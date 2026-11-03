@@ -51,8 +51,8 @@ class Wire:
 
 class Graphic:
     """Grafikteil: Polylinie (Linien, Kurven, Rechtecke) oder gefüllte Fläche."""
-    def __init__(self, pts, style, filled=False):
-        self.pts, self.style, self.filled = pts, style, filled
+    def __init__(self, pts, style, filled=False, fill=None):
+        self.pts, self.style, self.filled, self.fill = pts, style, filled, fill
         xs, ys = [p[0] for p in pts], [p[1] for p in pts]
         self.bbox = (min(xs), min(ys), max(xs), max(ys))
 
@@ -95,7 +95,7 @@ def load(page, area):
                 frames += [[a, b] for a, b in zip(seg, seg[1:])]
                 continue
             if filled:
-                graphics.append(Graphic(seg, "fill", True))
+                graphics.append(Graphic(seg, "fill", True, p.get("fill")))
                 continue
             style = DASHED if dashed else (THIN if width < 0.5 else STYLE)
             pe = dashed and PE_DASH in dashes
@@ -288,6 +288,20 @@ def build(page, area):
     return wires, clusters, cbox, ctexts, free_texts, pins, nodes, ends, frames, images
 
 
+def fuellung(rgb):
+    """PDF-Füllfarbe auf eine QET-Füllung abbilden (Listenköpfe sind hellgrau, Symbole schwarz)."""
+    if not rgb:
+        return "black"
+    hell = sum(rgb) / len(rgb)
+    if hell > 0.97:
+        return "white"
+    if hell > 0.75:
+        return "lightgray"
+    if hell > 0.35:
+        return "gray"
+    return "black"
+
+
 def add_text(e, t, T):
     x0, y0, x1, y1 = t["bbox"]
     d = t["dir"]
@@ -317,7 +331,7 @@ def write_elements(clusters, cbox, ctexts, pins, ordner, ziel, name):
             if len(g.pts) > 2 and (g.filled or g.style == DASHED):
                 q = [T(p) for p in g.pts]
                 e._box(*q)
-                style = STYLE.replace("filling:none", "filling:black") if g.filled else DASHED
+                style = STYLE.replace("filling:none", f"filling:{fuellung(g.fill)}") if g.filled else DASHED
                 e.parts.append(("polygon", {**{f"x{k + 1}": f"{x:.2f}" for k, (x, _) in enumerate(q)},
                                             **{f"y{k + 1}": f"{y:.2f}" for k, (_, y) in enumerate(q)},
                                             "closed": "true" if g.filled else "false", "antialias": "true",

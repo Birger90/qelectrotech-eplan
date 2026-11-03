@@ -24,6 +24,7 @@
 #include "../edz/edzpart.h"
 #include "eplandxfreader.h"
 #include "eplanelementbuilder.h"
+#include "eplanmacroreader.h"
 
 #include <QDir>
 #include <QDirIterator>
@@ -620,5 +621,41 @@ bool EplanPartImporter::importEdz(const QString &edz_path, const QString &manufa
 		return false;
 	}
 	m_written << importer.writtenPath();
+
+	// The EDZ may carry the manufacturer's EPLAN macro: its schematic is the
+	// symbol the manufacturer draws, next to the generic one built from the
+	// part data above
+	EdzArchive archive;
+	if (!archive.extract(edz_path)) return true;
+	EdzPart part;
+	const bool has_part = part.parse(archive.partXmlPath());
+	QDirIterator it(archive.extractedDir(), {QStringLiteral("*.ema")}, QDir::Files,
+			QDirIterator::Subdirectories);
+	while (it.hasNext()) {
+		const QString ema = it.next();
+		EplanMacroReader reader;
+		if (!reader.read(ema)) {
+			m_messages << QStringLiteral("%1: %2").arg(QFileInfo(ema).fileName(), reader.errorString());
+			continue;
+		}
+		EplanSymbolData data = reader.symbol();
+		sortPins(data.pins);
+		const QString letters = reader.deviceLetters();
+		const QVector<QPair<QString, QString>> info {
+			{QStringLiteral("manufacturer"), manufacturer},
+			{QStringLiteral("manufacturer_reference"), has_part ? part.orderNumber() : QString()},
+			{QStringLiteral("designation"), has_part && !part.typeNumber().isEmpty() ? part.typeNumber() : type},
+			{QStringLiteral("description"), reader.description()},
+			{QStringLiteral("label"), QLatin1Char('-') + (letters.isEmpty() ? QStringLiteral("K") : letters)}};
+		const QString element_name = QStringLiteral("%1 Schaltbild").arg(type);
+		const QDomDocument doc = EplanElementBuilder::build(
+			data, {{QStringLiteral("de"), element_name}, {QStringLiteral("en"), element_name}}, info);
+		const QString out = QDir(folder).filePath(safe(element_name) + QStringLiteral(".elmt"));
+		if (!writeElement(doc, out, &m_error)) return false;
+		m_written << out;
+		m_messages << QStringLiteral("%1: %2 terminals from the EPLAN macro").arg(element_name).arg(data.pins.size());
+		if (!reader.skipped().isEmpty())
+			m_messages << QStringLiteral("not taken over: %1").arg(reader.skipped().join(QStringLiteral(", ")));
+	}
 	return true;
 }

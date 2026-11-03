@@ -33,6 +33,9 @@ struct EplanSymbolData
 	QVector<EplanDxfText> texts;
 	QVector<EplanDxfPin> pins;       ///< sorted top-left to bottom-right; may be empty
 	QVector<EplanDxfField> fields;   ///< empty: one function field per terminal
+	QVector<QRectF> filled;          ///< solid black areas (transformer windings)
+	bool pin_fields = true;          ///< no fields: a function field per terminal
+	QString source;                  ///< note for the element, empty: from DXF data
 };
 
 /**

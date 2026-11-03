@@ -204,6 +204,22 @@ QDomDocument EplanElementBuilder::build(const EplanSymbolData &data,
 		e.setAttribute(QStringLiteral("style"), STYLE);
 		parts << e;
 	}
+	for (const QRectF &r : data.filled) {
+		const QPointF a = T(QPointF(r.left(), r.bottom()));  // upper left (y up)
+		xs << a.x() << a.x() + r.width() * S;
+		ys << a.y() << a.y() + r.height() * S;
+		QDomElement e = doc.createElement(QStringLiteral("rect"));
+		e.setAttribute(QStringLiteral("x"), num(a.x()));
+		e.setAttribute(QStringLiteral("y"), num(a.y()));
+		e.setAttribute(QStringLiteral("width"), num(r.width() * S));
+		e.setAttribute(QStringLiteral("height"), num(r.height() * S));
+		e.setAttribute(QStringLiteral("rx"), QStringLiteral("0"));
+		e.setAttribute(QStringLiteral("ry"), QStringLiteral("0"));
+		e.setAttribute(QStringLiteral("antialias"), QStringLiteral("false"));
+		e.setAttribute(QStringLiteral("style"), QString(STYLE).replace(
+			QStringLiteral("filling:none"), QStringLiteral("filling:black")));
+		parts << e;
+	}
 
 	QVector<QRectF> boxes;  // space taken by horizontal texts
 	for (const EplanDxfText &t : data.texts) {
@@ -324,8 +340,8 @@ QDomDocument EplanElementBuilder::build(const EplanSymbolData &data,
 	defn.appendChild(einfos);
 
 	QDomElement infos = doc.createElement(QStringLiteral("informations"));
-	infos.appendChild(doc.createTextNode(
-		QStringLiteral("Generated from the manufacturer's EPLAN DXF data")));
+	infos.appendChild(doc.createTextNode(data.source.isEmpty()
+		? QStringLiteral("Generated from the manufacturer's EPLAN DXF data") : data.source));
 	defn.appendChild(infos);
 
 	QDomElement desc = doc.createElement(QStringLiteral("description"));
@@ -441,6 +457,8 @@ QDomDocument EplanElementBuilder::build(const EplanSymbolData &data,
 	}
 
 	// no EPLAN fields: one function text per terminal, growing away from it
+	// (a macro already shows what its terminals are for)
+	if (!data.pin_fields) pin_texts.clear();
 	for (const PinText &u : std::as_const(pin_texts)) {
 		QVector<double> neighbours;
 		for (const PinText &o : std::as_const(pin_texts)) {

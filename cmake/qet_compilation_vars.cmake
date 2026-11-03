@@ -141,6 +141,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/pdf_links.h
   ${QET_DIR}/sources/import/eplandxf/eplandxfreader.cpp
   ${QET_DIR}/sources/import/eplandxf/eplandxfreader.h
+  ${QET_DIR}/sources/import/eplandxf/eplanmacroreader.cpp
+  ${QET_DIR}/sources/import/eplandxf/eplanmacroreader.h
   ${QET_DIR}/sources/import/eplandxf/eplanimportdialog.cpp
   ${QET_DIR}/sources/import/eplandxf/eplanimportdialog.h
   ${QET_DIR}/sources/import/eplandxf/eplanelementbuilder.cpp

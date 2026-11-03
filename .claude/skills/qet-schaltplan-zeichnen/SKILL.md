@@ -174,6 +174,14 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
     schlägt jede Nachzeichnung; nachzeichnen nur, wenn es kein Makro gibt. Logos werden nicht übernommen.
   - Anschlüsse liegen bei EPLAN-Makros **im** Kasten: Brücken zwischen zwei Anschlüssen laufen
     sonst auf der Rahmenlinie → `move_conductor_segment` (horizontales Segment, dy ±15) herausziehen.
+  - **Originalsymbol aus dem Vorlage-PDF statt Nachzeichnung** (Nutzer: „Der FI/LS ist doch ein
+    Witz? Wieso nutzt du nicht das originale?“): EPLAN-PDFs sind Vektor-PDFs. Mit
+    `qelectrotech-eplan/tools/symbole/pdf_symbol.py plan.pdf <seite> --clip x0,y0,x1,y1 --list`
+    den Ausschnitt ansehen, Anschlüsse an den Stummelenden ablesen (Pinnummer steht rechts daneben),
+    dann mit `--pin Name:x,y:n|s|e|w` in die Benutzersammlung schreiben (8 mm → 30 px). Reihenfolge:
+    Herstellermakro (EDZ) > Original-PDF > Nachzeichnen. Ausschnitte aus Kundenplänen nicht in den
+    öffentlichen Fork. Alle Nachbarn im Raster mitziehen (Klemmen 30 px statt 20 px).
+  - Datenblatt-Schaltbilder (z. B. WAGO) sind oft Rasterbilder im PDF → kein exakter Import, nachzeichnen.
   - **Jeder Anschluss trägt seine Nummer**, auch bei Fremdgeräten: NSHV-Abgänge als Anschlusspunkt
     mit „L1/L2/L3/PE“, Sicherungen mit ihren Klemmennummern 1/2, 3/4, 5/6 (Elementtext oben/unten
     rechts am `fusible`). Standardsymbole ohne Pinnamen nie unbeschriftet lassen.

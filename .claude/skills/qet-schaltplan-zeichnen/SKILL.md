@@ -202,6 +202,9 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
     stark ab (off_grid, misaligned) – das ist hier kein Fehler, Sichtprüfung entscheidet.
   - Senkrechte Verweistexte: `add_text` mit `id`, dann `rotate_text index "$id" angle 270`;
     x = Leitung − 1,3 · Größe, damit der Text mittig über der Leitung steht.
+  - **Folgepfeile gefüllt wie EPLAN**: `custom://Allgemein/Verweise/02going_arrow_gefuellt.elmt` und
+    `…/01coming_arrow_gefuellt.elmt` (Kopien der QET-Pfeile mit `filling:black`, im Fork unter
+    `bauteile/nachgezeichnet`). Die QET-Standardpfeile sind hohl.
   - Pinnamen mit „-“ am Anfang an pdf_symbol.py als `--pin=-(1):x,y:s` übergeben.
   - Datenblatt-Schaltbilder (z. B. WAGO) sind oft Rasterbilder im PDF → kein exakter Import, nachzeichnen.
   - **Jeder Anschluss trägt seine Nummer**, auch bei Fremdgeräten: NSHV-Abgänge als Anschlusspunkt

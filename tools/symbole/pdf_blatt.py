@@ -285,6 +285,20 @@ def build(page, area):
                 dirs.append(d)
                 ends[(id(w), e)] = ("k", k, d)
             nodes.append((p, dirs))
+
+    # Grafik ohne Leitungsanschluss (Kabelbilder, Gerätebilder, Tabellen) zu einem Hintergrund-Bauteil
+    # zusammenfassen: große Blätter bestehen sonst aus tausenden Kleinteilen
+    mit = [i for i in range(len(clusters)) if pins[i]]
+    ohne = [i for i in range(len(clusters)) if not pins[i]]
+    if len(ohne) > 1:
+        neu = {alt: k for k, alt in enumerate(mit)}
+        clusters2 = [clusters[i] for i in mit] + [[g for i in ohne for g in clusters[i]]]
+        ctexts2 = [ctexts[i] for i in mit] + [[t for i in ohne for t in ctexts[i]]]
+        cbox2 = [cbox[i] for i in mit] + [(min(cbox[i][0] for i in ohne), min(cbox[i][1] for i in ohne),
+                                            max(cbox[i][2] for i in ohne), max(cbox[i][3] for i in ohne))]
+        pins = {neu[i]: pins[i] for i in mit} | {len(mit): []}
+        ends = {k: (v[0], neu[v[1]], v[2], v[3]) if v[0] == "c" else v for k, v in ends.items()}
+        clusters, ctexts, cbox = clusters2, ctexts2, cbox2
     return wires, clusters, cbox, ctexts, free_texts, pins, nodes, ends, frames, images
 
 

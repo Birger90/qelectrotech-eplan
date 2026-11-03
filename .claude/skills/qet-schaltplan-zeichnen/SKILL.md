@@ -206,6 +206,10 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
   - **Folgepfeile gefüllt wie EPLAN**: `custom://Allgemein/Verweise/02going_arrow_gefuellt.elmt` und
     `…/01coming_arrow_gefuellt.elmt` (Kopien der QET-Pfeile mit `filling:black`, im Fork unter
     `bauteile/nachgezeichnet`). Die QET-Standardpfeile sind hohl.
+  - Ortsrahmen (+BP1 …) strichpunktiert: `add_shape rectangle` mit `id`, dann `set_shape index "$id"
+    line-style dashdot` (Formen: solid/dashed/dotted/dashdot – Leiter dagegen dashed/dashdotted).
+  - Gefüllte Flächen in EPLAN-PDFs (Steckerstifte, F-DI-Balken) bestehen aus Einzellinien;
+    `pdf_symbol.py` setzt sie zu einem gefüllten Polygon zusammen.
   - Pinnamen mit „-“ am Anfang an pdf_symbol.py als `--pin=-(1):x,y:s` übergeben.
   - Datenblatt-Schaltbilder (z. B. WAGO) sind oft Rasterbilder im PDF → kein exakter Import, nachzeichnen.
   - **Jeder Anschluss trägt seine Nummer**, auch bei Fremdgeräten: NSHV-Abgänge als Anschlusspunkt

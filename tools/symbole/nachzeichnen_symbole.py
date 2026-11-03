@@ -87,6 +87,13 @@ class Elem:
         self.parts.append(("ellipse", {"x": _n(cx - r), "y": _n(cy - r), "width": _n(2 * r),
                                        "height": _n(2 * r), "antialias": "true", "style": STYLE}))
 
+    def arc(self, cx, cy, r, start, angle):
+        """Kreisbogen um (cx, cy); Winkel in Grad gegen den Uhrzeigersinn ab 3 Uhr."""
+        self._box((cx - r, cy - r), (cx + r, cy + r))
+        self.parts.append(("arc", {"x": _n(cx - r), "y": _n(cy - r), "width": _n(2 * r),
+                                   "height": _n(2 * r), "start": _n(start), "angle": _n(angle),
+                                   "antialias": "true", "style": STYLE}))
+
     def text(self, x, y, s, size=5, rot=0):
         self._box((x, y))
         self.parts.append(("text", {"x": _n(x), "y": _n(y), "text": s, "rotation": _n(rot),
@@ -474,13 +481,52 @@ def luefter(base):
     return [e.write(base, ["Allgemein", "Lüfter", "Filterlüfter_230VAC"])]
 
 
+def fi_ls(base):
+    """FI/LS-Schalter 1P+N wie im EPLAN-Plan: 1 und N oben, 2 und N. unten, Antrieb links,
+    Auslöser (I>, IΔ) als Kasten über beide Pole. Siemens liefert für 5SU1 nur Aufbaudaten."""
+    e = Elem("FI/LS-Schalter 1P+N B6A 30mA", "-F",
+             info("Siemens", "5SU1356-6KK06", "5SU1356-6KK06", "FI/LS-Schalter 1P+N, B6A, 30 mA, Typ A"))
+    for x, top, bottom in ((0, "1", "2"), (20, "N", "N.")):
+        e.term(x, 0, "n", top)
+        e.term(x, 80, "s", bottom)
+        e.line(x, 0, x, 14)
+        e.line(x, 32, x - 8, 16)  # Schaltstück, Drehpunkt unten
+        e.line(x, 32, x, 80)
+        e.text(x + 2, 8, top)
+        e.text(x + 2, 78, bottom)
+    e.line(-40, 24, 16, 24, DASHED)       # mechanische Verbindung
+    e.rect(-48, 18, 10, 10)               # Antrieb (Schaltschloss)
+    e.line(-48, 23, -38, 23)
+    e.line(-43, 18, -43, 28)
+    e.rect(-6, 40, 32, 16)                # Auslöser beider Pole
+    e.text(-4, 51, "I>", size=6)
+    e.rect(-30, 42, 16, 12)               # Fehlerstromauslöser
+    e.text(-28, 52, "IΔ", size=6)
+    e.line(-14, 48, -6, 48, DASHED)
+    return [e.write(base, ["Siemens", "Schutzeinrichtungen", "5SU1356-6KK06"], "5SU1356-6KK06 Schaltbild")]
+
+
+def steckdose(base):
+    """Schutzkontaktsteckdose 1P+N+PE wie im EPLAN-Plan: drei Buchsen im 20-px-Raster, gestrichelter
+    Rahmen, PE mit Schutzkontaktstrich."""
+    e = Elem("Steckdose 1P+N+PE", "-XS", info("", "", "Schuko 230V 16A", "Schutzkontaktsteckdose 230 V, 16 A"))
+    for x, n in ((0, "L"), (20, "N"), (40, "PE")):
+        e.term(x, 0, "n", n)
+        e.line(x, 0, x, 20)
+        e.arc(x, 26, 6, 0, 180)           # Buchse, nach unten offen
+        e.text(x + 2, 8, n)
+    e.line(40, 20, 40, 30)                # Schutzkontakt
+    e.rect(-12, 14, 64, 20, DASHED)
+    return [e.write(base, ["Allgemein", "Steckdosen", "Schuko_1P_N_PE"])]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ziel", default=str(USER))
     a = ap.parse_args()
     base = Path(a.ziel)
     files = []
-    for f in (cybelec, pcss, irt, fiessler, murr_trafo, finder, phoenix, harting, petzold, luefter):
+    for f in (cybelec, pcss, irt, fiessler, murr_trafo, finder, phoenix, harting, petzold, luefter, fi_ls, steckdose):
         files += f(base)
     for p in files:
         print(p)

@@ -1,0 +1,53 @@
+<definition version="0.100.0" type="element" link_type="simple" width="120" height="140" hotspot_x="68" hotspot_y="40">
+    <uuid uuid="{c0e49070-1dca-4cf2-9200-e1223a2dc648}" />
+    <names>
+        <name lang="de">FI/LS-Schalter 1P+N B6A 30mA</name>
+        <name lang="en">FI/LS-Schalter 1P+N B6A 30mA</name>
+    </names>
+    <elementInformations>
+        <elementInformation name="manufacturer" show="1">Siemens</elementInformation>
+        <elementInformation name="manufacturer_reference" show="1">5SU1356-6KK06</elementInformation>
+        <elementInformation name="designation" show="1">5SU1356-6KK06</elementInformation>
+        <elementInformation name="description" show="1">FI/LS-Schalter 1P+N, B6A, 30 mA, Typ A</elementInformation>
+        <elementInformation name="label" show="1">-F</elementInformation>
+    </elementInformations>
+    <informations>Nachgezeichnet (QElectroTech EPLAN-Fork, tools/symbole)</informations>
+    <description>
+        <line x1="0" y1="0" x2="0" y2="14" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="32" x2="-8" y2="16" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="32" x2="0" y2="80" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="2" y="8" text="1" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="2" y="78" text="2" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="20" y1="0" x2="20" y2="14" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="20" y1="32" x2="12" y2="16" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="20" y1="32" x2="20" y2="80" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="22" y="8" text="N" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="22" y="78" text="N." rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="-40" y1="24" x2="16" y2="24" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:dashed;line-weight:normal;filling:none;color:black" />
+        <line x1="-48" y1="18" x2="-38" y2="18" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-38" y1="18" x2="-38" y2="28" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-38" y1="28" x2="-48" y2="28" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-48" y1="28" x2="-48" y2="18" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-48" y1="23" x2="-38" y2="23" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-43" y1="18" x2="-43" y2="28" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-6" y1="40" x2="26" y2="40" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="26" y1="40" x2="26" y2="56" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="26" y1="56" x2="-6" y2="56" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-6" y1="56" x2="-6" y2="40" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="-4" y="51" text="I&gt;" rotation="0" font="Liberation Sans,6,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="-30" y1="42" x2="-14" y2="42" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-14" y1="42" x2="-14" y2="54" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-14" y1="54" x2="-30" y2="54" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-30" y1="54" x2="-30" y2="42" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="-28" y="52" text="IΔ" rotation="0" font="Liberation Sans,6,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="-14" y1="48" x2="-6" y2="48" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:dashed;line-weight:normal;filling:none;color:black" />
+        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{9431f3dc-582c-445c-a3ea-8a1021a14821}" x="-48" y="-20" z="20">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal name="1" orientation="n" type="Generic" uuid="{2026639f-c933-4ef9-9642-3ac76216d774}" x="0" y="0" />
+        <terminal name="2" orientation="s" type="Generic" uuid="{a41803ad-0d2d-4578-b8d2-68574a67c4a5}" x="0" y="80" />
+        <terminal name="N" orientation="n" type="Generic" uuid="{66fe2272-cb49-470e-bea5-f49d17eb9963}" x="20" y="0" />
+        <terminal name="N." orientation="s" type="Generic" uuid="{322dadbe-89a2-4aaa-af52-ba9d15c9c477}" x="20" y="80" />
+    </description>
+</definition>

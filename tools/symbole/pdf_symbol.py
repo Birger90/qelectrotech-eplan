@@ -70,6 +70,8 @@ def main():
     ap.add_argument("--hersteller", default="")
     ap.add_argument("--bestell", default="")
     ap.add_argument("--beschreibung", default="")
+    ap.add_argument("--raster", type=float, default=10,
+                    help="Anschlüsse auf dieses Raster runden (px); 0 = genau wie im PDF")
     a = ap.parse_args()
 
     page = pymupdf.open(a.pdf)[a.seite]
@@ -137,7 +139,9 @@ def main():
         e.text(tx, ty, s["text"].strip(), size=size, rot=-rot)
     for name, x, y, ori in pins:
         tx, ty = T(pymupdf.Point(x, y))
-        e.term(round(tx / 10) * 10, round(ty / 10) * 10, ori, name)
+        if a.raster:
+            tx, ty = round(tx / a.raster) * a.raster, round(ty / a.raster) * a.raster
+        e.term(round(tx, 1), round(ty, 1), ori, name)
 
     levels = [v for v in a.ordner.split("/") if v]
     out = e.write(Path(a.ziel), levels, a.name)

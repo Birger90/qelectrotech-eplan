@@ -181,13 +181,15 @@ def kabel_schrift(path):
 
 def schrift(path):
     """Einheitliche Schrift: Kennzeichen LABEL, freie Texte nach SIZES (Attribut und HTML)."""
+    import html
     import re
     s = open(path, encoding="utf-8").read()
 
     def inp(m):
         tag = m.group(0)
         t = re.search(r'text-indent:0px;&quot;(?:>|&gt;)(.*?)&lt;/p', tag)
-        size = SIZES.get(t.group(1).replace("&amp;", "&") if t else "", DATA)
+        # „&“ steht doppelt maskiert im HTML des Attributs (&amp;amp;)
+        size = SIZES.get(html.unescape(html.unescape(t.group(1))) if t else "", DATA)
         tag = re.sub(r'font="Liberation Sans,\d+,', f'font="Liberation Sans,{size},', tag)
         return re.sub(r'font-size:\d+pt', f'font-size:{size}pt', tag)
     # QET maskiert ">" im Text-Attribut nicht, "<" schon: das Element reicht bis zum nächsten "<"
@@ -195,7 +197,7 @@ def schrift(path):
 
     def element(m):
         # Klemmen tragen nur ihre Nummer: klein wie die Anschlussnummern, Geräte LABEL
-        size = DATA if "borne" in m.group(1) else LABEL
+        size = DATA if ("borne" in m.group(1) or "klemme" in m.group(1).lower()) else LABEL
 
         def lab(t):
             block = t.group(0)

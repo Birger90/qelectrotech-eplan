@@ -195,6 +195,13 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
     stehen und alle Texte sind gleich groß. Nach jeder Änderung an `schrift()` die Größen im .qet zählen.
   - PDF-Texte laufen in QET breiter (Liberation Sans statt Tahoma): `pdf_symbol.py` verkleinert sie auf
     ihre Originalbreite; Glyphen-Texte (■ für Schalterstellungen) bleiben unverändert.
+  - **Wiederkehrende Kleinteile im 4-mm-Raster** (Verteilerklemme mit zwei Klemmpunkten): mit
+    `pdf_symbol.py --raster 0` übernehmen (Anschlüsse 15 px auseinander), alle Lagen aus den PDF-Koordinaten
+    umrechnen (`X(pt)`, `Y(pt)` in blatt13). Querbrücken als `add_shape line`, Π-Brücken als Leitung
+    von einem oberen Anschluss zu einem Abgangspfeil (QET legt den Bogen selbst). layout_check fällt dabei
+    stark ab (off_grid, misaligned) – das ist hier kein Fehler, Sichtprüfung entscheidet.
+  - Senkrechte Verweistexte: `add_text` mit `id`, dann `rotate_text index "$id" angle 270`;
+    x = Leitung − 1,3 · Größe, damit der Text mittig über der Leitung steht.
   - Pinnamen mit „-“ am Anfang an pdf_symbol.py als `--pin=-(1):x,y:s` übergeben.
   - Datenblatt-Schaltbilder (z. B. WAGO) sind oft Rasterbilder im PDF → kein exakter Import, nachzeichnen.
   - **Jeder Anschluss trägt seine Nummer**, auch bei Fremdgeräten: NSHV-Abgänge als Anschlusspunkt

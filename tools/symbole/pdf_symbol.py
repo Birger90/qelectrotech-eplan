@@ -131,6 +131,13 @@ def main():
                                             **{f"y{i + 1}": f"{y:.2f}" for i, (_, y) in enumerate(pts)},
                                             "closed": "true", "antialias": "true",
                                             "style": STYLE.replace("filling:none", "filling:black")}))
+            elif dashed and len(seg) > 2:
+                # gestrichelte Bögen als ein Linienzug, sonst fängt das Strichmuster in jedem Stück neu an
+                pts = [T(pt) for pt in seg]
+                e._box(*pts)
+                e.parts.append(("polygon", {**{f"x{i + 1}": f"{x:.2f}" for i, (x, _) in enumerate(pts)},
+                                            **{f"y{i + 1}": f"{y:.2f}" for i, (_, y) in enumerate(pts)},
+                                            "closed": "false", "antialias": "true", "style": style}))
             else:
                 for p1, p2 in zip(seg, seg[1:]):
                     (x1, y1), (x2, y2) = T(p1), T(p2)

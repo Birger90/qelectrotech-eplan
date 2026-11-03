@@ -108,7 +108,12 @@ def main():
         dashed = bool(p.get("dashes")) and p["dashes"] not in ("[] 0", "[] 0.0")
         style = DASHED if dashed else (THIN if (p.get("width") or 0) < 0.5 else STYLE)
         filled = bool(p.get("fill")) and p.get("type") in ("f", "fs")
-        for seg in segments(p):
+        segs = list(segments(p))
+        if filled and segs and all(len(sg) == 2 for sg in segs):
+            # EPLAN füllt Flächen als Folge einzelner Linienstücke: zu einem Umriss zusammensetzen
+            umriss = [segs[0][0]] + [sg[1] for sg in segs]
+            segs = [umriss]
+        for seg in segs:
             if not all(inside.contains(pt) for pt in seg):
                 continue
             if filled and len(seg) > 2:

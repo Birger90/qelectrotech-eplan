@@ -181,6 +181,13 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
     dann mit `--pin Name:x,y:n|s|e|w` in die Benutzersammlung schreiben (8 mm → 30 px). Reihenfolge:
     Herstellermakro (EDZ) > Original-PDF > Nachzeichnen. Ausschnitte aus Kundenplänen nicht in den
     öffentlichen Fork. Alle Nachbarn im Raster mitziehen (Klemmen 30 px statt 20 px).
+  - **Leitungsecken ohne Punkt**: `bod` zeichnet an jeder Ecke einen Verbindungspunkt (falsch,
+    EPLAN zeigt dort keinen), `corner.elmt` zeigt einen Kasten. Stattdessen direkt verbinden und den
+    Weg mit `move_conductor_segment` legen. QET speichert den Weg erst nach einer Verschiebung; jede
+    Verschiebung kann ein Segment einfügen → Index danach aus dem `.qet` lesen
+    (`<conductor …terminalname1=…><segment length orientation>`). Blatt 10: +(1) erst Segment 1 dy,
+    dann Segment 3 dx.
+  - Pinnamen mit „-“ am Anfang an pdf_symbol.py als `--pin=-(1):x,y:s` übergeben.
   - Datenblatt-Schaltbilder (z. B. WAGO) sind oft Rasterbilder im PDF → kein exakter Import, nachzeichnen.
   - **Jeder Anschluss trägt seine Nummer**, auch bei Fremdgeräten: NSHV-Abgänge als Anschlusspunkt
     mit „L1/L2/L3/PE“, Sicherungen mit ihren Klemmennummern 1/2, 3/4, 5/6 (Elementtext oben/unten

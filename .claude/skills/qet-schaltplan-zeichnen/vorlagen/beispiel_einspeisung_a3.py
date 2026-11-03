@@ -3,9 +3,12 @@
 Ausführen mit einem Python, das qet_mcp laden kann (siehe qet_direkt.py).
 """
 import os
+import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # eingebettetes Python sucht hier nicht
 from qet_direkt import *  # q, BIN, USER, COMMON, PROJ
+from abzweig import abzweig, an, ecke
 
 F = 0
 E = "common://10_electric/10_allpole/"
@@ -137,24 +140,24 @@ ops += el("q821", QS, XT, 560, "-Q82.1") + etext("q821", "q821t", "7...10A", -70
 ops += [w("t82", TR_PIN["9"], "q821", QS_IN[1]), w("t82", TR_PIN["12"], "q821", QS_IN[3]),
         w("q821", QS_OUT[4], "q821", QS_IN[5])]
 # T1 (von 6) mit Knoten zur PE-Schiene, T2 (von 2); senkrecht rechts vom Trafo zu den Schienen
-ops += el("bNode", BOD, 790, 640) + el("bT1u", BOD, XT1, 640) + el("bT1o", BOD, XT1, Y["T1"])
-ops += el("bT2u", BOD, XT2, 670) + el("bT2o", BOD, XT2, Y["T2"])
+ops += el("bNode", BOD, 790, 640) + ecke("bT1u", XT1, 640) + ecke("bT1o", XT1, Y["T1"])
+ops += ecke("bT2u", XT2, 670) + ecke("bT2o", XT2, Y["T2"])
 ops += [w("q821", QS_OUT[6], "bNode", BOD_W), w("bNode", BOD_E, "bT1u", BOD_W), w("bNode", BOD_S, "pe1", 0),
         w("bT1u", BOD_N, "bT1o", BOD_S),
         w("q821", QS_OUT[2], "bT2u", BOD_W), w("bT2u", BOD_N, "bT2o", BOD_S)]
 ops += etext("bT1u", "t1q", "RDWH 1,5", 4, -60, 5, 270) + etext("bT2u", "t2q", "RD 1,5", 4, -90, 5, 270)
 
 # Schrankbelüftung (außerhalb): -F88 an T2, -S88, -X2, Kabel W88, -EM88; N von T1
-ops += el("bT2a", BOD, XL - 30, Y["T2"]) + el("bT1a", BOD, XL + 30, Y["T1"])
-ops += [w("bT1o", BOD_E, "bT1a", BOD_W), w("bT1a", BOD_E, "pfT1", 0),
-        w("bT2o", BOD_E, "bT2a", BOD_W), w("bT2a", BOD_E, "pfT2", 0)]
+ops += abzweig("bT2a", "unten_rechts", XL - 30, Y["T2"]) + abzweig("bT1a", "unten_rechts", XL + 30, Y["T1"])
+ops += [w("bT1o", BOD_E, "bT1a", an("unten_rechts", "W")), w("bT1a", an("unten_rechts", "E"), "pfT1", 0),
+        w("bT2o", BOD_E, "bT2a", an("unten_rechts", "W")), w("bT2a", an("unten_rechts", "E"), "pfT2", 0)]
 ops += el("f88", LS, XL - 30, 240, "-F88")
 ops += [{"op": "set_element_text", "folio": F, "element": "$f88", "index": i, "property": "text", "value": v}
         for i, v in ((1, ""), (2, "B6A"))]  # Feld 2 = Charakteristik/Nennstrom
 ops += el("s88", TH, XL - 30, 450, "-S88", -50) + etext("s88", "s88t", "0-60°C", -60, 30, 6)
 ops += el("x2_1", KL, XL - 30, YX, "1", 4) + el("x2_2", KL, XL + 30, YX, "2", 4) + el("x2_3", KL, XL + 90, YX, "3", 4)
-ops += [w("bT2a", BOD_S, "f88", 0), w("f88", 1, "s88", 0), w("s88", 1, "x2_1", 0),
-        w("bT1a", BOD_S, "x2_2", 0), txt("-X2", XL - 70, YX - 6, LABEL)]
+ops += [w("bT2a", an("unten_rechts", "S"), "f88", 0), w("f88", 1, "s88", 0), w("s88", 1, "x2_1", 0),
+        w("bT1a", an("unten_rechts", "S"), "x2_2", 0), txt("-X2", XL - 70, YX - 6, LABEL)]
 ops += etext("f88", "f88q", "1,5", 2, 120, 5, 270) + etext("s88", "s88q", "1,5", 2, 160, 5, 270)
 ops += el("em88", LUE, XL, 860, "-EM88", 25)
 ops.append({"op": "set_element_text", "folio": F, "element": "$em88", "index": 0, "property": "y", "value": "45"})

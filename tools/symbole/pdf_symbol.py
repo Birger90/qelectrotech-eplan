@@ -141,7 +141,7 @@ def main():
             size = max(4, int(room / (0.68 * n)))
         base = pymupdf.Point(x0, y1 - 0.2 * s["size"]) if abs(rot) < 1 else pymupdf.Point(x1 - 0.2 * s["size"], y1)
         tx, ty = T(base)
-        e.text(tx, ty, s["text"].strip(), size=size, rot=-rot)
+        e.text(tx, ty, s["text"].strip(), size=size, rot=-rot, bold=bool(s["flags"] & 16))  # 16 = fett
     for name, x, y, ori in pins:
         tx, ty = T(pymupdf.Point(x, y))
         if a.raster:

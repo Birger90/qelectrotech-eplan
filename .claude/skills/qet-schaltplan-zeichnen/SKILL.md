@@ -217,3 +217,9 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
     rechts am `fusible`). Standardsymbole ohne Pinnamen nie unbeschriftet lassen.
   - Kennzeichen großer Kästen (Trafo) mit `set_element_text` x **und** y neben die obere linke
     Ecke („IN“-Höhe) legen; Motor-Kennzeichen dicht links neben den Kreis (x≈−42).
+  - **Abzweige wie EPLAN**: kein QET-Verbindungspunkt (`bod`), wo das Original einen T-Knoten mit
+    45°-Schräge zeigt; Abzweig-Symbole aus dem PDF (`Allgemein/Verbindungen/Abzweig_Plan`, Arten
+    unten_links/unten_rechts/oben_rechts/rechts_unten, Helfer `abzweig.py`). Leitungsecken ohne
+    Punkt über das unsichtbare „Ecke (Plan)“ (Anschlüsse N/W/E/S wie `bod`). Punkte nur dort, wo
+    auch das Original einen Punkt hat. Vor jedem Blatt im Original nachsehen, welche Art es ist.
+  - Fehler, die beim Vergleich auffallen, sofort ausbessern statt sie nur zu melden.

@@ -94,10 +94,13 @@ class Elem:
                                    "height": _n(2 * r), "start": _n(start), "angle": _n(angle),
                                    "antialias": "true", "style": STYLE}))
 
-    def text(self, x, y, s, size=5, rot=0):
+    def text(self, x, y, s, size=5, rot=0, bold=False):
         self._box((x, y))
+        font = FONT.format(size=size)
+        if bold:
+            font = font.replace(",50,", ",75,").replace("Regular", "Bold")
         self.parts.append(("text", {"x": _n(x), "y": _n(y), "text": s, "rotation": _n(rot),
-                                    "font": FONT.format(size=size), "color": "#000000"}))
+                                    "font": font, "color": "#000000"}))
 
     def term(self, x, y, ori, name):
         self._box((x, y))

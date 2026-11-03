@@ -190,6 +190,11 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
   - **Gerätekennzeichen und Daten großer Kästen rechtsbündig vor der Kastenkante** wie EPLAN
     („-F110“, darunter „In: …“, „Out: …“ in Datengröße 7). Elementtexte haben keine Ausrichtung →
     x = Kante − 4 − 0,62 · Größe · Zeichenzahl (`links_vom_kasten()` in blatt11).
+  - **Freie Texte im .qet**: QET maskiert „>“ im `text`-Attribut von `<input>` nicht (nur „<“).
+    Muster `<input [^<]*` verwenden, nicht `<input [^>]*>` – sonst bleibt `font-size` im HTML auf 9 pt
+    stehen und alle Texte sind gleich groß. Nach jeder Änderung an `schrift()` die Größen im .qet zählen.
+  - PDF-Texte laufen in QET breiter (Liberation Sans statt Tahoma): `pdf_symbol.py` verkleinert sie auf
+    ihre Originalbreite; Glyphen-Texte (■ für Schalterstellungen) bleiben unverändert.
   - Pinnamen mit „-“ am Anfang an pdf_symbol.py als `--pin=-(1):x,y:s` übergeben.
   - Datenblatt-Schaltbilder (z. B. WAGO) sind oft Rasterbilder im PDF → kein exakter Import, nachzeichnen.
   - **Jeder Anschluss trägt seine Nummer**, auch bei Fremdgeräten: NSHV-Abgänge als Anschlusspunkt

@@ -186,11 +186,12 @@ def schrift(path):
 
     def inp(m):
         tag = m.group(0)
-        t = re.search(r'text-indent:0px;&quot;&gt;(.*?)&lt;/p&gt;', tag)
+        t = re.search(r'text-indent:0px;&quot;(?:>|&gt;)(.*?)&lt;/p', tag)
         size = SIZES.get(t.group(1).replace("&amp;", "&") if t else "", DATA)
         tag = re.sub(r'font="Liberation Sans,\d+,', f'font="Liberation Sans,{size},', tag)
         return re.sub(r'font-size:\d+pt', f'font-size:{size}pt', tag)
-    s = re.sub(r'<input [^>]*>', inp, s)
+    # QET maskiert ">" im Text-Attribut nicht, "<" schon: das Element reicht bis zum nächsten "<"
+    s = re.sub(r'<input [^<]*', inp, s)
 
     def element(m):
         # Klemmen tragen nur ihre Nummer: klein wie die Anschlussnummern, Geräte LABEL

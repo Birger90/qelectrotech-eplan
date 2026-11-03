@@ -520,13 +520,63 @@ def steckdose(base):
     return [e.write(base, ["Allgemein", "Steckdosen", "Schuko_1P_N_PE"])]
 
 
+def wago_788_312(base):
+    """WAGO 788-312 Relaismodul 24 V DC, 2 Wechsler, nach dem Schaltbild im Datenblatt:
+    A1(+) / A2(-) mit Verpolschutzdiode, LED und Freilaufdiode, Spule; Wechsler 11/12/14 und 21/22/24."""
+    e = Elem("Relaismodul 788-312 24V DC 2 Wechsler", "-K",
+             info("WAGO", "788-312", "788-312", "Relaismodul 24 V DC, 2 Wechsler, 8 A, Statusanzeige"))
+    e.pin(0, 0, "w", "A1")
+    e.pin(0, 60, "w", "A2")
+    e.text(-14, 10, "+")
+    e.text(-14, 70, "-")
+    e.line(0, 0, 80, 0)
+    e.line(0, 60, 80, 60)
+    # Verpolschutzdiode in A2 (Durchlass zu A2 hin)
+    e.line(14, 55, 14, 65)
+    e.line(14, 60, 24, 55)
+    e.line(14, 60, 24, 65)
+    e.line(24, 55, 24, 65)
+    # LED und Freilaufdiode im Kasten zwischen den Schienen
+    e.line(40, 0, 40, 16)
+    e.line(40, 44, 40, 60)
+    e.rect(30, 16, 30, 28)
+    e.line(36, 26, 44, 26)        # LED: Dreieck nach unten
+    e.line(36, 26, 40, 34)
+    e.line(44, 26, 40, 34)
+    e.line(36, 34, 44, 34)
+    e.line(46, 27, 50, 23)        # Lichtpfeile
+    e.line(46, 31, 50, 27)
+    e.line(52, 34, 56, 34)        # Freilaufdiode: Dreieck nach oben
+    e.line(52, 34, 54, 26)
+    e.line(56, 34, 54, 26)
+    e.line(52, 26, 56, 26)
+    # Spule
+    e.line(80, 0, 80, 20)
+    e.line(80, 40, 80, 60)
+    e.rect(72, 20, 16, 20)
+    e.line(88, 30, 112, 30, DASHED)
+    e.line(112, 30, 112, 90, DASHED)
+    # zwei Wechsler: Schließer 14/24 oben, Mitte 11/21, Öffner 12/22 unten (Ruhelage 11-12)
+    for k, y in ((1, 0), (2, 60)):
+        e.pin(160, y + 10, "e", f"{k}4")
+        e.pin(160, y + 30, "e", f"{k}1")
+        e.pin(160, y + 50, "e", f"{k}2")
+        e.line(124, y + 10, 160, y + 10)
+        e.line(124, y + 10, 124, y + 18)
+        e.line(140, y + 30, 160, y + 30)
+        e.line(160, y + 50, 120, y + 50)
+        e.line(120, y + 50, 120, y + 44)
+        e.line(120, y + 44, 140, y + 30)
+    return [e.write(base, ["WAGO", "Relais, Schütze", "788-312"], "788-312 Schaltbild")]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ziel", default=str(USER))
     a = ap.parse_args()
     base = Path(a.ziel)
     files = []
-    for f in (cybelec, pcss, irt, fiessler, murr_trafo, finder, phoenix, harting, petzold, luefter, fi_ls, steckdose):
+    for f in (cybelec, pcss, irt, fiessler, murr_trafo, finder, phoenix, harting, petzold, luefter, fi_ls, steckdose, wago_788_312):
         files += f(base)
     for p in files:
         print(p)

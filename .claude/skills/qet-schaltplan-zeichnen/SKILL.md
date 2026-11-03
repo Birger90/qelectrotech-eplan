@@ -223,3 +223,10 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
     Punkt über das unsichtbare „Ecke (Plan)“ (Anschlüsse N/W/E/S wie `bod`). Punkte nur dort, wo
     auch das Original einen Punkt hat. Vor jedem Blatt im Original nachsehen, welche Art es ist.
   - Fehler, die beim Vergleich auffallen, sofort ausbessern statt sie nur zu melden.
+  - **Ganze Blätter automatisch** (ab Blatt 36): `tools/symbole/pdf_blatt.py` im Fork setzt ein EPLAN-PDF-Blatt
+    komplett um – Leitungen (waagerecht/senkrecht, Leiterstärke, freie Enden ausgeschlossen, Kästen erkannt)
+    werden echte Leiter, Ecken/Abzweige Knoten (unsichtbare „Ecke“), zusammenhängende Grafik wird je ein Bauteil
+    mit Anschlüssen genau an den Leitungsenden, Texte im Kasten gehören zum Bauteil, freie Texte/Ortsrahmen/Bilder
+    gehen aufs Blatt. Blattskript-Muster: `blatt_auto.py <PDF-Seite>` im Projektordner (liest Titel,
+    =Anlage, +Ort, Blattnummer aus dem Schriftfeld, zeichnet, erzeugt den Vergleich). Danach Vergleich ansehen
+    und nur Auffälliges von Hand nacharbeiten.

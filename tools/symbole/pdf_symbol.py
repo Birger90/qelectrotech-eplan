@@ -125,6 +125,13 @@ def main():
         x0, y0, x1, y1 = s["bbox"]
         rot = -math.degrees(math.atan2(d[1], d[0]))
         size = max(4, round(s["size"] * S) - 1)
+        # QETs Liberation Sans läuft breiter als die PDF-Schrift (EPLAN: Tahoma): Text nicht breiter
+        # werden lassen als im Original, sonst ragt er über Rahmen und Nachbartexte
+        n = len(s["text"].strip())
+        room = (x1 - x0 if abs(rot) < 1 else y1 - y0) * S
+        # nur Schrift, keine Zeichen-Grafik (EPLAN setzt z. B. Schalterstellungen als ■-Glyphen)
+        if n and any(c.isalnum() for c in s["text"]) and 0.68 * size * n > room:
+            size = max(4, int(room / (0.68 * n)))
         base = pymupdf.Point(x0, y1 - 0.2 * s["size"]) if abs(rot) < 1 else pymupdf.Point(x1 - 0.2 * s["size"], y1)
         tx, ty = T(base)
         e.text(tx, ty, s["text"].strip(), size=size, rot=-rot)

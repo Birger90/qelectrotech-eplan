@@ -104,6 +104,14 @@ def main():
     T = lambda pt: ((pt.x - ox) * S, (pt.y - oy) * S)  # noqa: E731
 
     e = Elem(a.name, a.kennzeichen, info(a.hersteller, a.bestell, a.bestell, a.beschreibung))
+    # kurze Stücke, die nur halb im Ausschnitt liegen, gehören meist zum Symbol (Kontaktschräge):
+    # Ausschnitt dann zu knapp -> melden
+    for p in paths:
+        for seg in segments(p):
+            drin = [inside.contains(pt) for pt in seg]
+            if any(drin) and not all(drin) and math.dist(seg[0], seg[-1]) < 15:
+                print(f"Warnung: Linie {[(round(pt.x, 1), round(pt.y, 1)) for pt in (seg[0], seg[-1])]} "
+                      f"ragt aus dem Ausschnitt ({a.name})", file=sys.stderr)
     for p in paths:
         dashed = bool(p.get("dashes")) and p["dashes"] not in ("[] 0", "[] 0.0")
         style = DASHED if dashed else (THIN if (p.get("width") or 0) < 0.5 else STYLE)

@@ -201,7 +201,8 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
     von einem oberen Anschluss zu einem Abgangspfeil (QET legt den Bogen selbst). layout_check fällt dabei
     stark ab (off_grid, misaligned) – das ist hier kein Fehler, Sichtprüfung entscheidet.
   - Senkrechte Verweistexte: `add_text` mit `id`, dann `rotate_text index "$id" angle 270`;
-    x = Leitung − 1,3 · Größe, damit der Text mittig über der Leitung steht.
+    x = Leitung − 1,3 · Größe, damit der Text mittig über der Leitung steht. Unter einem Pfeil:
+    unteres Ende = Pfeilende + 0,68 · Größe · Zeichenzahl + 8 (mit 0,6 stößt der Text an die Spitze).
   - **Folgepfeile gefüllt wie EPLAN**: `custom://Allgemein/Verweise/02going_arrow_gefuellt.elmt` und
     `…/01coming_arrow_gefuellt.elmt` (Kopien der QET-Pfeile mit `filling:black`, im Fork unter
     `bauteile/nachgezeichnet`). Die QET-Standardpfeile sind hohl.

@@ -1,0 +1,66 @@
+<definition version="0.100.0" type="element" link_type="simple" width="170" height="240" hotspot_x="130" hotspot_y="60">
+    <uuid uuid="{bcbc631a-422e-4fa2-bed6-c0a006455535}" />
+    <names>
+        <name lang="de">MVA-AA6 Encoder E4.1</name>
+        <name lang="en">MVA-AA6 Encoder E4.1</name>
+    </names>
+    <elementInformations>
+        <elementInformation name="manufacturer" show="1">Cybelec</elementInformation>
+        <elementInformation name="manufacturer_reference" show="1">N10.01.0173</elementInformation>
+        <elementInformation name="designation" show="1">MVA-AA6</elementInformation>
+        <elementInformation name="description" show="1">CybMVA Verstärkermodul</elementInformation>
+        <elementInformation name="label" show="1">-A</elementInformation>
+    </elementInformations>
+    <informations>Nachgezeichnet (QElectroTech EPLAN-Fork, tools/symbole)</informations>
+    <description>
+        <line x1="-110" y1="-20" x2="0" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="-20" x2="0" y2="160" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="160" x2="-110" y2="160" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-110" y1="160" x2="-110" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="-106" y="-8" text="Encoder E4.1" rotation="0" font="Liberation Sans,6,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-26.4" y="12" text="0V (5V)" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="10" x2="10" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="8" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="8" text="Pin 1" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-36" y="32" text="\Channel A" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="30" x2="10" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="28" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="28" text="Pin 2" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-36" y="52" text="\Channel B" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="50" x2="10" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="48" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="48" text="Pin 3" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-23.2" y="72" text="\Index" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="70" x2="10" y2="70" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="68" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="68" text="Pin 4" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-10.4" y="92" text="V+" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="90" x2="10" y2="90" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="88" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="88" text="Pin 5" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-32.8" y="112" text="Channel A" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="110" x2="10" y2="110" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="108" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="108" text="Pin 6" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-32.8" y="132" text="Channel B" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="130" x2="10" y2="130" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="128" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="128" text="Pin 7" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-20" y="152" text="Index" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="150" x2="10" y2="150" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="148" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="148" text="Pin 8" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{31bc8603-a43d-4deb-a0fa-ac6ef01d3324}" x="-110" y="-40" z="20">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal name="0V (5V)" orientation="e" type="Generic" uuid="{29076db0-0a76-45fe-bae0-03307af74577}" x="10" y="10" />
+        <terminal name="\Channel A" orientation="e" type="Generic" uuid="{dd5f1eeb-ba1c-4611-8e92-acf177fa61f3}" x="10" y="30" />
+        <terminal name="\Channel B" orientation="e" type="Generic" uuid="{4d971411-64b4-4b87-9c13-1483fa8397c2}" x="10" y="50" />
+        <terminal name="\Index" orientation="e" type="Generic" uuid="{c3fac98e-9dc4-4c60-baf9-58b93ff148a3}" x="10" y="70" />
+        <terminal name="V+" orientation="e" type="Generic" uuid="{408376a0-57d4-402e-8003-80273cbbee35}" x="10" y="90" />
+        <terminal name="Channel A" orientation="e" type="Generic" uuid="{5cb77c90-be0d-48e3-95f6-918e75ed1ffc}" x="10" y="110" />
+        <terminal name="Channel B" orientation="e" type="Generic" uuid="{2ff8c729-e7eb-417b-9f57-df1648ddace5}" x="10" y="130" />
+        <terminal name="Index" orientation="e" type="Generic" uuid="{94b10a87-cc94-4dcf-a62e-6e0c120ae223}" x="10" y="150" />
+    </description>
+</definition>

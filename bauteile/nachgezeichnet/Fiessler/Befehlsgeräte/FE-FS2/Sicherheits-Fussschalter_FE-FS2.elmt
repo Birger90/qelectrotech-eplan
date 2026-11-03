@@ -1,0 +1,91 @@
+<definition version="0.100.0" type="element" link_type="simple" width="730" height="170" hotspot_x="50" hotspot_y="60">
+    <uuid uuid="{8a4edb5f-6677-4200-9a41-73bfacd7ce10}" />
+    <names>
+        <name lang="de">Sicherheits-Fußschalter FE-FS2</name>
+        <name lang="en">Sicherheits-Fußschalter FE-FS2</name>
+    </names>
+    <elementInformations>
+        <elementInformation name="manufacturer" show="1">Fiessler Elektronik</elementInformation>
+        <elementInformation name="manufacturer_reference" show="1">FE-FS2-SU1ASDU1/U1-U-RD</elementInformation>
+        <elementInformation name="designation" show="1">FE-FS2-SU1ASDU1/U1-U-RD</elementInformation>
+        <elementInformation name="description" show="1">Sicherheits-Fußschalter, zweipedalig</elementInformation>
+        <elementInformation name="label" show="1">-S</elementInformation>
+    </elementInformations>
+    <informations>Nachgezeichnet (QElectroTech EPLAN-Fork, tools/symbole)</informations>
+    <description>
+        <line x1="-30" y1="-20" x2="660" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:dashed;line-weight:normal;filling:none;color:black" />
+        <line x1="660" y1="-20" x2="660" y2="70" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:dashed;line-weight:normal;filling:none;color:black" />
+        <line x1="660" y1="70" x2="-30" y2="70" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:dashed;line-weight:normal;filling:none;color:black" />
+        <line x1="-30" y1="70" x2="-30" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:dashed;line-weight:normal;filling:none;color:black" />
+        <text x="-26" y="-8" text="-K1" rotation="0" font="Liberation Sans,6,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="30" x2="0" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="10" x2="0" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="0" x2="20" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="20" y1="0" x2="20" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="10" x2="6" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="30" x2="8" y2="8" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="-12" y="48" text="21" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="22" y="48" text="22" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="120" y1="30" x2="120" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="120" y1="10" x2="120" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="120" y1="0" x2="140" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="140" y1="0" x2="140" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="120" y1="30" x2="112" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="108" y="48" text="13" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="142" y="48" text="14" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="240" y1="30" x2="240" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="240" y1="10" x2="240" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="240" y1="0" x2="260" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="260" y1="0" x2="260" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="240" y1="10" x2="246" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="240" y1="30" x2="248" y2="8" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="228" y="48" text="11" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="262" y="48" text="12" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="360" y1="30" x2="360" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="360" y1="10" x2="360" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="360" y1="0" x2="380" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="380" y1="0" x2="380" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="360" y1="30" x2="352" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="348" y="48" text="23" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="382" y="48" text="24" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="-8" y1="20" x2="372" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:dashed;line-weight:normal;filling:none;color:black" />
+        <line x1="420" y1="-20" x2="420" y2="70" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:dashed;line-weight:normal;filling:none;color:black" />
+        <text x="424" y="-8" text="-K3" rotation="0" font="Liberation Sans,6,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="460" y1="30" x2="460" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="460" y1="10" x2="460" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="460" y1="0" x2="480" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="480" y1="0" x2="480" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="460" y1="10" x2="466" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="460" y1="30" x2="468" y2="8" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="448" y="48" text="11" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="482" y="48" text="12" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="540" y1="30" x2="540" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="540" y1="10" x2="540" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="540" y1="0" x2="560" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="560" y1="0" x2="560" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="540" y1="30" x2="532" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="528" y="48" text="23" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="562" y="48" text="24" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="452" y1="20" x2="552" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:dashed;line-weight:normal;filling:none;color:black" />
+        <line x1="620" y1="70" x2="620" y2="80" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="618" y="73" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="622" y="89.4" text="PE" rotation="-90" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{e7ae2fb7-a079-42a1-b94c-6c0b12b7b003}" x="-30" y="-40" z="20">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal name="K1:21" orientation="s" type="Generic" uuid="{0150e290-1225-406f-97de-7d5ac6cf7e33}" x="0" y="50" />
+        <terminal name="K1:22" orientation="s" type="Generic" uuid="{2d819ca1-5a6b-45a5-8f39-507bb17d0ea2}" x="20" y="50" />
+        <terminal name="K1:13" orientation="s" type="Generic" uuid="{e2c030fd-ae4c-4422-966a-1fd31f441d3f}" x="120" y="50" />
+        <terminal name="K1:14" orientation="s" type="Generic" uuid="{006b43e5-2114-4090-8aa6-3b9830c9fb1d}" x="140" y="50" />
+        <terminal name="K1:11" orientation="s" type="Generic" uuid="{80511b7a-178c-477d-800e-709d9b83890d}" x="240" y="50" />
+        <terminal name="K1:12" orientation="s" type="Generic" uuid="{a6ffa5c0-8f85-47e2-bbff-6229cd11ca98}" x="260" y="50" />
+        <terminal name="K1:23" orientation="s" type="Generic" uuid="{773f1f8d-1cba-4924-98af-1da7f8368b9a}" x="360" y="50" />
+        <terminal name="K1:24" orientation="s" type="Generic" uuid="{c150bc61-902a-4fbd-8d87-4a8dcff59562}" x="380" y="50" />
+        <terminal name="K3:11" orientation="s" type="Generic" uuid="{c9e9d12e-06ba-410d-8c3a-be06bbd0cbb0}" x="460" y="50" />
+        <terminal name="K3:12" orientation="s" type="Generic" uuid="{0541caf8-6fb6-4993-9226-2458a5ad12af}" x="480" y="50" />
+        <terminal name="K3:23" orientation="s" type="Generic" uuid="{ad49999f-bc3b-4efe-bce4-83a3392ca50f}" x="540" y="50" />
+        <terminal name="K3:24" orientation="s" type="Generic" uuid="{99f6c344-5fa2-4cad-9954-e0258d71ce26}" x="560" y="50" />
+        <terminal name="PE" orientation="s" type="Generic" uuid="{41502941-7adf-43af-9b85-0eebd7e3406d}" x="620" y="80" />
+    </description>
+</definition>

@@ -139,6 +139,14 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/logging/ui/diagnosticsreportdialog.h
   ${QET_DIR}/sources/pdf_links.cpp
   ${QET_DIR}/sources/pdf_links.h
+  ${QET_DIR}/sources/import/eplandxf/eplandxfreader.cpp
+  ${QET_DIR}/sources/import/eplandxf/eplandxfreader.h
+  ${QET_DIR}/sources/import/eplandxf/eplanimportdialog.cpp
+  ${QET_DIR}/sources/import/eplandxf/eplanimportdialog.h
+  ${QET_DIR}/sources/import/eplandxf/eplanelementbuilder.cpp
+  ${QET_DIR}/sources/import/eplandxf/eplanelementbuilder.h
+  ${QET_DIR}/sources/import/eplandxf/eplanpartimporter.cpp
+  ${QET_DIR}/sources/import/eplandxf/eplanpartimporter.h
   ${QET_DIR}/sources/import/edz/edzarchive.cpp
   ${QET_DIR}/sources/import/edz/edzarchive.h
   ${QET_DIR}/sources/import/edz/edzpart.cpp

@@ -1,0 +1,34 @@
+<definition version="0.100.0" type="element" link_type="simple" width="160" height="120" hotspot_x="130" hotspot_y="60">
+    <uuid uuid="{450b33ea-3b26-45d3-b42c-87854dd5a456}" />
+    <names>
+        <name lang="de">MVA-AA6 AX.5 Versorgung</name>
+        <name lang="en">MVA-AA6 AX.5 Versorgung</name>
+    </names>
+    <elementInformations>
+        <elementInformation name="manufacturer" show="1">Cybelec</elementInformation>
+        <elementInformation name="manufacturer_reference" show="1">N10.01.0173</elementInformation>
+        <elementInformation name="designation" show="1">MVA-AA6</elementInformation>
+        <elementInformation name="description" show="1">CybMVA Verstärkermodul</elementInformation>
+        <elementInformation name="label" show="1">-A</elementInformation>
+    </elementInformations>
+    <informations>Nachgezeichnet (QElectroTech EPLAN-Fork, tools/symbole)</informations>
+    <description>
+        <line x1="-110" y1="-20" x2="0" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="-20" x2="0" y2="40" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="40" x2="-110" y2="40" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-110" y1="40" x2="-110" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="-106" y="-8" text="AX.5 Versorgung" rotation="0" font="Liberation Sans,6,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-26.4" y="12" text="+24V DC" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="10" x2="10" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="8" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="-13.6" y="32" text="GND" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="30" x2="10" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="28" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{929b559f-b6d8-433a-bb00-699a2ea4ac7f}" x="-110" y="-40" z="20">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal name="+24V DC" orientation="e" type="Generic" uuid="{01273b35-715e-451a-9c22-c9c3bdedfed8}" x="10" y="10" />
+        <terminal name="GND" orientation="e" type="Generic" uuid="{a9abb2f7-b990-4cb2-85e3-286df985f4cd}" x="10" y="30" />
+    </description>
+</definition>

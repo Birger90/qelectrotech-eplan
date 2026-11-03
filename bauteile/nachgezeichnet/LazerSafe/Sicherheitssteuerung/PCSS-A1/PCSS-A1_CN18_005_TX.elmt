@@ -1,0 +1,71 @@
+<definition version="0.100.0" type="element" link_type="simple" width="130" height="260" hotspot_x="90" hotspot_y="60">
+    <uuid uuid="{286d3cd2-c73f-459e-ad9f-33fb9ac77a0e}" />
+    <names>
+        <name lang="de">PCSS-A1 CN18 005 TX</name>
+        <name lang="en">PCSS-A1 CN18 005 TX</name>
+    </names>
+    <elementInformations>
+        <elementInformation name="manufacturer" show="1">LazerSafe</elementInformation>
+        <elementInformation name="manufacturer_reference" show="1">N12.01.0022</elementInformation>
+        <elementInformation name="designation" show="1">PCSS-A1</elementInformation>
+        <elementInformation name="description" show="1">LazerSafe PCSS-A1 Safety Controller</elementInformation>
+        <elementInformation name="label" show="1">-A</elementInformation>
+    </elementInformations>
+    <informations>Nachgezeichnet (QElectroTech EPLAN-Fork, tools/symbole)</informations>
+    <description>
+        <line x1="-70" y1="-20" x2="0" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="-20" x2="0" y2="180" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="180" x2="-70" y2="180" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-70" y1="180" x2="-70" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="-66" y="-8" text="CN18 005 TX" rotation="0" font="Liberation Sans,6,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-23.2" y="12" text="CN18:9" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="10" x2="10" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="8" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="8" text="9" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-23.2" y="32" text="CN18:8" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="30" x2="10" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="28" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="28" text="8" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-23.2" y="52" text="CN18:7" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="50" x2="10" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="48" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="48" text="7" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-23.2" y="72" text="CN18:6" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="70" x2="10" y2="70" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="68" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="68" text="6" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-23.2" y="92" text="CN18:5" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="90" x2="10" y2="90" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="88" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="88" text="5" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-23.2" y="112" text="CN18:4" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="110" x2="10" y2="110" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="108" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="108" text="4" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-23.2" y="132" text="CN18:3" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="130" x2="10" y2="130" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="128" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="128" text="3" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-23.2" y="152" text="CN18:2" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="150" x2="10" y2="150" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="148" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="148" text="2" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-23.2" y="172" text="CN18:1" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="170" x2="10" y2="170" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="168" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="168" text="1" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{e11ecfa2-691b-4385-9636-b5d6c6fe24fb}" x="-70" y="-40" z="20">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal name="CN18:9" orientation="e" type="Generic" uuid="{baa890f0-bd92-453c-a65c-d339759383b2}" x="10" y="10" />
+        <terminal name="CN18:8" orientation="e" type="Generic" uuid="{4195bf58-c457-402d-912a-1933ed28ccb1}" x="10" y="30" />
+        <terminal name="CN18:7" orientation="e" type="Generic" uuid="{14de7326-017a-48fe-953b-219f8721c314}" x="10" y="50" />
+        <terminal name="CN18:6" orientation="e" type="Generic" uuid="{41113290-abea-44e1-a7bb-66c3e6f76f34}" x="10" y="70" />
+        <terminal name="CN18:5" orientation="e" type="Generic" uuid="{c99f18d2-1ea8-4942-8026-25261fc0e97f}" x="10" y="90" />
+        <terminal name="CN18:4" orientation="e" type="Generic" uuid="{a3e6e056-ee48-4ad5-9f71-e76f9cd70eed}" x="10" y="110" />
+        <terminal name="CN18:3" orientation="e" type="Generic" uuid="{6628f153-8d8e-4429-9925-d2ab806a3896}" x="10" y="130" />
+        <terminal name="CN18:2" orientation="e" type="Generic" uuid="{90f56e45-e144-49de-89de-621bdf9a4d17}" x="10" y="150" />
+        <terminal name="CN18:1" orientation="e" type="Generic" uuid="{e9dc62d7-dc09-44be-925d-3ce5332c763c}" x="10" y="170" />
+    </description>
+</definition>

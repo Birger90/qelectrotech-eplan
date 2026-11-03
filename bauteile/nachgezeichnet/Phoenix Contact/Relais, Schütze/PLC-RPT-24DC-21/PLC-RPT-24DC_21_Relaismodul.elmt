@@ -1,0 +1,43 @@
+<definition version="0.100.0" type="element" link_type="simple" width="120" height="100" hotspot_x="32" hotspot_y="40">
+    <uuid uuid="{67443377-3186-48ec-870a-1076928f7dca}" />
+    <names>
+        <name lang="de">PLC-RPT-24DC/21 Relaismodul</name>
+        <name lang="en">PLC-RPT-24DC/21 Relaismodul</name>
+    </names>
+    <elementInformations>
+        <elementInformation name="manufacturer" show="1">Phoenix Contact</elementInformation>
+        <elementInformation name="manufacturer_reference" show="1">2900299</elementInformation>
+        <elementInformation name="designation" show="1">PLC-RPT-24DC/21</elementInformation>
+        <elementInformation name="description" show="1">PLC-INTERFACE Relais 24VDC 1 Wechsler</elementInformation>
+        <elementInformation name="label" show="1">-K</elementInformation>
+    </elementInformations>
+    <informations>Nachgezeichnet (QElectroTech EPLAN-Fork, tools/symbole)</informations>
+    <description>
+        <line x1="0" y1="0" x2="0" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-12" y1="12" x2="12" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="12" y1="12" x2="12" y2="28" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="12" y1="28" x2="-12" y2="28" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-12" y1="28" x2="-12" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="28" x2="0" y2="40" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="2" y="8" text="A1" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="2" y="38" text="A2" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="50" y1="40" x2="50" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="50" y1="30" x2="60" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="40" y1="0" x2="40" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="40" y1="12" x2="46" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="60" y1="0" x2="60" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="52" y="38" text="11" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="42" y="8" text="12" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="62" y="8" text="14" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="12" y1="20" x2="46" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:dashed;line-weight:normal;filling:none;color:black" />
+        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{88345154-2f4b-4324-a0db-61cf06c5e310}" x="-12" y="-20" z="20">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal name="A1" orientation="n" type="Generic" uuid="{79ed4236-1dc1-4f4a-b393-b1c6276abcd7}" x="0" y="0" />
+        <terminal name="A2" orientation="s" type="Generic" uuid="{cfdbd65c-2763-4699-b723-504a7744a93c}" x="0" y="40" />
+        <terminal name="11" orientation="s" type="Generic" uuid="{921e4637-5f58-4379-a3cc-fdbde4fc723e}" x="50" y="40" />
+        <terminal name="12" orientation="n" type="Generic" uuid="{19b162e0-d0b9-4416-9f2b-faa6f5e8fd2d}" x="40" y="0" />
+        <terminal name="14" orientation="n" type="Generic" uuid="{0e175601-c7d8-4a6f-8a90-4c31c50394d4}" x="60" y="0" />
+    </description>
+</definition>

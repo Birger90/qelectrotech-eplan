@@ -1,0 +1,46 @@
+<definition version="0.100.0" type="element" link_type="simple" width="170" height="160" hotspot_x="130" hotspot_y="60">
+    <uuid uuid="{a308f6da-e03d-48ed-8a0a-52c5bac66298}" />
+    <names>
+        <name lang="de">MVA-AA6 AX.5 Analogausgänge</name>
+        <name lang="en">MVA-AA6 AX.5 Analogausgänge</name>
+    </names>
+    <elementInformations>
+        <elementInformation name="manufacturer" show="1">Cybelec</elementInformation>
+        <elementInformation name="manufacturer_reference" show="1">N10.01.0173</elementInformation>
+        <elementInformation name="designation" show="1">MVA-AA6</elementInformation>
+        <elementInformation name="description" show="1">CybMVA Verstärkermodul</elementInformation>
+        <elementInformation name="label" show="1">-A</elementInformation>
+    </elementInformations>
+    <informations>Nachgezeichnet (QElectroTech EPLAN-Fork, tools/symbole)</informations>
+    <description>
+        <line x1="-110" y1="-20" x2="0" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="-20" x2="0" y2="80" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="80" x2="-110" y2="80" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-110" y1="80" x2="-110" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="-106" y="-8" text="AX.5 Analogausgänge" rotation="0" font="Liberation Sans,6,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-23.2" y="12" text="AO5.1+" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="10" x2="10" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="8" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="8" text="1" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-23.2" y="32" text="AO5.1-" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="30" x2="10" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="28" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="28" text="2" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-23.2" y="52" text="AO5.2+" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="50" x2="10" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="48" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="48" text="3" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-23.2" y="72" text="AO5.2-" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="0" y1="70" x2="10" y2="70" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="3" y="68" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="68" text="4" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{db462871-3e4c-4381-a2ea-13f71157af26}" x="-110" y="-40" z="20">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal name="AO5.1+" orientation="e" type="Generic" uuid="{04bfb12a-7e61-41e3-bc16-e9c9f8b20b02}" x="10" y="10" />
+        <terminal name="AO5.1-" orientation="e" type="Generic" uuid="{4194daff-540f-477c-b7d6-678ef808fc75}" x="10" y="30" />
+        <terminal name="AO5.2+" orientation="e" type="Generic" uuid="{96fca9d0-4f80-46e0-a201-bdaf646fe652}" x="10" y="50" />
+        <terminal name="AO5.2-" orientation="e" type="Generic" uuid="{239e2a8c-b7c5-4f77-b4b4-3a1c00861b99}" x="10" y="70" />
+    </description>
+</definition>

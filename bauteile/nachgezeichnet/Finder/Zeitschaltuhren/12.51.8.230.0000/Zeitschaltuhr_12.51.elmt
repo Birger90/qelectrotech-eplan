@@ -1,0 +1,45 @@
+<definition version="0.100.0" type="element" link_type="simple" width="120" height="100" hotspot_x="32" hotspot_y="40">
+    <uuid uuid="{0ea3440d-c4c9-4239-b070-0f0dcac766da}" />
+    <names>
+        <name lang="de">Zeitschaltuhr 12.51</name>
+        <name lang="en">Zeitschaltuhr 12.51</name>
+    </names>
+    <elementInformations>
+        <elementInformation name="manufacturer" show="1">Finder</elementInformation>
+        <elementInformation name="manufacturer_reference" show="1">12.51.8.230.0000</elementInformation>
+        <elementInformation name="designation" show="1">12.51.8.230.0000</elementInformation>
+        <elementInformation name="description" show="1">Digitale Zeitschaltuhr 1 Kanal 16A 230VAC</elementInformation>
+        <elementInformation name="label" show="1">-K</elementInformation>
+    </elementInformations>
+    <informations>Nachgezeichnet (QElectroTech EPLAN-Fork, tools/symbole)</informations>
+    <description>
+        <line x1="0" y1="0" x2="0" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-12" y1="12" x2="12" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="12" y1="12" x2="12" y2="28" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="12" y1="28" x2="-12" y2="28" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-12" y1="28" x2="-12" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-12" y1="12" x2="-4" y2="28" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-4" y1="12" x2="-12" y2="28" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="28" x2="0" y2="40" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="2" y="8" text="A1" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="2" y="38" text="A2" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="50" y1="40" x2="50" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="50" y1="30" x2="60" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="40" y1="0" x2="40" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="40" y1="12" x2="46" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="60" y1="0" x2="60" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="52" y="38" text="11" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="42" y="8" text="12" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="62" y="8" text="14" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="12" y1="20" x2="46" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:dashed;line-weight:normal;filling:none;color:black" />
+        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{83dfd96b-e3f3-4c1d-903d-ecc72a8fe9fa}" x="-12" y="-20" z="20">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal name="A1" orientation="n" type="Generic" uuid="{7e012955-6947-432c-96fb-707463ea18fc}" x="0" y="0" />
+        <terminal name="A2" orientation="s" type="Generic" uuid="{2e7d22df-4fed-4229-837f-5c08ff371973}" x="0" y="40" />
+        <terminal name="11" orientation="s" type="Generic" uuid="{d8c53590-22d1-4268-98b9-df14c287bde3}" x="50" y="40" />
+        <terminal name="12" orientation="n" type="Generic" uuid="{e44d05f3-e863-43cb-ac51-6e4baaad5a1e}" x="40" y="0" />
+        <terminal name="14" orientation="n" type="Generic" uuid="{93ee1be1-028a-437c-ac5a-353a4f0f6774}" x="60" y="0" />
+    </description>
+</definition>

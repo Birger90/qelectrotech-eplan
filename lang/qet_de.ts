@@ -13943,6 +13943,30 @@ Verfügbare Optionen:
 <context>
     <name>QETDiagramEditor</name>
     <message>
+        <source>Part import</source>
+        <translation>Bauteil-Import</translation>
+    </message>
+    <message>
+        <source>EPLAN DXF package (ZIP)…</source>
+        <translation>EPLAN-DXF-Paket (ZIP)…</translation>
+    </message>
+    <message>
+        <source>Unpacked EPLAN DXF package (folder)…</source>
+        <translation>Entpacktes EPLAN-DXF-Paket (Ordner)…</translation>
+    </message>
+    <message>
+        <source>Single EPLAN DXF…</source>
+        <translation>Einzelne EPLAN-DXF…</translation>
+    </message>
+    <message>
+        <source>EPLAN part (.edz)…</source>
+        <translation>EPLAN-Bauteil (.edz)…</translation>
+    </message>
+    <message>
+        <source>Open the user collection folder</source>
+        <translation>Ordner der Benutzersammlung öffnen</translation>
+    </message>
+    <message>
         <location filename="../sources/qetdiagrameditor.cpp" line="2108"/>
         <source>Tape measure</source>
         <translation>Maßband</translation>
@@ -28724,6 +28748,155 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
         <location filename="../sources/SearchAndReplace/ui/replaceadvanceddialog.ui" line="92"/>
         <source>What:</source>
         <translation>Was:</translation>
+    </message>
+</context>
+<context>
+    <name>EplanImportDialog</name>
+    <message>
+        <source>source</source>
+        <translation>Quelle</translation>
+    </message>
+    <message>
+        <source>manufacturer</source>
+        <translation>Hersteller</translation>
+    </message>
+    <message>
+        <source>type</source>
+        <translation>Typ</translation>
+    </message>
+    <message>
+        <source>accept the terms</source>
+        <translation>Bedingungen akzeptieren</translation>
+    </message>
+    <message>
+        <source>Still missing: %1</source>
+        <translation>Es fehlt noch: %1</translation>
+    </message>
+    <message>
+        <source>Part import</source>
+        <translation>Bauteil-Import</translation>
+    </message>
+    <message>
+        <source>Change…</source>
+        <translation>Ändern…</translation>
+    </message>
+    <message>
+        <source>optional: order number and description</source>
+        <translation>optional: Bestellnummer und Bezeichnung</translation>
+    </message>
+    <message>
+        <source>Choose…</source>
+        <translation>Wählen…</translation>
+    </message>
+    <message>
+        <source>User collection</source>
+        <translation>Benutzersammlung</translation>
+    </message>
+    <message>
+        <source>Company collection</source>
+        <translation>Firmensammlung</translation>
+    </message>
+    <message>
+        <source>Other folder…</source>
+        <translation>Anderer Ordner…</translation>
+    </message>
+    <message>
+        <source>Folder of an element collection</source>
+        <translation>Ordner einer Bauteilsammlung</translation>
+    </message>
+    <message>
+        <source>Source:</source>
+        <translation>Quelle:</translation>
+    </message>
+    <message>
+        <source>Manufacturer:</source>
+        <translation>Hersteller:</translation>
+    </message>
+    <message>
+        <source>Category:</source>
+        <translation>Kategorie:</translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <translation>Typ:</translation>
+    </message>
+    <message>
+        <source>Part data (.edz):</source>
+        <translation>Artikeldaten (.edz):</translation>
+    </message>
+    <message>
+        <source>Import into:</source>
+        <translation>Importieren in:</translation>
+    </message>
+    <message>
+        <source>The elements are stored in manufacturer / category / type folders. Each empty EPLAN field (PLC address, symbolic address, function text) becomes a text of its own that is filled in per placement.</source>
+        <translation>Die Bauteile werden in Ordnern Hersteller / Kategorie / Typ abgelegt. Jedes leere EPLAN-Feld (SPS-Adresse, symbolische Adresse, Funktionstext) wird ein eigener Text, der je Platzierung im Plan ausgefüllt wird.</translation>
+    </message>
+    <message>
+        <source>Manufacturer data from the EPLAN Data Portal or a manufacturer's website is subject to the terms of use of that source. By importing you confirm that you are authorised to use it here; the import is at your own responsibility.</source>
+        <translation>Herstellerdaten aus dem EPLAN Data Portal oder von einer Herstellerseite unterliegen den Nutzungsbedingungen dieser Quelle. Mit dem Import bestätigen Sie, dass Sie die Daten hier verwenden dürfen; der Import erfolgt in eigener Verantwortung.</translation>
+    </message>
+    <message>
+        <source>I accept these terms.</source>
+        <translation>Ich akzeptiere diese Bedingungen.</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <translation>Importieren</translation>
+    </message>
+    <message>
+        <source>EPLAN DXF package</source>
+        <translation>EPLAN-DXF-Paket</translation>
+    </message>
+    <message>
+        <source>EPLAN Data Portal DXF package (*.zip)</source>
+        <translation>EPLAN-Data-Portal-DXF-Paket (*.zip)</translation>
+    </message>
+    <message>
+        <source>Unpacked EPLAN DXF package</source>
+        <translation>Entpacktes EPLAN-DXF-Paket</translation>
+    </message>
+    <message>
+        <source>EPLAN DXF</source>
+        <translation>EPLAN-DXF</translation>
+    </message>
+    <message>
+        <source>DXF drawings (*.dxf)</source>
+        <translation>DXF-Zeichnungen (*.dxf)</translation>
+    </message>
+    <message>
+        <source>EPLAN part</source>
+        <translation>EPLAN-Bauteil</translation>
+    </message>
+    <message>
+        <source>EPLAN parts (*.edz)</source>
+        <translation>EPLAN-Bauteile (*.edz)</translation>
+    </message>
+    <message>
+        <source>This is no EPLAN DXF package:
+%1</source>
+        <translation>Das ist kein EPLAN-DXF-Paket:
+%1</translation>
+    </message>
+    <message>
+        <source>Choose the folder to import into.</source>
+        <translation>Bitte den Zielordner wählen.</translation>
+    </message>
+    <message>
+        <source>The import failed:
+%1</source>
+        <translation>Der Import ist fehlgeschlagen:
+%1</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n element(s) imported into
+%1</source>
+        <translation>
+            <numerusform>%n Bauteil importiert nach
+%1</numerusform>
+            <numerusform>%n Bauteile importiert nach
+%1</numerusform>
+        </translation>
     </message>
 </context>
 </TS>

@@ -1,0 +1,38 @@
+<definition version="0.100.0" type="element" link_type="simple" width="100" height="110" hotspot_x="20" hotspot_y="31">
+    <uuid uuid="{7e62f752-b8bc-4634-8cad-45c86cc04b60}" />
+    <names>
+        <name lang="de">Schaltschranksteckdose AST 11 LED</name>
+        <name lang="en">Schaltschranksteckdose AST 11 LED</name>
+    </names>
+    <elementInformations>
+        <elementInformation name="manufacturer" show="1">Petzold&amp;Otto</elementInformation>
+        <elementInformation name="manufacturer_reference" show="1">AST 11 LED</elementInformation>
+        <elementInformation name="designation" show="1">AST 11 LED</elementInformation>
+        <elementInformation name="description" show="1">Schuko-Steckdose 16A mit LED, Hutschiene</elementInformation>
+        <elementInformation name="label" show="1">-X</elementInformation>
+    </elementInformations>
+    <informations>Nachgezeichnet (QElectroTech EPLAN-Fork, tools/symbole)</informations>
+    <description>
+        <line x1="0" y1="20" x2="60" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="60" y1="20" x2="60" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="60" y1="50" x2="0" y2="50" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="50" x2="0" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="6" y="40" text="Schuko" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="10" y1="20" x2="10" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="8" y="13" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="9" text="L" rotation="-90" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="30" y1="20" x2="30" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="28" y="13" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="32" y="9" text="N" rotation="-90" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="50" y1="20" x2="50" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="48" y="13" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="52" y="9" text="PE" rotation="-90" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{649d4dcf-2bd0-4d58-a1e3-b1ffae491544}" x="0" y="-11" z="20">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal name="L" orientation="n" type="Generic" uuid="{8f31a0e2-880b-4f01-ac73-d6ed2550ce69}" x="10" y="10" />
+        <terminal name="N" orientation="n" type="Generic" uuid="{57721117-e841-4aed-b134-3f77c766688e}" x="30" y="10" />
+        <terminal name="PE" orientation="n" type="Generic" uuid="{ed60c476-fa8d-4d29-92b5-4cfe613fc7f6}" x="50" y="10" />
+    </description>
+</definition>

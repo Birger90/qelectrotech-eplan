@@ -1,0 +1,40 @@
+<definition version="0.100.0" type="element" link_type="simple" width="90" height="130" hotspot_x="12" hotspot_y="51">
+    <uuid uuid="{4365a687-6d4f-402c-be1f-9987e93a0ca3}" />
+    <names>
+        <name lang="de">Schaltschrankleuchte LED-13D-T-OS</name>
+        <name lang="en">Schaltschrankleuchte LED-13D-T-OS</name>
+    </names>
+    <elementInformations>
+        <elementInformation name="manufacturer" show="1">Petzold&amp;Otto</elementInformation>
+        <elementInformation name="manufacturer_reference" show="1">LED-13D-T-OS</elementInformation>
+        <elementInformation name="designation" show="1">LED-13D-T-OS</elementInformation>
+        <elementInformation name="description" show="1">Schaltschrankleuchte 13W 110-240VAC</elementInformation>
+        <elementInformation name="label" show="1">-E</elementInformation>
+    </elementInformations>
+    <informations>Nachgezeichnet (QElectroTech EPLAN-Fork, tools/symbole)</informations>
+    <description>
+        <ellipse x="18" y="28" width="24" height="24" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="22" y1="32" x2="38" y2="48" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="38" y1="32" x2="22" y2="48" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="10" y1="0" x2="10" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="8" y="-7" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="12" y="-11" text="L" rotation="-90" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="30" y1="0" x2="30" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="28" y="-7" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="32" y="-11" text="N" rotation="-90" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="50" y1="0" x2="50" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <ellipse x="48" y="-7" width="4" height="4" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="52" y="-11" text="PE" rotation="-90" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="10" y1="0" x2="10" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="10" y1="20" x2="24" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="30" y1="0" x2="30" y2="28" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="50" y1="0" x2="50" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{1f9f9477-f440-44aa-90dd-ac67ebc116d2}" x="8" y="-31" z="20">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal name="L" orientation="n" type="Generic" uuid="{95b6b67f-2d86-4773-b312-f6c0fe645c93}" x="10" y="-10" />
+        <terminal name="N" orientation="n" type="Generic" uuid="{c1ab9376-2329-4b02-88af-b8c926d34e75}" x="30" y="-10" />
+        <terminal name="PE" orientation="n" type="Generic" uuid="{746b2ace-4018-4c6b-a1fa-7e5784681d50}" x="50" y="-10" />
+    </description>
+</definition>

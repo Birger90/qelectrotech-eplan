@@ -1,0 +1,34 @@
+<definition version="0.100.0" type="element" link_type="simple" width="80" height="100" hotspot_x="50" hotspot_y="40">
+    <uuid uuid="{7190e186-e08b-4ca1-98b5-1027c98c4b44}" />
+    <names>
+        <name lang="de">Thermostat 7T.81 Schließer</name>
+        <name lang="en">Thermostat 7T.81 Schließer</name>
+    </names>
+    <elementInformations>
+        <elementInformation name="manufacturer" show="1">Finder</elementInformation>
+        <elementInformation name="manufacturer_reference" show="1">7T.81.0.000.2303</elementInformation>
+        <elementInformation name="designation" show="1">7T.81.0.000.2303</elementInformation>
+        <elementInformation name="description" show="1">Thermostat Schließer 250VAC/10A, 0-60°C</elementInformation>
+        <elementInformation name="label" show="1">-S</elementInformation>
+    </elementInformations>
+    <informations>Nachgezeichnet (QElectroTech EPLAN-Fork, tools/symbole)</informations>
+    <description>
+        <line x1="0" y1="0" x2="0" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="30" x2="0" y2="40" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="30" x2="-8" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="3" y="8" text="13" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="3" y="40" text="14" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="-30" y1="12" x2="-16" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-16" y1="12" x2="-16" y2="26" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-16" y1="26" x2="-30" y2="26" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-30" y1="26" x2="-30" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="-29" y="23" text="ϑ" rotation="0" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="-16" y1="19" x2="-6" y2="19" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:dashed;line-weight:normal;filling:none;color:black" />
+        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{15b4b4e4-dcbd-43ec-bf23-c1778f193803}" x="-30" y="-20" z="20">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal name="13" orientation="n" type="Generic" uuid="{5a5d5f0f-d238-4dcf-a19e-79fd7381f906}" x="0" y="0" />
+        <terminal name="14" orientation="s" type="Generic" uuid="{ffe466e2-3a91-4ad7-9bea-76d20bbe8ac8}" x="0" y="40" />
+    </description>
+</definition>

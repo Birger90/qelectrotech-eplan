@@ -28,6 +28,7 @@
 #include "diagram.h"
 #include "diagramcontext.h"
 #include "editor/terminalnamecheck.h"
+#include "import/eplandxf/eplanpartimporter.h"
 #include "dxfexport.h"
 #include "exportproperties.h"
 #include "pdf_links.h"
@@ -91,6 +92,7 @@ const QHash<QString, QString> &exportFlags()
 		{"--export-links", "links"},
 		{"--info", "info"},
 		{"--check-elements", "check"},
+		{"--import-eplan", "importeplan"},
 		{"--resave", "resave"},
 		{"--recover", "recover"},
 		{"--history", "history"},
@@ -1259,6 +1261,60 @@ int run(const QStringList &args)
 			return 2;
 		}
 		return checkElements(rest.at(0));
+	}
+
+	// --import-eplan turns manufacturer EPLAN DXF data into elements of a
+	// collection folder, as the part import of the menu does.
+	if (format == "importeplan") {
+		QStringList positional;
+		QHash<QString, QString> opts;
+		for (int i = 0; i < rest.size(); ++i) {
+			const QString &a = rest.at(i);
+			if (a.startsWith("--") && i + 1 < rest.size())
+				opts.insert(a.mid(2), rest.at(++i));
+			else
+				positional << a;
+		}
+		if (positional.size() < 2) {
+			err << "Usage: qelectrotech --import-eplan <package.zip | folder | file.dxf> "
+			       "<collection_dir> [--category C] [--manufacturer M --type T] [--edz part.edz]\n";
+			return 2;
+		}
+		EplanPartImporter importer;
+		const QString source = positional.at(0);
+		const QString suffix = QFileInfo(source).suffix();
+		const bool single_dxf = suffix.compare("dxf", Qt::CaseInsensitive) == 0;
+		const bool edz = suffix.compare("edz", Qt::CaseInsensitive) == 0;
+		bool ok;
+		if (edz) {
+			if (opts.value("manufacturer").isEmpty() || opts.value("type").isEmpty()) {
+				err << "--import-eplan: an .edz part needs --manufacturer and --type\n";
+				return 2;
+			}
+			ok = importer.importEdz(source, opts.value("manufacturer"),
+						opts.value("category", "Allgemein"), opts.value("type"),
+						positional.at(1));
+		} else if (single_dxf) {
+			if (opts.value("manufacturer").isEmpty() || opts.value("type").isEmpty()) {
+				err << "--import-eplan: a single DXF needs --manufacturer and --type\n";
+				return 2;
+			}
+			ok = importer.importDxf(source, opts.value("edz"), opts.value("manufacturer"),
+						opts.value("category", "Allgemein"), opts.value("type"),
+						positional.at(1));
+		} else {
+			ok = importer.importPackage(source, opts.value("category"), positional.at(1));
+		}
+		for (const QString &m : importer.messages())
+			out << m << "\n";
+		for (const QString &p : importer.writtenPaths())
+			out << "-> " << QDir::toNativeSeparators(p) << "\n";
+		out.flush();
+		if (!ok) {
+			err << source << ": " << importer.errorString() << "\n";
+			return 1;
+		}
+		return 0;
 	}
 
 	// --recover reads what it can of a damaged .qetz, which a project

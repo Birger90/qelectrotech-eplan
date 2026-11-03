@@ -39,6 +39,7 @@
 #include <QWidgetAction>
 #include <QGridLayout>
 #include "ElementsCollection/elementscollectionwidget.h"
+#include "import/eplandxf/eplanimportdialog.h"
 #include "ElementsCollection/elementpickerpopup.h"
 #include "shortcutbarsettings.h"
 #include "diagramtoolbarsettings.h"
@@ -2051,6 +2052,31 @@ void QETDiagramEditor::setUpMenu()
 	insertMenu(settings_menu_, menu_lists);
 	insertMenu(settings_menu_, menu_affichage);
 	insertMenu(help_menu_, windows_menu);
+
+	// Part import: manufacturer EPLAN data as elements of a collection
+	QMenu *menu_part_import = new QMenu(tr("Part import"), this);
+	menu_part_import->setObjectName(QStringLiteral("part_import_menu"));
+	insertMenu(settings_menu_, menu_part_import);
+	auto add_import = [this, menu_part_import](const QString &text,
+						   EplanImportDialog::Source source) {
+		connect(menu_part_import->addAction(text), &QAction::triggered, this, [this, source]() {
+			EplanImportDialog dialog(source, this);
+			if (!dialog.chooseSource()) return;
+			if (dialog.exec() == QDialog::Accepted && m_element_collection_widget)
+				m_element_collection_widget->reload();
+		});
+	};
+	add_import(tr("EPLAN DXF package (ZIP)…"), EplanImportDialog::Source::Package);
+	add_import(tr("Unpacked EPLAN DXF package (folder)…"), EplanImportDialog::Source::Folder);
+	add_import(tr("Single EPLAN DXF…"), EplanImportDialog::Source::Dxf);
+	menu_part_import->addSeparator();
+	add_import(tr("EPLAN part (.edz)…"), EplanImportDialog::Source::Edz);
+	menu_part_import->addSeparator();
+	connect(menu_part_import->addAction(tr("Open the user collection folder")),
+		&QAction::triggered, this, []() {
+			QDir().mkpath(QETApp::customElementsDir());
+			QDesktopServices::openUrl(QUrl::fromLocalFile(QETApp::customElementsDir()));
+		});
 
 	// File menu
 		// Add the RecentFiles menu itself, not a copy of the actions it

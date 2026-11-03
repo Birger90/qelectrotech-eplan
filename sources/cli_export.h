@@ -54,6 +54,7 @@ namespace CLIExport {
 		  qelectrotech --export-links   <project.qet> <output.csv>
 		  qelectrotech --info           <project.qet> [output.json]
 		  qelectrotech --check-elements <element.elmt | directory>
+		  qelectrotech --import-eplan   <package.zip | folder | file.dxf> <collection_dir> [--category C] [--manufacturer M --type T] [--edz part.edz]
 		  qelectrotech --resave         <project.qet> <output.qet>
 		  qelectrotech --recover        <damaged.qetz> <output.qet>
 		  qelectrotech --set-titleblock <project.qet> <output.qet> key=value...
@@ -95,6 +96,10 @@ namespace CLIExport {
 		info: structural project summary as JSON (stdout, or a file) —
 		      per-page element / conductor counts and unconnected terminals.
 		check-elements: validate .elmt file(s) against the element schema.
+		import-eplan: build elements from manufacturer EPLAN DXF data (an
+		      EPLAN Data Portal DXF package, or a single DXF with
+		      --manufacturer and --type) into
+		      <collection_dir>/<manufacturer>/<category>/<type>/.
 		resave: load and rewrite the project XML (round-trip integrity).
 		--ignore-lock: resave and set-titleblock leave a file alone when a lock
 		      file beside it (.~<name>.lock, made by a QElectroTech that has

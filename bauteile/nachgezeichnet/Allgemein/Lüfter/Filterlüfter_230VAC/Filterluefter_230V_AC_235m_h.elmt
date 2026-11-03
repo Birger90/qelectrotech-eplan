@@ -1,0 +1,42 @@
+<definition version="0.100.0" type="element" link_type="simple" width="160" height="200" hotspot_x="50" hotspot_y="100">
+    <uuid uuid="{cbbdfde5-0952-4b40-a3ab-9ab420068c87}" />
+    <names>
+        <name lang="de">Filterlüfter 230V AC 235m³/h</name>
+        <name lang="en">Filterlüfter 230V AC 235m³/h</name>
+    </names>
+    <elementInformations>
+        <elementInformation name="designation" show="1">Filterlüfter 230V AC</elementInformation>
+        <elementInformation name="description" show="1">Schaltschranklüfter 230V AC, 235 m³/h</elementInformation>
+        <elementInformation name="label" show="1">-EM</elementInformation>
+    </elementInformations>
+    <informations>Nachgezeichnet (QElectroTech EPLAN-Fork, tools/symbole)</informations>
+    <description>
+        <ellipse x="-20" y="-20" width="40" height="40" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="-5" y="0" text="M" rotation="0" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="-6" y="12" text="1~" rotation="0" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="-30" y1="-60" x2="-30" y2="-30" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-30" y1="-30" x2="-14.1" y2="-14.1" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="-27" y="-34" text="L" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="30" y1="-60" x2="30" y2="-30" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="30" y1="-30" x2="14.1" y2="-14.1" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="33" y="-34" text="N" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="14.1" y1="14.1" x2="22" y2="22" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="18" y1="26" x2="26" y2="18" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="22" y1="22" x2="22" y2="34" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="25" y="31" text="PE" rotation="0" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <line x1="22" y1="34" x2="90" y2="34" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:dashed;line-weight:normal;filling:none;color:black" />
+        <line x1="0" y1="20" x2="0" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:dashed;line-weight:normal;filling:none;color:black" />
+        <ellipse x="-20" y="30" width="40" height="40" antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="-12" y1="66" x2="-2" y2="31" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <line x1="12" y1="66" x2="2" y2="31" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" />
+        <text x="25" y="68" text="230V AC" rotation="0" font="Liberation Sans,6,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <text x="25" y="77" text="235m³/h" rotation="0" font="Liberation Sans,6,-1,5,50,0,0,0,0,0,Regular" color="#000000" />
+        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{b683748a-2d62-44a0-a01b-5002092165c5}" x="-30" y="-80" z="20">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal name="L" orientation="n" type="Generic" uuid="{1ede2217-81ac-4b77-a323-07182e192f1a}" x="-30" y="-60" />
+        <terminal name="N" orientation="n" type="Generic" uuid="{978e531d-ab15-48bd-a2cf-552cbd61948c}" x="30" y="-60" />
+        <terminal name="PE" orientation="n" type="Generic" uuid="{adc03270-d84f-4333-b50d-0c41ada60139}" x="90" y="34" />
+    </description>
+</definition>

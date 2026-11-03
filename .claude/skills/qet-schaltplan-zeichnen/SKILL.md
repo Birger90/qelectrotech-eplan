@@ -187,6 +187,9 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
     Verschiebung kann ein Segment einfügen → Index danach aus dem `.qet` lesen
     (`<conductor …terminalname1=…><segment length orientation>`). Blatt 10: +(1) erst Segment 1 dy,
     dann Segment 3 dx.
+  - **Gerätekennzeichen und Daten großer Kästen rechtsbündig vor der Kastenkante** wie EPLAN
+    („-F110“, darunter „In: …“, „Out: …“ in Datengröße 7). Elementtexte haben keine Ausrichtung →
+    x = Kante − 4 − 0,62 · Größe · Zeichenzahl (`links_vom_kasten()` in blatt11).
   - Pinnamen mit „-“ am Anfang an pdf_symbol.py als `--pin=-(1):x,y:s` übergeben.
   - Datenblatt-Schaltbilder (z. B. WAGO) sind oft Rasterbilder im PDF → kein exakter Import, nachzeichnen.
   - **Jeder Anschluss trägt seine Nummer**, auch bei Fremdgeräten: NSHV-Abgänge als Anschlusspunkt

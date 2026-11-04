@@ -436,6 +436,12 @@ bool EplanPartImporter::importPackage(const QString &path, const QString &catego
 		}
 		EplanSymbolData data;
 		data.lines = reader.lines();
+		// EPLAN black-box frames (SPECIAL symbol 14) are kept apart by the reader;
+		// in a package every DXF is one element, so its frames are drawn as they are
+		for (const QRectF &bx : reader.boxes()) {
+			data.lines << QLineF(bx.topLeft(), bx.topRight()) << QLineF(bx.topRight(), bx.bottomRight())
+				   << QLineF(bx.bottomRight(), bx.bottomLeft()) << QLineF(bx.bottomLeft(), bx.topLeft());
+		}
 		data.circles = reader.circles();
 		data.texts = withoutXrefs(reader.texts());
 		data.pins = reader.pins();

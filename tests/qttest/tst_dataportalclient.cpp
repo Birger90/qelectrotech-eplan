@@ -48,7 +48,6 @@ namespace {
 					"designation": {"en_US": "Test relay"}},
 			 "relationships": {
 				"manufacturer": {"data": {"type": "manufacturers", "id": "7"}},
-				"group_symbol_macro": {"data": {"type": "macros", "id": "9"}},
 				"data_types": {"data": [{"type": "data_types", "id": "commercial_data"}]}}}
 		],
 		"included": [
@@ -163,10 +162,6 @@ class DataPortalClientTest : public QObject
 			// no German text: English
 			QCOMPARE(parts.at(1).designation, QStringLiteral("Test relay"));
 			QVERIFY(!parts.at(1).has_dxf);
-			// schematic macros without the DXF mark: still worth a try
-			QVERIFY(parts.at(1).has_macro);
-			QVERIFY(parts.at(1).importable());
-			QVERIFY(!parts.at(0).has_macro);
 
 			DataPortalClient::parseParts("<html>maintenance</html>", QStringLiteral("en_US"), nullptr, &error);
 			QVERIFY(!error.isEmpty());

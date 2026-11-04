@@ -330,7 +330,6 @@ QVector<DataPortalPart> DataPortalClient::parseParts(const QByteArray &json, con
 		p.product_group = included.value(
 			QStringLiteral("eplan_catalog_entries/") + relationId(rel, QStringLiteral("product_group")))
 				.value(QStringLiteral("name")).toString();
-		p.has_macro = !relationId(rel, QStringLiteral("group_symbol_macro")).isEmpty();
 		// picture: part -> picturefile -> preview {"96": url, "512": url}
 		const QJsonObject picture = objects.value(
 			QStringLiteral("picturefile/") + relationId(rel, QStringLiteral("picture_file")));

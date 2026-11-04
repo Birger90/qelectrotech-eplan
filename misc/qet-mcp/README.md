@@ -46,6 +46,8 @@ it the `.qetz` itself, and write one when the output path ends in `.qetz`.
 | `qet_element_build` | **author a `.elmt`** — draw a new symbol, with terminals to wire it by |
 | `qet_project_new` | **start from nothing** — an empty project with a title and folios |
 | `qet_element_search` | **find a symbol** in a collection by name (any language), type or terminal count |
+| `qet_dataportal_search` | **find a manufacturer part online** in the EPLAN Data Portal by order number or words, for one manufacturer, only those with DXF data |
+| `qet_dataportal_import` | **fetch it** — download the part's DXF package and import it into your user collection (manufacturer / category / type); needs your Data Portal token, see below |
 | `qet_check` | **design-rule checks** — duplicate labels, unlabelled masters, unnumbered conductors, empty folios, terminals with more than four wires, folio reports with several wires |
 | `qet_layout_check` | **does the drawing read well?** — a 0–100 score; wires that jog because two symbols are a few pixels out of line, symbols off the grid, wires through symbols, overlaps, crossings, labels over wires, 4-way junction dots, side branches out of line; and the moves that fix them, ready for `qet_edit` |
 | `qet_query` | **ask the project database** — read-only SQL over the views and tables |
@@ -59,6 +61,22 @@ it the `.qetz` itself, and write one when the output path ends in `.qetz`.
 `qet_export` and `qet_edit` launch QElectroTech. Everything else parses the
 file directly, which is faster, needs no display, and cannot be confused by
 a dialog.
+
+### Parts from the EPLAN Data Portal
+
+`qet_dataportal_search` and `qet_dataportal_import` use the official Data
+Portal API (`https://dataportal.eplan.com/api`). Searching needs no login.
+The download needs your own Personal Access Token, made for the Data Portal
+in your ePulse profile; a token of the ePulse Community does not work.
+Enter it once in QElectroTech, **Part import → From the EPLAN Data Portal…**,
+with "Remember the token" ticked: the server reads it from QElectroTech's
+settings (or from `QET_DATAPORTAL_TOKEN` in its environment) and never
+returns it in a result. `QET_DATAPORTAL_URL` points both tools at another
+server, for tests.
+
+Only parts with DXF data can be fetched. The API offers no `.edz` or EPLAN
+macro download: for a part that has only those, download the `.edz` from
+the Data Portal website and import it through **Part import → Import part…**.
 
 ## Running it
 

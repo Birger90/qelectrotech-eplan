@@ -187,7 +187,152 @@ class ToolRegistry(unittest.TestCase):
         "qet_recording_remove", "qet_layout_check", "qet_live_new_project",
         "qet_live_open_project", "qet_live_switch_project", "qet_live_save_project",
         "qet_live_close_project", "qet_live_print", "qet_live_changes",
-        "qet_live_layout_check"})
+        "qet_live_layout_check", "qet_dataportal_search", "qet_dataportal_import"})
+
+
+class DataPortal(unittest.TestCase):
+    """The Data Portal tools against a local HTTP stub. The data is made up
+    and only has the shape of the portal's replies; QElectroTech's import is
+    replaced, so no manufacturer file is needed. Every test sets its own
+    token, so none reads the one the user keeps in QElectroTech."""
+
+    PARTS = {
+        "meta": {"page": {"offset": 0, "limit": 20, "total": 2}},
+        "data": [
+            {"type": "parts", "id": "1001",
+             "attributes": {"part_number": "TST.K-100", "order_number": "K-100", "type_number": "K100",
+                            "designation": {"en_US": "Test contactor", "de_DE": "Testschuetz"}},
+             "relationships": {"manufacturer": {"data": {"type": "manufacturers", "id": "7"}},
+                               "product_group": {"data": {"type": "eplan_catalog_entries", "id": "9"}},
+                               "data_types": {"data": [{"type": "data_types", "id": "dxf_data"}]}}},
+            {"type": "parts", "id": "1002",
+             "attributes": {"part_number": "TST.K-200", "order_number": "K-200",
+                            "designation": {"en_US": "Test relay"}},
+             "relationships": {"manufacturer": {"data": {"type": "manufacturers", "id": "7"}},
+                               "data_types": {"data": [{"type": "data_types", "id": "commercial_data"}]}}}],
+        "included": [
+            {"type": "manufacturers", "id": "7", "attributes": {"short_name": "TST", "long_name": "Test Werke"}},
+            {"type": "eplan_catalog_entries", "id": "9", "attributes": {"name": "Relais, Schuetze"}}]}
+
+    def setUp(self):
+        import http.server
+        import threading
+        test = self
+        self.requests = []
+        self.download_status = 200
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def log_message(self, *a):
+                pass
+
+            def do_GET(self):
+                test.requests.append((self.path, self.headers.get("Authorization", "")))
+                if self.path.startswith("/api/parts"):
+                    body, ctype, code = json.dumps(test.PARTS).encode(), "application/vnd.api+json", 200
+                elif self.path.startswith("/api/download/dxf_data/part/"):
+                    code = test.download_status
+                    body = b"PK\x03\x04" + b"x" * 32 if code == 200 else b'{"errors":[{"title":"x"}]}'
+                    ctype = "application/zip"
+                else:
+                    body, ctype, code = b"{}", "application/json", 404
+                self.send_response(code)
+                self.send_header("Content-Type", ctype)
+                if code == 200 and ctype == "application/zip":
+                    self.send_header("Content-Disposition", 'attachment; filename="MAC_TST.K-100.zip"')
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+        self.server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        self.tmp = tempfile.TemporaryDirectory()
+        self.collection = Path(self.tmp.name) / "elements"
+        self.collection.mkdir()
+        self.env = {"QET_DATAPORTAL_URL": f"http://127.0.0.1:{self.server.server_port}/api",
+                    "QET_DATAPORTAL_TOKEN": "secret-test-token", "QET_SETTINGS_DIR": ""}
+        self.saved_env = {k: os.environ.get(k) for k in self.env}
+        os.environ.update(self.env)
+        self.saved = (m._user_collections, m._run_qet)
+        self.runs = []
+
+        def fake_run(binary, args, timeout=180, **kw):
+            self.runs.append(args)
+            out = self.collection / "Test Werke" / "Relais, Schuetze" / "K100"
+            out.mkdir(parents=True, exist_ok=True)
+            (out / "K100_A1.elmt").write_text("<definition/>", encoding="utf-8")
+            return {"ok": True, "exit_code": 0, "stdout": "K100_A1: 3 terminals", "stderr": ""}
+
+        m._user_collections = lambda: {"custom": self.collection}
+        m._run_qet = fake_run
+
+    def tearDown(self):
+        m._user_collections, m._run_qet = self.saved
+        for k, v in self.saved_env.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+        self.server.shutdown()
+        self.server.server_close()
+        self.tmp.cleanup()
+
+    def test_search_sends_no_token_and_reads_the_reply(self):
+        out = m.tool_dataportal_search("K-100", "TST", only_dxf=True, exact=True)
+        self.assertEqual(out["total"], 2)
+        self.assertEqual(out["parts"][0]["manufacturer"], "Test Werke")
+        self.assertEqual(out["parts"][0]["designation"], "Testschuetz")
+        self.assertEqual(out["parts"][0]["product_group"], "Relais, Schuetze")
+        self.assertTrue(out["parts"][0]["dxf"])
+        self.assertFalse(out["parts"][1]["dxf"])
+        path, auth = self.requests[-1]
+        self.assertEqual(auth, "")
+        for piece in ("search=K-100", "filter[manufacturer]=TST",
+                      "filter[data_types]=dxf_data", "fuzziness=0"):
+            self.assertIn(piece, path)
+
+    def test_import_by_order_number(self):
+        out = m.tool_dataportal_import(TRUE, order_number="K-100", manufacturer="TST")
+        self.assertTrue(out["ok"])
+        self.assertEqual(out["part_id"], "1001")
+        self.assertEqual(out["paths"], ["custom://Test Werke/Relais, Schuetze/K100/K100_A1.elmt"])
+        self.assertEqual(self.runs[0][0], "--import-eplan")
+        self.assertTrue(self.runs[0][1].endswith("MAC_TST.K-100.zip"))
+        self.assertEqual(self.runs[0][2], str(self.collection))
+        downloads = [r for r in self.requests if "/download/" in r[0]]
+        self.assertEqual(downloads, [("/api/download/dxf_data/part/1001", "Bearer PAT:secret-test-token")])
+
+    def test_token_never_in_a_result(self):
+        """The token is the user's: a result goes into the conversation."""
+        out = m.tool_dataportal_import(TRUE, part_id="1001")
+        self.assertNotIn("secret-test-token", json.dumps(out))
+        self.assertEqual(out["token_from"], "QET_DATAPORTAL_TOKEN")
+        self.download_status = 401
+        with self.assertRaises(ValueError) as ctx:
+            m.tool_dataportal_import(TRUE, part_id="1001")
+        self.assertIn("did not accept the token", str(ctx.exception))
+        self.assertNotIn("secret-test-token", str(ctx.exception))
+
+    def test_part_without_dxf_is_refused_before_downloading(self):
+        with self.assertRaises(ValueError) as ctx:
+            m.tool_dataportal_import(TRUE, order_number="K-200")
+        self.assertIn(".edz", str(ctx.exception))
+        self.assertFalse([r for r in self.requests if "/download/" in r[0]])
+
+    def test_no_package_for_the_part(self):
+        self.download_status = 404
+        with self.assertRaises(ValueError) as ctx:
+            m.tool_dataportal_import(TRUE, part_id="1001")
+        self.assertIn("no DXF package", str(ctx.exception))
+
+    def test_token_from_the_settings_file(self):
+        os.environ["QET_DATAPORTAL_TOKEN"] = ""
+        ini = Path(self.tmp.name) / "settings" / "QElectroTech" / "QElectroTech.ini"
+        ini.parent.mkdir(parents=True)
+        ini.write_text("[eplanimport]\ndataportal_token=from-ini\n", encoding="utf-8")
+        os.environ["QET_SETTINGS_DIR"] = str(ini.parent.parent)
+        self.assertEqual(m._dataportal_token(), ("from-ini", str(ini)))
+        self.assertEqual(m._dataportal_authorization("PAT:abc"), "Bearer PAT:abc")
+        self.assertEqual(m._dataportal_authorization("eyJa.eyJb.c"), "Bearer eyJa.eyJb.c")
 
 
 class EditValidation(unittest.TestCase):

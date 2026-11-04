@@ -4101,6 +4101,296 @@ def standard_symbols(info: dict | None = None):
                       for r in roles if isinstance(r, dict) and r.get("path")]}
 
 
+# --------------------------------------------------------------------------
+# EPLAN Data Portal: search parts, import their DXF package
+# --------------------------------------------------------------------------
+#
+# The official API (https://dataportal.eplan.com/api, OpenAPI spec at
+# /api/doc). Searching needs no login. The DXF package of a part needs the
+# user's Personal Access Token, sent as "Authorization: Bearer PAT:<token>".
+# The token is the user's: this server reads it where QElectroTech keeps it
+# (the Data Portal dialog's "Remember the token") or from
+# QET_DATAPORTAL_TOKEN, and never puts it in a result. The API has no
+# download of .edz parts or EPLAN macros; parts without DXF data cannot be
+# fetched this way.
+
+_DATAPORTAL_DEFAULT_URL = "https://dataportal.eplan.com/api"
+_DATAPORTAL_TOKEN_KEY = "dataportal_token"
+
+
+def _dataportal_url() -> str:
+    return (os.environ.get("QET_DATAPORTAL_URL", "").strip()
+            or _DATAPORTAL_DEFAULT_URL).rstrip("/")
+
+
+def _ini_value(path: Path, group: str, key: str) -> str:
+    """One value of a QSettings INI file, "" when it is not there."""
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+    current = ""
+    for line in text.splitlines():
+        line = line.strip()
+        if line.startswith("[") and line.endswith("]"):
+            current = line[1:-1]
+        elif current == group and "=" in line:
+            k, v = line.split("=", 1)
+            if k.strip() == key:
+                v = v.strip()
+                if len(v) >= 2 and v[0] == v[-1] == '"':
+                    v = v[1:-1]
+                return v
+    return ""
+
+
+def _dataportal_token() -> tuple:
+    """(token, where it came from). The token is never returned to a client;
+    the source is, so a user can tell which one to fix."""
+    token = os.environ.get("QET_DATAPORTAL_TOKEN", "").strip()
+    if token:
+        return token, "QET_DATAPORTAL_TOKEN"
+    settings_dir = os.environ.get("QET_SETTINGS_DIR", "").strip()
+    if settings_dir:
+        ini = Path(settings_dir).expanduser() / "QElectroTech" / "QElectroTech.ini"
+        token = _ini_value(ini, "eplanimport", _DATAPORTAL_TOKEN_KEY)
+        if token:
+            return token, str(ini)
+    if os.name == "nt":
+        try:
+            import winreg
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                                r"Software\QElectroTech\QElectroTech\eplanimport") as key:
+                value, _ = winreg.QueryValueEx(key, _DATAPORTAL_TOKEN_KEY)
+            if isinstance(value, str) and value.strip():
+                return value.strip(), "QElectroTech settings (registry)"
+        except OSError:
+            pass
+    else:
+        conf = Path.home() / ".config" / "QElectroTech" / "QElectroTech.conf"
+        token = _ini_value(conf, "eplanimport", _DATAPORTAL_TOKEN_KEY)
+        if token:
+            return token, str(conf)
+    return "", ""
+
+
+def _dataportal_authorization(token: str) -> str:
+    """The same rules as DataPortalClient::authorization(): a Personal Access
+    Token as "Bearer PAT:<token>", a login JWT as "Bearer <token>"."""
+    t = token.strip()
+    if t.lower().startswith("bearer "):
+        t = t[7:].strip()
+    if t.upper().startswith("PAT:"):
+        return "Bearer PAT:" + t[4:].strip()
+    if t.startswith("eyJ") and t.count(".") == 2:
+        return "Bearer " + t
+    return "Bearer PAT:" + t
+
+
+def _dataportal_error(status: int, body: bytes, download: bool, has_token: bool,
+                      retry_after: str = "") -> str:
+    """The message for a failed request, in the words of the dialog."""
+    detail = ""
+    try:
+        errors = json.loads(body.decode("utf-8", "replace")).get("errors") or []
+        if errors:
+            detail = errors[0].get("detail") or errors[0].get("title") or ""
+    except (ValueError, AttributeError):
+        pass
+    if status == 401:
+        if not has_token:
+            return ("downloading needs the user's Personal Access Token of the Data "
+                    "Portal: ask them to enter it in QElectroTech (Part import -> From "
+                    "the EPLAN Data Portal..., \"Remember the token\") or to set "
+                    "QET_DATAPORTAL_TOKEN for this server")
+        return ("the Data Portal did not accept the token: it must be a Personal Access "
+                "Token made for the Data Portal and not expired; the user renews it")
+    if status == 403:
+        return ("the token has no right for this; a token of the ePulse Community "
+                "does not work, it must belong to an organisation")
+    if status == 404 and download:
+        return ("the Data Portal has no DXF package for this part (no DXF data, or "
+                "the manufacturer does not allow DXF downloads); the user can fetch "
+                "its .edz from the website and import that")
+    if status == 429:
+        wait = f" in {retry_after} s" if retry_after.strip().isdigit() else " later"
+        return f"the Data Portal's request limit is reached; try again{wait}"
+    if status >= 500:
+        return f"the Data Portal reported an error (HTTP {status}); try again later"
+    return f"the Data Portal reported an error (HTTP {status})" + (f": {detail}" if detail else "")
+
+
+def _dataportal_request(path: str, params: dict | None = None, token: str = "",
+                        timeout: int = 30, download: bool = False) -> tuple:
+    """GET a Data Portal path. Returns (body, headers); raises ValueError
+    with the user-facing message on any failure."""
+    import urllib.error
+    import urllib.parse
+    import urllib.request
+    url = _dataportal_url() + path
+    if params:
+        url += "?" + urllib.parse.urlencode(params, safe="[],")
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "QElectroTech-MCP",
+        "Accept": "application/zip" if download else "application/vnd.api+json, application/json",
+        "Accept-Language": "de_DE"})
+    if token:
+        req.add_header("Authorization", _dataportal_authorization(token))
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return resp.read(), dict(resp.headers)
+    except urllib.error.HTTPError as exc:
+        body = exc.read() if exc.fp else b""
+        retry = exc.headers.get("Retry-After", "") if exc.headers else ""
+        raise ValueError(_dataportal_error(exc.code, body, download, bool(token), retry)) from None
+    except (urllib.error.URLError, OSError) as exc:
+        reason = getattr(exc, "reason", exc)
+        raise ValueError(f"the EPLAN Data Portal cannot be reached ({reason}); "
+                         "check the internet connection or the proxy") from None
+
+
+def _dataportal_parts(data: dict, language: str) -> list:
+    """The parts of a JSON:API reply of GET /parts with
+    include=manufacturer,product_group."""
+    included = {(o.get("type"), str(o.get("id"))): o.get("attributes") or {}
+                for o in data.get("included") or [] if isinstance(o, dict)}
+
+    def rel(r: dict, name: str) -> str:
+        d = ((r.get(name) or {}).get("data")) or {}
+        return str(d.get("id", "")) if isinstance(d, dict) else ""
+
+    def text(obj) -> str:
+        if not isinstance(obj, dict) or not obj:
+            return ""
+        if language in obj:
+            return obj[language] or ""
+        for k, v in obj.items():
+            if k.startswith(language[:2] + "_"):
+                return v or ""
+        return obj.get("en_US") or next(iter(obj.values()), "") or ""
+
+    parts = []
+    for item in data.get("data") or []:
+        a = item.get("attributes") or {}
+        r = item.get("relationships") or {}
+        man = included.get(("manufacturers", rel(r, "manufacturer")), {})
+        types = [t.get("id") for t in ((r.get("data_types") or {}).get("data") or [])
+                 if isinstance(t, dict)]
+        parts.append({
+            "id": str(item.get("id", "")),
+            "part_number": a.get("part_number", ""),
+            "order_number": a.get("order_number", ""),
+            "type_number": a.get("type_number", ""),
+            "manufacturer": man.get("long_name") or a.get("data_supplier", ""),
+            "manufacturer_short": man.get("short_name") or a.get("data_supplier", ""),
+            "designation": text(a.get("designation")),
+            "product_group": included.get(("eplan_catalog_entries", rel(r, "product_group")),
+                                          {}).get("name", ""),
+            "dxf": "dxf_data" in types,
+        })
+    return parts
+
+
+def tool_dataportal_search(query: str = "", manufacturer: str = "", only_dxf: bool = True,
+                           exact: bool = False, limit: int = 20, offset: int = 0,
+                           language: str = "de_DE") -> dict:
+    """Search parts in the EPLAN Data Portal; no token needed."""
+    query = (query or "").strip()
+    manufacturer = (manufacturer or "").strip()
+    if not query and not manufacturer:
+        raise ValueError("give a 'query' (order, type or part number, or words) or a 'manufacturer'")
+    params = {"include": "manufacturer,product_group",
+              "page[offset]": max(0, int(offset)), "page[limit]": max(1, min(int(limit), 100))}
+    if query:
+        params["search"] = query[:100]
+        if exact:
+            params["fuzziness"] = 0
+    if manufacturer:
+        params["filter[manufacturer]"] = manufacturer
+    if only_dxf:
+        params["filter[data_types]"] = "dxf_data"
+    body, _ = _dataportal_request("/parts", params)
+    try:
+        data = json.loads(body.decode("utf-8"))
+    except ValueError:
+        raise ValueError("the reply of the Data Portal is no JSON") from None
+    parts = _dataportal_parts(data, language)
+    total = ((data.get("meta") or {}).get("page") or {}).get("total", len(parts))
+    out = {"total": total, "shown": len(parts), "offset": offset, "parts": parts}
+    if only_dxf:
+        out["note"] = ("only parts with DXF data, the ones qet_dataportal_import can fetch; "
+                       "set only_dxf false to see all")
+    return out
+
+
+def _collection_elements(root: Path) -> set:
+    return {str(p) for p in root.rglob("*.elmt")} if root.is_dir() else set()
+
+
+def tool_dataportal_import(binary: str, part_id: str = "", order_number: str = "",
+                           manufacturer: str = "", category: str = "",
+                           timeout: int = 180) -> dict:
+    """Download a part's DXF package from the Data Portal and import it into
+    the user collection, filed as manufacturer / category / type."""
+    part_id = str(part_id or "").strip()
+    order_number = (order_number or "").strip()
+    if not part_id and not order_number:
+        raise ValueError("give 'part_id' (from qet_dataportal_search) or 'order_number'")
+    user = _user_collections().get("custom")
+    if user is None:
+        raise ValueError("the user collection is not known yet: QElectroTech names it in "
+                         "qet-assistant.json when an editor window opens; start it once")
+    chosen = None
+    if not part_id:
+        found = tool_dataportal_search(order_number, manufacturer, only_dxf=False, exact=True,
+                                       limit=20)["parts"]
+        same = [p for p in found if p["order_number"].casefold() == order_number.casefold()]
+        if not same:
+            raise ValueError(f"no part with order number {order_number!r} in the Data Portal"
+                             + (f" for manufacturer {manufacturer!r}" if manufacturer else ""))
+        if len({p["manufacturer_short"] for p in same}) > 1:
+            raise ValueError("several manufacturers have this order number: give 'manufacturer' "
+                             "(short name) or 'part_id'. Found: " + ", ".join(
+                                 f"{p['manufacturer_short']} (part_id {p['id']})" for p in same))
+        chosen = same[0]
+        if not chosen["dxf"]:
+            raise ValueError(f"{order_number}: the Data Portal has no DXF data for this part, so "
+                             "it cannot be fetched through the API; the user can download its "
+                             ".edz from the Data Portal website and import that")
+        part_id = chosen["id"]
+    token, source = _dataportal_token()
+    body, headers = _dataportal_request(f"/download/dxf_data/part/{part_id}", token=token,
+                                        timeout=120, download=True)
+    if not body.startswith(b"PK"):
+        raise ValueError("the Data Portal sent no ZIP package")
+    m = re.search(r'filename\*?=(?:UTF-8\'\')?"?([^";]+)"?',
+                  headers.get("Content-Disposition", "") or "", re.I)
+    name = PurePath(m.group(1).replace("\\", "/")).name if m else ""
+    if not name.lower().endswith(".zip"):
+        name = f"MAC_{part_id}.zip"
+    before = _collection_elements(user)
+    with tempfile.TemporaryDirectory(prefix="qet-dataportal-") as tmp:
+        package = Path(tmp) / name
+        package.write_bytes(body)
+        args = ["--import-eplan", str(package), str(user)]
+        if category.strip():
+            args += ["--category", category.strip()]
+        run = _run_qet(binary, args, timeout=timeout)
+    written = sorted(_collection_elements(user) - before)
+    out = {"ok": run.get("ok", False), "part_id": part_id, "package": name,
+           "collection": str(user), "token_from": source or None,
+           "written": written, "stdout": run.get("stdout", ""), "stderr": run.get("stderr", "")}
+    if chosen:
+        out["part"] = chosen
+    if written:
+        # custom:// paths are what qet_edit's add_element takes
+        out["paths"] = ["custom://" + Path(w).relative_to(user).as_posix() for w in written]
+    elif out["ok"]:
+        out["note"] = ("QElectroTech reported success but wrote no new file: the elements may "
+                       "already have been there and been replaced; see stdout")
+    return out
+
+
 def tool_about() -> dict:
     """What this server and the QElectroTech it works with look like now."""
     info = assistant_info()
@@ -5486,6 +5776,57 @@ TOOLS = [
             a.get("limit", 25)),
     },
     {
+        "name": "qet_dataportal_search",
+        "description": "Search manufacturer parts in the EPLAN Data Portal (online) by "
+                       "order, type or part number or words, optionally for one "
+                       "manufacturer (short name, e.g. WAGO, SIE). No token needed. "
+                       "By default only parts with DXF data are listed: those are the "
+                       "ones qet_dataportal_import can fetch. Use it when a symbol is "
+                       "not in the collection (qet_element_search found nothing).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "order number such as 3RT2015-1BB41, or words"},
+                "manufacturer": {"type": "string", "description": "short name, e.g. WAGO, SIE, PXC"},
+                "only_dxf": {"type": "boolean", "default": True},
+                "exact": {"type": "boolean", "default": False,
+                          "description": "no fuzzy matching, like the portal's exact match"},
+                "limit": {"type": "integer", "default": 20},
+                "offset": {"type": "integer", "default": 0},
+                "language": {"type": "string", "default": "de_DE"},
+            },
+        },
+        "handler": lambda a: tool_dataportal_search(
+            a.get("query", ""), a.get("manufacturer", ""), a.get("only_dxf", True),
+            a.get("exact", False), a.get("limit", 20), a.get("offset", 0),
+            a.get("language", "de_DE")),
+    },
+    {
+        "name": "qet_dataportal_import",
+        "description": "Fetch a part's DXF package from the EPLAN Data Portal and import "
+                       "it into the user's collection (manufacturer / category / type "
+                       "folders), as the Part import menu does. Uses the user's own "
+                       "Data Portal token, which this server reads from QElectroTech's "
+                       "settings and never shows; if it is missing or refused, tell the "
+                       "user to enter it in Part import -> From the EPLAN Data Portal. "
+                       "Returns custom:// paths that qet_edit's add_element takes. Parts "
+                       "without DXF data (only an .edz on the website) cannot be fetched.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "part_id": {"type": "string", "description": "id from qet_dataportal_search"},
+                "order_number": {"type": "string", "description": "instead of part_id: looked up exactly"},
+                "manufacturer": {"type": "string", "description": "short name, when an order number is not unique"},
+                "category": {"type": "string", "description": "folder below the manufacturer; default the part's product group"},
+                "binary": {"type": "string", "description": "the qelectrotech executable; leave it out to use the one this server is configured with. Any other is refused unless its configuration allows it"},
+                "timeout": {"type": "integer", "default": 180},
+            },
+        },
+        "handler": lambda a: tool_dataportal_import(
+            a["binary"], a.get("part_id", ""), a.get("order_number", ""),
+            a.get("manufacturer", ""), a.get("category", ""), a.get("timeout", 180)),
+    },
+    {
         "name": "qet_check",
         "description": "Run design-rule checks over a project and report findings by "
                        "severity: duplicate master labels (error), duplicate simple "
@@ -6054,7 +6395,11 @@ _DATA_PATHS = {
     "qet_scan":           {"read": ("directory",)},
     "qet_element_info":   {"read": ("path",)},
     "qet_element_search": {"read": ("directory",)},
-    "qet_export":         {"read": ("project",), "write": ("output",)},
+    # Online, no client path; the import writes only into the user
+    # collection QElectroTech names, never where the client says.
+    "qet_dataportal_search": {},
+    "qet_dataportal_import": {},
+    "qet_export":        {"read": ("project",), "write": ("output",)},
     "qet_edit":           {"read": ("project",), "write": ("output",)},
     "qet_query":          {"read": ("project",)},
     "qet_continuity":     {"read": ("project",)},
@@ -6083,7 +6428,8 @@ _DATA_PATHS = {
 # Tools that launch QElectroTech, and so take "binary" and "elements_dir".
 _LAUNCHES_QET = {"qet_export", "qet_edit", "qet_query", "qet_continuity",
                  "qet_check", "qet_layout_check", "qet_project_new", "qet_script_api",
-                 "qet_script_test", "qet_recording_check", "qet_live_layout_check"}
+                 "qet_script_test", "qet_recording_check", "qet_live_layout_check",
+                 "qet_dataportal_import"}
 
 # Tools that launch QElectroTech only when given this argument.
 _LAUNCHES_QET_WITH = {"qet_script_install": "test_project"}

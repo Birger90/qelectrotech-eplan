@@ -54,7 +54,8 @@ def safe(name):
         name = name.replace(a, b)
     return re.sub(r"[^A-Za-z0-9._+-]+", "_", name).strip("_")
 
-USER = Path(os.environ.get("APPDATA", "")) / "QElectroTech" / "QElectroTech" / "elements"
+# QET_USER_ELEMENTS: Benutzersammlung, wenn sie nicht am Standardort liegt (in QElectroTech unter Einstellungen gesetzt)
+USER = Path(os.environ.get("QET_USER_ELEMENTS") or Path(os.environ.get("APPDATA", "")) / "QElectroTech" / "QElectroTech" / "elements")
 DASHED = STYLE.replace("line-style:normal", "line-style:dashed")
 
 

@@ -26,6 +26,11 @@ REGELN = [
      "slave", {"type": "plc", "state": "NO", "number": "1"}),
     (r"^PCSS-A1_(?!.*Uebersicht).*_Plan\.elmt$", r"LazerSafe", "slave", {"type": "plc", "state": "NO", "number": "1"}),
     (r"^PCSS-A1_(CN\d|.*Uebersicht)", r"LazerSafe", "master", {"type": "plc"}),
+    # Geräte ohne Herstellerdaten: EIN Bauteil (Übersicht bzw. ganzes Gerät) als Master, auf den Funktionsblättern nur
+    # allgemeine Gerätepins als Slaves (nicht je Stecker oder Kanal ein eigenes Bauteil)
+    (r"^Geraetepin_", r"Verbindungen", "slave", {"type": "plc", "state": "NO", "number": "1"}),
+    (r"_Uebersicht", r"/(Cybelec|LazerSafe)/", "master", {"type": "plc"}),
+    (r"^Servomotor_Drive_4005_Plan\.elmt$", r"IRT", "master", {"type": "plc"}),
     (r"_Kanal_", r"/SPS/", "slave", {"type": "plc", "state": "NO", "number": "1"}),
     (r"_(DI|DQ|DI-VS|DI-AUX|DQ-P-DQ-M|DQ-PP-M|DQ-AUX|DQ-M|DI-24VDC)_[A-Z]1\.elmt$", r"/SPS/6ES713", "slave",
      {"type": "plc", "state": "NO", "number": "1"}),

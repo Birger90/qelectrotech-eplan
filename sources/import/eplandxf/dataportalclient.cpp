@@ -28,6 +28,8 @@
 #include <QUrl>
 #include <QUrlQuery>
 
+#include <algorithm>
+
 namespace {
 	const char DEFAULT_URL[] = "https://dataportal.eplan.com/api";
 	const int TIMEOUT_MS = 60000;
@@ -109,16 +111,20 @@ QNetworkRequest DataPortalClient::request(const QString &path) const
 	return req;
 }
 
-void DataPortalClient::search(const QString &text, const QString &manufacturer, int limit)
+void DataPortalClient::search(const DataPortalQuery &q)
 {
 	abort();
 	QUrlQuery query;
-	if (!text.trimmed().isEmpty()) query.addQueryItem(QStringLiteral("search"), text.trimmed().left(100));
-	if (!manufacturer.trimmed().isEmpty())
-		query.addQueryItem(QStringLiteral("filter[manufacturer]"), manufacturer.trimmed());
-	query.addQueryItem(QStringLiteral("include"), QStringLiteral("manufacturer,product_group"));
-	query.addQueryItem(QStringLiteral("page[offset]"), QStringLiteral("0"));
-	query.addQueryItem(QStringLiteral("page[limit]"), QString::number(limit));
+	const QString text = q.text.trimmed();
+	if (!text.isEmpty()) query.addQueryItem(QStringLiteral("search"), text.left(100));
+	if (!q.manufacturer.trimmed().isEmpty())
+		query.addQueryItem(QStringLiteral("filter[manufacturer]"), q.manufacturer.trimmed());
+	if (q.only_dxf) query.addQueryItem(QStringLiteral("filter[data_types]"), QStringLiteral("dxf_data"));
+	if (q.exact && !text.isEmpty()) query.addQueryItem(QStringLiteral("fuzziness"), QStringLiteral("0"));
+	query.addQueryItem(QStringLiteral("include"),
+			   QStringLiteral("manufacturer,product_group,picture_file.preview"));
+	query.addQueryItem(QStringLiteral("page[offset]"), QString::number(q.offset));
+	query.addQueryItem(QStringLiteral("page[limit]"), QString::number(q.limit));
 	QNetworkRequest req = request(QStringLiteral("/parts"));
 	QUrl url = req.url();
 	url.setQuery(query);
@@ -126,7 +132,8 @@ void DataPortalClient::search(const QString &text, const QString &manufacturer, 
 	req.setRawHeader("Accept", "application/vnd.api+json, application/json");
 	QNetworkReply *reply = m_manager->get(req);
 	m_reply = reply;
-	connect(reply, &QNetworkReply::finished, this, [this, reply]() { finished(reply, false); });
+	const int offset = q.offset;
+	connect(reply, &QNetworkReply::finished, this, [this, reply, offset]() { finished(reply, false, offset); });
 }
 
 void DataPortalClient::downloadDxf(const QString &part_id)
@@ -136,7 +143,41 @@ void DataPortalClient::downloadDxf(const QString &part_id)
 				      + QString::fromUtf8(QUrl::toPercentEncoding(part_id)));
 	QNetworkReply *reply = m_manager->get(req);
 	m_reply = reply;
-	connect(reply, &QNetworkReply::finished, this, [this, reply]() { finished(reply, true); });
+	connect(reply, &QNetworkReply::finished, this, [this, reply]() { finished(reply, true, 0); });
+}
+
+/// a failure here is not reported: the filter then stays a text field
+void DataPortalClient::loadManufacturers()
+{
+	QNetworkRequest req = request(QStringLiteral("/manufacturers"));
+	req.setRawHeader("Accept", "application/vnd.api+json, application/json");
+	QNetworkReply *reply = m_manager->get(req);
+	connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+		reply->deleteLater();
+		if (reply->error() != QNetworkReply::NoError) return;
+		emit manufacturersLoaded(parseManufacturers(reply->readAll()));
+	});
+}
+
+/// the pictures lie on a public file store: sent without the token
+void DataPortalClient::loadPicture(const QString &url)
+{
+	if (!m_picture_reply.isNull()) {
+		QNetworkReply *old = m_picture_reply;
+		old->disconnect(this);
+		old->abort();
+		old->deleteLater();
+	}
+	QNetworkRequest req{QUrl(url)};
+	req.setTransferTimeout(TIMEOUT_MS);
+	req.setHeader(QNetworkRequest::UserAgentHeader, QStringLiteral("QElectroTech"));
+	QNetworkReply *reply = m_manager->get(req);
+	m_picture_reply = reply;
+	connect(reply, &QNetworkReply::finished, this, [this, reply, url]() {
+		reply->deleteLater();
+		if (reply->error() != QNetworkReply::NoError) return;
+		emit pictureLoaded(url, reply->readAll());
+	});
 }
 
 /// cancel the running request without a signal
@@ -150,7 +191,7 @@ void DataPortalClient::abort()
 	reply->deleteLater();
 }
 
-void DataPortalClient::finished(QNetworkReply *reply, bool download)
+void DataPortalClient::finished(QNetworkReply *reply, bool download, int offset)
 {
 	reply->deleteLater();
 	if (m_reply == reply) m_reply.clear();
@@ -168,7 +209,7 @@ void DataPortalClient::finished(QNetworkReply *reply, bool download)
 			emit failed(tr("The reply of the Data Portal cannot be read: %1").arg(error));
 			return;
 		}
-		emit searchFinished(parts, total);
+		emit searchFinished(parts, total, offset);
 		return;
 	}
 	// a wrong URL may answer with a web page instead of the package
@@ -254,13 +295,15 @@ QVector<DataPortalPart> DataPortalClient::parseParts(const QByteArray &json, con
 	}
 	const QJsonObject root = doc.object();
 	// included objects by "type/id"
-	QHash<QString, QJsonObject> included;
+	QHash<QString, QJsonObject> objects;
 	for (const QJsonValue &v : root.value(QStringLiteral("included")).toArray()) {
 		const QJsonObject o = v.toObject();
-		included.insert(o.value(QStringLiteral("type")).toString() + QLatin1Char('/')
-				+ o.value(QStringLiteral("id")).toString(),
-				o.value(QStringLiteral("attributes")).toObject());
+		objects.insert(o.value(QStringLiteral("type")).toString() + QLatin1Char('/')
+			       + o.value(QStringLiteral("id")).toString(), o);
 	}
+	QHash<QString, QJsonObject> included;   // their attributes
+	for (auto it = objects.cbegin(); it != objects.cend(); ++it)
+		included.insert(it.key(), it.value().value(QStringLiteral("attributes")).toObject());
 
 	QVector<DataPortalPart> parts;
 	for (const QJsonValue &v : root.value(QStringLiteral("data")).toArray()) {
@@ -285,6 +328,14 @@ QVector<DataPortalPart> DataPortalClient::parseParts(const QByteArray &json, con
 		p.product_group = included.value(
 			QStringLiteral("eplan_catalog_entries/") + relationId(rel, QStringLiteral("product_group")))
 				.value(QStringLiteral("name")).toString();
+		// picture: part -> picturefile -> preview {"96": url, "512": url}
+		const QJsonObject picture = objects.value(
+			QStringLiteral("picturefile/") + relationId(rel, QStringLiteral("picture_file")));
+		const QJsonObject preview = included.value(
+			QStringLiteral("preview/") + relationId(picture.value(QStringLiteral("relationships")).toObject(),
+								QStringLiteral("preview")));
+		p.picture_url = preview.value(QStringLiteral("96")).toString();
+		if (p.picture_url.isEmpty()) p.picture_url = preview.value(QStringLiteral("512")).toString();
 		for (const QJsonValue &t : rel.value(QStringLiteral("data_types")).toObject()
 					       .value(QStringLiteral("data")).toArray()) {
 			if (t.toObject().value(QStringLiteral("id")).toString() == QLatin1String("dxf_data"))
@@ -297,4 +348,28 @@ QVector<DataPortalPart> DataPortalClient::parseParts(const QByteArray &json, con
 				 .toObject().value(QStringLiteral("total")).toInt(int(parts.size()));
 	}
 	return parts;
+}
+
+/**
+	The manufacturers of a reply of GET /manufacturers, sorted by long name.
+	The Data Portal lists some twice, once for NFPA data; both are kept.
+*/
+QVector<DataPortalManufacturer> DataPortalClient::parseManufacturers(const QByteArray &json)
+{
+	QVector<DataPortalManufacturer> list;
+	for (const QJsonValue &v : QJsonDocument::fromJson(json).object()
+				       .value(QStringLiteral("data")).toArray()) {
+		const QJsonObject a = v.toObject().value(QStringLiteral("attributes")).toObject();
+		DataPortalManufacturer m;
+		m.short_name = a.value(QStringLiteral("short_name")).toString();
+		m.long_name = a.value(QStringLiteral("long_name")).toString();
+		m.allow_dxf = a.value(QStringLiteral("allow_dxf")).toBool();
+		if (m.short_name.isEmpty()) continue;
+		if (m.long_name.isEmpty()) m.long_name = m.short_name;
+		list.append(m);
+	}
+	std::sort(list.begin(), list.end(), [](const DataPortalManufacturer &x, const DataPortalManufacturer &y) {
+		return x.long_name.compare(y.long_name, Qt::CaseInsensitive) < 0;
+	});
+	return list;
 }

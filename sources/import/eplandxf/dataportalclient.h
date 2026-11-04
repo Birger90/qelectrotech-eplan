@@ -39,7 +39,27 @@ struct DataPortalPart
 	QString manufacturer_short;
 	QString designation;   ///< in the language asked for, else English
 	QString product_group;
+	QString picture_url;   ///< product picture, public, may be empty
 	bool has_dxf = false;
+};
+
+/// one manufacturer of the Data Portal
+struct DataPortalManufacturer
+{
+	QString short_name;    ///< filter value, e.g. WAGO
+	QString long_name;
+	bool allow_dxf = false;
+};
+
+/// what to search for
+struct DataPortalQuery
+{
+	QString text;
+	QString manufacturer;  ///< short name, empty: all
+	bool only_dxf = false; ///< only parts with a DXF package
+	bool exact = false;    ///< no fuzzy matching
+	int offset = 0;
+	int limit = 50;
 };
 
 /**
@@ -66,31 +86,41 @@ class DataPortalClient : public QObject
 		QString baseUrl() const { return m_base; }
 		void setBaseUrl(const QString &url);
 
-		/// parts whose order, type or part number or text match @p text
-		void search(const QString &text, const QString &manufacturer, int limit = 50);
+		/// parts whose order, type or part number or text match the query
+		void search(const DataPortalQuery &query);
 		/// the DXF package (MAC_<part>.zip) of a part; needs the token
 		void downloadDxf(const QString &part_id);
+		/// all manufacturers, for the filter; no token needed
+		void loadManufacturers();
+		/// a product picture; a newer request replaces a running one
+		void loadPicture(const QString &url);
 		void abort();
 		bool isBusy() const { return !m_reply.isNull(); }
 
 		/// the parts of a JSON:API reply of GET /parts
 		static QVector<DataPortalPart> parseParts(const QByteArray &json, const QString &language,
 							  int *total = nullptr, QString *error = nullptr);
+		/// the manufacturers of a reply of GET /manufacturers, by long name
+		static QVector<DataPortalManufacturer> parseManufacturers(const QByteArray &json);
 		/// the value of the Authorization header for @p token
 		static QByteArray authorization(const QString &token);
 
 	signals:
-		void searchFinished(const QVector<DataPortalPart> &parts, int total);
+		/// @p offset is the one of the query: 0 for a new search
+		void searchFinished(const QVector<DataPortalPart> &parts, int total, int offset);
 		void downloadFinished(const QByteArray &data, const QString &file_name);
+		void manufacturersLoaded(const QVector<DataPortalManufacturer> &manufacturers);
+		void pictureLoaded(const QString &url, const QByteArray &data);
 		void failed(const QString &message);
 
 	private:
 		QNetworkRequest request(const QString &path) const;
-		void finished(QNetworkReply *reply, bool download);
+		void finished(QNetworkReply *reply, bool download, int offset);
 		QString errorText(QNetworkReply *reply, const QByteArray &body, bool download) const;
 
 		QNetworkAccessManager *m_manager = nullptr;
-		QPointer<QNetworkReply> m_reply;
+		QPointer<QNetworkReply> m_reply;          ///< search or download
+		QPointer<QNetworkReply> m_picture_reply;
 		QString m_base;
 		QString m_token;
 		QString m_language = QStringLiteral("en_US");

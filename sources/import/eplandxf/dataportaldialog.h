@@ -21,9 +21,12 @@
 #include "dataportalclient.h"
 
 #include <QDialog>
+#include <QHash>
+#include <QPixmap>
 #include <QStringList>
 
 class QCheckBox;
+class QComboBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
@@ -51,7 +54,13 @@ class DataPortalDialog : public QDialog
 
 	private:
 		void runSearch();
-		void showParts(const QVector<DataPortalPart> &parts, int total);
+		void loadMore();
+		void showParts(const QVector<DataPortalPart> &parts, int total, int offset);
+		void fillManufacturers(const QVector<DataPortalManufacturer> &list);
+		QString manufacturerFilter() const;
+		void showPicture();
+		void pictureLoaded(const QString &url, const QByteArray &data);
+		void updateCount();
 		void runImport();
 		void importNext();
 		void importPackage(const QByteArray &data, const QString &file_name);
@@ -65,10 +74,17 @@ class DataPortalDialog : public QDialog
 		QLineEdit *m_token = nullptr;
 		QCheckBox *m_remember = nullptr;
 		QLineEdit *m_search = nullptr;
-		QLineEdit *m_manufacturer = nullptr;
+		QComboBox *m_manufacturer = nullptr;
+		QCheckBox *m_only_dxf = nullptr;
+		QCheckBox *m_exact = nullptr;
 		QPushButton *m_search_button = nullptr;
 		QTreeWidget *m_results = nullptr;
+		QLabel *m_picture = nullptr;
 		QLabel *m_count = nullptr;
+		QPushButton *m_more = nullptr;
+		DataPortalQuery m_query;           ///< the last search
+		int m_total = 0;                   ///< parts matching it
+		QHash<QString, QPixmap> m_pictures; ///< loaded pictures by URL
 		QLineEdit *m_category = nullptr;
 		QCheckBox *m_terms = nullptr;
 		QLabel *m_status = nullptr;

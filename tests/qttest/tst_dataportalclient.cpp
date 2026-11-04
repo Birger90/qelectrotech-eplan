@@ -40,6 +40,7 @@ namespace {
 			 "relationships": {
 				"manufacturer": {"data": {"type": "manufacturers", "id": "7"}},
 				"product_group": {"data": {"type": "eplan_catalog_entries", "id": "200030000"}},
+				"picture_file": {"data": {"type": "picturefile", "id": "55"}},
 				"data_types": {"data": [{"type": "data_types", "id": "commercial_data"},
 							{"type": "data_types", "id": "dxf_data"}]}}},
 			{"type": "parts", "id": "1002",
@@ -51,8 +52,24 @@ namespace {
 		],
 		"included": [
 			{"type": "manufacturers", "id": "7", "attributes": {"short_name": "TST", "long_name": "Test Werke"}},
-			{"type": "eplan_catalog_entries", "id": "200030000", "attributes": {"name": "Relais, Schuetze"}}
+			{"type": "eplan_catalog_entries", "id": "200030000", "attributes": {"name": "Relais, Schuetze"}},
+			{"type": "picturefile", "id": "55",
+			 "relationships": {"preview": {"data": {"type": "preview", "id": "TST\K-100.jpg"}}}},
+			{"type": "preview", "id": "TST\K-100.jpg", "attributes": {"512": "https://example.invalid/k100.png"}}
 		]})";
+
+	const QByteArray MANUFACTURERS = R"({"data": [
+		{"type": "manufacturers", "id": "2", "attributes": {"short_name": "ZZZ", "long_name": "Zeta", "allow_dxf": false}},
+		{"type": "manufacturers", "id": "1", "attributes": {"short_name": "TST", "long_name": "Alpha Test", "allow_dxf": true}}
+	]})";
+
+	DataPortalQuery query(const QString &text, const QString &manufacturer = QString())
+	{
+		DataPortalQuery q;
+		q.text = text;
+		q.manufacturer = manufacturer;
+		return q;
+	}
 
 	/// one canned reply of the stub
 	struct Reply { int status = 200; QByteArray headers; QByteArray body; };
@@ -109,7 +126,7 @@ class DataPortalClientTest : public QObject
 		{
 			QSignalSpy failed(&client, &DataPortalClient::failed);
 			if (download) client.downloadDxf(QStringLiteral("1001"));
-			else client.search(QStringLiteral("K-100"), QString());
+			else client.search(query(QStringLiteral("K-100")));
 			if (!failed.wait(10000)) return QString();
 			return failed.first().first().toString();
 		}
@@ -140,6 +157,8 @@ class DataPortalClientTest : public QObject
 			QCOMPARE(parts.at(0).designation, QStringLiteral("Testschuetz"));
 			QCOMPARE(parts.at(0).product_group, QStringLiteral("Relais, Schuetze"));
 			QVERIFY(parts.at(0).has_dxf);
+			QCOMPARE(parts.at(0).picture_url, QStringLiteral("https://example.invalid/k100.png"));
+			QVERIFY(parts.at(1).picture_url.isEmpty());
 			// no German text: English
 			QCOMPARE(parts.at(1).designation, QStringLiteral("Test relay"));
 			QVERIFY(!parts.at(1).has_dxf);
@@ -155,8 +174,13 @@ class DataPortalClientTest : public QObject
 			DataPortalClient client;
 			client.setBaseUrl(stub.url());
 			QSignalSpy found(&client, &DataPortalClient::searchFinished);
-			client.search(QStringLiteral("K-100"), QStringLiteral("TST"));
+			DataPortalQuery q = query(QStringLiteral("K-100"), QStringLiteral("TST"));
+			q.only_dxf = true;
+			q.exact = true;
+			q.offset = 50;
+			client.search(q);
 			QVERIFY(found.wait(10000));
+			QCOMPARE(found.first().at(2).toInt(), 50);
 			QCOMPARE(found.first().first().value<QVector<DataPortalPart>>().size(), 2);
 			QCOMPARE(found.first().at(1).toInt(), 120);
 			QVERIFY(stub.m_auth.isEmpty());
@@ -164,7 +188,29 @@ class DataPortalClientTest : public QObject
 			QVERIFY(stub.m_target.startsWith("/api/parts?"));
 			QCOMPARE(query.queryItemValue(QStringLiteral("search")), QStringLiteral("K-100"));
 			QCOMPARE(query.queryItemValue(QStringLiteral("filter[manufacturer]")), QStringLiteral("TST"));
-			QVERIFY(query.queryItemValue(QStringLiteral("include")).contains(QStringLiteral("manufacturer")));
+			QVERIFY(query.queryItemValue(QStringLiteral("include")).contains(QStringLiteral("picture_file.preview")));
+			QCOMPARE(query.queryItemValue(QStringLiteral("filter[data_types]")), QStringLiteral("dxf_data"));
+			QCOMPARE(query.queryItemValue(QStringLiteral("fuzziness")), QStringLiteral("0"));
+			QCOMPARE(query.queryItemValue(QStringLiteral("page[offset]")), QStringLiteral("50"));
+		}
+
+		void manufacturers()
+		{
+			const QVector<DataPortalManufacturer> list = DataPortalClient::parseManufacturers(MANUFACTURERS);
+			QCOMPARE(list.size(), 2);
+			QCOMPARE(list.at(0).short_name, QStringLiteral("TST"));   // sorted by long name
+			QVERIFY(list.at(0).allow_dxf);
+			QCOMPARE(list.at(1).long_name, QStringLiteral("Zeta"));
+
+			Stub stub;
+			stub.m_reply = {200, "Content-Type: application/vnd.api+json\r\n", MANUFACTURERS};
+			DataPortalClient client;
+			client.setBaseUrl(stub.url());
+			QSignalSpy loaded(&client, &DataPortalClient::manufacturersLoaded);
+			client.loadManufacturers();
+			QVERIFY(loaded.wait(10000));
+			QCOMPARE(stub.m_target, QByteArray("/api/manufacturers"));
+			QCOMPARE(loaded.first().first().value<QVector<DataPortalManufacturer>>().size(), 2);
 		}
 
 		void downloadWithToken()

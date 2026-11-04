@@ -2058,21 +2058,15 @@ void QETDiagramEditor::setUpMenu()
 	QMenu *menu_part_import = new QMenu(tr("Part import"), this);
 	menu_part_import->setObjectName(QStringLiteral("part_import_menu"));
 	insertMenu(settings_menu_, menu_part_import);
-	auto add_import = [this, menu_part_import](const QString &text,
-						   EplanImportDialog::Source source) {
-		connect(menu_part_import->addAction(text), &QAction::triggered, this, [this, source]() {
-			EplanImportDialog dialog(source, this);
-			if (!dialog.chooseSource()) return;
-			if (dialog.exec() == QDialog::Accepted && m_element_collection_widget)
-				m_element_collection_widget->reload();
-		});
-	};
-	add_import(tr("EPLAN DXF package (ZIP)…"), EplanImportDialog::Source::Package);
-	add_import(tr("Unpacked EPLAN DXF package (folder)…"), EplanImportDialog::Source::Folder);
-	add_import(tr("Single EPLAN DXF…"), EplanImportDialog::Source::Dxf);
-	menu_part_import->addSeparator();
-	add_import(tr("EPLAN part (.edz)…"), EplanImportDialog::Source::Edz);
-	menu_part_import->addSeparator();
+	// one entry for every file kind: the dialog tells it by the file
+	connect(menu_part_import->addAction(tr("Import part…")), &QAction::triggered, this, [this]() {
+		EplanImportDialog dialog(this);
+		// the file dialog over the import dialog: cancelled, the import
+		// dialog still offers a folder or a dropped file
+		QTimer::singleShot(0, &dialog, [&dialog]() { dialog.chooseSource(); });
+		if (dialog.exec() == QDialog::Accepted && m_element_collection_widget)
+			m_element_collection_widget->reload();
+	});
 	connect(menu_part_import->addAction(tr("From the EPLAN Data Portal…")),
 		&QAction::triggered, this, [this]() {
 			DataPortalDialog dialog(this);

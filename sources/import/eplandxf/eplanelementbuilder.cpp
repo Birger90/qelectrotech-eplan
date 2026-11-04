@@ -26,7 +26,6 @@
 #include <limits>
 
 namespace {
-	const double S = 2.5;  // px per EPLAN mm: 8 mm grid -> 20 px (QET grid 10 px)
 	const QString STYLE = QStringLiteral(
 		"line-style:normal;line-weight:normal;filling:none;color:black");
 
@@ -137,6 +136,7 @@ QDomDocument EplanElementBuilder::build(const EplanSymbolData &data,
 					const QMap<QString, QString> &names,
 					const QVector<QPair<QString, QString>> &info)
 {
+	const double S = data.scale;  // px per mm of the drawing (EPLAN: 8 mm grid -> 20 px, QET grid 10 px)
 	QDomDocument doc;
 	// QET wants unique terminal names; EPLAN repeats them (both sides of a
 	// feed-through terminal, channels named after their function only):
@@ -223,7 +223,8 @@ QDomDocument EplanElementBuilder::build(const EplanSymbolData &data,
 
 	QVector<QRectF> boxes;  // space taken by horizontal texts
 	for (const EplanDxfText &t : data.texts) {
-		const int size = qMax(5, int(rnd(t.height * S * 1.1)));
+		// a smaller scale (5 mm grid) leaves less room: allow the next smaller font there
+		const int size = qMax(S < 2.5 ? 4 : 5, int(rnd(t.height * S * 1.1)));
 		const double w = 0.6 * size * t.text.size();  // rough text width in px
 		QPointF a = T(t.anchor);
 		double rot = std::fmod(t.rotation, 360.0);

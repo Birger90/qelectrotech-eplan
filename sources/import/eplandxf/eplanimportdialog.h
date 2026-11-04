@@ -40,7 +40,7 @@ class EplanImportDialog : public QDialog
 	Q_OBJECT
 
 	public:
-		enum class Source { Package, Folder, Dxf, Edz };
+		enum class Source { Package, Folder, Dxf, Edz, Dwg };
 
 		explicit EplanImportDialog(QWidget *parent = nullptr);
 
@@ -61,6 +61,7 @@ class EplanImportDialog : public QDialog
 		void sourceChanged();
 		void chooseEdz();
 		void readEdz(const QString &path);
+		void readWspak(const QString &path);
 		void updateButtons();
 		void runImport();
 		QString targetDir();

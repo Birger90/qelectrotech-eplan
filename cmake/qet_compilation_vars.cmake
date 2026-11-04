@@ -139,6 +139,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/logging/ui/diagnosticsreportdialog.h
   ${QET_DIR}/sources/pdf_links.cpp
   ${QET_DIR}/sources/pdf_links.h
+  ${QET_DIR}/sources/import/eplandxf/dwgreader.cpp
+  ${QET_DIR}/sources/import/eplandxf/dwgreader.h
   ${QET_DIR}/sources/import/eplandxf/eplandxfreader.cpp
   ${QET_DIR}/sources/import/eplandxf/eplandxfreader.h
   ${QET_DIR}/sources/import/eplandxf/eplanmacroreader.cpp

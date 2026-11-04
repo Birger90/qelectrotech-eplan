@@ -1276,8 +1276,9 @@ int run(const QStringList &args)
 				positional << a;
 		}
 		if (positional.size() < 2) {
-			err << "Usage: qelectrotech --import-eplan <package.zip | folder | file.dxf> "
-			       "<collection_dir> [--category C] [--manufacturer M --type T] [--edz part.edz]\n";
+			err << "Usage: qelectrotech --import-eplan <package.zip | folder | file.dxf | file.dwg> "
+			       "<collection_dir> [--category C] [--manufacturer M --type T] [--edz part.edz] "
+			       "[--wspak part.wspak]\n";
 			return 2;
 		}
 		EplanPartImporter importer;
@@ -1285,8 +1286,14 @@ int run(const QStringList &args)
 		const QString suffix = QFileInfo(source).suffix();
 		const bool single_dxf = suffix.compare("dxf", Qt::CaseInsensitive) == 0;
 		const bool edz = suffix.compare("edz", Qt::CaseInsensitive) == 0;
+		const bool dwg = suffix.compare("dwg", Qt::CaseInsensitive) == 0;
 		bool ok;
-		if (edz) {
+		if (dwg) {
+			// manufacturer and type may come from the WSCAD Universe package instead
+			ok = importer.importDwg(source, opts.value("wspak"), opts.value("manufacturer"),
+						opts.value("category", "Allgemein"), opts.value("type"),
+						positional.at(1));
+		} else if (edz) {
 			if (opts.value("manufacturer").isEmpty() || opts.value("type").isEmpty()) {
 				err << "--import-eplan: an .edz part needs --manufacturer and --type\n";
 				return 2;

@@ -145,6 +145,10 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/import/eplandxf/eplanmacroreader.h
   ${QET_DIR}/sources/import/eplandxf/eplanimportdialog.cpp
   ${QET_DIR}/sources/import/eplandxf/eplanimportdialog.h
+  ${QET_DIR}/sources/import/eplandxf/dataportalclient.cpp
+  ${QET_DIR}/sources/import/eplandxf/dataportalclient.h
+  ${QET_DIR}/sources/import/eplandxf/dataportaldialog.cpp
+  ${QET_DIR}/sources/import/eplandxf/dataportaldialog.h
   ${QET_DIR}/sources/import/eplandxf/eplanelementbuilder.cpp
   ${QET_DIR}/sources/import/eplandxf/eplanelementbuilder.h
   ${QET_DIR}/sources/import/eplandxf/eplanpartimporter.cpp

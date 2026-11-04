@@ -27,6 +27,8 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QDir>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFormLayout>
@@ -34,24 +36,32 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMimeData>
 #include <QPushButton>
 #include <QSettings>
+#include <QUrl>
 #include <QVBoxLayout>
 
-EplanImportDialog::EplanImportDialog(Source source, QWidget *parent) :
-	QDialog(parent),
-	m_kind(source)
+EplanImportDialog::EplanImportDialog(QWidget *parent) :
+	QDialog(parent)
 {
 	setWindowTitle(tr("Part import"));
 	setMinimumWidth(520);
+	setAcceptDrops(true);
 
 	m_source = new QLineEdit(this);
 	m_source->setReadOnly(true);
+	m_source->setPlaceholderText(tr("ZIP package, .edz part or DXF; or drop it here"));
 	auto *change = new QPushButton(tr("Change…"), this);
 	connect(change, &QPushButton::clicked, this, &EplanImportDialog::chooseSource);
+	// an unpacked package is a folder, which a file dialog cannot pick
+	auto *folder = new QPushButton(tr("Folder…"), this);
+	folder->setToolTip(tr("Unpacked EPLAN DXF package (folder)"));
+	connect(folder, &QPushButton::clicked, this, &EplanImportDialog::chooseFolder);
 	auto *source_row = new QHBoxLayout;
 	source_row->addWidget(m_source);
 	source_row->addWidget(change);
+	source_row->addWidget(folder);
 
 	m_manufacturer = new QLineEdit(this);
 	m_category = new QLineEdit(this);
@@ -134,43 +144,93 @@ EplanImportDialog::EplanImportDialog(Source source, QWidget *parent) :
 	layout->addWidget(m_missing);
 	layout->addWidget(buttons);
 
-	const bool dxf = m_kind == Source::Dxf;
-	m_edz->setEnabled(dxf);
-	m_edz_button->setEnabled(dxf);
+	m_edz->setEnabled(false);
+	m_edz_button->setEnabled(false);
 	updateButtons();
 }
 
 /**
-	Ask for the file or folder to import.
+	Ask for the file to import: a Data Portal package, an .edz part or a
+	single DXF, all in one file dialog.
 	@return false when the user cancels
 */
 bool EplanImportDialog::chooseSource()
 {
 	QSettings settings;
 	const QString last = settings.value(QStringLiteral("eplanimport/lastdir")).toString();
-	QString path;
-	switch (m_kind) {
-		case Source::Package:
-			path = QFileDialog::getOpenFileName(this, tr("EPLAN DXF package"), last,
-							    tr("EPLAN Data Portal DXF package (*.zip)"));
-			break;
-		case Source::Folder:
-			path = QFileDialog::getExistingDirectory(this, tr("Unpacked EPLAN DXF package"), last);
-			break;
-		case Source::Dxf:
-			path = QFileDialog::getOpenFileName(this, tr("EPLAN DXF"), last,
-							    tr("DXF drawings (*.dxf)"));
-			break;
-		case Source::Edz:
-			path = QFileDialog::getOpenFileName(this, tr("EPLAN part"), last,
-							    tr("EPLAN parts (*.edz)"));
-			break;
-	}
+	const QStringList filters {
+		tr("EPLAN parts (*.zip *.edz *.dxf)"),
+		tr("EPLAN Data Portal DXF package (*.zip)"),
+		tr("EPLAN parts (*.edz)"),
+		tr("DXF drawings (*.dxf)")};
+	const QString path = QFileDialog::getOpenFileName(this, tr("Import part"), last,
+							  filters.join(QStringLiteral(";;")));
 	if (path.isEmpty()) return false;
 	settings.setValue(QStringLiteral("eplanimport/lastdir"), QFileInfo(path).absolutePath());
+	return setSource(path);
+}
+
+/**
+	Ask for an unpacked Data Portal package.
+	@return false when the user cancels
+*/
+bool EplanImportDialog::chooseFolder()
+{
+	QSettings settings;
+	const QString last = settings.value(QStringLiteral("eplanimport/lastdir")).toString();
+	const QString path = QFileDialog::getExistingDirectory(this, tr("Unpacked EPLAN DXF package"), last);
+	if (path.isEmpty()) return false;
+	settings.setValue(QStringLiteral("eplanimport/lastdir"), path);
+	return setSource(path);
+}
+
+/**
+	Take @p path as the source; its kind is told by the file: a folder is an
+	unpacked package, else the suffix .zip, .edz or .dxf.
+	@return false, with a message, when it is none of these
+*/
+bool EplanImportDialog::setSource(const QString &path)
+{
+	const QFileInfo info(path);
+	const QString suffix = info.suffix().toLower();
+	Source kind;
+	if (info.isDir()) kind = Source::Folder;
+	else if (suffix == QLatin1String("zip")) kind = Source::Package;
+	else if (suffix == QLatin1String("edz")) kind = Source::Edz;
+	else if (suffix == QLatin1String("dxf")) kind = Source::Dxf;
+	else {
+		QET::QetMessageBox::warning(this, tr("Part import"),
+					    tr("%1 is no EPLAN part: choose a ZIP package, an .edz "
+					       "part, a DXF or the folder of an unpacked package.")
+					    .arg(QDir::toNativeSeparators(path)));
+		return false;
+	}
+	m_kind = kind;
+	// what the previous source told does not hold for this one
+	m_manufacturer->clear();
+	m_type->clear();
+	m_edz->clear();
+	m_category->setPlaceholderText(QStringLiteral("Allgemein"));
+	const bool dxf = m_kind == Source::Dxf;
+	m_edz->setEnabled(dxf);
+	m_edz_button->setEnabled(dxf);
 	m_source->setText(QDir::toNativeSeparators(path));
 	sourceChanged();
 	return true;
+}
+
+void EplanImportDialog::dragEnterEvent(QDragEnterEvent *event)
+{
+	const QList<QUrl> urls = event->mimeData()->urls();
+	if (urls.size() == 1 && urls.first().isLocalFile()) event->acceptProposedAction();
+}
+
+void EplanImportDialog::dropEvent(QDropEvent *event)
+{
+	const QList<QUrl> urls = event->mimeData()->urls();
+	if (urls.size() != 1 || !urls.first().isLocalFile()) return;
+	event->acceptProposedAction();
+	setSource(urls.first().toLocalFile());
 }
 
 /**

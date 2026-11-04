@@ -22,14 +22,18 @@
 
 class QCheckBox;
 class QComboBox;
+class QDragEnterEvent;
+class QDropEvent;
 class QLabel;
 class QLineEdit;
 class QPushButton;
 
 /**
 	@brief Dialog of the "Part import" menu: imports manufacturer EPLAN data
-	(Data Portal DXF package, single DXF, .edz part) into an element
-	collection, sorted into manufacturer / category / type folders.
+	(Data Portal DXF package as ZIP or folder, single DXF, .edz part) into
+	an element collection, sorted into manufacturer / category / type
+	folders. The kind of source is told by the file itself; a file or
+	folder may also be dropped onto the dialog.
 */
 class EplanImportDialog : public QDialog
 {
@@ -38,12 +42,20 @@ class EplanImportDialog : public QDialog
 	public:
 		enum class Source { Package, Folder, Dxf, Edz };
 
-		explicit EplanImportDialog(Source source, QWidget *parent = nullptr);
+		explicit EplanImportDialog(QWidget *parent = nullptr);
 
 		/// asks for the file first; false when the user cancels
 		bool chooseSource();
+		/// asks for an unpacked package; false when the user cancels
+		bool chooseFolder();
+		/// takes @p path as the source; false when it is nothing to import
+		bool setSource(const QString &path);
 		/// the elements written by the last import
 		QStringList writtenPaths() const { return m_written; }
+
+	protected:
+		void dragEnterEvent(QDragEnterEvent *event) override;
+		void dropEvent(QDropEvent *event) override;
 
 	private:
 		void sourceChanged();
@@ -53,7 +65,7 @@ class EplanImportDialog : public QDialog
 		void runImport();
 		QString targetDir();
 
-		Source m_kind;
+		Source m_kind = Source::Package;
 		QLineEdit *m_source = nullptr;
 		QLineEdit *m_manufacturer = nullptr;
 		QLineEdit *m_category = nullptr;

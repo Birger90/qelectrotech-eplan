@@ -689,11 +689,14 @@ bool EplanPartImporter::importDwg(const QString &dwg_path, const QString &wspak_
 	}
 
 	EplanSymbolData data;
-	data.scale = 2.0;                                 // WSCAD draws on a 5 mm grid: 5 mm -> 10 px
+	data.pins = reader.pins();
+	// a schematic: WSCAD draws on a 5 mm grid, 5 mm -> 10 px keeps the terminals on the QET grid;
+	// a layout view (no terminals): the scale of the EPLAN layout macros, so devices side by side
+	// in a panel layout are true to each other in size
+	data.scale = data.pins.isEmpty() ? 2.5 : 2.0;
 	data.pin_fields = false;                          // the drawing names each terminal's function itself
 	data.lines = reader.lines();
 	data.circles = reader.circles();
-	data.pins = reader.pins();
 	// the device tag ("-K") is the element label, placeholders ("...") stay empty
 	QString letters = QStringLiteral("A");
 	static const QRegularExpression tag(QStringLiteral("^-([A-Z]{1,3})$"));

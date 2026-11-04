@@ -74,6 +74,8 @@ def main():
                     help="Anschlüsse auf dieses Raster runden (px); 0 = genau wie im PDF")
     a = ap.parse_args()
 
+    # Git-Bash wandelt Argumente wie „/38/5“ in Windows-Pfade; „//38/5“ übersteht das und meint „/38/5“
+    a.skip = [s[1:] if s.startswith("//") else s for s in a.skip]
     page = pymupdf.open(a.pdf)[a.seite]
     clip = pymupdf.Rect(*map(float, a.clip.split(",")))
     inside = pymupdf.Rect(clip.x0 - 0.3, clip.y0 - 0.3, clip.x1 + 0.3, clip.y1 + 0.3)

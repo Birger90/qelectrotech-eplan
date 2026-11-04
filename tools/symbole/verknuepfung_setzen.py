@@ -17,6 +17,10 @@ from pathlib import Path
 # (Muster im Dateinamen, Ordner-Muster, link_type, kindInformations)
 REGELN = [
     (r"_Spule", r"", "master", {"type": "coil"}),
+    # Wendestarter 3RM1: Steuerteil (C1) trägt die Querverweise, Hauptstromkreis (B1) ist sein Leistungskontakt
+    (r"^3RM1.*_C1", r"", "master", {"type": "coil"}),
+    (r"^3RM1.*_B1", r"", "slave", {"type": "power", "state": "NO", "number": "3"}),
+    (r"Motorschutzschalter_mit_Hilfskontakten", r"", "master", {"type": "protection"}),
     (r"_Uebersicht", r"/SPS/6ES713", "master", {"type": "plc"}),
     (r"_Kanal_", r"/SPS/", "slave", {"type": "plc", "state": "NO", "number": "1"}),
     (r"Hauptkontakte", r"", "slave", {"type": "power", "state": "NO", "number": "3"}),
@@ -24,7 +28,8 @@ REGELN = [
     (r"Hilfskontakt(?!en)", r"", "slave", {"type": "simple", "state": "NO", "number": "1"}),
     (r"Fehlerkontakt|Wechsler", r"Relais|Schuetze|Schütze|Zeitrelais|Sanftstarter|Schaltglieder", "slave",
      {"type": "simple", "state": "SW", "number": "1"}),
-    (r"Schliesser_\d", r"Relais", "slave", {"type": "simple", "state": "NO", "number": "2"}),
+    (r"Schliesser_1-2_3-4", r"Relais", "slave", {"type": "simple", "state": "NO", "number": "2"}),
+    (r"Schliesser_\d", r"Schaltglieder", "slave", {"type": "simple", "state": "NO", "number": "1"}),
 ]
 
 

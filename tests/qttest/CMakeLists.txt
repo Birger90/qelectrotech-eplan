@@ -1979,6 +1979,18 @@ add_test(NAME tst_qetzip COMMAND tst_qetzip)
 target_include_directories(tst_qetzip PRIVATE ${QET_DIR}/sources)
 target_link_libraries(tst_qetzip PRIVATE Qt::Test)
 
+# The client of the EPLAN Data Portal against a local HTTP stub: search,
+# token header, package download, and the messages for a wrong token, a
+# reached limit and an unreachable server (sources/import/eplandxf/).
+add_executable(
+  tst_dataportalclient
+  tst_dataportalclient.cpp
+  ${QET_DIR}/sources/import/eplandxf/dataportalclient.cpp
+  ${QET_DIR}/sources/import/eplandxf/dataportalclient.h)
+add_test(NAME tst_dataportalclient COMMAND tst_dataportalclient)
+target_include_directories(tst_dataportalclient PRIVATE ${QET_DIR}/sources)
+target_link_libraries(tst_dataportalclient PRIVATE Qt::Network Qt::Test)
+
 # A project split into the parts of a .qetz and joined back is the same
 # document, on every example (and QET_CONTAINER_CORPUS if set).
 add_executable(

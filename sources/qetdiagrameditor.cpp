@@ -39,6 +39,7 @@
 #include <QWidgetAction>
 #include <QGridLayout>
 #include "ElementsCollection/elementscollectionwidget.h"
+#include "import/eplandxf/dataportaldialog.h"
 #include "import/eplandxf/eplanimportdialog.h"
 #include "ElementsCollection/elementpickerpopup.h"
 #include "shortcutbarsettings.h"
@@ -2071,6 +2072,14 @@ void QETDiagramEditor::setUpMenu()
 	add_import(tr("Single EPLAN DXF…"), EplanImportDialog::Source::Dxf);
 	menu_part_import->addSeparator();
 	add_import(tr("EPLAN part (.edz)…"), EplanImportDialog::Source::Edz);
+	menu_part_import->addSeparator();
+	connect(menu_part_import->addAction(tr("From the EPLAN Data Portal…")),
+		&QAction::triggered, this, [this]() {
+			DataPortalDialog dialog(this);
+			dialog.exec();
+			if (!dialog.writtenPaths().isEmpty() && m_element_collection_widget)
+				m_element_collection_widget->reload();
+		});
 	menu_part_import->addSeparator();
 	connect(menu_part_import->addAction(tr("Open the user collection folder")),
 		&QAction::triggered, this, []() {

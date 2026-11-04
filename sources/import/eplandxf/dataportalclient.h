@@ -41,6 +41,10 @@ struct DataPortalPart
 	QString product_group;
 	QString picture_url;   ///< product picture, public, may be empty
 	bool has_dxf = false;
+	/// schematic macros without the "dxf_data" mark: the DXF download may
+	/// still work, e.g. for WAGO 750-362
+	bool has_macro = false;
+	bool importable() const { return has_dxf || has_macro; }
 };
 
 /// one manufacturer of the Data Portal

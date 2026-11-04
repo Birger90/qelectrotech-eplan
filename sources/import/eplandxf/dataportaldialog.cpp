@@ -288,12 +288,15 @@ void DataPortalDialog::showParts(const QVector<DataPortalPart> &parts, int total
 	for (const DataPortalPart &p : parts) {
 		auto *item = new QTreeWidgetItem(m_results, {p.order_number, p.type_number, p.manufacturer,
 							     p.designation, p.product_group,
-							     p.has_dxf ? tr("yes") : tr("no")});
+							     p.has_dxf ? tr("yes") : p.has_macro ? tr("maybe") : tr("no")});
 		item->setData(0, ROLE_INDEX, int(m_parts.size()));
 		m_parts.append(p);
 		item->setToolTip(0, p.part_number);
 		item->setToolTip(3, p.designation);
-		if (!p.has_dxf) {
+		if (!p.has_dxf && p.has_macro) {
+			item->setToolTip(5, tr("The Data Portal marks no DXF data for this part, but it has "
+					       "schematic macros: the import tries the DXF download."));
+		} else if (!p.has_dxf) {
 			const QString why = tr("The Data Portal has no DXF data for this part: it cannot be imported.");
 			for (int c = 0; c < m_results->columnCount(); ++c) {
 				item->setForeground(c, palette().brush(QPalette::Disabled, QPalette::Text));
@@ -365,7 +368,7 @@ void DataPortalDialog::runImport()
 	QStringList without_dxf;
 	for (QTreeWidgetItem *item : m_results->selectedItems()) {
 		const DataPortalPart &p = m_parts.at(item->data(0, ROLE_INDEX).toInt());
-		if (p.has_dxf) m_queue.append(p);
+		if (p.importable()) m_queue.append(p);
 		else without_dxf << p.order_number;
 	}
 	if (m_queue.isEmpty()) return;
@@ -457,6 +460,6 @@ void DataPortalDialog::updateButtons()
 {
 	bool any_dxf = false;
 	for (QTreeWidgetItem *item : m_results->selectedItems())
-		if (m_parts.value(item->data(0, ROLE_INDEX).toInt()).has_dxf) any_dxf = true;
+		if (m_parts.value(item->data(0, ROLE_INDEX).toInt()).importable()) any_dxf = true;
 	m_import->setEnabled(!m_busy && any_dxf && m_terms->isChecked());
 }

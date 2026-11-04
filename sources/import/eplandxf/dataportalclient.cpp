@@ -33,6 +33,7 @@
 namespace {
 	const char DEFAULT_URL[] = "https://dataportal.eplan.com/api";
 	const int TIMEOUT_MS = 60000;
+	const int SEARCH_TIMEOUT_MS = 20000;   ///< a search should not keep the user waiting
 
 	/// the server's own words of a JSON:API error reply, if any
 	QString serverDetail(const QByteArray &body)
@@ -126,6 +127,7 @@ void DataPortalClient::search(const DataPortalQuery &q)
 	query.addQueryItem(QStringLiteral("page[offset]"), QString::number(q.offset));
 	query.addQueryItem(QStringLiteral("page[limit]"), QString::number(q.limit));
 	QNetworkRequest req = request(QStringLiteral("/parts"));
+	req.setTransferTimeout(SEARCH_TIMEOUT_MS);
 	QUrl url = req.url();
 	url.setQuery(query);
 	req.setUrl(url);

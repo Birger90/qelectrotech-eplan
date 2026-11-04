@@ -250,7 +250,8 @@ QString DataPortalDialog::manufacturerFilter() const
 
 void DataPortalDialog::runSearch()
 {
-	if (m_busy) return;
+	// a new search replaces a running one; only an import is waited for
+	if (!m_current.id.isEmpty()) return;
 	DataPortalQuery query;
 	query.text = m_search->text().trimmed();
 	query.manufacturer = manufacturerFilter();
@@ -447,7 +448,7 @@ void DataPortalDialog::setBusy(bool busy, const QString &text)
 {
 	m_busy = busy;
 	if (busy) m_status->setText(text);
-	m_search_button->setEnabled(!busy);
+	m_search_button->setEnabled(m_current.id.isEmpty());
 	m_more->setEnabled(!busy);
 	updateButtons();
 }

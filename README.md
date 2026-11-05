@@ -5,7 +5,7 @@
 >
 > 🇩🇪 [Deutsche Fassung](README.de.md)
 >
-> This fork (branch `feature/eplan-bauteil-import`) extends QElectroTech so that EPLAN schematics can be rebuilt as
+> This fork extends QElectroTech so that EPLAN schematics can be rebuilt as
 > real, linked projects — navigating like an EPLAN PDF and carrying their data the way EPLAN does — and so that
 > manufacturer parts and cables can be used directly. The upstream
 > ([qelectrotech-source-mirror](https://github.com/qelectrotech/qelectrotech-source-mirror)) is merged regularly;

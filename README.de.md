@@ -4,7 +4,7 @@
 
 🇬🇧 [English version](README.md) · Allgemeine Beschreibung von QElectroTech: [README.md](README.md#qelectrotech)
 
-Dieser Fork (Zweig `feature/eplan-bauteil-import`) erweitert QElectroTech so, dass sich EPLAN-Schaltpläne als echte,
+Dieser Fork erweitert QElectroTech so, dass sich EPLAN-Schaltpläne als echte,
 verknüpfte Projekte nachbauen lassen – sie navigieren wie ein EPLAN-PDF und tragen ihre Daten so, wie EPLAN es tut –
 und dass Herstellerbauteile und -kabel direkt nutzbar sind. Der Upstream
 ([qelectrotech-source-mirror](https://github.com/qelectrotech/qelectrotech-source-mirror)) wird regelmäßig

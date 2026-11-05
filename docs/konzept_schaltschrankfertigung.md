@@ -164,3 +164,41 @@ Perforex/Steinhauer/Athex · K Skript/MCP.
   zugeordnet werden.
 - Geräte auf Tragschienen erzeugen keine Löcher; entscheidend sind Schienen, Kanäle, direkt geschraubte Geräte
   (Netzteile, Umrichter, Trafos) und alles in Tür und Wänden.
+
+---
+
+## 7. Datenquellen für Schränke und Montageplatten (geprüft am Beispiel Rittal, 05.11.2026)
+
+**EPLAN Data Portal** (über die Portal-Schnittstelle des Forks abgefragt, Zugang des Nutzers):
+- Rittal ist vollständig vertreten: Montageplatte VX 5051.037 (32 Treffer verwandter Platten), Anreih-Schranksystem
+  VX25 8606000, Rückwände, Bodenbleche, Sockel.
+- Am Artikel VX 5051.037: Datenarten kaufmännische Daten, Funktionsschablone, 2D-Grafik, 3D-Grafik, DXF-Daten;
+  Grafikmakro `Rittal\VX5051037_3D.ema`, Gruppensymbolmakro `Rittal\VX5051037.ema`; Beschreibung mit Maßen
+  „B x H: 499 x 1896 mm“; Zubehör- und Abhängigkeitsbeziehungen.
+- Die Abfrage-Schnittstelle liefert **keine** Montagedaten (Varianten-Eintrag nur mit Nummer). Bebaubare Fläche,
+  Montageplattenpositionen und Bohrbilder stehen erst im Download-Paket (DXF-Paket per Zugangsschlüssel, EDZ nur über
+  die Portal-Oberfläche) – an einem Paket zu prüfen.
+
+**Rittal direkt**: Datenblatt nennt Maße, Material (Stahlblech verzinkt), passende Gehäuse (VX 600 × 2000),
+Gewicht 24,8 kg (daraus rechnerisch ≈ 3 mm Blech), Befestigungszubehör für TS. Rittal bietet laut Pressemitteilung
+CAD-Daten in über 70 Formaten (STEP, DXF …) und erzeugt im Konfigurator selbst Perforex-Programme für Ausbrüche.
+
+**Folgerung**: Montagefläche = Rittal-Artikel auswählen → Maße aus den Artikeldaten (Beschreibung bzw.
+Montagedaten im Paket), Material/Stärke aus dem Datenblatt; für Türen/Wände dasselbe. Der komplette Schrank als
+3D-Logik (Profile, Bezugspunkte) wird nicht nachgebaut – nur die bearbeiteten Flächen.
+
+## 8. Teile aus FreeCAD / Open CASCADE
+
+Lizenz: FreeCAD LGPL 2.0+, Open CASCADE (OCCT) LGPL 2.1 mit Ausnahme – beides darf in den GPL-Fork übernommen bzw.
+gelinkt werden (Lizenzhinweise mitführen).
+
+| Teil | Nutzen | Einordnung |
+|---|---|---|
+| FreeCAD-DXF-Schreiber | NC-DXF mit Ebenen, Kreisen, Polylinien in mm | Stufe 1, statt Eigenbau |
+| OCCT STEP-Import | Rittal-/Hersteller-STEP einlesen → Umriss, bebaubare Fläche, vorhandene Löcher einer Platte/Tür | Stufe 3, zweiter Datenweg neben dem Data Portal; neue Abhängigkeit (MSYS2-Paket) |
+| FreeCAD CAM | G-Code-Bohrprogramm für allgemeine CNC aus unseren Bohrdaten | extern per Skript, bei Bedarf |
+| TechDraw / Sheet Metal | Abwicklungen, Biegeteile | nur falls später nötig |
+
+Nicht übernehmen: FreeCADs 3D-Ansicht und Dokumentmodell (Coin3D, Python) – passt nicht zu QET; für fertigbare Tafeln
+genügt 2D. Sinnvolle Arbeitsteilung, falls 3D gewünscht: QET plant und gibt DXF/STEP aus, FreeCAD erzeugt daraus
+3D-Modell oder CNC-Programm.

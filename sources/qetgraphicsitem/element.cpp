@@ -389,6 +389,29 @@ Element *Element::jumpTarget() const
 }
 
 /**
+	@brief Element::destinationElement
+	@return the element named by the information "destination" of this
+	element (its uuid), or nullptr. Navigation only, as EPLAN's jump from a
+	device to its picture in the cabinet layout: Ctrl + double click follows
+	it, and the PDF export makes the element a link to it.
+*/
+Element *Element::destinationElement() const
+{
+	const QUuid target(elementInformations()["destination"].toString());
+	if (target.isNull() || !diagram() || !diagram()->project())
+		return nullptr;
+	const auto folios = diagram()->project()->diagrams();
+	for (Diagram *folio : folios) {
+		const auto elements = folio->elements();
+		for (Element *element : elements) {
+			if (element->uuid() == target && element != this)
+				return element;
+		}
+	}
+	return nullptr;
+}
+
+/**
 	@brief Element::displayHelpLine
 	Display the help line of each terminal if b is true
 	@param b
@@ -2871,7 +2894,13 @@ void Element::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 */
 void Element::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
-	if (Element *target = jumpTarget())
+	Element *target = jumpTarget();
+		//Ctrl + double click follows the destination of the element (EPLAN:
+		//device <-> cabinet layout); a plain double click still opens the
+		//properties
+	if (!target && (event->modifiers() & Qt::ControlModifier))
+		target = destinationElement();
+	if (target)
 	{
 		event->accept();
 			//Unselect and ungrab mouse to prevent unwanted

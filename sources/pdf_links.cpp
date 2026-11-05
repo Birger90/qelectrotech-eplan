@@ -131,6 +131,14 @@ void injectCrossRefLinks(QPdfEngine *engine, Diagram *diagram,
 
 	for (auto *item : diagram->items()) {
 
+		// --- An element with a destination (EPLAN: device <-> cabinet
+		// layout): the element itself becomes the link ---
+		if (auto *elmt = dynamic_cast<Element*>(item)) {
+			if (Element *dest = elmt->destinationElement())
+				injectLink(elmt->mapRectToScene(elmt->boundingRect()), dest);
+			continue;
+		}
+
 		// --- CrossRefItem links ---
 		if (auto *xref = dynamic_cast<CrossRefItem*>(item)) {
 			for (auto it = xref->hoveredContactsMap().begin();

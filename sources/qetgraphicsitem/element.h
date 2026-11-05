@@ -213,6 +213,7 @@ class Element : public QetGraphicsItem
 		void showAsJumpTarget();
 		bool isShownAsJumpTarget() const { return m_jump_highlight > 0; }
 		Element *jumpTarget() const;
+		Element *destinationElement() const;
 		static void jumpTo(Element *target);
 		void displayHelpLine(bool b = true);
 		QSize size() const;

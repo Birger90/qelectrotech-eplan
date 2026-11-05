@@ -29,8 +29,12 @@
 > - `anschluesse_ergaenzen.py`, `nachzeichnen_symbole.py`: Anschlüsse ergänzen, eigene Symbole nachzeichnen
 >   (`bauteile/nachgezeichnet/`).
 >
-> **Für KI-Assistenten**: der Skill `.claude/skills/qet-schaltplan-zeichnen` beschreibt, wie man EPLAN-artige Blätter per
-> Skript zeichnet, prüft und verknüpft.
+> **Für KI-Assistenten**: zwei Skills unter `.claude/skills/` (Claude Code lädt sie im Klon automatisch; andere
+> Werkzeuge: die jeweilige `SKILL.md` lesen, sie verweist auf ihre Unterdateien):
+> - `qet-schaltplan-zeichnen` – wie man EPLAN-artige Blätter per Skript zeichnet, prüft und verknüpft.
+> - `eplan-wissen` – die EPLAN-Plattform-Hilfe 2.9 in eigenen Worten (PDF-Sprünge, Querverweise, Kennzeichnung,
+>   Klemmen, Kabel, SPS, Auswertungen, Makros/Artikel, Eigenschafts-IDs, Prüfmeldungen …), jede Regel mit Quell-URL
+>   und „Bedeutung für QET“. Einstieg: `.claude/skills/eplan-wissen/SKILL.md`.
 >
 > Herstellerdateien selbst sind nicht enthalten (Nutzungsbedingungen der Portale).
 

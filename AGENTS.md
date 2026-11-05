@@ -117,3 +117,17 @@ project, never a customer's or an employer's drawing.
 - Say that an AI assistant helped, and who read the result. For a translation,
   say how many strings are reviewed and how many are still unfinished.
 - After a review, push new commits. Do not force-push an open pull request.
+
+## This fork: skills for EPLAN-style work
+
+This fork adds two skills under `.claude/skills/` (Claude Code loads them
+automatically; other agents should read the `SKILL.md`, which points to its
+reference files):
+
+- `qet-schaltplan-zeichnen`: drawing, checking and linking EPLAN-style sheets
+  by script.
+- `eplan-wissen`: the EPLAN platform help 2.9, summarised in German with a
+  source URL per rule and notes on the QET equivalent. Read it before
+  reverse-engineering EPLAN behaviour (PDF jumps, cross-references, device
+  tags, terminals, cables, PLC, reports, macros and parts, property IDs,
+  check messages).

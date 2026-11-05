@@ -187,7 +187,22 @@ bool EplanMacroReader::read(const QString &path)
 				EplanDxfPin pin;
 				pin.pos = pos;
 				pin.name = e.attribute(QStringLiteral("A185"));
-				pin.function = language(props.attribute(QStringLiteral("P20406")));
+				// A185 = connection designation (FUNC_TERMINALDESIGNATION 20028),
+				// A186 = connection description (20029), e.g. "DI a.0", "2L+".
+				// P20406 is the plug designation ("X10"), not the description.
+				pin.function = language(e.attribute(QStringLiteral("A186")));
+				// Without a description, show the plug designation where the
+				// macro itself places it as a property text (A771 = 20406),
+				// e.g. "IN"/"OUT" on a transformer, as EPLAN draws it.
+				if (pin.function.isEmpty()) {
+					for (QDomElement c = e.firstChildElement(); !c.isNull();
+					     c = c.nextSiblingElement()) {
+						if (c.attribute(QStringLiteral("A771")) == QLatin1String("20406")) {
+							pin.function = language(props.attribute(QStringLiteral("P20406")));
+							break;
+						}
+					}
+				}
 				m_symbol.pins << pin;
 				// EPLAN's connection point: a small circle the wire ends at
 				m_symbol.circles << qMakePair(pos, 1.0);

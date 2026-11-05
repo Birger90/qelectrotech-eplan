@@ -110,11 +110,13 @@ Quellen stehen in den Referenzdateien beim jeweiligen Abschnitt.
 - **PDF** (`sources/pdf_links.cpp`): Dreifachsprung vorhanden; es fehlen Lesezeichen (/Outlines), BM-Seiten,
   Blinkrahmen und Auswertungseinträge in der Sprungfolge; Fork zoomt per /FitR, EPLAN zeigt die ganze Seite.
 - **Makro-Import** (`eplanmacroreader.cpp`): liest nur die erste Variante mit `MacroFuncType="1"` (Übersicht,
-  Kanäle, „Allpolig Fluid“ gehen verloren); `pin.function = P20406` – P20406 ist laut Hilfe die
-  *Steckerbezeichnung*, die Anschlussbeschreibung ist P20029/P20023; Funktionsdefinition der Objekte wird nicht
-  ausgewertet.
-- **EDZ-Import** (`sources/import/edz/edzpart.cpp`): `connectionDesignation` ist zeilenweise getrennt, wird aber
-  als ein Pin gelesen (A1/A2 → ein Pin); `terminalNr` bedeutet je Produktgruppe Stecker, Kontakt oder Querschnitt;
+  Kanäle, „Allpolig Fluid“ gehen verloren – deshalb scheitert z. B. das S7-1200-Makro mit „holds no drawing“);
+  Funktionsdefinition der Objekte wird nicht ausgewertet. **Behoben (2026-11-05, nicht committet):** am O17 ist
+  A185 die Anschlussbezeichnung, A186 die Anschlussbeschreibung („DI a.1“), A194/P20406 die Steckerbezeichnung;
+  `pin.function` liest jetzt A186, die Steckerbezeichnung nur, wenn das Makro sie als Text (A771=20406) zeigt.
+- **EDZ-Import** (`sources/import/edz/edzpart.cpp`): **Behoben (2026-11-05, nicht committet):**
+  `connectionDesignation`/`connectiondescription` werden zeilenweise in einzelne Pins geteilt (3VA9988: `.2/.1/.4`
+  jetzt 3 Anschlüsse statt 1). Offen: `terminalNr` bedeutet je Produktgruppe Stecker, Kontakt oder Querschnitt;
   `functiondefcategory/-group/-id`, `P_ARTICLE_PRODUCTGROUP`, `P_ARTICLE_MACRO` ungenutzt.
 - **Querverweis-Formel**: `%F` = Blattname, `%f` = Index; für EPLAN-Nachbauten `%F.%c` statt `%f-%l%c`.
 - **Verknüpfung**: SPS über die Adresse ist nur eine Notlösung (Regel 6); Paar- und Sternquerverweis fehlen.

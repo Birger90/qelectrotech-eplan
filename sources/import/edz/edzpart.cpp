@@ -204,27 +204,38 @@ bool EdzPart::parse(const QString &part_xml_path)
 		part.elementsByTagName(QStringLiteral("functiontemplate"));
 	for (int i = 0; i < fts.size(); ++i) {
 		const QDomElement ft = fts.at(i).toElement();
-		const QString desig =
-			ft.attribute(QStringLiteral("connectionDesignation")).trimmed();
-		if (desig.isEmpty()) {
-			continue;
-		}
-		EdzPin pin;
-		pin.designation = desig;
-		pin.description =
-			ft.attribute(QStringLiteral("connectiondescription")).trimmed();
+		// One function template is one function (a contact, a coil, a PLC
+		// channel); its connectionDesignation lists ALL of that function's
+		// connection points, one per line, e.g. ".2\n.1\n.4" for a changeover
+		// contact (EPLAN help, XML export: functiontemplate).  The matching
+		// connectiondescription is line-aligned.
+		static const QRegularExpression lines(QStringLiteral("\\r?\\n"));
+		const QStringList desigs =
+			ft.attribute(QStringLiteral("connectionDesignation")).split(lines);
+		const QStringList descrs =
+			ft.attribute(QStringLiteral("connectiondescription")).split(lines);
 		// terminalNr identifies the physical connector socket (X01, X31, …) and
 		// is the preferred group key.  Older EPLAN formats may omit it and carry
 		// a text functiondefinition block name (FINP, MOUT, …) instead, either on
 		// the <functiontemplate> itself or on its parent wrapper element.
-		pin.group = ft.attribute(QStringLiteral("terminalNr")).trimmed();
-		if (pin.group.isEmpty()) {
-			pin.group = ft.attribute(QStringLiteral("functiondefinition")).trimmed();
-			if (pin.group.isEmpty())
-				pin.group = ft.parentNode().toElement()
+		QString group = ft.attribute(QStringLiteral("terminalNr")).trimmed();
+		if (group.isEmpty()) {
+			group = ft.attribute(QStringLiteral("functiondefinition")).trimmed();
+			if (group.isEmpty())
+				group = ft.parentNode().toElement()
 						.attribute(QStringLiteral("functiondefinition")).trimmed();
 		}
-		m_pins.append(pin);
+		for (int k = 0; k < desigs.size(); ++k) {
+			const QString desig = desigs.at(k).trimmed();
+			if (desig.isEmpty()) {
+				continue;
+			}
+			EdzPin pin;
+			pin.designation = desig;
+			pin.description = k < descrs.size() ? descrs.at(k).trimmed() : QString();
+			pin.group = group;
+			m_pins.append(pin);
+		}
 	}
 
 	// Sort: preserve the XML order of functional groups (first-seen wins), and

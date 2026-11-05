@@ -1,7 +1,7 @@
 # Konzept: Schaltschrankaufbau bis zur gefertigten Tafel – EPLAN-Ablauf in QElectroTech
 
 Ziel: Montageplatten, Türen und Wände so planen, dass daraus direkt gefertigt werden kann – Bohrungen und Ausschnitte
-für Geräte, Tragschienen und Verdrahtungskanäle, Zuschnittliste für Schienen und Kanäle, NC-taugliche DXF je Tafel und
+für Geräte, Hutschienen (Tragschienen) und Verdrahtungskanäle, Zuschnittliste für Schienen und Kanäle, NC-taugliche DXF je Tafel und
 eine Bohrschablone 1:1. Vorbild ist der Ablauf in EPLAN (2D-Schaltschrankaufbau + Pro Panel/NC), umgesetzt in 2D, weil
 QET kein 3D hat. Grundlage: EPLAN-Plattform-Hilfe 2.9, zusammengefasst im Skill `eplan-wissen`
 (`referenz/schaltschrankaufbau.md`, `referenz/3d-nc-kupfer.md`, `referenz/xml-datenformate.md`).
@@ -21,7 +21,26 @@ QET kein 3D hat. Grundlage: EPLAN-Plattform-Hilfe 2.9, zusammengefasst im Skill 
 | 7 | **NC-Export je Feld**: DXF (Ebenen je Bohrtyp/Bauteil), Bohrschablone PDF 1:1, Perforex/Steinhauer, Athex (Tragschienenbestückung) – mit Bohrausnahmen und Werkzeugwahl | Dateien für Maschine/Werkstatt; Abschlussliste exportiert / nicht exportiert mit Grund |
 
 Wichtig für die Umsetzung: Ein Durchbruch gehört immer zum **Trägerbauteil** mit „Mechanischer Bearbeitung“ – ein Kanal
-auf der Montageplatte erzeugt Löcher in der Platte, ein Gerät auf der Tragschiene erzeugt keine (es rastet auf).
+auf der Montageplatte erzeugt Löcher in der Platte, ein Gerät auf der Hutschiene (Tragschiene TS35) erzeugt keine (es
+rastet auf).
+
+### Montagearten eines Geräts (Montagevarianten)
+
+Nicht jedes Gerät sitzt auf einer Hutschiene. EPLAN führt das am Artikel als **Montagevarianten**, je Variante mit
+eigenem Bohrbild (oder ohne):
+
+| Montageart | Beispiel | Was die Platte bekommt |
+|---|---|---|
+| nur Hutschiene | Klemmen, Sicherungsautomaten, SPS-Karten, Relais | nichts – Löcher nur für die Hutschiene selbst |
+| nur Schraubbefestigung | große Netzteile, Umrichter, Transformatoren, Schütze ab Baugröße, Lüfter | Bohrbild des Geräts (Gewinde oder Durchgang) |
+| beides möglich | viele Netzteile, Schütze, Motorschutzschalter, Steuerrelais | je nach gewählter Variante: Hutschiene (keine Löcher) oder Schraubbefestigung (Bohrbild) |
+| Tür / Wand / Front | Drucktaster, Not-Halt, Leuchtmelder, Displays, Kabelverschraubungen | Ausschnitt bzw. Bohrung in Tür oder Wand |
+
+In QET heißt das: Das Bauteil trägt **mehrere Montagevarianten** (`<pattern variant="Hutschiene">` ohne Löcher,
+`<pattern variant="Schraubbefestigung">` mit Löchern …). Beim Platzieren wird die Variante gewählt – auf eine
+Hutschiene gezogen automatisch „Hutschiene“, frei auf die Platte gezogen die Schraubvariante. Hat ein Gerät nur eine
+Montageart, gibt es keine Wahl. Ein Gerät ohne Hutschienen-Variante darf nicht auf eine Hutschiene (Prüfung), ein
+Gerät nur für die Hutschiene nicht frei auf die Platte.
 
 ---
 
@@ -71,12 +90,12 @@ demselben Muster.
 1. **Blatt „Schaltschrankaufbau“ anlegen**, Maßstab wählen (1:5, 1:10 …).
 2. **Montagefläche setzen**: Artikel (Montageplatte, Tür, Seitenwand) oder frei aufziehen, Maße in mm eingeben.
    Nullpunkt und „Mechanische Bearbeitung“ einstellen.
-3. **Tragschienen und Kanäle aufziehen** wie ein Kabel: Klick Start, Klick Ende, Fang an Plattenkante, Raster in mm,
+3. **Hutschienen und Kanäle aufziehen** wie ein Kabel: Klick Start, Klick Ende, Fang an Plattenkante, Raster in mm,
    Länge wird angezeigt und kann eingegeben werden. Befehle **Einpassen** (bis Kante/Nachbarkanal), **Gleichmäßig
    verteilen**, **Ausrichten**. Aus dem Bohrbild des Artikels entstehen die Befestigungslöcher in der Platte
    automatisch, mit Nullschnitt (von welcher Seite die Lochreihe gerechnet wird) und Endabstand.
 4. **Geräte platzieren** aus einem **Aufbau-Navigator**: alle BMK des Schaltplans mit Artikel, Status
-   offen/platziert, Filter. Ziehen auf Schiene (rastet, keine Löcher) oder Fläche (Bohrbild der gewählten
+   offen/platziert, Filter. Ziehen auf die Hutschiene (rastet, keine Löcher) oder frei auf die Fläche (Bohrbild der gewählten
    Montagevariante wird zu Durchbrüchen). Anfasspunkt 9-fach, Drehung, Variante. Die Grafik kommt aus dem
    Artikelplatzierungs-Makro, sonst Rechteck aus B × H – wie bei EPLAN.
 5. **Durchbrüche von Hand** und **Sperrflächen** (Tür, Wand, Flansch).

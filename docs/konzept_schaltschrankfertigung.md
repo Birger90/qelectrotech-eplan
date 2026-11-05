@@ -187,18 +187,30 @@ CAD-Daten in über 70 Formaten (STEP, DXF …) und erzeugt im Konfigurator selbs
 Montagedaten im Paket), Material/Stärke aus dem Datenblatt; für Türen/Wände dasselbe. Der komplette Schrank als
 3D-Logik (Profile, Bezugspunkte) wird nicht nachgebaut – nur die bearbeiteten Flächen.
 
-## 8. Teile aus FreeCAD / Open CASCADE
+## 8. Ausgabe: nur DXF – und eine 3D-Ansicht in QET
 
-Lizenz: FreeCAD LGPL 2.0+, Open CASCADE (OCCT) LGPL 2.1 mit Ausnahme – beides darf in den GPL-Fork übernommen bzw.
-gelinkt werden (Lizenzhinweise mitführen).
+Vorgabe (Birger, 05.11.2026): Ausgabe nur als **DXF**; eine **3D-Ansicht direkt in QET**; keine zusätzlichen
+Installationen – nur was mit dem Build kommt.
 
-| Teil | Nutzen | Einordnung |
-|---|---|---|
-| FreeCAD-DXF-Schreiber | NC-DXF mit Ebenen, Kreisen, Polylinien in mm | Stufe 1, statt Eigenbau |
-| OCCT STEP-Import | Rittal-/Hersteller-STEP einlesen → Umriss, bebaubare Fläche, vorhandene Löcher einer Platte/Tür | Stufe 3, zweiter Datenweg neben dem Data Portal; neue Abhängigkeit (MSYS2-Paket) |
-| FreeCAD CAM | G-Code-Bohrprogramm für allgemeine CNC aus unseren Bohrdaten | extern per Skript, bei Bedarf |
-| TechDraw / Sheet Metal | Abwicklungen, Biegeteile | nur falls später nötig |
+**DXF**: je bearbeiteter Fläche eine Datei in mm (Umriss, Bohrungen als Kreise, Gewinde, Ausschnitte als
+geschlossene Polylinien, Ebenen je Art und Durchmesser). Als Vorlage darf der DXF-Schreiber von FreeCAD (LGPL)
+als Quelltext übernommen werden – das ist Code im Fork, keine Installation. Kein CAM/G-Code, keine Maschinenformate.
 
-Nicht übernehmen: FreeCADs 3D-Ansicht und Dokumentmodell (Coin3D, Python) – passt nicht zu QET; für fertigbare Tafeln
-genügt 2D. Sinnvolle Arbeitsteilung, falls 3D gewünscht: QET plant und gibt DXF/STEP aus, FreeCAD erzeugt daraus
-3D-Modell oder CNC-Programm.
+**3D-Ansicht**: mit Qt OpenGL / OpenGLWidgets – beides ist im vorhandenen Qt-Build schon enthalten (`Qt6OpenGL`,
+`Qt6OpenGLWidgets`), es kommt keine Bibliothek dazu. Qt 3D, Qt Quick 3D und Open CASCADE sind nicht installiert und
+werden nicht gebraucht.
+
+- Fenster bzw. Dock „3D-Ansicht“ zum Aufbaublatt: Drehen, Verschieben, Zoomen; Standardblickpunkte vorn/oben/iso.
+- Geometrie aus den vorhandenen Daten, wie EPLAN ohne 3D-Makro: Montageplatte als Platte (B × H × Stärke),
+  Hutschienen als Profil (35 × 7,5), Kanäle als Kasten (Breite × Höhe × Länge, mit Deckel), Geräte als Quader aus
+  Breite × Höhe × Tiefe der Artikeldaten, Löcher als Bohrungen in der Platte, Tür optional geöffnet/geschlossen.
+- Auswahl synchron mit dem 2D-Blatt (Klick in 3D markiert das Bauteil auf dem Blatt und umgekehrt), Kollisionen und
+  Einbautiefe sichtbar (Gerät ragt über Kanaldeckel oder Türanschlag).
+- Später echte Gerätekonturen: einfache Netzformate (STL/OBJ) mit eigenem kleinem Leser im Fork, sofern Hersteller sie
+  anbieten; STEP würde Open CASCADE verlangen und bleibt deshalb außen vor.
+
+| Baustein | Inhalt |
+|---|---|
+| L. 3D-Szene | Szenenmodell aus Montageflächen, Profilen, Geräten, Durchbrüchen (gleiche Daten wie DXF) |
+| M. 3D-Fenster | QOpenGLWidget mit einfacher Beleuchtung, Orbit-Kamera, Auswahl per Strahl |
+| N. Netzformate | optional STL/OBJ je Artikel |

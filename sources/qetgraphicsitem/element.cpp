@@ -45,6 +45,7 @@
 #include "../TerminalStrip/terminalstrip.h"
 #include "dynamicelementtextitem.h"
 #include "elementtextitemgroup.h"
+#include "independenttextitem.h"
 #include "iostream"
 
 #include <QAbstractTextDocumentLayout>
@@ -409,6 +410,89 @@ Element *Element::destinationElement() const
 		}
 	}
 	return nullptr;
+}
+
+/**
+	@brief Element::jumpUuid
+	EPLAN's three-way jump of a component: "next" (left area, forward in
+	the jump sequence of the device), "prev" (right area, backward) and
+	"main" (middle: an auxiliary function leads to the main function).
+	Stored as the informations jump_next, jump_prev and jump_main; "main"
+	falls back to the older "destination".
+	@param which : "next", "prev" or "main"
+	@return the uuid of the target (element, free text or folio), or null
+*/
+QUuid Element::jumpUuid(const QString &which) const
+{
+	const DiagramContext infos = elementInformations();
+	QUuid u(infos[QStringLiteral("jump_") + which].toString());
+	if (u.isNull() && which == QLatin1String("main"))
+		u = QUuid(infos[QStringLiteral("destination")].toString());
+	return u;
+}
+
+/**
+	@brief Element::findJump
+	Find what @p target names in @p project: an element, a free text or a
+	folio, with the folio it stands on and its rectangle in that scene
+	(the whole drawing area for a folio).
+*/
+Element::JumpFound Element::findJump(QETProject *project, const QUuid &target)
+{
+	JumpFound found;
+	if (!project || target.isNull())
+		return found;
+	const auto folios = project->diagrams();
+	for (Diagram *folio : folios) {
+		if (folio->uuid() == target) {
+			found.diagram = folio;
+			found.sceneRect = folio->border_and_titleblock.insideBorderRect();
+			return found;
+		}
+	}
+	for (Diagram *folio : folios) {
+		const auto items = folio->items();
+		for (QGraphicsItem *item : items) {
+			if (auto *element = dynamic_cast<Element *>(item)) {
+				if (element->uuid() == target) {
+					found.diagram = folio;
+					found.element = element;
+					found.sceneRect = element->mapRectToScene(element->boundingRect());
+					return found;
+				}
+			} else if (auto *text = dynamic_cast<IndependentTextItem *>(item)) {
+				if (text->uuid() == target) {
+					found.diagram = folio;
+					found.text = text;
+					found.sceneRect = text->mapRectToScene(text->boundingRect());
+					return found;
+				}
+			}
+		}
+	}
+	return found;
+}
+
+/**
+	@brief Element::goToJump
+	Show what findJump() found: an element as a cross reference shows it, a
+	free text selected on its folio, a folio on its own.
+*/
+void Element::goToJump(const JumpFound &found)
+{
+	if (found.element) {
+		jumpTo(found.element);
+		return;
+	}
+	if (!found.diagram)
+		return;
+	found.diagram->showMe();
+	if (found.text) {
+		found.diagram->clearSelection();
+		found.text->setSelected(true);
+		for (QGraphicsView *view : found.diagram->views())
+			view->centerOn(found.text);
+	}
 }
 
 /**
@@ -2895,11 +2979,30 @@ void Element::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 void Element::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
 	Element *target = jumpTarget();
-		//Ctrl + double click follows the destination of the element (EPLAN:
-		//device <-> cabinet layout); a plain double click still opens the
-		//properties
-	if (!target && (event->modifiers() & Qt::ControlModifier))
-		target = destinationElement();
+		//Ctrl + double click: EPLAN's three-way jump. The left third goes
+		//forward in the jump sequence of the device, the right third
+		//backward, the middle to the main function. A plain double click
+		//still opens the properties.
+	if (!target && (event->modifiers() & Qt::ControlModifier) && diagram())
+	{
+		const QRectF r = boundingRect();
+		const qreal x = event->pos().x();
+		QString which = x < r.left() + r.width() / 3.0 ? QStringLiteral("next")
+					  : x > r.right() - r.width() / 3.0 ? QStringLiteral("prev")
+					  : QStringLiteral("main");
+		QUuid u = jumpUuid(which);
+		if (u.isNull()) u = jumpUuid(QStringLiteral("main"));
+		if (u.isNull()) u = jumpUuid(QStringLiteral("next"));
+		const JumpFound found = findJump(diagram()->project(), u);
+		if (found.diagram)
+		{
+			event->accept();
+			setSelected(false);
+			ungrabMouse();
+			goToJump(found);
+			return;
+		}
+	}
 	if (target)
 	{
 		event->accept();

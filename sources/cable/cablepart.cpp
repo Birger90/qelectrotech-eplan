@@ -2012,6 +2012,20 @@ void CablePart::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 		event->accept();
 		return;
 	}
+		//Ctrl + double click follows the destination of the cable (EPLAN:
+		//the cable leads to its row of the cable overview)
+	if (event->button() == Qt::LeftButton && (event->modifiers() & Qt::ControlModifier)
+		&& m_cable && !m_cable->destination().isNull() && diagram() && diagram()->project())
+	{
+		const auto folios = diagram()->project()->diagrams();
+		for (Diagram *folio : folios) {
+			if (folio->uuid() == m_cable->destination()) {
+				folio->showMe();
+				event->accept();
+				return;
+			}
+		}
+	}
 	QetGraphicsItem::mouseDoubleClickEvent(event);
 }
 

@@ -253,6 +253,12 @@ class Cable : public QObject
 		QUuid uuid() const;
 		void setUuid(const QUuid &uuid);
 
+			//Navigation only (EPLAN: a cable leads to its row of the cable
+			//overview): the folio this cable's label leads to. Ctrl + double
+			//click on the label follows it, the PDF export makes it a link.
+		QUuid destination() const {return m_destination;}
+		void setDestination(const QUuid &folio) {m_destination = folio;}
+
 		//Properties the user fills in
 		QString designation() const;
 		void setDesignation(const QString &designation);
@@ -327,6 +333,7 @@ class Cable : public QObject
 
 	private:
 		QUuid m_uuid;
+		QUuid m_destination;
 		QString m_designation;
 			///< where that name comes from (see designationByHand)
 		bool m_designation_by_hand = false;

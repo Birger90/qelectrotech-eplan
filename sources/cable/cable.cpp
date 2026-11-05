@@ -702,6 +702,10 @@ QDomElement Cable::toXml(QDomDocument &document) const
 	if (!m_length.isEmpty()) {
 		root.setAttribute(QLatin1String("length"), m_length);
 	}
+		//Only a cable which leads somewhere says so
+	if (!m_destination.isNull()) {
+		root.setAttribute(QLatin1String("destination"), m_destination.toString());
+	}
 		//Only what was switched off is written: a cable written before
 		//these existed shows everything, like the ones written from now
 	if (!m_show_designation) {
@@ -834,6 +838,7 @@ void Cable::fromXml(const QDomElement &element)
 	m_installation = element.attribute(QLatin1String("installation"));
 	m_location = element.attribute(QLatin1String("location"));
 	m_length = element.attribute(QLatin1String("length"));
+	m_destination = QUuid(element.attribute(QLatin1String("destination")));
 	m_show_designation = element.attribute(
 		QLatin1String("show_designation"), QLatin1String("1")).toInt() != 0;
 	m_show_type = element.attribute(

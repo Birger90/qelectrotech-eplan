@@ -37,6 +37,8 @@ class Terminal;
 class Conductor;
 class DynamicElementTextItem;
 class ElementTextItemGroup;
+class IndependentTextItem;
+class Diagram;
 class QUndoCommand;
 
 /**
@@ -217,6 +219,16 @@ class Element : public QetGraphicsItem
 		void showAsJumpTarget();
 		bool isShownAsJumpTarget() const { return m_jump_highlight > 0; }
 		Element *jumpTarget() const;
+			///What a jump of the three-way jump (see jumpUuid) leads to
+		struct JumpFound {
+			Diagram *diagram = nullptr;
+			Element *element = nullptr;
+			IndependentTextItem *text = nullptr;
+			QRectF sceneRect;
+		};
+		QUuid jumpUuid(const QString &which) const;
+		static JumpFound findJump(QETProject *project, const QUuid &target);
+		static void goToJump(const JumpFound &found);
 		Element *destinationElement() const;
 		static void jumpTo(Element *target);
 		void displayHelpLine(bool b = true);

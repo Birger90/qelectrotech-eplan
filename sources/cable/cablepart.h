@@ -64,6 +64,9 @@ class CablePart : public QetGraphicsItem
 		void setCable(Cable *cable);
 		Cable *cable() const;
 		QUuid partUuid() const;
+			///Where the label of this section stands, in scene coordinates
+			///(the link of the cable's destination in the PDF export)
+		QRectF labelSceneRect() const {return mapRectToScene(labelRect());}
 			///Bind the item to its cable once the project is loaded
 		void refreshPending();
 

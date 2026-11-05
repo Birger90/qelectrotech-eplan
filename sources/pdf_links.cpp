@@ -17,6 +17,7 @@
 */
 #include "pdf_links.h"
 
+#include "cable/cable.h"
 #include "cable/cablepart.h"
 #include "diagram.h"
 #include "qetgraphicsitem/crossrefitem.h"
@@ -134,12 +135,34 @@ void injectCrossRefLinks(QPdfEngine *engine, Diagram *diagram,
 		// --- An element with a destination (EPLAN: device <-> cabinet
 		// layout): the element itself becomes the link ---
 		if (auto *elmt = dynamic_cast<Element*>(item)) {
-			if (Element *dest = elmt->destinationElement())
-				injectLink(elmt->mapRectToScene(elmt->boundingRect()), dest);
 				// a linked folio report: the arrow itself leads to its other
 				// end too, not only its label (as in EPLAN)
-			else if (Element *other = elmt->jumpTarget())
+			if (Element *other = elmt->jumpTarget()) {
 				injectLink(elmt->mapRectToScene(elmt->boundingRect()), other);
+				continue;
+			}
+				// EPLAN's three-way jump: left third forward in the jump
+				// sequence of the device, middle to the main function, right
+				// third backward. Without a sequence the main target takes
+				// the whole element.
+			const QRectF r = elmt->boundingRect();
+			const QUuid next = elmt->jumpUuid(QStringLiteral("next"));
+			const QUuid prev = elmt->jumpUuid(QStringLiteral("prev"));
+			const QUuid main = elmt->jumpUuid(QStringLiteral("main"));
+			auto link = [&](const QRectF &local, const QUuid &u) {
+				if (u.isNull()) return;
+				const Element::JumpFound f = Element::findJump(diagram->project(), u);
+				if (f.diagram && f.element != elmt)
+					injectLinkTo(elmt->mapRectToScene(local), f.diagram, f.sceneRect);
+			};
+			if (next.isNull() && prev.isNull()) {
+				link(r, main);
+			} else {
+				const qreal w = r.width() / 3.0;
+				link(QRectF(r.left(), r.top(), w, r.height()), next);
+				link(QRectF(r.left() + w, r.top(), w, r.height()), main.isNull() ? next : main);
+				link(QRectF(r.left() + 2 * w, r.top(), w, r.height()), prev);
+			}
 			continue;
 		}
 
@@ -161,6 +184,18 @@ void injectCrossRefLinks(QPdfEngine *engine, Diagram *diagram,
 		if (auto *cable = dynamic_cast<CablePart*>(item)) {
 			for (const CablePart::PdfRef &ref : cable->pdfRefs()) {
 				injectLinkTo(ref.here, ref.diagram, ref.there);
+			}
+				// the label of a cable with a destination leads to that folio
+				// (EPLAN: cable -> its row of the cable overview)
+			if (cable->cable() && !cable->cable()->destination().isNull() && diagram->project()) {
+				const auto folios = diagram->project()->diagrams();
+				for (Diagram *folio : folios) {
+					if (folio->uuid() == cable->cable()->destination()) {
+						injectLinkTo(cable->labelSceneRect(), folio,
+									 folio->border_and_titleblock.insideBorderRect());
+						break;
+					}
+				}
 			}
 			continue;
 		}

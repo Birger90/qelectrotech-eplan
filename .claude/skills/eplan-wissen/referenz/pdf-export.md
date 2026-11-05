@@ -21,8 +21,11 @@ Stand der Recherche: 05.11.2026.
 12. Seitenreihenfolge im PDF
 13. API/Automatisierung
 14. Neuerungen nach Version
-15. Stand im QET-Fork und offene Punkte
-16. Quellen
+15. Ausgabegröße, Druckränder, Einstellungsschema, PDF-Kommentare
+16. Stand im QET-Fork und offene Punkte
+17. Quellen
+
+Drucken, DXF/DWG und EDA-Export: siehe `dxf-dwg-druck.md`.
 
 ---
 
@@ -369,7 +372,41 @@ Fork-PDF sind 1-basierte Positionen (`pageMap`, Quelle: Fork `sources/cli_export
 | 2025/2026 | Menüpfad „Datei > Einstellungen“ statt „Optionen > Einstellungen“; Schreibschutz unterdrückt rote Rahmen ausdrücklich | https://www.eplan.help/de-de/Infoportal/Content/Plattform/2025/Content/htm/pdfexportgui_k_grundlagen.htm |
 | 2026 | „Weiße grafische Elemente invertieren“; Dateinamen auch aus Bauraumeigenschaften; Pfad „Datei > Exportieren > Projektdaten > Seite > PDF“ | https://www.eplan.help/de-de/Infoportal/Content/Plattform/2026/Content/htm/pdfexportgui_d_export.htm |
 
-## 15. Stand im QET-Fork und offene Punkte
+## 15. Ausgabegröße, Druckränder, Einstellungsschema, PDF-Kommentare
+
+(Ergänzung aus der Hilfe-Durchsicht B6.)
+
+- **Eine Datei:** Beim PDF-Export von einzelnen Seiten oder ganzem Projekt entsteht immer genau **eine** PDF-Datei.
+  Das Schema (Benutzer > Schnittstellen > PDF-Export) bündelt die Registerkarten Export, Allgemein, BM-Seiten,
+  BM-/Artikeleigenschaften.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/pdfexportgui_d_einstellexport.htm
+- **Ausgabegröße** ([Einstellungen] > Ausgabegröße bzw. Station > Grafische Bearbeitung > PDF-Ausgabegröße):
+  **Originalgröße** (Standard) = Papierformat aus dem Normblatt der Seite; **Auf Seite skalieren** = auf ein gewähltes
+  Format, Seitenverhältnis bleibt, Seiten werden **nicht gedreht** (A4-quer-Seite in A4-hoch -> auf A5-Größe
+  verkleinert). Breite/Höhe überschreibbar.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/pdfexportgui_d_einstellausgabegroesse.htm
+- Wählbare Formate: A0 841×1189, A1 594×841, A2 420×594, A3 297×420, A4 210×297, A5 148×210 mm, ANSI A (Letter)
+  216×279, ANSI B (Ledger/Tabloid) 279×432, ANSI C 432×559, ANSI D 559×864, ANSI E 864×1118 mm.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/pdfexportgui_d_auswahlausgabeformat.htm
+- **Druckränder** im PDF-Export (Links/Rechts/Oben/Unten, Druckposition) sind dieselben Werte wie unter Projekt >
+  Drucken > [Einstellungen]; Änderungen hier wirken dort mit.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/printgui_d_druckraender.htm
+- **PDF-Kommentare:** Kommentare aus einer (geprüften) PDF-Datei lassen sich ins Projekt importieren und im
+  Kommentare-Navigator (Seite > Kommentare-Navigator) verwalten: Baum nach Seitenstruktur, Liste konfigurierbar,
+  „Gehe zu (Grafik)“ springt zum Kommentar auf der Seite, Status in den Eigenschaften änderbar.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/pdfexportgui_d_kommentarnavigator.htm
+
+**Bedeutung für QET:**
+- Die Seitengröße im EPLAN-PDF ist bei „Originalgröße“ das Normblattformat (meist A3 quer). Weicht die MediaBox des
+  Originals davon ab (z. B. A4 mit skaliertem Inhalt), wurde „Auf Seite skalieren“ benutzt – für den Nachbau zählt das
+  Normblattformat, nicht die PDF-Größe.
+- Druckränder verschieben im PDF nur den Inhalt (Lochrand); Koordinaten aus dem Original-PDF dann um den Rand
+  korrigieren, bevor man Positionen ins QET-Raster überträgt (**Vermutung**, am Original prüfen: gleichmäßiger Versatz
+  aller Seiten).
+- PDF-Kommentare (Rückläufer vom Kunden) sind Annotationen, keine Zeichnungsinhalte – beim Auslesen eines Original-
+  PDFs ignorieren bzw. als Revisionshinweise sammeln.
+
+## 16. Stand im QET-Fork und offene Punkte
 
 Vorhanden (Code-Durchsicht `sources/pdf_links.cpp`, `sources/cli_export.cpp`, `sources/qetgraphicsitem/element.cpp`):
 - Dreifachsprung über `jump_next`/`jump_main`/`jump_prev` (Drittel der Bauteilfläche).
@@ -392,7 +429,7 @@ Aufgaben für das Verknüpfungsskript (`verknuepfen.py`):
 3. Listenzeilen: `destination` = Hauptfunktion (Stückliste) bzw. Klemme/Kabel.
 4. Nach dem Export Linkzahlen je Art gegen das Original (`get_links()`) vergleichen.
 
-## 16. Quellen
+## 17. Quellen
 
 Gelesen und erreichbar:
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/pdfexportgui_k_grundlagen.htm
@@ -422,6 +459,13 @@ Gelesen und erreichbar:
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/pagebrowsergui_k_prinzip.htm
 - https://www.eplan.help/en-US/Infoportal/content/api/2026/export.html
 - https://community.adobe.com/t5/acrobat-discussions/pdf-zusammenf%C3%BChren-eplan-links-verschwinden/m-p/13502452 (nur Suchtreffer-Auszug, inoffiziell)
+
+Ergänzt in der Durchsicht B6 (lokal gelesene Hilfe 2.9):
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/pdfexportgui_d_einstellexport.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/pdfexportgui_d_einstellausgabegroesse.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/pdfexportgui_d_auswahlausgabeformat.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/pdfexportgui_d_kommentarnavigator.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/printgui_d_druckraender.htm
 
 Nicht erreichbar (HTTP 404):
 - https://www.eplan.help/help/platform/2.8/de-de/help/Content/htm/pdfexportgui_k_grundlagen.htm

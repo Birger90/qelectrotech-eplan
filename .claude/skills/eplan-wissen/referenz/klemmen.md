@@ -20,7 +20,15 @@ Die Struktur der Hilfe ist von 2.9 bis 2026 gleich (gleiche Themenseiten unter `
 12. Auswertungen: Klemmenplan, Klemmenanschlussplan, Formulare
 13. Stecker
 14. Neuerungen neuerer Versionen
-15. Quellen
+15. Ergänzung: Dialog „Klemmenleiste bearbeiten“ im Detail
+16. Klemmenleisten-Navigator, Verschieben, Klemmen erzeugen
+17. Zubehör (aufreihbar / nicht aufreihbar)
+18. Teilklemmen: Einstellungen, Einfügen, Optimieren
+19. Angeschlossene SPS-Adresse an Klemmen und Steckerkontakten
+20. Ergänzung Stecker: Navigator, Definitionen, Bearbeiten
+21. Seitenumbruch im Klemmenplan (Lücke)
+22. Ergänzung: Funktionen per Nummerierungsmuster, Mehrstock-Etagen, Stecker-Spalten, Kompatibilitätsoptionen
+23. Quellen
 
 ---
 
@@ -164,7 +172,143 @@ Die Struktur der Hilfe ist von 2.9 bis 2026 gleich (gleiche Themenseiten unter `
 - **2024, „Klemmenleiste bearbeiten“:** „Neue Klemmen (Geräte)“ direkt im Dialog (unter der markierten Klemme), Zubehör und Mehrstockklemmen getrennt abtrennbar, neue Symbolleisten-Schaltflächen für Zubehör und Mehrstock-Trennen, Kontextmenü **„Klemmenleiste prüfen“** mit Spalten „Prüflauf: Status“/„Prüflauf: Meldungstext“, **„Gehe zu (Grafik)“** springt zum Objekt im Grafischen Editor. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2024/Content/htm/news_p_klemmen_klemmenbearbeiten_389642.htm
 - **2026:** Die Themenstruktur der Klemmenhilfe ist unverändert. Der TechTipp „Klemmen mit variablem Aufbau“ (Basisklemme plus Zusatzklemmen als Mehrstockklemme) ist neu. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2026/Content/htm/terminalgui_k_start.htm , https://www.eplan.help/techtipps/de-DE/Klemmen/TechTip-Terminals-with-variable-structure.pdf
 
-## 15. Quellen
+## 15. Ergänzung: Dialog „Klemmenleiste bearbeiten“ im Detail
+
+- Welche Spalten der Dialog in welcher Reihenfolge zeigt, steht in einem **Schema** (Dialog „Einstellungen: Spaltenkonfiguration (Klemmen)“, Aufruf über [...] neben „Schema“). Schemata werden **benutzerbezogen** gespeichert und gehen nicht mit dem Projekt mit (Export nötig). Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/stripmanagementgui_d_schemaspaltenkonfiguration.htm
+- Weitere Spalten mit fachlicher Wirkung (Ergänzung zu Abschnitt 11):
+  - **Status**: platziert oder nicht, überlagert eine Funktionsschablone des Artikels, freie Schablonen übrig. Daran sieht man, ob der Artikel zur Mehrstockklemme passt.
+  - **Klemme geöffnet**: trennt die klemmeninterne Verbindung intern↔extern, die Potenzialweiterleitung ist unterbrochen. Zurückschreibbar.
+  - **Schaltbrücke (extern/intern)** und **Schaltsperre**: zurückschreibbar.
+  - **SPS-Adresse**: aus „Angeschlossene SPS-Adresse (automatisch)“.
+  - **Potenzialtyp der Anschlüsse**: „Undefiniert“, wenn die Anschlüsse verschiedene Typen haben.
+  - **Beschriftungsart**: unterscheidet Klemmen für verschiedene Etikettengrößen.
+  - **Grafikdarstellung in Auswertungen [1]–[10]**: Werte, die beim Erzeugen eines Klemmenplans über eine Zuordnungstabelle am Formular durch Grafiken ersetzt werden.
+  - Weiter: Blockeigenschaften [1]–[10], Meldungen, Artikelnummer und Typnummer [1]–[10] (Artikel nur an Hauptklemmen), Anschlussbezeichnungen/-beschreibungen (alle) (änderbar und zurückschreibbar), Platzierung (extern/intern) (Fundort des angeschlossenen Anschlusses, auch bei Teilklemmen).
+
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/stripmanagementgui_d_klemmenleistebearbeiten.htm
+- **Stegbrücken-Spalten**: Ein kleiner Punkt zeigt, ob die Klemme überhaupt einen Stegbrückenanschluss hat. Die Spalte „Stegbrücken“ ohne Zusatz zeigt alle Stegbrücken, egal auf welcher Seite. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/stripmanagementgui_d_klemmenleistebearbeiten.htm
+- **Manuelle Stegbrücke erzeugen (extern/intern)** ist nur aktiv, wenn die markierten Klemmen die passende Stegbrückenmöglichkeit haben. Vorhandene manuelle Stegbrücken in der Markierung werden zu einer durchgehenden Brücke zusammengefasst, zusätzliche Knoten werden eingefügt. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/stripmanagementgui_d_klemmenleistebearbeiten.htm
+- **Trennen und Geräteposition**:
+  - „Sortierung löschen“ löscht die Geräteposition.
+  - „Trennen“ gibt jeder Klemme eine eigene Geräteposition.
+  - Ist die Geräteposition leer, fasst EPLAN aufeinanderfolgende Klemmen von einer Hauptklemme bis zur nächsten zu einem Gerät zusammen.
+  - „Mehrstockklemme(n) erzeugen“ funktioniert nur, wenn „Hauptklemmen nicht verwenden“ an der Leiste aus ist.
+
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/stripmanagementgui_d_klemmenleistebearbeiten.htm
+- **Ansicht: Anschlussorientiert** blendet Zeilen für alle Anschlüsse ein, auch für unbeschaltete. Das entspricht dem Inhalt anschlussorientierter Auswertungen. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/stripmanagementgui_d_klemmenleistebearbeiten.htm
+- „Klemme: Intern/extern tauschen“: Die Anzeige von Steg- und Brückenanschlüssen aktualisiert sich erst nach [Übernehmen]. Vor einer „Geräteauswahl“ (Artikel für Hauptklemme oder Etagen suchen) erst übernehmen. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/stripmanagementgui_d_klemmenleistebearbeiten.htm
+
+**Bedeutung für QET:** „Klemme geöffnet“ (offene Trennklemme) unterbricht in EPLAN das Potenzial durch die Klemme. Ein Potenzial- oder Durchgangsprüfer im Fork darf an einer als geöffnet gekennzeichneten Trennklemme also nicht weiterlaufen **(Vermutung zur Umsetzung; im Fork ist dafür kein Feld bekannt)**. Grafiken im EPLAN-Klemmenplan (Symbole für LED-, Sicherungs- oder Trennklemmen in einer Spalte) kommen aus „Grafikdarstellung in Auswertungen“. Beim Nachbau gehören sie in die Klemmenplanzeile, nicht in den Stromlaufplan.
+
+## 16. Klemmenleisten-Navigator, Verschieben, Klemmen erzeugen
+
+- Navigator (Projektdaten > Klemmenleisten > Navigator): Baum je Leiste (unter dem BMK die Leistendefinition und die Klemmen) und Liste. Zwei Ansichten: **BMK-orientiert** oder **geräteorientiert**. Geräteorientiert fasst Klemmen gleicher Geräteposition zu einem Klemmengerät zusammen (z. B. Mehrstockklemme). Dafür darf das Gerät nur **eine** Hauptklemme haben. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_d_klemmennavigator.htm
+- Kontextmenü „**Neue Klemmen (Geräte)**“: erzeugt mehrere Klemmen über einen Artikel. Je Klemmengerät wird die zuerst erzeugte Klemme Hauptklemme und bekommt den Artikel. Die Funktionsdefinitionen kommen aus den Funktionsschablonen des Artikels. „**Neue Funktionen**“ erzeugt mehrere Funktionen gleicher Funktionsdefinition nach einem Nummerierungsmuster. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_d_klemmennavigator.htm , https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_h_klemmenerstlbearb.htm
+- „**Zuweisen**“: überträgt eine (nicht platzierte) Funktion auf ein Schaltzeichen. Die Funktion muss mindestens so viele Anschlüsse haben wie das Schaltzeichen. Löschen im Navigator entfernt auch die Platzierung und kann Verbindungen verändern. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_d_klemmennavigator.htm
+- Klemmen lassen sich vorab im Navigator (ohne Grafik) anlegen und später platzieren oder per Drag & Drop auf eine Seite ziehen. Eine neue Klemme ist Hauptklemme. Für eine Nebenklemme das Kästchen abwählen. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_h_klemmenerstlbearb.htm
+- **Verschieben** (Kontextmenü im Leistendialog): verschiebt die markierten **und alle folgenden Klemmen bis zum Leistenende** um n Positionen. Dabei ändern sich **Klemmenbezeichnung und Sortierkennung**. So entstehen Lücken oder schließen sich wieder. Negativer Wert = nach oben/hinten, positiver = nach unten/vorne. Mehrstockklemmen bleiben erhalten, maßgeblich ist die unterste Etage. Wer die Etagen einzeln verschieben will, trennt die Mehrstockklemme vorher. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalplugcommongui_d_verschieben.htm , https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_h_klemmenverschieb.htm
+- **Klemmenleistenaufbau über Gerätedefinition** (nur aus Kompatibilitätsgründen; nur ohne Hauptklemmen bzw. mit „Hauptklemmen nicht verwenden“):
+  - Funktionsschablonen an der Leistendefinition legen den Aufbau fest. Löschen von Klemmen ändert ihn nicht: Eine gelöschte Klemme bleibt in der Leiste und kann wieder platziert werden.
+  - Jede Schablone wird über Klemmenbezeichnung, Funktionsdefinition und Etage identifiziert. Eine leere Bezeichnung passt zu jeder Klemme.
+  - Weitergabe durch Kopieren der Leistendefinition oder per Makro.
+
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_h_funktionsschabloneerzeugen.htm
+
+**Bedeutung für QET:** Klemmen ohne Grafik (nur im Navigator angelegt) erscheinen im EPLAN-Klemmenplan, aber auf keinem Stromlaufplanblatt. Beim Nachbau sind sie Zeilen ohne Sprungziel (Spalte „Platzierung“ leer). Im Fork lassen sie sich nur als Klemme im Klemmleisten-Editor ohne Bauteil oder als Bauteil auf einem Hilfsblatt führen **(Vermutung; prüfen, ob der Fork-Editor Klemmen ohne Element erlaubt)**. Lücken in der Nummerierung (z. B. 1–5, 8–12) stammen oft aus „Verschieben“ und sind gewollt.
+
+## 17. Zubehör (aufreihbar / nicht aufreihbar)
+
+- **Nicht aufreihbares Zubehör** (Klemmenschild, Leistenschild, Abdeckung, Querverbinder, Schaltbrücke, Schaltsperre, Steckaufsatz, Trennwand, Testzubehör …) hängt als Artikel an der Klemme oder an der Leistendefinition. Es erscheint **nicht** im Klemmenplan, nur in der Spalte „Vorschau Zubehör“. Kennzeichen: In der Artikelverwaltung ist „Aufreihbar“ aus. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_k_klemmenzubehoer.htm
+- **Aufreihbares Zubehör** (Tragschiene, Endwinkel, Abschluss(platte), Trennwand …) sitzt auf der Leiste vor oder hinter einer Klemme. Der Artikel steht an der Hauptklemme, ohne Hauptklemmen an der Leistendefinition. „Aufreihbar“ ist für Abschluss, Endwinkel und Trennwand voreingestellt. Klemmen sind immer aufreihbar. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_k_klemmenzubehoer.htm
+- In klemmenbezogenen Auswertungen erzeugt die Formulareigenschaft **„Aufreihbares Zubehör anzeigen“** eigene Zeilen für das Zubehör. Es steht dann nicht mehr in der Klemmenzeile. Ausnahme: Die Platzhalter „Klemmen-Artikelreferenz nach Produktuntergruppen“ zeigen es immer in der Klemmenzeile. Je Klemme oder Leistendefinition gibt es höchstens **50 Artikelreferenzen** (1 Hauptartikel + 49 Zubehör). Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_k_klemmenzubehoer.htm
+- Im Leistendialog:
+  - „Aufreihbares Zubehör sichtbar“ zeigt das Zubehör als schraffierte Zeile.
+  - „Hinzufügen“ fügt es unter dem Cursor ein. „Nachfolgend“ entscheidet, ob es vor oder hinter der Hauptklemme liegt (Pfeil in Spalte „Zeile“).
+  - Nach [Übernehmen] bilden Klemme und Zubehör einen Block. Die Reihenfolge wird als Sortierkennung in der Artikeleigenschaft **„Einsortierung“** abgelegt.
+  - Löschen: den Block erst trennen, dann die Zubehörzeile löschen.
+
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_h_leistenzubehoererstlloesch.htm
+- Aufreihbares Zubehör zwischen zwei Klemmen verhindert die automatische Stegbrücke (siehe Abschnitt 7). Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_k_verwendungbruecken.htm
+
+**Bedeutung für QET:** Zeilen wie „Endplatte“, „Trennplatte“ oder „Endhalter“ im EPLAN-Klemmenplan sind aufreihbares Zubehör mit eigener Zeile: keine Klemme, keine Nummer, keine Ziele. Im Fork entspricht das am ehesten `terminal_separator` bzw. einem Trenn- oder Platzhaltereintrag zwischen den `PhysicalTerminal`s **(Vermutung zur Zuordnung)**. Eine Trennplatte zwischen zwei Klemmen erklärt, warum dort keine Steckbrücke durchläuft.
+
+## 18. Teilklemmen: Einstellungen, Einfügen, Optimieren
+
+- Projekteinstellung „Klemmen (Teilklemmen)“:
+  - Standard-Funktionsdefinition für Teilklemmen.
+  - **„Platzieren ab Anschlusszahl“** (1, 2, 3, 4, 6, 8, niemals): Ab so vielen *bezeichneten* Anschlüssen wird eine Klemme beim Einfügen als Gerät oder aus dem Navigator als Teilklemmen platziert, sonst als Ganzes.
+  - „Zusammengehörige Teilklemmen automatisch verbinden“: sollte an sein, sonst keine Potenzialweiterleitung. Ist die Option aus, meldet ein Prüflauf unverbundene zusammengehörige Teilklemmen.
+  - „Brückenoptimierung“.
+
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_d_projekteinstellungenklemmen.htm , https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_h_teilklemmenzeichnen.htm
+- Beispiel der Hilfe zur Brückenoptimierung: Drei Teilklemmen 1, 2, 3 sind mehrfach grafisch verbunden. Ergebnis: zwei Stegbrücken (1–2, 2–3) und fünf interne Brücken (1:a–1:b, 2:a–2:b, 2:b–2:c, 3:a–3:b, 3:b–3:c), auch ohne gezeichnete Linie zwischen 2:b und 2:c. Die Art der Brücke bestimmt die Anschlussart des letzten Klemmenanschlusses (normalerweise „Stegbrücke“). Ohne Brückenoptimierung entstehen die Brücken aus den gezeichneten Verbindungen. **Netzbasierte Verbindungen** und Brückenoptimierung schließen sich aus. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_d_projekteinstellungenklemmen.htm
+- Einfügen > Teilklemme: Mindestens das BMK muss eingetragen sein.
+  - Bekanntes BMK → bestehende Leiste. Neues BMK → neue Leiste ohne Definition.
+  - Bekannte Klemmenbezeichnung → Teil derselben Klemme.
+  - Die Anschlussbezeichnungen der Teilklemmen sind nur sichtbar und druckbar, wenn die Ebene **EPLAN430** (Eigenschaftsplatzierung Klemmen-Anschlussbezeichnungen) sichtbar und druckbar ist (Eigenschaft Anschlussbezeichnung des Symbols, ID 20028).
+
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_h_teilklemmenzeichnen.htm
+- Einfügen als Gerät: Die erste Teilklemme wird Hauptklemme. Je Anschlussbezeichnung entsteht eine eigene Teilklemme, leere Bezeichnungen werden übersprungen. [N] blättert durch die Funktionen, [Leertaste] wechselt zum nächsten Klemmengerät, [Tab] dreht den Anschluss. Tipp der Hilfe: Symbole verwenden, bei denen die Anschlüsse für interne Verbindungen nicht gezeichnet sind. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_h_teilklemmenzeichnen.htm
+- **Teilklemmen optimieren** (Projektdaten > Klemmenleisten):
+  - Vergibt Anschlussbezeichnungen für jeden Anschluss mit mindestens einem Draht (Steg- und interne Brücken zählen nicht).
+  - Fasst Teilklemmen zu vollständigen Klemmenfunktionen zusammen und setzt „Hauptklemme“ an der ersten Teilklemme.
+  - Artikel je Klemme, PE-, N- und SH-Klemme: Die erste Funktionsschablone überschreibt **alle** Eigenschaften, auch mit Leerwerten. Artikel mit Klemmenbezeichnung in der Schablone werden ignoriert.
+  - „Vorhandene Klemmenbezeichnungen beibehalten“: sammelt verbundene Teilklemmen gleicher Bezeichnung, bis die Anschlusszahl des Artikels erreicht ist, und vergibt einen Teilklemmenindex. Ohne diese Option vergibt EPLAN neue Bezeichnungen nach der Online-Nummerierung (Beispiel: 8 Teilklemmen -X1, Funktionsdefinition mit 3 Anschlüssen → Klemmen 1, 2, 3).
+  - Weitere Optionen: Anschlussbezeichnungen bzw. Teilklemmenindex beibehalten; „Zusammenlegen von miteinander verbundenen Klemmen zulassen“ (legt verbundene Klemmen nach Brücken nebeneinander; PE/PEN nur mit „Auch PE-Klemmen“).
+
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_d_teilklemmenoptimieren.htm
+
+**Bedeutung für QET:** Teilklemmen erkennt man im PDF an gleicher Klemmenbezeichnung mit verschiedenen Anschlussbezeichnungen (a, b, c) an verschiedenen Stellen. Im Fork ist das ein Klemmeneintrag mit mehreren Bauteilen gleichen Kennzeichens. Die interne Verbindung a–b–c muss als Potenzial durchgehen, auch ohne gezeichnete Linie, denn EPLAN erzeugt dort interne Brücken. Ein Verknüpfungsskript muss diese Teile daher als ein Potenzial behandeln. Sind im PDF keine Anschlussbezeichnungen sichtbar, war vermutlich EPLAN430 ausgeblendet. Die Bezeichnungen stehen dann nur im Klemmenplan.
+
+## 19. Angeschlossene SPS-Adresse an Klemmen und Steckerkontakten
+
+- Klemmen und Steckerkontakte können im Klemmen- oder Steckerplan die SPS-Adresse des angeschlossenen SPS-Anschlusses zeigen. EPLAN trägt sie in **„Angeschlossene SPS-Adresse (automatisch)“** ein. Eine manuelle Angabe in **„Angeschlossene SPS-Adresse“** hat Vorrang und beendet die Suche. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_k_ermittlungspsadresse.htm
+- Suchreihenfolge: erst die **internen** Ziele, dann die **externen**, jeweils rekursiv weiter über angeschlossene Klemmen und Steckerkontakte. Erst wenn dort nichts gefunden wird, folgen die Ziele über interne und externe Brücken. Ändert sich der SPS-Anschluss, aktualisiert sich der Wert selbst. Tipp der Hilfe: Die interne Seite der Klemme Richtung SPS legen, dann gibt es keine Doppeldeutigkeiten. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_k_ermittlungspsadresse.htm
+
+**Bedeutung für QET:** Eine SPS-Adresse (z. B. „%I1.3“) an einer Klemme im EPLAN-Klemmenplan stammt aus dieser rekursiven Suche. Ein QET-Klemmenplan-Generator geht entsprechend vor: Vom Klemmenanschluss aus sucht er erst über die interne Seite (Schrankseite) zum SPS-Kanal-Bauteil, auch über weitere Klemmen hinweg, und nimmt die Adresse aus dem Kanal (Formel/Label des SPS-Elements). Brücken kommen erst zuletzt dran, sonst bekommen gebrückte Potenzialklemmen falsche Adressen. Eine manuell gesetzte Adresse im Original gewinnt.
+
+## 20. Ergänzung Stecker: Navigator, Definitionen, Bearbeiten
+
+- Stecker-Navigator (Projektdaten > Stecker > Navigator): Baum je Stecker mit Steckerdefinitionen und Kontakten. Die Liste zeigt u. a. „Zuordnung zu Stecker (Stift-/Buchsenseite)“. „Steckerdefinition erzeugen“ bietet **Stifte und Buchsen / Nur Stifte / Nur Buchsen**. Ein Betriebsmittel hat **höchstens drei** Steckerdefinitionen (Stift, Buchse, Stift-Buchse-Kombination). „Steckerkontakt erzeugen“ bietet Stift und Buchse / Stift / Buchse. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/plugsgui_d_steckernavigator.htm
+- Gemeinsame Verwaltung → Untermenü „Stifte und Buchsen“. Getrennte Verwaltung → je Seite „Buchsen“ bzw. „Stifte“. Ein Stecker, der nur über das BMK eines Kontakts entsteht (ohne Definition), ist „nicht vordefiniert“: in Auswertungen sichtbar, aber ohne Eigenschaften. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/plugsgui_h_steckerleisteerstlbearb.htm
+- Dialog „Stecker bearbeiten“:
+  - Besteht der Stecker aus mehreren Definitionen (getrennte Stift-/Buchsenseite), bearbeitet man nur die **markierte** Definition.
+  - Bearbeitbar sind die Felder der Seite, von der aus der Dialog aufgerufen wurde (Stift oder Buchse).
+  - Spalten je Buchsen- und Stiftseite: Ziel, Kabel (BMK + Farbe/Nummer), Funktionstext des Ziels, Platzierung (Seitenname + Spalte), Brücken, Kontaktbezeichnung, Potenzialtyp, Funktionsdefinition, Verbindungseigenschaften (Farbe/Nummer bis Verbindungsbezeichnung).
+
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/connectormanagementgui_d_steckerbearbeiten.htm
+- Reihenfolge der Steckerkontakte: Zeilen markieren (Strg für mehrere) und mit den Pfeilen verschieben, oder [Sortieren]. „Nach Position“ = grafische Reihenfolge nach Normblattlogik, nicht platzierte zuerst. „Sortierung löschen“ löscht nur die Sortierkennung (anders als bei Klemmen keine Geräteposition). Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/plugsgui_h_steckerkontaktesortieren.htm , https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/connectormanagementgui_d_steckerbearbeiten.htm
+
+**Bedeutung für QET:** Ein EPLAN-Steckerplan zeigt die gespeicherte Kontaktreihenfolge, und die muss nicht numerisch sein. Deshalb die Reihenfolge aus dem Original übernehmen. Die Spalte „Platzierung“ (Seite und Spalte des Ziels) im Steckerplan wird im QET-Nachbau ein Sprungziel zum Gerät.
+
+## 21. Seitenumbruch im Klemmenplan (Lücke)
+
+**Nachtrag:** Die Umbruchregeln (voller Datenbereich, neues Kopfobjekt/neue Leiste, Schema „Neue Seite bei
+geändertem Eigenschaftswert“, keine freie Kabelspalte mehr, Folgeformular, neuer Strukturkennzeichen-Block) stehen
+jetzt in [formulare-platzhalter.md](formulare-platzhalter.md) Abschnitt 9, mit Quellen aus den Formulareditor-Seiten.
+Offen bleibt nur, ob Mehrstockklemmen über ein Seitenende getrennt werden.
+
+- Die Klemmen-, Stecker- und Kabelseiten der Hilfe nennen keine Regel, wann ein Klemmenplan auf die nächste Seite umbricht. Die Beschriftungsseiten erwähnen „Seitenumbruch“ nur für Exportvorlagen, nicht für Klemmenpläne. Weiterhin gilt: den Umbruch aus dem Original-PDF ablesen (siehe Abschnitt 12). Quelle (Fehlen der Regel): https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/stripmanagementgui_d_klemmenleistebearbeiten.htm , https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_k_auswertungklemmen.htm
+
+## 22. Ergänzung: Funktionen per Nummerierungsmuster, Mehrstock-Etagen, Stecker-Spalten, Kompatibilitätsoptionen
+**Dialog Funktionen erzeugen** (Navigator > BMK markieren > „Neue Funktionen“): erzeugt mehrere Funktionen nach Nummerierungsmuster – nur für Klemmen, Steckerkontakte, Spulen-/Relaiskontakte, Geräte- und SPS-Anschlüsse und Sammelschienen; Funktionen ohne Anschlüsse (z. B. „SPS-Anschluss, intern, allgemein“) gehen nicht.
+- Bei Klemmen, Stecker- und Spulenkontakten bestimmt das Muster die **Klemmen-/Kontaktbezeichnung**, bei allen anderen die **Anschlussbezeichnungen**.
+- Anzahl neuer Funktionen = Werte des Musters ÷ Anschlüsse je Funktion: Klemme (2 Anschlüsse) „1-10“ → 10 Klemmen 1…10; Leistungsschließer (2 Anschlüsse) „1-6“ → 3 Schließer `1¶2`, `3¶4`, `5¶6`; „1a,1b,2a-8b“ → 16 Klemmen 1a…8b.
+- **Mehrstockklemme** mit „Anzahl Etagen“: aus 16 Klemmen werden 8 Zweistock-Klemmen. *Etagenorientiert* = Etage 2 erhält die erste Hälfte fortlaufend (1a[2] … 4b[2]), Etage 1 die zweite (5a[1] … 8b[1]); *klemmenweise* = je Klemme wechseln die Werte zwischen den Etagen (1a[2], 1b[1], 2a[2], 2b[1] …). Die Etage steht in eckigen Klammern hinter der Bezeichnung.
+Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/eservicesgui_d_nummusteranschluesse.htm
+
+**Spaltenkonfiguration „Stecker bearbeiten“**: Schemata für die Spalten sind **benutzerbezogen** gespeichert; mit dem Projekt reisen sie nur, wenn man sie exportiert und separat weitergibt.
+Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/connectormanagementgui_d_schemaspaltenkonfiguration.htm
+
+**Kompatibilitätsoptionen mit Klemmenbezug** (Projekt > Verwaltung > Kompatibilität, Details in einstellungen-oberflaeche.md):
+- „Klemmen als Hauptfunktion zulassen“ entspricht dem Verhalten vor 2.6; empfohlen ist nur die Eigenschaft **Hauptklemme**.
+- „Registerkarte ‚Verbindungen‘ bei Klemmen und Steckerkontakten verwenden“: Ziele werden abweichend von der Grafik ausgewertet; im Dialog Klemmenleiste bearbeiten tauscht „Anschluss: Intern/extern tauschen“ dann die **Ziele**, nicht die Anschlüsse. Ausgeschaltet entsprechen Auswertungen immer der Anschlusslogik im Schaltplan.
+- „Teilklemmen bei Export/Import von Kabelbaumdaten getrennt behandeln“: an = eine Zeile je Teilklemme (Verhalten vor 2.8), aus = eine Zeile je Klemme.
+Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/xessettingsgui_d_einstellungenprojektkompatibilitaet.htm
+
+**Bedeutung für QET**: Beim Import von Mehrstockklemmen die Etagennummer aus dem Suffix `[n]` lesen und nicht aus der Reihenfolge ableiten – je nach Option „etagenorientiert“ liegen fortlaufende Bezeichnungen auf derselben Etage oder wechseln die Etage. Auswertungen im Fork sollten ohne Sonder-Ziele aus der Grafik (Anschlusslogik) ableiten, wie es EPLAN bei ausgeschalteter Kompatibilitätsoption tut.
+
+## 23. Quellen
 
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_k_start.htm
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_k_verwaltungleisten.htm
@@ -205,4 +349,24 @@ Die Struktur der Hilfe ist von 2.9 bis 2026 gleich (gleiche Themenseiten unter `
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2024/Content/htm/news_p_klemmen_klemmenbearbeiten_389642.htm
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2026/Content/htm/terminalgui_k_start.htm
 - https://www.eplan.help/techtipps/de-DE/Klemmen/TechTip-Terminals-with-variable-structure.pdf
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/stripmanagementgui_d_schemaspaltenkonfiguration.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_d_klemmennavigator.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_h_klemmenerstlbearb.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_h_klemmenverschieb.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalplugcommongui_d_verschieben.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_h_funktionsschabloneerzeugen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_k_klemmenzubehoer.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_h_leistenzubehoererstlloesch.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_d_projekteinstellungenklemmen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_h_teilklemmenzeichnen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_d_teilklemmenoptimieren.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/terminalgui_k_ermittlungspsadresse.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/plugsgui_d_steckernavigator.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/plugsgui_h_steckerleisteerstlbearb.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/plugsgui_h_steckerkontaktesortieren.htm
 - Fork-Quellcode (nur gelesen): `C:\Users\test\Documents\Code Projekte\qelectrotech-eplan\sources\TerminalStrip\` (physicalterminal.h, realterminal.h, terminalstrip.h, terminalstripbridge.h), `sources\properties\elementdata.h`
+
+Zusatz-Dialogseiten (Ergänzung Abschnitt 22):
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/eservicesgui_d_nummusteranschluesse.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/connectormanagementgui_d_schemaspaltenkonfiguration.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/xessettingsgui_d_einstellungenprojektkompatibilitaet.htm

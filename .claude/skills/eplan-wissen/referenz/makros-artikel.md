@@ -24,7 +24,17 @@ SPS-Kanal = Kanalmakro des Moduls, nie je Adresse ein eigenes Symbol.
 12. Makro-Zuordnung zum Artikel, Normen und Firmenstandards
 13. Artikel-Import/-Export, EDZ
 14. Data Portal
-15. Quellen
+15. Makroprojekt: Makros automatisch erzeugen
+16. Darstellungsarten (vollständige Liste), Seitenmaßstab, Varianten-Regel
+17. Makros aktualisieren, Anschlussbezeichnungen, geschützte Gruppen
+18. Platzhalterobjekte und Wertesätze im Detail
+19. Artikeldatenzuweisung im Makro
+20. Eigenschaft „Makro“ (20468), geschachtelte Makros, Makro-Navigator
+21. Grafische Makroauswahl
+22. Quellen
+
+Weitere Referenzen: `artikelverwaltung.md` (Artikeldatenbank, Artikelauswahl, Import/Export, BMEcat, Ersatzteil-
+logik, Data Portal/eServices), `funktionsdefinitionen.md` (Funktionsdefinitionsbibliothek, Austausch).
 
 ---
 
@@ -208,6 +218,11 @@ wirklich verschiedene Grafiken sein (andere Kanalzahl, andere Beschaltung) und v
 Master, Kontakt → Slave, Klemme → `terminal`, SPS-Anschluss → Kanal (Slave des Moduls). Der Fork liest aus O17 die
 Anschlussbezeichnung (A185) und die Anschlussbeschreibung (P20406) (Fork-Code); die Kategorie der
 Funktionsdefinition auszuwerten wäre der nächste Schritt für den richtigen Elementtyp (Vermutung).
+**Korrektur:** Laut Eigenschaftenliste ist P20406 die *Steckerbezeichnung* (`FUNC_PLCPLUG_DESIGNATION_MANUAL`),
+nicht die Anschlussbeschreibung; diese ist P20029 (`FUNC_TERMINALDESCRIPTION`, indiziert) bzw. P20023
+(`FUNC_CONNECTIONDESCRIPTION`). Der Fork (`eplanmacroreader.cpp`, `pin.function = P20406`) ist darauf zu prüfen.
+Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/properties_o_main.htm
+(siehe [eigenschaften-ids.md](eigenschaften-ids.md))
 
 ## 10. Artikelverwaltung: Aufbau, Varianten, Zubehör
 
@@ -330,7 +345,222 @@ Aus der eigenen API-Notiz (Daten aus der OpenAPI-Spezifikation des Portals, nich
 schlechter als ein `.ema` aus dem EDZ. Für Anschlüsse und Kanäle bei DXF-Importen immer gegen Datenblatt bzw.
 Funktionsschablonen prüfen. Ein Token gehört nur in den lokalen QET-Einstellungsspeicher, nie in Dateien oder Logs.
 
-## 15. Quellen
+## 15. Makroprojekt: Makros automatisch erzeugen
+
+- Projektart steht in der Projekteigenschaft **Art des Projekts** („Makroprojekt“); ein Schaltplanprojekt lässt sich
+  nachträglich umschalten. Grundlage ist ein Basisprojekt `*.zw9` oder eine Vorlage `*.ept`.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_h_makroprojekteerstellen.htm
+- Nur im Makroprojekt: Gerät gruppieren, Bohrbildkasten und Makrokasten einfügen, Makros automatisch erzeugen,
+  „Alle Objekte des Makros dem Platzhalterobjekt zuordnen“. Nur im Schaltplanprojekt: Platzierung löschen,
+  übergreifendes Bearbeiten. Verbindungen entstehen im Makroprojekt nur seitenintern (Abbruchstellen gelten als
+  Ziel), **keine Strang- und Netzverbindungen**; beim Umschalten der Projektart werden Verbindungen neu berechnet.
+  Querverweise und Blockeigenschaften können im Makroprojekt ausgeblendet oder als Name/Wert gezeigt werden
+  (bei vielen Varianten Ausblenden empfohlen).
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_k_makroprojekte.htm
+- Ablauf Fenster-/Symbolmakro: Einfügen > Kasten/Anschluss/Montageplatte > **Makrokasten** um die Objekte ziehen;
+  im Makrokasten mindestens **Name** eintragen. Name **ohne Endung → `.ema`**, Name **mit `.ems` → Symbolmakro**;
+  Pfadangaben im Namen erlaubt (Unterordner im Makroverzeichnis). Dann Projektdaten > Makros > Automatisch
+  erzeugen (Option „Bestehende Makros überschreiben“); Ergebnis in den Systemmeldungen. Makrokästen lassen sich auch
+  als Polylinie mit Symbol **MC2** zeichnen.
+- Seitenmakro: in den Seiteneigenschaften **Makro: Name** setzen; **gleicher Name auf mehreren Seiten =
+  mehrseitiges Seitenmakro `.emp`**. Makro: Beschreibung = ID 11057.
+- **Varianten automatisch**: jede Variante manuell auf den Seiten zeichnen, je einen Makrokasten mit **gleichem Namen
+  und anderer Variantenbezeichnung** versehen; beim Erzeugen landen alle in einer Datei.
+- Registerkarte **Makro-Definition**: mehrere Zeilen Name/Beschreibung = derselbe Kasten bzw. dieselbe Seite wird
+  in mehrere Makrodateien geschrieben; erste Zeile ist mit Name/Beschreibung des Makrokastens synchron. Nicht
+  sichtbar bei Verwendungsart Referenzierend/Untergeordnet und in Schaltplanprojekten.
+Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_h_makrosausmakroprojekt.htm ·
+https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_r_makrodefinition.htm ·
+https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_r_makrokasten.htm
+- Makrokasten-Ebenen nach Verwendungsart: **EPLAN308** Untergeordnet/Nicht festgelegt, **EPLAN326** Definierend,
+  **EPLAN327** Referenzierend. Prüflauf **014006** (Meldungsklasse 014 „Makros“) prüft die Verwendungsart.
+  Konvertierung alter Projekte (≤ 2.7): Makroprojekt-Kästen → Definierend, eingefügte → Referenzierend, innere
+  geschachtelte nach grafischer Lage (bei überlappenden Kastenlinien Zuordnungsprobleme möglich).
+  Makrokästen bzw. Platzhalterobjekte lassen sich beim **Projekt komprimieren** entfernen.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_k_makrokaesten.htm
+- Felder des Makrokastens: Version (freie Versionierung, nicht EPLAN-Version), Quellprojekt (beim Erzeugen gefüllt),
+  Quelle/Referenz (z. B. Herstellerkatalog); Version und Quelle/Referenz sind nur im Makroprojekt bearbeitbar, bei
+  Makros aus Schaltplanprojekten leer.
+  Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_r_makrokasten.htm ·
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_k_daten.htm
+- Vorbereiten (Projektdaten > Makros > …vorbereiten): Kasteninhalt wird nur dann als **Gerätegruppe** gruppiert,
+  wenn er die Kriterien einer Gerätegruppe erfüllt; aktivierte Anfasspunkte verhindern Verschiebungen nach
+  Aktualisieren.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_makrosvorbereiten.htm
+- Makros aus DXF/DWG: Voreinstellung Zielordner `<Programmverzeichnis>\Makros\<Firmenkennung>`.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_h_makrosausdxf.htm
+
+**Bedeutung für QET:** Ein eigenes „Makroprojekt“ ist in QET eine `.qet`-Datei, deren Folios je ein Bauteil/
+Kanalbild tragen; das entspricht der Hausregel „eigene Testprojekte“. Für den Import gilt: Makroname im Kasten
+kann einen Unterpfad enthalten – als Ordnerstruktur in der Sammlung übernehmen (Hersteller/Kategorie/Typ bleibt
+Vorrang). Mehrere Makrokästen gleichen Namens mit verschiedenen Varianten = **eine** Datei mit mehreren
+`MacroVariant`-Einträgen; der Reader sollte daher je Variante ein Element erzeugen (siehe Abschnitt 3).
+Kastengrafik auf EPLAN308/326/327 nie als Bauteilgrafik übernehmen.
+
+## 16. Darstellungsarten (vollständige Liste), Seitenmaßstab, Varianten-Regel
+
+- Speichern-unter-Dialog listet zusätzlich zu Abschnitt 3: **Artikelplatzierung** (Montageplatte), Schaltschrank-
+  aufbau (auch „Schaltschrankaufbau detailliert“), 3D-Montageaufbau (einzige Darstellungsart für 3D-Makros),
+  Vorplanung. Darstellungsart und Variante sind bei Seiten- und Vorplanungsmakros nicht wählbar; voreingestellt
+  wird die Darstellungsart aus den markierten Funktionen bzw. dem Seitentyp.
+- Hat eine Funktion mehrere Darstellungsarten mit widersprüchlichen Daten, entscheidet eine feste **Reihenfolge der
+  Darstellungsarten**, welche Daten ausgewertet werden.
+- **Seitenmaßstab berücksichtigen**: aktiv = Makro behält seine Originalmaße und wird auf maßstäblichen Seiten
+  passend skaliert dargestellt; inaktiv = Makro wird mit dem Seitenmaßstab vergrößert/verkleinert.
+- Korrektur zu Abschnitt 3: Die Hilfe sagt einheitlich (Makros erstellen, Speichern unter, Makrokasten) **„bis zu 26
+  Varianten je Darstellungsart“** unter einem Dateinamen; kein Widerspruch. Nur der 3D-Dialog formuliert „je Makro“.
+- Winkel-/Drehvarianten entstehen nie automatisch, sie werden manuell gezeichnet und als weitere Variante gespeichert.
+Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_speichernunter.htm ·
+https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_speichernunter3d.htm ·
+https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_h_makroserzeugen.htm
+
+**Bedeutung für QET:** Variante B, C … eines Herstellermakros sind häufig nur gedrehte Lagen (Winkelvarianten)
+derselben Grafik. Vor dem Import mehrerer Varianten prüfen, ob sich nur die Ausrichtung unterscheidet; dann reicht
+ein QET-Element (Drehung beim Platzieren). Unterschiedliche Anschlusszahl = echtes eigenes Element (Vermutung,
+abgeleitet aus „Varianten entstehen manuell“). „Artikelplatzierung“/„Schaltschrankaufbau“-Varianten sind
+Aufbaugrafik (Montageplatte), nicht Schaltplan.
+
+## 17. Makros aktualisieren, Anschlussbezeichnungen, geschützte Gruppen
+
+- Aktualisieren geht nur für Kästen mit Verwendungsart Referenzierend oder Nicht festgelegt, und nur wenn der
+  Makrokasten mit eingefügt wurde. EPLAN sucht die Makrodatei im Makroverzeichnis, ermittelt **passende Variante
+  und Darstellungsart** und ersetzt nach einem Aktualisierungs-Schema; Fehler in den Systemmeldungen. Übernommen
+  werden auch Version, Quellprojekt, Quelle/Referenz, Beschreibung, manuelle Objektzuordnung. Untergeordnete Kästen
+  werden beim projektweiten Aktualisieren übersprungen (gezielt einzeln mit Abfrage möglich).
+- **Makro erstellen** am eingefügten Makrokasten speichert ein geändertes Makro (z. B. Symboltausch) mit
+  voreingestelltem Namen/Variante zurück.
+- „Zugehörige Objekte markieren“ zeigt die Objekte eines Makros; **manuelle Objektzuordnung** nimmt Objekte außerhalb
+  des Kastens auf oder schließt innere aus.
+- **Anfasspunkt**: Standard ist „oben links“ am ersten Einfügepunkt; aktivierter Anfasspunkt hat X/Y-Position und
+  wird mit dem Kasten gespeichert.
+Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_h_makrokasten.htm
+- Makrokasten > Einstellungen: **Makrokasten mit einfügen** (Ja/Nein/„Aus Projekteinstellungen“; gilt auch beim
+  Gerät einfügen, hat Vorrang vor der Projekteinstellung). **Anschlussbezeichnungen berücksichtigen**: bei der
+  Gerätezuordnung müssen neben der Funktionsdefinition auch die Anschlussbezeichnungen gleich sein (passt Funktionen
+  komplexer Geräte zu); beim Aktualisieren „Ja“ = Anschlussbezeichnungen aus der Datei übernehmen, „Nein“ = im
+  Schaltplan behalten. Die Aktualisieren-Option **„Nur das BMK beibehalten“** hat Vorrang: dann wird alles Logische
+  außer dem BMK aus der Datei übertragen. Im Schaltplanprojekt ist dort nur der Anfasspunkt änderbar.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_r_makrokasteneinstellungen.htm
+- **Geschützte Gruppe**: beim Einfügen erzeugte Gruppe, die grafisch nicht verändert oder zerlegt werden kann
+  (Eigenschaften bleiben editierbar); lässt sich nicht per „Gruppierung berücksichtigen“ oder Umschalt-Taste lösen,
+  nur per Projekt komprimieren („Geschützte Gruppen entfernen“). Einstellbar nur bei Verwendungsart Definierend/
+  Nicht festgelegt.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_k_geschuetztegruppen.htm
+
+**Bedeutung für QET:** QET kennt kein Makro-Aktualisieren. Für den Nachbau heißt das: ein im EPLAN-PDF als
+Makro eingesetztes Gerät ist in QET ein Element; ändert sich das Herstellermakro, Element neu importieren und per
+Elementtausch ersetzen. Die Regel „Funktionsdefinition **und** Anschlussbezeichnungen müssen passen“ ist das
+Vorbild für ein Verknüpfungsskript, das Slave-Elemente (Kontakte, Kanäle) dem Master zuordnet: nicht nur nach BMK,
+sondern auch nach Anschlussbezeichnung prüfen.
+
+## 18. Platzhalterobjekte und Wertesätze im Detail
+
+- Zu einem Platzhalterobjekt gehören die markierten Objekte (Funktionen, Artikelplatzierungen, Grafik) **plus Seite
+  bzw. Bauraum und Projekt** – auch Projekt- und Seiteneigenschaften können Variablen bekommen.
+  Name ist identifizierend und nicht mehrsprachig, Beschreibung mehrsprachig.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_platzhalterobjekt.htm
+- Arbeitsweise: Registerkarte **Zuordnung** (Objekt → Eigenschaft → Variable), Registerkarte **Werte** (Zeilen =
+  Variablen, Spalten = **Wertesätze**, Spalte „Veränderbar“). Werte können aus Auswahldialogen kommen (Artikelnummer
+  [1]–[50], Funktionsdefinition, Verbindungsfarbe/-nummer, Strukturkennzeichen). Das Platzhalterobjekt wird links
+  oberhalb des markierten Bereichs abgelegt; Ebene **EPLAN322** steuert die Sichtbarkeit des Ankers.
+  Blockbearbeitung mehrerer Platzhalter nur bei identischen Variablen- und Wertesatznamen.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_h_platzhalterobjekteerzeugen.htm
+- **Wertesatz zuweisen** (auch nachträglich, Kontextmenü am Anker): Eigenschaften mit Variable bekommen die Werte des
+  Satzes. Ändert man veränderbare Werte, entsteht ein zusätzlicher Satz mit Präfix „Benutzerdefiniert“; erneute
+  Auswahl des Originalsatzes entfernt ihn wieder. Filterfeld sucht in Satznamen und Werten.
+  Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_h_wertesatzzuweisen.htm ·
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_wertesatzauswaehlen.htm
+- Wertesatz-Dialog beim Einfügen: Benutzereinstellung (Grafische Bearbeitung > Makros) getrennt für Fenster-/
+  Symbolmakros (wirkt auch beim Kopieren/Einfügen) und für Seitenmakros (wirkt nicht beim Seiten-Kopieren).
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_einstellmakros.htm
+- Weitere Objekte nachträglich zuordnen („Objekte dem Platzhalterobjekt zuordnen“); im Makroprojekt „Alle Objekte
+  des Makros…“ ordnet alles zu, was eindeutig zum definierenden Makrokasten bzw. Seitenmakro gehört.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_h_platzhalterobjekteerweitern.htm
+- EPLAN Cogineer: Platzhalter optional für die Schaltplangenerierung freigeben und danach entfernen lassen.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_r_platzhaltereinstellungen.htm
+
+**Bedeutung für QET:** Wertesätze sind die EPLAN-Form von „ein Makro, viele Artikel“ (z. B. Motorabgang für
+0,37/0,55/0,75 kW mit je anderem Schutzschalter). Beim Import eines Makros mit Platzhalter: die Grafik einmal
+als Element, die Wertesätze als Liste möglicher Artikel (Vermutung: Ablage als Kommentar/Info-Feld oder getrennte
+Elemente je Wertesatz, wenn sich Artikelnummer ändert). Im Nachbau steht im PDF immer schon der aufgelöste Wert;
+Variablen `<…>` dürfen nie als Text im QET-Plan stehen bleiben.
+
+## 19. Artikeldatenzuweisung im Makro
+
+- Registerkarte/Dialog **Artikeldatenzuweisung** (am Makrokasten oder Speichern unter > Extras): legt fest, welche
+  Artikeleigenschaften (inkl. freie Eigenschaften) beim Einfügen eines **Geräts** mit hinterlegtem Makro an welche
+  Eigenschaften der Makroobjekte kopiert werden; Werte über Formatelemente. Wirkt bei „Gerät einfügen“, Geräte- und
+  Artikelauswahl. Zuweisung einer Artikelnummer lagert den Artikel ein, überträgt seine Daten aber nicht erneut.
+- Konflikt: weisen Artikeldatenzuweisung und Platzhalter-Wertesatz dieselbe Eigenschaft zu, **gewinnt die
+  Artikeldatenzuweisung**.
+Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_r_artikeldatenzuweisung.htm
+
+**Bedeutung für QET:** Entspricht dem Befüllen der `elementInformations` beim Import aus Artikeldaten. Rangfolge
+für den Fork: Artikeldaten (EDZ `part.xml`/`commercialdata.csv`) schlagen Texte aus dem Makro.
+
+## 20. Eigenschaft „Makro“ (20468), geschachtelte Makros, Makro-Navigator
+
+- Jede eingefügte Funktion trägt in **Makro (ID 20468)** Pfad und Dateiname ihres Makros. Benutzereinstellung
+  **Geschachtelte Makrokästen beim Einfügen berücksichtigen**: aktiv = innere Funktionen behalten den Namen ihres
+  Untermakros; inaktiv = alle bekommen den Namen des äußeren Makros. Der Makroname kann als **Automatikfilter** bei
+  der Artikelauswahl dienen, wenn am Artikel der Makroname hinterlegt ist.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_einstellmakros.htm
+- Makro-Navigator: Baum Projekt → Verwendungsart → Unterverzeichnis → Makro → Darstellungsart → Variante →
+  Platzhalterobjekte; im Makroprojekt alle Varianten, im Schaltplan nur die eingefügten. Drag & Drop aus dem
+  Navigator nimmt den Stand im Makroprojekt, nicht die gespeicherte Datei; Variantenwahl dabei nicht möglich.
+  Eigenschaft **Makro: Verzeichnis** zur Blockbearbeitung der Ablageorte. Makros ohne Namen landen unter „Ohne Namen“.
+  Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_k_makronavigator.htm ·
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_makronavigator.htm
+
+**Bedeutung für QET:** Eigenschaft 20468 im EPLAN-Export (falls vorhanden, z. B. in einer Betriebsmittelliste)
+verrät, aus welchem Herstellermakro ein Gerät stammt – bester Schlüssel, um im Nachbau das passende importierte
+Element zu finden. Vorschlag: beim Import den Makrodateinamen in ein Element-Infofeld schreiben (Vermutung).
+
+## 21. Grafische Makroauswahl
+
+- Benutzereinstellung „Grafische Makroauswahl verwenden“ ersetzt den Dateidialog überall, wo Makros gewählt werden
+  (Fenster/Symbol/Seite einfügen, Platzieren aus Navigatoren, Makro in der Artikelverwaltung). Verzeichnisse werden
+  als Bilder gezeigt (Bild und mehrsprachiger Text je Ordner in den Firmeneinstellungen), Makros als Tabelle mit
+  Vorschau und aufklappbaren Darstellungsarten/Varianten; Doppelklick nimmt die **erste vorhandene Variante**.
+  Filter nach `.ema`, `.ems`, `.emp`, **`.fc2`** (Kontur-Extrusion für das Artikelfeld Makro). Keine
+  Dateioperationen im Dialog.
+Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/Eplan.EplCoreAddin.GraphicalMacroChoosing_k_start.htm ·
+https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/Eplan.EplCoreAddin.GraphicalMacroChoosing_k_aufbau.htm ·
+https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/Eplan.EplCoreAddin.GraphicalMacroChoosing_d_auswahl.htm ·
+https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/Eplan.EplCoreAddin.GraphicalMacroChoosing_d_einstellungen.htm ·
+https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/Eplan.EplCoreAddin.GraphicalMacroChoosing_h_select.htm
+
+**Bedeutung für QET:** Vorbild für die QET-Sammlungsansicht: Ordnerbilder je Hersteller/Kategorie, darunter
+Varianten aufklappbar. Die „erste Variante“ als Standard deckt sich mit dem heutigen Verhalten von
+`eplanmacroreader` (erste allpolige Variante).
+
+### 21a. Weitere Dialoge im Makro-Kapitel der Hilfe (knapp)
+
+- **Eigenschaften extern bearbeiten**: Schema je **Objekttyp** (fest bei Erstellung; u. a. Abbruchstellen,
+  Abschirmungen, Funktionen, Kabel, Klemmen, Klemmenleisten, SPS-Anschlüsse, SPS-Kästen, Seiten, Stecker,
+  Steckerkontakte, Strukturkästen, Verbindungen), Export als Datei (z. B. Excel mit Vorlage), Sprache einzeln oder
+  „Alle Anzeigesprachen“ (Import ersetzt nur die importierten Sprachen); Formatelemente mit Kennzeichen „Änderbar“.
+  Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_pxfeinstellungenexport.htm ·
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_pxfseitenexport.htm ·
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_r_pxfallgemein.htm ·
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_r_pxfdaten.htm
+- **XML-Projekt importieren** (`*.epj` aus vorherigem Export) mit Option „Artikelabgleich durchführen“.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_pxfprojektimport.htm
+- **Kabelbaumdaten abgleichen** (`*.hpdex`): Funktionen und Verbindungen aus Datei gegen Projekt mit Aktion je Zeile;
+  Filter beeinflussen den Import nicht (immer ganze Datei).
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_importabgleich.htm
+- Zwischenablage: optional mehrere Zwischenablagen mit Beschreibung (Dialog Einfügen); Benutzereinstellung
+  Darstellung > Allgemein enthält außerdem „Auswertungen beim Öffnen/Drucken/Export aktualisieren“ und „Beim
+  Seitenwechsel Verbindungen aktualisieren“.
+  Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_einfuegen.htm ·
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_zwischenablage.htm ·
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_einstellzwischablage.htm
+
+**Bedeutung für QET:** „Eigenschaften extern bearbeiten“ (Excel je Objekttyp) und der XML-Projektexport `.epj`
+sind mögliche maschinenlesbare Quellen aus EPLAN, falls statt des PDFs Projektdaten geliefert werden; `.epj`
+enthält die Logik vollständig (Vermutung, Format hier nicht beschrieben).
+
+## 22. Quellen
 
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_k_start.htm
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_h_makroserzeugen.htm
@@ -374,3 +604,36 @@ Funktionsschablonen prüfen. Ein Token gehört nur in den lokalen QET-Einstellun
 - https://www.eplan.help/de-de/Infoportal/Content/EDP/Content/htm/EPLANDataPortalHelp_k_start.htm
 - https://www.eplan.help/techtipps/de-DE/SPS/TechTip-Configuring-PLC-devices-with-device-description-files.pdf
 - https://dataportal.eplan.com/api/doc (über eigene Notiz dataportal-api.md)
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_auswahlmakrodatei.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_h_makroprojekteerstellen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_h_makrosausmakroprojekt.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_r_makrodefinition.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_speichernunter.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_speichernunter3d.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_h_makrokasten.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_k_geschuetztegruppen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_platzhalterobjekt.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_h_wertesatzzuweisen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_wertesatzauswaehlen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_einstellmakros.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_h_platzhalterobjekteerweitern.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_r_platzhaltereinstellungen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_r_artikeldatenzuweisung.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_k_makronavigator.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_makronavigator.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/Eplan.EplCoreAddin.GraphicalMacroChoosing_k_start.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/Eplan.EplCoreAddin.GraphicalMacroChoosing_k_aufbau.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/Eplan.EplCoreAddin.GraphicalMacroChoosing_d_auswahl.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/Eplan.EplCoreAddin.GraphicalMacroChoosing_d_einstellungen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/Eplan.EplCoreAddin.GraphicalMacroChoosing_h_select.htm
+
+Nachtrag:
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_pxfeinstellungenexport.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_pxfseitenexport.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_r_pxfallgemein.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_r_pxfdaten.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_pxfprojektimport.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_importabgleich.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_einfuegen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_zwischenablage.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_d_einstellzwischablage.htm

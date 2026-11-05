@@ -24,8 +24,15 @@ Quelle; „Vermutung“ = nicht durch die Hilfe belegt. Stand der Recherche: 05.
 14. Normblätter (Schriftfeld/Plankopf, Spalten, Zeilen)
 15. Seitentypen
 16. Seiteneigenschaften, Seitenname, Nummerierung
-17. Bedeutung für den QET-Nachbau (Zusammenfassung)
-18. Quellen
+17. Filter-, Sortier- und Seitenumbruchschemata, manuelle Auswahl
+18. Seitensortierung im Detail
+19. Abläufe rund um Auswertungen (Ergänzungen)
+20. Stückliste-Navigator und Artikel-Einstellungen
+21. Bedeutung für den QET-Nachbau (Zusammenfassung)
+22. Quellen
+
+Siehe auch `formulare-platzhalter.md` (Formulareditor, Platzhalterelemente je Formulartyp, Seitenumbruchregeln,
+Normblatteditor, Strukturkennzeichen-Verwaltung).
 
 ---
 
@@ -335,7 +342,8 @@ Folgeformular – Daten gehören zur selben Leiste; Seitentyp bleibt der des Hau
 ## 13. Einstellungen Anzeige/Ausgabe
 
 - „Identische Texte ersetzen durch“: wiederholte, untereinander stehende Texte werden durch ein Zeichen (z. B. `"`)
-  ersetzt – nur bei Platzhaltern mit „Identischen Text ersetzen“.
+  ersetzt – nur bei Platzhaltern mit „Identischen Text ersetzen“. Korrektur/Ergänzung: Die Vorgabe ist laut Hilfe „=“,
+  nicht für Inhaltsverzeichnisse (Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formeditorgui_r_platzierung.htm).
 - Ausgabe von Kabeln/Klemmenleisten/Steckern einschränken (ab Mindestanzahl Verbindungen/Klemmen/Stifte).
 - Quelle/Ziel von Kabelverbindungen aus Kabel oder Kabelverbindungen; Ersetzungszeichen für Einzel-/
   Kabelverbindungen in Kabeltabellen.
@@ -429,7 +437,178 @@ und https://www.eplan.help/de-de/Infoportal/Content/Plattform/2026/Content/htm/p
   verschieden); in QET `folio-id`/`folio-total` zählen Folios im ganzen Projekt – bei Zählung je Anlage eigene
   Variable pflegen.
 
-## 17. Bedeutung für den QET-Nachbau (Zusammenfassung)
+## 17. Filter-, Sortier- und Seitenumbruchschemata, manuelle Auswahl
+
+(Ergänzung aus der Hilfe-Durchsicht B6; Formular-Details in `formulare-platzhalter.md`.)
+
+- Nach Wahl des Auswertungstyps öffnet sich „Einstellungen – <Auswertungstyp>“. **Auswertungsübersichten**: ein Filter,
+  eine Sortierung, ein Schema „Neue Seite bei geändertem Eigenschaftswert“ und optional ein abweichendes Formular.
+  Beispiel: Filter Anlage = FB3 und Einbauort = FT1 -> Inhaltsverzeichnis nur für Seiten in =FB3+FT1. Schemata werden
+  benutzerbezogen gespeichert und beim Erzeugen mit der Auswertung abgelegt.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_d_grafikausgabe.htm
+- **Funktionsbezogene Auswertungen**: getrennte Gruppenfelder **Betriebsmittel** (Kopfobjekte, z. B. Klemmenleisten
+  bzw. Symbolbibliotheken; nur ohne manuelle Auswahl) und **Funktionen** (z. B. Klemmen) jeweils mit Filter und
+  Sortierung; „Neue Seite bei geändertem Eigenschaftswert“ gehört zu den Funktionen. Beispiele: Leisten der Anlage HF1,
+  davon nur „PE-/PEN-Klemme, 4 Ziele“; Leisten nach Einbauort, Klemmen nach Montageort sortiert. „- Nicht aktiviert -“
+  schaltet ein Schema ab.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_d_filtererweitert.htm
+- **Sortierschema**: Kriterien nacheinander (z. B. Anlage, dann BMK-Kennbuchstabe, dann Einbauort). Für
+  Artikelstückliste, Artikelsummenstückliste und Betriebsmittelliste ist auch **Funktionsdefinition (ID 20026)** als
+  Sortierkriterium wählbar. **Seitenumbruchschema**: eine Eigenschaft; bei jedem Wertwechsel neue Seite (Beispiel
+  Betriebsmittelliste: neue Seite beim Wechsel von Anlage EB1 zu FB1). Das gleiche Dialogmuster dient im
+  Stückliste-Navigator als „Neue Nummerierung bei geänderter Eigenschaft“ für Positionsnummern.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_d_sortierung.htm
+- **Manuelle Auswahl** (nur funktionsbezogen): Liste „Verfügbare“ (abhängig vom Typ: Betriebsmittel, Artikel oder
+  Symbolbibliotheken) -> „Ausgewählte“; [Sortieren] sortiert alphanumerisch, sonst gilt die Auswahlreihenfolge.
+  Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_d_auswahl.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_funkbezogauswerterzeugen.htm
+- **Verbindungsdiagramm** (Geräte-/Klemmen-/Steckeranschlussplan „für Verbindungsdiagramm“, manuelle Platzierung +
+  manuelle Auswahl): Montageplatte wählen; Betriebsmittel erscheinen in der Reihenfolge wie auf der Montageplatte,
+  ohne exakte Koordinaten; bereits ausgewertete können ausgeblendet werden.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_d_auswahlmontageplatte.htm
+
+## 18. Seitensortierung im Detail
+
+- Dialog „Seitensortierung – <Auswertungstyp>“ (Projekteinstellungen > Auswertungen > Ausgabe in Seiten, Spalte
+  Seitensortierung, oder an der Vorlage). Arten:
+  - **Aus Einstellungen** (nur an Vorlagen): Projekteinstellung verwenden.
+  - **Strukturkennzeichen**: gewählte Kennzeichnungsblöcke; je **Kombination** ein Auswertungsblock, einsortiert unter
+    der jeweiligen Struktur (Beispiel Anlage + Einbauort -> eigenes Inhaltsverzeichnis für =GB1+A1, =GD1+A2 …).
+    Strukturtiefe je Block: „Vollständig“, „Hauptkennzeichen“ oder „Unterkennzeichen“.
+  - **Gesamt**: ein Block über das ganze Projekt; zusätzlich gewählte Blöcke erzeugen **zusätzliche** Blöcke je
+    Kombination. Bei funktionsbezogenen Auswertungen gibt es weder Gesamt noch Kennzeichnungsblock-Häkchen.
+  - **Ausgabegruppe**: neuer Block bei jedem Wechsel der Schaltzeichen-Eigenschaft Ausgabegruppe (nicht kombinierbar).
+  - **Objektkennzeichen**: Seitenstruktur nach DIN EN 61355-1 (Dokumentenart).
+- **Quelle / Ziel verwenden** (nur Kabelplan, Kabelübersicht, Kabelanschlussplan, Verbindungsliste): Strukturkennzeichen
+  von Quelle und Ziel statt des Kabel-BMK; Kabel zwischen unterschiedlichen Orten erscheinen in mehreren Blöcken.
+- **Platzierung verwenden**: es zählen die Strukturkennzeichen der Seite, auf der das Betriebsmittel platziert ist,
+  nicht die des Betriebsmittels.
+- Verfügbare Arten hängen vom Typ ab (Formulardokumentation nur Gesamt).
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_d_seitensortierung.htm
+- Ablauf „ohne Vorlage“: [Einstellungen] > Ausgabe in Seiten > Seitensortierung wählen > Neu > Ausgabeform „Seite“ >
+  Quellprojekt prüfen > Typ > Schemata > Startseite (Seitenname, Beschreibung, Blattnummer) **je Strukturkennzeichen**
+  oder „Start für alle Strukturkennzeichen übernehmen“.
+  Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_auswerterzeugen.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_funkbezogauswerterzeugen.htm
+
+**Bedeutung für QET:** Liegt im Original je Einbauort ein eigener Klemmenplan-/Kabelplanblock (unter +S1, +S2 …), ist
+das Seitensortierung „Strukturkennzeichen“. Ein Kabel, das in zwei Ortsblöcken auftaucht, deutet auf „Quelle/Ziel
+verwenden“ – im Generator dann bewusst doppelt ausgeben, nicht als Fehler entfernen.
+
+## 19. Abläufe rund um Auswertungen (Ergänzungen)
+
+- **Formular zuordnen:** [Einstellungen] > Ausgabe in Seiten, Spalte Formular > „Durchsuchen“ (Formularverzeichnis aus
+  den Einstellungen).
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_auswerten.htm
+- **Abweichendes Formular** beim Erzeugen: wird am Auswertungsblock als Eigenschaft Formular mit „Aktualisieren mit
+  diesem Formular“ gespeichert und beim Aktualisieren benutzt; beim Erzeugen einer Vorlage übernommen. **Auswerten von
+  Vorlagen überschreibt** die Formulare der Blöcke. „Projekt auswerten“: eingebettete Auswertungen behalten ihr
+  Formular; Auswertungsseiten mit abweichendem Formular bleiben nur, wenn es für den Typ keine Vorlage gibt oder die
+  Vorlage dieses Formular trägt. **An Hauptfunktionen (Kabel-, Klemmenleisten-, Steckerdefinition …) eingetragene
+  Formulare haben Vorrang vor allem anderen.**
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_k_updatewithformeigenschaft.htm
+- **Vorlage erzeugen:** neu (Name automatisch „0001“; bei vorhandener Vorlage gleichen Typs Abfrage Überschreiben, bei
+  „Nein“ zwei gleichnamige) oder aus bestehender Auswertung (Kontextmenü „Auswertungsvorlage erzeugen“). **Bedingte
+  Vorlage** über Projektfilter: trifft er zu, ist „Vorlage aktiv“ gesetzt und Auswerten/Projekt auswerten erzeugt sie.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_vorlageerstellen.htm
+- Aus Vorlage auswerten: auch bei einer markierten Vorlage werden alle Vorlagen dieses Typs ausgewertet.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_auswertungausvorlage.htm
+- Export/Import von Vorlagen als *.xml (Vorgabeordner = Schemata-Verzeichnis).
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_exportimport.htm
+- **Löschen:** „Auswertungsblock löschen“ löscht immer alle Seiten des Blocks. Eingebettete Auswertung nur auf ihrer
+  Seite löschbar (Bearbeiten > Löschen) – dann ist der Block weg, Auswertungsseiten bleiben.
+  Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_auswertungloeschen.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_eingbauswertungloeschen.htm
+- **Eingefrorene Seiten:** Block wird gelöscht, Seiten bleiben (eigenes Icon), eingebettete Auswertungen nicht
+  einfrierbar. Anzahl je Seitentyp in Projekteigenschaften > Statistik (Spalte Eingefrorene Seiten); Navigator-Filter
+  auf Eigenschaft „Eingefrorene Auswertungsseite“.
+  Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_k_eingefrorseiten.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_eingefroreneseitenfiltern.htm
+- **Geänderte Seiten finden:** Beim Aktualisieren ändert sich das automatische Änderungsdatum einer Auswertungsseite
+  nur, wenn sich ihr Inhalt (Daten oder Formular) wirklich geändert hat -> Filter „Änderungsdatum (automatisch) >=
+  Datum“.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_geaenderteseitenfiltern.htm
+- **Quellprojekt / Auswertungsprojekt:** Auswertungen eines anderen (Quell-)Projekts im geöffneten Projekt erzeugen;
+  das Quellprojekt wird dabei lesend im Hintergrund geöffnet (dort kann weitergearbeitet werden). Formulare, Symbole
+  und Einstellungen kommen immer aus dem Auswertungsprojekt. Seiteneigenschaft **Auswertung: Quellprojekt (ID 11067)**
+  zeigt die Herkunft. „Auswertungsprojekt erzeugen“ kopiert Kopfdaten, ohne Seiten, mit eingetragenem Quellprojekt.
+  Achtung: Verbindungen werden für die Verbindungsliste nur im normalen Projekt automatisch aktualisiert, nicht für ein
+  Auswertungsprojekt.
+  Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_k_quellprojekt.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_inanderesprojekt.htm
+- **Komplexe Geräte** (z. B. Mittelspannung): als Makro mit interner Verschaltung; Eigenschaftsplatzierungen an den
+  Anschlüssen werden in der Betriebsmittelliste zu Platzhaltertexten -> Sprung zur Seite/zum Anschluss.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_k_komplexegeraete.htm
+- **Grafische Auswertung**: Ablaufdiagramm (Typ Funktionsdiagramm, Formular Grafik *.f28), textorientiert oder
+  symbolorientiert, mehrfach im Projekt möglich.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_k_auswertunggrafisch.htm
+
+**Bedeutung für QET:** Klemmenleisten oder Kabel mit eigenem Formular im Original (andere Optik als die übrigen) sind
+kein Fehler – EPLAN nimmt das an der Leiste/am Kabel hinterlegte Formular vorrangig. Im Generator je Leiste/Kabel ein
+Layout-Parameter vorsehen.
+
+## 20. Stückliste-Navigator und Artikel-Einstellungen
+
+- Die Stückliste ist **Projektdaten**, nicht Artikelverwaltung (Projektdaten > Geräte / Artikel > Stückliste-Navigator).
+  Sie zeigt BMK mit und ohne Artikel, Artikel an Artikeldefinitionspunkten und Projektartikel; Daten werden beim Öffnen
+  frisch gelesen. **Liste** = betriebsmittelorientiert (Spalten konfigurierbar), **Baum** = artikelorientiert (nur BMK
+  mit Artikel; Ansichten Artikelnummer, Artikelnummer/Strukturkennzeichen, Hersteller, Lieferant,
+  Stücklistengruppierung).
+  Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_k_start.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_d_artikelstueckliste.htm
+- Kontextmenü: Projektartikel hinzufügen (ohne BMK, z. B. Beistellteile; alphabetisch im Baum), Artikel hinzufügen
+  (an bestehende Artikel des BM angehängt), Artikel austauschen (Menge bleibt, Baugruppen nicht aufgelöst; K1 0815 ->
+  0915), Löschen (nicht bei vorhandener Artikelplatzierung; die Position bleibt leer), Gerätedaten aktualisieren,
+  Artikeldaten abgleichen (fehlende Artikel in der Datenbank anlegen), Export/Import (nur im selben Projekt).
+  Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_d_artikelstueckliste.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_h_artikelbearbeiten.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_h_artikelhinzufuegen.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_h_projektartikelhinzufuegen.htm
+- **Einstellungen: Artikel** (Projekteinstellungen > Auswertungen > Artikel): Baugruppen/Module auflösen bis Stufe
+  (wirkt auf Artikelstückliste, Summenstückliste, Schaltschranklegende); **Artikel eines Betriebsmittels
+  zusammenfassen** – Klemmenartikel zur Leiste, Aderartikel zum Kabel (Beispiel: eine Position „25 × UK5“ statt 25
+  Einzelzeilen); „Artikel berücksichtigen“ je Artikelart (BM ohne Artikelnummer, Klemmen-, Leisten-, Kabel-, Stecker-,
+  Kontakt-, Sammelschienen-, Verbindungs-, Vorplanungsartikel) – gilt meist auch für die Auswertungen und teils für
+  die Betriebsmittelliste.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_d_paramartikelauswertung.htm
+- **Verbindungsartikel** (an Verbindungsdefinitionspunkten): ein Artikel an einem Punkt mit mehreren Verbindungen geht
+  an jede Verbindung; mehrere Punkte mit gleichem Artikel auf einer Verbindung zählen einmal; richtige Stückzahl erst
+  nach Erzeugen der Verbindungsliste.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_h_artikelanverbindungen.htm
+- **Montageplatte:** Artikelplatzierungen ohne Hauptfunktion definieren schon ein Gerät; ein Artikel darf trotzdem nur
+  einmal in der Stückliste stehen. Platzierungen, deren Artikel an der Hauptfunktion fehlen, gelten als Fehler und
+  werden zusätzlich ausgegeben (z. B. Hauptfunktion 0815;0915 + Platzierung 0715 -> Ausgabe 0815, 0915, 0715).
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_k_artikelreferenzenausmontageplatte.htm
+- **Positionsnummern:** reines Strukturmerkmal der Stückliste; Sortierschema, „Neue Nummerierung bei geänderter
+  Eigenschaft“ (z. B. je Anlage oder Seite neu ab Startwert), Startwert, Schrittweite, Feldbreite, „Gleiche Nummer für
+  identische Geräte“ (BM ohne Artikelnummer bekommen immer eine neue Nummer), Ergebnisvorschau. Eigenschaft
+  **Positionsnummernliste (ID 20346)** zeigt alle Positionsnummern einer Funktion kommagetrennt (für Grafik oder
+  Auswertung).
+  Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_d_positionsnummerierung.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_h_positionenneunummerieren.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_d_nummerierungsvorschau.htm
+- **Stücklistengruppe** (Artikelreferenzdaten): Gruppierung im Baum, als Filter und Spalte nutzbar.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_k_stuecklistengruppen.htm
+- **Export/Import-Felder:** Export schreibt alle Artikel mit allen Feldern (unabhängig von Filtern), z. B.
+  `P_ARTICLEREF_IDENTNAME` (BMK), `P_DESIGNATION_FULLPLANT`/`…FULLLOCATION` (Anlage/Ort), `P_FUNC_CODE`/`…COUNTER`
+  (Kennbuchstabe/Zähler), `P_FUNC_COMPONENTTYPE` (Funktionsdefinition), `P_ARTICLEREF_PARTNO`, `…COUNT`,
+  `…COUNT_TOTAL`, `…LENGTH_SUM`, `P_ARTICLE_ORDERNR`, `…TYPENR`, `…DESCR1–3`, `…MANUFACTURER`, `…SUPPLIER`,
+  `REFERENCE_POS` (Reihenfolge der Artikel am BM). Zurückgeschrieben werden nur Artikelreferenzfelder (Artikelnummer,
+  Variante, Datensatztyp, Menge, Funktionsgruppe, Teileart, Artikelzuordnung, Baugruppe, Positionsnummer, Zusatzfelder,
+  externe Platzierung). Import mit unbekanntem BMK -> Projektartikel.
+  Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_k_felderexportdatei.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_h_stuecklistenexportieren.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_h_stuecklistenimportieren.htm
+
+**Bedeutung für QET:**
+- Ob eine Original-Stückliste Klemmen einzeln oder als „n × Klemme“ an der Leiste führt, entscheidet „Artikel eines
+  Betriebsmittels zusammenfassen“ – Zeilenbildung des Generators danach wählen.
+- Projektartikel (Zeilen ohne BMK) und Montageplatten-Artikel ohne Hauptfunktion haben kein Sprungziel im Schaltplan;
+  im Nachbau als Projektdaten führen, `destination` leer oder auf das Aufbaublatt.
+- Der EPLAN-Stücklistenexport (Feldnamen `P_…`) ist ein brauchbares Importformat für Artikeldaten in den Fork, falls
+  ein solcher Export vorliegt (**Vermutung**: Dateiformat je nach Auswahl Excel/CSV/XML, Hilfe nennt die Typen nicht).
+
+## 21. Bedeutung für den QET-Nachbau (Zusammenfassung)
 
 1. Jede Liste ist eine Auswertung: aus Daten generieren, bei jedem Gesamt-Bau neu (= Projekt auswerten).
 2. Inhaltsverzeichnis zuletzt erzeugen, mit Sprung je Zeile auf das Blatt.
@@ -440,8 +619,12 @@ und https://www.eplan.help/de-de/Infoportal/Content/Plattform/2026/Content/htm/p
 6. Gekürzte BMKs und Wiederholzeichen (`"`) beim Auslesen auflösen.
 7. Seitentyp je Blatt mitführen (für Lesezeichen/Inhaltsverzeichnis), Übersichtsseiten nicht als eigene Geräte.
 8. Weicht eine Originalliste vom Schaltplan ab: Auswertung war evtl. veraltet/eingefroren – Schaltplan führt.
+9. Seitensortierung des Originals erkennen (Gesamt / je Strukturkennzeichen / Quelle-Ziel bei Kabeln) und
+   nachbilden; ein Kabel darf dann in zwei Ortsblöcken stehen.
+10. Stückliste: Zusammenfassung der Klemmen-/Aderartikel an Leiste/Kabel wie im Original; Projektartikel ohne BMK.
+11. Seitenumbruchregeln: `formulare-platzhalter.md` Abschnitt 9.
 
-## 18. Quellen
+## 22. Quellen
 
 Gelesen und erreichbar:
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_k_start.htm
@@ -493,6 +676,46 @@ Gelesen und erreichbar:
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/pdfexportgui_k_grundlagen.htm
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/news_p_grafeditor_hyperlinkserkennung_248626.htm
 - https://www.eplan.help/en-us/infoportal/content/Plattform/2026/Content/htm/msgmanagementgui_h_prueflaufonline.htm (nur Suchtreffer-Auszug)
+
+Ergänzt in der Durchsicht B6 (lokal gelesene Hilfe 2.9):
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_d_auswahl.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_d_auswahlmontageplatte.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_d_filtererweitert.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_d_grafikausgabe.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_d_seitensortierung.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_d_sortierung.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_auswerten.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_auswerterzeugen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_auswertungausvorlage.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_auswertungloeschen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_auswplatzieren.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_eingbauswertungloeschen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_eingefroreneseitenfiltern.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_exportimport.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_funkbezogauswerterzeugen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_geaenderteseitenfiltern.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_inanderesprojekt.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_h_vorlageerstellen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_k_auswertunggrafisch.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_k_eingefrorseiten.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_k_komplexegeraete.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_k_quellprojekt.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_k_updatewithformeigenschaft.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_k_start.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_d_artikelstueckliste.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_d_nummerierungsvorschau.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_d_paramartikelauswertung.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_d_positionsnummerierung.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_h_artikelanverbindungen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_h_artikelbearbeiten.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_h_artikelhinzufuegen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_h_positionenneunummerieren.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_h_projektartikelhinzufuegen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_h_stuecklistenexportieren.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_h_stuecklistenimportieren.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_k_artikelreferenzenausmontageplatte.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_k_felderexportdatei.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partslistgui_k_stuecklistengruppen.htm
 
 Nicht erreichbar (HTTP 404):
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/formgeneratorgui_k_grundlagen.htm

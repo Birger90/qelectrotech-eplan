@@ -26,7 +26,11 @@ https://www.eplan.help/de-de/Infoportal/Content/Plattform/2026/Content/htm/xesse
 12. Verbindungsdefinitionspunkte
 13. Seitenraster (Normblatt, Spalten, Zeilen, Pfade)
 14. Neuerungen in neueren Versionen
-15. Quellen
+15. Abbruchstellen im Detail: Sortierkennung, Abbuchen, Navigator, Smart-Connecting
+16. Querverweise an Kästen, Geräteanschlüssen, Sammelschienen und funktionalen Platzierungen
+17. Sprünge zum Gegenstück im Editor
+18. Querverweis-Einstellungen: Anzeige, manuelle QVW, Montageplatten, Betriebsmittellisten
+19. Quellen
 
 ---
 
@@ -346,7 +350,144 @@ selbst setzen (Vermutung, bisher nicht gesehen). Verweisziele immer auf das Rast
   unerheblich).
   Quelle: https://eplan.help/en-us/Infoportal/Content/Plattform/2.9/Content/htm/news_p_preplanning_querverweise_auswertungen_241563.htm
 
-## 15. Quellen
+## 15. Abbruchstellen im Detail: Sortierkennung, Abbuchen, Navigator, Smart-Connecting
+
+- Name der Abbruchstelle = Zusammengehörigkeit: Potentialname (`L1`, `L+`, `PE`, `PEN`, `N`), Wirkungsangabe (`Not`,
+  `+15V`, Signalname) oder beliebiger Text. Jedes Projekt führt eine **Liste der Abbruchstellennamen**; neue
+  Abbruchstellen werden einem vorhandenen Namen zugeordnet (Dialog „Abbruchstelle abbuchen“, Baum
+  Kennzeichnungsblock > Name > Quelle/Ziel). Beim Abbuchen eines Namens wird nur der Name übernommen; beim Abbuchen einer
+  einzelnen Funktion alle schreibbaren Eigenschaften **außer** Darstellung, **Sortierkennung** und **Sternquelle**.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/interruptionpointgui_d_abbruchstellenabbuchen.htm
+- **Sortierkennung**: Standard **100** = Sortierung nur nach Seite, Zeile, Spalte (grafische Reihenfolge); kleinere
+  Werte ziehen eine Abbruchstelle nach vorn; **0 macht sie zur Quelle**. Gleiche Kennung → Reihenfolge im Schaltplan.
+  Der Dialog „Abbruchstellen sortieren“ zeigt Position, Typ (Quelle/Ziel), Verbindung und Kennung; Pfeiltasten ändern die
+  **Paarbildung der Kette**; „Grafisch sortieren“ setzt alle auf 100.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/interruptionpointgui_d_abbruchstellensortieren.htm
+- **Korrektur/Präzisierung:** §8 sagt „keine Quell/Ziel-Unterscheidung“. Das gilt fürs Zeichnen (eine Abbruchstelle
+  kann nach beiden Seiten angebunden werden, Richtung ermittelt EPLAN). Für die **Paarbildung** führt EPLAN dennoch einen
+  Typ Quelle/Ziel, den man über Sortierkennung 0 bzw. Reihenfolge beeinflusst.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/interruptionpointgui_k_start.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/interruptionpointgui_d_abbruchstellensortieren.htm
+- Ungewollte Anbindung an der zweiten Seite einer Abbruchstelle → **Unterbrechung** einfügen.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/interruptionpointgui_k_start.htm
+- **Abbruchstellen-Navigator** (`Projektdaten > Verbindungen`): alle Abbruchstellen auf Schaltplan- und Übersichtsseiten;
+  Platzieren (neue Abbruchstelle mit gewähltem Namen; Rücktaste = anderes Symbol), **Zuweisen** (Name/Daten auf ein
+  vorhandenes Schaltzeichen übertragen), Löschen (auch die Platzierung), Sortieren, Gehe zu, Tabellarisch bearbeiten.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/interruptionpointgui_d_projektdatenabbruchstellen.htm
+- Eingabe: sichtbares BMK direkt oder über [...] aus der Namensliste; vollständiges BMK (z. B. anderer Einbauort) einstellbar.
+  **Untergeordnetes BMK** an Abbruchstellen nur mit **erweiterter Referenzkennzeichnung** (Projekt > Struktur).
+  Standardposition der „Beschreibung der Abbruchstelle“ je Variante als Eigenschaftsanordnung speicherbar (Standard für
+  neue Abbruchstellen).
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/interruptionpointgui_h_abbruchstellenbearbeiten.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/interruptionpointgui_h_abbruchstelleneinfuegen.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/interruptionpointgui_h_standardposabbruchstellenbeschrfestlegen.htm
+- Grafikregeln: Abbruchstelle darf einen Winkel/ein T-Stück **überzeichnen**, nicht umgekehrt; Abbruchstellen werden nicht
+  in Gerätekästen geschachtelt; keine direkte Textbearbeitung (F2); Format übertragen nur Registerkarte Anzeige.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/egedgui_h_verbindungsstueckeaustauschen.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/blackbox_k_schachteln.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/inplaceeditinggui_k_start.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/gededitgui_h_formatuebertragen.htm
+- **Smart-Connecting**: Ausschneiden/Einfügen eines Schaltplanteils auf eine andere Seite erzeugt auf beiden Seiten
+  Abbruchstellen mit Querverweis, Namen aus Zähler (Mindeststellen, Füllzeichen, numerisch oder alphanumerisch A, K, S,
+  AA …; mit Vorzeichen, wenn „Vorzeichen setzen für Abbruchstellen“ an). Gleiche Einstellungen gelten für „Neues BMK
+  ermitteln“ am Feld sichtbares BMK.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/connectionbrowsergui_h_smartconnecting.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/interruptionpointgui_d_einstellsmartconnecting.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/interruptionpointgui_d_einstellsmartabbruchstellen.htm
+- **Stränge** lassen sich über Abbruchstellen seitenübergreifend fortführen (dick erst nach Verbindungen aktualisieren);
+  netzbasierte Verbindungen ebenso. Beim Makro-Aktualisieren bleiben BMK der Abbruchstellen erhalten.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/singlepole_k_straenge_in_einpoligerdarstellung.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/netbasedwires_k_start.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/gedviewer_d_einstellungenmakrosaktualisieren.htm
+
+**Bedeutung für QET:** `verknuepfen.py` sollte die Kettenpaarung nach EPLAN-Regel bilden: je Name alle Pfeile nach
+(Sortierkennung, Seite, Zeile, Spalte) sortieren und paarweise 1↔2, 3↔4 verknüpfen. Die Sortierkennung steht nicht im
+PDF – maßgeblich ist daher, worauf der Verweistext im Original zeigt; nur wenn er fehlt, grafische Reihenfolge. Pfeil mit
+Verweis auf **sich selbst gleiche Seite** ist kein Fehler (Smart-Connecting-Paare auf derselben Seite, Vermutung).
+Abbruchstellen tragen kein Geräte-Kennzeichen im Sinne des Kastens: auch innerhalb eines Ortsrahmens/Gerätekastens
+keinen Kasten-Präfix ableiten, nur die Strukturkennzeichen (Anlage/Ort), wenn das Original sie zeigt.
+
+## 16. Querverweise an Kästen, Geräteanschlüssen, Sammelschienen und funktionalen Platzierungen
+
+- **Geräteanschlüsse im Gerätekasten ohne eigenes BMK** sind immer Nebenfunktionen und zeigen **nie** Querverweise (der
+  Kasten verweist). Außerhalb eines Kastens werden Geräteanschlüsse querverwiesen; Hauptfunktion kann Geräteanschluss
+  oder Kasten sein. Ein Gerätekasten kann für Sonderschütze auch einen **Kontaktspiegel** tragen.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/blackbox_h_anschluesseeinfuegen.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/blackbox_k_start.htm
+- Lampe `-H2` im Kasten `-U1` wird mit `-U1-H2` außerhalb querverwiesen (bei eingeschaltetem Schachteln); bei Kasten-in-
+  Kasten mit unklarer Lage gibt es einen Hinweis in der Meldungsverwaltung.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/blackbox_k_arbeitsweise.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/blackbox_k_schachteln.htm
+- **Strukturkästen**: „Gehe zu (Gegenstück)“ springt zur Hauptplatzierung; „Gehe zu (alle Darstellungsarten)“ und „Gehe
+  zu (querverwiesene)“ listen alle Strukturkästen gleichen vollständigen Namens.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/locationbox_k_grundlagen.htm
+- **Sammelschienen** und **Leitungsverteiler/-verbinder** sind Funktionen mit Haupt- und Nebenfunktionen gleichen BMK
+  (Artikel an der Hauptfunktion; mehrere Verteiler eines BMK brauchen verschiedene Anschlussbezeichnungen) → sie werden
+  wie Betriebsmittel querverwiesen (Vermutung: Querverweis Haupt ↔ Neben wie §4).
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/egedgui_k_sammelschienen.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/egedgui_k_verteiler.htm
+- **BMK zusammenführen**: mehrere Schaltzeichen mit gemeinsamem vollständigem BMK → automatisch Betriebsmittelquerverweise.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/egedgui_h_bmkzusammenfuehren.htm
+- **Darstellungsart „Funktional“** (Ablaufdiagramme): funktionales Platzieren erzeugt eine **Kopie als Nebenfunktion**,
+  mehrfach platzierbar, nur Grafik, nicht logisch ausgewertet. Die Rangfolge der Darstellungsarten bei Gruppen lautet
+  Allpolig > Übersicht > Paarquerverweis > Einpolig > RI-Fließbild > Extern.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/functionaldiagramgui_k_prinzip.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/gededitgui_k_gruppierung.htm
+- Kontaktspiegel am Symbol: Ausrichtung **Im Schaltplanpfad** = je nach Normblatt **unten oder rechts** im Pfad; **Am
+  Schaltzeichen** = daneben (Symboleditor, Registerkarte Kontaktspiegel). Kontaktspiegel lässt sich wie Eigenschaftstexte
+  manuell verschieben (Strg+B).
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/symboleditorgui_d_eigenschaftsplatzierung.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/gededitgui_h_symboltexteverschieben.htm
+- Einpolig ↔ allpolig: dieselbe Funktion wird je Seitentyp ein-/allpolig platziert; abweichende Daten verteilter
+  Darstellungen lassen sich projektweit abgleichen; Funktionstexte aller Funktionen eines BMK über „Funktionstexte
+  abgleichen“.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/singlepole_k_hintergrund.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/egedgui_h_funktionstexteabgleichen.htm
+
+**Bedeutung für QET:** Pins eines Gerätekastens (FU, Netzteil) im Original ohne Verweistext → in QET **keine** Slaves,
+sondern Anschlüsse des Kasten-Elements; nur der Kasten (Master) und gleichnamige Kästen/Teile auf anderen Blättern
+(Slaves) werden verknüpft. Einträge in Ablaufdiagrammen (Funktional) nicht als Master/Slave in den Kontaktspiegel
+aufnehmen (Vermutung: EPLAN zeigt sie in der Verweisliste nicht, weil nicht ausgewertet). Kontaktspiegel „Im
+Schaltplanpfad“ bei Normblatt mit Zeilen rechts statt unten – XRef-Lage in QET danach wählen.
+
+## 17. Sprünge zum Gegenstück im Editor
+
+- `[Strg]`+Klick oder `[Strg]`+`[Leertaste]` auf einen Querverweis springt zum Gegenstück, mit `[Umschalt]` zusätzlich in
+  neuem Editorfenster; `F` = Gegenstück anspringen (auch bei Abbruchstellen); `Alt+Bild↓/↑` = nächste/vorige
+  querverwiesene Funktion.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/gededitgui_k_tastaturbefehle.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/connectionbrowsergui_h_smartconnecting.htm
+
+**Bedeutung für QET:** Das Editor-Verhalten entspricht dem PDF-Dreifachsprung (pdf-export.md): im QET-Fork
+Doppelklick auf XRef/Report = Gegenstück; „nächste querverwiesene Funktion“ ≈ Sprungfolge links/rechts.
+
+## 18. Querverweis-Einstellungen: Anzeige, manuelle QVW, Montageplatten, Betriebsmittellisten
+
+### 18.1 Grundlage und Einstellungsorte
+- Grundlage jedes Querverweises ist die Einteilung des Normblatts in Zeilen (horizontale) und Spalten (vertikale Abschnitte); beide Achsen können getrennt alphabetisch oder numerisch nummeriert sein. Ein Querverweis enthält mindestens den Seitennamen, optional Spalte und zusätzlich Zeile. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/xessettingsgui_k_start.htm
+- Alle Anzeigeeinstellungen liegen in den **Projekteinstellungen** unter Querverweise / Kontaktspiegel, verteilt auf drei Bereiche: **Abbruchstellen** (Gruppenfeld Darstellung = wie QVW an Abbruchstellen erscheinen), **Allgemein** (Darstellung am Bauteil; Trennzeichen vor der Seite, zwischen Seite und Spalte, zwischen Zeile und Spalte) und **Anzeige** (je Seitentyp, zu welchen anderen Seitentypen Querverweise erscheinen und in welcher Reihenfolge; Gruppenfeld „Übersichtsquerverweise anzeigen“). Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/xessettingsgui_h_einstellungenqvwanzeige.htm
+
+### 18.2 Manuelle Querverweise
+- Ein manueller Querverweis ist ein frei eingegebener, auch mehrzeiliger Text (Eigenschaft „Manueller Querverweis“, über (Neu) in der Eigenschaftsliste der Registerkarte <Funktionskategorie> hinzuzufügen; Zeilenumbruch über Kontextmenü bzw. Strg+Eingabe im Dialog Mehrzeilige Eingabe). EPLAN zeigt ihn **zusammen mit** dem automatischen Querverweis am Schaltzeichen, und zwar **davor**. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/xessettingsgui_h_manuelleqvwerzeugen.htm
+
+### 18.3 Montageplattenquerverweise (Schaltschrankaufbau)
+- Wird der Artikel einer Hauptfunktion (Beispiel Schützspule -K1 mit Artikel, der Breite/Höhe in den Montagedaten hat) über den 2D-Schaltschrankaufbau-Navigator auf eine Montageplatte einer Seite vom Typ „Schaltschrankaufbau“ abgesetzt, entsteht ein **wechselseitiger** Querverweis: an der Spule im Schaltplan auf den platzierten Artikel und am Artikel auf die Spule. Voraussetzung: in Einstellungen > Anzeige (Gruppenfeld Betriebsmittelquerverweise anzeigen) ist die Beziehung allpoliger Schaltplan ↔ Schaltschrankaufbau in beide Richtungen freigegeben. Die Abmessungen der abgesetzten Grafik stammen aus den Artikeldaten.
+- **Markierung:** In Einstellungen > Allgemein, Gruppenfeld Markierung, Feld Schaltschrankaufbau, kann ein beliebiges Zeichen (Beispiel „%“) eingetragen werden, das Montageplattenquerverweise an Hauptfunktionen kennzeichnet; wirksam nach Ansicht > Neu zeichnen.
+Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/xessettingsgui_h_montageplattenqvwerzeugen.htm
+
+### 18.4 Querverweise auf Betriebsmittellisten
+- An Haupt- und Nebenfunktionen kann ein zusätzlicher Querverweis auf die **Betriebsmittelliste** (Auswertungsseite) stehen, in der das Betriebsmittel steht; umgekehrt verweisen die Einträge der Betriebsmittelliste auf die Hauptfunktion im Schaltplan. Ablauf im Beispiel: Schaltzeichen mit sichtbarem BMK (-T1, -F1, -H1), Hauptfunktion gesetzt, Artikel zugeordnet; dann Auswertung „Betriebsmittelliste“ erzeugen. Voraussetzung: Anzeige-Einstellung allpoliger Schaltplan ↔ Betriebsmittelliste freigegeben.
+- Option in Einstellungen > Allgemein: **„Auch Nebenfunktionen zeigen auf die Betriebsmittelliste“** (sonst nur Hauptfunktionen).
+- **Markierung:** Gruppenfeld Markierung, Feld Betriebsmittelliste, ein frei wählbares Zeichen (Beispiel „>“) unterscheidet diese Verweise von den übrigen; wirksam nach Neu zeichnen.
+Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/xessettingsgui_h_qvwaufbetriebsmittellisten.htm
+
+### 18.5 Bedeutung für QET
+- **Manueller QVW vor dem automatischen:** Steht im Original vor dem gewohnten Verweis ein freier Text (z. B. Hinweis auf ein Fremdgerät oder eine andere Dokumentation), ist das ein manueller Querverweis. Im Nachbau als eigenes Textfeld/Element-Info **links bzw. oberhalb** des QET-XRef platzieren; nicht in die XRef-Formel mischen, weil er nicht navigierbar ist.
+- **Markierungszeichen erkennen:** Ein einzelnes Sonderzeichen vor einem Verweis (z. B. `%` oder `>`) bedeutet „Verweis auf Schaltschrankaufbau“ bzw. „auf Betriebsmittelliste“, nicht auf eine Schaltplanseite. Solche Verweise beim Verknüpfen (`verknuepfen.py`) **nicht** als Master/Slave-Beziehung zwischen Schaltplanseiten werten; im PDF-Export sollten sie, falls nachgebildet, auf die Aufbau- bzw. Listenseite springen (Vermutung: im EPLAN-PDF sind sie wie andere QVW verlinkt).
+- **Aufbau- und Listen-Verweise sind wechselseitig:** Erzeugt der Fork Montageaufbau- oder Betriebsmittellisten-Folios, sollte jeder Eintrag dort auf die Hauptfunktion zurückverweisen, und die Hauptfunktion auf den Eintrag – analog zu Haupt-/Nebenfunktion.
+- **Seitentyp-Matrix:** Ob ein Verweistyp überhaupt erscheint, hängt in EPLAN an der Einstellung „Anzeige“ je Seitentyp-Paar. Fehlt im Original z. B. ein Verweis von der Übersicht auf den Schaltplan, ist das eine Projekteinstellung, kein Zeichenfehler; im Nachbau ebenso weglassen.
+
+## 19. Quellen
 
 Alle unter https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/ (sofern nicht anders):
 xessettingsgui_k_grundlagen.htm, xessettingsgui_k_querverweisarten.htm, xessettingsgui_h_symbolquerverweiseerzeugen.htm,
@@ -364,6 +505,17 @@ connectionbrowsergui_k_vdp.htm, locationbox_k_grundlagen.htm, formeditorgui_h_no
 projects_h_normblattpfad.htm, pagebrowsergui_d_projekteinstellungen.htm, prjmanagementgui_r_vererbung.htm,
 prjmanagementgui_r_darstellungerwprjstrukturen.htm.
 
+Ergänzt (Abschnitte 15–17): interruptionpointgui_d_abbruchstellenabbuchen.htm,
+interruptionpointgui_d_abbruchstellensortieren.htm, interruptionpointgui_d_projektdatenabbruchstellen.htm,
+interruptionpointgui_d_einstellsmartconnecting.htm, interruptionpointgui_d_einstellsmartabbruchstellen.htm,
+interruptionpointgui_h_abbruchstellenbearbeiten.htm, interruptionpointgui_h_standardposabbruchstellenbeschrfestlegen.htm,
+connectionbrowsergui_h_smartconnecting.htm, egedgui_h_verbindungsstueckeaustauschen.htm, egedgui_h_bmkzusammenfuehren.htm,
+egedgui_h_funktionstexteabgleichen.htm, egedgui_k_sammelschienen.htm, egedgui_k_verteiler.htm, blackbox_k_start.htm,
+blackbox_k_arbeitsweise.htm, blackbox_k_schachteln.htm, blackbox_h_anschluesseeinfuegen.htm, inplaceeditinggui_k_start.htm,
+gededitgui_h_formatuebertragen.htm, gededitgui_k_gruppierung.htm, gededitgui_k_tastaturbefehle.htm,
+gededitgui_h_symboltexteverschieben.htm, symboleditorgui_d_eigenschaftsplatzierung.htm, functionaldiagramgui_k_prinzip.htm,
+singlepole_k_straenge_in_einpoligerdarstellung.htm, netbasedwires_k_start.htm, gedviewer_d_einstellungenmakrosaktualisieren.htm.
+
 Weitere:
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2025/Content/htm/adjustdata_h_nebenfunktionaendern.htm
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2026/Content/htm/singlepole_k_hintergrund.htm
@@ -376,3 +528,10 @@ Weitere:
 - QET-Fork (gelesen, nicht geändert): `sources/properties/xrefproperties.cpp/.h`, `sources/qetgraphicsitem/crossrefitem.cpp`,
   `sources/autoNum/assignvariables.cpp`, `sources/properties/reportproperties.cpp`, `sources/qetgraphicsitem/element.h`,
   `sources/qetgraphicsitem/conductordefinitionmark.h`
+
+Querverweis-Einstellungen (§18):
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/xessettingsgui_k_start.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/xessettingsgui_h_einstellungenqvwanzeige.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/xessettingsgui_h_manuelleqvwerzeugen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/xessettingsgui_h_montageplattenqvwerzeugen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/xessettingsgui_h_qvwaufbetriebsmittellisten.htm

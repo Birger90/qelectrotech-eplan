@@ -18,7 +18,8 @@ Strukturkasten, Gerätekasten) und wie das sichtbare BMK verkürzt wird. Grundla
 10. Kennbuchstaben (IEC 81346-2)
 11. Nummerierung online/offline
 12. Abbildung in QET (Zusammenfassung)
-13. Quellen
+13. Ergänzungen (BMK-Übernahme, Nummerierungsformat, Seiten, Suche, Kopieren)
+14. Quellen
 
 ---
 
@@ -285,7 +286,58 @@ Feldnamen aus `sources/qetinformation.cpp` (label, plant, location, comment, fun
 manufacturer, manufacturer_reference, auxiliary1–3 …) und Verweisvariablen `%M`/`%LM`/`%F`/`%c`/`%l` aus
 `sources/autoNum/assignvariables.cpp` des Forks (gelesen, nicht geändert).
 
-## 13. Quellen
+## 13. Ergänzungen (BMK-Übernahme, Nummerierungsformat, Seiten, Suche, Kopieren)
+
+Ausführlich in `betriebsmittel.md`, `nummerierung.md`, `navigatoren-seiten.md`; hier die Punkte, die die Kennzeichnung
+direkt betreffen.
+
+- **BMK-Übernahme**: Funktionen **ohne sichtbares BMK** bekommen ihr BMK von der nächsten Funktion in Suchrichtung
+  (IEC: von links, gleiche Y-Höhe des Einfügepunkts; alternativ von oben) oder nur vom umgebenden Geräte-/SPS-Kasten;
+  Strukturkästen geben ihr BMK nicht nach links/oben weiter, wohl aber an Funktionen in ihrem Inneren. Ihr sichtbares BMK
+  bleibt leer – die Suche findet sie über das BMK nicht, Ersetzen ändert sie nicht. Quelle:
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/devicetaggui_k_bmkuebernahme.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/devicetaggui_k_bmkuebernahmesonder.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/searchandreplacegui_k_prinzip.htm
+- **Strukturkasten, sichtbares BMK**: zeigt standardmäßig nur die gegenüber der Umgebung **geänderten** Kennzeichen
+  (Kasten `=AP+ST1`, Anlage → ANL2: sichtbar `=ANL2`, vollständig `=ANL2+ST1`). Quelle:
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/devicetaggui_r_locationbox.htm
+- **Präzisierung zu Abschnitt 11 (pfadbezogene BMK)**: Seite, Spalte oder Zeile **zwischen** Kennbuchstabe und Zähler
+  sind nur mit fester Mindeststellenzahl zulässig (`M0023` = Seite 002 + Zähler 3; `-M052` = Spalte 05 + Zähler 2).
+  Ein BMK wie `-K381` ist daher nur mit bekannter Stellenzahl eindeutig zerlegbar (Seite 38 + Zähler 1 oder Seite 3 +
+  Spalte 8 + Zähler 1 – Vermutung, am Original prüfen). Punkt, Minus oder Struktur-Vorzeichen als Trennzeichen erzeugen
+  Klammern (`-2F(.4.)3`), ausblendbar. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/numerationgui_k_format.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/numerationgui_d_bmkformat.htm
+- **Einfügemodus „Nicht verändern“**: sichtbares BMK bleibt, das vollständige übernimmt die Strukturkennzeichen der
+  Zielseite, wenn das sichtbare keine eigenen enthält. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/numerationgui_d_einfuegemodus.htm
+- **Identifizierende Seiteneigenschaft ändern** (z. B. Anlage der Seite) benennt alle BMK auf der Seite mit derselben
+  Anlage mit um. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/pagebrowsergui_h_eigenschaftenbearbeiten.htm
+- **Kopieren in Projekte mit anderer Struktur**: Seiten behalten Blöcke, die im Ziel beschreibend sind, verlieren Blöcke,
+  die dort nicht verfügbar sind; Betriebsmittel behalten **immer ihr sichtbares BMK**, das identifizierende Kennzeichen
+  enthält nur die Blöcke der Zielstruktur. Reduktion der Seitenstruktur scheitert, wenn doppelte Seiten entstünden (bis
+  zu 10 werden gemeldet). Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/projectstructure_k_verhkopinbmubauteilen.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/projectstructure_k_hinterg.htm
+- **Suche mit Struktur**: BMK-Suchbegriffe mit Struktur müssen vom BMK nach links eine lückenlose Teilstruktur mit
+  Vorzeichen enthalten (bei `==`,`=`,`++`,`+`: `+O-K1` ja, `=A-K1` nein), ohne Platzhalter. Quelle:
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/searchandreplacegui_k_prinzip.htm
+- **BMK-Aufteilung** (tabellarische Bearbeitung): Standardteile Teil-BMK 1, Teil-BMK 2, Präfix, Kennbuchstabe, Zähler,
+  Unterzähler; freie Aufteilung beim Wechsel der Zeichengruppe Ziffer / Sonderzeichen / sonstige (`1V2` → 1|V|2,
+  `U1-F1` → U|1|-|F|1). Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/functiondatagridgui_k_bmkaufteilung.htm
+- **BMK-Syntaxprüfung**: prüft bei aktivierter Elektro-/Fluid-Prüfung das ganze vollständige BMK; Blöcke nach
+  Registerkarte Strukturkennzeichen (Zahlen / Großbuchstaben / Groß+Klein, Sonderzeichen, Umlaute, Anlagennummer nur
+  Zahlen). Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/devicetagcheckgui_d_einstellungenprojektbmsyntaxueberpruefung.htm
+- **Seitenname**: ohne Strukturkennzeichen, Unterseite nach dem **ersten** Punkt von links, max. 32 bzw. 16 Zeichen;
+  „Seitenname (identifizierend)“ = identifizierende Kennzeichen + Name, „(vollständig)“ = alle. Quelle:
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/pagebrowsergui_k_eigenschaften.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/pagebrowsergui_k_start.htm
+- **Baumdarstellung** der Navigatoren (identifizierende Kennzeichen standardmäßig sichtbar, Blöcke aus-/einblendbar,
+  Seitentyp/Kennbuchstabe zusätzlich): auch in 2.9 dokumentiert (bisher nur 2.8-Quelle zitiert). Quelle:
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/projectstructure_h_kennzeichenausblenden.htm
+
+**Bedeutung für QET:** Verknüpfungsskript braucht für Elemente ohne label eine BMK-Übernahme nach EPLAN-Regel
+(Einfügepunkt-Höhe links bzw. umgebender Gerätekasten), bevor Master/Slave gebildet wird. Beim Import/Kopieren immer das
+sichtbare BMK des Originals beibehalten und die Struktur vom Ziel-Folio ableiten.
+
+## 14. Quellen
 
 Alle unter https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/ (sofern nicht anders):
 projectstructure_k_hinterg.htm, projectstructure_k_aufbaukennzeichnungsbl.htm, projectstructure_k_hauptkundunterk.htm,
@@ -299,6 +351,13 @@ numerationgui_k_start.htm, numerationgui_k_format.htm, numerationgui_h_onlinefor
 numerationgui_d_nummerierungsformate.htm, offlinenumerationgui_k_start.htm, offlinenumerationgui_d_nummerierungsformate.htm,
 locationbox_k_start.htm, locationbox_k_grundlagen.htm, locationbox_h_geschachtelte.htm, pagebrowsergui_d_projekteinstellungen.htm,
 xessettingsgui_h_qvwanzeigeoptimieren.htm, xessettingsgui_d_einstellungenprojektqvwallgemein.htm.
+
+Ergänzt (Abschnitt 13): devicetaggui_k_bmkuebernahme.htm, devicetaggui_k_bmkuebernahmesonder.htm,
+devicetaggui_r_locationbox.htm, numerationgui_d_bmkformat.htm, numerationgui_d_einfuegemodus.htm,
+pagebrowsergui_h_eigenschaftenbearbeiten.htm, pagebrowsergui_k_eigenschaften.htm, pagebrowsergui_k_start.htm,
+projectstructure_k_verhkopinbmubauteilen.htm, projectstructure_k_start.htm, projectstructure_h_kennzeichenausblenden.htm,
+searchandreplacegui_k_prinzip.htm, functiondatagridgui_k_bmkaufteilung.htm,
+devicetagcheckgui_d_einstellungenprojektbmsyntaxueberpruefung.htm.
 
 Weitere:
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2026/Content/htm/fctdeflibdataexchangegui_k_kennbuchstaben.htm

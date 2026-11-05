@@ -18,7 +18,14 @@ Die Themenstruktur der Kabelhilfe ist von 2.9 bis 2026 gleich. Quelle: https://w
 10. Kabel und Klemmen
 11. Auswertungen: Kabelplan, Kabelanschlussplan, Kabelübersicht, Kabeldarstellungsplan, Längen
 12. Neuerungen neuerer Versionen
-13. Quellen
+13. Projekteinstellungen „Kabel“: Sortierung, geschachtelte Ziele, Einheiten, Standardkabel
+14. Kabel-BMK-Format und Nummerierungsreihenfolge
+15. Automatisch erzeugte Kabel: Ablauf, Kennzeichnung, Löschen
+16. Automatische Kabelauswahl: Schema und Regeln
+17. Kabel-Navigator
+18. Kabellängen summieren (Dialog) und Kabeldarstellungsplan erzeugen
+19. Darstellungseinstellungen für Kabel und Pakete
+20. Quellen
 
 ---
 
@@ -143,7 +150,94 @@ Die Themenstruktur der Kabelhilfe ist von 2.9 bis 2026 gleich. Quelle: https://w
 - **2026:** Themenstruktur der Kabelhilfe unverändert. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2026/Content/htm/cablegui_k_start.htm
 - Laut einer Pressemitteilung zur Plattform 2024 (nicht eplan.help) können Reserveadern automatisch angeschlossen werden. In der Hilfe ist das nicht nachgeprüft. Quelle: https://rittal.com/imf/none/24_4357/Presseinfo%20Eplan%20Plattform%202024
 
-## 13. Quellen
+## 13. Projekteinstellungen „Kabel“: Sortierung, geschachtelte Ziele, Einheiten, Standardkabel
+
+- **„Kabelverbindungen immer nach Steckerreihenfolge sortieren“**: Ist die Option an, folgen Kabelverbindungen zwischen Klemmen und Steckern immer der Reihenfolge der Steckerkontaktbezeichnungen. Ist sie aus, sind Klemme und Stecker gleichberechtigt, und es gilt die Sortierung an der Quelle. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_einstellungenkabelmanuell.htm
+- **„Bei geschachtelten Zielen untergeordnete BMK ignorieren“** wirkt auf Kabelnummerierung, automatische Kabelerzeugung und Kabelauswertungen. Ist die Option an, gilt das übergeordnete Betriebsmittel (z. B. Gerätekasten) als Kabelziel. Die Zielanzeige der einzelnen Kabelverbindungen zeigt weiter das untergeordnete BMK. Beispiel der Hilfe: Verbindungen zwischen -U1-X1/-U2-X3 und -U1-X2/-U2-X4 ergeben ohne die Option zwei Kabel, mit der Option ein Kabel -U1↔-U2. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_einstellungenkabelmanuell.htm
+- **Maßeinheit für Kabellänge**: gilt in Kabelplänen für Längen ohne Einheit. Im Schaltplan bleibt der Eintrag unverändert. „Querschnitte mit Leerzeichen“ und „Längen mit Leerzeichen“ steuern, ob zwischen Wert und Einheit ein Leerzeichen steht („1,5 mm²“ vs. „1,5mm²“, „12 m“ vs. „12m“). Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_einstellungenkabelmanuell.htm
+- **Standardkabel** im Detail:
+  - Schneidet die neue Kabellinie nur Verbindungen ohne Kabel, ordnet EPLAN die Kabelverbindungen des Standardkabels über die identifizierenden Eigenschaften zu. Übertragen werden nur die Schabloneneigenschaften, also kein Artikel und kein Typ.
+  - Gehört schon eine geschnittene Verbindung zu einem Kabel, übernimmt die Linie das erste gefundene Kabel-BMK. Die neuen Verbindungen bekommen dann freie Adern dieses Kabels.
+  - Ohne Standardkabel ordnet EPLAN beim Zeichnen nichts zu.
+
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_einstellungenkabelmanuell.htm
+
+**Bedeutung für QET:** Längen- und Querschnittsangaben im Kabelplan wörtlich mit oder ohne Leerzeichen übernehmen, wie im Original. Endet ein EPLAN-Kabel in einem Gerätekasten mit eigener Klemmenleiste (z. B. -U1-X1), kann der Kabelplan als Ziel „-U1“ zeigen statt „-U1-X1“. Das ist eine Einstellung und kein Fehler. Im QET-Kabelplan-Generator wird man das Ziel des Kabels deshalb wahlweise auf das übergeordnete Kennzeichen kürzen.
+
+## 14. Kabel-BMK-Format und Nummerierungsreihenfolge
+
+- Formate (Registerkarte Format der Kabelnummerierung):
+  - **Aus Projektstruktur** (Betriebsmittelstruktur für Kabel; nur dieses Format hat die Registerkarte Reihenfolge).
+  - **Nach Quelle** (z. B. `-W=A1+O1-X1`), **Nach Ziel** (`-W=A1+O1-M1`), **Nach Quelle und Ziel** (`-W=A1+O1-X1/=A1+O1-M1`), **Nach Ziel und Quelle**.
+  - Das Trennzeichen zwischen Quelle und Ziel ist frei, bei DIN Standard „/“.
+  - Kennzeichen, die schon in der Struktur des Kabels stehen, werden im Zähler unterdrückt.
+  - Bei SPS-Anschlüssen kommt die Steckerbezeichnung des SPS-Anschlusses mit ins BMK, bei Bus-Anschlüssen zusätzlich der Bus-Schnittstellenname.
+
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_r_einstkabelnumformat.htm
+- **Klammern**: Quelle/Ziel stehen in runden oder eckigen Klammern, z. B. `-W(-X1/-M1).1` (Ziel M1, Unterkabel 1) vs. `-W(-X1/-M1.1)` (Ziel M1.1). Die Klammern lassen sich über „Klammern im BMK ausblenden“ abschalten. Dann ist `-W-X1/-M1.1.1` mehrdeutig. Bei der BMK-Zerlegung gilt ein geklammerter Teil als **ein** Bestandteil und je nach Stellung als Vorziffer, Zähler oder Unterzähler (z. B. `-W(=A+O-X1).1` → Zähler; `=A+O-(=A-X1/=B-X2)W1` → Vorziffer). Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_r_einstkabelnumformat.htm
+- **Unterkabel erzeugen** (Standard bei Formaten mit Quelle/Ziel): Mehrere Kabel zwischen denselben Zielen unterscheiden sich durch Unterkabel-BMK (`.1`, `.2`). Ohne diese Option zählt der normale Zähler weiter (nur bei „Aus Projektstruktur“). **Anschlussbezeichnung anhängen** (bei Quelle/Ziel): hängt die grafisch erste Anschlussbezeichnung mit einem Trennzeichen an (Standard „,“; „?“, „:“ und „.“ sind verboten). Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_r_einstkabelnumformat.htm
+- Reihenfolge (nur bei „Aus Projektstruktur“):
+  - **Manuelle Kabel zuerst nummerieren** (in grafischer Reihenfolge; Vorrang vor „Kabel an Steckern zuerst“).
+  - **Klemmen-/steckerorientiert nummerieren**: Kabel an Klemmen oder Steckern zuerst, in der Reihenfolge der Leisten, maßgeblich ist das Quell-BMK. Ohne die Option gilt die grafische Reihenfolge nach Normblatt und Lage der Kabel-Hauptfunktion.
+  - **Kabel an gleichen Zielen aufeinander folgend** (Beispiel: W1, W3 → X7 und W2, W4 → X8 ergibt W1, W3→W2, W2→W3, W4).
+  - **Kabel an Steckern zuerst**: Nein / Alle / Nur die automatisch erzeugten, mit festgelegter Gesamtreihenfolge zusammen mit „manuell zuerst“.
+
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_r_einstkabelnumreihenfolge.htm
+- **Ergebnisvorschau** der Nummerierung: Tabelle alt/neu für Linien, Abschirmungen und Definitionspunkte. „Ursprüngliches BMK verwenden“ behält die alten BMK. Was vorher gleich hieß, heißt danach wieder gleich, damit bleiben die Zuordnungen erhalten. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_ergebniskabelnummerierung.htm
+- Der Kabel-Navigator kennt zwei Nummerierungen: „Kabel-BMK nummerieren“ (kabelspezifische Formate wie oben) und „BMK nummerieren“ (allgemeine Formatelemente für alle Betriebsmittel). Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_kabelnavigator.htm
+
+**Bedeutung für QET:** Kabel-BMK wie `-W(-X1/-M1).1` oder `-W-X1/-M1` sind aus Quelle und Ziel **berechnete** Namen, kein freier Text. Beim Nachbau trotzdem wörtlich übernehmen, auch mit Klammern. Für Sprung- und Verknüpfungsskripte gilt dabei: Der geklammerte Teil ist ein Bestandteil des BMK und darf nicht an „-“ oder „/“ zerlegt werden. Wer das Kennzeichen am „-“ trennt (z. B. zur Strukturerkennung), muss Klammerinhalte vorher ausnehmen. Unterkabel `.1`/`.2` sind zwei verschiedene Kabel mit gleicher Strecke, also in QET zwei `Cable`-Objekte.
+
+## 15. Automatisch erzeugte Kabel: Ablauf, Kennzeichnung, Löschen
+
+- Der Automatiklauf aktualisiert zuerst die Verbindungen. Dann folgen drei Schritte: Kabel erzeugen → Kabelnummerierung → automatische Kabelauswahl (Artikel). Nummerierung und Auswahl lassen sich auch einzeln aufrufen. Automatisch erzeugte Kabellinien liegen auf einer **eigenen Ebene**. Linien und Definitionspunkte tragen die Eigenschaft **„Automatisch erzeugt“**, daher lässt sich der Lauf beliebig wiederholen. Am Definitionspunkt kann man das Kabel-BMK als **„Manuell gesetzt“** kennzeichnen und bei der Nummerierung entscheiden, ob auch solche BMK neu vergeben werden. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_k_automatikkabel.htm
+- Bedingung für ein automatisches Kabel: „Verbindung: Zugehörigkeit“ = Kabel (an der Verbindung oder am Definitionspunkt), **oder** der **grafisch erste** Anschluss der Verbindung (nach Normblattausrichtung) ist ein Kabelanschluss. Ob der zweite Anschluss einer ist, spielt keine Rolle. Ist der grafisch erste Anschluss kein Kabelanschluss, entsteht kein Kabel. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_k_automatikkabel.htm
+- Dialog „Kabel automatisch erzeugen“: drei Schemata (Kabelerzeugung, Kabelnummerierung, Kabelauswahl), dazu Startwert, Schrittweite und „Vorhandene Kabel-BMK beibehalten“ (nur „?“-Kennbuchstaben). Die Voreinstellung der drei Schemata steht in den Projekteinstellungen „Kabel (automatisch)“. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_kabelerzeugen.htm , https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_einstellungenkabelautomatisch.htm
+- **Automatisch erzeugte Kabel löschen** (Markierung oder ganzes Projekt): entfernt alle als automatisch gekennzeichneten Linien und Definitionspunkte. An manuell gezeichneten Linien und Punkten werden nur die automatisch vergebenen BMK gelöscht, die Objekte bleiben. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_h_automatischekabelloeschen.htm
+
+**Bedeutung für QET:** In EPLAN-PDFs ist ein automatisch erzeugtes Kabel oft nur eine kurze Linie an der grafisch ersten Verbindung, an den übrigen Adern stehen nur Definitionspunkte (siehe Abschnitt 8). Im Nachbau trotzdem alle Adern dem Kabel zuordnen, auch die ohne eigene Kabellinie im Bild.
+
+## 16. Automatische Kabelauswahl: Schema und Regeln
+
+- Das Schema enthält eine **Kabel-Vorauswahl** (Liste von Kabelartikeln). Nur aus dieser Liste wird gewählt. Je Zeile: Hersteller (leer = erster gefundener), PE-Adern (0/1/2), Verbindungsanzahl (mehrere durch Kommata), **Spannung in Volt** (leer = unbegrenzt). Gewählt wird der **kleinste passende Spannungswert**. Beispiel der Hilfe: Vorauswahl 300/500/1000 V; Kabel mit 300 V → 300-V-Typ, Kabel mit 400 V → 500-V-Typ. Ist am Kabel schon ein Typ eingetragen, der nicht in der Liste steht, wählt EPLAN ein Kabel dieses Typs mit passender Aderzahl. Ein fehlender Querschnitt kommt spannungsabhängig aus den Vorgaben. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_einstellungenautomatischekabelauswahl.htm
+- **Reserve**: Ab „Mindestzahl für Reserve“ Adern fügt EPLAN die eingetragene Zahl Reserveadern hinzu (z. B. für Werksnormen). **„Vorgegebene Verbindungsanzahl anpassen“**: tatsächliche Adern + Reserve, mit dem Eintrag verglichen, der größere Wert gilt, dann das passende oder nächstgrößere Kabel. PE/PEN zählen mit, Abschirmungen nicht. **„Alle Werte an die Schaltzeichen übertragen“**: Ist die Option an, füllt EPLAN auch leere Felder. Ist sie aus, überschreibt es nur schon gefüllte. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_einstellungenautomatischekabelauswahl.htm
+- Dialog „Automatische Kabelauswahl“ (Kabel-Navigator, Mehrfachauswahl): Schema wählen. „Nur automatisch erzeugte oder benannte Kabel“ schließt manuelle Kabel aus. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_automatischekabelauswahl.htm
+
+**Bedeutung für QET:** Reserveadern im EPLAN-Kabelplan können aus dieser Regel stammen (z. B. 7 statt 5 Adern). Sie gehören als freie Adern ins QET-Kabel (`core_count` größer als die Zahl belegter Adern), nicht als Fehler.
+
+## 17. Kabel-Navigator
+
+- Baum: je Kabel-BMK die Kabeldefinitionslinien, Abschirmungen und Kabelverbindungen. Liste: Name, Funktionsdefinition, Quell- und Ziel-BMK sowie alle Verbindungs- und Kabeleigenschaften (Verbindungsanzahl, Querschnitt …). Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_kabelnavigator.htm
+- Kontextmenü mit Wirkung:
+  - **Verlegen (Topologie)** sowie Verlegeverbindungen ein-/ausblenden (siehe verdrahtung-fertigung.md).
+  - **Kabelverbindungen sammeln**: weitere Verbindungen zwischen denselben Quellen/Zielen, die noch keinem Kabel gehören.
+  - **Kabelverbindungen zuordnen**: sortiert die Aderreihenfolge neu nach den Quelle/Ziel-Regeln bzw. der Klemmenreihenfolge, mit „Vorhandene Eigenschaften beibehalten“ oder „Alle neu zuordnen“.
+  - **Gehe zu (Grafik)** springt zum ersten platzierten Objekt mit Bezug auf die markierte Ader, Definition oder Abschirmung.
+
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_kabelnavigator.htm
+
+## 18. Kabellängen summieren (Dialog) und Kabeldarstellungsplan erzeugen
+
+- **Vollständiger Kabeltyp** = gleicher Typ (z. B. NYM) + gleiche Verbindungsanzahl + gleicher Querschnitt/Durchmesser + gleiche Einheit. Je vollständigem Kabeltyp gibt es eine Zeile: berechnete Gesamtlänge, längste Einzellänge, Artikelnummer und -variante des längsten Einzelkabels (über das Kontextmenü änderbar, auch auf einen kürzeren Artikel), Artikellänge, **erforderliche Stückzahl = Gesamtlänge / Artikellänge** (manuell änderbar). Löschen einer Zeile löscht den Kabelprojektartikel. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_kabelmengenberechnung.htm
+- **Kabeldarstellungsplan** (*.f08) wird mit einem **Folgeformular** Artikelsummenstückliste (*.f02) erzeugt:
+  - Auf dem f08-Formular wird ein **Folgeformulareinfügepunkt** (Auswertungstyp Artikelsummenstückliste) gesetzt. „Neue Seite“ entscheidet, ob die Stückliste auf eigener Seite oder auf derselben Seite steht.
+  - In den Auswertungseinstellungen „Ausgabe in Seiten“ wird das Folgeformular eingetragen.
+  - Jedem Kabel wird die Eigenschaft **Kabeldarstellungsplanformular** gegeben. Am bequemsten geht das im Kabel-Navigator mit dem Filter „Hauptfunktion“ und der Spalte „Kabel / Paket: Typ“, alle Kabel eines Typs zugleich.
+  - Je Formular entsteht ein Auswertungsblock (Kabeldarstellungsplan + Stückliste), sortiert wird nur innerhalb des Blocks.
+
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_h_kabeldarstellungsplan.htm
+
+**Bedeutung für QET:** Ein Kabeldarstellungsplan im EPLAN-PDF fasst alle Kabel **eines Typs** auf einem Block zusammen, mit Stückliste darunter oder danach. Im Nachbau als eigenes Auswertungsblatt je Kabeltyp anlegen, mit Sprungzielen zu den einzelnen Kabeln. Die Längensumme aus „Kabellängen summieren“ steht nur in der Stückliste.
+
+## 19. Darstellungseinstellungen für Kabel und Pakete
+
+- **Darstellung der Autoconnect-Linie**: kabelorientiert (Linien nach Kabel eingefärbt) oder potenzialorientiert. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_r_allgemein.htm
+- Getrennt für allpolig und einpolig lässt sich festlegen, welches Symbol an den Definitionspunkten von Kabeldefinitionslinien (auch bei automatisch erzeugten Kabeln) und von Abschirmungen steht. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_r_allpoligeinpolig.htm
+- **Pakete**: Die Definitionspunkte einer Paketdefinition haben standardmäßig ein Symbol **ohne Grafik** und sind nur über die Einfügepunkte sichtbar. Ein anderes Symbol ist in „Einstellungen: Paket“ wählbar. Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_einstellungenpaket.htm
+
+**Bedeutung für QET:** Farbige Linien im EPLAN-PDF können Kabel- **oder** Potenzialfarben sein, je nach dieser Einstellung. Vor einer Übernahme von Farben als Leiterfarbe prüfen, welche Lesart das Original nutzt. Die Schrägstriche bzw. Symbole an den Adern sind Definitionspunkt-Symbole. Ihre Form hängt an der Projekteinstellung und trägt keine eigene Bedeutung.
+
+## 20. Quellen
 
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_k_start.htm
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_k_prinzip.htm
@@ -182,4 +276,22 @@ Die Themenstruktur der Kabelhilfe ist von 2.9 bis 2026 gleich. Quelle: https://w
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2025/Content/htm/cablegui_d_kabelnummerierung.htm
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2026/Content/htm/cablegui_k_start.htm
 - https://rittal.com/imf/none/24_4357/Presseinfo%20Eplan%20Plattform%202024 (Pressemitteilung, keine Hilfe)
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_einstellungenkabelmanuell.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_einstellungenkabelautomatisch.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_einstellungenkabelnummerierung.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_r_einstkabelnumformat.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_r_einstkabelnumreihenfolge.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_ergebniskabelnummerierung.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_kabelnummerierung.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_k_automatikkabel.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_kabelerzeugen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_h_automatischekabelloeschen.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_einstellungenautomatischekabelauswahl.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_automatischekabelauswahl.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_kabelnavigator.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_kabelmengenberechnung.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_h_kabeldarstellungsplan.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_r_allgemein.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_r_allpoligeinpolig.htm
+- https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_einstellungenpaket.htm
 - Fork-Quellcode (nur gelesen): `C:\Users\test\Documents\Code Projekte\qelectrotech-eplan\sources\cable\cable.h`, `sources\cable\cable.cpp`, `sources\conductorproperties.h`, `sources\TerminalStrip\realterminal.h`, `sources\cablelist\`

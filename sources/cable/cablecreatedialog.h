@@ -38,6 +38,7 @@ class QTableView;
 class QTabWidget;
 class QWidget;
 class QComboBox;
+class QToolButton;
 class QDoubleSpinBox;
 class QSpinBox;
 class QPushButton;
@@ -76,6 +77,11 @@ class CableFilterProxy : public QSortFilterProxyModel
 		void setTechnicalFilter(int cores_column, double cores_min, double cores_max,
 								int section_column, double section_min, double section_max,
 								int chain_column, bool chain_only);
+			/**
+				Keep only the lines whose column @p column (a list
+				separated by commas) holds every one of @p required.
+			*/
+		void setRequiredProperties(int column, const QStringList &required);
 
 	protected:
 		bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
@@ -88,6 +94,8 @@ class CableFilterProxy : public QSortFilterProxyModel
 		int m_cores_column = -1, m_section_column = -1, m_chain_column = -1;
 		double m_cores_min = 0, m_cores_max = 0, m_section_min = 0, m_section_max = 0;
 		bool m_chain_only = false;
+		int m_properties_column = -1;
+		QStringList m_required_properties;
 };
 
 /**
@@ -246,7 +254,9 @@ class CableCreateDialog : public QDialog
 		QDoubleSpinBox *m_section_min = nullptr;
 		QDoubleSpinBox *m_section_max = nullptr;
 		QCheckBox *m_chain_only = nullptr;
+		QToolButton *m_properties = nullptr;
 		void applyTechnicalFilter();
+		void fillPropertiesMenu();
 
 		QLineEdit *m_existing_search = nullptr;
 		QCheckBox *m_existing_hide = nullptr;

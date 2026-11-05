@@ -40,6 +40,9 @@
 #include <QComboBox>
 #include <QFileInfo>
 #include <QDoubleSpinBox>
+#include <QMenu>
+#include <QToolButton>
+#include <QAction>
 #include <QSpinBox>
 #include <QStandardItem>
 #include <QStandardItemModel>
@@ -143,6 +146,26 @@ void CableFilterProxy::setTechnicalFilter(int cores_column, double cores_min, do
 }
 
 /**
+	@brief CableFilterProxy::setRequiredProperties
+	@param column the column listing the properties of a type
+	@param required the properties a type must all have to stay
+*/
+void CableFilterProxy::setRequiredProperties(int column, const QStringList &required)
+{
+	if (m_properties_column == column && m_required_properties == required) return;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+	beginFilterChange();
+	m_properties_column = column;
+	m_required_properties = required;
+	endFilterChange(QSortFilterProxyModel::Direction::Rows);
+#else
+	m_properties_column = column;
+	m_required_properties = required;
+	invalidateFilter();
+#endif
+}
+
+/**
 	@brief CableFilterProxy::filterAcceptsRow
 	@param source_row
 	@param source_parent
@@ -178,6 +201,15 @@ bool CableFilterProxy::filterAcceptsRow(int source_row, const QModelIndex &sourc
 		const QString v = sourceModel()->index(source_row, m_chain_column, source_parent)
 				.data(Qt::DisplayRole).toString().trimmed().toLower();
 		if (v != QLatin1String("ja") && v != QLatin1String("yes") && v != QLatin1String("1")) return false;
+	}
+	if (m_properties_column >= 0 && !m_required_properties.isEmpty()) {
+		QStringList has;
+		const QString cell = sourceModel()->index(source_row, m_properties_column, source_parent)
+				.data(Qt::DisplayRole).toString();
+		for (const QString &p : cell.split(QLatin1Char(','), Qt::SkipEmptyParts))
+			has << p.trimmed().toLower();
+		for (const QString &wanted : m_required_properties)
+			if (!has.contains(wanted.toLower())) return false;
 	}
 	if (m_tokens.isEmpty()) {
 		return true;
@@ -385,6 +417,16 @@ void CableCreateDialog::buildNewTab()
 	m_chain_only = new QCheckBox(tr("Only fit for energy chains"), page);
 	m_chain_only->setToolTip(tr("Cable types marked as fit for energy chains (drag chains) in the catalog"));
 	tech_row->addWidget(m_chain_only);
+	tech_row->addSpacing(12);
+		//The properties the catalogues name (halogen free, shielded, UL/CSA
+		//...): a list of checkable entries, a type stays when it has every
+		//one which is ticked
+	m_properties = new QToolButton(page);
+	m_properties->setText(tr("Properties"));
+	m_properties->setToolTip(tr("Show only cable types which have every ticked property"));
+	m_properties->setPopupMode(QToolButton::InstantPopup);
+	m_properties->setMenu(new QMenu(m_properties));
+	tech_row->addWidget(m_properties);
 	tech_row->addStretch(1);
 	layout->addLayout(tech_row);
 	connect(m_cores_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &CableCreateDialog::applyTechnicalFilter);
@@ -625,6 +667,7 @@ void CableCreateDialog::loadTypeFile()
 		disconnect(m_catalog, nullptr, this, nullptr);
 		connect(m_catalog, QOverload<int>::of(&QComboBox::currentIndexChanged), this, apply);
 	}
+	fillPropertiesMenu();
 	applyTechnicalFilter();
 
 	m_new_model->setHorizontalHeaderLabels(CableTypeList::translatedHeader(m_types.columns));
@@ -682,6 +725,44 @@ void CableCreateDialog::applyTechnicalFilter()
 		m_types.columns.indexOf(QStringLiteral("cores")), m_cores_min->value(), m_cores_max->value(),
 		m_types.columns.indexOf(QStringLiteral("section")), m_section_min->value(), m_section_max->value(),
 		m_types.columns.indexOf(QStringLiteral("chain")), m_chain_only->isChecked());
+
+	QStringList required;
+	if (m_properties && m_properties->menu())
+		for (QAction *a : m_properties->menu()->actions())
+			if (a->isChecked()) required << a->text();
+	m_new_proxy->setRequiredProperties(m_types.columns.indexOf(QStringLiteral("properties")), required);
+	if (m_properties)
+		m_properties->setText(required.isEmpty() ? tr("Properties")
+												 : tr("Properties: %1").arg(required.join(QStringLiteral(", "))));
+}
+
+/**
+	@brief CableCreateDialog::fillPropertiesMenu
+	One checkable entry per property the loaded lines name (column
+	"properties", a list separated by commas), sorted, keeping what was
+	ticked across a reload of the file.
+*/
+void CableCreateDialog::fillPropertiesMenu()
+{
+	if (!m_properties) return;
+	QMenu *menu = m_properties->menu();
+	QStringList ticked;
+	for (QAction *a : menu->actions())
+		if (a->isChecked()) ticked << a->text();
+	menu->clear();
+
+	QStringList all;
+	for (const CableTypeRecord &record : std::as_const(m_types.records))
+		for (const QString &p : record.value(QStringLiteral("properties")).split(QLatin1Char(','), Qt::SkipEmptyParts))
+			if (!all.contains(p.trimmed())) all << p.trimmed();
+	all.sort(Qt::CaseInsensitive);
+	for (const QString &p : std::as_const(all)) {
+		QAction *a = menu->addAction(p);
+		a->setCheckable(true);
+		a->setChecked(ticked.contains(p));
+		connect(a, &QAction::toggled, this, &CableCreateDialog::applyTechnicalFilter);
+	}
+	m_properties->setEnabled(!all.isEmpty());
 }
 
 /**

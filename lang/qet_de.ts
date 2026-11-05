@@ -1623,6 +1623,18 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
 <context>
     <name>CableCreateDialog</name>
     <message>
+        <source>Properties</source>
+        <translation>Eigenschaften</translation>
+    </message>
+    <message>
+        <source>Show only cable types which have every ticked property</source>
+        <translation>Nur Kabeltypen zeigen, die alle angehakten Eigenschaften haben</translation>
+    </message>
+    <message>
+        <source>Properties: %1</source>
+        <translation>Eigenschaften: %1</translation>
+    </message>
+    <message>
         <source>Cores:</source>
         <translation>Adern:</translation>
     </message>

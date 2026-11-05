@@ -39,6 +39,7 @@
 #include <QPushButton>
 #include <QComboBox>
 #include <QFileInfo>
+#include <QDoubleSpinBox>
 #include <QSpinBox>
 #include <QStandardItem>
 #include <QStandardItemModel>
@@ -120,6 +121,28 @@ void CableFilterProxy::setCatalog(int column, const QString &catalog)
 }
 
 /**
+	@brief CableFilterProxy::setTechnicalFilter
+	Ranges on the number of cores and on the core cross section (mm²),
+	0 meaning no bound, and the energy chain flag.
+*/
+void CableFilterProxy::setTechnicalFilter(int cores_column, double cores_min, double cores_max,
+										  int section_column, double section_min, double section_max,
+										  int chain_column, bool chain_only)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+	beginFilterChange();
+#endif
+	m_cores_column = cores_column; m_cores_min = cores_min; m_cores_max = cores_max;
+	m_section_column = section_column; m_section_min = section_min; m_section_max = section_max;
+	m_chain_column = chain_column; m_chain_only = chain_only;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+	endFilterChange(QSortFilterProxyModel::Direction::Rows);
+#else
+	invalidateFilter();
+#endif
+}
+
+/**
 	@brief CableFilterProxy::filterAcceptsRow
 	@param source_row
 	@param source_parent
@@ -136,6 +159,25 @@ bool CableFilterProxy::filterAcceptsRow(int source_row, const QModelIndex &sourc
 		&& sourceModel()->index(source_row, m_catalog_column, source_parent)
 			   .data(Qt::DisplayRole).toString() != m_catalog) {
 		return false;
+	}
+	auto number = [&](int column) {
+		return sourceModel()->index(source_row, column, source_parent).data(Qt::DisplayRole)
+				.toString().replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+	};
+	if (m_cores_column >= 0 && (m_cores_min > 0 || m_cores_max > 0)) {
+		const double v = number(m_cores_column);
+		if ((m_cores_min > 0 && v < m_cores_min) || (m_cores_max > 0 && v > m_cores_max)) return false;
+	}
+	if (m_section_column >= 0 && (m_section_min > 0 || m_section_max > 0)) {
+		const double v = number(m_section_column);
+		if ((m_section_min > 0 && v < m_section_min - 1e-9)
+			|| (m_section_max > 0 && v > m_section_max + 1e-9)) return false;
+	}
+	if (m_chain_only) {
+		if (m_chain_column < 0) return false;
+		const QString v = sourceModel()->index(source_row, m_chain_column, source_parent)
+				.data(Qt::DisplayRole).toString().trimmed().toLower();
+		if (v != QLatin1String("ja") && v != QLatin1String("yes") && v != QLatin1String("1")) return false;
 	}
 	if (m_tokens.isEmpty()) {
 		return true;
@@ -312,6 +354,44 @@ void CableCreateDialog::buildNewTab()
 							 "type file) or of your own list"));
 	search_row->addWidget(m_catalog);
 	layout->addLayout(search_row);
+
+		//Technical filters: number of cores, core cross section and the
+		//fitness for an energy chain -- 0 in a field means no bound
+	auto *tech_row = new QHBoxLayout;
+	tech_row->addWidget(new QLabel(tr("Cores:"), page));
+	m_cores_min = new QSpinBox(page);
+	m_cores_max = new QSpinBox(page);
+	for (QSpinBox *s : {m_cores_min, m_cores_max}) {
+		s->setRange(0, 200);
+		s->setSpecialValueText(tr("any"));
+	}
+	tech_row->addWidget(m_cores_min);
+	tech_row->addWidget(new QLabel(QStringLiteral("\u2013"), page));
+	tech_row->addWidget(m_cores_max);
+	tech_row->addSpacing(12);
+	tech_row->addWidget(new QLabel(tr("Core cross section (mm²):"), page));
+	m_section_min = new QDoubleSpinBox(page);
+	m_section_max = new QDoubleSpinBox(page);
+	for (QDoubleSpinBox *s : {m_section_min, m_section_max}) {
+		s->setRange(0, 500);
+		s->setDecimals(2);
+		s->setSingleStep(0.25);
+		s->setSpecialValueText(tr("any"));
+	}
+	tech_row->addWidget(m_section_min);
+	tech_row->addWidget(new QLabel(QStringLiteral("\u2013"), page));
+	tech_row->addWidget(m_section_max);
+	tech_row->addSpacing(12);
+	m_chain_only = new QCheckBox(tr("Only fit for energy chains"), page);
+	m_chain_only->setToolTip(tr("Cable types marked as fit for energy chains (drag chains) in the catalog"));
+	tech_row->addWidget(m_chain_only);
+	tech_row->addStretch(1);
+	layout->addLayout(tech_row);
+	connect(m_cores_min, QOverload<int>::of(&QSpinBox::valueChanged), this, &CableCreateDialog::applyTechnicalFilter);
+	connect(m_cores_max, QOverload<int>::of(&QSpinBox::valueChanged), this, &CableCreateDialog::applyTechnicalFilter);
+	connect(m_section_min, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &CableCreateDialog::applyTechnicalFilter);
+	connect(m_section_max, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &CableCreateDialog::applyTechnicalFilter);
+	connect(m_chain_only, &QCheckBox::toggled, this, &CableCreateDialog::applyTechnicalFilter);
 
 		//What the checkbox hides is what cannot be taken: too few cores
 		//to carry the line which was just drawn, and -- when a type is
@@ -545,6 +625,7 @@ void CableCreateDialog::loadTypeFile()
 		disconnect(m_catalog, nullptr, this, nullptr);
 		connect(m_catalog, QOverload<int>::of(&QComboBox::currentIndexChanged), this, apply);
 	}
+	applyTechnicalFilter();
 
 	m_new_model->setHorizontalHeaderLabels(CableTypeList::translatedHeader(m_types.columns));
 
@@ -588,6 +669,19 @@ void CableCreateDialog::loadTypeFile()
 		m_new_table->setCurrentIndex(m_new_proxy->mapFromSource(source));
 		m_new_table->scrollTo(m_new_table->currentIndex());
 	}
+}
+
+/**
+	@brief CableCreateDialog::applyTechnicalFilter
+	Hand the ranges of the filter row to the type list.
+*/
+void CableCreateDialog::applyTechnicalFilter()
+{
+	if (!m_new_proxy || !m_cores_min) return;
+	m_new_proxy->setTechnicalFilter(
+		m_types.columns.indexOf(QStringLiteral("cores")), m_cores_min->value(), m_cores_max->value(),
+		m_types.columns.indexOf(QStringLiteral("section")), m_section_min->value(), m_section_max->value(),
+		m_types.columns.indexOf(QStringLiteral("chain")), m_chain_only->isChecked());
 }
 
 /**

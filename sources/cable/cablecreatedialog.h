@@ -38,6 +38,8 @@ class QTableView;
 class QTabWidget;
 class QWidget;
 class QComboBox;
+class QDoubleSpinBox;
+class QSpinBox;
 class QPushButton;
 
 /**
@@ -65,6 +67,15 @@ class CableFilterProxy : public QSortFilterProxyModel
 				lines), @p column that column, -1 for every line.
 			*/
 		void setCatalog(int column, const QString &catalog);
+			/**
+				Keep only the lines whose number of cores and core cross
+				section lie in a range (0 = no bound), and -- when
+				@p chain_only -- which are fit for an energy chain
+				(column @p chain_column says "Ja"/"Yes"/"1").
+			*/
+		void setTechnicalFilter(int cores_column, double cores_min, double cores_max,
+								int section_column, double section_min, double section_max,
+								int chain_column, bool chain_only);
 
 	protected:
 		bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
@@ -74,6 +85,9 @@ class CableFilterProxy : public QSortFilterProxyModel
 		bool m_hide_unsuitable = true;
 		int m_catalog_column = -1;
 		QString m_catalog;
+		int m_cores_column = -1, m_section_column = -1, m_chain_column = -1;
+		double m_cores_min = 0, m_cores_max = 0, m_section_min = 0, m_section_max = 0;
+		bool m_chain_only = false;
 };
 
 /**
@@ -227,6 +241,12 @@ class CableCreateDialog : public QDialog
 			///written with
 		QStringList m_own_columns;
 		QComboBox *m_catalog = nullptr;
+		QSpinBox *m_cores_min = nullptr;
+		QSpinBox *m_cores_max = nullptr;
+		QDoubleSpinBox *m_section_min = nullptr;
+		QDoubleSpinBox *m_section_max = nullptr;
+		QCheckBox *m_chain_only = nullptr;
+		void applyTechnicalFilter();
 
 		QLineEdit *m_existing_search = nullptr;
 		QCheckBox *m_existing_hide = nullptr;

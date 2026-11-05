@@ -1623,6 +1623,26 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
 <context>
     <name>CableCreateDialog</name>
     <message>
+        <source>Cores:</source>
+        <translation>Adern:</translation>
+    </message>
+    <message>
+        <source>any</source>
+        <translation>beliebig</translation>
+    </message>
+    <message>
+        <source>Core cross section (mm²):</source>
+        <translation>Aderquerschnitt (mm²):</translation>
+    </message>
+    <message>
+        <source>Only fit for energy chains</source>
+        <translation>Nur energiekettentauglich</translation>
+    </message>
+    <message>
+        <source>Cable types marked as fit for energy chains (drag chains) in the catalog</source>
+        <translation>Kabeltypen, die der Katalog als energiekettentauglich (schleppkettentauglich) führt</translation>
+    </message>
+    <message>
         <source>Catalog:</source>
         <translation>Katalog:</translation>
     </message>
@@ -2597,6 +2617,30 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
 </context>
 <context>
     <name>CableTypeList</name>
+    <message>
+        <source>Properties</source>
+        <translation>Eigenschaften</translation>
+    </message>
+    <message>
+        <source>Outer diameter</source>
+        <translation>Außendurchmesser</translation>
+    </message>
+    <message>
+        <source>Energy chain</source>
+        <translation>Energiekette</translation>
+    </message>
+    <message>
+        <source>Sheath</source>
+        <translation>Mantel</translation>
+    </message>
+    <message>
+        <source>Rated voltage</source>
+        <translation>Nennspannung</translation>
+    </message>
+    <message>
+        <source>Bending radius</source>
+        <translation>Biegeradius</translation>
+    </message>
     <message>
         <source>Catalog</source>
         <translation>Katalog</translation>

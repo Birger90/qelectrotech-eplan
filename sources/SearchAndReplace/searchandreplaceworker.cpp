@@ -606,6 +606,7 @@ ConductorProperties SearchAndReplaceWorker::replaceAdvanced(
 		else if (what == COND_TENSION_PROTOCOL) {properties.m_tension_protocol.replace(rx, replace);}
 		else if (what == COND_COLOR)            {properties.m_wire_color.replace(rx, replace);}
 		else if (what == COND_SECTION)          {properties.m_wire_section.replace(rx, replace);}
+		else if (what == COND_TYPE)             {properties.m_conductor_type.replace(rx, replace);}
 	}
 
 	return properties;

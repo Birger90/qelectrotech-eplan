@@ -1938,6 +1938,7 @@ add_executable(
   tst_searchreplaceconductor.cpp
   ${QET_DIR}/sources/SearchAndReplace/searchandreplaceworker.cpp
   ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/titleblockproperties.cpp
   ${QET_DIR}/sources/diagramcontext.cpp
   ${QET_DIR}/sources/qetinformation.cpp

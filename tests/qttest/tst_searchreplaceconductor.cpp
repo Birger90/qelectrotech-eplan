@@ -35,10 +35,12 @@ Diagram *QetGraphicsItem::diagram() const { notInThisTest("QetGraphicsItem::diag
 Diagram *DiagramTextItem::diagram() const { notInThisTest("DiagramTextItem::diagram"); }
 void DiagramTextItem::setPlainText(const QString &) { notInThisTest("DiagramTextItem::setPlainText"); }
 QETProject *Diagram::project() const { notInThisTest("Diagram::project"); }
-TitleBlockProperties BorderTitleBlock::exportTitleBlock() { notInThisTest("exportTitleBlock"); }
+TitleBlockProperties BorderTitleBlock::exportTitleBlock() const { notInThisTest("exportTitleBlock"); }
+QSet<Conductor *> Conductor::functionSeparatedConductors(const bool) { notInThisTest("functionSeparatedConductors"); }
+DiagramContext Element::elementInformations() const { notInThisTest("Element::elementInformations"); }
 Diagram *Conductor::diagram() const { notInThisTest("Conductor::diagram"); }
 ConductorProperties Conductor::properties() const { notInThisTest("Conductor::properties"); }
-QSet<Conductor *> Conductor::relatedPotentialConductors(const bool, QList<Terminal *> *)
+QSet<Conductor *> Conductor::relatedPotentialConductors(const bool, QList<Terminal *> *, const bool)
 { notInThisTest("relatedPotentialConductors"); }
 ChangeTitleBlockCommand::ChangeTitleBlockCommand(
 		Diagram *, const TitleBlockProperties &, const TitleBlockProperties &, QUndoCommand *)
@@ -80,10 +82,11 @@ class tst_searchreplaceconductor : public QObject
 		if (key == COND_TENSION_PROTOCOL) return &p.m_tension_protocol;
 		if (key == COND_COLOR)            return &p.m_wire_color;
 		if (key == COND_SECTION)          return &p.m_wire_section;
+		if (key == COND_TYPE)                return &p.m_conductor_type;
 		return nullptr;
 	}
 
-		// A wire whose six text fields all hold "A1"
+		// A wire whose seven text fields all hold "A1"
 	static ConductorProperties wire()
 	{
 		ConductorProperties p;

@@ -4280,6 +4280,21 @@ Hold Shift and drag to move this text on its own</source>
         <translation>Schaltschrank-Miniaturansicht erzeugen</translation>
     </message>
     <message>
+        <location filename="../sources/diagramview.cpp" line="157"/>
+        <source>Change type</source>
+        <comment>context menu action</comment>
+        <translation>Typ ändern</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../sources/diagramview.cpp" line="2530"/>
+        <source>Change the type of %n element(s)</source>
+        <comment>undo text</comment>
+        <translation>
+            <numerusform>Typ von %n Element ändern</numerusform>
+            <numerusform>Typ von %n Elementen ändern</numerusform>
+        </translation>
+    </message>
+    <message>
         <location filename="../sources/diagramview.cpp" line="165"/>
         <source>Sheet reference</source>
         <translation>Seitenverweis</translation>

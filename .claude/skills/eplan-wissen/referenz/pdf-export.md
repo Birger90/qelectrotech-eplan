@@ -153,6 +153,18 @@ reines Bild-PDF (PDF-Kopie) erfüllt das nicht, weil nichts springt.
   `jump_next/jump_prev` der Bauteile ein. Freie Texte haben im Fork aber nur ein Ziel (keine drei Bereiche).
   Ob das reicht, gegen das Original prüfen.
 
+**Beobachtet am Original-PDF (pymupdf `get_links()`, EPLAN-Plan mit 133 Seiten, 05.11.2026):** schließt die
+Lücke „von welchem Eintrag zu welchem Ziel“:
+- Klemmen-/Steckerplan: Funktionstext, Klemmen-/Pinnummer, Brückenmarke und Pfad einer Zeile sind EIN Link
+  vorwärts in der Sprungfolge. Hat die Leiste eine Folgeseite, zeigt er dorthin (Seite 84 -> 85 -> 86 -> 87);
+  auf der letzten bzw. einzigen Seite in den Stromlauf (Kette läuft also um, zurück zur Hauptfunktion).
+  Die Zielspalten (Ziel extern/intern) sind KEINE Links.
+- Steckerplan: nächstes Glied ist der Stücklisteneintrag des Steckers (Seite 103 -> 131); hat der Stecker keinen
+  Stücklisteneintrag, geht es in den Stromlauf.
+- Stückliste: SPS-Baugruppen springen auf das Stationsblatt (Hauptfunktion mit Artikel), nicht in die
+  Kartenübersicht.
+- Deckblatt, Ausführungsdaten, Strukturkennzeichenübersicht: keine Links.
+
 ## 5. Querverweis- und Unterbrechungspunkt-Sprünge
 
 - Querverweise sind im PDF Sprünge: Mitte einer querverwiesenen Nebenfunktion -> Hauptfunktion; Verweise auf

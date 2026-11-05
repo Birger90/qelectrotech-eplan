@@ -16,11 +16,13 @@ from pathlib import Path
 # „mit_Hilfskontakten“ ist ein ganzes Gerät (Motorschutzschalter), kein einzelner Kontakt.
 # (Muster im Dateinamen, Ordner-Muster, link_type, kindInformations)
 REGELN = [
-    (r"_Spule", r"", "master", {"type": "coil"}),
+    (r"(^|_)Spule", r"", "master", {"type": "coil"}),        # auch „Spule_230VAC_Plan.elmt“ (Name beginnt mit Spule)
     # Wendestarter 3RM1: Steuerteil (C1) trägt die Querverweise, Hauptstromkreis (B1) ist sein Leistungskontakt
     (r"^3RM1.*_C1", r"", "master", {"type": "coil"}),
     (r"^3RM1.*_B1", r"", "slave", {"type": "power", "state": "NO", "number": "3"}),
     (r"Motorschutzschalter_mit_Hilfskontakten|LS_\d-polig_mit_Hilfsschalter", r"", "master", {"type": "protection"}),
+    # Sanftstarter: das Schaltbild (Leistungsteil) trägt die Querverweise seiner Hilfs-/Fehlerkontakte
+    (r"_Schaltbild_Plan\.elmt$", r"/Sanftstarter/", "master", {"type": "coil"}),
     (r"_Uebersicht", r"/SPS/(6ES713|6ES7512|6ES7193-6AR|6AV2128)", "master", {"type": "plc"}),
     (r"_(24VDC-0VDC|AUX|1L\+-1M|1L\+-2M|L\+-M)_[A-Z]1\.elmt$|6AV2128-3GB06-0AX1_B1\.elmt$", r"/SPS/(6ES713|6ES7512|6AV2128)",
      "slave", {"type": "plc", "state": "NO", "number": "1"}),

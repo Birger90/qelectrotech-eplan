@@ -157,7 +157,8 @@ reines Bild-PDF (PDF-Kopie) erfüllt das nicht, weil nichts springt.
 Lücke „von welchem Eintrag zu welchem Ziel“:
 - Klemmen-/Steckerplan: Funktionstext, Klemmen-/Pinnummer, Brückenmarke und Pfad einer Zeile sind EIN Link
   vorwärts in der Sprungfolge. Hat die Leiste eine Folgeseite, zeigt er dorthin (Seite 84 -> 85 -> 86 -> 87);
-  auf der letzten bzw. einzigen Seite in den Stromlauf (Kette läuft also um, zurück zur Hauptfunktion).
+  auf der letzten bzw. einzigen Seite in den Stromlauf, und zwar auf die ERSTE Platzierung der Leiste (nicht die
+  einzelne Klemme): X5.1 letzte Seite -> Blatt 14 (Leiste dort definiert), X6 -> Blatt 30.
   Die Zielspalten (Ziel extern/intern) sind KEINE Links.
 - Steckerplan: nächstes Glied ist der Stücklisteneintrag des Steckers (Seite 103 -> 131); hat der Stecker keinen
   Stücklisteneintrag, geht es in den Stromlauf.
@@ -175,7 +176,7 @@ Lücke „von welchem Eintrag zu welchem Ziel“:
   Schrankaufbau stehen. Aufbau-Platzierungen springen vorwärts in die Stückliste.
 - Reihenfolge der Artikelsumme im Original: Hersteller, dann Bestellnummer (nicht nur Bestellnummer).
 - SPS-Karte: Die Kette enthält nur die Kartendarstellungen, nach Seite geordnet: Station (Hauptfunktion mit
-  Artikel) -> Kartenversorgung -> Kartenübersicht -> Schrankaufbau -> Stückliste -> Artikelsumme. Die Kanäle sind
+  Artikel) -> Busanschlüsse im Netzwerkplan -> Kartenversorgung -> Kartenübersicht -> Schrankaufbau -> Stückliste -> Artikelsumme. Die Kanäle sind
   eigene Funktionen mit eigener Kette (Kanal <-> Übersicht). Kartenübersicht springt rückwärts zur Versorgung,
   vorwärts in den Aufbau.
 - Klemme: Die Leiste im Schrankaufbau ist Glied der Klemmenkette (Stromlauf -> Aufbauseite der Leiste).

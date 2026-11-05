@@ -20,6 +20,7 @@
 
 #include "../diagram.h"
 #include "../diagramcommands.h"
+#include "element.h"
 #include "../lastusedstyle.h"
 #include "../qet.h"
 #include "../qetapp.h"
@@ -211,6 +212,34 @@ void IndependentTextItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 				return;
 			}
 		}
+			//The destination may also be an element (a row of a terminal
+			//plan, a cable or parts list leads to the device it names):
+			//show it as a cross reference does
+		if (Element *target = destinationElement()) {
+			Element::jumpTo(target);
+			event->accept();
+			return;
+		}
 	}
 	DiagramTextItem::mousePressEvent(event);
+}
+
+/**
+	@brief IndependentTextItem::destinationElement
+	@return the element of the project whose uuid is the destination of
+	this text, or nullptr when the destination is a folio, none or unknown.
+*/
+Element *IndependentTextItem::destinationElement() const
+{
+	if (m_destination.isNull() || !diagram() || !diagram()->project())
+		return nullptr;
+	const auto folios = diagram()->project()->diagrams();
+	for (Diagram *folio : folios) {
+		const auto elements = folio->elements();
+		for (Element *element : elements) {
+			if (element->uuid() == m_destination)
+				return element;
+		}
+	}
+	return nullptr;
 }

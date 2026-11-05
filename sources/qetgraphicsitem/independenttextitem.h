@@ -22,6 +22,8 @@
 
 #include <QUuid>
 
+class Element;
+
 /**
 	This class represents an independent text field on a particular diagram.
 	It may be moved, edited, and rotated.
@@ -63,12 +65,14 @@ class IndependentTextItem : public DiagramTextItem
 		qreal textWidth() const {return m_text_width;}
 		void setTextWidth(qreal width);
 
-			//The folio this text leads to (a reference such as /12.3):
-			//Ctrl-click follows it, and the PDF export makes it a link.
-			//Null for a text which leads nowhere. Navigation only, it does
-			//not make an electrical link.
+			//The folio this text leads to (a reference such as /12.3), or
+			//an element (a row of a terminal plan, a cable or parts list
+			//naming a device): Ctrl-click follows it, and the PDF export
+			//makes it a link. Null for a text which leads nowhere.
+			//Navigation only, it does not make an electrical link.
 		QUuid destination() const {return m_destination;}
 		void setDestination(const QUuid &folio);
+		Element *destinationElement() const;
 		
 	protected:
 		void mousePressEvent(QGraphicsSceneMouseEvent *event) override;

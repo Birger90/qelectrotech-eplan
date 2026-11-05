@@ -1,6 +1,41 @@
 ![](logo.png)
 
 
+> ## Dieser Fork: QElectroTech für EPLAN-Pläne und Herstellerdaten
+>
+> Dieser Fork (Zweig `feature/eplan-bauteil-import`) erweitert QElectroTech so, dass sich EPLAN-Schaltpläne
+> als echte, verknüpfte Pläne nachbauen lassen und Herstellerbauteile direkt nutzbar sind. Der Upstream
+> ([qelectrotech-source-mirror](https://github.com/qelectrotech/qelectrotech-source-mirror)) wird regelmäßig
+> eingemischt; alles Folgende gibt es nur hier.
+>
+> **Bauteil-Import** (Menü „Bauteil-Import“, ohne Oberfläche: `--import-eplan`)
+> - EPLAN-Makros und EDZ-Pakete: Grafik aus DXF, Schaltbild aus `.ema`, Anschlüsse und Artikeldaten; Black-Box-Rahmen,
+>   Kanalnamen und zerstückelte Linien werden bereinigt.
+> - DWG-Zeichnungen (AutoCAD 2004–2018) direkt, ohne Konverter; Aufbauansichten im Maßstab der EPLAN-Aufbaumakros.
+> - Artikeldaten aus WSCAD-Paketen (`.wspak`).
+> - Suche und Import direkt aus dem EPLAN Data Portal (Herstellerliste, Filter, Bildvorschau).
+>
+> **Navigation wie bei EPLAN**
+> - Freie Texte können nicht nur auf ein Blatt, sondern auch auf ein **Bauteil** zeigen (Attribut `destination`):
+>   Strg+Klick springt dorthin, der PDF-Export macht daraus einen Link, der auf das Bauteil zoomt – so springen
+>   Zeilen von Klemmen-, Kabel- und Stücklisten zum Gerät im Schaltplan.
+> - Gefüllte Verweispfeile im EPLAN-Aussehen.
+>
+> **Werkzeuge** (`tools/symbole/`)
+> - `pdf_symbol.py` / `pdf_blatt.py`: Symbole bzw. ganze Blätter 1:1 aus einem Vektor-PDF (z. B. EPLAN-Plan) übernehmen,
+>   mit echten Leitern und Knoten.
+> - `verknuepfung_setzen.py`: Master/Slave-Verknüpfungsart importierter Herstellersymbole nach ihrer Rolle setzen
+>   (Spule, Kontakt, Schutzschalter, SPS-Baugruppe, SPS-Kanal, Gerätepin).
+> - `anschluesse_ergaenzen.py`, `nachzeichnen_symbole.py`: Anschlüsse ergänzen, eigene Symbole nachzeichnen
+>   (`bauteile/nachgezeichnet/`).
+>
+> **Für KI-Assistenten**: der Skill `.claude/skills/qet-schaltplan-zeichnen` beschreibt, wie man EPLAN-artige Blätter per
+> Skript zeichnet, prüft und verknüpft.
+>
+> Herstellerdateien selbst sind nicht enthalten (Nutzungsbedingungen der Portale).
+
+---
+
 # QElectroTech
 
 ### What it is

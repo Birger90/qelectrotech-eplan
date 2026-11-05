@@ -164,13 +164,18 @@ void injectCrossRefLinks(QPdfEngine *engine, Diagram *diagram,
 		// --- A free text which leads to a folio (a reference such as /12.3) ---
 		if (auto *text = dynamic_cast<IndependentTextItem*>(item)) {
 			if (text->destination().isNull() || !diagram->project()) continue;
+			bool found = false;
 			const auto folios = diagram->project()->diagrams();
 			for (Diagram *folio : folios) {
 				if (folio->uuid() != text->destination()) continue;
 				injectLinkTo(text->mapRectToScene(text->boundingRect()), folio,
 							 folio->border_and_titleblock.insideBorderRect());
+				found = true;
 				break;
 			}
+				// ...or to an element: the link frames that element
+			if (!found)
+				injectLink(text->mapRectToScene(text->boundingRect()), text->destinationElement());
 			continue;
 		}
 

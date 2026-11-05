@@ -169,6 +169,11 @@ Lücke „von welchem Eintrag zu welchem Ziel“:
   Teilansichten eines Geräts verketten ebenso von Seite zu Seite.
 - SPS-Kanal: Neben dem Sprung zur Kartenübersicht ist der Stationsverweis („=SB/55/5“) ein eigener Link aufs
   Stationsblatt.
+- Artikelsummenstückliste: je Zeile ist nur die Menge ein Link, Ziel = erste Stücklistenseite mit dem Artikel.
+  Die Artikelsumme ist das LETZTE Glied der Sprungfolge eines Geräts; die Kette läuft um, daher springt die
+  Hauptfunktion im Schaltplan rückwärts in die Artikelsumme (-K268 -> Artikelsumme), ebenso Teile, die nur im
+  Schrankaufbau stehen. Aufbau-Platzierungen springen vorwärts in die Stückliste.
+- Reihenfolge der Artikelsumme im Original: Hersteller, dann Bestellnummer (nicht nur Bestellnummer).
 
 ## 5. Querverweis- und Unterbrechungspunkt-Sprünge
 

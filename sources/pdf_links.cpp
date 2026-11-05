@@ -136,6 +136,10 @@ void injectCrossRefLinks(QPdfEngine *engine, Diagram *diagram,
 		if (auto *elmt = dynamic_cast<Element*>(item)) {
 			if (Element *dest = elmt->destinationElement())
 				injectLink(elmt->mapRectToScene(elmt->boundingRect()), dest);
+				// a linked folio report: the arrow itself leads to its other
+				// end too, not only its label (as in EPLAN)
+			else if (Element *other = elmt->jumpTarget())
+				injectLink(elmt->mapRectToScene(elmt->boundingRect()), other);
 			continue;
 		}
 

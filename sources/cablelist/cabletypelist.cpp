@@ -278,7 +278,13 @@ QString CableTypeList::translatedColumn(const QString &column)
 		{QStringLiteral("section"),
 		 QCoreApplication::translate("CableTypeList", "Cable section")},
 		{QStringLiteral("color"),
-		 QCoreApplication::translate("CableTypeList", "Sheath color")}
+		 QCoreApplication::translate("CableTypeList", "Sheath color")},
+		{QStringLiteral("catalog"),
+		 QCoreApplication::translate("CableTypeList", "Catalog")},
+		{QStringLiteral("manufacturer"),
+		 QCoreApplication::translate("CableTypeList", "Manufacturer")},
+		{QStringLiteral("manufacturer_reference"),
+		 QCoreApplication::translate("CableTypeList", "Article number")}
 	};
 
 	const auto it = own.constFind(column);
@@ -821,4 +827,68 @@ bool CableTypeList::createFile(const QString &path, QString *error)
 bool CableTypeList::isEmptyFile(const QString &path)
 {
 	return !hasContent(path);
+}
+
+/**
+	@brief CableTypeList::catalogDirectory
+	@param type_file the cable type file of the user
+	@return the folder holding the manufacturer catalogues: "cable-catalogs"
+	beside that file. Each CSV file in it is one catalogue (LAPP.csv,
+	igus.csv...), written the same way as the cable type file.
+*/
+QString CableTypeList::catalogDirectory(const QString &type_file)
+{
+	return QFileInfo(type_file).absolutePath() + QStringLiteral("/cable-catalogs");
+}
+
+/**
+	@brief CableTypeList::catalogFiles
+	@return the catalogue files, sorted by name
+*/
+QStringList CableTypeList::catalogFiles(const QString &type_file)
+{
+	QDir dir(catalogDirectory(type_file));
+	QStringList out;
+	for (const QString &name : dir.entryList({QStringLiteral("*.csv")}, QDir::Files, QDir::Name))
+		out << dir.absoluteFilePath(name);
+	return out;
+}
+
+/**
+	@brief CableTypeList::loadWithCatalogs
+	Read the cable type file of the user, then every manufacturer
+	catalogue after it. The lines of a catalogue carry its name in the
+	column "catalog" (the file name without extension), which comes first
+	as soon as there is a catalogue; the user's own lines leave it empty.
+	@param type_file the cable type file of the user
+	@param data receives the lines: first those of the user, then the
+	catalogues
+	@param own_columns receives the columns of the user's file alone, the
+	ones a line he adds or edits is written with
+	@return how many lines come from the user's own file
+*/
+int CableTypeList::loadWithCatalogs(const QString &type_file, CableTypeListData *data,
+									QStringList *own_columns)
+{
+	*data = CableTypeListData();
+	load(type_file, data);
+	if (own_columns) *own_columns = data->columns;
+	const int own = data->records.size();
+	const QStringList files = catalogFiles(type_file);
+	for (const QString &file : files)
+	{
+		CableTypeListData catalog;
+		if (!load(file, &catalog)) continue;
+		const QString name = QFileInfo(file).completeBaseName();
+		for (const QString &column : std::as_const(catalog.columns))
+			if (!data->columns.contains(column)) data->columns.append(column);
+		for (CableTypeRecord record : std::as_const(catalog.records))
+		{
+			record.setValue(catalogColumn(), name);
+			data->records.append(record);
+		}
+	}
+	if (!files.isEmpty() && !data->columns.contains(catalogColumn()))
+		data->columns.prepend(catalogColumn());
+	return own;
 }

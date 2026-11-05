@@ -66,6 +66,7 @@
 #include "diagramevent/diagrameventfillet.h"
 #include "diagramevent/diagrameventaddtext.h"
 #include "cable/cablepart.h"
+#include "cable/cableoverviewdialog.h"
 #include "cable/editcablecommand.h"
 #include "bridge/bridgepart.h"
 #include "bridge/bridgeundocommands.h"
@@ -1256,6 +1257,17 @@ void QETDiagramEditor::setUpActions()
 	});
 
 		//Export the whole cable list to CSV, every column of the list
+	// Every cable of the project in one list, its type chosen from the
+	// cable type file or a manufacturer catalogue
+	m_cable_overview = new QAction(QET::Icons::DocumentSpreadsheet, tr("Cable list (choose types)..."), this);
+	m_cable_overview->setStatusTip(tr("Lists every cable of the project; the type of a cable is chosen "
+									  "from your cable type list or a manufacturer catalog"));
+	connect(m_cable_overview, &QAction::triggered, [this]() {
+		if (QETProject *project = currentProject()) {
+			CableOverviewDialog dialog(project, this);
+			dialog.exec();
+		}
+	});
 	m_export_cable_list = new QAction(QET::Icons::DocumentSpreadsheet, tr("Export the cable list to CSV format"), this);
 	connect(m_export_cable_list, &QAction::triggered, [this]() {
 		QETProject *project = this->currentProject();
@@ -2240,6 +2252,7 @@ void QETDiagramEditor::setUpMenu()
 	menu_project->addAction(m_project_languages);
 	menu_project -> addSeparator();
 	menu_project -> addAction(m_csv_export);
+	menu_project -> addAction(m_cable_overview);
 	menu_project -> addAction(m_export_cable_list);
 	menu_project -> addAction(m_project_export_conductor_num);
 	menu_project -> addAction(m_project_export_wiring_list);
@@ -3863,6 +3876,7 @@ void QETDiagramEditor::slot_updateActions()
 	m_cable_numbering             -> setEnabled(editable_project);
 	m_add_cable_list              -> setEnabled(editable_project);
 	m_export_cable_list           -> setEnabled(editable_project);
+	m_cable_overview              -> setEnabled(editable_project);
 	m_reload_element_drawings     -> setEnabled(opened_project);
 	m_update_elements_from_collections -> setEnabled(editable_project);
 #ifdef QET_HAS_SCRIPTING

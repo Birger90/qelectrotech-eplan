@@ -37,6 +37,8 @@
 #include <QMessageBox>
 #include <QModelIndex>
 #include <QPushButton>
+#include <QComboBox>
+#include <QFileInfo>
 #include <QSpinBox>
 #include <QStandardItem>
 #include <QStandardItemModel>
@@ -98,6 +100,26 @@ void CableFilterProxy::setHideUnsuitable(bool hide)
 }
 
 /**
+	@brief CableFilterProxy::setCatalog
+	@param column the catalogue column of the source model, -1 for all
+	@param catalog the catalogue kept, empty for the user's own lines
+*/
+void CableFilterProxy::setCatalog(int column, const QString &catalog)
+{
+	if (m_catalog_column == column && m_catalog == catalog) return;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+	beginFilterChange();
+	m_catalog_column = column;
+	m_catalog = catalog;
+	endFilterChange(QSortFilterProxyModel::Direction::Rows);
+#else
+	m_catalog_column = column;
+	m_catalog = catalog;
+	invalidateFilter();
+#endif
+}
+
+/**
 	@brief CableFilterProxy::filterAcceptsRow
 	@param source_row
 	@param source_parent
@@ -108,6 +130,11 @@ bool CableFilterProxy::filterAcceptsRow(int source_row, const QModelIndex &sourc
 	const QModelIndex first = sourceModel()->index(source_row, 0, source_parent);
 
 	if (m_hide_unsuitable && first.data(UnsuitableRole).toBool()) {
+		return false;
+	}
+	if (m_catalog_column >= 0
+		&& sourceModel()->index(source_row, m_catalog_column, source_parent)
+			   .data(Qt::DisplayRole).toString() != m_catalog) {
 		return false;
 	}
 	if (m_tokens.isEmpty()) {
@@ -276,6 +303,14 @@ void CableCreateDialog::buildNewTab()
 	m_new_search->setClearButtonEnabled(true);
 	m_new_search->setPlaceholderText(tr("Filter cable types"));
 	search_row->addWidget(m_new_search, 1);
+		//The manufacturer catalogues (folder cable-catalogs beside the
+		//cable type file): all of them, the user's own list, or one
+	search_row->addWidget(new QLabel(tr("Catalog:"), page));
+	m_catalog = new QComboBox(page);
+	m_catalog->setToolTip(tr("Cable types of one manufacturer catalog (CSV files "
+							 "in the folder \"cable-catalogs\" beside the cable "
+							 "type file) or of your own list"));
+	search_row->addWidget(m_catalog);
 	layout->addLayout(search_row);
 
 		//What the checkbox hides is what cannot be taken: too few cores
@@ -479,8 +514,37 @@ void CableCreateDialog::loadTypeFile()
 	if (path.isEmpty()) {
 		path = CableTypeList::defaultPath();
 	}
-	m_types = CableTypeListData();
-	CableTypeList::load(path, &m_types);
+	m_own_count = CableTypeList::loadWithCatalogs(path, &m_types, &m_own_columns);
+
+		//The catalogue chooser: all lines, the user's own, then one entry
+		//per catalogue file -- keeping the choice across a reload
+	if (m_catalog)
+	{
+		const QString kept = m_catalog->currentData().toString();
+		const bool had = m_catalog->count() > 0;
+		const int column = m_types.columns.indexOf(CableTypeList::catalogColumn());
+		m_catalog->blockSignals(true);
+		m_catalog->clear();
+		m_catalog->addItem(tr("All"), QStringLiteral("*"));
+		if (column >= 0) {
+			m_catalog->addItem(tr("Own list"), QString());
+			for (const QString &file : CableTypeList::catalogFiles(path)) {
+				const QString name = QFileInfo(file).completeBaseName();
+				m_catalog->addItem(name, name);
+			}
+		}
+		const int at = had ? m_catalog->findData(kept) : 0;
+		m_catalog->setCurrentIndex(at < 0 ? 0 : at);
+		m_catalog->setEnabled(column >= 0);
+		m_catalog->blockSignals(false);
+		auto apply = [this, column]() {
+			const QString value = m_catalog->currentData().toString();
+			m_new_proxy->setCatalog(value == QStringLiteral("*") ? -1 : column, value);
+		};
+		apply();
+		disconnect(m_catalog, nullptr, this, nullptr);
+		connect(m_catalog, QOverload<int>::of(&QComboBox::currentIndexChanged), this, apply);
+	}
 
 	m_new_model->setHorizontalHeaderLabels(CableTypeList::translatedHeader(m_types.columns));
 
@@ -710,7 +774,7 @@ void CableCreateDialog::selectionChanged()
 	if (m_edit_button)
 	{
 		m_edit_button->setEnabled(on_new_tab && index.isValid()
-								  && index.row() < m_types.records.size());
+								  && index.row() < m_own_count);
 	}
 
 	if (!acceptable) return;
@@ -1013,7 +1077,9 @@ QString CableCreateDialog::typeFilePath() const
 */
 void CableCreateDialog::addTypeRecord()
 {
-	QStringList columns = m_types.columns;
+		//Written to his own file, with its own columns: not the
+		//catalogue column, nor the columns only a catalogue has
+	QStringList columns = m_own_columns;
 	if (columns.isEmpty()) {
 		columns = CableTypeList::defaultColumns();
 	}
@@ -1070,9 +1136,10 @@ void CableCreateDialog::editTypeRecord()
 	const QModelIndex index = currentSourceIndex();
 	if (!index.isValid() || index.row() >= m_types.records.size()) return;
 
+	if (index.row() >= m_own_count) return;          //a catalogue line is read-only
 	const CableTypeRecord before = m_types.records.at(index.row());
 
-	QStringList columns = m_types.columns;
+	QStringList columns = m_own_columns;
 	if (columns.isEmpty()) {
 		columns = CableTypeList::defaultColumns();
 	}

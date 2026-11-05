@@ -1102,6 +1102,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/cable/cablecopy.h
   ${QET_DIR}/sources/cable/cablecreatedialog.cpp
   ${QET_DIR}/sources/cable/cablecreatedialog.h
+  ${QET_DIR}/sources/cable/cableoverviewdialog.cpp
+  ${QET_DIR}/sources/cable/cableoverviewdialog.h
   ${QET_DIR}/sources/cable/cablemanager.cpp
   ${QET_DIR}/sources/cable/cablemanager.h
   ${QET_DIR}/sources/cable/cablepart.cpp

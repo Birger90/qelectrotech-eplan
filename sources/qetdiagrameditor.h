@@ -330,6 +330,7 @@ class QETDiagramEditor : public QETMainWindow
 		*m_cable_numbering,            ///< Action to open the cable numbering window (rule + numbering of every cable)
 		*m_add_cable_list,             ///< Add a cable list graphics item
 		*m_export_cable_list,          ///< Export the cable list of the project to CSV
+		*m_cable_overview,             ///< Window listing every cable, where its type is chosen
 		*m_reload_element_drawings,    ///< Action to redraw every placed element from its current definition
 		*m_update_elements_from_collections, ///< Action to replace embedded elements changed in their collection
 #ifdef QET_HAS_SCRIPTING

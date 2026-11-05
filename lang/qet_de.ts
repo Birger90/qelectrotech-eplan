@@ -1623,6 +1623,22 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
 <context>
     <name>CableCreateDialog</name>
     <message>
+        <source>Catalog:</source>
+        <translation>Katalog:</translation>
+    </message>
+    <message>
+        <source>Cable types of one manufacturer catalog (CSV files in the folder "cable-catalogs" beside the cable type file) or of your own list</source>
+        <translation>Kabeltypen eines Herstellerkatalogs (CSV-Dateien im Ordner „cable-catalogs“ neben der Kabeltypdatei) oder der eigenen Liste</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>Alle</translation>
+    </message>
+    <message>
+        <source>Own list</source>
+        <translation>Eigene Liste</translation>
+    </message>
+    <message>
         <location filename="../sources/cable/cablecreatedialog.cpp" line="180"/>
         <location filename="../sources/cable/cablecreatedialog.cpp" line="928"/>
         <location filename="../sources/cable/cablecreatedialog.cpp" line="1180"/>
@@ -2581,6 +2597,18 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
 </context>
 <context>
     <name>CableTypeList</name>
+    <message>
+        <source>Catalog</source>
+        <translation>Katalog</translation>
+    </message>
+    <message>
+        <source>Manufacturer</source>
+        <translation>Hersteller</translation>
+    </message>
+    <message>
+        <source>Article number</source>
+        <translation>Artikelnummer</translation>
+    </message>
     <message>
         <location filename="../sources/cablelist/cabletypelist.cpp" line="273"/>
         <source>Designation</source>
@@ -13966,6 +13994,14 @@ Verfügbare Optionen:
 </context>
 <context>
     <name>QETDiagramEditor</name>
+    <message>
+        <source>Cable list (choose types)...</source>
+        <translation>Kabelliste (Typen wählen)…</translation>
+    </message>
+    <message>
+        <source>Lists every cable of the project; the type of a cable is chosen from your cable type list or a manufacturer catalog</source>
+        <translation>Listet alle Kabel des Projekts; der Typ eines Kabels wird aus der eigenen Kabeltypliste oder einem Herstellerkatalog gewählt</translation>
+    </message>
     <message>
         <source>Part import</source>
         <translation>Bauteil-Import</translation>
@@ -29231,6 +29267,61 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <message>
         <source>Reset all filter schemes to defaults?</source>
         <translation>Alle Filterschemata auf Standard zurücksetzen?</translation>
+    </message>
+</context>
+<context>
+    <name>CableOverviewDialog</name>
+    <message>
+        <source>Cable list</source>
+        <translation>Kabelliste</translation>
+    </message>
+    <message>
+        <source>Search:</source>
+        <translation>Suchen:</translation>
+    </message>
+    <message>
+        <source>Filter cables</source>
+        <translation>Kabel filtern</translation>
+    </message>
+    <message>
+        <source>Choose type...</source>
+        <translation>Typ wählen…</translation>
+    </message>
+    <message>
+        <source>Choose the type of the selected cable from your cable type list or a manufacturer catalog</source>
+        <translation>Typ des gewählten Kabels aus der eigenen Kabeltypliste oder einem Herstellerkatalog wählen</translation>
+    </message>
+    <message>
+        <source>Designation</source>
+        <translation>Bezeichnung</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Typ</translation>
+    </message>
+    <message>
+        <source>Cores</source>
+        <translation>Adern</translation>
+    </message>
+    <message>
+        <source>Core colors</source>
+        <translation>Aderfarben</translation>
+    </message>
+    <message>
+        <source>Plant</source>
+        <translation>Anlage</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation>Ort</translation>
+    </message>
+    <message>
+        <source>Folios</source>
+        <translation>Blätter</translation>
+    </message>
+    <message>
+        <source>(no type)</source>
+        <translation>(kein Typ)</translation>
     </message>
 </context>
 </TS>

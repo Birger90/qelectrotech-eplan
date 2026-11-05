@@ -37,6 +37,7 @@ class QStandardItemModel;
 class QTableView;
 class QTabWidget;
 class QWidget;
+class QComboBox;
 class QPushButton;
 
 /**
@@ -58,6 +59,12 @@ class CableFilterProxy : public QSortFilterProxyModel
 
 		void setTokens(const QStringList &tokens);
 		void setHideUnsuitable(bool hide);
+			/**
+				Keep only the lines of one catalogue: @p catalog is the
+				value of the catalogue column (empty: the user's own
+				lines), @p column that column, -1 for every line.
+			*/
+		void setCatalog(int column, const QString &catalog);
 
 	protected:
 		bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
@@ -65,6 +72,8 @@ class CableFilterProxy : public QSortFilterProxyModel
 	private:
 		QStringList m_tokens;
 		bool m_hide_unsuitable = true;
+		int m_catalog_column = -1;
+		QString m_catalog;
 };
 
 /**
@@ -211,6 +220,13 @@ class CableCreateDialog : public QDialog
 			///can only work on a line which was picked
 		QPushButton *m_edit_button = nullptr;
 		CableTypeListData m_types;
+			///How many lines of m_types are the user's own (the rest come
+			///from the manufacturer catalogues and are read-only)
+		int m_own_count = 0;
+			///The columns of the user's own file, the ones his lines are
+			///written with
+		QStringList m_own_columns;
+		QComboBox *m_catalog = nullptr;
 
 		QLineEdit *m_existing_search = nullptr;
 		QCheckBox *m_existing_hide = nullptr;

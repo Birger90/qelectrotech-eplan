@@ -100,6 +100,15 @@ class CableTypeList
 		static int coreCount(const CableTypeRecord &record);
 		static QStringList coreColors(const CableTypeRecord &record);
 
+		//Manufacturer catalogues: every CSV file of the folder
+		//"cable-catalogs" beside the cable type file is read with it,
+		//its lines read-only and marked with the catalogue they come from
+		static QString catalogDirectory(const QString &type_file);
+		static QStringList catalogFiles(const QString &type_file);
+		static int loadWithCatalogs(const QString &type_file, CableTypeListData *data,
+									QStringList *own_columns = nullptr);
+		static QString catalogColumn() {return QStringLiteral("catalog");}
+
 		//File io
 		static bool load(const QString &path, CableTypeListData *data, QString *error = nullptr);
 		static bool writeFile(const QString &path, const CableTypeListData &data, QString *error = nullptr);

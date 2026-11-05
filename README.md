@@ -1,42 +1,72 @@
 ![](logo.png)
 
 
-> ## Dieser Fork: QElectroTech für EPLAN-Pläne und Herstellerdaten
+> ## This fork: QElectroTech for EPLAN schematics and manufacturer data
 >
-> Dieser Fork (Zweig `feature/eplan-bauteil-import`) erweitert QElectroTech so, dass sich EPLAN-Schaltpläne
-> als echte, verknüpfte Pläne nachbauen lassen und Herstellerbauteile direkt nutzbar sind. Der Upstream
-> ([qelectrotech-source-mirror](https://github.com/qelectrotech/qelectrotech-source-mirror)) wird regelmäßig
-> eingemischt; alles Folgende gibt es nur hier.
+> 🇩🇪 [Deutsche Fassung](README.de.md)
 >
-> **Bauteil-Import** (Menü „Bauteil-Import“, ohne Oberfläche: `--import-eplan`)
-> - EPLAN-Makros und EDZ-Pakete: Grafik aus DXF, Schaltbild aus `.ema`, Anschlüsse und Artikeldaten; Black-Box-Rahmen,
->   Kanalnamen und zerstückelte Linien werden bereinigt.
-> - DWG-Zeichnungen (AutoCAD 2004–2018) direkt, ohne Konverter; Aufbauansichten im Maßstab der EPLAN-Aufbaumakros.
-> - Artikeldaten aus WSCAD-Paketen (`.wspak`).
-> - Suche und Import direkt aus dem EPLAN Data Portal (Herstellerliste, Filter, Bildvorschau).
+> This fork (branch `feature/eplan-bauteil-import`) extends QElectroTech so that EPLAN schematics can be rebuilt as
+> real, linked projects — navigating like an EPLAN PDF and carrying their data the way EPLAN does — and so that
+> manufacturer parts and cables can be used directly. The upstream
+> ([qelectrotech-source-mirror](https://github.com/qelectrotech/qelectrotech-source-mirror)) is merged regularly;
+> everything below exists only here.
 >
-> **Navigation wie bei EPLAN**
-> - Freie Texte können nicht nur auf ein Blatt, sondern auch auf ein **Bauteil** zeigen (Attribut `destination`):
->   Strg+Klick springt dorthin, der PDF-Export macht daraus einen Link, der auf das Bauteil zoomt – so springen
->   Zeilen von Klemmen-, Kabel- und Stücklisten zum Gerät im Schaltplan.
-> - Gefüllte Verweispfeile im EPLAN-Aussehen.
+> **Part import** (menu "Part import", headless: `--import-eplan`)
+> - EPLAN macros and EDZ packages: graphics from DXF, schematic from `.ema`, terminals and article data; black box
+>   frames, channel names and broken lines are cleaned up. Terminal designations are split per line, terminal
+>   descriptions come from the right EPLAN property.
+> - DWG drawings (AutoCAD 2004–2018) read directly, no converter; mounting views at the scale of the EPLAN macros.
+> - Article data from WSCAD packages (`.wspak`).
+> - Search and import straight from the EPLAN Data Portal (manufacturer list, filters, picture preview).
 >
-> **Werkzeuge** (`tools/symbole/`)
-> - `pdf_symbol.py` / `pdf_blatt.py`: Symbole bzw. ganze Blätter 1:1 aus einem Vektor-PDF (z. B. EPLAN-Plan) übernehmen,
->   mit echten Leitern und Knoten.
-> - `verknuepfung_setzen.py`: Master/Slave-Verknüpfungsart importierter Herstellersymbole nach ihrer Rolle setzen
->   (Spule, Kontakt, Schutzschalter, SPS-Baugruppe, SPS-Kanal, Gerätepin).
-> - `anschluesse_ergaenzen.py`, `nachzeichnen_symbole.py`: Anschlüsse ergänzen, eigene Symbole nachzeichnen
+> **Navigation like EPLAN** (in QET and in the exported PDF)
+> - EPLAN's three-way jump on a part: left third forward through the jump sequence of the device, middle to its main
+>   function, right third backward (Ctrl+double-click in QET; three link areas in the PDF).
+> - Free texts, parts and cables can point to a folio or to a part (`destination`): rows of terminal, cable and parts
+>   lists jump to the device; Ctrl+click follows, the PDF link zooms onto it.
+> - A linked folio report arrow is itself a link to its partner, not only its text. Filled report arrows in the
+>   EPLAN look.
+>
+> **Data like EPLAN instead of typed text**
+> - PLC: a card (PLC master) keeps its I/O table (address, function text, comment, terminals); each channel is bound
+>   to its row (`group_index`) and shows those values through its fields — edit the table, the channels follow.
+> - Contacts: a placed coil can carry its own contact groups (11/12/14, 21/22/24 …), like the function template of
+>   an EPLAN article; the contacts take their terminal names from it and the contact mirror shows them.
+> - Cross reference formula `%=M`: the plant is shown only when it differs from the sheet's own (`/42/1`,
+>   `=DC/38/2`), as in EPLAN.
+>
+> **Sheets and title block**
+> - Light grey stamps over the sheet like an EPLAN form: title block variables `watermark` (diagonal, e.g. the print
+>   date) and `watermark-side` (upright at the right edge); empty = off, per folio or as project default.
+> - New title block variables `%{printdate}` and `%{saveddate-de}` (DD.MM.YYYY).
+> - Script API: `outsideSheet(folio)` lists what lies outside the sheet.
+>
+> **Cables**
+> - Menu Project > *Cable list (choose types)…*: every cable of the project with type, cores, colours, plant,
+>   location and folios; *Choose type…* changes the type in one undo step.
+> - Manufacturer catalogues: every CSV in the folder `cable-catalogs` beside the cable type file is read as a
+>   read-only catalogue. Filters for catalogue, number of cores, core cross section, energy chain suitability and
+>   properties (shielded, halogen free, UL/CSA, torsion …).
+> - `tools/kabelkatalog/kabelkatalog_eplan.py` builds such catalogues from the free EPLAN article data of the
+>   manufacturers (e.g. igus chainflex, LAPP): cores with colours, cross section, outer diameter, voltage, article
+>   number.
+>
+> **Tools** (`tools/symbole/`)
+> - `pdf_symbol.py` / `pdf_blatt.py`: take symbols or whole sheets 1:1 from a vector PDF (e.g. an EPLAN plan), with
+>   real conductors and nodes.
+> - `verknuepfung_setzen.py`: set the master/slave link type of imported manufacturer symbols by their role (coil,
+>   contact, protection device, PLC module, PLC channel, device pin).
+> - `anschluesse_ergaenzen.py`, `nachzeichnen_symbole.py`: add missing terminals, redraw your own symbols
 >   (`bauteile/nachgezeichnet/`).
 >
-> **Für KI-Assistenten**: zwei Skills unter `.claude/skills/` (Claude Code lädt sie im Klon automatisch; andere
-> Werkzeuge: die jeweilige `SKILL.md` lesen, sie verweist auf ihre Unterdateien):
-> - `qet-schaltplan-zeichnen` – wie man EPLAN-artige Blätter per Skript zeichnet, prüft und verknüpft.
-> - `eplan-wissen` – die EPLAN-Plattform-Hilfe 2.9 in eigenen Worten (PDF-Sprünge, Querverweise, Kennzeichnung,
->   Klemmen, Kabel, SPS, Auswertungen, Makros/Artikel, Eigenschafts-IDs, Prüfmeldungen …), jede Regel mit Quell-URL
->   und „Bedeutung für QET“. Einstieg: `.claude/skills/eplan-wissen/SKILL.md`.
+> **For AI assistants**: two skills in `.claude/skills/` (Claude Code loads them in a clone; other tools: read the
+> `SKILL.md`, it points to its sub files):
+> - `qet-schaltplan-zeichnen` – how to draw, check and link EPLAN-style sheets by script.
+> - `eplan-wissen` – the EPLAN platform help 2.9 in own words (PDF jumps, cross references, designations, terminals,
+>   cables, PLC, reports, macros/articles, property IDs, check messages …), every rule with its source URL and its
+>   meaning for QET. Start: `.claude/skills/eplan-wissen/SKILL.md`.
 >
-> Herstellerdateien selbst sind nicht enthalten (Nutzungsbedingungen der Portale).
+> Manufacturer files themselves are not included (terms of use of the portals).
 
 ---
 

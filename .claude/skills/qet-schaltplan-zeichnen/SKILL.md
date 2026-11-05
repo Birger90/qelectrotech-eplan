@@ -249,3 +249,7 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
 - Cross reference position "text field" (`xrefpos="AlignHCenter"`) keeps the slave cross reference off the sheet.
 - **Stamps**: title block variables `watermark` (diagonal) and `watermark-side` (upright, right edge), light grey,
   may use variables such as `%{printdate}` and `%{saveddate-de}`; empty = off.
+- **Cable types from manufacturer catalogues**: every CSV in `cable-catalogs` beside the cable type file is a
+  read-only catalogue in the type window (filters: catalogue, cores, core cross section, energy chain, properties).
+  Build it from EPLAN article data with `tools/kabelkatalog/kabelkatalog_eplan.py` (cable article = function
+  template category 400, cores = category 4 / id 4 with `connectionDesignation` as colour).

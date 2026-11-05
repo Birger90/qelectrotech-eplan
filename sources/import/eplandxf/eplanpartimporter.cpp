@@ -540,10 +540,11 @@ bool EplanPartImporter::importDxf(const QString &dxf_path, const QString &edz_pa
 	}
 
 	QString name = type, type_nr = type, order_nr;
+	EdzPart part;
+	bool has_part = false;
 	if (!edz_path.isEmpty()) {
 		EdzArchive archive;
-		EdzPart part;
-		if (!archive.extract(edz_path) || !part.parse(archive.partXmlPath())) {
+		if (!archive.extract(edz_path) || !(has_part = part.parse(archive.partXmlPath()))) {
 			m_messages << QStringLiteral("No part data from %1").arg(QFileInfo(edz_path).fileName());
 		} else {
 			// EPLAN multilingual text: "??_??@{{text}};de_DE@text;..."
@@ -573,8 +574,9 @@ bool EplanPartImporter::importDxf(const QString &dxf_path, const QString &edz_pa
 	if (!ensureDirs(collection_dir, {manufacturer, category, type}, &folder, &m_error)) return false;
 
 	auto write = [&](const EplanSymbolData &data, const QString &element_name) {
-		const QDomDocument doc = EplanElementBuilder::build(
+		QDomDocument doc = EplanElementBuilder::build(
 			data, {{QStringLiteral("de"), element_name}, {QStringLiteral("en"), element_name}}, info);
+		if (has_part) part.appendMountingData(doc);
 		const QString out = QDir(folder).filePath(safe(element_name) + QStringLiteral(".elmt"));
 		if (!writeElement(doc, out, &m_error)) return false;
 		m_written << out;
@@ -777,8 +779,9 @@ bool EplanPartImporter::importEdz(const QString &edz_path, const QString &manufa
 			{QStringLiteral("description"), reader.description()},
 			{QStringLiteral("label"), QLatin1Char('-') + (letters.isEmpty() ? QStringLiteral("K") : letters)}};
 		const QString element_name = QStringLiteral("%1 Schaltbild").arg(type);
-		const QDomDocument doc = EplanElementBuilder::build(
+		QDomDocument doc = EplanElementBuilder::build(
 			data, {{QStringLiteral("de"), element_name}, {QStringLiteral("en"), element_name}}, info);
+		if (has_part) part.appendMountingData(doc);
 		const QString out = QDir(folder).filePath(safe(element_name) + QStringLiteral(".elmt"));
 		if (!writeElement(doc, out, &m_error)) return false;
 		m_written << out;

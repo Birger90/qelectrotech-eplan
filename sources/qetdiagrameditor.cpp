@@ -161,6 +161,7 @@
 #include <QUrl>
 #include <algorithm>
 #include "foliogrid.h"
+#include "panel/panelmenu.h"
 
 namespace {
 	/**
@@ -2099,6 +2100,8 @@ void QETDiagramEditor::setUpMenu()
 	insertMenu(settings_menu_, menu_numbering);
 	insertMenu(settings_menu_, menu_lists);
 	insertMenu(settings_menu_, menu_affichage);
+		//Cabinet layout: mounting surfaces, rails, ducts, drilling, DXF, 3D
+	insertMenu(settings_menu_, new PanelMenu(this));
 	insertMenu(help_menu_, windows_menu);
 
 	// Part import: manufacturer EPLAN data as elements of a collection
@@ -3877,6 +3880,7 @@ void QETDiagramEditor::slot_updateActions()
 	m_add_cable_list              -> setEnabled(editable_project);
 	m_export_cable_list           -> setEnabled(editable_project);
 	m_cable_overview              -> setEnabled(editable_project);
+	if (auto *panel_menu = findChild<PanelMenu *>()) panel_menu->updateActions();
 	m_reload_element_drawings     -> setEnabled(opened_project);
 	m_update_elements_from_collections -> setEnabled(editable_project);
 #ifdef QET_HAS_SCRIPTING

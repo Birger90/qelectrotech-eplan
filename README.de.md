@@ -60,6 +60,24 @@ In QET und im exportierten PDF:
 - `tools/kabelkatalog/kabelkatalog_eplan.py` erzeugt solche Kataloge aus den frei erhältlichen EPLAN-Artikeldaten der
   Hersteller (z. B. igus chainflex, LAPP): Adern mit Farben, Querschnitt, Außendurchmesser, Spannung, Artikelnummer.
 
+## Schaltschrankaufbau und Tafelfertigung
+
+Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem normalen Blatt:
+
+- Montageflächen (Platte, Tür, Wand) im Maßstab, Hutschienen, Kabelkanäle und C-Profile mit Befestigungsreihe
+  (Gewinde oder Durchgangsloch, Abstand, Randabstand, Nullschnitt), Ausschnitte (rund, Rechteck, Langloch, Sechs-
+  und Achtkant) und Sperrflächen – normale Formen mit einer `<panel>`-Rolle, also verschieb-, kopier- und rückgängig
+  machbar wie jede Form.
+- *Geräte aus dem Schaltplan platzieren*: jedes Gerät wird ein Rechteck in echter Größe (Vignette, nicht in der
+  Stückliste), auf die Hutschienen gerastet, mit dem Bohrbild seines Artikels.
+- Montagevarianten je Artikel (`<drillingpatterns>`): auf der Hutschiene keine Bohrung, geschraubt das Bohrbild; der
+  EDZ-Import liest Breite/Höhe/Tiefe, Einrasthöhe, Mittenversatz und die EPLAN-`construction`.
+- Bohransicht über dem Blatt, Fertigungsbericht mit Warnungen (Loch in Sperrfläche, Überschneidung, Gerät ohne
+  Bohrbild), Export: je Montagefläche eine DXF (R12, mm, Layer je Bohrungsart) plus Bohrliste und Schnittliste.
+- 3D-Ansicht (Qt OpenGL) mit Platte, Schienen, Kanälen und Geräten; STEP-Modelle der Teile, wenn mit Open CASCADE
+  gebaut (MSYS2-Paket `opencascade`, CMake findet es selbst). Klick wählt das Teil auf dem Blatt.
+- Skript-API: `setShapePanel`, `shapePanel`, `panelReport`, `exportPanelDxf`, `stepInfo`.
+
 ## Werkzeuge
 
 In `tools/symbole/`:

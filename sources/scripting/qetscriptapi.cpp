@@ -51,6 +51,16 @@
 #include "../conductorsegment.h"
 #include "../conductorrouter.h"
 #include "../qetgraphicsitem/diagramimageitem.h"
+#include "../qetgraphicsitem/qetshapeitem.h"
+#include "../panel/panelcommands.h"
+#include "../panel/paneldxf.h"
+#include "../panel/panellayout.h"
+#include "../panel/panelstep.h"
+#include <QDir>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QRegularExpression>
 #include "../utils/qetsettings.h"
 #include "assistantinfo.h"
 
@@ -218,6 +228,148 @@ QStringList QetScriptApi::outsideSheet(int folioIndex) const
 	const QList<Diagram *> diagrams = m_project->folios();
 	if (folioIndex < 0 || folioIndex >= diagrams.count()) return QStringList();
 	return diagrams.at(folioIndex)->itemsOutsideSheet();
+}
+
+/**
+	@brief QetScriptApi::setShapePanel
+	Give shape @p shapeIndex of a folio its meaning in a cabinet layout:
+	@p panelXml is a <panel role="surface|din_rail|duct|c_profile|cutout|keepout" ...>
+	element (see PanelData), "" makes it an ordinary shape again.
+	One undo step.
+*/
+bool QetScriptApi::setShapePanel(int folioIndex, int shapeIndex, const QString &panelXml)
+{
+	if (!m_project || m_project->isReadOnly()) return false;
+	const QList<QetShapeItem *> list = sortedShapes(folioIndex);
+	if (shapeIndex < 0 || shapeIndex >= list.count()) {
+		log(QStringLiteral("qet.setShapePanel: folio %1 has no shape %2").arg(folioIndex).arg(shapeIndex));
+		return false;
+	}
+	PanelData data;
+	if (!panelXml.trimmed().isEmpty()) {
+		QDomDocument doc;
+		if (!doc.setContent(panelXml)) {
+			log(QStringLiteral("qet.setShapePanel: not XML: %1").arg(panelXml.left(80)));
+			return false;
+		}
+		data = PanelData::fromXml(doc.documentElement());
+	}
+	QetShapeItem *shape = list.at(shapeIndex);
+	if (Diagram *d = qobject_cast<Diagram *>(shape->scene()))
+		d->undoStack().push(new ChangePanelDataCommand(shape, data));
+	else
+		shape->setPanelData(data);
+	return true;
+}
+
+/**
+	@brief QetScriptApi::shapePanel
+	@return the <panel> element of a shape as text, empty for an ordinary shape
+*/
+QString QetScriptApi::shapePanel(int folioIndex, int shapeIndex) const
+{
+	const QList<QetShapeItem *> list = sortedShapes(folioIndex);
+	if (shapeIndex < 0 || shapeIndex >= list.count()) return QString();
+	const PanelData data = list.at(shapeIndex)->panelData();
+	if (data.isNull()) return QString();
+	QDomDocument doc;
+	doc.appendChild(data.toXml(doc));
+	return doc.toString(-1);
+}
+
+/**
+	@brief QetScriptApi::panelReport
+	@return JSON: one entry per mounting surface of the folio with its size,
+	the holes (type, size, x/y in mm from its zero point, what made them),
+	the parts on it, the cut list and the warnings
+*/
+QString QetScriptApi::panelReport(int folioIndex) const
+{
+	if (!m_project) return QString();
+	const QList<Diagram *> diagrams = m_project->folios();
+	if (folioIndex < 0 || folioIndex >= diagrams.count()) return QString();
+	QJsonArray surfaces;
+	for (QetShapeItem *surface : PanelLayout::surfaces(diagrams.at(folioIndex)))
+	{
+		const PanelLayout layout(surface);
+		QJsonObject s;
+		s[QStringLiteral("name")] = layout.name();
+		s[QStringLiteral("width_mm")] = layout.widthMm();
+		s[QStringLiteral("height_mm")] = layout.heightMm();
+		QJsonArray holes;
+		for (const PanelHole &h : layout.holes()) {
+			QJsonObject o;
+			o[QStringLiteral("kind")] = h.kindName();
+			o[QStringLiteral("x")] = qRound(h.x * 10) / 10.0;
+			o[QStringLiteral("y")] = qRound(h.y * 10) / 10.0;
+			o[QStringLiteral("source")] = h.source;
+			holes.append(o);
+		}
+		s[QStringLiteral("holes")] = holes;
+		QJsonArray devices;
+		for (const PanelDevice &d : layout.devices()) {
+			QJsonObject o;
+			o[QStringLiteral("designation")] = d.designation;
+			o[QStringLiteral("variant")] = d.variant;
+			o[QStringLiteral("on_rail")] = d.on_rail;
+			o[QStringLiteral("x")] = qRound(d.pos_mm.x() * 10) / 10.0;
+			o[QStringLiteral("y")] = qRound(d.pos_mm.y() * 10) / 10.0;
+			devices.append(o);
+		}
+		s[QStringLiteral("devices")] = devices;
+		s[QStringLiteral("cut_list")] = QJsonArray::fromStringList(layout.cutList());
+		s[QStringLiteral("warnings")] = QJsonArray::fromStringList(layout.warnings());
+		surfaces.append(s);
+	}
+	return QString::fromUtf8(QJsonDocument(surfaces).toJson(QJsonDocument::Compact));
+}
+
+/**
+	@brief QetScriptApi::exportPanelDxf
+	Write one manufacturing DXF per mounting surface of the folio into
+	@p outDir, named after the surface.
+	@return the files written
+*/
+QStringList QetScriptApi::exportPanelDxf(int folioIndex, const QString &outDir, bool labels)
+{
+	QStringList written;
+	if (!m_project) return written;
+	const QList<Diagram *> diagrams = m_project->folios();
+	if (folioIndex < 0 || folioIndex >= diagrams.count()) return written;
+	QDir().mkpath(outDir);
+	PanelDxf::Options options;
+	options.labels = labels;
+	int n = 0;
+	for (QetShapeItem *surface : PanelLayout::surfaces(diagrams.at(folioIndex)))
+	{
+		const PanelLayout layout(surface);
+		QString name = layout.name();
+		name.replace(QRegularExpression(QStringLiteral("[^A-Za-z0-9_+=.-]")), QStringLiteral("_"));
+		if (name.isEmpty()) name = QStringLiteral("Feld%1").arg(++n);
+		const QString path = QDir(outDir).filePath(name + QStringLiteral(".dxf"));
+		QString error;
+		if (PanelDxf::write(layout, path, options, &error)) written << path;
+		else log(QStringLiteral("qet.exportPanelDxf: %1: %2").arg(path, error));
+	}
+	return written;
+}
+
+/**
+	@brief QetScriptApi::stepInfo
+	Read a STEP model as the 3D view of the cabinet layout does.
+	@return JSON: ok, triangles, min/max of the bounding box in mm, error
+*/
+QString QetScriptApi::stepInfo(const QString &path) const
+{
+	QString error;
+	const PanelMesh mesh = PanelStep::load(path, &error);
+	QJsonObject o;
+	o[QStringLiteral("ok")] = !mesh.isEmpty();
+	o[QStringLiteral("triangles")] = int(mesh.vertices.size() / 3);
+	o[QStringLiteral("min")] = QJsonArray{mesh.min.x(), mesh.min.y(), mesh.min.z()};
+	o[QStringLiteral("max")] = QJsonArray{mesh.max.x(), mesh.max.y(), mesh.max.z()};
+	if (!error.isEmpty()) o[QStringLiteral("error")] = error;
+	return QString::fromUtf8(QJsonDocument(o).toJson(QJsonDocument::Compact));
 }
 
 /**

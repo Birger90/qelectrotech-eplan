@@ -17,6 +17,8 @@
 */
 #include "edzpart.h"
 
+#include <QDir>
+#include <QDirIterator>
 #include <QDomDocument>
 #include <QFile>
 #include <QFileInfo>
@@ -145,6 +147,33 @@ bool natLess(const QString &a, const QString &b)
 	return ka.size() < kb.size();
 }
 
+double mmAttr(const QDomElement &e, const char *name)
+{
+	return e.attribute(QLatin1String(name)).replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+}
+
+/**
+	The <construction> of a part (EPLAN "drilling pattern"): the part.xml
+	names it in P_ARTICLE_REF_CONSTRUCTION_NAME, the EDZ carries it in a
+	file *.construction.xml beside the part.xml.
+*/
+QDomElement findConstruction(const QString &dir, const QString &name)
+{
+	if (name.isEmpty()) return QDomElement();
+	QDirIterator it(dir, {QStringLiteral("*.construction.xml")}, QDir::Files);
+	while (it.hasNext()) {
+		QFile f(it.next());
+		if (!f.open(QIODevice::ReadOnly)) continue;
+		QDomDocument doc;
+		if (!doc.setContent(&f)) continue;
+		const QDomNodeList list = doc.elementsByTagName(QStringLiteral("construction"));
+		for (int i = 0; i < list.size(); ++i) {
+			const QDomElement c = list.at(i).toElement();
+			if (c.attribute(QStringLiteral("P_PART_CONSTRUCTION_NAME")) == name) return c;
+		}
+	}
+	return QDomElement();
+}
 } // namespace
 
 /** Parse the part.xml at @a part_xml_path into this object. */
@@ -193,6 +222,55 @@ bool EdzPart::parse(const QString &part_xml_path)
 	m_description = pickLang(descr1);
 	m_comment     = pickLang(descr2);
 	m_names       = multilangNames(descr1);
+
+	// Mounting data (EPLAN Pro Panel). The drilling positions of the
+	// construction are measured from the part's placement point, the lower
+	// left corner of its front, x to the right and y up, shifted by the
+	// <constructionPosition> of the part; the element keeps them from its
+	// upper left corner (y up, so negative downwards).
+	m_width = mmAttr(part, "P_ARTICLE_WIDTH");
+	m_height = mmAttr(part, "P_ARTICLE_HEIGHT");
+	m_depth = mmAttr(part, "P_ARTICLE_DEPTH");
+	m_snap_height = mmAttr(part, "P_ARTICLE_SNAPHEIGHT");
+	m_middle_offset = mmAttr(part, "P_ARTICLE_MIDDLEOFFSET");
+	m_patterns.clear();
+	{
+		PanelPattern rail;
+		rail.variant = QStringLiteral("Hutschiene");
+		rail.din_rail = true;
+		const QDomElement construction = findConstruction(
+			QFileInfo(part_xml_path).absolutePath(),
+			part.attribute(QStringLiteral("P_ARTICLE_REF_CONSTRUCTION_NAME")));
+		const QDomElement cpos = part.firstChildElement(QStringLiteral("constructionPosition"));
+		const double off_x = mmAttr(cpos, "offsetx"), off_y = mmAttr(cpos, "offsety");
+		PanelPattern screws;
+		screws.variant = QStringLiteral("Schraubbefestigung");
+		for (QDomElement d = construction.firstChildElement(QStringLiteral("drillingPosition"));
+			 !d.isNull(); d = d.nextSiblingElement(QStringLiteral("drillingPosition"))) {
+			PanelHole h;
+			h.type = PanelHole::Type(d.attribute(QStringLiteral("type"), QStringLiteral("1")).toInt());
+			h.subtype = PanelHole::SubType(d.attribute(QStringLiteral("subtype")).toInt());
+			h.d1 = mmAttr(d, "dimension1");
+			h.d2 = mmAttr(d, "dimension2");
+			h.d3 = mmAttr(d, "dimension3");
+			h.x = mmAttr(d, "xpos") + off_x;
+			h.y = mmAttr(d, "ypos") + off_y - m_height;
+			h.angle = mmAttr(d, "angle");
+			h.repeat = mmAttr(d, "spacingrepeat");
+			h.end = mmAttr(d, "spacingend");
+			h.nth = d.attribute(QStringLiteral("drillnthhole")).toInt();
+			if (h.nth == 1) h.nth = 0;
+			if (h.d1 > 0) screws.holes << h;
+		}
+			// a part with a drilling pattern is screwed by default, unless it
+			// has a snap height; one without can only snap onto a rail
+		if (!screws.holes.isEmpty()) {
+			if (m_snap_height > 0) m_patterns << rail << screws;
+			else m_patterns << screws << rail;
+		} else {
+			m_patterns << rail;
+		}
+	}
 
 	const QString pic = part.attribute(QStringLiteral("P_ARTICLE_PICTUREFILE"));
 	if (!pic.isEmpty()) {
@@ -254,4 +332,49 @@ bool EdzPart::parse(const QString &part_xml_path)
 				 return natLess(a.designation, b.designation);
 			 });
 	return true;
+}
+
+/**
+	@brief EdzPart::appendMountingData
+	Write the outline (width_mm, height_mm, depth_mm, snap height and
+	middle offset) into the element information of @p element_definition
+	and its mounting variants into <drillingpatterns>, for the cabinet
+	layout.
+*/
+void EdzPart::appendMountingData(QDomDocument &element_definition) const
+{
+	QDomElement root = element_definition.documentElement();
+	if (root.isNull()) return;
+	QDomElement infos = root.firstChildElement(QStringLiteral("elementInformations"));
+	if (infos.isNull()) {
+		infos = element_definition.createElement(QStringLiteral("elementInformations"));
+		root.insertAfter(infos, root.firstChildElement(QStringLiteral("names")));
+	}
+	auto set = [&](const QString &name, double value) {
+		if (value == 0) return;
+		QDomElement e = infos.firstChildElement();
+		while (!e.isNull()) {
+			QDomElement next = e.nextSiblingElement();
+			if (e.attribute(QStringLiteral("name")) == name) infos.removeChild(e);
+			e = next;
+		}
+		QDomElement n = element_definition.createElement(QStringLiteral("elementInformation"));
+		n.setAttribute(QStringLiteral("name"), name);
+		n.setAttribute(QStringLiteral("show"), 0);
+		n.appendChild(element_definition.createTextNode(
+			QString::number(value, 'g', 6).replace(QLatin1Char('.'), QLatin1Char(','))));
+		infos.appendChild(n);
+	};
+	set(QStringLiteral("width_mm"), m_width);
+	set(QStringLiteral("height_mm"), m_height);
+	set(QStringLiteral("depth_mm"), m_depth);
+	set(QStringLiteral("snap_height_mm"), m_snap_height);
+	set(QStringLiteral("middle_offset_mm"), m_middle_offset);
+
+	QDomElement old = root.firstChildElement(QStringLiteral("drillingpatterns"));
+	if (!old.isNull()) root.removeChild(old);
+	if (m_patterns.isEmpty()) return;
+	QDomElement patterns = element_definition.createElement(QStringLiteral("drillingpatterns"));
+	for (const PanelPattern &p : m_patterns) patterns.appendChild(p.toXml(element_definition));
+	root.insertBefore(patterns, root.firstChildElement(QStringLiteral("description")));
 }

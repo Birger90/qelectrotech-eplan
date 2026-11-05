@@ -49,7 +49,8 @@ bool EdzImporter::importToDirectory(const QString &edz_path,
 		return false;
 	}
 
-	const QDomDocument doc = EdzElementBuilder::build(part);
+	QDomDocument doc = EdzElementBuilder::build(part);
+	part.appendMountingData(doc);
 
 	// Name the file from the order number (fall back to part number / source).
 	QString base = part.orderNumber();

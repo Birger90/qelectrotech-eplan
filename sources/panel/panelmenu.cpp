@@ -1,0 +1,1317 @@
+/*
+	Copyright 2006-2026 The QElectroTech Team
+	This file is part of QElectroTech.
+
+	QElectroTech is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 2 of the License, or
+	(at your option) any later version.
+
+	QElectroTech is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
+*/
+#include "panelmenu.h"
+
+#include "panel3dview.h"
+#include "panelcommands.h"
+#include "paneldxf.h"
+#include "panellayout.h"
+#include "panelstep.h"
+#include "../ElementsCollection/xmlelementcollection.h"
+#include "../NameList/nameslist.h"
+#include "../QPropertyUndoCommand/qpropertyundocommand.h"
+#include "../diagram.h"
+#include "../diagramview.h"
+#include "../factory/elementfactory.h"
+#include "../qet.h"
+#include "../qetapp.h"
+#include "../qetdiagrameditor.h"
+#include "../qetgraphicsitem/element.h"
+#include "../qetgraphicsitem/qetshapeitem.h"
+#include "../qetproject.h"
+#include "../qetversion.h"
+#include "../undocommand/addgraphicsobjectcommand.h"
+#include "../undocommand/changeelementinformationcommand.h"
+
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QDir>
+#include <QDoubleSpinBox>
+#include <QFileDialog>
+#include <QFormLayout>
+#include <QGraphicsObject>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QPainter>
+#include <QPlainTextEdit>
+#include <QPushButton>
+#include <QRegularExpression>
+#include <QSaveFile>
+#include <QSet>
+#include <QSpinBox>
+#include <QTableWidget>
+#include <QTextStream>
+#include <QUndoStack>
+#include <QUuid>
+#include <QVBoxLayout>
+
+#include <algorithm>
+
+namespace {
+
+	/// paper millimetres per scene unit when a folio is printed on A4
+	/// landscape, the reference for the nominal scale 1:N
+const double kPaperMmPerUnit = 0.2658;
+
+QRectF sceneRectOf(QetShapeItem *shape)
+{
+	return shape->mapToScene(shape->rect().normalized()).boundingRect();
+}
+
+QString num(double v, int decimals = 1)
+{
+	QString s = QString::number(v, 'f', decimals);
+	if (s.contains(QLatin1Char('.'))) {
+		while (s.endsWith(QLatin1Char('0'))) s.chop(1);
+		if (s.endsWith(QLatin1Char('.'))) s.chop(1);
+	}
+	return s.replace(QLatin1Char('.'), QLatin1Char(','));
+}
+
+double infoNumber(const DiagramContext &info, const QString &key)
+{
+	return info.value(key).toString().replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+}
+
+double cellNumber(QTableWidget *table, int row, int column)
+{
+	QTableWidgetItem *item = table->item(row, column);
+	return item ? item->text().replace(QLatin1Char(','), QLatin1Char('.')).toDouble() : 0;
+}
+
+QDoubleSpinBox *mmBox(double value, double max, int decimals, QWidget *parent)
+{
+	auto *b = new QDoubleSpinBox(parent);
+	b->setRange(0, max);
+	b->setDecimals(decimals);
+	b->setSuffix(QStringLiteral(" mm"));
+	b->setValue(value);
+	return b;
+}
+
+	/// a line edit with a "..." button that picks a STEP file
+QWidget *stepPicker(QLineEdit *edit, QWidget *parent)
+{
+	auto *w = new QWidget(parent);
+	auto *l = new QHBoxLayout(w);
+	l->setContentsMargins(0, 0, 0, 0);
+	auto *b = new QPushButton(QStringLiteral("..."), w);
+	b->setMaximumWidth(32);
+	l->addWidget(edit, 1);
+	l->addWidget(b);
+	QObject::connect(b, &QPushButton::clicked, w, [edit, w]() {
+		const QString file = QFileDialog::getOpenFileName(
+					w, PanelMenu::tr("STEP model"), QFileInfo(edit->text()).absolutePath(),
+					PanelMenu::tr("STEP files (*.stp *.step *.STP *.STEP)"));
+		if (!file.isEmpty()) edit->setText(QDir::toNativeSeparators(file));
+	});
+	return w;
+}
+
+QDialogButtonBox *okCancel(QDialog *dialog)
+{
+	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, dialog);
+	QObject::connect(buttons, &QDialogButtonBox::accepted, dialog, &QDialog::accept);
+	QObject::connect(buttons, &QDialogButtonBox::rejected, dialog, &QDialog::reject);
+	return buttons;
+}
+
+/* ------------------------------------------------------------------ */
+
+/**
+	@brief The drilling view: drawn over a folio, not saved with it (the
+	folio writes only the items it knows). Shows every hole the
+	manufacturing will get at its real size, the device outlines from
+	their part sizes and the keep-out areas.
+*/
+class PanelHoleOverlay : public QGraphicsObject
+{
+	public:
+		explicit PanelHoleOverlay(Diagram *diagram) : m_diagram(diagram)
+		{
+			setZValue(1e6);
+			setAcceptedMouseButtons(Qt::NoButton);
+			setFlag(QGraphicsItem::ItemIsSelectable, false);
+		}
+
+		void refresh()
+		{
+			prepareGeometryChange();
+			m_holes.clear();
+			m_outlines.clear();
+			m_bad.clear();
+			m_rect = QRectF();
+			if (!m_diagram) return;
+			for (QetShapeItem *surface : PanelLayout::surfaces(m_diagram))
+			{
+				const PanelLayout layout(surface);
+				const double k = layout.mmPerUnit() > 0 ? layout.mmPerUnit() : 1;
+				m_rect |= sceneRectOf(surface).adjusted(-20, -20, 20, 20);
+				for (const PanelHole &h : layout.holes()) {
+					Hole s;
+					s.centre = layout.toScene(QPointF(h.x, h.y));
+					s.w = h.d1 / k;
+					s.h = (h.type == PanelHole::Rectangle || h.type == PanelHole::Slot ? h.d2 : h.d1) / k;
+					s.round = h.type != PanelHole::Rectangle;
+					s.thread = h.type == PanelHole::Thread;
+					s.angle = h.angle;
+					m_holes << s;
+				}
+				for (const PanelDevice &d : layout.devices()) {
+					const QPointF a = layout.toScene(d.rect_mm.topLeft());
+					const QPointF b = layout.toScene(d.rect_mm.bottomRight());
+					m_outlines << QRectF(a, b).normalized();
+				}
+				for (const QRectF &r : layout.keepouts()) {
+					const QPointF a = layout.toScene(r.topLeft());
+					const QPointF b = layout.toScene(r.bottomRight());
+					m_bad << QRectF(a, b).normalized();
+				}
+			}
+			update();
+		}
+
+		QRectF boundingRect() const override {return m_rect;}
+
+		void paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *) override
+		{
+			p->setRenderHint(QPainter::Antialiasing, true);
+			p->setPen(QPen(QColor(200, 0, 0, 160), 0, Qt::DashLine));
+			p->setBrush(QBrush(QColor(255, 0, 0, 60), Qt::BDiagPattern));
+			for (const QRectF &r : m_bad) p->drawRect(r);
+
+			p->setPen(QPen(QColor(0, 90, 200), 0, Qt::DashLine));
+			p->setBrush(Qt::NoBrush);
+			for (const QRectF &r : m_outlines) p->drawRect(r);
+
+			for (const Hole &h : m_holes)
+			{
+				p->save();
+				p->translate(h.centre);
+				p->rotate(-h.angle);
+				const QRectF r(-h.w / 2, -h.h / 2, h.w, h.h);
+				p->setPen(QPen(QColor(220, 0, 0), 0));
+				p->setBrush(QColor(220, 0, 0, 60));
+				if (h.round) p->drawEllipse(r); else p->drawRect(r);
+				if (h.thread) {
+						// thread: a second, open circle like the drawing symbol
+					p->setBrush(Qt::NoBrush);
+					p->drawEllipse(r.adjusted(h.w * 0.15, h.h * 0.15, -h.w * 0.15, -h.h * 0.15));
+				}
+				const double c = qMax(h.w, h.h) * 0.8;
+				p->drawLine(QPointF(-c, 0), QPointF(c, 0));
+				p->drawLine(QPointF(0, -c), QPointF(0, c));
+				p->restore();
+			}
+		}
+
+	private:
+		struct Hole {QPointF centre; double w = 0, h = 0, angle = 0; bool round = true, thread = false;};
+		QPointer<Diagram> m_diagram;
+		QList<Hole> m_holes;
+		QList<QRectF> m_outlines;
+		QList<QRectF> m_bad;
+		QRectF m_rect;
+};
+
+/**
+	@brief The definition of the 2D panel representation of a device: a
+	rectangle of the device's real size at the drawing scale, with its
+	designation, and the device's drilling patterns, sizes and STEP model.
+	A thumbnail element: it stays out of the bill of materials, the
+	schematic device is the one that is ordered.
+*/
+QDomElement panelDeviceDefinition(QDomDocument &doc, const QString &label, const QString &title,
+								  double w_mm, double h_mm, double d_mm, double k,
+								  const DiagramContext &source_info, const QDomElement &patterns)
+{
+	const int w = qMax(4, qRound(w_mm / k));
+	const int h = qMax(4, qRound(h_mm / k));
+	QDomElement definition = doc.createElement(QStringLiteral("definition"));
+	definition.setAttribute(QStringLiteral("version"), QetVersion::currentVersion().toString());
+	definition.setAttribute(QStringLiteral("type"), QStringLiteral("element"));
+	definition.setAttribute(QStringLiteral("link_type"), QStringLiteral("thumbnail"));
+	definition.setAttribute(QStringLiteral("width"), w);
+	definition.setAttribute(QStringLiteral("height"), h);
+	definition.setAttribute(QStringLiteral("hotspot_x"), 0);
+	definition.setAttribute(QStringLiteral("hotspot_y"), 0);
+	doc.appendChild(definition);
+
+	QDomElement uuid = doc.createElement(QStringLiteral("uuid"));
+	uuid.setAttribute(QStringLiteral("uuid"), QUuid::createUuid().toString());
+	definition.appendChild(uuid);
+
+	NamesList names;
+	names.addName(QStringLiteral("en"), title);
+	names.addName(QStringLiteral("de"), title);
+	definition.appendChild(names.toXml(doc));
+
+	DiagramContext infos;
+	infos.addValue(QStringLiteral("label"), label);
+	for (const QString &key : {QStringLiteral("manufacturer"), QStringLiteral("manufacturer_reference"),
+							   QStringLiteral("designation"), QStringLiteral("description"),
+							   QStringLiteral("step_file"), QStringLiteral("mount_variant"),
+							   QStringLiteral("snap_height_mm"), QStringLiteral("middle_offset_mm")})
+		if (!source_info.value(key).toString().isEmpty())
+			infos.addValue(key, source_info.value(key), false);
+	infos.addValue(QStringLiteral("width_mm"), num(w_mm), false);
+	infos.addValue(QStringLiteral("height_mm"), num(h_mm), false);
+	infos.addValue(QStringLiteral("depth_mm"), num(d_mm), false);
+	QDomElement informations = doc.createElement(QStringLiteral("elementInformations"));
+	infos.toXml(informations, QStringLiteral("elementInformation"));
+	definition.appendChild(informations);
+
+	if (!patterns.isNull()) definition.appendChild(doc.importNode(patterns, true));
+
+	QDomElement description = doc.createElement(QStringLiteral("description"));
+	QDomElement rect = doc.createElement(QStringLiteral("rect"));
+	rect.setAttribute(QStringLiteral("x"), 0);
+	rect.setAttribute(QStringLiteral("y"), 0);
+	rect.setAttribute(QStringLiteral("width"), w);
+	rect.setAttribute(QStringLiteral("height"), h);
+	rect.setAttribute(QStringLiteral("rx"), 0);
+	rect.setAttribute(QStringLiteral("ry"), 0);
+	rect.setAttribute(QStringLiteral("style"),
+					  QStringLiteral("line-style:normal;line-weight:normal;filling:white;color:black"));
+	rect.setAttribute(QStringLiteral("antialias"), QStringLiteral("false"));
+	description.appendChild(rect);
+
+		// the designation, turned upright when the device is narrow like
+		// a terminal or a circuit breaker
+	const bool upright = h > w * 1.5;
+	QDomElement text = doc.createElement(QStringLiteral("dynamic_text"));
+	text.setAttribute(QStringLiteral("x"), upright ? w / 2 + 4 : 2);
+	text.setAttribute(QStringLiteral("y"), upright ? 2 : h / 2 - 6);
+	text.setAttribute(QStringLiteral("z"), 1);
+	text.setAttribute(QStringLiteral("rotation"), upright ? 90 : 0);
+	text.setAttribute(QStringLiteral("text_width"), -1);
+	text.setAttribute(QStringLiteral("Halignment"), QStringLiteral("AlignLeft"));
+	text.setAttribute(QStringLiteral("Valignment"), QStringLiteral("AlignTop"));
+	text.setAttribute(QStringLiteral("frame"), QStringLiteral("false"));
+	text.setAttribute(QStringLiteral("keep_visual_rotation"), QStringLiteral("false"));
+	text.setAttribute(QStringLiteral("text_from"), QStringLiteral("ElementInfo"));
+	text.setAttribute(QStringLiteral("uuid"), QUuid::createUuid().toString());
+	text.setAttribute(QStringLiteral("font"), QETApp::dynamicTextsItemFont(qBound(5, qMin(w, h) / 4, 9)).toString());
+	QDomElement cache = doc.createElement(QStringLiteral("text"));
+	cache.appendChild(doc.createTextNode(label));
+	text.appendChild(cache);
+	QDomElement info_name = doc.createElement(QStringLiteral("info_name"));
+	info_name.appendChild(doc.createTextNode(QStringLiteral("label")));
+	text.appendChild(info_name);
+	description.appendChild(text);
+	definition.appendChild(description);
+	return definition;
+}
+
+QString reportText(QETProject *project)
+{
+	QString out;
+	QTextStream s(&out);
+	int n_surfaces = 0;
+	const QList<Diagram *> folios = project->folios();
+	for (int f = 0; f < folios.size(); ++f)
+	{
+		for (QetShapeItem *surface : PanelLayout::surfaces(folios.at(f)))
+		{
+			++n_surfaces;
+			const PanelLayout layout(surface);
+			s << PanelMenu::tr("Folio %1 -- %2: %3 x %4 mm, %5 mm thick, scale 1:%6")
+				 .arg(f + 1).arg(layout.name(), num(layout.widthMm()), num(layout.heightMm()),
+					  num(layout.surfaceData().thickness), num(PanelMenu::scaleForMmPerUnit(layout.mmPerUnit()), 2))
+			  << "\n";
+			QMap<QString, int> kinds;
+			for (const PanelHole &h : layout.holes()) kinds[h.kindName()]++;
+			s << "  " << PanelMenu::tr("Holes: %1").arg(layout.holes().size());
+			QStringList parts;
+			for (auto it = kinds.constBegin(); it != kinds.constEnd(); ++it)
+				parts << QStringLiteral("%1 x %2").arg(it.value()).arg(it.key());
+			if (!parts.isEmpty()) s << "  (" << parts.join(QStringLiteral(", ")) << ")";
+			s << "\n";
+			for (const PanelDevice &d : layout.devices())
+				s << "  " << d.designation << ": "
+				  << (d.on_rail ? PanelMenu::tr("on DIN rail") : PanelMenu::tr("screwed"))
+				  << (d.variant.isEmpty() ? QString() : QStringLiteral(" -- ") + d.variant)
+				  << QStringLiteral("  x=%1 y=%2").arg(num(d.pos_mm.x()), num(d.pos_mm.y())) << "\n";
+			const QStringList cuts = layout.cutList();
+			if (!cuts.isEmpty()) {
+				s << "  " << PanelMenu::tr("Cut list:") << "\n";
+				for (const QString &c : cuts) s << "    " << c << "\n";
+			}
+			const QStringList warnings = layout.warnings();
+			if (!warnings.isEmpty()) {
+				s << "  " << PanelMenu::tr("Warnings:") << "\n";
+				for (const QString &w : warnings) s << "    ! " << w << "\n";
+			}
+			s << "\n";
+		}
+	}
+	if (!n_surfaces)
+		s << PanelMenu::tr("The project has no mounting surface. Cabinet layout > Insert mounting surface.") << "\n";
+	return out;
+}
+
+void showText(QWidget *parent, const QString &title, const QString &text)
+{
+	QDialog dialog(parent);
+	dialog.setWindowTitle(title);
+	dialog.resize(760, 560);
+	auto *edit = new QPlainTextEdit(text, &dialog);
+	edit->setReadOnly(true);
+	edit->setFont(QFont(QStringLiteral("Consolas"), 9));
+	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close, &dialog);
+	QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+	auto *box = new QVBoxLayout(&dialog);
+	box->addWidget(edit, 1);
+	box->addWidget(buttons);
+	dialog.exec();
+}
+
+} // namespace
+
+/* ------------------------------------------------------------------ */
+
+double PanelMenu::mmPerUnitForScale(double n)
+{
+	return n * kPaperMmPerUnit;
+}
+
+double PanelMenu::scaleForMmPerUnit(double mm_per_unit)
+{
+	return mm_per_unit / kPaperMmPerUnit;
+}
+
+PanelMenu::PanelMenu(QETDiagramEditor *editor) :
+	QMenu(tr("Ca&binet layout"), editor),
+	m_editor(editor)
+{
+	auto add = [this](const QString &text, const QString &tip, auto slot) {
+		QAction *a = addAction(text);
+		a->setStatusTip(tip);
+		connect(a, &QAction::triggered, this, slot);
+		m_edit_actions << a;
+		return a;
+	};
+	add(tr("Insert mounting surface..."),
+		tr("A mounting plate, door or wall of the given size, drawn to scale on this folio"),
+		&PanelMenu::insertSurface);
+	addSeparator();
+	add(tr("Insert DIN rail..."), tr("A DIN rail (TS 35) on the mounting surface, with its fixing holes"),
+		[this]() {insertProfile(PanelData::DinRail);});
+	add(tr("Insert cable duct..."), tr("A wiring duct on the mounting surface, with its fixing holes"),
+		[this]() {insertProfile(PanelData::Duct);});
+	add(tr("Insert C profile..."), tr("A C mounting profile on the mounting surface"),
+		[this]() {insertProfile(PanelData::CProfile);});
+	add(tr("Place devices from the schematic..."),
+		tr("Put the devices of the project on the mounting surface at their real size, snapped onto the DIN rails"),
+		&PanelMenu::placeDevices);
+	add(tr("Insert cut-out..."), tr("A hole or cut-out in the mounting surface (e.g. 22.5 mm for a push button)"),
+		&PanelMenu::insertCutout);
+	add(tr("Insert keep-out area..."), tr("An area of the mounting surface where no hole may be drilled"),
+		&PanelMenu::insertKeepout);
+	addSeparator();
+	add(tr("Manufacturing data of the selection..."),
+		tr("Role and data of the selected shape, or mounting variant, size and STEP model of the selected device"),
+		&PanelMenu::editSelected);
+	addSeparator();
+	m_hole_view = addAction(tr("Drilling view"));
+	m_hole_view->setCheckable(true);
+	m_hole_view->setStatusTip(tr("Show the holes and the device outlines over the cabinet layout"));
+	connect(m_hole_view, &QAction::toggled, this, &PanelMenu::toggleHoleView);
+	QAction *report = addAction(tr("Manufacturing report..."));
+	report->setStatusTip(tr("Holes, cut list and warnings of every mounting surface"));
+	connect(report, &QAction::triggered, this, &PanelMenu::showReport);
+	QAction *view3d = addAction(tr("3D view..."));
+	view3d->setStatusTip(tr("The cabinet layout of this folio in 3D, with the STEP models of the parts"));
+	connect(view3d, &QAction::triggered, this, &PanelMenu::show3D);
+	addSeparator();
+	QAction *exp = addAction(tr("Export manufacturing data (DXF)..."));
+	exp->setStatusTip(tr("One DXF per mounting surface with every hole, a hole list and a cut list"));
+	connect(exp, &QAction::triggered, this, &PanelMenu::exportManufacturing);
+	updateActions();
+}
+
+void PanelMenu::updateActions()
+{
+	Diagram *d = diagram();
+	const bool editable = d && d->project() && !d->project()->isReadOnly();
+	for (QAction *a : std::as_const(m_edit_actions)) a->setEnabled(editable);
+	if (m_hole_view && m_hole_view->isChecked()) refreshHoleView();
+}
+
+Diagram *PanelMenu::diagram() const
+{
+	if (!m_editor) return nullptr;
+	DiagramView *view = m_editor->currentDiagramView();
+	return view ? view->diagram() : nullptr;
+}
+
+/**
+	The surface a new part goes on: the selected one, the one under a
+	selected item, else the first surface of the folio.
+*/
+QetShapeItem *PanelMenu::targetSurface(Diagram *d) const
+{
+	const QList<QetShapeItem *> surfaces = PanelLayout::surfaces(d);
+	if (surfaces.isEmpty()) return nullptr;
+	for (QGraphicsItem *item : d->selectedItems()) {
+		if (auto *s = dynamic_cast<QetShapeItem *>(item))
+			if (surfaces.contains(s)) return s;
+		const QPointF c = item->sceneBoundingRect().center();
+		for (QetShapeItem *s : surfaces)
+			if (sceneRectOf(s).contains(c)) return s;
+	}
+	return surfaces.first();
+}
+
+QetShapeItem *PanelMenu::addShape(Diagram *d, const QRectF &r, bool ellipse,
+								  const PanelData &data, const QString &undo_text)
+{
+	auto *shape = new QetShapeItem(r.topLeft(), r.bottomRight(),
+								   ellipse ? QetShapeItem::Ellipse : QetShapeItem::Rectangle);
+	QPen pen = shape->pen();
+	if (data.role == PanelData::Keepout) pen.setStyle(Qt::DashDotLine);
+	shape->setPen(pen);
+	if (data.role == PanelData::Duct)
+		shape->setBrush(QBrush(QColor(90, 90, 90), Qt::BDiagPattern));
+	else if (data.role == PanelData::DinRail || data.role == PanelData::CProfile)
+		shape->setBrush(QBrush(QColor(90, 90, 90), Qt::Dense6Pattern));
+	else if (data.role == PanelData::Keepout)
+		shape->setBrush(QBrush(QColor(200, 0, 0), Qt::DiagCrossPattern));
+	shape->setPanelData(data);
+	d->addItem(shape);
+	auto *cmd = new QUndoCommand(undo_text);
+	new AddGraphicsObjectCommand(shape, d, QPointF(), cmd);
+	d->undoStack().push(cmd);
+	d->clearSelection();
+	shape->setSelected(true);
+	return shape;
+}
+
+/* ------------------------------------------------------------------ */
+
+void PanelMenu::insertSurface()
+{
+	Diagram *d = diagram();
+	if (!d) return;
+	QDialog dialog(m_editor);
+	dialog.setWindowTitle(tr("Insert mounting surface"));
+	auto *form = new QFormLayout;
+	auto *designation = new QLineEdit(QStringLiteral("-MP1"), &dialog);
+	auto *w = mmBox(500, 5000, 1, &dialog);
+	auto *h = mmBox(700, 5000, 1, &dialog);
+	auto *t = mmBox(3, 50, 1, &dialog);
+	auto *scale = new QComboBox(&dialog);
+	scale->addItem(tr("Fit to the folio"), 0.0);
+	const QList<double> scales = {1.0, 2.0, 2.5, 5.0, 10.0, 20.0, 25.0, 50.0};
+	for (double n : scales) scale->addItem(QStringLiteral("1:%1").arg(num(n)), n);
+	scale->setToolTip(tr("Nominal scale when the folio is printed on A4"));
+	auto *origin = new QComboBox(&dialog);
+	origin->addItems({tr("bottom left"), tr("top left"), tr("top right"), tr("bottom right")});
+	auto *article = new QLineEdit(&dialog);
+	auto *manufacturer = new QLineEdit(&dialog);
+	auto *step = new QLineEdit(&dialog);
+	form->addRow(tr("Designation"), designation);
+	form->addRow(tr("Width"), w);
+	form->addRow(tr("Height"), h);
+	form->addRow(tr("Sheet thickness"), t);
+	form->addRow(tr("Scale"), scale);
+	form->addRow(tr("Zero point"), origin);
+	form->addRow(tr("Manufacturer"), manufacturer);
+	form->addRow(tr("Article number"), article);
+	form->addRow(tr("STEP model"), stepPicker(step, &dialog));
+	auto *layout = new QVBoxLayout(&dialog);
+	layout->addLayout(form);
+	layout->addWidget(okCancel(&dialog));
+	if (dialog.exec() != QDialog::Accepted) return;
+
+	const QRectF area = d->border_and_titleblock.insideBorderRect().adjusted(20, 20, -20, -20);
+	double n = scale->currentData().toDouble();
+	if (n <= 0) {
+			// the smallest standard scale at which the surface fits
+		n = scales.last();
+		for (double c : scales) {
+			const double k = mmPerUnitForScale(c);
+			if (w->value() / k <= area.width() && h->value() / k <= area.height()) {n = c; break;}
+		}
+	}
+	PanelData data = PanelData::defaults(PanelData::Surface);
+	data.designation = designation->text().trimmed();
+	data.mm_per_unit = mmPerUnitForScale(n);
+	data.thickness = t->value();
+	data.origin = origin->currentIndex();
+	data.article = article->text().trimmed();
+	data.manufacturer = manufacturer->text().trimmed();
+	data.step_file = step->text().trimmed();
+	const QSizeF size(w->value() / data.mm_per_unit, h->value() / data.mm_per_unit);
+	addShape(d, QRectF(area.topLeft(), size), false, data,
+			 tr("insert mounting surface %1").arg(data.designation));
+	refreshHoleView();
+}
+
+void PanelMenu::insertProfile(PanelData::Role role)
+{
+	Diagram *d = diagram();
+	if (!d) return;
+	QetShapeItem *surface = targetSurface(d);
+	if (!surface) {
+		QMessageBox::information(m_editor, title(), tr("Insert a mounting surface on this folio first."));
+		return;
+	}
+	const PanelLayout layout(surface);
+	PanelData data = PanelData::defaults(role);
+	const QString what = role == PanelData::DinRail ? tr("DIN rail")
+					   : role == PanelData::Duct ? tr("cable duct") : tr("C profile");
+
+	QDialog dialog(m_editor);
+	dialog.setWindowTitle(tr("Insert %1").arg(what));
+	auto *form = new QFormLayout;
+	auto *designation = new QLineEdit(&dialog);
+	auto *orientation = new QComboBox(&dialog);
+	orientation->addItems({tr("horizontal"), tr("vertical")});
+	auto *length = mmBox(qMax(10.0, layout.widthMm() - (role == PanelData::Duct ? 20 : 60)), 5000, 1, &dialog);
+	auto *width = mmBox(role == PanelData::DinRail ? 35 : role == PanelData::Duct ? 60 : 30, 500, 1, &dialog);
+	auto *depth = mmBox(data.profile_depth, 500, 1, &dialog);
+	auto *pos = mmBox(role == PanelData::Duct ? layout.heightMm() - 40 : layout.heightMm() / 2, 5000, 1, &dialog);
+	pos->setToolTip(tr("Distance of the centre line from the zero edge of the surface"));
+	auto *fixing = new QComboBox(&dialog);
+	fixing->addItem(tr("Tapped hole"), int(PanelHole::Thread));
+	fixing->addItem(tr("Through hole"), int(PanelHole::Drill));
+	fixing->setCurrentIndex(data.fixing.type == PanelHole::Drill ? 1 : 0);
+	auto *size = mmBox(data.fixing.d1, 30, 1, &dialog);
+	size->setToolTip(tr("Thread size (M5: 5) or drill diameter"));
+	auto *spacing = mmBox(data.spacing, 2000, 1, &dialog);
+	auto *end = mmBox(data.end_distance, 500, 1, &dialog);
+	auto *rows = new QSpinBox(&dialog);
+	rows->setRange(1, 2);
+	rows->setValue(data.rows);
+	auto *article = new QLineEdit(&dialog);
+	auto *step = new QLineEdit(&dialog);
+	form->addRow(tr("Designation"), designation);
+	form->addRow(tr("Orientation"), orientation);
+	form->addRow(tr("Length"), length);
+	form->addRow(tr("Width"), width);
+	form->addRow(tr("Height above the surface"), depth);
+	form->addRow(tr("Position of the centre line"), pos);
+	form->addRow(tr("Fixing"), fixing);
+	form->addRow(tr("Fixing size"), size);
+	form->addRow(tr("Hole spacing"), spacing);
+	form->addRow(tr("End distance"), end);
+	form->addRow(tr("Rows of holes"), rows);
+	form->addRow(tr("Article number"), article);
+	form->addRow(tr("STEP model"), stepPicker(step, &dialog));
+	const double sw = layout.widthMm(), sh = layout.heightMm();
+	connect(orientation, &QComboBox::currentIndexChanged, &dialog, [=](int i) {
+		length->setValue(qMax(10.0, (i == 0 ? sw : sh) - 60));
+		pos->setValue(i == 0 ? sh / 2 : sw / 2);
+	});
+	auto *box = new QVBoxLayout(&dialog);
+	box->addLayout(form);
+	box->addWidget(okCancel(&dialog));
+	if (dialog.exec() != QDialog::Accepted) return;
+
+	data.designation = designation->text().trimmed();
+	data.profile_depth = depth->value();
+	data.fixing.type = PanelHole::Type(fixing->currentData().toInt());
+	data.fixing.d1 = size->value();
+	data.spacing = spacing->value();
+	data.end_distance = end->value();
+	data.rows = rows->value();
+	data.article = article->text().trimmed();
+	data.step_file = step->text().trimmed();
+
+	const bool horizontal = orientation->currentIndex() == 0;
+	const double L = length->value(), W = width->value();
+		// centred along the surface, centre line at the given distance
+	QPointF a_mm, b_mm;
+	if (horizontal) {
+		const double x0 = (sw - L) / 2;
+		a_mm = QPointF(x0, pos->value() - W / 2);
+		b_mm = QPointF(x0 + L, pos->value() + W / 2);
+	} else {
+		const double y0 = (sh - L) / 2;
+		a_mm = QPointF(pos->value() - W / 2, y0);
+		b_mm = QPointF(pos->value() + W / 2, y0 + L);
+	}
+	const QRectF r = QRectF(layout.toScene(a_mm), layout.toScene(b_mm)).normalized();
+	addShape(d, r, false, data, tr("insert %1").arg(what));
+	refreshHoleView();
+}
+
+void PanelMenu::insertCutout()
+{
+	Diagram *d = diagram();
+	if (!d) return;
+	QetShapeItem *surface = targetSurface(d);
+	if (!surface) {
+		QMessageBox::information(m_editor, title(), tr("Insert a mounting surface on this folio first."));
+		return;
+	}
+	const PanelLayout layout(surface);
+	QDialog dialog(m_editor);
+	dialog.setWindowTitle(tr("Insert cut-out"));
+	auto *form = new QFormLayout;
+	auto *type = new QComboBox(&dialog);
+	type->addItem(tr("Round hole"), int(PanelHole::Drill));
+	type->addItem(tr("Tapped hole"), int(PanelHole::Thread));
+	type->addItem(tr("Rectangle"), int(PanelHole::Rectangle));
+	type->addItem(tr("Slot"), int(PanelHole::Slot));
+	type->addItem(tr("Hexagon"), int(PanelHole::Hexagon));
+	type->addItem(tr("Octagon"), int(PanelHole::Octagon));
+	auto *d1 = mmBox(22.5, 2000, 2, &dialog);
+	auto *d2 = mmBox(0, 2000, 2, &dialog);
+	d2->setToolTip(tr("0: as wide as high"));
+	auto *d3 = mmBox(0, 200, 2, &dialog);
+	auto *x = mmBox(layout.widthMm() / 2, 5000, 1, &dialog);
+	auto *y = mmBox(layout.heightMm() / 2, 5000, 1, &dialog);
+	auto *designation = new QLineEdit(&dialog);
+	form->addRow(tr("Kind"), type);
+	form->addRow(tr("Diameter / width"), d1);
+	form->addRow(tr("Height"), d2);
+	form->addRow(tr("Corner radius"), d3);
+	form->addRow(tr("Centre x"), x);
+	form->addRow(tr("Centre y"), y);
+	form->addRow(tr("Designation"), designation);
+	auto *box = new QVBoxLayout(&dialog);
+	box->addLayout(form);
+	box->addWidget(okCancel(&dialog));
+	if (dialog.exec() != QDialog::Accepted) return;
+
+	PanelData data = PanelData::defaults(PanelData::Cutout);
+	data.designation = designation->text().trimmed();
+	data.cutout.type = PanelHole::Type(type->currentData().toInt());
+	data.cutout.d1 = d1->value();
+	data.cutout.d2 = d2->value() > 0 ? d2->value() : d1->value();
+	data.cutout.d3 = d3->value();
+	data.cutout.subtype = d3->value() > 0 ? PanelHole::Rounded : PanelHole::Plain;
+	const QPointF c = layout.toScene(QPointF(x->value(), y->value()));
+	const double k = layout.mmPerUnit();
+	const QSizeF s(data.cutout.d1 / k, data.cutout.d2 / k);
+	const bool round = data.cutout.type != PanelHole::Rectangle && data.cutout.type != PanelHole::Slot;
+	addShape(d, QRectF(c - QPointF(s.width() / 2, s.height() / 2), s), round, data, tr("insert cut-out"));
+	refreshHoleView();
+}
+
+void PanelMenu::insertKeepout()
+{
+	Diagram *d = diagram();
+	if (!d) return;
+	QetShapeItem *surface = targetSurface(d);
+	if (!surface) {
+		QMessageBox::information(m_editor, title(), tr("Insert a mounting surface on this folio first."));
+		return;
+	}
+	const PanelLayout layout(surface);
+	const PanelData data = PanelData::defaults(PanelData::Keepout);
+	const QPointF a = layout.toScene(QPointF(layout.widthMm() * 0.4, layout.heightMm() * 0.4));
+	const QPointF b = layout.toScene(QPointF(layout.widthMm() * 0.6, layout.heightMm() * 0.6));
+	addShape(d, QRectF(a, b).normalized(), false, data, tr("insert keep-out area"));
+	refreshHoleView();
+}
+
+/* ------------------------------------------------------------------ */
+
+/**
+	@brief PanelMenu::placeDevices
+	EPLAN "place from the device navigator": every device of the project
+	(main functions of the schematic, not yet on a layout) can be put on
+	the mounting surface as a rectangle of its real size, carrying its
+	drilling patterns and STEP model. They are snapped onto the DIN rails
+	from left to right; what does not fit goes into the free area.
+*/
+void PanelMenu::placeDevices()
+{
+	Diagram *d = diagram();
+	if (!d || !d->project()) return;
+	QetShapeItem *surface = targetSurface(d);
+	if (!surface) {
+		QMessageBox::information(m_editor, title(), tr("Insert a mounting surface on this folio first."));
+		return;
+	}
+	QETProject *project = d->project();
+
+		// devices already on a layout: by designation
+	QSet<QString> placed;
+	for (Diagram *folio : project->folios())
+		if (!PanelLayout::surfaces(folio).isEmpty())
+			for (Element *e : folio->elements())
+				if (!e->actualLabel().isEmpty()) placed << e->actualLabel();
+
+	struct Row {Element *e; QString label; double w, h, dep;};
+	QList<Row> rows;
+	QSet<QString> seen;
+	for (Diagram *folio : project->folios()) {
+		if (!PanelLayout::surfaces(folio).isEmpty()) continue;
+		for (Element *e : folio->elements()) {
+			const int t = e->linkType();
+			if (!(t == Element::Simple || t == Element::Master || t == Element::Terminale)) continue;
+			const QString label = e->actualLabel();
+			if (label.isEmpty() || seen.contains(label)) continue;
+			seen << label;
+			const DiagramContext info = e->elementInformations();
+			rows << Row{e, label, infoNumber(info, QStringLiteral("width_mm")),
+						infoNumber(info, QStringLiteral("height_mm")),
+						infoNumber(info, QStringLiteral("depth_mm"))};
+		}
+	}
+	std::sort(rows.begin(), rows.end(), [](const Row &a, const Row &b) {
+		return QString::localeAwareCompare(a.label, b.label) < 0;});
+	if (rows.isEmpty()) {
+		QMessageBox::information(m_editor, title(), tr("The project has no devices with a designation."));
+		return;
+	}
+
+	QDialog dialog(m_editor);
+	dialog.setWindowTitle(tr("Place devices on %1").arg(PanelLayout(surface).name()));
+	dialog.resize(780, 560);
+	auto *table = new QTableWidget(int(rows.size()), 6, &dialog);
+	table->setHorizontalHeaderLabels({tr("Designation"), tr("Part"), tr("Width mm"), tr("Height mm"),
+									  tr("Depth mm"), tr("Mounting variants")});
+	table->verticalHeader()->hide();
+	for (int i = 0; i < rows.size(); ++i) {
+		const Row &r = rows.at(i);
+		auto *c0 = new QTableWidgetItem(r.label);
+		c0->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+		c0->setCheckState(!placed.contains(r.label) && r.w > 0 && r.h > 0 ? Qt::Checked : Qt::Unchecked);
+		table->setItem(i, 0, c0);
+		const DiagramContext info = r.e->elementInformations();
+		QString part = info.value(QStringLiteral("manufacturer_reference")).toString();
+		if (part.isEmpty()) part = r.e->name();
+		if (placed.contains(r.label)) part += QStringLiteral("  ") + tr("(already placed)");
+		auto *c1 = new QTableWidgetItem(part);
+		c1->setFlags(Qt::ItemIsEnabled);
+		table->setItem(i, 1, c1);
+		table->setItem(i, 2, new QTableWidgetItem(r.w > 0 ? num(r.w) : QStringLiteral("45")));
+		table->setItem(i, 3, new QTableWidgetItem(r.h > 0 ? num(r.h) : QStringLiteral("90")));
+		table->setItem(i, 4, new QTableWidgetItem(r.dep > 0 ? num(r.dep) : QStringLiteral("70")));
+		QStringList variants;
+		for (const PanelPattern &p : PanelLayout::patternsOf(r.e)) variants << p.variant;
+		auto *c5 = new QTableWidgetItem(variants.isEmpty() ? tr("none") : variants.join(QStringLiteral(", ")));
+		c5->setFlags(Qt::ItemIsEnabled);
+		table->setItem(i, 5, c5);
+	}
+	table->resizeColumnsToContents();
+	table->horizontalHeader()->setStretchLastSection(true);
+	auto *hint = new QLabel(tr("Devices without a size are proposed at 45 x 90 x 70 mm; correct the sizes here "
+							   "or in the part. They are snapped onto the DIN rails from left to right."), &dialog);
+	hint->setWordWrap(true);
+	auto *buttons = okCancel(&dialog);
+	buttons->button(QDialogButtonBox::Ok)->setText(tr("Place"));
+	auto *box = new QVBoxLayout(&dialog);
+	box->addWidget(table, 1);
+	box->addWidget(hint);
+	box->addWidget(buttons);
+	if (dialog.exec() != QDialog::Accepted) return;
+
+	XmlElementCollection *collection = project->embeddedElementCollection();
+	if (!collection) return;
+	const QString dir_name = QStringLiteral("Cabinet layout");
+	const QString dir_path = QStringLiteral("import/") + dir_name;
+	if (!collection->exist(dir_path)) {
+		NamesList names;
+		names.addName(QStringLiteral("en"), dir_name);
+		names.addName(QStringLiteral("de"), QStringLiteral("Schaltschrankaufbau"));
+		if (!collection->createDir(QStringLiteral("import"), dir_name, names)) return;
+	}
+
+	const PanelLayout layout(surface);
+	const double k = layout.mmPerUnit();
+	const QRectF plate = sceneRectOf(surface);
+
+		// free run on every horizontal rail, after what is already on it
+	struct Rail {QRectF r; double cursor;};
+	QList<Rail> rails;
+	for (const PanelProfile &p : layout.profiles()) {
+		if (p.data.role != PanelData::DinRail || !p.shape) continue;
+		const QRectF r = sceneRectOf(p.shape);
+		if (r.width() < r.height()) continue;   // vertical rails are left to the user
+		double cursor = r.left() + 5 / k;
+		for (const PanelDevice &dev : layout.devices()) {
+			const QPointF a = layout.toScene(dev.rect_mm.topLeft()), b = layout.toScene(dev.rect_mm.bottomRight());
+			const QRectF dr = QRectF(a, b).normalized();
+			if (dr.intersects(r)) cursor = qMax(cursor, dr.right());
+		}
+		rails << Rail{r, cursor};
+	}
+	std::sort(rails.begin(), rails.end(), [](const Rail &a, const Rail &b) {return a.r.top() < b.r.top();});
+	QPointF free_pos = plate.topLeft() + QPointF(20 / k, 20 / k);
+	double free_row_h = 0;
+
+	auto *macro = new QUndoCommand(tr("place devices on %1").arg(layout.name()));
+	int created = 0;
+	QStringList skipped;
+	for (int i = 0; i < rows.size(); ++i)
+	{
+		if (table->item(i, 0)->checkState() != Qt::Checked) continue;
+		const Row &r = rows.at(i);
+		const double w = cellNumber(table, i, 2), h = cellNumber(table, i, 3), dep = cellNumber(table, i, 4);
+		if (w <= 0 || h <= 0) {skipped << r.label; continue;}
+
+		const DiagramContext info = r.e->elementInformations();
+		const QDomElement patterns = r.e->location().xml().firstChildElement(QStringLiteral("drillingpatterns"));
+		QDomDocument doc;
+		QString title_text = r.label;
+		const QString ref = info.value(QStringLiteral("manufacturer_reference")).toString();
+		if (!ref.isEmpty()) title_text += QStringLiteral(" ") + ref;
+		const QDomElement def = panelDeviceDefinition(doc, r.label, title_text, w, h, dep, k, info, patterns);
+		const QString file_name = QET::stringToFileName(r.label) + QLatin1Char('-')
+								  + QUuid::createUuid().toString(QUuid::Id128).left(8) + QStringLiteral(".elmt");
+		if (!collection->addElementDefinition(dir_path, file_name, def)) {skipped << r.label; continue;}
+		const ElementsLocation location(dir_path + QLatin1Char('/') + file_name, project);
+		int state = 0;
+		Element *element = ElementFactory::Instance()->createElement(location, nullptr, &state);
+		if (state || !element) {delete element; skipped << r.label; continue;}
+
+		const double ws = w / k, hs = h / k;
+		QPointF pos;
+		bool done = false;
+		for (Rail &rail : rails) {
+			if (rail.cursor + ws <= rail.r.right() - 2 / k) {
+					// EPLAN's middle offset: the device centre above the rail centre line
+				const double offset = infoNumber(info, QStringLiteral("middle_offset_mm")) / k;
+				pos = QPointF(rail.cursor, rail.r.center().y() - hs / 2 - offset);
+				rail.cursor += ws;
+				done = true;
+				break;
+			}
+		}
+		if (!done) {
+			if (free_pos.x() + ws > plate.right() - 20 / k) {
+				free_pos = QPointF(plate.left() + 20 / k, free_pos.y() + free_row_h + 10 / k);
+				free_row_h = 0;
+			}
+			pos = free_pos;
+			free_pos.rx() += ws + 10 / k;
+			free_row_h = qMax(free_row_h, hs);
+		}
+		element->setPos(pos);
+		d->addItem(element);
+		new AddGraphicsObjectCommand(element, d, pos, macro);
+		++created;
+	}
+	if (!created) {
+		delete macro;
+	} else {
+		d->undoStack().push(macro);
+		project->setModified(true);
+	}
+	if (!skipped.isEmpty())
+		QMessageBox::warning(m_editor, title(), tr("Not placed (no size or not readable): %1")
+							 .arg(skipped.join(QStringLiteral(", "))));
+	refreshHoleView();
+}
+
+/* ------------------------------------------------------------------ */
+
+void PanelMenu::editSelected()
+{
+	Diagram *d = diagram();
+	if (!d) return;
+	const QList<QGraphicsItem *> selection = d->selectedItems();
+	for (QGraphicsItem *item : selection)
+		if (auto *shape = dynamic_cast<QetShapeItem *>(item)) {editShape(shape); return;}
+	for (QGraphicsItem *item : selection)
+		if (auto *element = dynamic_cast<Element *>(item)) {editDevice(element); return;}
+	QMessageBox::information(m_editor, title(),
+							 tr("Select a shape (surface, rail, duct, cut-out) or a device first."));
+}
+
+void PanelMenu::editShape(QetShapeItem *shape)
+{
+	const PanelData data = shape->panelData();
+	QDialog dialog(m_editor);
+	dialog.setWindowTitle(tr("Manufacturing data"));
+	auto *form = new QFormLayout;
+	auto *role = new QComboBox(&dialog);
+	const QList<QPair<PanelData::Role, QString>> roles = {
+		{PanelData::None, tr("none (ordinary shape)")}, {PanelData::Surface, tr("Mounting surface")},
+		{PanelData::DinRail, tr("DIN rail")}, {PanelData::Duct, tr("Cable duct")},
+		{PanelData::CProfile, tr("C profile")}, {PanelData::Cutout, tr("Cut-out")},
+		{PanelData::Keepout, tr("Keep-out area")}};
+	for (const auto &r : roles) role->addItem(r.second, int(r.first));
+	role->setCurrentIndex(qMax(0, role->findData(int(data.role))));
+
+		// start a new role from its defaults, keep the values of the old one
+	const PanelData base = data.isNull() ? PanelData::defaults(PanelData::DinRail) : data;
+	auto *designation = new QLineEdit(data.designation, &dialog);
+	auto *manufacturer = new QLineEdit(data.manufacturer, &dialog);
+	auto *article = new QLineEdit(data.article, &dialog);
+	auto *step = new QLineEdit(data.step_file, &dialog);
+
+	auto *scale = new QDoubleSpinBox(&dialog);
+	scale->setRange(0.1, 1000);
+	scale->setDecimals(2);
+	scale->setPrefix(QStringLiteral("1:"));
+	scale->setValue(scaleForMmPerUnit(data.mm_per_unit));
+	scale->setToolTip(tr("A new scale keeps the size of the surface in millimetres; move the parts on it to fit again"));
+	auto *thickness = mmBox(data.thickness, 50, 1, &dialog);
+	auto *machined = new QCheckBox(tr("Holes are drilled into this surface"), &dialog);
+	machined->setChecked(data.machined);
+	auto *origin = new QComboBox(&dialog);
+	origin->addItems({tr("bottom left"), tr("top left"), tr("top right"), tr("bottom right")});
+	origin->setCurrentIndex(data.origin);
+
+	auto *depth = mmBox(base.profile_depth, 500, 1, &dialog);
+	auto *fixing = new QComboBox(&dialog);
+	fixing->addItem(tr("Tapped hole"), int(PanelHole::Thread));
+	fixing->addItem(tr("Through hole"), int(PanelHole::Drill));
+	fixing->setCurrentIndex(base.fixing.type == PanelHole::Drill ? 1 : 0);
+	auto *fsize = mmBox(base.fixing.d1, 30, 1, &dialog);
+	auto *spacing = mmBox(base.spacing, 2000, 1, &dialog);
+	auto *end = mmBox(base.end_distance, 500, 1, &dialog);
+	auto *rows = new QSpinBox(&dialog);
+	rows->setRange(1, 2);
+	rows->setValue(base.rows);
+	auto *row_offset = mmBox(base.row_offset, 500, 1, &dialog);
+	row_offset->setToolTip(tr("0: a quarter of the width"));
+	auto *zero_end = new QCheckBox(tr("Measure the rows from the other end (zero cut)"), &dialog);
+	zero_end->setChecked(base.zero_from_end);
+
+	const PanelData cut_base = data.role == PanelData::Cutout ? data : PanelData::defaults(PanelData::Cutout);
+	auto *ctype = new QComboBox(&dialog);
+	ctype->addItem(tr("Round hole"), int(PanelHole::Drill));
+	ctype->addItem(tr("Tapped hole"), int(PanelHole::Thread));
+	ctype->addItem(tr("Rectangle"), int(PanelHole::Rectangle));
+	ctype->addItem(tr("Slot"), int(PanelHole::Slot));
+	ctype->addItem(tr("Hexagon"), int(PanelHole::Hexagon));
+	ctype->addItem(tr("Octagon"), int(PanelHole::Octagon));
+	ctype->setCurrentIndex(qMax(0, ctype->findData(int(cut_base.cutout.type))));
+	auto *cd1 = mmBox(cut_base.cutout.d1, 2000, 2, &dialog);
+	auto *cd2 = mmBox(cut_base.cutout.d2, 2000, 2, &dialog);
+	auto *cd3 = mmBox(cut_base.cutout.d3, 200, 2, &dialog);
+
+		// a part takes the scale of the surface it lies on
+	const QRectF scene = sceneRectOf(shape);
+	double k_part = data.mm_per_unit;
+	if (data.role != PanelData::Surface)
+		if (auto *d = qobject_cast<Diagram *>(shape->scene()))
+			for (QetShapeItem *s : PanelLayout::surfaces(d))
+				if (s != shape && sceneRectOf(s).contains(scene.center())) {k_part = s->panelData().mm_per_unit; break;}
+	auto *len_w = mmBox(scene.width() * k_part, 10000, 1, &dialog);
+	auto *len_h = mmBox(scene.height() * k_part, 10000, 1, &dialog);
+
+	form->addRow(tr("Role"), role);
+	form->addRow(tr("Designation"), designation);
+	form->addRow(tr("Manufacturer"), manufacturer);
+	form->addRow(tr("Article number"), article);
+	form->addRow(tr("STEP model"), stepPicker(step, &dialog));
+	form->addRow(tr("Width"), len_w);
+	form->addRow(tr("Height"), len_h);
+	auto *g_surface = new QGroupBox(tr("Mounting surface"), &dialog);
+	auto *fs = new QFormLayout(g_surface);
+	fs->addRow(tr("Scale"), scale);
+	fs->addRow(tr("Sheet thickness"), thickness);
+	fs->addRow(QString(), machined);
+	fs->addRow(tr("Zero point"), origin);
+	auto *g_profile = new QGroupBox(tr("Fixing row"), &dialog);
+	auto *fp = new QFormLayout(g_profile);
+	fp->addRow(tr("Height above the surface"), depth);
+	fp->addRow(tr("Fixing"), fixing);
+	fp->addRow(tr("Fixing size"), fsize);
+	fp->addRow(tr("Hole spacing"), spacing);
+	fp->addRow(tr("End distance"), end);
+	fp->addRow(tr("Rows of holes"), rows);
+	fp->addRow(tr("Row distance from the centre"), row_offset);
+	fp->addRow(QString(), zero_end);
+	auto *g_cut = new QGroupBox(tr("Cut-out"), &dialog);
+	auto *fc = new QFormLayout(g_cut);
+	fc->addRow(tr("Kind"), ctype);
+	fc->addRow(tr("Diameter / width"), cd1);
+	fc->addRow(tr("Height"), cd2);
+	fc->addRow(tr("Corner radius"), cd3);
+
+	auto update_groups = [=]() {
+		const auto r = PanelData::Role(role->currentData().toInt());
+		g_surface->setVisible(r == PanelData::Surface);
+		g_profile->setVisible(r == PanelData::DinRail || r == PanelData::Duct || r == PanelData::CProfile);
+		g_cut->setVisible(r == PanelData::Cutout);
+	};
+	connect(role, &QComboBox::currentIndexChanged, &dialog, update_groups);
+		// a new profile role: its own defaults
+	connect(role, &QComboBox::currentIndexChanged, &dialog, [=]() {
+		const auto r = PanelData::Role(role->currentData().toInt());
+		if (r == data.role) return;
+		if (r == PanelData::DinRail || r == PanelData::Duct || r == PanelData::CProfile) {
+			const PanelData def = PanelData::defaults(r);
+			depth->setValue(def.profile_depth);
+			fixing->setCurrentIndex(def.fixing.type == PanelHole::Drill ? 1 : 0);
+			fsize->setValue(def.fixing.d1);
+			spacing->setValue(def.spacing);
+			end->setValue(def.end_distance);
+			rows->setValue(def.rows);
+		}
+	});
+	update_groups();
+
+	auto *box = new QVBoxLayout(&dialog);
+	box->addLayout(form);
+	box->addWidget(g_surface);
+	box->addWidget(g_profile);
+	box->addWidget(g_cut);
+	box->addWidget(okCancel(&dialog));
+	if (dialog.exec() != QDialog::Accepted) return;
+
+	const PanelData::Role new_role = PanelData::Role(role->currentData().toInt());
+	PanelData nd;
+	if (new_role != PanelData::None) {
+		nd = data.role == new_role ? data : PanelData::defaults(new_role);
+		nd.role = new_role;
+		nd.designation = designation->text().trimmed();
+		nd.manufacturer = manufacturer->text().trimmed();
+		nd.article = article->text().trimmed();
+		nd.step_file = step->text().trimmed();
+		if (new_role == PanelData::Surface) {
+			nd.mm_per_unit = mmPerUnitForScale(scale->value());
+			nd.thickness = thickness->value();
+			nd.machined = machined->isChecked();
+			nd.origin = origin->currentIndex();
+		}
+		if (new_role == PanelData::DinRail || new_role == PanelData::Duct || new_role == PanelData::CProfile) {
+			nd.profile_depth = depth->value();
+			nd.fixing.type = PanelHole::Type(fixing->currentData().toInt());
+			nd.fixing.d1 = fsize->value();
+			nd.spacing = spacing->value();
+			nd.end_distance = end->value();
+			nd.rows = rows->value();
+			nd.row_offset = row_offset->value();
+			nd.zero_from_end = zero_end->isChecked();
+		}
+		if (new_role == PanelData::Cutout) {
+			nd.cutout.type = PanelHole::Type(ctype->currentData().toInt());
+			nd.cutout.d1 = cd1->value();
+			nd.cutout.d2 = cd2->value();
+			nd.cutout.d3 = cd3->value();
+			nd.cutout.subtype = cd3->value() > 0 ? PanelHole::Rounded : PanelHole::Plain;
+		}
+	}
+
+	auto *macro = new QUndoCommand(tr("Edit cabinet layout data"));
+	new ChangePanelDataCommand(shape, nd, macro);
+	const double k = new_role == PanelData::Surface ? nd.mm_per_unit : k_part;
+	const QRectF old_rect = shape->rect();
+	const QRectF local = old_rect.normalized();
+	const QRectF new_rect(local.topLeft(), QSizeF(len_w->value() / k, len_h->value() / k));
+	const double old_w_mm = scene.width() * k_part, old_h_mm = scene.height() * k_part;
+		// a new size, or a new scale of a surface which keeps its size in mm
+	if (qAbs(len_w->value() - old_w_mm) > 0.05 || qAbs(len_h->value() - old_h_mm) > 0.05
+		|| qAbs(k - k_part) > 1e-9)
+		new QPropertyUndoCommand(shape, "rect", old_rect, new_rect, macro);
+	if (Diagram *d = qobject_cast<Diagram *>(shape->scene())) d->undoStack().push(macro);
+	else {macro->redo(); delete macro;}
+	refreshHoleView();
+}
+
+void PanelMenu::editDevice(Element *element)
+{
+	const DiagramContext old_info = element->elementInformations();
+	const QList<PanelPattern> patterns = PanelLayout::patternsOf(element);
+	QDialog dialog(m_editor);
+	dialog.setWindowTitle(tr("Mounting of %1").arg(element->actualLabel()));
+	auto *form = new QFormLayout;
+	auto *variant = new QComboBox(&dialog);
+	variant->addItem(tr("automatic (DIN rail when on a rail)"), QString());
+	for (const PanelPattern &p : patterns)
+		variant->addItem(p.din_rail ? p.variant + QStringLiteral(" [") + tr("DIN rail") + QStringLiteral("]")
+									: p.variant + QStringLiteral(" (") + tr("%n holes", nullptr, int(p.holes.size())) + QStringLiteral(")"),
+						 p.variant);
+	variant->setCurrentIndex(qMax(0, variant->findData(old_info.value(QStringLiteral("mount_variant")).toString())));
+	auto *w = mmBox(infoNumber(old_info, QStringLiteral("width_mm")), 5000, 1, &dialog);
+	auto *h = mmBox(infoNumber(old_info, QStringLiteral("height_mm")), 5000, 1, &dialog);
+	auto *dep = mmBox(infoNumber(old_info, QStringLiteral("depth_mm")), 5000, 1, &dialog);
+	auto *step = new QLineEdit(old_info.value(QStringLiteral("step_file")).toString(), &dialog);
+	form->addRow(tr("Mounting variant"), variant);
+	form->addRow(tr("Width"), w);
+	form->addRow(tr("Height"), h);
+	form->addRow(tr("Depth"), dep);
+	form->addRow(tr("STEP model"), stepPicker(step, &dialog));
+	if (patterns.isEmpty()) {
+		auto *note = new QLabel(tr("The part has no drilling patterns: it leaves no holes unless it is "
+								   "on a DIN rail. Import the part from the manufacturer's data to get them."), &dialog);
+		note->setWordWrap(true);
+		form->addRow(note);
+	}
+	auto *box = new QVBoxLayout(&dialog);
+	box->addLayout(form);
+	box->addWidget(okCancel(&dialog));
+	if (dialog.exec() != QDialog::Accepted) return;
+
+	DiagramContext new_info = old_info;
+	new_info.addValue(QStringLiteral("mount_variant"), variant->currentData().toString(), false);
+	new_info.addValue(QStringLiteral("width_mm"), w->value() > 0 ? num(w->value()) : QString(), false);
+	new_info.addValue(QStringLiteral("height_mm"), h->value() > 0 ? num(h->value()) : QString(), false);
+	new_info.addValue(QStringLiteral("depth_mm"), dep->value() > 0 ? num(dep->value()) : QString(), false);
+	new_info.addValue(QStringLiteral("step_file"), step->text().trimmed(), false);
+	if (new_info == old_info) return;
+	if (auto *d = qobject_cast<Diagram *>(element->scene()))
+		d->undoStack().push(new ChangeElementInformationCommand(element, old_info, new_info));
+	else
+		element->setElementInformations(new_info);
+	refreshHoleView();
+}
+
+/* ------------------------------------------------------------------ */
+
+void PanelMenu::toggleHoleView(bool on)
+{
+	for (const QPointer<QObject> &o : std::as_const(m_overlays)) delete o.data();
+	m_overlays.clear();
+	if (!on) return;
+	Diagram *d = diagram();
+	if (!d || !d->project()) return;
+	for (Diagram *folio : d->project()->folios()) {
+		if (PanelLayout::surfaces(folio).isEmpty()) continue;
+		auto *overlay = new PanelHoleOverlay(folio);
+		folio->addItem(overlay);
+		overlay->refresh();
+		m_overlays << overlay;
+	}
+	connect(d->project()->undoStack(), &QUndoStack::indexChanged, this,
+			&PanelMenu::refreshHoleView, Qt::UniqueConnection);
+}
+
+void PanelMenu::refreshHoleView()
+{
+	if (!m_hole_view || !m_hole_view->isChecked()) return;
+	Diagram *d = diagram();
+	if (d && !PanelLayout::surfaces(d).isEmpty()) {
+		bool have = false;
+		for (const QPointer<QObject> &o : std::as_const(m_overlays))
+			if (auto *ov = dynamic_cast<PanelHoleOverlay *>(o.data()))
+				if (ov->scene() == d) have = true;
+		if (!have) {toggleHoleView(true); return;}
+	}
+	for (const QPointer<QObject> &o : std::as_const(m_overlays))
+		if (auto *ov = dynamic_cast<PanelHoleOverlay *>(o.data())) ov->refresh();
+}
+
+/* ------------------------------------------------------------------ */
+
+void PanelMenu::showReport()
+{
+	Diagram *d = diagram();
+	if (!d || !d->project()) return;
+	showText(m_editor, tr("Manufacturing report"), reportText(d->project()));
+}
+
+/**
+	@brief PanelMenu::exportManufacturing
+	Like EPLAN's NC export for a drilling machine or a laser: one DXF per
+	mounting surface (layers per hole kind), plus a hole list and a cut
+	list as CSV, all in one folder.
+*/
+void PanelMenu::exportManufacturing()
+{
+	Diagram *d = diagram();
+	if (!d || !d->project()) return;
+	QETProject *project = d->project();
+
+	QDialog dialog(m_editor);
+	dialog.setWindowTitle(tr("Export manufacturing data"));
+	auto *form = new QFormLayout;
+	auto *dir = new QLineEdit(&dialog);
+	const QString base = project->filePath().isEmpty() ? QDir::homePath()
+														: QFileInfo(project->filePath()).absolutePath();
+	dir->setText(QDir::toNativeSeparators(QDir(base).filePath(QStringLiteral("Fertigung"))));
+	auto *browse = new QPushButton(QStringLiteral("..."), &dialog);
+	connect(browse, &QPushButton::clicked, &dialog, [dir, &dialog]() {
+		const QString p = QFileDialog::getExistingDirectory(&dialog, QString(), dir->text());
+		if (!p.isEmpty()) dir->setText(QDir::toNativeSeparators(p));
+	});
+	auto *row = new QHBoxLayout;
+	row->addWidget(dir, 1);
+	row->addWidget(browse);
+	auto *labels = new QCheckBox(tr("Write the designations into the DXF (layer BESCHRIFTUNG)"), &dialog);
+	auto *core = new QCheckBox(tr("Tapped holes as core hole diameter (for drilling, not for a tapping head)"), &dialog);
+	form->addRow(tr("Folder"), row);
+	form->addRow(QString(), labels);
+	form->addRow(QString(), core);
+	auto *box = new QVBoxLayout(&dialog);
+	box->addLayout(form);
+	box->addWidget(okCancel(&dialog));
+	if (dialog.exec() != QDialog::Accepted) return;
+
+	const QString out_dir = dir->text();
+	QDir().mkpath(out_dir);
+	PanelDxf::Options options;
+	options.labels = labels->isChecked();
+	options.thread_core = core->isChecked();
+
+	QStringList written, errors;
+	QString holes_csv = tr("Folio;Surface;Kind;X mm;Y mm;Source") + QStringLiteral("\n");
+	QString cut_csv = tr("Folio;Surface;Part") + QStringLiteral("\n");
+	const QList<Diagram *> folios = project->folios();
+	QSet<QString> names;
+	for (int f = 0; f < folios.size(); ++f)
+	{
+		for (QetShapeItem *surface : PanelLayout::surfaces(folios.at(f)))
+		{
+			const PanelLayout layout(surface);
+			QString name = layout.name();
+			name.replace(QRegularExpression(QStringLiteral("[^A-Za-z0-9_+=.-]")), QStringLiteral("_"));
+			name = QStringLiteral("%1_%2").arg(f + 1, 2, 10, QLatin1Char('0')).arg(name);
+			while (names.contains(name)) name += QStringLiteral("_");
+			names << name;
+			const QString path = QDir(out_dir).filePath(name + QStringLiteral(".dxf"));
+			QString error;
+			if (PanelDxf::write(layout, path, options, &error)) written << path;
+			else errors << error;
+			for (const PanelHole &h : layout.holes())
+				holes_csv += QStringLiteral("%1;%2;%3;%4;%5;%6\n").arg(f + 1).arg(layout.name(), h.kindName(),
+								num(h.x, 2), num(h.y, 2), h.source);
+			for (const QString &c : layout.cutList())
+				cut_csv += QStringLiteral("%1;%2;%3\n").arg(f + 1).arg(layout.name(), c);
+		}
+	}
+	auto write_csv = [&](const QString &file, const QString &text) {
+		QSaveFile out(QDir(out_dir).filePath(file));
+		if (out.open(QIODevice::WriteOnly)) {
+			out.write("\xEF\xBB\xBF");
+			out.write(text.toUtf8());
+			if (out.commit()) written << out.fileName();
+		}
+	};
+	if (!names.isEmpty()) {
+		write_csv(QStringLiteral("Bohrliste.csv"), holes_csv);
+		write_csv(QStringLiteral("Schnittliste.csv"), cut_csv);
+	}
+
+	QString text;
+	if (names.isEmpty()) text = tr("The project has no mounting surface: nothing written.") + QStringLiteral("\n");
+	else {
+		text = tr("Written:") + QStringLiteral("\n");
+		for (const QString &w : std::as_const(written))
+			text += QStringLiteral("  ") + QDir::toNativeSeparators(w) + QStringLiteral("\n");
+	}
+	if (!errors.isEmpty())
+		text += QStringLiteral("\n") + tr("Errors:") + QStringLiteral("\n  ") + errors.join(QStringLiteral("\n  ")) + QStringLiteral("\n");
+	text += QStringLiteral("\n") + reportText(project);
+	showText(m_editor, tr("Export manufacturing data"), text);
+}
+
+void PanelMenu::show3D()
+{
+	Diagram *d = diagram();
+	if (!d) return;
+	auto *dialog = new Panel3DDialog(d, m_editor);
+	dialog->show();
+}

@@ -3061,6 +3061,7 @@ bool QetShapeItem::fromXml(const QDomElement &e)
 
 	is_movable_ = (e.attribute("is_movable").toInt());
 	m_closed = e.attribute("closed", "0").toInt();
+	m_panel = PanelData::fromXml(e.firstChildElement(QStringLiteral("panel")));
 	m_pen = QETXML::penFromXml(e.firstChildElement("pen"));
 	m_brush = QETXML::brushFromXml(e.firstChildElement("brush"));
 
@@ -3281,7 +3282,21 @@ QDomElement QetShapeItem::toXml(QDomDocument &document) const
 
 	result.setAttribute("z", QString::number(this->zValue()));
 
+	if (!m_panel.isNull())
+		result.appendChild(m_panel.toXml(document));
+
 	return(result);
+}
+
+/**
+	@brief QetShapeItem::setPanelData
+	Give this shape its meaning in a cabinet layout, then redraw it: a
+	part of a cabinet layout carries its hole marks and its name.
+*/
+void QetShapeItem::setPanelData(const PanelData &data)
+{
+	m_panel = data;
+	update();
 }
 
 /**

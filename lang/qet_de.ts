@@ -21479,6 +21479,34 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
         <comment>undo command text</comment>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Edit cabinet layout data</source>
+        <translation>Daten des Schaltschrankaufbaus ändern</translation>
+    </message>
+    <message>
+        <source>File not found: %1</source>
+        <translation>Datei nicht gefunden: %1</translation>
+    </message>
+    <message>
+        <source>Not a readable STEP file: %1</source>
+        <translation>Keine lesbare STEP-Datei: %1</translation>
+    </message>
+    <message>
+        <source>The STEP file holds no shape: %1</source>
+        <translation>Die STEP-Datei enthält keine Form: %1</translation>
+    </message>
+    <message>
+        <source>The STEP file has no faces to show: %1</source>
+        <translation>Die STEP-Datei hat keine darstellbaren Flächen: %1</translation>
+    </message>
+    <message>
+        <source>Open CASCADE could not read %1: %2</source>
+        <translation>Open CASCADE konnte %1 nicht lesen: %2</translation>
+    </message>
+    <message>
+        <source>This QElectroTech was built without STEP support (Open CASCADE).</source>
+        <translation>Dieses QElectroTech wurde ohne STEP-Unterstützung (Open CASCADE) gebaut.</translation>
+    </message>
 </context>
 <context>
     <name>QTextOrientationWidget</name>
@@ -29378,6 +29406,577 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <message>
         <source>(no type)</source>
         <translation>(kein Typ)</translation>
+    </message>
+</context>
+<context>
+    <name>Panel3DDialog</name>
+    <message>
+        <source>%1: no depth given, shown 60 mm deep</source>
+        <translation>%1: keine Tiefe angegeben, mit 60 mm dargestellt</translation>
+    </message>
+    <message>
+        <source>3D view of the cabinet layout</source>
+        <translation>3D-Ansicht des Schaltschrankaufbaus</translation>
+    </message>
+    <message>
+        <source>Front</source>
+        <translation>Vorne</translation>
+    </message>
+    <message>
+        <source>Top</source>
+        <translation>Oben</translation>
+    </message>
+    <message>
+        <source>Isometric</source>
+        <translation>Isometrisch</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Aktualisieren</translation>
+    </message>
+    <message>
+        <source>This folio has no mounting surface. Draw a rectangle and give it the role &quot;Mounting surface&quot; (Cabinet layout &gt; Manufacturing data).</source>
+        <translation>Dieses Blatt hat keine Montagefläche. Rechteck zeichnen und ihm die Rolle „Montagefläche“ geben (Schaltschrankaufbau &gt; Fertigungsdaten).</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n bodies. Drag: turn, right drag: move, wheel: zoom, click: select on the folio.</source>
+        <translation>
+            <numerusform>%n Körper. Ziehen: drehen, rechts ziehen: verschieben, Rad: zoomen, Klick: auf dem Blatt wählen.</numerusform>
+            <numerusform>%n Körper. Ziehen: drehen, rechts ziehen: verschieben, Rad: zoomen, Klick: auf dem Blatt wählen.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>(built without STEP support)</source>
+        <translation>(ohne STEP-Unterstützung gebaut)</translation>
+    </message>
+</context>
+<context>
+    <name>Panel3DWidget</name>
+    <message>
+        <source>OpenGL is not available on this computer.</source>
+        <translation>OpenGL ist auf diesem Rechner nicht verfügbar.</translation>
+    </message>
+</context>
+<context>
+    <name>PanelMenu</name>
+    <message>
+        <source>STEP model</source>
+        <translation>STEP-Modell</translation>
+    </message>
+    <message>
+        <source>STEP files (*.stp *.step *.STP *.STEP)</source>
+        <translation>STEP-Dateien (*.stp *.step *.STP *.STEP)</translation>
+    </message>
+    <message>
+        <source>Folio %1 -- %2: %3 x %4 mm, %5 mm thick, scale 1:%6</source>
+        <translation>Blatt %1 – %2: %3 x %4 mm, %5 mm stark, Maßstab 1:%6</translation>
+    </message>
+    <message>
+        <source>Holes: %1</source>
+        <translation>Bohrungen: %1</translation>
+    </message>
+    <message>
+        <source>on DIN rail</source>
+        <translation>auf Hutschiene</translation>
+    </message>
+    <message>
+        <source>screwed</source>
+        <translation>geschraubt</translation>
+    </message>
+    <message>
+        <source>Cut list:</source>
+        <translation>Schnittliste:</translation>
+    </message>
+    <message>
+        <source>Warnings:</source>
+        <translation>Warnungen:</translation>
+    </message>
+    <message>
+        <source>The project has no mounting surface. Cabinet layout &gt; Insert mounting surface.</source>
+        <translation>Das Projekt hat keine Montagefläche. Schaltschrankaufbau &gt; Montagefläche einfügen.</translation>
+    </message>
+    <message>
+        <source>Ca&amp;binet layout</source>
+        <translation>Schalt&amp;schrankaufbau</translation>
+    </message>
+    <message>
+        <source>Insert mounting surface...</source>
+        <translation>Montagefläche einfügen…</translation>
+    </message>
+    <message>
+        <source>A mounting plate, door or wall of the given size, drawn to scale on this folio</source>
+        <translation>Montageplatte, Tür oder Wand in der angegebenen Größe, maßstäblich auf diesem Blatt</translation>
+    </message>
+    <message>
+        <source>Insert DIN rail...</source>
+        <translation>Hutschiene einfügen…</translation>
+    </message>
+    <message>
+        <source>A DIN rail (TS 35) on the mounting surface, with its fixing holes</source>
+        <translation>Hutschiene (TS 35) auf der Montagefläche, mit ihren Befestigungsbohrungen</translation>
+    </message>
+    <message>
+        <source>Insert cable duct...</source>
+        <translation>Kabelkanal einfügen…</translation>
+    </message>
+    <message>
+        <source>A wiring duct on the mounting surface, with its fixing holes</source>
+        <translation>Verdrahtungskanal auf der Montagefläche, mit seinen Befestigungsbohrungen</translation>
+    </message>
+    <message>
+        <source>Insert C profile...</source>
+        <translation>C-Profil einfügen…</translation>
+    </message>
+    <message>
+        <source>A C mounting profile on the mounting surface</source>
+        <translation>C-Montageprofil auf der Montagefläche</translation>
+    </message>
+    <message>
+        <source>Place devices from the schematic...</source>
+        <translation>Geräte aus dem Schaltplan platzieren…</translation>
+    </message>
+    <message>
+        <source>Put the devices of the project on the mounting surface at their real size, snapped onto the DIN rails</source>
+        <translation>Die Geräte des Projekts in echter Größe auf die Montagefläche setzen, auf die Hutschienen gerastet</translation>
+    </message>
+    <message>
+        <source>Insert cut-out...</source>
+        <translation>Ausschnitt einfügen…</translation>
+    </message>
+    <message>
+        <source>A hole or cut-out in the mounting surface (e.g. 22.5 mm for a push button)</source>
+        <translation>Bohrung oder Ausschnitt in der Montagefläche (z. B. 22,5 mm für einen Taster)</translation>
+    </message>
+    <message>
+        <source>Insert keep-out area...</source>
+        <translation>Sperrfläche einfügen…</translation>
+    </message>
+    <message>
+        <source>An area of the mounting surface where no hole may be drilled</source>
+        <translation>Bereich der Montagefläche, in dem nicht gebohrt werden darf</translation>
+    </message>
+    <message>
+        <source>Manufacturing data of the selection...</source>
+        <translation>Fertigungsdaten der Auswahl…</translation>
+    </message>
+    <message>
+        <source>Role and data of the selected shape, or mounting variant, size and STEP model of the selected device</source>
+        <translation>Rolle und Daten der gewählten Form oder Montagevariante, Größe und STEP-Modell des gewählten Geräts</translation>
+    </message>
+    <message>
+        <source>Drilling view</source>
+        <translation>Bohransicht</translation>
+    </message>
+    <message>
+        <source>Show the holes and the device outlines over the cabinet layout</source>
+        <translation>Bohrungen und Geräteumrisse über dem Schaltschrankaufbau anzeigen</translation>
+    </message>
+    <message>
+        <source>Manufacturing report...</source>
+        <translation>Fertigungsbericht…</translation>
+    </message>
+    <message>
+        <source>Holes, cut list and warnings of every mounting surface</source>
+        <translation>Bohrungen, Schnittliste und Warnungen aller Montageflächen</translation>
+    </message>
+    <message>
+        <source>3D view...</source>
+        <translation>3D-Ansicht…</translation>
+    </message>
+    <message>
+        <source>The cabinet layout of this folio in 3D, with the STEP models of the parts</source>
+        <translation>Der Schaltschrankaufbau dieses Blatts in 3D, mit den STEP-Modellen der Teile</translation>
+    </message>
+    <message>
+        <source>Export manufacturing data (DXF)...</source>
+        <translation>Fertigungsdaten exportieren (DXF)…</translation>
+    </message>
+    <message>
+        <source>One DXF per mounting surface with every hole, a hole list and a cut list</source>
+        <translation>Eine DXF je Montagefläche mit allen Bohrungen, dazu Bohrliste und Schnittliste</translation>
+    </message>
+    <message>
+        <source>Insert mounting surface</source>
+        <translation>Montagefläche einfügen</translation>
+    </message>
+    <message>
+        <source>Fit to the folio</source>
+        <translation>Passend zum Blatt</translation>
+    </message>
+    <message>
+        <source>Nominal scale when the folio is printed on A4</source>
+        <translation>Nennmaßstab beim Ausdruck des Blatts auf A4</translation>
+    </message>
+    <message>
+        <source>bottom left</source>
+        <translation>unten links</translation>
+    </message>
+    <message>
+        <source>top left</source>
+        <translation>oben links</translation>
+    </message>
+    <message>
+        <source>top right</source>
+        <translation>oben rechts</translation>
+    </message>
+    <message>
+        <source>bottom right</source>
+        <translation>unten rechts</translation>
+    </message>
+    <message>
+        <source>Designation</source>
+        <translation>Kennzeichen</translation>
+    </message>
+    <message>
+        <source>Width</source>
+        <translation>Breite</translation>
+    </message>
+    <message>
+        <source>Height</source>
+        <translation>Höhe</translation>
+    </message>
+    <message>
+        <source>Sheet thickness</source>
+        <translation>Blechdicke</translation>
+    </message>
+    <message>
+        <source>Scale</source>
+        <translation>Maßstab</translation>
+    </message>
+    <message>
+        <source>Zero point</source>
+        <translation>Nullpunkt</translation>
+    </message>
+    <message>
+        <source>Manufacturer</source>
+        <translation>Hersteller</translation>
+    </message>
+    <message>
+        <source>Article number</source>
+        <translation>Artikelnummer</translation>
+    </message>
+    <message>
+        <source>insert mounting surface %1</source>
+        <translation>Montagefläche %1 einfügen</translation>
+    </message>
+    <message>
+        <source>Insert a mounting surface on this folio first.</source>
+        <translation>Zuerst eine Montagefläche auf diesem Blatt einfügen.</translation>
+    </message>
+    <message>
+        <source>DIN rail</source>
+        <translation>Hutschiene</translation>
+    </message>
+    <message>
+        <source>cable duct</source>
+        <translation>Kabelkanal</translation>
+    </message>
+    <message>
+        <source>C profile</source>
+        <translation>C-Profil</translation>
+    </message>
+    <message>
+        <source>Insert %1</source>
+        <translation>%1 einfügen</translation>
+    </message>
+    <message>
+        <source>horizontal</source>
+        <translation>waagerecht</translation>
+    </message>
+    <message>
+        <source>vertical</source>
+        <translation>senkrecht</translation>
+    </message>
+    <message>
+        <source>Distance of the centre line from the zero edge of the surface</source>
+        <translation>Abstand der Mittellinie von der Nullkante der Fläche</translation>
+    </message>
+    <message>
+        <source>Tapped hole</source>
+        <translation>Gewindebohrung</translation>
+    </message>
+    <message>
+        <source>Through hole</source>
+        <translation>Durchgangsbohrung</translation>
+    </message>
+    <message>
+        <source>Thread size (M5: 5) or drill diameter</source>
+        <translation>Gewindegröße (M5: 5) oder Bohrdurchmesser</translation>
+    </message>
+    <message>
+        <source>Orientation</source>
+        <translation>Ausrichtung</translation>
+    </message>
+    <message>
+        <source>Length</source>
+        <translation>Länge</translation>
+    </message>
+    <message>
+        <source>Height above the surface</source>
+        <translation>Höhe über der Fläche</translation>
+    </message>
+    <message>
+        <source>Position of the centre line</source>
+        <translation>Lage der Mittellinie</translation>
+    </message>
+    <message>
+        <source>Fixing</source>
+        <translation>Befestigung</translation>
+    </message>
+    <message>
+        <source>Fixing size</source>
+        <translation>Befestigungsgröße</translation>
+    </message>
+    <message>
+        <source>Hole spacing</source>
+        <translation>Lochabstand</translation>
+    </message>
+    <message>
+        <source>End distance</source>
+        <translation>Randabstand</translation>
+    </message>
+    <message>
+        <source>Rows of holes</source>
+        <translation>Lochreihen</translation>
+    </message>
+    <message>
+        <source>insert %1</source>
+        <translation>%1 einfügen</translation>
+    </message>
+    <message>
+        <source>Insert cut-out</source>
+        <translation>Ausschnitt einfügen</translation>
+    </message>
+    <message>
+        <source>Round hole</source>
+        <translation>Rundloch</translation>
+    </message>
+    <message>
+        <source>Rectangle</source>
+        <translation>Rechteck</translation>
+    </message>
+    <message>
+        <source>Slot</source>
+        <translation>Langloch</translation>
+    </message>
+    <message>
+        <source>Hexagon</source>
+        <translation>Sechskant</translation>
+    </message>
+    <message>
+        <source>Octagon</source>
+        <translation>Achtkant</translation>
+    </message>
+    <message>
+        <source>0: as wide as high</source>
+        <translation>0: so hoch wie breit</translation>
+    </message>
+    <message>
+        <source>Kind</source>
+        <translation>Art</translation>
+    </message>
+    <message>
+        <source>Diameter / width</source>
+        <translation>Durchmesser / Breite</translation>
+    </message>
+    <message>
+        <source>Corner radius</source>
+        <translation>Eckenradius</translation>
+    </message>
+    <message>
+        <source>Centre x</source>
+        <translation>Mitte x</translation>
+    </message>
+    <message>
+        <source>Centre y</source>
+        <translation>Mitte y</translation>
+    </message>
+    <message>
+        <source>insert cut-out</source>
+        <translation>Ausschnitt einfügen</translation>
+    </message>
+    <message>
+        <source>insert keep-out area</source>
+        <translation>Sperrfläche einfügen</translation>
+    </message>
+    <message>
+        <source>The project has no devices with a designation.</source>
+        <translation>Das Projekt hat keine Geräte mit Kennzeichen.</translation>
+    </message>
+    <message>
+        <source>Place devices on %1</source>
+        <translation>Geräte auf %1 platzieren</translation>
+    </message>
+    <message>
+        <source>Part</source>
+        <translation>Artikel</translation>
+    </message>
+    <message>
+        <source>Width mm</source>
+        <translation>Breite mm</translation>
+    </message>
+    <message>
+        <source>Height mm</source>
+        <translation>Höhe mm</translation>
+    </message>
+    <message>
+        <source>Depth mm</source>
+        <translation>Tiefe mm</translation>
+    </message>
+    <message>
+        <source>Mounting variants</source>
+        <translation>Montagevarianten</translation>
+    </message>
+    <message>
+        <source>(already placed)</source>
+        <translation>(schon platziert)</translation>
+    </message>
+    <message>
+        <source>none</source>
+        <translation>keine</translation>
+    </message>
+    <message>
+        <source>Devices without a size are proposed at 45 x 90 x 70 mm; correct the sizes here or in the part. They are snapped onto the DIN rails from left to right.</source>
+        <translation>Geräte ohne Maße werden mit 45 x 90 x 70 mm vorgeschlagen; Maße hier oder im Artikel korrigieren. Sie werden von links nach rechts auf die Hutschienen gerastet.</translation>
+    </message>
+    <message>
+        <source>Place</source>
+        <translation>Platzieren</translation>
+    </message>
+    <message>
+        <source>place devices on %1</source>
+        <translation>Geräte auf %1 platzieren</translation>
+    </message>
+    <message>
+        <source>Not placed (no size or not readable): %1</source>
+        <translation>Nicht platziert (ohne Maße oder nicht lesbar): %1</translation>
+    </message>
+    <message>
+        <source>Select a shape (surface, rail, duct, cut-out) or a device first.</source>
+        <translation>Zuerst eine Form (Fläche, Schiene, Kanal, Ausschnitt) oder ein Gerät wählen.</translation>
+    </message>
+    <message>
+        <source>Manufacturing data</source>
+        <translation>Fertigungsdaten</translation>
+    </message>
+    <message>
+        <source>none (ordinary shape)</source>
+        <translation>keine (normale Form)</translation>
+    </message>
+    <message>
+        <source>Mounting surface</source>
+        <translation>Montagefläche</translation>
+    </message>
+    <message>
+        <source>Cable duct</source>
+        <translation>Kabelkanal</translation>
+    </message>
+    <message>
+        <source>Cut-out</source>
+        <translation>Ausschnitt</translation>
+    </message>
+    <message>
+        <source>Keep-out area</source>
+        <translation>Sperrfläche</translation>
+    </message>
+    <message>
+        <source>A new scale keeps the size of the surface in millimetres; move the parts on it to fit again</source>
+        <translation>Ein neuer Maßstab behält die Größe der Fläche in Millimetern; die Teile darauf danach neu ausrichten</translation>
+    </message>
+    <message>
+        <source>Holes are drilled into this surface</source>
+        <translation>In diese Fläche wird gebohrt (mechanische Bearbeitung)</translation>
+    </message>
+    <message>
+        <source>0: a quarter of the width</source>
+        <translation>0: ein Viertel der Breite</translation>
+    </message>
+    <message>
+        <source>Measure the rows from the other end (zero cut)</source>
+        <translation>Reihen vom anderen Ende aus messen (Nullschnitt)</translation>
+    </message>
+    <message>
+        <source>Role</source>
+        <translation>Rolle</translation>
+    </message>
+    <message>
+        <source>Fixing row</source>
+        <translation>Befestigungsreihe</translation>
+    </message>
+    <message>
+        <source>Row distance from the centre</source>
+        <translation>Reihenabstand von der Mitte</translation>
+    </message>
+    <message>
+        <source>Edit cabinet layout data</source>
+        <translation>Daten des Schaltschrankaufbaus ändern</translation>
+    </message>
+    <message>
+        <source>Mounting of %1</source>
+        <translation>Montage von %1</translation>
+    </message>
+    <message>
+        <source>automatic (DIN rail when on a rail)</source>
+        <translation>automatisch (Hutschiene, wenn auf einer Schiene)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n holes</source>
+        <translation>
+            <numerusform>%n Bohrung</numerusform>
+            <numerusform>%n Bohrungen</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Mounting variant</source>
+        <translation>Montagevariante</translation>
+    </message>
+    <message>
+        <source>Depth</source>
+        <translation>Tiefe</translation>
+    </message>
+    <message>
+        <source>The part has no drilling patterns: it leaves no holes unless it is on a DIN rail. Import the part from the manufacturer&apos;s data to get them.</source>
+        <translation>Der Artikel hat kein Bohrbild: er hinterlässt keine Bohrungen, außer er sitzt auf einer Hutschiene. Den Artikel aus den Herstellerdaten importieren, um es zu erhalten.</translation>
+    </message>
+    <message>
+        <source>Manufacturing report</source>
+        <translation>Fertigungsbericht</translation>
+    </message>
+    <message>
+        <source>Export manufacturing data</source>
+        <translation>Fertigungsdaten exportieren</translation>
+    </message>
+    <message>
+        <source>Write the designations into the DXF (layer BESCHRIFTUNG)</source>
+        <translation>Kennzeichen in die DXF schreiben (Layer BESCHRIFTUNG)</translation>
+    </message>
+    <message>
+        <source>Tapped holes as core hole diameter (for drilling, not for a tapping head)</source>
+        <translation>Gewinde als Kernlochdurchmesser (zum Bohren, nicht für einen Gewindekopf)</translation>
+    </message>
+    <message>
+        <source>Folder</source>
+        <translation>Ordner</translation>
+    </message>
+    <message>
+        <source>Folio;Surface;Kind;X mm;Y mm;Source</source>
+        <translation>Blatt;Fläche;Art;X mm;Y mm;Herkunft</translation>
+    </message>
+    <message>
+        <source>Folio;Surface;Part</source>
+        <translation>Blatt;Fläche;Teil</translation>
+    </message>
+    <message>
+        <source>The project has no mounting surface: nothing written.</source>
+        <translation>Das Projekt hat keine Montagefläche: nichts geschrieben.</translation>
+    </message>
+    <message>
+        <source>Written:</source>
+        <translation>Geschrieben:</translation>
+    </message>
+    <message>
+        <source>Errors:</source>
+        <translation>Fehler:</translation>
     </message>
 </context>
 </TS>

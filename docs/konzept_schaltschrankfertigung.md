@@ -214,3 +214,43 @@ werden nicht gebraucht.
 | L. 3D-Szene | Szenenmodell aus Montageflächen, Profilen, Geräten, Durchbrüchen (gleiche Daten wie DXF) |
 | M. 3D-Fenster | QOpenGLWidget mit einfacher Beleuchtung, Orbit-Kamera, Auswahl per Strahl |
 | N. Netzformate | optional STL/OBJ je Artikel |
+
+## 9. Umsetzung (Stand 05.11.2026, Branch `feature/schaltschrankaufbau`)
+
+Entscheidung nach Rückfrage: **STEP ist dabei** – über Open CASCADE (MSYS2-Paket `mingw-w64-ucrt-x86_64-opencascade`).
+CMake bindet es ein, wenn es gefunden wird (`QET_WITH_OCCT`), sonst baut der Fork ohne STEP und die 3D-Ansicht zeigt
+Quader. Nachteil: OCCT zieht über TKDESTEP → TKXCAF → TKService rund 120 DLLs (u. a. ffmpeg, freeimage) in den
+deploy-Ordner.
+
+**Bedienung (Menü *Schaltschrankaufbau*)**
+
+1. *Montagefläche einfügen…* – Kennzeichen, Breite, Höhe, Blechdicke, Maßstab (oder „passend zum Blatt“), Nullpunkt,
+   Artikel, STEP. Maßstab 1:N bezieht sich auf den A4-Ausdruck (1 Rastereinheit = N × 0,2658 mm).
+2. *Hutschiene / Kabelkanal / C-Profil einfügen…* – Länge, Breite, Höhe, Lage der Mittellinie, Befestigung
+   (Gewinde/Durchgang, Größe, Abstand, Randabstand, Reihen). Bohrungen: Randabstand, dann alle Abstände, letzte bei
+   L − Randabstand; zwei Reihen bei ±Reihenabstand (0 = Breite/4); Nullschnitt spiegelt.
+3. *Geräte aus dem Schaltplan platzieren…* – Tabelle aller Geräte mit Kennzeichen (Simple/Master/Klemme) ohne
+   Aufbau-Platzierung; Maße aus `width_mm`/`height_mm`/`depth_mm`, editierbar. Erzeugt Vignetten-Elemente in
+   `import/Cabinet layout` der Projektsammlung, rastet sie von links nach rechts auf waagerechte Hutschienen
+   (Mittenversatz beachtet), Rest in den freien Bereich.
+4. *Ausschnitt / Sperrfläche einfügen…*
+5. *Fertigungsdaten der Auswahl…* – Rolle und Daten einer Form (auch nachträglich jede Form zur Fläche/Schiene machen),
+   Größe in mm; bei einem Gerät Montagevariante (automatisch/Hutschiene/Schraubbefestigung), Maße, STEP. Alles undo-fähig.
+6. *Bohransicht* (Overlay, wird nicht gespeichert), *Fertigungsbericht…*, *3D-Ansicht…*
+7. *Fertigungsdaten exportieren (DXF)…* – Ordner, Beschriftungslayer, Gewinde als Kernloch; schreibt
+   `NN_<Fläche>.dxf`, `Bohrliste.csv`, `Schnittliste.csv`.
+
+**EPLAN-Bohrbild beim Import**: `P_ARTICLE_REF_CONSTRUCTION_NAME` → `*.construction.xml` → `drillingPosition`
+(type, dimension1–3, xpos, ypos, angle, spacingrepeat, spacingend, drillnthhole) plus `constructionPosition`
+(offsetx/offsety). Annahme: Bezugspunkt ist die linke untere Ecke der Gerätefront, y nach oben; im Element steht das
+Bohrbild ab der linken oberen Ecke (y = ypos + offsety − Höhe). **Gegen ein echtes EPLAN-Bohrbild prüfen.**
+Teile mit Bohrbild bekommen „Schraubbefestigung“ (+ „Hutschiene“), ohne nur „Hutschiene“.
+
+**Geprüft (headless)**: Platte 500 × 400, Schiene 400 mm, Kanal 480 mm, Ausschnitt Ø 22,5, Sperrfläche, Testgerät
+einmal auf der Schiene (keine Bohrung) und einmal geschraubt (4 × M4) – alle Positionen wie von Hand gerechnet,
+Loch in der Sperrfläche entfällt mit Warnung; DXF mit ezdxf gelesen (R12, $MEASUREMENT 1, Audit ohne Fehler).
+STEP: OCCT-Beispiel und Hersteller-STEP gelesen (920 / 6330 Dreiecke). EDZ S7-1200: 70 × 125 × 100 mm, 2 × Ø 3,5.
+
+**Offen**: Menüs und 3D-Fenster noch nicht von Hand durchgeklickt; Kollisionsprüfung mit den Abstandsflächen
+(`P_ARTICLE_SPACING_*`); senkrechte Hutschienen beim automatischen Platzieren; Tür/Gehäuse aus Rittal-Daten;
+Konturen (Typ 7) im DXF.

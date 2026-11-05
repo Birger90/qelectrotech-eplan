@@ -1103,6 +1103,20 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/cable/cablecreatedialog.cpp
   ${QET_DIR}/sources/cable/cablecreatedialog.h
   ${QET_DIR}/sources/cable/cableoverviewdialog.cpp
+  ${QET_DIR}/sources/panel/paneldata.cpp
+  ${QET_DIR}/sources/panel/paneldata.h
+  ${QET_DIR}/sources/panel/panellayout.cpp
+  ${QET_DIR}/sources/panel/panellayout.h
+  ${QET_DIR}/sources/panel/paneldxf.cpp
+  ${QET_DIR}/sources/panel/paneldxf.h
+  ${QET_DIR}/sources/panel/panelcommands.cpp
+  ${QET_DIR}/sources/panel/panelcommands.h
+  ${QET_DIR}/sources/panel/panelstep.cpp
+  ${QET_DIR}/sources/panel/panelstep.h
+  ${QET_DIR}/sources/panel/panel3dview.cpp
+  ${QET_DIR}/sources/panel/panel3dview.h
+  ${QET_DIR}/sources/panel/panelmenu.cpp
+  ${QET_DIR}/sources/panel/panelmenu.h
   ${QET_DIR}/sources/cable/cableoverviewdialog.h
   ${QET_DIR}/sources/cable/cablemanager.cpp
   ${QET_DIR}/sources/cable/cablemanager.h

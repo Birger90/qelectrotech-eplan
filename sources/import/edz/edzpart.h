@@ -22,6 +22,10 @@
 #include <QList>
 #include <QMap>
 
+#include "../../panel/paneldata.h"
+
+class QDomDocument;
+
 /** One physical connection of an EPLAN part (a pin/terminal). */
 struct EdzPin {
 	QString designation;   ///< terminal id, e.g. "1", "PE"
@@ -53,6 +57,16 @@ class EdzPart
 		QMap<QString, QString> names() const { return m_names; }
 		QList<EdzPin> pins()   const { return m_pins; }
 
+			// Mounting data for the cabinet layout (EPLAN Pro Panel):
+			// outline, snap height and middle offset on a DIN rail, and the
+			// drilling pattern of the part (its <construction>)
+		double widthMm()  const { return m_width; }
+		double heightMm() const { return m_height; }
+		double depthMm()  const { return m_depth; }
+		QList<PanelPattern> drillingPatterns() const { return m_patterns; }
+			/// write the mounting data into an element definition
+		void appendMountingData(QDomDocument &element_definition) const;
+
 	private:
 		QString m_error;
 		QString m_part_number;
@@ -64,6 +78,9 @@ class EdzPart
 		QString m_picture;       ///< picture file name, if any
 		QMap<QString, QString> m_names;   ///< 2-letter lang -> localized name
 		QList<EdzPin> m_pins;
+		double m_width = 0, m_height = 0, m_depth = 0;
+		double m_snap_height = 0, m_middle_offset = 0;
+		QList<PanelPattern> m_patterns;
 };
 
 #endif // EDZPART_H

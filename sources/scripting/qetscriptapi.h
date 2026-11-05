@@ -384,6 +384,13 @@ class QetScriptApi : public QObject
 		Q_INVOKABLE int currentFolio() const;
 		Q_INVOKABLE QString folioTitle(int index) const;
 		Q_INVOKABLE QStringList outsideSheet(int folioIndex) const;
+			// Cabinet layout: give a shape its meaning (<panel role=...>),
+			// report the surfaces with their holes, write the DXF per surface
+		Q_INVOKABLE bool setShapePanel(int folioIndex, int shapeIndex, const QString &panelXml);
+		Q_INVOKABLE QString shapePanel(int folioIndex, int shapeIndex) const;
+		Q_INVOKABLE QString panelReport(int folioIndex) const;
+		Q_INVOKABLE QStringList exportPanelDxf(int folioIndex, const QString &outDir, bool labels = false);
+		Q_INVOKABLE QString stepInfo(const QString &path) const;
 		Q_INVOKABLE QString folioUuid(int index) const;
 		Q_INVOKABLE int folioIndex(const QString &uuid) const;
 		Q_INVOKABLE int elementCount(int folioIndex) const;

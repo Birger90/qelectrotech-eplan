@@ -51,6 +51,20 @@
 >   manufacturers (e.g. igus chainflex, LAPP): cores with colours, cross section, outer diameter, voltage, article
 >   number.
 >
+> **Cabinet layout and panel manufacturing** (menu *Cabinet layout*, the EPLAN Pro Panel 2D workflow)
+> - Mounting surfaces (plate, door, wall) to scale, DIN rails, cable ducts and C profiles with their fixing rows
+>   (thread or through hole, spacing, end distance, zero cut), cut-outs (round, rectangle, slot, hex, oct) and
+>   keep-out areas -- ordinary shapes carrying a `<panel>` role, so they move, copy and undo like any shape.
+> - *Place devices from the schematic*: each device becomes a thumbnail of its real size (stays out of the BOM),
+>   snapped onto the DIN rails, carrying the drilling patterns of its part.
+> - Mounting variants per part (`<drillingpatterns>`): on a DIN rail it leaves no hole, screwed it leaves its
+>   pattern; the EDZ import reads width/height/depth, snap height, middle offset and the EPLAN `construction`.
+> - Drilling view over the sheet, manufacturing report with warnings (hole in a keep-out area, overlaps, device
+>   without pattern), export: one DXF R12 in mm per surface (layers per hole kind) plus hole list and cut list.
+> - 3D view (Qt OpenGL) of plate, rails, ducts and devices; STEP models of parts are shown when QElectroTech is
+>   built with Open CASCADE (MSYS2 package `opencascade`, found automatically by CMake). A click selects on the sheet.
+> - Script API: `setShapePanel`, `shapePanel`, `panelReport`, `exportPanelDxf`, `stepInfo`.
+>
 > **Tools** (`tools/symbole/`)
 > - `pdf_symbol.py` / `pdf_blatt.py`: take symbols or whole sheets 1:1 from a vector PDF (e.g. an EPLAN plan), with
 >   real conductors and nodes.

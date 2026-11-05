@@ -93,6 +93,23 @@ endif()
 # the application depends on. When it's missing the feature is silently
 # disabled - see the QET_HAS_SCRIPTING guard in qetscripting.*.
 set(QET_HAS_SCRIPTING FALSE)
+# Cabinet layout 3D view: Qt's own OpenGL widgets (part of qtbase, no extra
+# library). STEP models of enclosures and devices need Open CASCADE; it is
+# optional -- without it the 3D view shows boxes from the article sizes.
+find_package(Qt6 QUIET COMPONENTS OpenGL OpenGLWidgets)
+if(TARGET Qt6::OpenGLWidgets)
+    list(APPEND QET_PRIVATE_LIBRARIES Qt6::OpenGL Qt6::OpenGLWidgets)
+    add_compile_definitions(QET_WITH_OPENGL)
+    message(STATUS "Cabinet layout 3D view: Qt OpenGL widgets found")
+endif()
+find_package(OpenCASCADE CONFIG QUIET)
+if(OpenCASCADE_FOUND)
+    list(APPEND QET_PRIVATE_LIBRARIES TKDESTEP TKXSBase TKMesh TKTopAlgo TKBRep TKGeomBase TKG3d TKG2d TKMath TKernel TKShHealing)
+    include_directories(${OpenCASCADE_INCLUDE_DIR})
+    add_compile_definitions(QET_WITH_OCCT)
+    message(STATUS "Cabinet layout STEP import: Open CASCADE ${OpenCASCADE_VERSION}")
+endif()
+
 find_package(Qt6 QUIET COMPONENTS Qml)
 if(TARGET Qt6::Qml)
     set(QET_HAS_SCRIPTING TRUE)

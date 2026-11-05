@@ -21,6 +21,7 @@
 #include "../QetGraphicsItemModeler/qetgraphicshandleritem.h"
 #include "qetgraphicsitem.h"
 #include "shapetransform.h"
+#include "../panel/paneldata.h"
 
 #include <QPen>
 #include <QUuid>
@@ -162,6 +163,11 @@ class QetShapeItem : public QetGraphicsItem
 		virtual bool	    fromXml (const QDomElement &);
 		virtual QDomElement toXml (QDomDocument &document) const;
 		QUuid uuid() const {return m_uuid;}
+			///What this shape stands for in a cabinet layout (mounting
+			///surface, DIN rail, duct, cut-out ...): none for an ordinary shape
+		PanelData panelData() const {return m_panel;}
+		void setPanelData(const PanelData &data);
+		bool isPanelPart() const {return !m_panel.isNull();}
 		void setUuid(const QUuid &uuid) {m_uuid = uuid; emit uuidChanged();}
 		void newUuid() {setUuid(QUuid::createUuid());}	//create new uuid for this item
 		virtual bool toDXF (const QString &filepath,const QPen &pen);
@@ -316,6 +322,7 @@ class QetShapeItem : public QetGraphicsItem
 			///ATTRIBUTES
 	private:
 		QUuid		 m_uuid = QUuid::createUuid();
+		PanelData	 m_panel;
 		ShapeType	 m_shapeType;
 		QPen		 m_pen;
 		QBrush		 m_brush;

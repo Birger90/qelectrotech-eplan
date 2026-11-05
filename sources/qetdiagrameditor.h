@@ -65,6 +65,8 @@ class KAutoSaveFile;
 class QETDiagramEditor : public QETMainWindow
 {
 	Q_OBJECT
+		//The cabinet layout menu works on the folio shown
+	friend class PanelMenu;
 
         friend class TerminalStripEditorWindow;
         friend class LiveServer;

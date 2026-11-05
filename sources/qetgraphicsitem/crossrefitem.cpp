@@ -190,7 +190,8 @@ QString CrossRefItem::elementPositionText(
 {
 	autonum::sequentialNumbers seq;
 	QString txt = autonum::AssignVariables::formulaToLabel(
-				m_properties.masterLabel(),
+				autonum::AssignVariables::forViewer(m_properties.masterLabel(),
+						elmt->diagram(), m_element ? m_element->diagram() : nullptr),
 				seq, elmt->diagram(),
 				elmt);
 

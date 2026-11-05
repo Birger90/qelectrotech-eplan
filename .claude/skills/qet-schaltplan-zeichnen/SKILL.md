@@ -230,3 +230,22 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
     gehen aufs Blatt. Blattskript-Muster: `blatt_auto.py <PDF-Seite>` im Projektordner (liest Titel,
     =Anlage, +Ort, Blattnummer aus dem Schriftfeld, zeichnet, erzeugt den Vergleich). Danach Vergleich ansehen
     und nur Auffälliges von Hand nacharbeiten.
+
+## Data instead of hand-typed text: PLC channels and contacts like EPLAN
+
+- **PLC channel**: bind the fields of the channel symbol to element information (`text_from="ElementInfo"`):
+  `plc_address`, `plc_comment`, `plc_function`, `plc_t1`…`plc_t4`. The card (PLC master) holds the I/O table
+  `<plcMasterData><plcIOs><plcIO type address functionText comment terminalCount><terminal>…`; each channel is tied
+  to its row by `group_index` on its `link_uuid`. Edits to the table reach the channels. PLC slaves read their
+  ElementInfo fields from themselves, other slaves from their master.
+- `plc_tN` follows the order in which the fork hands out terminal labels: the slave's terminals **sorted by name**
+  (numeric aware), e.g. "AUX" before "DI", "DQ-M" before "DQ-P".
+- ET 200SP channel name and first terminal follow from card type and address: 16-channel cards count over two bytes
+  (channel = (byte mod 2)·8 + bit), terminal = channel + 1. Second terminals (VS, M, AUX) are a wiring choice.
+- **Contacts**: the contact mirror shows the terminal names of the contacts. A placed master may carry its own
+  `<slaveContactGroups><group type="SW" terminalCount="3"><label>11</label>…` (overrides the symbol's groups); the
+  contact links with `group_index`. Name changeover terminals by their IEC digit 1/2/4 with types Common/Nc/No so
+  that sorting hands out 11/12/14 correctly.
+- Cross reference position "text field" (`xrefpos="AlignHCenter"`) keeps the slave cross reference off the sheet.
+- **Stamps**: title block variables `watermark` (diagonal) and `watermark-side` (upright, right edge), light grey,
+  may use variables such as `%{printdate}` and `%{saveddate-de}`; empty = off.

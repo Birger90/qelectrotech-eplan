@@ -383,6 +383,7 @@ class QetScriptApi : public QObject
 		Q_INVOKABLE int folioCount() const;
 		Q_INVOKABLE int currentFolio() const;
 		Q_INVOKABLE QString folioTitle(int index) const;
+		Q_INVOKABLE QStringList outsideSheet(int folioIndex) const;
 		Q_INVOKABLE QString folioUuid(int index) const;
 		Q_INVOKABLE int folioIndex(const QString &uuid) const;
 		Q_INVOKABLE int elementCount(int folioIndex) const;

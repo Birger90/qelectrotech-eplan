@@ -29,6 +29,7 @@
 #include "TerminalStrip/GraphicsItem/terminalstripitem.h"
 #include "cable/cablecopy.h"
 #include "cable/cablepart.h"
+#include "cable/cable.h"
 #include "xml/terminalstripitemxml.h"
 #include "QPropertyUndoCommand/qpropertyundocommand.h"
 #include "diagramcontent.h"
@@ -349,7 +350,14 @@ QStringList Diagram::itemsOutsideSheet() const
 			case DiagramImageItem::Type:    names << tr("a picture"); break;
 			case QetGraphicsTableItem::Type: names << tr("a table"); break;
 			case TerminalStripItem::Type:   names << tr("a terminal strip"); break;
-			case CablePart::Type:           names << tr("a cable"); break;
+			case CablePart::Type: {
+				//Named by its designation, so that the cable can be found
+				const Cable *cable = static_cast<CablePart *>(item)->cable();
+				const QString designation = cable ? cable->designation() : QString();
+				names << (designation.isEmpty() ? tr("a cable")
+								: tr("cable %1").arg(designation));
+				break;
+			}
 			default: break;
 		}
 	}

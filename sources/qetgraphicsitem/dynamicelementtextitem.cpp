@@ -2119,7 +2119,7 @@ void DynamicElementTextItem::updateXref()
 					{
 						QString xref_label = xrp.slaveLabel();
 						autonum::sequentialNumbers seq_copy = master_elmt->sequenceStruct();
-						xref_label = autonum::AssignVariables::formulaToLabel(xref_label, seq_copy, master_elmt->diagram(), master_elmt);
+						xref_label = autonum::AssignVariables::formulaToLabel(autonum::AssignVariables::forViewer(xref_label, master_elmt->diagram(), m_parent_element ? m_parent_element->diagram() : nullptr), seq_copy, master_elmt->diagram(), master_elmt);
 
 						DiagramContext dc = m_parent_element->elementInformations();
 						if(dc.value("xref").toString() != xref_label)
@@ -2150,7 +2150,7 @@ void DynamicElementTextItem::updateXref()
 				{
 					QString xref_label = xrp.slaveLabel();
 					autonum::sequentialNumbers seq_copy = master_elmt->sequenceStruct();
-					xref_label = autonum::AssignVariables::formulaToLabel(xref_label, seq_copy, master_elmt->diagram(), master_elmt);
+					xref_label = autonum::AssignVariables::formulaToLabel(autonum::AssignVariables::forViewer(xref_label, master_elmt->diagram(), m_parent_element ? m_parent_element->diagram() : nullptr), seq_copy, master_elmt->diagram(), master_elmt);
 					
 					if(!m_slave_Xref_item)
 					{
@@ -2207,7 +2207,7 @@ void DynamicElementTextItem::updateXref()
 				{
 					QString xref_label = xrp.slaveLabel();
 					autonum::sequentialNumbers seq_copy = master_elmt->sequenceStruct();
-					xref_label = autonum::AssignVariables::formulaToLabel(xref_label, seq_copy, master_elmt->diagram(), master_elmt);
+					xref_label = autonum::AssignVariables::formulaToLabel(autonum::AssignVariables::forViewer(xref_label, master_elmt->diagram(), m_parent_element ? m_parent_element->diagram() : nullptr), seq_copy, master_elmt->diagram(), master_elmt);
 
 					DiagramContext dc = m_parent_element->elementInformations();
 					if(dc.value("xref").toString() != xref_label)

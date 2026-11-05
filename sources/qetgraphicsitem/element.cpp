@@ -1647,6 +1647,13 @@ bool Element::fromXml(QDomElement &e,
 		m_data.m_master_type != ElementData::PLC)
 		m_data.xrefDisplayFromXml(e.firstChildElement(QStringLiteral("xrefDisplay")));
 
+		//Contact groups of this placed master (its own contacts and their
+		//terminal names, like the function template of the article in
+		//EPLAN) override those of its symbol
+	if (m_data.m_type == ElementData::Master &&
+		m_data.m_master_type != ElementData::PLC)
+		m_data.slaveContactGroupsFromXml(e.firstChildElement(QStringLiteral("slaveContactGroups")));
+
 	//We must block the update of the alignment when loading the information
 	//otherwise the pos of the text will not be the same as it was at save time.
 	for(DynamicElementTextItem *deti : m_dynamic_text_list)
@@ -2683,6 +2690,10 @@ void Element::appendDataXml(QDomDocument &document, QDomElement &element) const
 		auto xml_display = m_data.xrefDisplayToXml(document);
 		if (!xml_display.isNull())
 			element.appendChild(xml_display);
+			//Saved with each placed master: the groups may be its own
+		auto xml_groups = m_data.slaveContactGroupsToXml(document);
+		if (!xml_groups.isNull())
+			element.appendChild(xml_groups);
 	}
 }
 

@@ -457,7 +457,9 @@ QString TitleBlockTemplateCellWidget::defaultVariablesString() const
 		"project</li><li>%{projectfilename}: filename of the projectfile</li><li"
 		">%{saveddate}: date of saving the file in local format</li><li>%{saveddate-eu}: "
 		"date of saving the file in format DD-MM-YYYY</li><li>%{saveddate-us}: date of "
-		"saving the file in format YYYY-MM-DD</li><li>%{savedtime}: time of saving the "
+		"saving the file in format YYYY-MM-DD</li><li>%{saveddate-de}: date of saving the "
+		"file in format DD.MM.YYYY</li><li>%{printdate}: date of printing or exporting, "
+		"DD.MM.YYYY</li><li>%{savedtime}: time of saving the "
 		"file</li><li>%{savedfilename}: name of the file saved</li><li>%{savedfilepath}: "
 		"path of the saved file</li></ul>"
 	);

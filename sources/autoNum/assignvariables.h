@@ -100,6 +100,7 @@ namespace autonum
 		public:
 			static QString formulaToLabel (QString formula, sequentialNumbers &seqStruct, Diagram *diagram, const Element *elmt = nullptr, const Conductor *cndr = nullptr);
 			static QString formulaToLabel (QString formula, sequentialNumbers &seqStruct, const FormulaContext &context);
+			static QString forViewer (const QString &formula, const Diagram *target, const Diagram *viewer);
 			static QString replaceVariable (const QString &formula, const DiagramContext &dc);
 			static QString genericXref (const Element *element);
 

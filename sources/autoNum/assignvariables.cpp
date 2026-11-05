@@ -219,6 +219,28 @@ namespace autonum
 		@param elmt - parent element (if any) of the formula
 		@return the string with variable assigned.
 	*/
+	/**
+		@brief AssignVariables::forViewer
+		Resolves "%=M" of a cross-reference formula the way EPLAN writes a
+		reference: the plant, with its "=", only when the folio referred to
+		(@a target) belongs to another plant than the folio the reference
+		stands on (@a viewer) -- "/42/1" within a plant, "=DC/38/2" across.
+		Everything else of the formula is left for formulaToLabel().
+	*/
+	QString AssignVariables::forViewer(const QString &formula,
+					   const Diagram *target,
+					   const Diagram *viewer)
+	{
+		if (!formula.contains(QLatin1String("%=M")))
+			return formula;
+		const bool other = !target || !viewer
+				|| target->border_and_titleblock.plant()
+				   != viewer->border_and_titleblock.plant();
+		QString out = formula;
+		return out.replace(QLatin1String("%=M"),
+				   other ? QStringLiteral("=%M") : QString());
+	}
+
 	QString AssignVariables::formulaToLabel(QString formula,
 						sequentialNumbers &seqStruct,
 						Diagram *diagram,

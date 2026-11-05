@@ -207,6 +207,20 @@ QString QetScriptApi::folioTitle(int index) const
 }
 
 /**
+	@brief QetScriptApi::outsideSheet
+	What lies wholly or partly outside the sheet (border and title block)
+	of the folio at @p folioIndex, named as the "Outside the sheet"
+	warning names it; empty when everything fits.
+*/
+QStringList QetScriptApi::outsideSheet(int folioIndex) const
+{
+	if (!m_project) return QStringList();
+	const QList<Diagram *> diagrams = m_project->folios();
+	if (folioIndex < 0 || folioIndex >= diagrams.count()) return QStringList();
+	return diagrams.at(folioIndex)->itemsOutsideSheet();
+}
+
+/**
 	@brief QetScriptApi::folioUuid
 	The uuid of the folio at @p index, or an empty string.
 	The uuid is what to hold across an edit; the index is what the other

@@ -26,6 +26,8 @@
 #include "qetapp.h"
 #include "qetversion.h"
 #include "titleblocktemplate.h"
+
+#include <QDate>
 #include "titleblocktemplaterenderer.h"
 #include "projectorigin.h"
 
@@ -781,7 +783,59 @@ void BorderTitleBlock::draw(QPainter *painter)
 		}
 	}
 
+	drawStamps(painter);
+
 	painter -> restore();
+}
+
+/**
+	@brief BorderTitleBlock::drawStamps
+	Light grey stamps over the sheet, like the print date drawn across each
+	page and the page change date along the right edge of an EPLAN form.
+	Their text is in the title block variables "watermark" (diagonal, above
+	the title block on the right) and "watermark-side" (upright at the right
+	edge) and may use the title block variables, e.g. %{printdate}: an empty
+	variable switches the stamp off, so folios and project defaults turn them
+	on and off.
+*/
+void BorderTitleBlock::drawStamps(QPainter *painter) const
+{
+	if (!m_titleblock_template_renderer)
+		return;
+	const DiagramContext context = m_titleblock_template_renderer->context();
+	auto resolve = [&context](QString text) {
+		for (const QString &key : context.keys())
+			text.replace(QStringLiteral("%{") + key + QStringLiteral("}"),
+						 context.value(key).toString());
+		return text.trimmed();
+	};
+	const QString diagonal = resolve(context.value(QStringLiteral("watermark")).toString());
+	const QString side = resolve(context.value(QStringLiteral("watermark-side")).toString());
+	if (diagonal.isEmpty() && side.isEmpty())
+		return;
+
+		//Places measured on an EPLAN A3 form, from the bottom right corner
+		//of the sheet (pt x 15 / (4 / 25.4 x 72) = scene units)
+	const QPointF corner = borderAndTitleBlockRect().bottomRight();
+	painter->save();
+	painter->setPen(QColor(0xE1, 0xE1, 0xE1));
+	if (!diagonal.isEmpty()) {
+		painter->save();
+		painter->translate(corner + QPointF(-230.1, -128.1));
+		painter->rotate(-45);
+		painter->setFont(QETApp::diagramTextsFont(35));
+		painter->drawText(QPointF(0, 0), diagonal);
+		painter->restore();
+	}
+	if (!side.isEmpty()) {
+		painter->save();
+		painter->translate(corner + QPointF(-6.7, -106.1));
+		painter->rotate(-90);
+		painter->setFont(QETApp::diagramTextsFont(9));
+		painter->drawText(QPointF(0, 0), side);
+		painter->restore();
+	}
+	painter->restore();
 }
 
 /**
@@ -1140,6 +1194,8 @@ void BorderTitleBlock::updateDiagramContextForTitleBlock(
 	context.addValue("auto_page_num", tb.auto_page_num);
 	context.addValue("previous-folio-num", m_previous_folio_num);
 	context.addValue("next-folio-num", m_next_folio_num);
+		//Date of printing or exporting, for the print date stamp of a form
+	context.addValue("printdate", QDate::currentDate().toString(QStringLiteral("dd.MM.yyyy")));
 
 	m_titleblock_template_renderer -> setContext(context);
 }

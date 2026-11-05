@@ -258,6 +258,8 @@ class ElementData : public PropertiesInterface
 		QDomElement kindInfoToXml(QDomDocument &document);
 	QDomElement plcMasterDataToXml(QDomDocument &document) const;
 	void plcMasterDataFromXml(const QDomElement &xml_plc);
+	QDomElement slaveContactGroupsToXml(QDomDocument &document) const;
+	void slaveContactGroupsFromXml(const QDomElement &xml_groups);
 		QDomElement xrefDisplayToXml(QDomDocument &document) const;
 		void xrefDisplayFromXml(const QDomElement &xml_display);
 

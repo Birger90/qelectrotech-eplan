@@ -1319,3 +1319,58 @@ QStringList ElementData::plcIOTypeList()
 		<< translatedPlcIOType(EntreeUniverselle)
 		<< translatedPlcIOType(SortieUniverselle);
 }
+
+/**
+ * @brief ElementData::slaveContactGroupsToXml
+ * The contact groups of this master (labels of each group: the terminal
+ * names its slaves take, like the function template of an article in
+ * EPLAN). Null when the master declares none.
+ */
+QDomElement ElementData::slaveContactGroupsToXml(QDomDocument &document) const
+{
+	if (!m_slave_contact_groups_enabled || m_slave_contact_groups.isEmpty())
+		return QDomElement();
+	auto xml_groups = document.createElement(QStringLiteral("slaveContactGroups"));
+	for (const auto &group : m_slave_contact_groups) {
+		auto xml_group = document.createElement(QStringLiteral("group"));
+		xml_group.setAttribute(QStringLiteral("type"), slaveStateToString(group.type));
+		xml_group.setAttribute(QStringLiteral("subtype"), slaveTypeToString(group.subtype));
+		xml_group.setAttribute(QStringLiteral("contactCount"), group.contactCount);
+		xml_group.setAttribute(QStringLiteral("terminalCount"), group.terminalCount);
+		for (const auto &label : group.labels) {
+			auto xml_label = document.createElement(QStringLiteral("label"));
+			xml_label.appendChild(document.createTextNode(label));
+			xml_group.appendChild(xml_label);
+		}
+		xml_groups.appendChild(xml_group);
+	}
+	return xml_groups;
+}
+
+/**
+ * @brief ElementData::slaveContactGroupsFromXml
+ * Replace the contact groups of this master by those of @p xml_groups
+ * (nothing happens when it is null): a placed master can carry its own
+ * contacts, so one coil symbol serves relays with different contacts.
+ */
+void ElementData::slaveContactGroupsFromXml(const QDomElement &xml_groups)
+{
+	if (xml_groups.isNull())
+		return;
+	m_slave_contact_groups.clear();
+	m_slave_contact_groups_enabled = true;
+	for (const auto &xml_group : QETXML::findInDomElement(xml_groups, QStringLiteral("group"))) {
+		SlaveContactGroup group;
+		group.type = slaveStateFromString(
+			xml_group.attribute(QStringLiteral("type"), QStringLiteral("NO")));
+		group.subtype = slaveTypeFromString(
+			xml_group.attribute(QStringLiteral("subtype"), QStringLiteral("simple")));
+		group.contactCount = xml_group.attribute(
+			QStringLiteral("contactCount"), QStringLiteral("1")).toInt();
+		group.terminalCount = xml_group.attribute(
+			QStringLiteral("terminalCount"), QStringLiteral("1")).toInt();
+		for (const auto &xml_label : QETXML::findInDomElement(xml_group, QStringLiteral("label")))
+			group.labels.append(xml_label.text());
+		m_slave_contact_groups.append(group);
+	}
+}

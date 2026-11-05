@@ -106,6 +106,7 @@ class BorderTitleBlock : public QObject
 
 	public:
 		QRectF borderAndTitleBlockRect () const;
+		void drawStamps(QPainter *painter) const;
 		QRectF columnsRect () const;
 		QRectF rowsRect () const;
 		QRectF outsideBorderRect() const;

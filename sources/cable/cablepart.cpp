@@ -887,8 +887,12 @@ QRectF CablePart::boundingRect() const
 		{
 			if (core.part != m_part_uuid || !coreDrawn(core)) continue;
 			const QPointF at = (core.core == m_dragged_core) ? m_drag_scene : coreDrawPosition(core);
-			rect = rect.united(coreLabelRect(at, m_cable->colorOfCore(core.core))
-							   .adjusted(-3.0, -3.0, 3.0, 3.0));
+				//A core without a colour writes nothing: its empty rectangle
+				//stands at the origin, and grown by the margin it would pull
+				//the cable's bounds up to the corner of the sheet
+			const QRectF text = coreLabelRect(at, m_cable->colorOfCore(core.core));
+			if (!text.isEmpty())
+				rect = rect.united(text.adjusted(-3.0, -3.0, 3.0, 3.0));
 		}
 			//The core which is only waiting to be put down is drawn
 			//too, so its colour has to be inside what is repainted --
@@ -896,9 +900,10 @@ QRectF CablePart::boundingRect() const
 			//already stands at the line or still has to come there
 		if (m_pending_core >= 0)
 		{
-			rect = rect.united(coreLabelRect(m_drag_scene,
-											 m_cable->colorOfCore(m_pending_core))
-							   .adjusted(-3.0, -3.0, 3.0, 3.0));
+			const QRectF text = coreLabelRect(m_drag_scene,
+											  m_cable->colorOfCore(m_pending_core));
+			if (!text.isEmpty())
+				rect = rect.united(text.adjusted(-3.0, -3.0, 3.0, 3.0));
 		}
 	}
 	return rect;

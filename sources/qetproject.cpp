@@ -3211,7 +3211,7 @@ bool QETProject::changedOnDisk(QDateTime *when) const
 /**
 	@brief QETProject::stampSaved
 	Set the title block variables of the save (saveddate, saveddate-eu,
-	saveddate-us, savedtime, savedfilename, savedfilepath) to now and to
+	saveddate-us, saveddate-de, savedtime, savedfilename, savedfilepath) to now and to
 	the file being written, when there is something new to save: the
 	project changed since it was opened or last saved, or it is written to
 	another file. Otherwise they keep what the file holds, so saving an
@@ -3227,6 +3227,7 @@ bool QETProject::stampSaved()
 	m_project_properties.addValue("saveddate",     QLocale::system().toString(QDate::currentDate(), QLocale::ShortFormat));
 	m_project_properties.addValue("saveddate-eu",  QDate::currentDate().toString("dd-MM-yyyy"));
 	m_project_properties.addValue("saveddate-us",  QDate::currentDate().toString("yyyy-MM-dd"));
+	m_project_properties.addValue("saveddate-de",  QDate::currentDate().toString("dd.MM.yyyy"));
 	m_project_properties.addValue("savedtime",     QDateTime::currentDateTime().toString("HH:mm"));
 	m_project_properties.addValue("savedfilename", QFileInfo(filePath()).completeBaseName());
 	m_project_properties.addValue("savedfilepath", filePath());

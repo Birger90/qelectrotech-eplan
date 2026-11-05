@@ -174,6 +174,13 @@ Lücke „von welchem Eintrag zu welchem Ziel“:
   Hauptfunktion im Schaltplan rückwärts in die Artikelsumme (-K268 -> Artikelsumme), ebenso Teile, die nur im
   Schrankaufbau stehen. Aufbau-Platzierungen springen vorwärts in die Stückliste.
 - Reihenfolge der Artikelsumme im Original: Hersteller, dann Bestellnummer (nicht nur Bestellnummer).
+- SPS-Karte: Die Kette enthält nur die Kartendarstellungen, nach Seite geordnet: Station (Hauptfunktion mit
+  Artikel) -> Kartenversorgung -> Kartenübersicht -> Schrankaufbau -> Stückliste -> Artikelsumme. Die Kanäle sind
+  eigene Funktionen mit eigener Kette (Kanal <-> Übersicht). Kartenübersicht springt rückwärts zur Versorgung,
+  vorwärts in den Aufbau.
+- Klemme: Die Leiste im Schrankaufbau ist Glied der Klemmenkette (Stromlauf -> Aufbauseite der Leiste).
+- Teile, die nur im Schrankaufbau stehen (ohne BMK, z. B. Kabelkanal, Filter), springen in ihre Artikelsummen-Zeile.
+- Verweistexte mit Beschreibung („/55/3  Digital Input“) sind ebenfalls Links auf die genannte Seite.
 
 ## 5. Querverweis- und Unterbrechungspunkt-Sprünge
 

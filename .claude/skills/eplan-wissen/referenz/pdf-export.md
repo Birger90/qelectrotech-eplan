@@ -164,6 +164,11 @@ Lücke „von welchem Eintrag zu welchem Ziel“:
 - Stückliste: SPS-Baugruppen springen auf das Stationsblatt (Hauptfunktion mit Artikel), nicht in die
   Kartenübersicht.
 - Deckblatt, Ausführungsdaten, Strukturkennzeichenübersicht: keine Links.
+- Ortskasten (z. B. +MASCHINE): die ganze Kastenfläche ist EIN Link zur nächsten Seite mit einem Kasten gleicher
+  =Anlage+Ort, am Ende zurück zur ersten (=DB+MASCHINE 30 -> 31 -> 32 -> 33 -> 34 -> 30). Gerätekästen von
+  Teilansichten eines Geräts verketten ebenso von Seite zu Seite.
+- SPS-Kanal: Neben dem Sprung zur Kartenübersicht ist der Stationsverweis („=SB/55/5“) ein eigener Link aufs
+  Stationsblatt.
 
 ## 5. Querverweis- und Unterbrechungspunkt-Sprünge
 

@@ -56,6 +56,8 @@
 #include <QMessageBox>
 #include <QPainter>
 #include <QPlainTextEdit>
+#include <QProgressDialog>
+#include <QSettings>
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QSaveFile>
@@ -247,7 +249,8 @@ class PanelHoleOverlay : public QGraphicsObject
 */
 QDomElement panelDeviceDefinition(QDomDocument &doc, const QString &label, const QString &title,
 								  double w_mm, double h_mm, double d_mm, double k,
-								  const DiagramContext &source_info, const QDomElement &patterns)
+								  const DiagramContext &source_info, const QDomElement &patterns,
+								  const PanelOutline &graphic = PanelOutline())
 {
 	const int w = qMax(4, qRound(w_mm / k));
 	const int h = qMax(4, qRound(h_mm / k));
@@ -295,17 +298,67 @@ QDomElement panelDeviceDefinition(QDomDocument &doc, const QString &label, const
 	rect.setAttribute(QStringLiteral("height"), h);
 	rect.setAttribute(QStringLiteral("rx"), 0);
 	rect.setAttribute(QStringLiteral("ry"), 0);
-	rect.setAttribute(QStringLiteral("style"),
-					  QStringLiteral("line-style:normal;line-weight:normal;filling:white;color:black"));
+	rect.setAttribute(QStringLiteral("style"), graphic.isEmpty()
+					  ? QStringLiteral("line-style:normal;line-weight:normal;filling:white;color:black")
+					  : QStringLiteral("line-style:normal;line-weight:none;filling:white;color:white"));
 	rect.setAttribute(QStringLiteral("antialias"), QStringLiteral("false"));
 	description.appendChild(rect);
 
+		// the manufacturer's panel layout drawing, fitted into the outline
+	if (!graphic.isEmpty() && graphic.width > 0 && graphic.height > 0) {
+		const double sx = w / graphic.width, sy = h / graphic.height;
+		auto px = [&](const QPointF &p) {return QPointF(p.x() * sx, (graphic.height - p.y()) * sy);};
+		const QString style = QStringLiteral("line-style:normal;line-weight:thin;filling:none;color:black");
+		int count = 0;
+		for (const QLineF &l : graphic.lines) {
+			const QPointF a = px(l.p1()), b = px(l.p2());
+				// what is too small to see at this scale is left out
+			if (QLineF(a, b).length() < 0.3) continue;
+			if (++count > 12000) break;
+			QDomElement e = doc.createElement(QStringLiteral("line"));
+			e.setAttribute(QStringLiteral("x1"), QString::number(a.x(), 'f', 2));
+			e.setAttribute(QStringLiteral("y1"), QString::number(a.y(), 'f', 2));
+			e.setAttribute(QStringLiteral("x2"), QString::number(b.x(), 'f', 2));
+			e.setAttribute(QStringLiteral("y2"), QString::number(b.y(), 'f', 2));
+			e.setAttribute(QStringLiteral("end1"), QStringLiteral("none"));
+			e.setAttribute(QStringLiteral("end2"), QStringLiteral("none"));
+			e.setAttribute(QStringLiteral("length1"), 1.5);
+			e.setAttribute(QStringLiteral("length2"), 1.5);
+			e.setAttribute(QStringLiteral("style"), style);
+			e.setAttribute(QStringLiteral("antialias"), QStringLiteral("true"));
+			description.appendChild(e);
+		}
+		for (const PanelOutline::Arc &a : graphic.arcs) {
+			if (a.r * sx < 0.15) continue;
+			if (++count > 12000) break;
+			const QPointF c = px(a.centre);
+			const double rx = a.r * sx, ry = a.r * sy;
+			QDomElement e = doc.createElement(a.isCircle() ? QStringLiteral("ellipse") : QStringLiteral("arc"));
+			e.setAttribute(QStringLiteral("x"), QString::number(c.x() - rx, 'f', 2));
+			e.setAttribute(QStringLiteral("y"), QString::number(c.y() - ry, 'f', 2));
+			e.setAttribute(QStringLiteral("width"), QString::number(2 * rx, 'f', 2));
+			e.setAttribute(QStringLiteral("height"), QString::number(2 * ry, 'f', 2));
+			if (!a.isCircle()) {
+				double span = a.a1 - a.a0;
+				while (span <= 0) span += 360;
+				e.setAttribute(QStringLiteral("start"), QString::number(a.a0, 'f', 2));
+				e.setAttribute(QStringLiteral("angle"), QString::number(span, 'f', 2));
+			}
+			e.setAttribute(QStringLiteral("style"), style);
+			e.setAttribute(QStringLiteral("antialias"), QStringLiteral("true"));
+			description.appendChild(e);
+		}
+	}
+
 		// the designation, turned upright when the device is narrow like
 		// a terminal or a circuit breaker
-	const bool upright = h > w * 1.5 && label.size() * 6 + 4 > w;
+	const bool upright = graphic.isEmpty() && h > w * 1.5 && label.size() * 6 + 4 > w;
+		// with the manufacturer's drawing the designation stands above the
+		// device, like in EPLAN's mounting layout
+	const bool above = !graphic.isEmpty();
 	QDomElement text = doc.createElement(QStringLiteral("dynamic_text"));
-	text.setAttribute(QStringLiteral("x"), upright ? w / 2 + 4 : 2);
-	text.setAttribute(QStringLiteral("y"), upright ? 2 : h / 2 - 6);
+	text.setAttribute(QStringLiteral("x"), upright ? w / 2 + 4 : (above ? 0 : 2));
+	text.setAttribute(QStringLiteral("y"), upright ? 2 : (above ? -13 : h / 2 - 6));
 	text.setAttribute(QStringLiteral("z"), 1);
 	text.setAttribute(QStringLiteral("rotation"), upright ? 90 : 0);
 	text.setAttribute(QStringLiteral("text_width"), -1);
@@ -315,7 +368,7 @@ QDomElement panelDeviceDefinition(QDomDocument &doc, const QString &label, const
 	text.setAttribute(QStringLiteral("keep_visual_rotation"), QStringLiteral("false"));
 	text.setAttribute(QStringLiteral("text_from"), QStringLiteral("ElementInfo"));
 	text.setAttribute(QStringLiteral("uuid"), QUuid::createUuid().toString());
-	text.setAttribute(QStringLiteral("font"), QETApp::dynamicTextsItemFont(qBound(5, qMin(w, h) / 4, 9)).toString());
+	text.setAttribute(QStringLiteral("font"), QETApp::dynamicTextsItemFont(above ? 6 : qBound(5, qMin(w, h) / 4, 9)).toString());
 	QDomElement cache = doc.createElement(QStringLiteral("text"));
 	cache.appendChild(doc.createTextNode(label));
 	text.appendChild(cache);
@@ -1054,11 +1107,19 @@ void PanelMenu::placeDevices()
 	auto *hint = new QLabel(tr("Devices without a size are proposed at 45 x 90 x 70 mm; correct the sizes here "
 							   "or in the part. They are snapped onto the DIN rails from left to right."), &dialog);
 	hint->setWordWrap(true);
+	auto *graphics = new QCheckBox(tr("Manufacturer's panel layout drawing from the EPLAN Data Portal "
+									  "(by order number; also gives the size)"), &dialog);
+	const bool has_token = !QSettings().value(QStringLiteral("eplanimport/dataportal_token")).toString().isEmpty();
+	graphics->setChecked(has_token);
+	graphics->setEnabled(has_token);
+	if (!has_token)
+		graphics->setToolTip(tr("Needs your Data Portal token: Part import > From the EPLAN Data Portal"));
 	auto *buttons = okCancel(&dialog);
 	buttons->button(QDialogButtonBox::Ok)->setText(tr("Place"));
 	auto *box = new QVBoxLayout(&dialog);
 	box->addWidget(table, 1);
 	box->addWidget(hint);
+	box->addWidget(graphics);
 	box->addWidget(buttons);
 	if (dialog.exec() != QDialog::Accepted) return;
 
@@ -1098,21 +1159,39 @@ void PanelMenu::placeDevices()
 
 	auto *macro = new QUndoCommand(tr("place devices on %1").arg(layout.name()));
 	int created = 0;
-	QStringList skipped;
+	QStringList skipped, no_graphic;
+	QProgressDialog progress(tr("Placing devices…"), tr("Cancel"), 0, int(rows.size()), m_editor);
+	progress.setWindowModality(Qt::WindowModal);
+	progress.setMinimumDuration(500);
 	for (int i = 0; i < rows.size(); ++i)
 	{
+		progress.setValue(i);
+		if (progress.wasCanceled()) break;
 		if (table->item(i, 0)->checkState() != Qt::Checked) continue;
 		const Row &r = rows.at(i);
-		const double w = cellNumber(table, i, 2), h = cellNumber(table, i, 3), dep = cellNumber(table, i, 4);
+		double w = cellNumber(table, i, 2), h = cellNumber(table, i, 3);
+		const double dep = cellNumber(table, i, 4);
+		const DiagramContext info = r.e->elementInformations();
+
+			// the drawing of the panel layout from the manufacturer's data;
+			// a device without sizes takes them from it
+		PanelOutline graphic;
+		const QString order = info.value(QStringLiteral("manufacturer_reference")).toString();
+		if (graphics->isChecked() && !order.isEmpty()) {
+			progress.setLabelText(tr("Drawing of %1 (%2)…").arg(r.label, order));
+			QString why;
+			graphic = PanelImport::fetchDeviceView(order, info.value(QStringLiteral("manufacturer")).toString(), &why);
+			if (graphic.isEmpty()) no_graphic << QStringLiteral("%1 (%2)").arg(r.label, order);
+			else if (r.w <= 0 || r.h <= 0) {w = graphic.width; h = graphic.height;}
+		}
 		if (w <= 0 || h <= 0) {skipped << r.label; continue;}
 
-		const DiagramContext info = r.e->elementInformations();
 		const QDomElement patterns = r.e->location().xml().firstChildElement(QStringLiteral("drillingpatterns"));
 		QDomDocument doc;
 		QString title_text = r.label;
 		const QString ref = info.value(QStringLiteral("manufacturer_reference")).toString();
 		if (!ref.isEmpty()) title_text += QStringLiteral(" ") + ref;
-		const QDomElement def = panelDeviceDefinition(doc, r.label, title_text, w, h, dep, k, info, patterns);
+		const QDomElement def = panelDeviceDefinition(doc, r.label, title_text, w, h, dep, k, info, patterns, graphic);
 		const QString file_name = QET::stringToFileName(r.label) + QLatin1Char('-')
 								  + QUuid::createUuid().toString(QUuid::Id128).left(8) + QStringLiteral(".elmt");
 		if (!collection->addElementDefinition(dir_path, file_name, def)) {skipped << r.label; continue;}
@@ -1154,9 +1233,14 @@ void PanelMenu::placeDevices()
 		d->undoStack().push(macro);
 		project->setModified(true);
 	}
+	progress.setValue(int(rows.size()));
 	if (!skipped.isEmpty())
 		QMessageBox::warning(m_editor, title(), tr("Not placed (no size or not readable): %1")
 							 .arg(skipped.join(QStringLiteral(", "))));
+	if (!no_graphic.isEmpty())
+		QMessageBox::information(m_editor, title(),
+								 tr("No vector drawing in the Data Portal (shown as a rectangle of its size): %1")
+								 .arg(no_graphic.join(QStringLiteral(", "))));
 	refreshHoleView();
 }
 

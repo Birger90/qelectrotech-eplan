@@ -22,6 +22,8 @@
 #include "../qetapp.h"
 
 #include <QDialogButtonBox>
+#include <QEventLoop>
+#include <QTimer>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -200,6 +202,22 @@ class Reader
 					addArc(pl, QPointF(e.num(10), e.num(20)), e.num(40), 0, 360);
 				} else if (e.type == QLatin1String("ARC")) {
 					addArc(pl, QPointF(e.num(10), e.num(20)), e.num(40), e.num(50), e.num(51));
+				} else if (e.type == QLatin1String("ELLIPSE")) {
+						//centre, end of the major axis (relative), ratio, start and
+						//end parameter: as a chain of short lines
+					const QPointF c(e.num(10), e.num(20)), major(e.num(11), e.num(21));
+					const double ratio = e.num(40, 1), t0 = e.num(41, 0), t1 = e.num(42, 2 * M_PI);
+					const QPointF minor(-major.y() * ratio, major.x() * ratio);
+					double span = t1 - t0;
+					while (span <= 0) span += 2 * M_PI;
+					const int n = qBound(4, int(span / (2 * M_PI) * 48), 48);
+					QPointF prev = c + major * qCos(t0) + minor * qSin(t0);
+					for (int k = 1; k <= n; ++k) {
+						const double t = t0 + span * k / n;
+						const QPointF p = c + major * qCos(t) + minor * qSin(t);
+						addLine(pl, prev, p);
+						prev = p;
+					}
 				} else if (e.type == QLatin1String("LWPOLYLINE")) {
 					QVector<QPointF> pts;
 					QVector<double> bulges;
@@ -332,7 +350,8 @@ QByteArray PanelImport::plateViewFromPackage(const QByteArray &zip, QString *err
 		if (!mz_zip_reader_file_stat(&archive, i, &stat) || stat.m_is_directory) continue;
 		const QString name = QString::fromUtf8(stat.m_filename);
 		if (!name.endsWith(QLatin1String(".dxf"), Qt::CaseInsensitive)
-			|| !name.contains(QLatin1String("panel layout"), Qt::CaseInsensitive)) continue;
+			|| !(name.contains(QLatin1String("panel layout"), Qt::CaseInsensitive)
+				 || name.contains(QLatin1String("schaltschrankaufbau"), Qt::CaseInsensitive))) continue;
 		if (stat.m_uncomp_size > 64 * 1024 * 1024) continue;
 		size_t size = 0;
 		void *data = mz_zip_reader_extract_to_heap(&archive, i, &size, 0);
@@ -366,7 +385,8 @@ QMap<QString, QByteArray> PanelImport::viewsFromPackage(const QByteArray &zip)
 		mz_zip_archive_file_stat stat;
 		if (!mz_zip_reader_file_stat(&archive, i, &stat) || stat.m_is_directory) continue;
 		const QString name = QString::fromUtf8(stat.m_filename);
-		if (!name.contains(QLatin1String("panel layout"), Qt::CaseInsensitive)) continue;
+		if (!name.contains(QLatin1String("panel layout"), Qt::CaseInsensitive)
+			&& !name.contains(QLatin1String("schaltschrankaufbau"), Qt::CaseInsensitive)) continue;
 		const QRegularExpressionMatch m = letter.match(name);
 		if (!m.hasMatch() || stat.m_uncomp_size > 64 * 1024 * 1024) continue;
 		size_t size = 0;
@@ -377,6 +397,99 @@ QMap<QString, QByteArray> PanelImport::viewsFromPackage(const QByteArray &zip)
 	}
 	mz_zip_reader_end(&archive);
 	return out;
+}
+
+QByteArray PanelImport::deviceViewFromPackage(const QByteArray &zip)
+{
+		//the front: view A of the panel layout, else the first one there is
+	const QMap<QString, QByteArray> views = viewsFromPackage(zip);
+	if (views.contains(QStringLiteral("A"))) return views.value(QStringLiteral("A"));
+	return views.isEmpty() ? QByteArray() : views.first();
+}
+
+QString PanelImport::devicesDirectory()
+{
+	return templatesDirectory() + QStringLiteral("/devices");
+}
+
+PanelOutline PanelImport::fetchDeviceView(const QString &order_number, const QString &manufacturer,
+										  QString *error)
+{
+	const QString order = order_number.trimmed();
+	if (order.isEmpty()) return PanelOutline();
+	QString key = (manufacturer.trimmed() + QLatin1Char('_') + order);
+	key.replace(QRegularExpression(QStringLiteral("[^A-Za-z0-9_.+-]")), QStringLiteral("_"));
+	const QString cached = QDir(devicesDirectory()).filePath(key + QStringLiteral(".dxf"));
+	const QString none = QDir(devicesDirectory()).filePath(key + QStringLiteral(".none"));
+	if (QFileInfo::exists(cached)) return readDxfFile(cached, error);
+	if (QFileInfo::exists(none)) {
+		if (error) *error = QStringLiteral("no panel layout drawing in the Data Portal");
+		return PanelOutline();
+	}
+	const QString token = QSettings().value(QStringLiteral("eplanimport/dataportal_token")).toString();
+	if (token.isEmpty()) {
+		if (error) *error = QStringLiteral("no Data Portal token");
+		return PanelOutline();
+	}
+
+		//one request after the other, waiting for each
+	DataPortalClient client;
+	client.setToken(token);
+	QEventLoop loop;
+	QTimer guard;
+	guard.setSingleShot(true);
+	QObject::connect(&guard, &QTimer::timeout, &loop, &QEventLoop::quit);
+	QVector<DataPortalPart> found;
+	QByteArray package;
+	QString failure;
+	QObject::connect(&client, &DataPortalClient::searchFinished, &loop,
+					 [&](const QVector<DataPortalPart> &parts, int, int) {found = parts; loop.quit();});
+	QObject::connect(&client, &DataPortalClient::downloadFinished, &loop,
+					 [&](const QByteArray &data, const QString &) {package = data; loop.quit();});
+	QObject::connect(&client, &DataPortalClient::failed, &loop,
+					 [&](const QString &message) {failure = message; loop.quit();});
+	DataPortalQuery q;
+	q.text = order;
+	q.only_dxf = true;
+	q.exact = true;
+	q.limit = 20;
+	client.search(q);
+	guard.start(30000);
+	loop.exec();
+	DataPortalPart part;
+	for (const DataPortalPart &p : std::as_const(found)) {
+		if (p.order_number.compare(order, Qt::CaseInsensitive) != 0) continue;
+		const bool same_maker = manufacturer.isEmpty()
+				|| p.manufacturer.contains(manufacturer, Qt::CaseInsensitive)
+				|| manufacturer.contains(p.manufacturer_short, Qt::CaseInsensitive);
+		if (part.id.isEmpty() || same_maker) part = p;
+		if (same_maker) break;
+	}
+	if (part.id.isEmpty()) {
+		if (error) *error = failure.isEmpty() ? QStringLiteral("not in the Data Portal") : failure;
+		if (failure.isEmpty()) {QDir().mkpath(devicesDirectory()); QFile f(none); f.open(QIODevice::WriteOnly);}
+		return PanelOutline();
+	}
+	client.downloadDxf(part.id);
+	guard.start(60000);
+	loop.exec();
+	if (package.isEmpty()) {
+		if (error) *error = failure.isEmpty() ? QStringLiteral("download failed") : failure;
+		return PanelOutline();
+	}
+	const QByteArray view = deviceViewFromPackage(package);
+	QDir().mkpath(devicesDirectory());
+	if (view.isEmpty()) {
+		QFile f(none);
+		f.open(QIODevice::WriteOnly);
+		if (error) *error = QStringLiteral("no panel layout drawing in the Data Portal");
+		return PanelOutline();
+	}
+	QSaveFile f(cached);
+	if (f.open(QIODevice::WriteOnly)) {f.write(view); f.commit();}
+	PanelOutline o = readDxf(view, error);
+	o.name = part.part_number;
+	return o;
 }
 
 QString PanelImport::enclosuresDirectory()

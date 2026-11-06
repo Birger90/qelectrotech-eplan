@@ -57,6 +57,8 @@
 >   keep-out areas -- ordinary shapes carrying a `<panel>` role, so they move, copy and undo like any shape.
 > - *Place devices from the schematic*: each device becomes a thumbnail of its real size (stays out of the BOM),
 >   snapped onto the DIN rails, carrying the drilling patterns of its part.
+> - Devices are drawn with the manufacturer's panel layout drawing from the EPLAN Data Portal (by order
+>   number, cached in Documents/panel-templates/devices), which also gives their size.
 > - Mounting variants per part (`<drillingpatterns>`): on a DIN rail it leaves no hole, screwed it leaves its
 >   pattern; the EDZ import reads width/height/depth, snap height, middle offset and the EPLAN `construction`.
 > - Drilling view over the sheet, manufacturing report with warnings (hole in a keep-out area, overlaps, device

@@ -70,6 +70,8 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
   machbar wie jede Form.
 - *Geräte aus dem Schaltplan platzieren*: jedes Gerät wird ein Rechteck in echter Größe (Vignette, nicht in der
   Stückliste), auf die Hutschienen gerastet, mit dem Bohrbild seines Artikels.
+- Geräte erscheinen mit der Herstellergrafik (Schaltschrankaufbau) aus dem EPLAN Data Portal (über die
+  Bestellnummer, zwischengespeichert in Dokumente\panel-templates\devices); sie liefert auch die Maße.
 - Montagevarianten je Artikel (`<drillingpatterns>`): auf der Hutschiene keine Bohrung, geschraubt das Bohrbild; der
   EDZ-Import liest Breite/Höhe/Tiefe, Einrasthöhe, Mittenversatz und die EPLAN-`construction`.
 - Bohransicht über dem Blatt, Fertigungsbericht mit Warnungen (Loch in Sperrfläche, Überschneidung, Gerät ohne

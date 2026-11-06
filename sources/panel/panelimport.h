@@ -68,6 +68,16 @@ class PanelImport
 		static QString saveEnclosure(const QString &name, const QString &description,
 									 const QMap<QString, QByteArray> &views, QString *error = nullptr);
 
+			/// the panel layout view (front, A) of a device from the EPLAN
+			/// Data Portal, found by its order number: read from the cache
+			/// (panel-templates/devices) or downloaded with the user's token.
+			/// Blocks while it downloads (a few seconds); empty when the
+			/// portal has none or only a raster picture.
+		static PanelOutline fetchDeviceView(const QString &order_number, const QString &manufacturer,
+											QString *error = nullptr);
+		static QString devicesDirectory();
+		static QByteArray deviceViewFromPackage(const QByteArray &zip);
+
 		static QString templatesDirectory();
 		static QStringList templateFiles();
 		static QString templateName(const QString &file);

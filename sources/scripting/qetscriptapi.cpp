@@ -387,6 +387,26 @@ bool QetScriptApi::setSurfaceTemplate(int folioIndex, int shapeIndex, const QStr
 }
 
 /**
+	@brief QetScriptApi::panelDeviceView
+	The manufacturer's panel layout drawing of a part (EPLAN Data Portal,
+	cached in panel-templates/devices).
+	@return JSON: ok, width, height, lines, arcs, error
+*/
+QString QetScriptApi::panelDeviceView(const QString &orderNumber, const QString &manufacturer) const
+{
+	QString error;
+	const PanelOutline o = PanelImport::fetchDeviceView(orderNumber, manufacturer, &error);
+	QJsonObject j;
+	j[QStringLiteral("ok")] = !o.isEmpty();
+	if (!error.isEmpty()) j[QStringLiteral("error")] = error;
+	j[QStringLiteral("width")] = o.width;
+	j[QStringLiteral("height")] = o.height;
+	j[QStringLiteral("lines")] = int(o.lines.size());
+	j[QStringLiteral("arcs")] = int(o.arcs.size());
+	return QString::fromUtf8(QJsonDocument(j).toJson(QJsonDocument::Compact));
+}
+
+/**
 	@brief QetScriptApi::readPanelTemplate
 	@return JSON: width, height, lines, arcs, circles (d, x, y) of a plate DXF
 */

@@ -30105,6 +30105,30 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
         <source>The data hold no mounting plate: its size is estimated (width - 101, height - 104 mm). Please check.</source>
         <translation>Die Daten enthalten keine Montageplatte: ihr Maß ist geschätzt (Breite − 101, Höhe − 104 mm). Bitte prüfen.</translation>
     </message>
+    <message>
+        <source>Manufacturer&apos;s panel layout drawing from the EPLAN Data Portal (by order number; also gives the size)</source>
+        <translation>Herstellergrafik (Schaltschrankaufbau) aus dem EPLAN Data Portal (über die Bestellnummer; liefert auch die Maße)</translation>
+    </message>
+    <message>
+        <source>Needs your Data Portal token: Part import &gt; From the EPLAN Data Portal</source>
+        <translation>Braucht dein Data-Portal-Token: Bauteil-Import &gt; Aus dem EPLAN Data Portal</translation>
+    </message>
+    <message>
+        <source>Placing devices…</source>
+        <translation>Platziere Geräte…</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>Drawing of %1 (%2)…</source>
+        <translation>Grafik von %1 (%2)…</translation>
+    </message>
+    <message>
+        <source>No vector drawing in the Data Portal (shown as a rectangle of its size): %1</source>
+        <translation>Keine Vektorgrafik im Data Portal (als Rechteck in seiner Größe dargestellt): %1</translation>
+    </message>
 </context>
 <context>
     <name>PanelTemplateDialog</name>

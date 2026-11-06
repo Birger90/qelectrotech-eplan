@@ -23,6 +23,8 @@
 #include <QList>
 #include <QPointF>
 #include <QRectF>
+#include <QRegularExpression>
+#include <QString>
 #include <QStringList>
 
 class Diagram;
@@ -82,6 +84,14 @@ class PanelLayout
 			/// rail's start when close; the move in scene units, null when
 			/// there is no rail near it
 		static QPointF railSnap(Diagram *diagram, Element *element);
+			/// a pair of devices that may hang on each other (geraetekombinationen.csv)
+		struct DeviceCombination {
+			QRegularExpression main, added;
+			QString side;          ///< unten, oben, links, rechts: where the added one sits
+			double dx_mm = 0, dy_mm = 0;
+			QString link;          ///< the part that joins them
+		};
+		static const QList<DeviceCombination> &deviceCombinations();
 
 		QetShapeItem *surface() const {return m_surface;}
 		PanelData surfaceData() const {return m_data;}

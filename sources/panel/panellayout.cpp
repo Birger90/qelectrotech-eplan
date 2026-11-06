@@ -25,6 +25,14 @@
 #include "../ElementsCollection/elementslocation.h"
 #include "../qetgraphicsitem/element.h"
 #include "../qetgraphicsitem/qetshapeitem.h"
+#include "../qetapp.h"
+
+#include <QDateTime>
+#include <QFile>
+#include <QFileInfo>
+#include <QRegularExpression>
+#include <QTextStream>
+#include <cmath>
 
 #include <QLineF>
 #include <QMap>
@@ -104,6 +112,51 @@ QList<PanelPattern> PanelLayout::patternsOf(Element *element)
 	return out;
 }
 
+/**
+	The device combinations a cabinet layout allows: geraetekombinationen.csv
+	in the company and the user collection, read again when it changes.
+	A line: main device;added device;side;x mm;y mm;link part;source --
+	order numbers with * and ? as wildcards.
+*/
+const QList<PanelLayout::DeviceCombination> &PanelLayout::deviceCombinations()
+{
+	static QList<DeviceCombination> list;
+	static QMap<QString, QDateTime> stamps;
+	const QStringList files = {QETApp::companyElementsDir() + QStringLiteral("geraetekombinationen.csv"),
+							   QETApp::customElementsDir() + QStringLiteral("geraetekombinationen.csv")};
+	bool changed = stamps.isEmpty();
+	for (const QString &f : files)
+		if (stamps.value(f) != QFileInfo(f).lastModified()) changed = true;
+	if (!changed) return list;
+	list.clear();
+	stamps.clear();
+	for (const QString &f : files) {
+		stamps.insert(f, QFileInfo(f).lastModified());
+		QFile file(f);
+		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) continue;
+		QTextStream in(&file);
+		while (!in.atEnd()) {
+			const QString line = in.readLine().trimmed();
+			if (line.isEmpty() || line.startsWith(QLatin1Char('#'))) continue;
+			const QStringList p = line.split(QLatin1Char(';'));
+			if (p.size() < 3) continue;
+			DeviceCombination c;
+			auto pattern = [](const QString &w) {
+				QString rx = QRegularExpression::wildcardToRegularExpression(w.trimmed(), QRegularExpression::UnanchoredWildcardConversion);
+				return QRegularExpression(QLatin1Char('^') + rx + QLatin1Char('$'), QRegularExpression::CaseInsensitiveOption);
+			};
+			c.main = pattern(p.at(0));
+			c.added = pattern(p.at(1));
+			c.side = p.at(2).trimmed().toLower();
+			c.dx_mm = p.value(3).trimmed().replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+			c.dy_mm = p.value(4).trimmed().replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+			c.link = p.value(5).trimmed();
+			if (c.main.isValid() && c.added.isValid()) list << c;
+		}
+	}
+	return list;
+}
+
 QPointF PanelLayout::railSnap(Diagram *diagram, Element *element)
 {
 	if (!diagram || !element) return QPointF();
@@ -141,8 +194,8 @@ QPointF PanelLayout::railSnap(Diagram *diagram, Element *element)
 		}
 		if (rail.isNull()) {
 				// no rail: a device hung onto another one (a contactor under its
-				// motor starter, an auxiliary block on a contactor) snaps edge to
-				// edge onto the device right above or below it
+				// motor starter) -- only a pair the combination list allows,
+				// at the place the list gives
 			auto footprint = [k](Element *e) {
 				const DiagramContext i = e->elementInformations();
 				const double ew = infoNumber(i, QStringLiteral("width_mm")), eh = infoNumber(i, QStringLiteral("height_mm"));
@@ -152,25 +205,40 @@ QPointF PanelLayout::railSnap(Diagram *diagram, Element *element)
 				t.rotate(e->rotation());
 				return t.mapRect(QRectF(0, 0, ew / k, eh / k));
 			};
-			const double catch_edge = 15 / k;
-			double sdx = 0, sdy = 0, sbest = 1e300;
+			const QString own = info.value(QStringLiteral("manufacturer_reference")).toString().trimmed();
+			if (own.isEmpty()) return QPointF();
+			const double catch_place = 20 / k;
+			QPointF best_move;
+			double best_d = 1e300;
 			for (QGraphicsItem *item : diagram->items()) {
 				auto *other = dynamic_cast<Element *>(item);
 				if (!other || other == element || other->parentItem()) continue;
 				const QRectF ob = footprint(other);
 				if (ob.isNull()) continue;
-				if (box.right() <= ob.left() || box.left() >= ob.right()) continue;   // not above or below it
-				for (double d : {ob.bottom() - box.top(), ob.top() - box.bottom()}) {   // under it / over it
-					if (qAbs(d) > catch_edge || qAbs(d) >= sbest) continue;
-					sbest = qAbs(d);
-					sdy = d;
-						// in line with it when nearly so
-					const double ldx = ob.left() - box.left();
-					sdx = qAbs(ldx) <= catch_x ? ldx : 0;
+				const QString theirs = other->elementInformations().value(QStringLiteral("manufacturer_reference")).toString().trimmed();
+				if (theirs.isEmpty()) continue;
+				for (const DeviceCombination &c : deviceCombinations()) {
+					QPointF target;   // the top left corner the moved device goes to
+					const double dx = c.dx_mm / k, dy = c.dy_mm / k;
+					if (c.main.match(theirs).hasMatch() && c.added.match(own).hasMatch()) {
+							// moved: the added device, onto the main one
+						if (c.side == QLatin1String("unten")) target = QPointF(ob.left() + dx, ob.bottom() + dy);
+						else if (c.side == QLatin1String("oben")) target = QPointF(ob.left() + dx, ob.top() - box.height() - dy);
+						else if (c.side == QLatin1String("links")) target = QPointF(ob.left() - box.width() - dx, ob.top() + dy);
+						else target = QPointF(ob.right() + dx, ob.top() + dy);
+					} else if (c.main.match(own).hasMatch() && c.added.match(theirs).hasMatch()) {
+							// moved: the main device, onto the added one
+						if (c.side == QLatin1String("unten")) target = QPointF(ob.left() - dx, ob.top() - box.height() - dy);
+						else if (c.side == QLatin1String("oben")) target = QPointF(ob.left() - dx, ob.bottom() + dy);
+						else if (c.side == QLatin1String("links")) target = QPointF(ob.right() + dx, ob.top() - dy);
+						else target = QPointF(ob.left() - box.width() - dx, ob.top() - dy);
+					} else continue;
+					const QPointF move = target - box.topLeft();
+					const double d = std::hypot(move.x(), move.y());
+					if (d <= catch_place && d < best_d) {best_d = d; best_move = move;}
 				}
 			}
-			if (sbest > 1e299) return QPointF();
-			return QPointF(sdx, sdy);
+			return best_move;
 		}
 		const double offset = infoNumber(info, QStringLiteral("middle_offset_mm")) / k;
 		const double dy = rail.center().y() - offset - box.center().y();

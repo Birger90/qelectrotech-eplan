@@ -60,6 +60,7 @@
 #include "../panel/paneldxf.h"
 #include "../panel/panellayout.h"
 #include "../panel/panelstep.h"
+#include "../panel/panel3dview.h"
 #include "../panel/panelimport.h"
 #include "../panel/panelmenu.h"
 #include "../import/eplandxf/eplanpartimporter.h"
@@ -360,6 +361,30 @@ QStringList QetScriptApi::exportPanelDxf(int folioIndex, const QString &outDir, 
 		else log(QStringLiteral("qet.exportPanelDxf: %1: %2").arg(path, error));
 	}
 	return written;
+}
+
+/**
+	@brief QetScriptApi::exportPanel3D
+	Write the 3D view of the cabinet layout of a folio as glTF (.glb):
+	devices with the STEP model of their order number where there is one.
+	@return what could not be shown, one line each; "ERROR: ..." when
+	nothing was written
+*/
+QString QetScriptApi::exportPanel3D(int folioIndex, const QString &path, bool enclosure)
+{
+	if (!m_project) return QStringLiteral("ERROR: no project");
+	const QList<Diagram *> diagrams = m_project->folios();
+	if (folioIndex < 0 || folioIndex >= diagrams.count()) return QStringLiteral("ERROR: no such folio");
+	QStringList notes;
+	const QList<Panel3DBody> bodies = Panel3DDialog::build(diagrams.at(folioIndex), &notes, enclosure);
+	if (bodies.isEmpty()) return QStringLiteral("ERROR: no mounting surface on this folio");
+	int models = 0;
+	for (const Panel3DBody &b : bodies) if (!b.mesh.isEmpty()) ++models;
+	QString error;
+	if (!Panel3DDialog::writeGlb(bodies, path, &error)) return QStringLiteral("ERROR: ") + error;
+	notes.removeDuplicates();
+	notes.prepend(QStringLiteral("%1 bodies, %2 with STEP model").arg(bodies.size()).arg(models));
+	return notes.join(QLatin1Char('\n'));
 }
 
 /**

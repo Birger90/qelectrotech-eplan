@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "panellayout.h"
+#include "panelstep.h"
 
 #include "../diagramcontext.h"
 
@@ -384,6 +385,14 @@ void PanelLayout::collect()
 		d.height_mm = infoNumber(info, QStringLiteral("height_mm"));
 		d.depth_mm = infoNumber(info, QStringLiteral("depth_mm"));
 		d.step_file = info.value(QStringLiteral("step_file")).toString();
+			// no model named: the one of its order number in the 3D folder
+		for (const QString &a : info.value(QStringLiteral("accessories")).toString().split(QRegularExpression(QStringLiteral("[;,\n]")), Qt::SkipEmptyParts))
+			if (!a.trimmed().isEmpty()) d.accessories << a.trimmed();
+		for (const QString &t : info.value(QStringLiteral("terminals")).toString().split(QLatin1Char(';'), Qt::SkipEmptyParts))
+			if (!t.trimmed().isEmpty()) d.terminals << t.trimmed();
+		if (d.step_file.isEmpty())
+			d.step_file = PanelStep::findModel(info.value(QStringLiteral("manufacturer_reference")).toString(),
+											   info.value(QStringLiteral("manufacturer")).toString());
 			//The outline: the real size from the insertion point (top left
 			//corner of the device, like EPLAN's placement point), turned with
 			//the element; without a size the drawn symbol

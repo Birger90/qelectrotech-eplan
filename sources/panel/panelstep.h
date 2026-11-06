@@ -19,6 +19,7 @@
 #define PANELSTEP_H
 
 #include <QString>
+#include <QStringList>
 #include <QVector>
 #include <QVector3D>
 
@@ -45,6 +46,8 @@ class PanelStep
 	public:
 		static bool available();
 		static PanelMesh load(const QString &path, QString *error = nullptr);
+		static QString findModel(const QString &reference, const QString &manufacturer = QString());
+		static QStringList modelDirs();
 };
 
 #endif // PANELSTEP_H

@@ -26,6 +26,12 @@
 #include <QCheckBox>
 #include <QDialogButtonBox>
 #include <QDir>
+#include <QFile>
+#include <QFileDialog>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QMessageBox>
 #include <QFileInfo>
 #include <QGraphicsView>
 #include <QHBoxLayout>
@@ -101,7 +107,12 @@ PanelMesh fitMesh(const PanelMesh &in, const QVector3D &lo, const QVector3D &hi)
 	float best_err = 1e30f;
 	for (int p = 0; p < 6; ++p) {
 		float err = 0;
-		for (int k = 0; k < 3; ++k) err += qAbs(have[perms[p][k]] - want[k]);
+			// no depth given (want z = 0): only the width and height decide,
+			// the model keeps its own depth
+		for (int k = 0; k < 3; ++k) {
+			if (k == 2 && want.z() <= 0.01f) continue;
+			err += qAbs(have[perms[p][k]] - want[k]);
+		}
 		if (err < best_err - 0.01f) {best_err = err; best = p;}
 	}
 	const auto &pm = perms[best];
@@ -282,13 +293,25 @@ void Panel3DWidget::paintGL()
 
 	gl->glLoadMatrixf(modelView(m_centre, m_pan, m_distance, m_yaw, m_pitch).constData());
 
-	for (int i = 0; i < m_bodies.size(); ++i)
+		// opaque bodies first, the see-through ones (enclosure) after them
+	QList<int> order;
+	for (int i = 0; i < m_bodies.size(); ++i) if (m_bodies.at(i).opacity >= 1.0f) order << i;
+	for (int i = 0; i < m_bodies.size(); ++i) if (m_bodies.at(i).opacity < 1.0f) order << i;
+	for (int i : order)
 	{
 		const Panel3DBody &b = m_bodies.at(i);
 		QColor c = b.colour;
 		if (i == m_selected) c = QColor(230, 120, 30);
 		gl->glEnable(GL_LIGHTING);
-		gl->glColor3f(float(c.redF()), float(c.greenF()), float(c.blueF()));
+		if (b.opacity < 1.0f) {
+			gl->glEnable(GL_BLEND);
+			gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			gl->glDepthMask(GL_FALSE);
+		} else {
+			gl->glDisable(GL_BLEND);
+			gl->glDepthMask(GL_TRUE);
+		}
+		gl->glColor4f(float(c.redF()), float(c.greenF()), float(c.blueF()), b.opacity);
 		gl->glEnable(GL_POLYGON_OFFSET_FILL);
 		gl->glPolygonOffset(1.0f, 1.0f);
 		if (!b.mesh.isEmpty()) {
@@ -450,10 +473,8 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 			const QRectF r = d.rect_mm.normalized();
 			const float z0 = d.on_rail ? rail_top : 0;
 			float depth = float(d.depth_mm);
-			if (depth <= 0) {
-				depth = 60;
-				if (notes) *notes << tr("%1: no depth given, shown 60 mm deep").arg(d.designation);
-			}
+			const bool no_depth = depth <= 0;
+			if (no_depth) depth = 60;
 			b.min = QVector3D(offset_x + float(r.left()), float(r.top()), z0);
 			b.max = QVector3D(offset_x + float(r.right()), float(r.bottom()), z0 + depth);
 			b.colour = QColor(90, 110, 140);
@@ -463,10 +484,75 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 				QString error;
 				const PanelMesh mesh = PanelStep::load(resolve(d.step_file), &error);
 				if (!mesh.isEmpty()) {
-					b.mesh = fitMesh(mesh, b.min, b.max);
+					b.mesh = fitMesh(mesh, b.min, no_depth ? QVector3D(b.max.x(), b.max.y(), b.min.z()) : b.max);
+					b.max.setZ(qMax(b.max.z(), b.mesh.max.z()));
 					b.colour = QColor(120, 125, 135);
 				} else if (notes) *notes << error;
 			}
+				// accessories mounted with it: a part as wide and high as the
+				// device (an ET 200SP BaseUnit) carries it -- the carrier sits
+				// on the rail, the device in front of it, flush at the top and
+				// at the depth given for the whole
+			for (const QString &acc : d.accessories) {
+				const QString file = PanelStep::findModel(acc);
+				if (file.isEmpty()) continue;
+				const PanelMesh am = PanelStep::load(file);
+				if (am.isEmpty()) continue;
+				const PanelMesh fitted = fitMesh(am, b.min, QVector3D(b.max.x(), b.max.y(), b.min.z()));
+				const QVector3D fs = fitted.max - fitted.min, bs = b.max - b.min;
+					// a carrier covers the device's footprint (it may be a bit
+					// wider and higher: latches, terminal area)
+				if (fs.x() < 0.8f * bs.x() || fs.x() > 1.5f * bs.x()
+					|| fs.y() < 0.8f * bs.y() || fs.y() > 1.4f * bs.y()) continue;
+				Panel3DBody carrier;
+				carrier.mesh = fitted;
+				carrier.min = fitted.min;
+				carrier.max = fitted.max;
+				carrier.colour = QColor(150, 152, 158);
+				carrier.item = d.element;
+				carrier.name = d.designation + QStringLiteral(" ") + acc;
+				if (!b.mesh.isEmpty()) {
+					const float front = no_depth ? fitted.max.z() + (b.mesh.max.z() - b.mesh.min.z()) * 0.5f
+												 : b.min.z() + depth;
+					const QVector3D shift(0, fitted.max.y() - b.mesh.max.y(), front - b.mesh.max.z());
+					for (QVector3D &v : b.mesh.vertices) v += shift;
+					b.mesh.min += shift;
+					b.mesh.max += shift;
+				}
+				bodies << carrier;
+				break;
+			}
+				// a terminal strip: every terminal with its own model, side by
+				// side along the rail from the left end of the strip
+			if (!d.terminals.isEmpty()) {
+				float cursor = b.min.x();
+				int shown = 0;
+				for (const QString &t : d.terminals) {
+					const QString file = PanelStep::findModel(t);
+					PanelMesh tm;
+					if (!file.isEmpty()) tm = PanelStep::load(file);
+					if (tm.isEmpty()) {cursor += 6.1f; continue;}
+						// the thinnest side along the rail, the longest across
+					PanelMesh fitted = fitMesh(tm, QVector3D(cursor, b.min.y(), b.min.z()),
+											   QVector3D(cursor + 0.1f, b.max.y(), b.min.z()));
+					const float shift = cursor - fitted.min.x();
+					for (QVector3D &v : fitted.vertices) v.setX(v.x() + shift);
+					fitted.min.setX(fitted.min.x() + shift);
+					fitted.max.setX(fitted.max.x() + shift);
+					Panel3DBody tb;
+					tb.mesh = fitted;
+					tb.min = fitted.min;
+					tb.max = fitted.max;
+					tb.colour = QColor(196, 180, 140);   // terminal beige
+					tb.item = d.element;
+					tb.name = d.designation + QStringLiteral(":") + QString::number(++shown) + QStringLiteral(" ") + t;
+					bodies << tb;
+					cursor = fitted.max.x();
+				}
+				if (shown) continue;
+			}
+			if (no_depth && b.mesh.isEmpty() && notes)
+				*notes << tr("%1: no depth given, shown 60 mm deep").arg(d.designation);
 			bodies << b;
 		}
 			//the enclosure around the plate: a frame of 40 mm profiles like a
@@ -480,6 +566,8 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 			QVector3D lo(offset_x - m - p, -m - p, -t - 30 - p), hi(offset_x + w + m + p, h + m + p, front + p);
 				// an enclosure drawn around the plate gives the real size
 			const QRectF plate_rect = surface->mapToScene(surface->rect().normalized()).boundingRect();
+			QString enclosure_model, enclosure_name;
+			QetShapeItem *enclosure_item = nullptr;
 			for (QGraphicsItem *item : diagram->items()) {
 				auto *shape = dynamic_cast<QetShapeItem *>(item);
 				if (!shape || shape->panelData().role != PanelData::Enclosure) continue;
@@ -492,6 +580,11 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 				hi = QVector3D(offset_x + float((er.right() - plate_rect.left()) * k),
 							   float((plate_rect.bottom() - er.top()) * k),
 							   -t - 25 + float(ed.profile_depth > 0 ? ed.profile_depth : front + t + 25));
+					enclosure_model = ed.step_file.isEmpty() ? PanelStep::findModel(ed.article, ed.manufacturer)
+														 : resolve(ed.step_file);
+				enclosure_item = shape;
+				enclosure_name = ed.designation.isEmpty() ? ed.article : ed.designation;
+				if (!enclosure_model.isEmpty()) break;
 					// the rear wall behind the plate
 				Panel3DBody wall;
 				wall.min = QVector3D(lo.x() + p, lo.y() + p, lo.z());
@@ -500,6 +593,26 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 				wall.name = QStringLiteral("frame");
 				bodies << wall;
 				break;
+			}
+				// the manufacturer's model of the enclosure (by its order
+				// number), see-through so the inside stays visible
+			if (!enclosure_model.isEmpty()) {
+				QString error;
+				const PanelMesh mesh = PanelStep::load(enclosure_model, &error);
+				if (!mesh.isEmpty()) {
+					Panel3DBody cab;
+					cab.mesh = fitMesh(mesh, lo, hi);
+					cab.min = cab.mesh.min;
+					cab.max = cab.mesh.max;
+					cab.colour = QColor(200, 203, 208);
+					cab.opacity = 0.28f;
+					cab.item = enclosure_item;
+					cab.name = enclosure_name;
+					bodies << cab;
+					offset_x += w + 150 + 160;
+					continue;
+				}
+				if (notes) *notes << error;
 			}
 			auto post = [&](QVector3D a, QVector3D b) {
 				Panel3DBody frame;
@@ -526,6 +639,90 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 	return bodies;
 }
 
+/**
+	@brief Panel3DDialog::writeGlb
+	Write the scene as one binary glTF 2.0 file (.glb), in metres with y up:
+	every body one mesh with its colour, a box where it has no STEP model.
+	Opens in any 3D viewer, a browser or a CAD program.
+*/
+bool Panel3DDialog::writeGlb(const QList<Panel3DBody> &bodies, const QString &path, QString *error)
+{
+	QByteArray bin;
+	QJsonArray buffer_views, accessors, meshes, nodes, materials, scene_nodes;
+	auto append = [&](const QVector<QVector3D> &data, bool positions) {
+		const int offset = bin.size();
+		QVector3D lo(1e30f, 1e30f, 1e30f), hi(-1e30f, -1e30f, -1e30f);
+		for (const QVector3D &v : data) {
+			for (int k = 0; k < 3; ++k) {
+				const float f = v[k];
+				bin.append(reinterpret_cast<const char *>(&f), 4);
+				lo[k] = qMin(lo[k], f); hi[k] = qMax(hi[k], f);
+			}
+		}
+		buffer_views.append(QJsonObject{{"buffer", 0}, {"byteOffset", offset},
+										{"byteLength", int(data.size() * 12)}, {"target", 34962}});
+		QJsonObject a{{"bufferView", buffer_views.size() - 1}, {"componentType", 5126},
+					  {"count", int(data.size())}, {"type", "VEC3"}};
+		if (positions) {
+			a.insert("min", QJsonArray{lo.x(), lo.y(), lo.z()});
+			a.insert("max", QJsonArray{hi.x(), hi.y(), hi.z()});
+		}
+		accessors.append(a);
+		return accessors.size() - 1;
+	};
+	for (const Panel3DBody &b : bodies)
+	{
+		QVector<QVector3D> pos, nor;
+		if (!b.mesh.isEmpty()) {
+			for (int i = 0; i < b.mesh.vertices.size(); ++i) {
+				pos << (b.mesh.vertices.at(i) + b.mesh_offset) / 1000.0f;
+				nor << b.mesh.normals.value(i).normalized();
+			}
+		} else {
+				// a box: two triangles per side
+			const QVector3D l = b.min / 1000.0f, h = b.max / 1000.0f;
+			const QVector3D c[8] = {{l.x(), l.y(), l.z()}, {h.x(), l.y(), l.z()}, {h.x(), h.y(), l.z()}, {l.x(), h.y(), l.z()},
+									{l.x(), l.y(), h.z()}, {h.x(), l.y(), h.z()}, {h.x(), h.y(), h.z()}, {l.x(), h.y(), h.z()}};
+			const int f[6][4] = {{4, 5, 6, 7}, {1, 0, 3, 2}, {5, 1, 2, 6}, {0, 4, 7, 3}, {7, 6, 2, 3}, {0, 1, 5, 4}};
+			const QVector3D n[6] = {{0, 0, 1}, {0, 0, -1}, {1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}};
+			for (int s = 0; s < 6; ++s)
+				for (int t : {0, 1, 2, 0, 2, 3}) {pos << c[f[s][t]]; nor << n[s];}
+		}
+		if (pos.isEmpty()) continue;
+		const int pa = append(pos, true), na = append(nor, false);
+		const QColor col = b.colour.isValid() ? b.colour : QColor(128, 128, 128);
+		materials.append(QJsonObject{{"pbrMetallicRoughness", QJsonObject{
+			{"baseColorFactor", QJsonArray{col.redF(), col.greenF(), col.blueF(), double(b.opacity)}},
+			{"metallicFactor", 0.1}, {"roughnessFactor", 0.7}}}, {"doubleSided", true},
+			{"alphaMode", b.opacity < 1.0f ? "BLEND" : "OPAQUE"}});
+		meshes.append(QJsonObject{{"primitives", QJsonArray{QJsonObject{
+			{"attributes", QJsonObject{{"POSITION", pa}, {"NORMAL", na}}},
+			{"material", materials.size() - 1}}}}});
+		nodes.append(QJsonObject{{"mesh", meshes.size() - 1},
+								 {"name", b.name.isEmpty() ? QStringLiteral("body%1").arg(nodes.size()) : b.name}});
+		scene_nodes.append(nodes.size() - 1);
+	}
+	while (bin.size() % 4) bin.append(char(0));
+	const QJsonObject gltf{
+		{"asset", QJsonObject{{"version", "2.0"}, {"generator", "QElectroTech cabinet layout"}}},
+		{"scene", 0}, {"scenes", QJsonArray{QJsonObject{{"nodes", scene_nodes}}}},
+		{"nodes", nodes}, {"meshes", meshes}, {"materials", materials},
+		{"accessors", accessors}, {"bufferViews", buffer_views},
+		{"buffers", QJsonArray{QJsonObject{{"byteLength", int(bin.size())}}}}};
+	QByteArray json = QJsonDocument(gltf).toJson(QJsonDocument::Compact);
+	while (json.size() % 4) json.append(' ');
+	QFile file(path);
+	if (!file.open(QIODevice::WriteOnly)) {
+		if (error) *error = file.errorString();
+		return false;
+	}
+	auto u32 = [&](quint32 v) {file.write(reinterpret_cast<const char *>(&v), 4);};
+	u32(0x46546C67); u32(2); u32(quint32(12 + 8 + json.size() + 8 + bin.size()));
+	u32(quint32(json.size())); u32(0x4E4F534A); file.write(json);
+	u32(quint32(bin.size())); u32(0x004E4942); file.write(bin);
+	return true;
+}
+
 Panel3DDialog::Panel3DDialog(Diagram *diagram, QWidget *parent) :
 	QDialog(parent),
 	m_diagram(diagram)
@@ -542,6 +739,16 @@ Panel3DDialog::Panel3DDialog(Diagram *diagram, QWidget *parent) :
 	auto *top = new QPushButton(tr("Top"), this);
 	auto *iso = new QPushButton(tr("Isometric"), this);
 	auto *refresh = new QPushButton(tr("Refresh"), this);
+	auto *save = new QPushButton(tr("Export..."), this);
+	save->setToolTip(tr("Save the scene as glTF (.glb) for a 3D viewer, a browser or a CAD program"));
+	connect(save, &QPushButton::clicked, this, [this]() {
+		const QString path = QFileDialog::getSaveFileName(this, tr("Export 3D view"), QString(),
+														  tr("glTF binary (*.glb)"));
+		if (path.isEmpty()) return;
+		QString error;
+		if (!writeGlb(build(m_diagram, nullptr, !m_enclosure || m_enclosure->isChecked()), path, &error))
+			QMessageBox::warning(this, tr("Export 3D view"), error);
+	});
 	m_enclosure = new QCheckBox(tr("Enclosure"), this);
 	m_enclosure->setChecked(true);
 	connect(m_enclosure, &QCheckBox::toggled, this, &Panel3DDialog::reload);
@@ -558,6 +765,7 @@ Panel3DDialog::Panel3DDialog(Diagram *diagram, QWidget *parent) :
 	row->addWidget(top);
 	row->addWidget(iso);
 	row->addWidget(refresh);
+	row->addWidget(save);
 	row->addWidget(m_enclosure);
 	row->addStretch();
 	row->addWidget(buttons);

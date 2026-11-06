@@ -17,12 +17,23 @@
 */
 #include "panelstep.h"
 
+#include "../qetapp.h"
+
+#include <QDateTime>
+#include <QDir>
+#include <QDirIterator>
 #include <QFileInfo>
 #include <QHash>
+#include <QRegularExpression>
+#include <QThread>
 #include <QObject>
 
 #ifdef QET_WITH_OCCT
 #include <BRepBndLib.hxx>
+#include <OSD.hxx>
+#ifdef _WIN32
+#include <float.h>
+#endif
 #include <BRepMesh_IncrementalMesh.hxx>
 #include <BRep_Tool.hxx>
 #include <Bnd_Box.hxx>
@@ -42,6 +53,78 @@ QHash<QString, PanelMesh> &cache()
 	static QHash<QString, PanelMesh> c;
 	return c;
 }
+}
+
+/**
+	@brief PanelStep::modelDirs
+	The folders that hold the STEP models of the parts: QET_3D_DIR, the
+	folder "3D" next to the company collection and the one next to the
+	user collection. A model is kept there as <manufacturer>/<order number>.stp.
+*/
+QStringList PanelStep::modelDirs()
+{
+	QStringList dirs;
+	const QString env = qEnvironmentVariable("QET_3D_DIR");
+	if (!env.isEmpty()) dirs << QDir::fromNativeSeparators(env);
+	for (const QString &collection : {QETApp::companyElementsDir(), QETApp::customElementsDir()}) {
+		QDir d(collection);
+		if (collection.isEmpty() || !d.cdUp()) continue;
+		const QString p = d.filePath(QStringLiteral("3D"));
+		if (QFileInfo(p).isDir() && !dirs.contains(p)) dirs << p;
+	}
+	return dirs;
+}
+
+namespace {
+	/// an order number without its separators: 3RT2015-1BB41 = 3RT20151BB41
+QString orderKey(const QString &s)
+{
+	static const QRegularExpression other(QStringLiteral("[^A-Z0-9]"));
+	return s.toUpper().remove(other);
+}
+}
+
+/**
+	@brief PanelStep::findModel
+	The STEP model of the part with the order number @p reference in the
+	model folders, found with or without its dashes and dots; a model in
+	the folder of @p manufacturer is taken first. Empty when there is none.
+*/
+QString PanelStep::findModel(const QString &reference, const QString &manufacturer)
+{
+	const QString key = orderKey(reference);
+	if (key.isEmpty()) return QString();
+		// order number -> files, made again when a model folder changed
+	static QHash<QString, QStringList> index;
+	static QHash<QString, QDateTime> stamps;
+	const QStringList dirs = modelDirs();
+	bool changed = stamps.size() != dirs.size();
+	for (const QString &d : dirs) {
+		QDateTime newest = QFileInfo(d).lastModified();
+		for (const QFileInfo &sub : QDir(d).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot))
+			newest = qMax(newest, sub.lastModified());
+		if (stamps.value(d) != newest) {changed = true; stamps.insert(d, newest);}
+	}
+	if (changed) {
+		index.clear();
+		for (const QString &d : dirs) {
+			QDirIterator it(d, {QStringLiteral("*.stp"), QStringLiteral("*.step"), QStringLiteral("*.STP"), QStringLiteral("*.STEP")},
+							QDir::Files, QDirIterator::Subdirectories);
+			while (it.hasNext()) {
+				const QString f = it.next();
+				index[orderKey(QFileInfo(f).completeBaseName())] << f;
+			}
+		}
+	}
+	const QStringList files = index.value(key);
+	if (files.isEmpty()) return QString();
+	const QString maker = orderKey(manufacturer);
+	if (!maker.isEmpty())
+		for (const QString &f : files)
+			if (orderKey(QFileInfo(f).dir().dirName()).startsWith(maker.left(5))
+				|| maker.startsWith(orderKey(QFileInfo(f).dir().dirName()).left(5)))
+				return f;
+	return files.first();
 }
 
 bool PanelStep::available()
@@ -67,6 +150,34 @@ PanelMesh PanelStep::load(const QString &path, QString *error)
 
 	PanelMesh mesh;
 #ifdef QET_WITH_OCCT
+		// The STEP reader recurses deeply on big assemblies; on the main
+		// thread (and inside a script) the default stack is too small and
+		// some manufacturer models crash it. Read on a thread of its own
+		// with a large stack.
+	if (!QThread::currentThread()->property("qet_step_reader").toBool()) {
+		QString thread_error;
+		QThread *thread = QThread::create([&]() {
+			QThread::currentThread()->setProperty("qet_step_reader", true);
+				// The STEP translator relies on Open CASCADE turning access
+				// violations inside it into exceptions it catches itself;
+				// without its signal handling some models crash QElectroTech.
+				// Floating point exceptions stay masked.
+			static const bool signals_set = []() {OSD::SetSignal(Standard_False); return true;}();
+			Q_UNUSED(signals_set)
+			OSD::SetThreadLocalSignal(OSD_SignalMode_Set, Standard_False);
+#ifdef _WIN32
+			_clearfp();
+			_controlfp(_MCW_EM, _MCW_EM);
+#endif
+			mesh = load(path, &thread_error);
+		});
+		thread->setStackSize(256u * 1024u * 1024u);
+		thread->start();
+		thread->wait();
+		delete thread;
+		if (error) *error = thread_error;
+		return mesh;
+	}
 	if (!QFileInfo::exists(path)) {
 		if (error) *error = QObject::tr("File not found: %1").arg(path);
 		return mesh;

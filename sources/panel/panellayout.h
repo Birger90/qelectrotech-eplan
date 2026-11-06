@@ -59,6 +59,8 @@ struct PanelDevice
 	bool on_rail = false;        ///< sits on a DIN rail: leaves no holes
 	QList<PanelPattern> patterns;
 	QString step_file;
+	QStringList accessories;     ///< order numbers of the parts mounted with it (BaseUnit, labels)
+	QStringList terminals;       ///< a terminal strip: order number of each terminal, left to right
 };
 
 /**

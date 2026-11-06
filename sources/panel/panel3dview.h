@@ -43,6 +43,7 @@ struct Panel3DBody
 {
 	QVector3D min, max;             ///< box, or where the mesh is fitted
 	QColor colour;
+	float opacity = 1.0f;           ///< below 1: drawn see-through (an enclosure)
 	PanelMesh mesh;                 ///< empty: draw the box
 	QVector3D mesh_offset;          ///< added to the mesh vertices
 	QList<QVector3D> holes;         ///< hole centres on the top face of a surface
@@ -111,6 +112,7 @@ class Panel3DDialog : public QDialog
 	public:
 		explicit Panel3DDialog(Diagram *diagram, QWidget *parent = nullptr);
 		static QList<Panel3DBody> build(Diagram *diagram, QStringList *notes, bool enclosure = true);
+		static bool writeGlb(const QList<Panel3DBody> &bodies, const QString &path, QString *error = nullptr);
 
 	private:
 		void reload();

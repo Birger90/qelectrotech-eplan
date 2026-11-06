@@ -481,6 +481,27 @@ PanelMenu::PanelMenu(QETDiagramEditor *editor) :
 	m_editor(editor)
 {
 		// a double click on a duct, rail or surface opens its own editor
+		// a device dragged on a mounting surface: no grid, it snaps onto a
+		// DIN rail near it and against its neighbour while it moves
+	QetGraphicsItem::drag_filter = [](QetGraphicsItem *item, QPointF &pos) {
+		auto *element = qobject_cast<Element *>(item);
+		auto *d = element ? qobject_cast<Diagram *>(element->scene()) : nullptr;
+		if (!d) return false;
+		const QList<QetShapeItem *> plates = PanelLayout::surfaces(d);
+		if (plates.isEmpty()) return false;
+		const QPointF centre = element->sceneBoundingRect().center() + (pos - element->pos());
+		bool on_plate = false;
+		for (QetShapeItem *s : plates) if (sceneRectOf(s).contains(centre)) on_plate = true;
+		if (!on_plate) return false;
+			// Shift: free, no rail and no grid
+		if (QGuiApplication::keyboardModifiers() & Qt::ShiftModifier) return true;
+		const QPointF old = element->pos();
+		element->QGraphicsItem::setPos(pos);
+		const QPointF snap = PanelLayout::railSnap(d, element);
+		element->QGraphicsItem::setPos(old);
+		pos += snap;
+		return true;
+	};
 	QetShapeItem::panel_editor = [self = QPointer<PanelMenu>(this)](QetShapeItem *shape) {
 		if (!self || shape->panelData().role == PanelData::Enclosure) return false;
 		self->editShape(shape);

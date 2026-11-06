@@ -140,6 +140,8 @@ void QetGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
  *handle mouse movement
 	@param event
 */
+std::function<bool(QetGraphicsItem *, QPointF &)> QetGraphicsItem::drag_filter;
+
 void QetGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
 	if (isSelected() && event->buttons() & Qt::LeftButton)
@@ -161,7 +163,11 @@ void QetGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 			m_mouse_to_origin_movement = old_pos - event -> buttonDownScenePos(Qt::LeftButton);
 		}
 		QPointF expected_pos = event->scenePos() + m_mouse_to_origin_movement;
-		setPos(expected_pos); // setPos() will snap the expected position to the grid
+		QPointF filtered = expected_pos;
+		if (drag_filter && is_movable_ && drag_filter(this, filtered))
+			QGraphicsItem::setPos(filtered);   // its own place, not the grid
+		else
+			setPos(expected_pos); // setPos() will snap the expected position to the grid
 
 			//we calculate the real movement applied by setPos()
 		QPointF effective_movement = pos() - old_pos;

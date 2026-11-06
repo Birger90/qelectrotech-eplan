@@ -123,7 +123,7 @@ QPointF PanelLayout::railSnap(Diagram *diagram, Element *element)
 			t.rotate(element->rotation());
 			box = t.mapRect(QRectF(0, 0, w / k, h / k));
 		}
-		const double near = 20 / k, catch_x = 15 / k;
+		const double near = 25 / k, catch_x = 15 / k;
 			//the rail: horizontal, under the device or just beside it
 		QRectF rail;
 		double best = 1e300;
@@ -133,11 +133,45 @@ QPointF PanelLayout::railSnap(Diagram *diagram, Element *element)
 			const QRectF r = sceneRectOf(shape);
 			if (r.width() < r.height() || !plate.contains(r.center())) continue;
 			if (r.right() < box.left() || r.left() > box.right()) continue;
-			if (box.bottom() + near < r.top() || box.top() - near > r.bottom()) continue;
+				// caught when the device's middle is near the rail: pulled
+				// further away it comes free again
+			if (qAbs(box.center().y() - r.center().y()) > r.height() / 2 + near) continue;
 			const double d = qAbs(box.center().y() - r.center().y());
 			if (d < best) {best = d; rail = r;}
 		}
-		if (rail.isNull()) return QPointF();
+		if (rail.isNull()) {
+				// no rail: a device hung onto another one (a contactor under its
+				// motor starter, an auxiliary block on a contactor) snaps edge to
+				// edge onto the device right above or below it
+			auto footprint = [k](Element *e) {
+				const DiagramContext i = e->elementInformations();
+				const double ew = infoNumber(i, QStringLiteral("width_mm")), eh = infoNumber(i, QStringLiteral("height_mm"));
+				if (ew <= 0 || eh <= 0) return QRectF();
+				QTransform t;
+				t.translate(e->scenePos().x(), e->scenePos().y());
+				t.rotate(e->rotation());
+				return t.mapRect(QRectF(0, 0, ew / k, eh / k));
+			};
+			const double catch_edge = 15 / k;
+			double sdx = 0, sdy = 0, sbest = 1e300;
+			for (QGraphicsItem *item : diagram->items()) {
+				auto *other = dynamic_cast<Element *>(item);
+				if (!other || other == element || other->parentItem()) continue;
+				const QRectF ob = footprint(other);
+				if (ob.isNull()) continue;
+				if (box.right() <= ob.left() || box.left() >= ob.right()) continue;   // not above or below it
+				for (double d : {ob.bottom() - box.top(), ob.top() - box.bottom()}) {   // under it / over it
+					if (qAbs(d) > catch_edge || qAbs(d) >= sbest) continue;
+					sbest = qAbs(d);
+					sdy = d;
+						// in line with it when nearly so
+					const double ldx = ob.left() - box.left();
+					sdx = qAbs(ldx) <= catch_x ? ldx : 0;
+				}
+			}
+			if (sbest > 1e299) return QPointF();
+			return QPointF(sdx, sdy);
+		}
 		const double offset = infoNumber(info, QStringLiteral("middle_offset_mm")) / k;
 		const double dy = rail.center().y() - offset - box.center().y();
 			//sideways: against the nearest neighbour on the rail, or its start
@@ -147,6 +181,7 @@ QPointF PanelLayout::railSnap(Diagram *diagram, Element *element)
 			if (qAbs(d) < nearest) {nearest = qAbs(d); dx = d;}
 		};
 		consider(rail.left() + 5 / k, box.left());
+		QList<QRectF> neighbours;
 		for (QGraphicsItem *item : diagram->items()) {
 			auto *other = dynamic_cast<Element *>(item);
 			if (!other || other == element || other->parentItem()) continue;
@@ -160,8 +195,19 @@ QPointF PanelLayout::railSnap(Diagram *diagram, Element *element)
 				ob = t.mapRect(QRectF(0, 0, ow / k, oh / k));
 			}
 			if (!ob.intersects(rail)) continue;
+			neighbours << ob;
 			consider(ob.right(), box.left());    // to the right of it
 			consider(ob.left(), box.right());    // to the left of it
+		}
+			// never on top of a neighbour: to the nearer free side of it
+		for (int round = 0; round < 8; ++round) {
+			const QRectF placed = box.translated(dx, 0).adjusted(0.01, 0, -0.01, 0);
+			const QRectF *hit = nullptr;
+			for (const QRectF &ob : std::as_const(neighbours))
+				if (placed.left() < ob.right() && placed.right() > ob.left()) {hit = &ob; break;}
+			if (!hit) break;
+			const double to_right = hit->right() - box.left(), to_left = hit->left() - box.right();
+			dx = qAbs(to_right - dx) <= qAbs(to_left - dx) ? to_right : to_left;
 		}
 		return QPointF(dx, dy);
 	}

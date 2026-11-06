@@ -29,6 +29,8 @@
 #include "diagram.h"
 #include "itemgroups.h"
 #include "panel/panellayout.h"
+
+#include <QGuiApplication>
 #include "qetgraphicsitem/conductor.h"
 #include "qetgraphicsitem/conductortextitem.h"
 #include "qetgraphicsitem/diagramimageitem.h"
@@ -354,7 +356,9 @@ void ElementsMover::endMovement()
 
 		//A device of a cabinet layout dropped on or near a DIN rail snaps
 		//onto it, against its neighbour -- in the same move, one undo step
-	if (m_moved_content.m_elements.size() == 1 && m_diagram && !m_current_movement.isNull())
+		//(Shift held: placed freely)
+	if (m_moved_content.m_elements.size() == 1 && m_diagram && !m_current_movement.isNull()
+		&& !(QGuiApplication::keyboardModifiers() & Qt::ShiftModifier))
 	{
 		Element *moved = m_moved_content.m_elements.first();
 		const QPointF snap = PanelLayout::railSnap(m_diagram, moved);

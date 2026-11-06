@@ -22,6 +22,8 @@
 
 #include <QGraphicsObject>
 
+#include <functional>
+
 class Diagram;
 
 class QetGraphicsItem : public QGraphicsObject
@@ -30,6 +32,10 @@ class QetGraphicsItem : public QGraphicsObject
 
 	public :
 		static void showItem (QetGraphicsItem *item);
+			/// a place for a dragged item other than the grid (e.g. a device
+			/// on a mounting plate snapping onto a DIN rail): given the
+			/// wanted position, true and the position when it decides
+		static std::function<bool(QetGraphicsItem *, QPointF &)> drag_filter;
 
 	public:
 		//constructor destructor

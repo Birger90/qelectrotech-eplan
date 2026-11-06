@@ -695,7 +695,19 @@ void QetShapeItem::paint(
 	painter->save();
 	painter->setRenderHint(QPainter::Antialiasing, true);
 	painter->setPen(m_pen);
-	painter->setBrush(m_brush);
+		//A part of a cabinet layout without a fill of its own gets the
+		//colour of its kind, as in EPLAN Pro Panel
+	QBrush brush = m_brush;
+	if (brush.style() == Qt::NoBrush) {
+		switch (m_panel.role) {
+			case PanelData::Surface:  brush = QColor(228, 228, 228); break;
+			case PanelData::Duct:     brush = QColor(72, 160, 160);  break;
+			case PanelData::DinRail:  brush = QColor(240, 140, 50);  break;
+			case PanelData::CProfile: brush = QColor(170, 170, 170); break;
+			default: break;
+		}
+	}
+	painter->setBrush(brush);
 
 		//Draw hovered shadow
 	if (m_hovered)
@@ -723,7 +735,7 @@ void QetShapeItem::paint(
 		hint.setStyle(Qt::DotLine);
 		hint.setCosmetic(true);
 		painter->setPen(hint);
-		painter->setBrush(m_brush);
+		painter->setBrush(brush);
 		painter->drawRect(r);
 		painter->setPen(m_pen);
 		for (const QLineF &l : o.lines) painter->drawLine(map(l.p1()), map(l.p2()));

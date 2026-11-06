@@ -76,6 +76,10 @@ class PanelImport
 		static PanelOutline fetchDeviceView(const QString &order_number, const QString &manufacturer,
 											QString *error = nullptr);
 		static QString devicesDirectory();
+			/// the device itself out of a manufacturer's drawing that holds
+			/// more (a drawing frame, side views, dimensions): the connected
+			/// part with the most detail and all that lies inside it
+		static PanelOutline frontView(const PanelOutline &drawing);
 		static QByteArray deviceViewFromPackage(const QByteArray &zip);
 
 		static QString templatesDirectory();

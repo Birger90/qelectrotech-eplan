@@ -278,7 +278,8 @@ QDomElement panelDeviceDefinition(QDomDocument &doc, const QString &label, const
 	for (const QString &key : {QStringLiteral("manufacturer"), QStringLiteral("manufacturer_reference"),
 							   QStringLiteral("designation"), QStringLiteral("description"),
 							   QStringLiteral("step_file"), QStringLiteral("mount_variant"),
-							   QStringLiteral("snap_height_mm"), QStringLiteral("middle_offset_mm")})
+							   QStringLiteral("snap_height_mm"), QStringLiteral("middle_offset_mm"),
+							   QStringLiteral("panel_of")})
 		if (!source_info.value(key).toString().isEmpty())
 			infos.addValue(key, source_info.value(key), false);
 	infos.addValue(QStringLiteral("width_mm"), num(w_mm), false);
@@ -354,13 +355,15 @@ QDomElement panelDeviceDefinition(QDomDocument &doc, const QString &label, const
 		// a terminal or a circuit breaker
 	const bool upright = graphic.isEmpty() && h > w * 1.5 && label.size() * 6 + 4 > w;
 		// with the manufacturer's drawing the designation stands above the
-		// device, like in EPLAN's mounting layout
+		// device, like in EPLAN's mounting layout; over a narrow device it
+		// stands upright so neighbours do not run into each other
 	const bool above = !graphic.isEmpty();
+	const bool above_up = above && label.size() * 4 > w;
 	QDomElement text = doc.createElement(QStringLiteral("dynamic_text"));
-	text.setAttribute(QStringLiteral("x"), upright ? w / 2 + 4 : (above ? 0 : 2));
-	text.setAttribute(QStringLiteral("y"), upright ? 2 : (above ? -13 : h / 2 - 6));
+	text.setAttribute(QStringLiteral("x"), upright ? w / 2 + 4 : (above_up ? w / 2 - 4 : (above ? 0 : 2)));
+	text.setAttribute(QStringLiteral("y"), upright ? 2 : (above_up ? -2 : (above ? -13 : h / 2 - 6)));
 	text.setAttribute(QStringLiteral("z"), 1);
-	text.setAttribute(QStringLiteral("rotation"), upright ? 90 : 0);
+	text.setAttribute(QStringLiteral("rotation"), upright ? 90 : (above_up ? 270 : 0));
 	text.setAttribute(QStringLiteral("text_width"), -1);
 	text.setAttribute(QStringLiteral("Halignment"), QStringLiteral("AlignLeft"));
 	text.setAttribute(QStringLiteral("Valignment"), QStringLiteral("AlignTop"));
@@ -368,7 +371,12 @@ QDomElement panelDeviceDefinition(QDomDocument &doc, const QString &label, const
 	text.setAttribute(QStringLiteral("keep_visual_rotation"), QStringLiteral("false"));
 	text.setAttribute(QStringLiteral("text_from"), QStringLiteral("ElementInfo"));
 	text.setAttribute(QStringLiteral("uuid"), QUuid::createUuid().toString());
-	text.setAttribute(QStringLiteral("font"), QETApp::dynamicTextsItemFont(above ? 6 : qBound(5, qMin(w, h) / 4, 9)).toString());
+		// above a device the text is no larger than the device is wide
+		// (upright) or than fits its width (across), at most 6, at least 3
+	int font_size = qBound(5, qMin(w, h) / 4, 9);
+	if (above_up) font_size = qBound(3, int(w * 0.9), 6);
+	else if (above) font_size = qBound(3, int(w / qMax(1.0, label.size() * 0.6)), 6);
+	text.setAttribute(QStringLiteral("font"), QETApp::dynamicTextsItemFont(font_size).toString());
 	QDomElement cache = doc.createElement(QStringLiteral("text"));
 	cache.appendChild(doc.createTextNode(label));
 	text.appendChild(cache);
@@ -867,7 +875,7 @@ void PanelMenu::insertProfile(PanelData::Role role)
 	if (!d) return;
 	QetShapeItem *surface = targetSurface(d);
 	if (!surface) {
-		QMessageBox::information(m_editor, title(), tr("Insert a mounting surface on this folio first."));
+		QMessageBox::information(m_editor, QString(title()).remove(QLatin1Char('&')), tr("Insert a mounting surface on this folio first."));
 		return;
 	}
 	const PanelLayout layout(surface);
@@ -956,7 +964,7 @@ void PanelMenu::insertCutout()
 	if (!d) return;
 	QetShapeItem *surface = targetSurface(d);
 	if (!surface) {
-		QMessageBox::information(m_editor, title(), tr("Insert a mounting surface on this folio first."));
+		QMessageBox::information(m_editor, QString(title()).remove(QLatin1Char('&')), tr("Insert a mounting surface on this folio first."));
 		return;
 	}
 	const PanelLayout layout(surface);
@@ -1010,7 +1018,7 @@ void PanelMenu::insertKeepout()
 	if (!d) return;
 	QetShapeItem *surface = targetSurface(d);
 	if (!surface) {
-		QMessageBox::information(m_editor, title(), tr("Insert a mounting surface on this folio first."));
+		QMessageBox::information(m_editor, QString(title()).remove(QLatin1Char('&')), tr("Insert a mounting surface on this folio first."));
 		return;
 	}
 	const PanelLayout layout(surface);
@@ -1037,31 +1045,80 @@ void PanelMenu::placeDevices()
 	if (!d || !d->project()) return;
 	QetShapeItem *surface = targetSurface(d);
 	if (!surface) {
-		QMessageBox::information(m_editor, title(), tr("Insert a mounting surface on this folio first."));
+		QMessageBox::information(m_editor, QString(title()).remove(QLatin1Char('&')), tr("Insert a mounting surface on this folio first."));
 		return;
 	}
 	QETProject *project = d->project();
 
-		// devices already on a layout: by designation
+			// One device is one full designation =plant+location-BMK, however it
+		// is written on its folios ("-A20" on a folio of =SB+CA, "=SB-A20",
+		// "=SB+CA-A20"): the parts of it a label leaves out come from the
+		// folio. Only the devices of the enclosure's location are offered.
+	struct Tag {QString plant, location, bmk;};
+	auto tagOf = [](Element *e, Diagram *folio) {
+		Tag t;
+		t.plant = folio->border_and_titleblock.plant().trimmed();
+		t.location = folio->border_and_titleblock.locmach().trimmed();
+		if (t.plant.startsWith(QLatin1Char('='))) t.plant.remove(0, 1);
+		if (t.location.startsWith(QLatin1Char('+'))) t.location.remove(0, 1);
+		static const QRegularExpression re(QStringLiteral("^(?:=([^+\\-]+))?(?:\\+([^\\-]+))?(-.*)?$"));
+		const QString label = e->actualLabel().trimmed();
+		const QRegularExpressionMatch m = re.match(label);
+		if (!m.hasMatch()) {t.bmk = label; return t;}
+		if (!m.captured(1).isEmpty()) t.plant = m.captured(1);
+		if (!m.captured(2).isEmpty()) t.location = m.captured(2);
+		t.bmk = m.captured(3);
+		return t;
+	};
+	auto keyOf = [](const Tag &t) {
+		return QStringLiteral("=%1+%2%3").arg(t.plant, t.location, t.bmk);
+	};
+		// the location of the enclosure around the plate
+	QString enclosure_location;
+	const QRectF plate_rect = sceneRectOf(surface);
+	for (QGraphicsItem *item : d->items())
+		if (auto *shape = dynamic_cast<QetShapeItem *>(item))
+			if (shape->panelData().role == PanelData::Enclosure
+				&& sceneRectOf(shape).contains(plate_rect.center())) {
+				QString loc = shape->panelData().designation.trimmed();
+				if (loc.contains(QLatin1Char('+'))) loc = loc.section(QLatin1Char('+'), 1).section(QLatin1Char('-'), 0, 0);
+				else loc.clear();
+				enclosure_location = loc;
+			}
+
+		// devices already on a layout: by their full designation
 	QSet<QString> placed;
 	for (Diagram *folio : project->folios())
 		if (!PanelLayout::surfaces(folio).isEmpty())
-			for (Element *e : folio->elements())
-				if (!e->actualLabel().isEmpty()) placed << e->actualLabel();
+			for (Element *e : folio->elements()) {
+				const QString of = e->elementInformations().value(QStringLiteral("panel_of")).toString();
+				if (!of.isEmpty()) placed << of;
+			}
 
-	struct Row {Element *e; QString label; double w, h, dep;};
+	struct Row {Element *e; QString label; QString key; double w, h, dep;};
 	QList<Row> rows;
-	QSet<QString> seen;
+	QSet<QString> seen, elsewhere;
+	int duplicates = 0;
 	for (Diagram *folio : project->folios()) {
 		if (!PanelLayout::surfaces(folio).isEmpty()) continue;
 		for (Element *e : folio->elements()) {
 			const int t = e->linkType();
 			if (!(t == Element::Simple || t == Element::Master || t == Element::Terminale)) continue;
-			const QString label = e->actualLabel();
-			if (label.isEmpty() || seen.contains(label)) continue;
-			seen << label;
+			if (e->actualLabel().trimmed().isEmpty()) continue;
+			const Tag tag = tagOf(e, folio);
+			if (tag.bmk.isEmpty()) continue;
+			if (!enclosure_location.isEmpty() && !tag.location.isEmpty()
+				&& tag.location.compare(enclosure_location, Qt::CaseInsensitive) != 0) {
+				elsewhere << keyOf(tag);
+				continue;
+			}
+			const QString key = keyOf(tag);
+			if (seen.contains(key)) {++duplicates; continue;}
+			seen << key;
+				// on the plate: plant and BMK, the location is the enclosure's
+			const QString label = tag.plant.isEmpty() ? tag.bmk : QStringLiteral("=%1%2").arg(tag.plant, tag.bmk);
 			const DiagramContext info = e->elementInformations();
-			rows << Row{e, label, infoNumber(info, QStringLiteral("width_mm")),
+			rows << Row{e, label, key, infoNumber(info, QStringLiteral("width_mm")),
 						infoNumber(info, QStringLiteral("height_mm")),
 						infoNumber(info, QStringLiteral("depth_mm"))};
 		}
@@ -1069,10 +1126,11 @@ void PanelMenu::placeDevices()
 	std::sort(rows.begin(), rows.end(), [](const Row &a, const Row &b) {
 		return QString::localeAwareCompare(a.label, b.label) < 0;});
 	if (rows.isEmpty()) {
-		QMessageBox::information(m_editor, title(), tr("The project has no devices with a designation."));
+		QMessageBox::information(m_editor, QString(title()).remove(QLatin1Char('&')), tr("The project has no devices with a designation."));
 		return;
 	}
 
+	const bool has_token = !QSettings().value(QStringLiteral("eplanimport/dataportal_token")).toString().isEmpty();
 	QDialog dialog(m_editor);
 	dialog.setWindowTitle(tr("Place devices on %1").arg(PanelLayout(surface).name()));
 	dialog.resize(780, 560);
@@ -1084,12 +1142,17 @@ void PanelMenu::placeDevices()
 		const Row &r = rows.at(i);
 		auto *c0 = new QTableWidgetItem(r.label);
 		c0->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-		c0->setCheckState(!placed.contains(r.label) && r.w > 0 && r.h > 0 ? Qt::Checked : Qt::Unchecked);
+			// ready to place: the size is known, or comes with the
+			// manufacturer's drawing (an order number and a token)
+		const bool sized = (r.w > 0 && r.h > 0)
+				|| (has_token && !r.e->elementInformations().value(QStringLiteral("manufacturer_reference")).toString().isEmpty());
+		c0->setCheckState(!placed.contains(r.key) && sized ? Qt::Checked : Qt::Unchecked);
+		c0->setToolTip(r.key);
 		table->setItem(i, 0, c0);
 		const DiagramContext info = r.e->elementInformations();
 		QString part = info.value(QStringLiteral("manufacturer_reference")).toString();
 		if (part.isEmpty()) part = r.e->name();
-		if (placed.contains(r.label)) part += QStringLiteral("  ") + tr("(already placed)");
+		if (placed.contains(r.key)) part += QStringLiteral("  ") + tr("(already placed)");
 		auto *c1 = new QTableWidgetItem(part);
 		c1->setFlags(Qt::ItemIsEnabled);
 		table->setItem(i, 1, c1);
@@ -1104,20 +1167,40 @@ void PanelMenu::placeDevices()
 	}
 	table->resizeColumnsToContents();
 	table->horizontalHeader()->setStretchLastSection(true);
-	auto *hint = new QLabel(tr("Devices without a size are proposed at 45 x 90 x 70 mm; correct the sizes here "
+	int without_order = 0;
+	for (const Row &r : std::as_const(rows))
+		if (r.e->elementInformations().value(QStringLiteral("manufacturer_reference")).toString().isEmpty()) ++without_order;
+	auto *hint = new QLabel(tr("%1 devices at %2; %3 devices of other locations left out; %4 further mentions "
+							   "of the same devices (other spelling or folio) merged; %5 without order number.")
+								.arg(rows.size())
+								.arg(enclosure_location.isEmpty() ? tr("all locations") : QStringLiteral("+") + enclosure_location)
+								.arg(elsewhere.size()).arg(duplicates).arg(without_order)
+							+ QStringLiteral("\n")
+							+ tr("Devices without a size are proposed at 45 x 90 x 70 mm; correct the sizes here "
 							   "or in the part. They are snapped onto the DIN rails from left to right."), &dialog);
 	hint->setWordWrap(true);
 	auto *graphics = new QCheckBox(tr("Manufacturer's panel layout drawing from the EPLAN Data Portal "
 									  "(by order number; also gives the size)"), &dialog);
-	const bool has_token = !QSettings().value(QStringLiteral("eplanimport/dataportal_token")).toString().isEmpty();
 	graphics->setChecked(has_token);
 	graphics->setEnabled(has_token);
 	if (!has_token)
 		graphics->setToolTip(tr("Needs your Data Portal token: Part import > From the EPLAN Data Portal"));
 	auto *buttons = okCancel(&dialog);
 	buttons->button(QDialogButtonBox::Ok)->setText(tr("Place"));
+	auto *all = new QPushButton(tr("All"), &dialog);
+	auto *none = new QPushButton(tr("None"), &dialog);
+	auto check = [table](Qt::CheckState state) {
+		for (int i = 0; i < table->rowCount(); ++i) table->item(i, 0)->setCheckState(state);
+	};
+	connect(all, &QPushButton::clicked, &dialog, [check]() {check(Qt::Checked);});
+	connect(none, &QPushButton::clicked, &dialog, [check]() {check(Qt::Unchecked);});
+	auto *select_row = new QHBoxLayout;
+	select_row->addWidget(all);
+	select_row->addWidget(none);
+	select_row->addStretch();
 	auto *box = new QVBoxLayout(&dialog);
 	box->addWidget(table, 1);
+	box->addLayout(select_row);
 	box->addWidget(hint);
 	box->addWidget(graphics);
 	box->addWidget(buttons);
@@ -1139,8 +1222,22 @@ void PanelMenu::placeDevices()
 	const QRectF plate = sceneRectOf(surface);
 
 		// free run on every horizontal rail, after what is already on it
-	struct Rail {QRectF r; double cursor;};
+	struct Rail {QRectF r; double cursor; double room;};
 	QList<Rail> rails;
+		// the room around a rail: up to the next duct, rail or the plate's
+		// edge above and below it, over the rail's length
+	auto roomAround = [&](const QRectF &r) {
+		double above = r.top() - plate.top(), below = plate.bottom() - r.bottom();
+		for (const PanelProfile &o : layout.profiles()) {
+			if (!o.shape) continue;
+			const QRectF q = sceneRectOf(o.shape);
+			if (q == r || q.right() <= r.left() || q.left() >= r.right()) continue;
+			if (q.bottom() <= r.top()) above = qMin(above, r.top() - q.bottom());
+			else if (q.top() >= r.bottom()) below = qMin(below, q.top() - r.bottom());
+		}
+			// a device sits centred on its rail
+		return r.height() + 2 * qMin(above, below);
+	};
 	for (const PanelProfile &p : layout.profiles()) {
 		if (p.data.role != PanelData::DinRail || !p.shape) continue;
 		const QRectF r = sceneRectOf(p.shape);
@@ -1151,7 +1248,7 @@ void PanelMenu::placeDevices()
 			const QRectF dr = QRectF(a, b).normalized();
 			if (dr.intersects(r)) cursor = qMax(cursor, dr.right());
 		}
-		rails << Rail{r, cursor};
+		rails << Rail{r, cursor, roomAround(r)};
 	}
 	std::sort(rails.begin(), rails.end(), [](const Rail &a, const Rail &b) {return a.r.top() < b.r.top();});
 	QPointF free_pos = plate.topLeft() + QPointF(20 / k, 20 / k);
@@ -1159,7 +1256,15 @@ void PanelMenu::placeDevices()
 
 	auto *macro = new QUndoCommand(tr("place devices on %1").arg(layout.name()));
 	int created = 0;
-	QStringList skipped, no_graphic;
+	QStringList skipped, no_graphic, too_big;
+		// the enclosure and the plate themselves are parts of the project
+		// too: they are not placed on the plate
+	QSet<QString> housing;
+	housing << layout.surfaceData().article;
+	for (QGraphicsItem *item : d->items())
+		if (auto *shape = dynamic_cast<QetShapeItem *>(item))
+			if (shape->panelData().role == PanelData::Enclosure) housing << shape->panelData().article;
+	housing.remove(QString());
 	QProgressDialog progress(tr("Placing devices…"), tr("Cancel"), 0, int(rows.size()), m_editor);
 	progress.setWindowModality(Qt::WindowModal);
 	progress.setMinimumDuration(500);
@@ -1177,6 +1282,7 @@ void PanelMenu::placeDevices()
 			// a device without sizes takes them from it
 		PanelOutline graphic;
 		const QString order = info.value(QStringLiteral("manufacturer_reference")).toString();
+		if (housing.contains(order)) continue;
 		if (graphics->isChecked() && !order.isEmpty()) {
 			progress.setLabelText(tr("Drawing of %1 (%2)…").arg(r.label, order));
 			QString why;
@@ -1185,13 +1291,21 @@ void PanelMenu::placeDevices()
 			else if (r.w <= 0 || r.h <= 0) {w = graphic.width; h = graphic.height;}
 		}
 		if (w <= 0 || h <= 0) {skipped << r.label; continue;}
+			// what does not fit the plate is no device on it (an enclosure,
+			// a long busbar, a wall bracket)
+		if (w > layout.widthMm() || h > layout.heightMm()) {
+			too_big << QStringLiteral("%1 (%2 x %3 mm)").arg(r.label, num(w), num(h));
+			continue;
+		}
 
 		const QDomElement patterns = r.e->location().xml().firstChildElement(QStringLiteral("drillingpatterns"));
 		QDomDocument doc;
 		QString title_text = r.label;
 		const QString ref = info.value(QStringLiteral("manufacturer_reference")).toString();
 		if (!ref.isEmpty()) title_text += QStringLiteral(" ") + ref;
-		const QDomElement def = panelDeviceDefinition(doc, r.label, title_text, w, h, dep, k, info, patterns, graphic);
+		DiagramContext with_key = info;
+		with_key.addValue(QStringLiteral("panel_of"), r.key, false);
+		const QDomElement def = panelDeviceDefinition(doc, r.label, title_text, w, h, dep, k, with_key, patterns, graphic);
 		const QString file_name = QET::stringToFileName(r.label) + QLatin1Char('-')
 								  + QUuid::createUuid().toString(QUuid::Id128).left(8) + QStringLiteral(".elmt");
 		if (!collection->addElementDefinition(dir_path, file_name, def)) {skipped << r.label; continue;}
@@ -1204,7 +1318,7 @@ void PanelMenu::placeDevices()
 		QPointF pos;
 		bool done = false;
 		for (Rail &rail : rails) {
-			if (rail.cursor + ws <= rail.r.right() - 2 / k) {
+			if (rail.cursor + ws <= rail.r.right() - 2 / k && hs <= rail.room) {
 					// EPLAN's middle offset: the device centre above the rail centre line
 				const double offset = infoNumber(info, QStringLiteral("middle_offset_mm")) / k;
 				pos = QPointF(rail.cursor, rail.r.center().y() - hs / 2 - offset);
@@ -1235,10 +1349,14 @@ void PanelMenu::placeDevices()
 	}
 	progress.setValue(int(rows.size()));
 	if (!skipped.isEmpty())
-		QMessageBox::warning(m_editor, title(), tr("Not placed (no size or not readable): %1")
+		QMessageBox::warning(m_editor, QString(title()).remove(QLatin1Char('&')), tr("Not placed (no size or not readable): %1")
 							 .arg(skipped.join(QStringLiteral(", "))));
+	if (!too_big.isEmpty())
+		QMessageBox::information(m_editor, QString(title()).remove(QLatin1Char('&')),
+								 tr("Larger than the mounting plate, not placed: %1")
+								 .arg(too_big.join(QStringLiteral(", "))));
 	if (!no_graphic.isEmpty())
-		QMessageBox::information(m_editor, title(),
+		QMessageBox::information(m_editor, QString(title()).remove(QLatin1Char('&')),
 								 tr("No vector drawing in the Data Portal (shown as a rectangle of its size): %1")
 								 .arg(no_graphic.join(QStringLiteral(", "))));
 	refreshHoleView();
@@ -1255,7 +1373,7 @@ void PanelMenu::editSelected()
 		if (auto *shape = dynamic_cast<QetShapeItem *>(item)) {editShape(shape); return;}
 	for (QGraphicsItem *item : selection)
 		if (auto *element = dynamic_cast<Element *>(item)) {editDevice(element); return;}
-	QMessageBox::information(m_editor, title(),
+	QMessageBox::information(m_editor, QString(title()).remove(QLatin1Char('&')),
 							 tr("Select a shape (surface, rail, duct, cut-out) or a device first."));
 }
 

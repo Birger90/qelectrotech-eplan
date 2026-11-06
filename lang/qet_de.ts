@@ -30129,6 +30129,26 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
         <source>No vector drawing in the Data Portal (shown as a rectangle of its size): %1</source>
         <translation>Keine Vektorgrafik im Data Portal (als Rechteck in seiner Größe dargestellt): %1</translation>
     </message>
+    <message>
+        <source>All</source>
+        <translation>Alle</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Keine</translation>
+    </message>
+    <message>
+        <source>Larger than the mounting plate, not placed: %1</source>
+        <translation>Größer als die Montageplatte, nicht platziert: %1</translation>
+    </message>
+    <message>
+        <source>%1 devices at %2; %3 devices of other locations left out; %4 further mentions of the same devices (other spelling or folio) merged; %5 without order number.</source>
+        <translation>%1 Geräte am Ort %2; %3 Geräte anderer Orte ausgeblendet; %4 weitere Nennungen derselben Geräte (andere Schreibweise oder Blatt) zusammengefasst; %5 ohne Bestellnummer.</translation>
+    </message>
+    <message>
+        <source>all locations</source>
+        <translation>alle Orte</translation>
+    </message>
 </context>
 <context>
     <name>PanelTemplateDialog</name>

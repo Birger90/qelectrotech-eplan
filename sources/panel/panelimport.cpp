@@ -36,12 +36,15 @@
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QSaveFile>
+#include <QSet>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QTransform>
 #include <QTreeWidget>
 #include <QVBoxLayout>
 #include <QtMath>
+
+#include <functional>
 
 #include <algorithm>
 
@@ -112,6 +115,19 @@ class Reader
 				if (!ok) {if (error) *error = QStringLiteral("Not an ASCII DXF"); return false;}
 				pairs.append({code, text.at(i + 1).trimmed()});
 			}
+				//layers that are switched off (negative colour) or frozen: what
+				//lies on them is not drawn (EPLAN_Invisible, for one)
+			for (int i = 0; i < pairs.size(); ++i) {
+				if (pairs.at(i).code != 0 || pairs.at(i).value != QLatin1String("LAYER")) continue;
+				QString name;
+				int colour = 7, flags = 0;
+				for (int j = i + 1; j < pairs.size() && pairs.at(j).code != 0; ++j) {
+					if (pairs.at(j).code == 2) name = pairs.at(j).value;
+					else if (pairs.at(j).code == 62) colour = pairs.at(j).value.toInt();
+					else if (pairs.at(j).code == 70) flags = pairs.at(j).value.toInt();
+				}
+				if (!name.isEmpty() && (colour < 0 || (flags & 1))) m_hidden << name;
+			}
 			QString section;
 			Entity *current = nullptr;
 			QVector<Entity> *target = nullptr;
@@ -153,11 +169,15 @@ class Reader
 		}
 
 		Geometry geometry;
+		QRectF symbol;   ///< what lies on EPLAN_Symbol: the device's outline
 
 	private:
+		bool m_symbol_layer = false;
 		void addLine(const Placement &pl, QPointF a, QPointF b)
 		{
-			geometry.lines << QLineF(pl.t.map(a), pl.t.map(b));
+			const QLineF l(pl.t.map(a), pl.t.map(b));
+			geometry.lines << l;
+			if (m_symbol_layer) symbol |= QRectF(l.p1(), l.p2()).normalized().adjusted(-1e-6, -1e-6, 1e-6, 1e-6);
 		}
 		void addArc(const Placement &pl, QPointF c, double r, double a0, double a1)
 		{
@@ -176,6 +196,7 @@ class Reader
 				arc.a0 = s; arc.a1 = e;
 			}
 			geometry.arcs << arc;
+			if (m_symbol_layer) symbol |= QRectF(arc.centre - QPointF(arc.r, arc.r), QSizeF(2 * arc.r, 2 * arc.r));
 		}
 		void polyline(const Placement &pl, const QVector<QPointF> &pts, const QVector<double> &bulges, bool closed)
 		{
@@ -196,6 +217,13 @@ class Reader
 		{
 			for (int i = 0; i < entities.size(); ++i) {
 				const Entity &e = entities.at(i);
+				if (!m_hidden.isEmpty() && m_hidden.contains(e.str(8))) {
+						// a hidden polyline takes its vertices along
+					if (e.type == QLatin1String("POLYLINE"))
+						while (i + 1 < entities.size() && entities.at(i + 1).type != QLatin1String("SEQEND")) ++i;
+					continue;
+				}
+				m_symbol_layer = e.str(8).compare(QLatin1String("EPLAN_Symbol"), Qt::CaseInsensitive) == 0;
 				if (e.type == QLatin1String("LINE")) {
 					addLine(pl, QPointF(e.num(10), e.num(20)), QPointF(e.num(11), e.num(21)));
 				} else if (e.type == QLatin1String("CIRCLE")) {
@@ -260,6 +288,7 @@ class Reader
 		QVector<Entity> m_entities;
 		QHash<QString, QVector<Entity>> m_blocks;
 		QHash<QString, QPointF> m_bases;
+		QSet<QString> m_hidden;
 		Entity m_block_header;
 		bool m_block_pending = false;
 };
@@ -285,7 +314,10 @@ QRectF arcBounds(const PanelOutline::Arc &a)
 QString safeName(QString s)
 {
 	s.replace(QRegularExpression(QStringLiteral("[\\\\/:*?\"<>|]")), QStringLiteral("_"));
-	return s.simplified().left(120);
+		//Windows drops a trailing blank or dot of a folder name: none at the end
+	s = s.simplified().left(120);
+	while (s.endsWith(QLatin1Char(' ')) || s.endsWith(QLatin1Char('.'))) s.chop(1);
+	return s;
 }
 
 } // namespace
@@ -317,6 +349,8 @@ PanelOutline PanelImport::readDxf(const QByteArray &dxf, QString *error)
 	}
 	out.width = x1 - x0;
 	out.height = y1 - y0;
+	if (reader.symbol.isValid() && reader.symbol.width() > 1 && reader.symbol.height() > 1)
+		out.frame = reader.symbol.translated(-o);
 	return out;
 }
 
@@ -407,6 +441,118 @@ QByteArray PanelImport::deviceViewFromPackage(const QByteArray &zip)
 	return views.isEmpty() ? QByteArray() : views.first();
 }
 
+PanelOutline PanelImport::frontView(const PanelOutline &drawing)
+{
+		// 1. EPLAN marks the device's outline on the layer EPLAN_Symbol
+	auto crop = [&drawing](const QRectF &area) {
+		const QRectF main = area.adjusted(-0.5, -0.5, 0.5, 0.5);
+		auto inside = [&](const QRectF &b) {
+			return b.left() >= main.left() && b.right() <= main.right()
+				&& b.top() >= main.top() && b.bottom() <= main.bottom();
+		};
+		PanelOutline out;
+		out.name = drawing.name;
+		const QPointF shift = area.topLeft();
+		for (const QLineF &l : drawing.lines)
+			if (inside(QRectF(l.p1(), l.p2()).normalized())) out.lines << l.translated(-shift);
+		for (PanelOutline::Arc a : drawing.arcs)
+			if (inside(QRectF(a.centre - QPointF(a.r, a.r), QSizeF(2 * a.r, 2 * a.r)))) {
+				a.centre -= shift;
+				out.arcs << a;
+			}
+		out.width = area.width();
+		out.height = area.height();
+		return out;
+	};
+	if (drawing.frame.isValid() && drawing.frame.width() > 1 && drawing.frame.height() > 1) {
+		const PanelOutline out = crop(drawing.frame);
+		if (!out.isEmpty()) return out;
+	}
+
+	struct Item {QRectF box; int line = -1; int arc = -1;};
+	QVector<Item> items;
+	for (int i = 0; i < drawing.lines.size(); ++i) {
+		const QLineF &l = drawing.lines.at(i);
+		items.append({QRectF(l.p1(), l.p2()).normalized(), i, -1});
+	}
+	for (int i = 0; i < drawing.arcs.size(); ++i) {
+		const PanelOutline::Arc &a = drawing.arcs.at(i);
+		items.append({QRectF(a.centre - QPointF(a.r, a.r), QSizeF(2 * a.r, 2 * a.r)), -1, i});
+	}
+	const int n = int(items.size());
+	if (n < 2) return drawing;
+
+		// connected parts: items whose boxes touch (0.3 mm), by a sweep over x
+	QVector<int> parent(n);
+	for (int i = 0; i < n; ++i) parent[i] = i;
+	std::function<int(int)> find = [&](int i) {return parent[i] == i ? i : parent[i] = find(parent[i]);};
+	QVector<int> order(n);
+	for (int i = 0; i < n; ++i) order[i] = i;
+	std::sort(order.begin(), order.end(), [&](int a, int b) {return items[a].box.left() < items[b].box.left();});
+	const double tol = 0.3;
+	for (int oi = 0; oi < n; ++oi) {
+		const QRectF a = items[order[oi]].box.adjusted(-tol, -tol, tol, tol);
+		for (int oj = oi + 1; oj < n; ++oj) {
+			const QRectF &b = items[order[oj]].box;
+			if (b.left() > a.right()) break;
+			if (b.top() <= a.bottom() && b.bottom() >= a.top()) {
+				const int ra = find(order[oi]), rb = find(order[oj]);
+				if (ra != rb) parent[ra] = rb;
+			}
+		}
+	}
+	QHash<int, QRectF> boxes;
+	QHash<int, int> counts;
+	for (int i = 0; i < n; ++i) {
+		const int r = find(i);
+		boxes[r] = boxes.contains(r) ? boxes[r].united(items[i].box) : items[i].box;
+		counts[r] += 1;
+	}
+		// a drawing frame of a standard sheet is no device
+	auto paper = [](const QRectF &r) {
+		static const QList<QSizeF> sizes = {{210, 148}, {297, 210}, {420, 297}, {594, 420}, {841, 594}};
+		for (const QSizeF &s : sizes)
+			if ((qAbs(r.width() - s.width()) < 3 && qAbs(r.height() - s.height()) < 3)
+				|| (qAbs(r.width() - s.height()) < 3 && qAbs(r.height() - s.width()) < 3)) return true;
+		return false;
+	};
+		// 2. only a drawing with a sheet frame is cut down: to its largest
+		//    part; 3. any other drawing is the device as it is
+	bool has_frame = false;
+	for (auto it = counts.constBegin(); it != counts.constEnd(); ++it)
+		if (paper(boxes[it.key()])) has_frame = true;
+	if (!has_frame) return drawing;
+	int best = -1;
+	auto area = [&](int k) {return boxes[k].width() * boxes[k].height();};
+	for (auto it = counts.constBegin(); it != counts.constEnd(); ++it) {
+		if (paper(boxes[it.key()])) continue;
+		if (best < 0 || area(it.key()) > area(best)) best = it.key();
+	}
+	if (best < 0) return drawing;
+	const QRectF main = boxes[best].adjusted(-0.5, -0.5, 0.5, 0.5);
+
+	PanelOutline out;
+	out.name = drawing.name;
+		// QRectF::contains() takes a straight line (no width or no height)
+		// for nothing: compare the coordinates
+	auto inside = [&](const QRectF &b) {
+		return b.left() >= main.left() && b.right() <= main.right()
+			&& b.top() >= main.top() && b.bottom() <= main.bottom();
+	};
+	for (const Item &it : std::as_const(items)) {
+		if (!inside(it.box)) continue;
+		if (it.line >= 0) out.lines << drawing.lines.at(it.line).translated(-main.topLeft() - QPointF(0.5, 0.5));
+		else {
+			PanelOutline::Arc a = drawing.arcs.at(it.arc);
+			a.centre -= main.topLeft() + QPointF(0.5, 0.5);
+			out.arcs << a;
+		}
+	}
+	out.width = main.width() - 1;
+	out.height = main.height() - 1;
+	return out.isEmpty() ? drawing : out;
+}
+
 QString PanelImport::devicesDirectory()
 {
 	return templatesDirectory() + QStringLiteral("/devices");
@@ -421,7 +567,7 @@ PanelOutline PanelImport::fetchDeviceView(const QString &order_number, const QSt
 	key.replace(QRegularExpression(QStringLiteral("[^A-Za-z0-9_.+-]")), QStringLiteral("_"));
 	const QString cached = QDir(devicesDirectory()).filePath(key + QStringLiteral(".dxf"));
 	const QString none = QDir(devicesDirectory()).filePath(key + QStringLiteral(".none"));
-	if (QFileInfo::exists(cached)) return readDxfFile(cached, error);
+	if (QFileInfo::exists(cached)) return frontView(readDxfFile(cached, error));
 	if (QFileInfo::exists(none)) {
 		if (error) *error = QStringLiteral("no panel layout drawing in the Data Portal");
 		return PanelOutline();
@@ -489,7 +635,7 @@ PanelOutline PanelImport::fetchDeviceView(const QString &order_number, const QSt
 	if (f.open(QIODevice::WriteOnly)) {f.write(view); f.commit();}
 	PanelOutline o = readDxf(view, error);
 	o.name = part.part_number;
-	return o;
+	return frontView(o);
 }
 
 QString PanelImport::enclosuresDirectory()

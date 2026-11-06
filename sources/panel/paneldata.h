@@ -22,6 +22,7 @@
 #include <QLineF>
 #include <QList>
 #include <QPointF>
+#include <QRectF>
 #include <QString>
 
 /**
@@ -95,6 +96,7 @@ struct PanelOutline
 	QList<Arc> arcs;
 	double width = 0, height = 0;
 	QString name;              ///< the template it came from
+	QRectF frame;              ///< the device's outline from the drawing (EPLAN_Symbol), if any; not saved
 
 	bool isEmpty() const {return lines.isEmpty() && arcs.isEmpty();}
 	PanelOutline stretched(double w, double h) const;

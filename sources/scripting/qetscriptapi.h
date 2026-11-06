@@ -400,6 +400,11 @@ class QetScriptApi : public QObject
 			// a device of a cabinet layout drawn anew in a new size (mm);
 			// returns the uuid of the new element, empty when not possible
 		Q_INVOKABLE QString resizePanelDevice(int folioIndex, const QString &elementUuid, double widthMm, double heightMm);
+			// a part of the EPLAN Data Portal, by its order number, imported as
+			// elements into a collection folder (as the part import of the
+			// menu does); returns a JSON summary {ok, written[], error}
+		Q_INVOKABLE QString importPartFromDataPortal(const QString &orderNumber, const QString &manufacturer,
+													 const QString &collectionDir, const QString &category = QString());
 		Q_INVOKABLE QString panelDeviceView(const QString &orderNumber, const QString &manufacturer = QString()) const;
 		Q_INVOKABLE QString folioUuid(int index) const;
 		Q_INVOKABLE int folioIndex(const QString &uuid) const;

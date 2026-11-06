@@ -17,6 +17,10 @@
 */
 #include "qetscriptapi.h"
 
+#include <QSettings>
+#include <QTemporaryDir>
+#include <QTimer>
+#include <QEventLoop>
 #include <QRegularExpression>
 #include <optional>
 
@@ -58,6 +62,8 @@
 #include "../panel/panelstep.h"
 #include "../panel/panelimport.h"
 #include "../panel/panelmenu.h"
+#include "../import/eplandxf/eplanpartimporter.h"
+#include "../import/eplandxf/dataportalclient.h"
 #include <QDir>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -397,6 +403,77 @@ QString QetScriptApi::resizePanelDevice(int folioIndex, const QString &elementUu
 	info.addValue(QStringLiteral("height_mm"), QString::number(heightMm, 'f', 1).replace(QLatin1Char('.'), QLatin1Char(',')), false);
 	Element *n = PanelMenu::replaceDevice(element, info);
 	return n ? n->uuid().toString() : QString();
+}
+
+QString QetScriptApi::importPartFromDataPortal(const QString &orderNumber, const QString &manufacturer,
+											 const QString &collectionDir, const QString &category)
+{
+	QJsonObject result;
+	auto finish = [&](const QString &error) {
+		result.insert(QStringLiteral("ok"), error.isEmpty());
+		if (!error.isEmpty()) result.insert(QStringLiteral("error"), error);
+		return QString::fromUtf8(QJsonDocument(result).toJson(QJsonDocument::Compact));
+	};
+	const QString order = orderNumber.trimmed();
+	if (order.isEmpty() || collectionDir.trimmed().isEmpty()) return finish(QStringLiteral("no order number or folder"));
+	const QString token = QSettings().value(QStringLiteral("eplanimport/dataportal_token")).toString();
+	if (token.isEmpty()) return finish(QStringLiteral("no Data Portal token"));
+
+	DataPortalClient client;
+	client.setToken(token);
+	QEventLoop loop;
+	QTimer guard;
+	guard.setSingleShot(true);
+	QObject::connect(&guard, &QTimer::timeout, &loop, &QEventLoop::quit);
+	QVector<DataPortalPart> found;
+	QByteArray package;
+	QString package_name, failure;
+	QObject::connect(&client, &DataPortalClient::searchFinished, &loop,
+					 [&](const QVector<DataPortalPart> &parts, int, int) {found = parts; loop.quit();});
+	QObject::connect(&client, &DataPortalClient::downloadFinished, &loop,
+					 [&](const QByteArray &data, const QString &name) {package = data; package_name = name; loop.quit();});
+	QObject::connect(&client, &DataPortalClient::failed, &loop,
+					 [&](const QString &message) {failure = message; loop.quit();});
+	DataPortalQuery q;
+	q.text = order;
+	q.only_dxf = true;
+	q.exact = true;
+	q.limit = 20;
+	client.search(q);
+	guard.start(30000);
+	loop.exec();
+	DataPortalPart part;
+	for (const DataPortalPart &p : std::as_const(found)) {
+		if (p.order_number.compare(order, Qt::CaseInsensitive) != 0) continue;
+		const bool same_maker = manufacturer.isEmpty()
+				|| p.manufacturer.contains(manufacturer, Qt::CaseInsensitive)
+				|| manufacturer.contains(p.manufacturer_short, Qt::CaseInsensitive);
+		if (part.id.isEmpty() || same_maker) part = p;
+		if (same_maker) break;
+	}
+	if (part.id.isEmpty())
+		return finish(failure.isEmpty() ? QStringLiteral("not in the Data Portal (with DXF data)") : failure);
+	result.insert(QStringLiteral("manufacturer"), part.manufacturer);
+	result.insert(QStringLiteral("designation"), part.designation);
+	client.downloadDxf(part.id);
+	guard.start(90000);
+	loop.exec();
+	if (package.isEmpty()) return finish(failure.isEmpty() ? QStringLiteral("download failed") : failure);
+
+	QTemporaryDir dir;
+	const QString path = dir.filePath(package_name.isEmpty() ? QStringLiteral("part.zip") : package_name);
+	QFile file(path);
+	if (!dir.isValid() || !file.open(QIODevice::WriteOnly) || file.write(package) != package.size())
+		return finish(QStringLiteral("the package cannot be stored"));
+	file.close();
+	EplanPartImporter importer;
+	if (!importer.importPackage(path, category.trimmed().isEmpty() ? QStringLiteral("Allgemein") : category.trimmed(),
+								collectionDir))
+		return finish(importer.errorString());
+	QJsonArray written;
+	for (const QString &w : importer.writtenPaths()) written.append(w);
+	result.insert(QStringLiteral("written"), written);
+	return finish(QString());
 }
 
 /**

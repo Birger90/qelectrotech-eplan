@@ -21,6 +21,7 @@
 #include "panelcommands.h"
 #include "panelimport.h"
 #include "articledialog.h"
+#include "eplanproject.h"
 #include "paneldxf.h"
 #include "panellayout.h"
 #include "panelstep.h"
@@ -47,6 +48,7 @@
 #include "../diagramcontent.h"
 
 #include <QPointer>
+#include <QGuiApplication>
 #include <limits>
 #include <QCheckBox>
 #include <QComboBox>
@@ -507,6 +509,9 @@ PanelMenu::PanelMenu(QETDiagramEditor *editor) :
 	add(tr("Place devices from the schematic..."),
 		tr("Put the devices of the project on the mounting surface at their real size, snapped onto the DIN rails"),
 		&PanelMenu::placeDevices);
+	add(tr("Take the layout from an EPLAN project..."),
+		tr("Move the devices and terminal strips to where an EPLAN project (.zw1 archive or project folder) has them on its panel layout page"),
+		&PanelMenu::importEplanLayout);
 	add(tr("Assign part..."),
 		tr("Give the selected devices or terminals their part (manufacturer and order number) from the EPLAN Data Portal"),
 		&PanelMenu::assignArticle);
@@ -1251,6 +1256,98 @@ Element *PanelMenu::replaceDevice(Element *device, const DiagramContext &info)
 	d->undoStack().push(macro);
 	d->project()->setModified(true);
 	return element;
+}
+
+QString PanelMenu::applyEplanLayout(Diagram *d, const QString &eplan_project)
+{
+	if (!d) return QString();
+	QetShapeItem *surface = targetSurface(d);
+	if (!surface) return tr("Insert a mounting surface on this folio first.");
+	const EplanProject::Layout layout = EplanProject::readLayout(eplan_project);
+	if (!layout.error.isEmpty()) return layout.error;
+	if (layout.items.isEmpty()) return tr("The panel layout page of the EPLAN project holds no devices.");
+	const double k = surface->panelData().mm_per_unit > 0 ? surface->panelData().mm_per_unit : 1;
+	const QRectF plate = sceneRectOf(surface);
+
+	static const QRegularExpression key_re(QStringLiteral("^=([^+]*)\\+([^-]*)(-.*)$"));
+	auto same = [](const QString &a, const QString &b) {return a.isEmpty() || b.isEmpty() || a.compare(b, Qt::CaseInsensitive) == 0;};
+	auto *macro = new QUndoCommand(tr("take the layout from %1").arg(QFileInfo(eplan_project).fileName()));
+	int moved = 0;
+	QStringList off_plate;
+	double park_y = plate.top();
+	for (Element *e : d->elements()) {
+		const DiagramContext info = e->elementInformations();
+		QString key = info.value(QStringLiteral("panel_of")).toString();
+		if (key.isEmpty()) continue;
+		QString plant, location, bmk;
+		if (key.startsWith(QLatin1String("strip:"))) bmk = key.mid(6);
+		else {
+			const QRegularExpressionMatch m = key_re.match(key);
+			if (!m.hasMatch()) continue;
+			plant = m.captured(1); location = m.captured(2); bmk = m.captured(3);
+		}
+		const double w = infoNumber(info, QStringLiteral("width_mm")), h = infoNumber(info, QStringLiteral("height_mm"));
+			// the placement of that device; of several (main part, auxiliary
+			// switch) the one of its size
+		const EplanProject::Placement *best = nullptr;
+		double best_cost = 1e18;
+		for (const EplanProject::Placement &p : layout.items) {
+			if (p.bmk.compare(bmk, Qt::CaseInsensitive) != 0 || !same(p.location, location) || !same(p.plant, plant)) continue;
+			const double cost = p.centre_only ? 1e6 : qAbs(p.rect_mm.width() - w) + qAbs(p.rect_mm.height() - h);
+			if (cost < best_cost) {best_cost = cost; best = &p;}
+		}
+		QPointF target;
+		bool on_plate = false;
+			// a device drawn on the page as a plain box with its type
+			// written in it, without a function there: the text is its centre
+		EplanProject::Placement by_text;
+		if (!best) {
+			const QString type = info.value(QStringLiteral("manufacturer_reference")).toString().trimmed().toUpper();
+			for (const auto &t : layout.texts)
+				if (!type.isEmpty() && t.first == type) {
+					by_text.centre_only = true;
+					by_text.rect_mm = QRectF(t.second, QSizeF(0, 0));
+					best = &by_text;
+					break;
+				}
+		}
+		if (best) {
+			double x = best->rect_mm.left(), top = best->rect_mm.bottom();
+			if (best->centre_only) {x -= w / 2; top += h / 2;}
+			on_plate = x > -w && x < plate.width() * k && top > 0 && top - h < plate.height() * k + h;
+			target = QPointF(plate.left() + x / k, plate.bottom() - top / k);
+		}
+		if (!on_plate) {
+				// not on the plate in EPLAN (door, roof, floor): beside the plate
+			if (!plate.intersects(e->sceneBoundingRect())) continue;
+			target = QPointF(plate.right() + 120 / k, park_y);
+			park_y += qMax(h / k, 20.0) + 10;
+			off_plate << key;
+		}
+		if (QLineF(e->pos(), target).length() < 0.01) continue;
+		new QPropertyUndoCommand(e, "pos", e->pos(), target, macro);
+		++moved;
+	}
+	if (moved) d->undoStack().push(macro);
+	else delete macro;
+	QString report = tr("%1 devices and terminal strips moved to their place in the EPLAN project.").arg(moved - off_plate.size());
+	if (!off_plate.isEmpty())
+		report += QLatin1Char('\n') + tr("Not on the plate in the EPLAN project, put beside it: %1").arg(off_plate.join(QStringLiteral(", ")));
+	return report;
+}
+
+void PanelMenu::importEplanLayout()
+{
+	Diagram *d = diagram();
+	if (!d) return;
+	const QString path = QFileDialog::getOpenFileName(m_editor, tr("EPLAN project"), QString(),
+		tr("EPLAN project (*.zw1 Function.eod);;All files (*)"));
+	if (path.isEmpty()) return;
+	QGuiApplication::setOverrideCursor(Qt::WaitCursor);
+	const QString report = applyEplanLayout(d, path);
+	QGuiApplication::restoreOverrideCursor();
+	refreshHoleView();
+	QMessageBox::information(m_editor, tr("Cabinet layout"), report);
 }
 
 Element *PanelMenu::partHolder(Element *e)

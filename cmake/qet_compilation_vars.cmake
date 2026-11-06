@@ -1120,6 +1120,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/panel/panelimport.cpp
   ${QET_DIR}/sources/panel/panelimport.h
   ${QET_DIR}/sources/panel/articledialog.cpp
+  ${QET_DIR}/sources/panel/eplanproject.cpp
+  ${QET_DIR}/sources/panel/eplanproject.h
   ${QET_DIR}/sources/panel/articledialog.h
   ${QET_DIR}/sources/cable/cableoverviewdialog.h
   ${QET_DIR}/sources/cable/cablemanager.cpp

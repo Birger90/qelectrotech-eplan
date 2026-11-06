@@ -476,6 +476,14 @@ QString QetScriptApi::importPartFromDataPortal(const QString &orderNumber, const
 	return finish(QString());
 }
 
+QString QetScriptApi::importEplanLayout(int folioIndex, const QString &eplanProject)
+{
+	if (!m_project) return QString();
+	const QList<Diagram *> diagrams = m_project->folios();
+	if (folioIndex < 0 || folioIndex >= diagrams.count()) return QString();
+	return PanelMenu::applyEplanLayout(built(diagrams.at(folioIndex)), eplanProject);
+}
+
 QString QetScriptApi::placePanelDevices(int folioIndex)
 {
 	if (!m_project) return QString();

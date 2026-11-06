@@ -74,6 +74,11 @@ class PanelMenu : public QMenu
 			/// the element that carries the part of @p e: the master of a
 			/// contact, else @p e itself
 		static Element *partHolder(Element *e);
+			/// the devices and terminal strips of the layout folio @p diagram
+			/// moved to where an EPLAN project (.zw1 or project folder) has
+			/// them on its panel layout page; what that page does not hold
+			/// leaves the plate. Returns a report.
+		static QString applyEplanLayout(Diagram *diagram, const QString &eplan_project);
 			/// "Place devices from the schematic" on @p diagram; with
 			/// @p interactive false no dialog: every device with an order
 			/// number or a size is placed, with the manufacturer's drawing;
@@ -93,6 +98,7 @@ class PanelMenu : public QMenu
 		void insertKeepout();
 		void placeDevices();
 		void placeTerminalStrips();
+		void importEplanLayout();
 		void assignArticle();
 		bool assignArticleTo(const QList<Element *> &targets);
 		void missingArticles();

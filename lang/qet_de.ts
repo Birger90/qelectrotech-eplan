@@ -30276,6 +30276,42 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
         <source>Folio</source>
         <translation>Blatt</translation>
     </message>
+    <message>
+        <source>Take the layout from an EPLAN project...</source>
+        <translation>Aufbau aus EPLAN-Projekt übernehmen...</translation>
+    </message>
+    <message>
+        <source>Move the devices and terminal strips to where an EPLAN project (.zw1 archive or project folder) has them on its panel layout page</source>
+        <translation>Geräte und Klemmenleisten dorthin setzen, wo sie auf der Aufbauseite eines EPLAN-Projekts (.zw1-Archiv oder Projektordner) sitzen</translation>
+    </message>
+    <message>
+        <source>The panel layout page of the EPLAN project holds no devices.</source>
+        <translation>Die Aufbauseite des EPLAN-Projekts enthält keine Geräte.</translation>
+    </message>
+    <message>
+        <source>take the layout from %1</source>
+        <translation>Aufbau aus %1 übernehmen</translation>
+    </message>
+    <message>
+        <source>%1 devices and terminal strips moved to their place in the EPLAN project.</source>
+        <translation>%1 Geräte und Klemmenleisten an ihren Platz im EPLAN-Projekt gesetzt.</translation>
+    </message>
+    <message>
+        <source>Not on the plate in the EPLAN project, put beside it: %1</source>
+        <translation>Im EPLAN-Projekt nicht auf der Platte, daneben gestellt: %1</translation>
+    </message>
+    <message>
+        <source>EPLAN project</source>
+        <translation>EPLAN-Projekt</translation>
+    </message>
+    <message>
+        <source>EPLAN project (*.zw1 Function.eod);;All files (*)</source>
+        <translation>EPLAN-Projekt (*.zw1 Function.eod);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <source>Cabinet layout</source>
+        <translation>Schaltschrankaufbau</translation>
+    </message>
 </context>
 <context>
     <name>PanelTemplateDialog</name>
@@ -30393,6 +30429,29 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <message>
         <source>%1 of %2 parts.</source>
         <translation>%1 von %2 Artikeln.</translation>
+    </message>
+</context>
+<context>
+    <name>EplanProject</name>
+    <message>
+        <source>A project archive (.zw1) is a 7z archive: install 7-Zip or unpack it and choose the project folder.</source>
+        <translation>Ein Projektarchiv (.zw1) ist ein 7z-Archiv: 7-Zip installieren oder es auspacken und den Projektordner wählen.</translation>
+    </message>
+    <message>
+        <source>7-Zip could not unpack %1.</source>
+        <translation>7-Zip konnte %1 nicht auspacken.</translation>
+    </message>
+    <message>
+        <source>No EPLAN project tables (Function.eod, Instance.eod) in %1.</source>
+        <translation>Keine EPLAN-Projekttabellen (Function.eod, Instance.eod) in %1.</translation>
+    </message>
+    <message>
+        <source>The project has no panel layout page with a mounting plate.</source>
+        <translation>Das Projekt hat keine Aufbauseite mit Montageplatte.</translation>
+    </message>
+    <message>
+        <source>The zero point of the mounting plate was not found on the layout page.</source>
+        <translation>Der Nullpunkt der Montageplatte wurde auf der Aufbauseite nicht gefunden.</translation>
     </message>
 </context>
 </TS>

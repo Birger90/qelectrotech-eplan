@@ -408,6 +408,8 @@ class QetScriptApi : public QObject
 			// "Place devices from the schematic" without a dialog: every device
 			// of the enclosure's location with an order number or a size
 		Q_INVOKABLE QString placePanelDevices(int folioIndex);
+			// the layout of an EPLAN project (.zw1 or folder) taken over
+		Q_INVOKABLE QString importEplanLayout(int folioIndex, const QString &eplanProject);
 		Q_INVOKABLE QString panelDeviceView(const QString &orderNumber, const QString &manufacturer = QString()) const;
 		Q_INVOKABLE QString folioUuid(int index) const;
 		Q_INVOKABLE int folioIndex(const QString &uuid) const;

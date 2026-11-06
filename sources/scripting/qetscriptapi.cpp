@@ -56,6 +56,7 @@
 #include "../panel/paneldxf.h"
 #include "../panel/panellayout.h"
 #include "../panel/panelstep.h"
+#include "../panel/panelimport.h"
 #include <QDir>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -352,6 +353,59 @@ QStringList QetScriptApi::exportPanelDxf(int folioIndex, const QString &outDir, 
 		else log(QStringLiteral("qet.exportPanelDxf: %1: %2").arg(path, error));
 	}
 	return written;
+}
+
+/**
+	@brief QetScriptApi::setSurfaceTemplate
+	Give the mounting surface @p shapeIndex the contour of the plate in
+	@p dxfPath (holes, radii, notches), stretched to the surface's size.
+	One undo step.
+*/
+bool QetScriptApi::setSurfaceTemplate(int folioIndex, int shapeIndex, const QString &dxfPath, bool machined)
+{
+	if (!m_project || m_project->isReadOnly()) return false;
+	const QList<QetShapeItem *> list = sortedShapes(folioIndex);
+	if (shapeIndex < 0 || shapeIndex >= list.count()) return false;
+	QetShapeItem *shape = list.at(shapeIndex);
+	PanelData data = shape->panelData();
+	if (data.role != PanelData::Surface) {
+		log(QStringLiteral("qet.setSurfaceTemplate: shape %1 is no mounting surface").arg(shapeIndex));
+		return false;
+	}
+	QString error;
+	data.outline = dxfPath.isEmpty() ? PanelOutline() : PanelImport::readDxfFile(dxfPath, &error);
+	if (!dxfPath.isEmpty() && data.outline.isEmpty()) {
+		log(QStringLiteral("qet.setSurfaceTemplate: %1").arg(error));
+		return false;
+	}
+	data.outline_machined = machined;
+	if (Diagram *d = qobject_cast<Diagram *>(shape->scene()))
+		d->undoStack().push(new ChangePanelDataCommand(shape, data));
+	else
+		shape->setPanelData(data);
+	return true;
+}
+
+/**
+	@brief QetScriptApi::readPanelTemplate
+	@return JSON: width, height, lines, arcs, circles (d, x, y) of a plate DXF
+*/
+QString QetScriptApi::readPanelTemplate(const QString &dxfPath) const
+{
+	QString error;
+	const PanelOutline o = PanelImport::readDxfFile(dxfPath, &error);
+	QJsonObject j;
+	j[QStringLiteral("ok")] = !o.isEmpty();
+	if (!error.isEmpty()) j[QStringLiteral("error")] = error;
+	j[QStringLiteral("width")] = o.width;
+	j[QStringLiteral("height")] = o.height;
+	j[QStringLiteral("lines")] = int(o.lines.size());
+	j[QStringLiteral("arcs")] = int(o.arcs.size() - o.circles().size());
+	QJsonArray c;
+	for (const PanelOutline::Arc &a : o.circles())
+		c.append(QJsonObject{{QStringLiteral("d"), 2 * a.r}, {QStringLiteral("x"), a.centre.x()}, {QStringLiteral("y"), a.centre.y()}});
+	j[QStringLiteral("circles")] = c;
+	return QString::fromUtf8(QJsonDocument(j).toJson(QJsonDocument::Compact));
 }
 
 /**

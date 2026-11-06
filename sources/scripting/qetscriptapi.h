@@ -391,6 +391,10 @@ class QetScriptApi : public QObject
 		Q_INVOKABLE QString panelReport(int folioIndex) const;
 		Q_INVOKABLE QStringList exportPanelDxf(int folioIndex, const QString &outDir, bool labels = false);
 		Q_INVOKABLE QString stepInfo(const QString &path) const;
+			// Mounting plate templates (DXF): give a surface the contour of
+			// a template, stretched to its size; machined: make its holes too
+		Q_INVOKABLE bool setSurfaceTemplate(int folioIndex, int shapeIndex, const QString &dxfPath, bool machined = true);
+		Q_INVOKABLE QString readPanelTemplate(const QString &dxfPath) const;
 		Q_INVOKABLE QString folioUuid(int index) const;
 		Q_INVOKABLE int folioIndex(const QString &uuid) const;
 		Q_INVOKABLE int elementCount(int folioIndex) const;

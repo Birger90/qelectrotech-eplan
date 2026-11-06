@@ -19,6 +19,7 @@
 #define PANELDATA_H
 
 #include <QDomElement>
+#include <QLineF>
 #include <QList>
 #include <QPointF>
 #include <QString>
@@ -70,6 +71,39 @@ struct PanelPattern
 };
 
 /**
+	@brief The drawn contour of a mounting plate taken from a template (a
+	manufacturer's plate or one's own DXF): lines, arcs and circles in
+	millimetres from the lower left corner, y up, at the size the template
+	had (width, height).
+
+	stretched() fits it to other outer dimensions the way a CAD "stretch"
+	does: what lies in the left half stays at its distance from the left
+	edge, what lies in the right half at its distance from the right edge,
+	the same up and down -- so corners keep their holes, radii and notches
+	and the long edges grow or shrink.
+*/
+struct PanelOutline
+{
+	struct Arc
+	{
+		QPointF centre;
+		double r = 0;
+		double a0 = 0, a1 = 360;   ///< degrees, counter-clockwise from a0 to a1
+		bool isCircle() const {return qAbs(qAbs(a1 - a0) - 360) < 1e-6;}
+	};
+	QList<QLineF> lines;
+	QList<Arc> arcs;
+	double width = 0, height = 0;
+	QString name;              ///< the template it came from
+
+	bool isEmpty() const {return lines.isEmpty() && arcs.isEmpty();}
+	PanelOutline stretched(double w, double h) const;
+	QList<Arc> circles() const;
+	QDomElement toXml(QDomDocument &document) const;
+	static PanelOutline fromXml(const QDomElement &element);
+};
+
+/**
 	@brief What a shape stands for in a cabinet layout, and the data the
 	manufacturing needs from it (sizes in millimetres).
 
@@ -83,7 +117,7 @@ struct PanelPattern
 */
 struct PanelData
 {
-	enum Role {None = 0, Surface, DinRail, Duct, CProfile, Cutout, Keepout};
+	enum Role {None = 0, Surface, DinRail, Duct, CProfile, Cutout, Keepout, Enclosure};
 
 	Role role = None;
 	QString designation;     ///< BMK of the surface or part (e.g. +CA-MP1)
@@ -110,6 +144,13 @@ struct PanelData
 
 		//3D: a STEP model shown instead of a box (path, may use %QET_STEP%)
 	QString step_file;
+
+		//Surface made from a template: its contour, stretched to the size
+		//of the surface; machined: its holes and cut-outs are made too (a
+		//plate made in house), else they are there already (a bought plate)
+		//and become keep-out areas
+	PanelOutline outline;
+	bool outline_machined = true;
 
 	bool isNull() const {return role == None;}
 	QDomElement toXml(QDomDocument &document) const;

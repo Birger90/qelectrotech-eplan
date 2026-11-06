@@ -38,6 +38,7 @@ struct DataPortalPart
 	QString manufacturer;  ///< long name, e.g. Siemens
 	QString manufacturer_short;
 	QString designation;   ///< in the language asked for, else English
+	QString description;   ///< long description, e.g. with the sizes of a mounting plate
 	QString product_group;
 	QString picture_url;   ///< product picture, public, may be empty
 	bool has_dxf = false;

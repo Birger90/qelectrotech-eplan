@@ -23,6 +23,7 @@
 #include "../qetgraphicsitem/element.h"
 #include "../qetgraphicsitem/qetshapeitem.h"
 
+#include <QCheckBox>
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QFileInfo>
@@ -225,6 +226,7 @@ int Panel3DWidget::pick(const QPoint &pos) const
 	int best = -1;
 	float best_t = 1e30f;
 	for (int i = 0; i < m_bodies.size(); ++i) {
+		if (!m_bodies.at(i).item) continue;
 		const float t = hitBox(a, dir, m_bodies.at(i).min, m_bodies.at(i).max);
 			// the surface lies under everything: only pick it when nothing else is hit
 		const float bias = m_bodies.at(i).holes.isEmpty() ? 0 : 1e6f;
@@ -368,7 +370,7 @@ void Panel3DWidget::paintGL()
 	STEP model named in step_file). Surfaces of one folio are put side by
 	side. @p notes collects what could not be shown.
 */
-QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes)
+QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bool enclosure)
 {
 	QList<Panel3DBody> bodies;
 	if (!diagram) return bodies;
@@ -467,7 +469,59 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes)
 			}
 			bodies << b;
 		}
-		offset_x += w + 150;
+			//the enclosure around the plate: a frame of 40 mm profiles like a
+			//TS 8 / VX 25 enclosure, 40 mm beyond the plate on every side and
+			//deep enough for the deepest part
+		if (enclosure) {
+			float front = 0;
+			for (const Panel3DBody &b : bodies) front = qMax(front, b.max.z());
+			front += 60;
+			const float m = 40, p = 40;   // margin, profile size
+			QVector3D lo(offset_x - m - p, -m - p, -t - 30 - p), hi(offset_x + w + m + p, h + m + p, front + p);
+				// an enclosure drawn around the plate gives the real size
+			const QRectF plate_rect = surface->mapToScene(surface->rect().normalized()).boundingRect();
+			for (QGraphicsItem *item : diagram->items()) {
+				auto *shape = dynamic_cast<QetShapeItem *>(item);
+				if (!shape || shape->panelData().role != PanelData::Enclosure) continue;
+				const QRectF er = shape->mapToScene(shape->rect().normalized()).boundingRect();
+				if (!er.contains(plate_rect.center())) continue;
+				const double k = qMax(1e-6, sd.mm_per_unit);
+				const PanelData ed = shape->panelData();
+				lo = QVector3D(offset_x + float((er.left() - plate_rect.left()) * k),
+							   float((plate_rect.bottom() - er.bottom()) * k), -t - 25);
+				hi = QVector3D(offset_x + float((er.right() - plate_rect.left()) * k),
+							   float((plate_rect.bottom() - er.top()) * k),
+							   -t - 25 + float(ed.profile_depth > 0 ? ed.profile_depth : front + t + 25));
+					// the rear wall behind the plate
+				Panel3DBody wall;
+				wall.min = QVector3D(lo.x() + p, lo.y() + p, lo.z());
+				wall.max = QVector3D(hi.x() - p, hi.y() - p, lo.z() + 2);
+				wall.colour = QColor(205, 207, 210);
+				wall.name = QStringLiteral("frame");
+				bodies << wall;
+				break;
+			}
+			auto post = [&](QVector3D a, QVector3D b) {
+				Panel3DBody frame;
+				frame.min = a;
+				frame.max = b;
+				frame.colour = QColor(75, 78, 84);
+				frame.name = QStringLiteral("frame");
+				bodies << frame;
+			};
+				// four upright posts
+			for (float x : {lo.x(), hi.x() - p})
+				for (float z : {lo.z(), hi.z() - p})
+					post(QVector3D(x, lo.y(), z), QVector3D(x + p, hi.y(), z + p));
+				// top and bottom: along x and along z
+			for (float y : {lo.y(), hi.y() - p}) {
+				for (float z : {lo.z(), hi.z() - p})
+					post(QVector3D(lo.x() + p, y, z), QVector3D(hi.x() - p, y + p, z + p));
+				for (float x : {lo.x(), hi.x() - p})
+					post(QVector3D(x, y, lo.z() + p), QVector3D(x + p, y + p, hi.z() - p));
+			}
+		}
+		offset_x += w + 150 + (enclosure ? 160 : 0);
 	}
 	return bodies;
 }
@@ -488,6 +542,9 @@ Panel3DDialog::Panel3DDialog(Diagram *diagram, QWidget *parent) :
 	auto *top = new QPushButton(tr("Top"), this);
 	auto *iso = new QPushButton(tr("Isometric"), this);
 	auto *refresh = new QPushButton(tr("Refresh"), this);
+	m_enclosure = new QCheckBox(tr("Enclosure"), this);
+	m_enclosure->setChecked(true);
+	connect(m_enclosure, &QCheckBox::toggled, this, &Panel3DDialog::reload);
 	connect(front, &QPushButton::clicked, m_view, &Panel3DWidget::viewFront);
 	connect(top, &QPushButton::clicked, m_view, &Panel3DWidget::viewTop);
 	connect(iso, &QPushButton::clicked, m_view, &Panel3DWidget::viewIso);
@@ -501,6 +558,7 @@ Panel3DDialog::Panel3DDialog(Diagram *diagram, QWidget *parent) :
 	row->addWidget(top);
 	row->addWidget(iso);
 	row->addWidget(refresh);
+	row->addWidget(m_enclosure);
 	row->addStretch();
 	row->addWidget(buttons);
 
@@ -524,7 +582,7 @@ Panel3DDialog::Panel3DDialog(Diagram *diagram, QWidget *parent) :
 void Panel3DDialog::reload()
 {
 	QStringList notes;
-	const QList<Panel3DBody> bodies = build(m_diagram, &notes);
+	const QList<Panel3DBody> bodies = build(m_diagram, &notes, !m_enclosure || m_enclosure->isChecked());
 	m_view->setBodies(bodies);
 	QString text;
 	if (bodies.isEmpty())

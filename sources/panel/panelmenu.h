@@ -61,6 +61,7 @@ class PanelMenu : public QMenu
 		QetShapeItem *addShape(Diagram *d, const QRectF &scene_rect, bool ellipse,
 							   const PanelData &data, const QString &undo_text);
 
+		void insertEnclosure();
 		void insertSurface();
 		void insertProfile(PanelData::Role role);
 		void insertCutout();

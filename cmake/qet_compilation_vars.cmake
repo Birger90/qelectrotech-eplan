@@ -1117,6 +1117,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/panel/panel3dview.h
   ${QET_DIR}/sources/panel/panelmenu.cpp
   ${QET_DIR}/sources/panel/panelmenu.h
+  ${QET_DIR}/sources/panel/panelimport.cpp
+  ${QET_DIR}/sources/panel/panelimport.h
   ${QET_DIR}/sources/cable/cableoverviewdialog.h
   ${QET_DIR}/sources/cable/cablemanager.cpp
   ${QET_DIR}/sources/cable/cablemanager.h

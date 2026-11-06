@@ -18,6 +18,7 @@
 #include "paneldata.h"
 
 #include <QDomDocument>
+#include <QtMath>
 
 namespace {
 QString num(double v) {return QString::number(v, 'g', 10);}
@@ -109,13 +110,14 @@ QString PanelData::roleName(Role role)
 		case CProfile: return QStringLiteral("c_profile");
 		case Cutout:   return QStringLiteral("cutout");
 		case Keepout:  return QStringLiteral("keepout");
+		case Enclosure: return QStringLiteral("enclosure");
 		default:       return QString();
 	}
 }
 
 PanelData::Role PanelData::roleFromName(const QString &name)
 {
-	for (Role r : {Surface, DinRail, Duct, CProfile, Cutout, Keepout})
+	for (Role r : {Surface, DinRail, Duct, CProfile, Cutout, Keepout, Enclosure})
 		if (roleName(r) == name) return r;
 	return None;
 }
@@ -172,6 +174,11 @@ QDomElement PanelData::toXml(QDomDocument &document) const
 			e.setAttribute(QStringLiteral("thickness"), num(thickness));
 			e.setAttribute(QStringLiteral("machined"), machined ? 1 : 0);
 			e.setAttribute(QStringLiteral("origin"), origin);
+			if (!outline.isEmpty()) {
+				QDomElement o = outline.toXml(document);
+				o.setAttribute(QStringLiteral("machined"), outline_machined ? 1 : 0);
+				e.appendChild(o);
+			}
 			break;
 		case DinRail:
 		case Duct:
@@ -186,6 +193,12 @@ QDomElement PanelData::toXml(QDomDocument &document) const
 			break;
 		case Cutout:
 			e.appendChild(cutout.toXml(document, QStringLiteral("cutout")));
+			break;
+		case Enclosure:
+				//the front view of the enclosure and its depth
+			e.setAttribute(QStringLiteral("depth"), num(profile_depth));
+			e.setAttribute(QStringLiteral("mm_per_unit"), num(mm_per_unit));
+			if (!outline.isEmpty()) e.appendChild(outline.toXml(document));
 			break;
 		default:
 			break;
@@ -214,5 +227,91 @@ PanelData PanelData::fromXml(const QDomElement &e)
 	d.zero_from_end = e.attribute(QStringLiteral("zero_from_end")) == QLatin1String("1");
 	d.fixing = PanelHole::fromXml(e.firstChildElement(QStringLiteral("fixing")));
 	d.cutout = PanelHole::fromXml(e.firstChildElement(QStringLiteral("cutout")));
+	const QDomElement o = e.firstChildElement(QStringLiteral("outline"));
+	d.outline = PanelOutline::fromXml(o);
+	d.outline_machined = o.attribute(QStringLiteral("machined"), QStringLiteral("1")) != QLatin1String("0");
 	return d;
+}
+
+/* ------------------------------------------------------------------ */
+
+PanelOutline PanelOutline::stretched(double w, double h) const
+{
+	if (isEmpty() || width <= 0 || height <= 0) return *this;
+	const double dx = w - width, dy = h - height;
+	const double mx = width / 2, my = height / 2;
+	auto move = [&](const QPointF &p) {
+		return QPointF(p.x() + (p.x() > mx ? dx : 0), p.y() + (p.y() > my ? dy : 0));
+	};
+	PanelOutline out;
+	out.width = w;
+	out.height = h;
+	out.name = name;
+	for (const QLineF &l : lines) out.lines << QLineF(move(l.p1()), move(l.p2()));
+	for (const Arc &a : arcs) {
+		Arc b = a;
+		b.centre = move(a.centre);
+		out.arcs << b;
+	}
+	return out;
+}
+
+QList<PanelOutline::Arc> PanelOutline::circles() const
+{
+	QList<Arc> out;
+	for (const Arc &a : arcs)
+		if (a.isCircle()) out << a;
+	return out;
+}
+
+QDomElement PanelOutline::toXml(QDomDocument &document) const
+{
+	QDomElement e = document.createElement(QStringLiteral("outline"));
+	e.setAttribute(QStringLiteral("width"), num(width));
+	e.setAttribute(QStringLiteral("height"), num(height));
+	if (!name.isEmpty()) e.setAttribute(QStringLiteral("name"), name);
+	for (const QLineF &l : lines) {
+		QDomElement x = document.createElement(QStringLiteral("line"));
+		x.setAttribute(QStringLiteral("x1"), num(l.x1()));
+		x.setAttribute(QStringLiteral("y1"), num(l.y1()));
+		x.setAttribute(QStringLiteral("x2"), num(l.x2()));
+		x.setAttribute(QStringLiteral("y2"), num(l.y2()));
+		e.appendChild(x);
+	}
+	for (const Arc &a : arcs) {
+		QDomElement x = document.createElement(a.isCircle() ? QStringLiteral("circle") : QStringLiteral("arc"));
+		x.setAttribute(QStringLiteral("x"), num(a.centre.x()));
+		x.setAttribute(QStringLiteral("y"), num(a.centre.y()));
+		x.setAttribute(QStringLiteral("r"), num(a.r));
+		if (!a.isCircle()) {
+			x.setAttribute(QStringLiteral("a0"), num(a.a0));
+			x.setAttribute(QStringLiteral("a1"), num(a.a1));
+		}
+		e.appendChild(x);
+	}
+	return e;
+}
+
+PanelOutline PanelOutline::fromXml(const QDomElement &e)
+{
+	PanelOutline o;
+	if (e.isNull()) return o;
+	o.width = dbl(e, "width");
+	o.height = dbl(e, "height");
+	o.name = e.attribute(QStringLiteral("name"));
+	for (QDomElement x = e.firstChildElement(); !x.isNull(); x = x.nextSiblingElement()) {
+		if (x.tagName() == QLatin1String("line"))
+			o.lines << QLineF(dbl(x, "x1"), dbl(x, "y1"), dbl(x, "x2"), dbl(x, "y2"));
+		else if (x.tagName() == QLatin1String("circle") || x.tagName() == QLatin1String("arc")) {
+			Arc a;
+			a.centre = QPointF(dbl(x, "x"), dbl(x, "y"));
+			a.r = dbl(x, "r");
+			if (x.tagName() == QLatin1String("arc")) {
+				a.a0 = dbl(x, "a0");
+				a.a1 = dbl(x, "a1");
+			}
+			o.arcs << a;
+		}
+	}
+	return o;
 }

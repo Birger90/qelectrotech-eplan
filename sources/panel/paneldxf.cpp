@@ -34,6 +34,18 @@ struct Writer
 	void pair(int code, double value) {pair(code, f(value));}
 	void pair(int code, int value) {pair(code, QString::number(value));}
 
+	void line(const QString &layer, QPointF a, QPointF b)
+	{
+		pair(0, QStringLiteral("LINE")); pair(8, layer);
+		pair(10, a.x()); pair(20, a.y()); pair(30, 0.0);
+		pair(11, b.x()); pair(21, b.y()); pair(31, 0.0);
+	}
+	void arc(const QString &layer, QPointF c, double r, double a0, double a1)
+	{
+		pair(0, QStringLiteral("ARC")); pair(8, layer);
+		pair(10, c.x()); pair(20, c.y()); pair(30, 0.0); pair(40, r);
+		pair(50, a0); pair(51, a1);
+	}
 	void circle(const QString &layer, QPointF c, double r)
 	{
 		pair(0, QStringLiteral("CIRCLE")); pair(8, layer);
@@ -144,7 +156,14 @@ bool PanelDxf::write(const PanelLayout &layout, const QString &path,
 
 		//ENTITIES
 	w.pair(0, QStringLiteral("SECTION")); w.pair(2, QStringLiteral("ENTITIES"));
-	w.polyline(QStringLiteral("FELD"), {QPointF(0, 0), QPointF(W, 0), QPointF(W, H), QPointF(0, H)});
+		//the field: the contour of the template plate, else its rectangle
+	const PanelOutline outline = layout.outline();
+	if (outline.isEmpty()) {
+		w.polyline(QStringLiteral("FELD"), {QPointF(0, 0), QPointF(W, 0), QPointF(W, H), QPointF(0, H)});
+	} else {
+		for (const QLineF &l : outline.lines) w.line(QStringLiteral("FELD"), l.p1(), l.p2());
+		for (const PanelOutline::Arc &a : outline.arcs) w.arc(QStringLiteral("FELD"), a.centre, a.r, a.a0, a.a1);
+	}
 
 	for (const PanelHole &h : holes)
 	{

@@ -668,7 +668,13 @@ QPainterPath QetShapeItem::shape() const
 	QPainterPathStroker pps;
 	pps.setWidth(m_hovered? m_pen.widthF()+10 : m_pen.widthF());
 	pps.setJoinStyle(Qt::RoundJoin);
-	return pps.createStroke(outline());
+	QPainterPath path = pps.createStroke(outline());
+		//A rail, duct, cut-out or keep-out area of a cabinet layout is
+		//picked over its whole area, like a part in EPLAN; a mounting
+		//surface only at its edge, so what lies on it stays reachable
+	if (!m_panel.isNull() && m_panel.role != PanelData::Surface && m_panel.role != PanelData::Enclosure)
+		path = path.united(outline());
+	return path;
 }
 
 /**
@@ -703,7 +709,58 @@ void QetShapeItem::paint(
 		painter -> restore  ();
 	}
 
-	painter->drawPath(outline());
+		//A mounting plate made from a template shows the template's
+		//contour, stretched to its size; the rectangle only as a hint
+	if ((m_panel.role == PanelData::Surface || m_panel.role == PanelData::Enclosure)
+		&& !m_panel.outline.isEmpty() && m_shapeType == Rectangle && m_panel.mm_per_unit > 0)
+	{
+		const QRectF r = rect().normalized();
+		const double k = m_panel.mm_per_unit;
+		const PanelOutline o = m_panel.outline.stretched(r.width() * k, r.height() * k);
+		auto map = [&](const QPointF &p) {return QPointF(r.left() + p.x() / k, r.bottom() - p.y() / k);};
+		painter->save();
+		QPen hint(QColor(160, 160, 160));
+		hint.setStyle(Qt::DotLine);
+		hint.setCosmetic(true);
+		painter->setPen(hint);
+		painter->setBrush(m_brush);
+		painter->drawRect(r);
+		painter->setPen(m_pen);
+		for (const QLineF &l : o.lines) painter->drawLine(map(l.p1()), map(l.p2()));
+		for (const PanelOutline::Arc &a : o.arcs) {
+			const QPointF c = map(a.centre);
+			const double rr = a.r / k;
+			const QRectF box(c.x() - rr, c.y() - rr, 2 * rr, 2 * rr);
+			if (a.isCircle()) {painter->drawEllipse(box); continue;}
+			double span = a.a1 - a.a0;
+			while (span <= 0) span += 360;
+			painter->drawArc(box, qRound(a.a0 * 16), qRound(span * 16));
+		}
+		painter->restore();
+	}
+	else
+		painter->drawPath(outline());
+
+		//Rails, ducts and profiles show their designation in the middle,
+		//along their length, like the numbers of EPLAN's mounting layout
+	if ((m_panel.role == PanelData::DinRail || m_panel.role == PanelData::Duct
+		 || m_panel.role == PanelData::CProfile) && !m_panel.designation.isEmpty()
+		&& m_shapeType == Rectangle)
+	{
+		const QRectF r = rect().normalized();
+		const bool vertical = r.height() > r.width();
+		painter->save();
+		painter->translate(r.center());
+		if (vertical) painter->rotate(-90);
+		QFont font = painter->font();
+		font.setPixelSize(qBound(4, int((vertical ? r.width() : r.height()) * 0.55), 12));
+		painter->setFont(font);
+		painter->setPen(QColor(20, 40, 140));
+		const double len = vertical ? r.height() : r.width();
+		const double wid = vertical ? r.width() : r.height();
+		painter->drawText(QRectF(-len / 2, -wid / 2, len, wid), Qt::AlignCenter, m_panel.designation);
+		painter->restore();
+	}
 
 	// Segment midpoint markers: a small, distinct diamond at the middle
 	// of every segment -- straight or already curved -- shown only in

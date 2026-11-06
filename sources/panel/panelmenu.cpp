@@ -19,6 +19,7 @@
 
 #include "panel3dview.h"
 #include "panelcommands.h"
+#include "panelimport.h"
 #include "paneldxf.h"
 #include "panellayout.h"
 #include "panelstep.h"
@@ -193,6 +194,8 @@ class PanelHoleOverlay : public QGraphicsObject
 		}
 
 		QRectF boundingRect() const override {return m_rect;}
+			// never under the mouse: the folio's own items stay clickable
+		QPainterPath shape() const override {return QPainterPath();}
 
 		void paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *) override
 		{
@@ -299,7 +302,7 @@ QDomElement panelDeviceDefinition(QDomDocument &doc, const QString &label, const
 
 		// the designation, turned upright when the device is narrow like
 		// a terminal or a circuit breaker
-	const bool upright = h > w * 1.5;
+	const bool upright = h > w * 1.5 && label.size() * 6 + 4 > w;
 	QDomElement text = doc.createElement(QStringLiteral("dynamic_text"));
 	text.setAttribute(QStringLiteral("x"), upright ? w / 2 + 4 : 2);
 	text.setAttribute(QStringLiteral("y"), upright ? 2 : h / 2 - 6);
@@ -412,6 +415,9 @@ PanelMenu::PanelMenu(QETDiagramEditor *editor) :
 		m_edit_actions << a;
 		return a;
 	};
+	add(tr("Insert enclosure..."),
+		tr("An enclosure of a manufacturer (e.g. Rittal from the EPLAN Data Portal) with its mounting plate"),
+		&PanelMenu::insertEnclosure);
 	add(tr("Insert mounting surface..."),
 		tr("A mounting plate, door or wall of the given size, drawn to scale on this folio"),
 		&PanelMenu::insertSurface);
@@ -492,12 +498,20 @@ QetShapeItem *PanelMenu::addShape(Diagram *d, const QRectF &r, bool ellipse,
 	QPen pen = shape->pen();
 	if (data.role == PanelData::Keepout) pen.setStyle(Qt::DashDotLine);
 	shape->setPen(pen);
-	if (data.role == PanelData::Duct)
-		shape->setBrush(QBrush(QColor(90, 90, 90), Qt::BDiagPattern));
-	else if (data.role == PanelData::DinRail || data.role == PanelData::CProfile)
-		shape->setBrush(QBrush(QColor(90, 90, 90), Qt::Dense6Pattern));
+		//colours of the EPLAN Pro Panel mounting layout: ducts teal, DIN
+		//rails orange, the plate light grey
+	if (data.role == PanelData::Surface)
+		shape->setBrush(QColor(228, 228, 228));
+	else if (data.role == PanelData::Duct)
+		shape->setBrush(QColor(72, 160, 160));
+	else if (data.role == PanelData::DinRail)
+		shape->setBrush(QColor(240, 140, 50));
+	else if (data.role == PanelData::CProfile)
+		shape->setBrush(QColor(170, 170, 170));
 	else if (data.role == PanelData::Keepout)
 		shape->setBrush(QBrush(QColor(200, 0, 0), Qt::DiagCrossPattern));
+	else if (data.role == PanelData::Cutout)
+		shape->setBrush(QColor(255, 255, 255));
 	shape->setPanelData(data);
 	d->addItem(shape);
 	auto *cmd = new QUndoCommand(undo_text);
@@ -510,6 +524,138 @@ QetShapeItem *PanelMenu::addShape(Diagram *d, const QRectF &r, bool ellipse,
 
 /* ------------------------------------------------------------------ */
 
+/**
+	@brief PanelMenu::insertEnclosure
+	EPLAN Pro Panel "Insert > Enclosure": the enclosure of a manufacturer
+	with its mounting plate. The enclosure comes from the EPLAN Data
+	Portal (its panel layout views: front A, mounting plate B, ...); on
+	the folio it is drawn as its front view at a scale that fits, the
+	mounting plate inside it, ready for rails, ducts and devices. A
+	bought plate: its holes are there already and keep drills away.
+*/
+void PanelMenu::insertEnclosure()
+{
+	Diagram *d = diagram();
+	if (!d) return;
+	QDialog dialog(m_editor);
+	dialog.setWindowTitle(tr("Insert enclosure"));
+	auto *form = new QFormLayout;
+	auto *list = new QComboBox(&dialog);
+	auto fill = [list](const QString &select) {
+		list->clear();
+		for (const QString &f : PanelImport::enclosureFolders()) list->addItem(QFileInfo(f).fileName(), f);
+		const int i = list->findData(select);
+		if (i >= 0) list->setCurrentIndex(i);
+	};
+	fill(QString());
+	auto *portal = new QPushButton(tr("Data Portal…"), &dialog);
+	portal->setToolTip(tr("Choose an enclosure (e.g. Rittal TS 8, VX 25, AX) in the EPLAN Data Portal"));
+	auto *row = new QHBoxLayout;
+	row->addWidget(list, 1);
+	row->addWidget(portal);
+	auto *info = new QLabel(&dialog);
+	info->setWordWrap(true);
+	auto *designation = new QLineEdit(QStringLiteral("+S1"), &dialog);
+	auto *plate_name = new QLineEdit(QStringLiteral("-MP1"), &dialog);
+	auto *with_plate = new QCheckBox(tr("With its mounting plate"), &dialog);
+	with_plate->setChecked(true);
+	auto *machined = new QCheckBox(tr("Make the holes of the mounting plate too (plate made in house)"), &dialog);
+	auto *plate_w = mmBox(0, 5000, 1, &dialog);
+	auto *plate_h = mmBox(0, 5000, 1, &dialog);
+	auto *plate_size = new QHBoxLayout;
+	plate_size->addWidget(plate_w);
+	plate_size->addWidget(new QLabel(QStringLiteral("x"), &dialog));
+	plate_size->addWidget(plate_h);
+	form->addRow(tr("Enclosure"), row);
+	form->addRow(QString(), info);
+	form->addRow(tr("Designation"), designation);
+	form->addRow(QString(), with_plate);
+	form->addRow(tr("Mounting plate"), plate_name);
+	form->addRow(tr("Plate size"), plate_size);
+	form->addRow(QString(), machined);
+
+	PanelImport::Enclosure enclosure;
+	auto load = [&]() {
+		enclosure = PanelImport::Enclosure();
+		const QString folder = list->currentData().toString();
+		if (folder.isEmpty()) {
+			info->setText(tr("No enclosure yet: choose one in the Data Portal."));
+		} else {
+			enclosure = PanelImport::readEnclosure(folder);
+			QString text = enclosure.description;
+			text += QStringLiteral("\n") + tr("W x H x D: %1 x %2 x %3 mm").arg(num(enclosure.width), num(enclosure.height), num(enclosure.depth));
+			if (!enclosure.plate.isEmpty()) {
+				text += QStringLiteral("\n") + tr("Mounting plate %1 x %2 mm").arg(num(enclosure.plate.width), num(enclosure.plate.height));
+				plate_w->setValue(enclosure.plate.width);
+				plate_h->setValue(enclosure.plate.height);
+			} else {
+					//Rittal: the plate of a TS 8 / VX enclosure is 101 mm narrower
+					//and 104 mm lower than the enclosure -- an estimate to check
+				text += QStringLiteral("\n") + tr("The data hold no mounting plate: its size is estimated "
+												  "(width - 101, height - 104 mm). Please check.");
+				plate_w->setValue(qMax(0.0, enclosure.width - 101));
+				plate_h->setValue(qMax(0.0, enclosure.height - 104));
+			}
+			info->setText(text);
+		}
+		plate_w->setEnabled(enclosure.plate.isEmpty());
+		plate_h->setEnabled(enclosure.plate.isEmpty());
+		machined->setEnabled(!enclosure.plate.isEmpty());
+	};
+	connect(list, &QComboBox::currentIndexChanged, &dialog, load);
+	connect(portal, &QPushButton::clicked, &dialog, [&]() {
+		PanelTemplateDialog dp(&dialog, true);
+		if (dp.exec() == QDialog::Accepted && !dp.templateFile().isEmpty()) {
+			fill(dp.templateFile());
+			load();
+		}
+	});
+	load();
+	auto *box = new QVBoxLayout(&dialog);
+	box->addLayout(form);
+	box->addWidget(okCancel(&dialog));
+	if (dialog.exec() != QDialog::Accepted || enclosure.isNull()) return;
+
+		// a scale at which the front view fits the folio
+	const QRectF area = d->border_and_titleblock.insideBorderRect().adjusted(20, 20, -20, -20);
+	const QList<double> scales = {1.0, 2.0, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0, 20.0, 25.0, 50.0};
+	double n = scales.last();
+	for (double cand : scales) {
+		const double kk = mmPerUnitForScale(cand);
+		if (enclosure.front.width / kk <= area.width() && enclosure.front.height / kk <= area.height()) {n = cand; break;}
+	}
+	const double k = mmPerUnitForScale(n);
+	const QString type = enclosure.name.section(QStringLiteral(" - "), 0, 0);
+
+	PanelData enc;
+	enc.role = PanelData::Enclosure;
+	enc.designation = designation->text().trimmed();
+	enc.manufacturer = QStringLiteral("Rittal");
+	enc.article = type.contains(QLatin1Char('.')) ? type.section(QLatin1Char('.'), 1) : type;
+	enc.mm_per_unit = k;
+	enc.profile_depth = enclosure.depth;
+	enc.outline = enclosure.front;
+	const QRectF enc_rect(area.topLeft(), QSizeF(enclosure.front.width / k, enclosure.front.height / k));
+	QetShapeItem *enc_shape = addShape(d, enc_rect, false, enc, tr("insert enclosure %1").arg(enc.designation));
+	enc_shape->setBrush(Qt::NoBrush);
+
+	if (with_plate->isChecked() && plate_w->value() > 0 && plate_h->value() > 0) {
+		PanelData plate = PanelData::defaults(PanelData::Surface);
+		plate.designation = plate_name->text().trimmed();
+		plate.manufacturer = enc.manufacturer;
+		plate.mm_per_unit = k;
+		if (!enclosure.plate.isEmpty()) {
+			plate.outline = enclosure.plate;
+			plate.outline_machined = machined->isChecked();
+		}
+			// in the middle of the enclosure's front
+		const QSizeF size(plate_w->value() / k, plate_h->value() / k);
+		const QRectF r(enc_rect.center() - QPointF(size.width() / 2, size.height() / 2), size);
+		addShape(d, r, false, plate, tr("insert mounting surface %1").arg(plate.designation));
+	}
+	refreshHoleView();
+}
+
 void PanelMenu::insertSurface()
 {
 	Diagram *d = diagram();
@@ -517,13 +663,41 @@ void PanelMenu::insertSurface()
 	QDialog dialog(m_editor);
 	dialog.setWindowTitle(tr("Insert mounting surface"));
 	auto *form = new QFormLayout;
+
+		// what the plate is made from: sizes only, sizes with the corners
+		// of a template (holes, radii, notches), or the template as it is
+	auto *basis = new QComboBox(&dialog);
+	basis->addItem(tr("Sizes only (plain plate)"));
+	basis->addItem(tr("Sizes, holes and edges like the template"));
+	basis->addItem(tr("Template plate as it is"));
+	auto *templ = new QComboBox(&dialog);
+	auto fill_templates = [templ](const QString &select) {
+		templ->clear();
+		for (const QString &f : PanelImport::templateFiles()) templ->addItem(PanelImport::templateName(f), f);
+		const int i = templ->findData(select);
+		if (i >= 0) templ->setCurrentIndex(i);
+	};
+	fill_templates(QString());
+	auto *from_portal = new QPushButton(tr("Data Portal…"), &dialog);
+	from_portal->setToolTip(tr("Load a manufacturer's mounting plate (e.g. Rittal) as template"));
+	auto *from_file = new QPushButton(tr("DXF file…"), &dialog);
+	from_file->setToolTip(tr("Use the DXF of a plate as template"));
+	auto *templ_row = new QHBoxLayout;
+	templ_row->addWidget(templ, 1);
+	templ_row->addWidget(from_portal);
+	templ_row->addWidget(from_file);
+	auto *templ_info = new QLabel(&dialog);
+	auto *machined = new QCheckBox(tr("The plate is made in house: make the holes and edges of the template too"), &dialog);
+	machined->setChecked(true);
+	machined->setToolTip(tr("Off: the plate is bought with its holes; they become keep-out areas"));
+
 	auto *designation = new QLineEdit(QStringLiteral("-MP1"), &dialog);
 	auto *w = mmBox(500, 5000, 1, &dialog);
 	auto *h = mmBox(700, 5000, 1, &dialog);
 	auto *t = mmBox(3, 50, 1, &dialog);
 	auto *scale = new QComboBox(&dialog);
 	scale->addItem(tr("Fit to the folio"), 0.0);
-	const QList<double> scales = {1.0, 2.0, 2.5, 5.0, 10.0, 20.0, 25.0, 50.0};
+	const QList<double> scales = {1.0, 2.0, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0, 20.0, 25.0, 50.0};
 	for (double n : scales) scale->addItem(QStringLiteral("1:%1").arg(num(n)), n);
 	scale->setToolTip(tr("Nominal scale when the folio is printed on A4"));
 	auto *origin = new QComboBox(&dialog);
@@ -531,6 +705,10 @@ void PanelMenu::insertSurface()
 	auto *article = new QLineEdit(&dialog);
 	auto *manufacturer = new QLineEdit(&dialog);
 	auto *step = new QLineEdit(&dialog);
+	form->addRow(tr("Made from"), basis);
+	form->addRow(tr("Template"), templ_row);
+	form->addRow(QString(), templ_info);
+	form->addRow(QString(), machined);
 	form->addRow(tr("Designation"), designation);
 	form->addRow(tr("Width"), w);
 	form->addRow(tr("Height"), h);
@@ -540,6 +718,63 @@ void PanelMenu::insertSurface()
 	form->addRow(tr("Manufacturer"), manufacturer);
 	form->addRow(tr("Article number"), article);
 	form->addRow(tr("STEP model"), stepPicker(step, &dialog));
+
+	PanelOutline outline;
+	auto load_template = [&]() {
+		outline = PanelOutline();
+		const QString file = templ->currentData().toString();
+		if (!file.isEmpty()) {
+			QString error;
+			outline = PanelImport::readDxfFile(file, &error);
+			if (outline.isEmpty()) templ_info->setText(error);
+			else templ_info->setText(tr("%1 x %2 mm, %n holes", nullptr, int(outline.circles().size()))
+									 .arg(num(outline.width), num(outline.height)));
+		} else {
+			templ_info->setText(tr("No template yet: load one from the Data Portal or a DXF file."));
+		}
+		const bool use = basis->currentIndex() > 0;
+		templ->setEnabled(use);
+		from_portal->setEnabled(use);
+		from_file->setEnabled(use);
+		machined->setEnabled(use);
+		templ_info->setEnabled(use);
+		const bool as_is = basis->currentIndex() == 2 && !outline.isEmpty();
+		w->setEnabled(!as_is);
+		h->setEnabled(!as_is);
+		if (use && !outline.isEmpty() && (as_is || (w->value() == 500 && h->value() == 700))) {
+			w->setValue(outline.width);
+			h->setValue(outline.height);
+		}
+			// a Data Portal template is named "<type> - <description>"
+		if (use && !outline.isEmpty() && article->text().isEmpty()) {
+			const QString type = outline.name.section(QStringLiteral(" - "), 0, 0);
+			if (type.contains(QLatin1Char('.'))) article->setText(type.section(QLatin1Char('.'), 1));
+		}
+	};
+	connect(basis, &QComboBox::currentIndexChanged, &dialog, load_template);
+	connect(templ, &QComboBox::currentIndexChanged, &dialog, load_template);
+	connect(from_portal, &QPushButton::clicked, &dialog, [&]() {
+		PanelTemplateDialog portal(&dialog);
+		if (portal.exec() == QDialog::Accepted && !portal.templateFile().isEmpty()) {
+			fill_templates(portal.templateFile());
+			if (manufacturer->text().isEmpty()) manufacturer->setText(QStringLiteral("Rittal"));
+			load_template();
+		}
+	});
+	connect(from_file, &QPushButton::clicked, &dialog, [&]() {
+		const QString file = QFileDialog::getOpenFileName(&dialog, tr("DXF of a mounting plate"), QString(),
+														  tr("DXF files (*.dxf *.DXF)"));
+		if (file.isEmpty()) return;
+		QFile f(file);
+		if (!f.open(QIODevice::ReadOnly)) return;
+		QString error;
+		const QString stored = PanelImport::saveTemplate(QFileInfo(file).completeBaseName(), f.readAll(), &error);
+		if (stored.isEmpty()) {templ_info->setText(error); return;}
+		fill_templates(stored);
+		load_template();
+	});
+	load_template();
+
 	auto *layout = new QVBoxLayout(&dialog);
 	layout->addLayout(form);
 	layout->addWidget(okCancel(&dialog));
@@ -563,6 +798,10 @@ void PanelMenu::insertSurface()
 	data.article = article->text().trimmed();
 	data.manufacturer = manufacturer->text().trimmed();
 	data.step_file = step->text().trimmed();
+	if (basis->currentIndex() > 0 && !outline.isEmpty()) {
+		data.outline = outline;
+		data.outline_machined = machined->isChecked();
+	}
 	const QSizeF size(w->value() / data.mm_per_unit, h->value() / data.mm_per_unit);
 	addShape(d, QRectF(area.topLeft(), size), false, data,
 			 tr("insert mounting surface %1").arg(data.designation));

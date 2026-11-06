@@ -110,7 +110,7 @@ class Panel3DDialog : public QDialog
 
 	public:
 		explicit Panel3DDialog(Diagram *diagram, QWidget *parent = nullptr);
-		static QList<Panel3DBody> build(Diagram *diagram, QStringList *notes);
+		static QList<Panel3DBody> build(Diagram *diagram, QStringList *notes, bool enclosure = true);
 
 	private:
 		void reload();
@@ -118,6 +118,7 @@ class Panel3DDialog : public QDialog
 		QPointer<Diagram> m_diagram;
 		Panel3DWidget *m_view = nullptr;
 		QLabel *m_status = nullptr;
+		class QCheckBox *m_enclosure = nullptr;
 };
 
 #endif // PANEL3DVIEW_H

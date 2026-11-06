@@ -29449,6 +29449,10 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
         <source>(built without STEP support)</source>
         <translation>(ohne STEP-Unterstützung gebaut)</translation>
     </message>
+    <message>
+        <source>Enclosure</source>
+        <translation>Gehäuse</translation>
+    </message>
 </context>
 <context>
     <name>Panel3DWidget</name>
@@ -29977,6 +29981,184 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <message>
         <source>Errors:</source>
         <translation>Fehler:</translation>
+    </message>
+    <message>
+        <source>Sizes only (plain plate)</source>
+        <translation>Nur Maße (glatte Platte)</translation>
+    </message>
+    <message>
+        <source>Sizes, holes and edges like the template</source>
+        <translation>Maße, Löcher und Kanten wie die Vorlage</translation>
+    </message>
+    <message>
+        <source>Template plate as it is</source>
+        <translation>Vorlagenplatte unverändert</translation>
+    </message>
+    <message>
+        <source>Data Portal…</source>
+        <translation>Data Portal…</translation>
+    </message>
+    <message>
+        <source>Load a manufacturer&apos;s mounting plate (e.g. Rittal) as template</source>
+        <translation>Montageplatte eines Herstellers (z. B. Rittal) als Vorlage laden</translation>
+    </message>
+    <message>
+        <source>DXF file…</source>
+        <translation>DXF-Datei…</translation>
+    </message>
+    <message>
+        <source>Use the DXF of a plate as template</source>
+        <translation>Die DXF einer Platte als Vorlage nehmen</translation>
+    </message>
+    <message>
+        <source>The plate is made in house: make the holes and edges of the template too</source>
+        <translation>Platte wird selbst gefertigt: Löcher und Kanten der Vorlage mitfertigen</translation>
+    </message>
+    <message>
+        <source>Off: the plate is bought with its holes; they become keep-out areas</source>
+        <translation>Aus: die Platte wird mit ihren Löchern gekauft; sie werden Sperrflächen</translation>
+    </message>
+    <message>
+        <source>Made from</source>
+        <translation>Grundlage</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>Vorlage</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1 x %2 mm, %n holes</source>
+        <translation>
+            <numerusform>%1 x %2 mm, %n Loch</numerusform>
+            <numerusform>%1 x %2 mm, %n Löcher</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>No template yet: load one from the Data Portal or a DXF file.</source>
+        <translation>Noch keine Vorlage: aus dem Data Portal oder einer DXF-Datei laden.</translation>
+    </message>
+    <message>
+        <source>DXF of a mounting plate</source>
+        <translation>DXF einer Montageplatte</translation>
+    </message>
+    <message>
+        <source>DXF files (*.dxf *.DXF)</source>
+        <translation>DXF-Dateien (*.dxf *.DXF)</translation>
+    </message>
+    <message>
+        <source>Insert enclosure...</source>
+        <translation>Schaltschrank einfügen…</translation>
+    </message>
+    <message>
+        <source>An enclosure of a manufacturer (e.g. Rittal from the EPLAN Data Portal) with its mounting plate</source>
+        <translation>Schaltschrank eines Herstellers (z. B. Rittal aus dem EPLAN Data Portal) mit seiner Montageplatte</translation>
+    </message>
+    <message>
+        <source>Insert enclosure</source>
+        <translation>Schaltschrank einfügen</translation>
+    </message>
+    <message>
+        <source>Choose an enclosure (e.g. Rittal TS 8, VX 25, AX) in the EPLAN Data Portal</source>
+        <translation>Schaltschrank im EPLAN Data Portal wählen (z. B. Rittal TS 8, VX 25, AX)</translation>
+    </message>
+    <message>
+        <source>With its mounting plate</source>
+        <translation>Mit seiner Montageplatte</translation>
+    </message>
+    <message>
+        <source>Make the holes of the mounting plate too (plate made in house)</source>
+        <translation>Löcher der Montageplatte mitfertigen (Platte wird selbst gefertigt)</translation>
+    </message>
+    <message>
+        <source>Enclosure</source>
+        <translation>Schaltschrank</translation>
+    </message>
+    <message>
+        <source>Mounting plate</source>
+        <translation>Montageplatte</translation>
+    </message>
+    <message>
+        <source>No enclosure yet: choose one in the Data Portal.</source>
+        <translation>Noch kein Schaltschrank: einen im Data Portal wählen.</translation>
+    </message>
+    <message>
+        <source>W x H x D: %1 x %2 x %3 mm</source>
+        <translation>B x H x T: %1 x %2 x %3 mm</translation>
+    </message>
+    <message>
+        <source>Mounting plate %1 x %2 mm</source>
+        <translation>Montageplatte %1 x %2 mm</translation>
+    </message>
+    <message>
+        <source>The data hold no mounting plate.</source>
+        <translation>Die Daten enthalten keine Montageplatte.</translation>
+    </message>
+    <message>
+        <source>insert enclosure %1</source>
+        <translation>Schaltschrank %1 einfügen</translation>
+    </message>
+    <message>
+        <source>Plate size</source>
+        <translation>Plattenmaß</translation>
+    </message>
+    <message>
+        <source>The data hold no mounting plate: its size is estimated (width - 101, height - 104 mm). Please check.</source>
+        <translation>Die Daten enthalten keine Montageplatte: ihr Maß ist geschätzt (Breite − 101, Höhe − 104 mm). Bitte prüfen.</translation>
+    </message>
+</context>
+<context>
+    <name>PanelTemplateDialog</name>
+    <message>
+        <source>Mounting plate from the EPLAN Data Portal</source>
+        <translation>Montageplatte aus dem EPLAN Data Portal</translation>
+    </message>
+    <message>
+        <source>Short name of the manufacturer (RIT = Rittal), empty: all</source>
+        <translation>Kurzname des Herstellers (RIT = Rittal), leer: alle</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <translation>Suchen</translation>
+    </message>
+    <message>
+        <source>Manufacturer</source>
+        <translation>Hersteller</translation>
+    </message>
+    <message>
+        <source>Order number</source>
+        <translation>Bestellnummer</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Typ</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation>Beschreibung</translation>
+    </message>
+    <message>
+        <source>Use as template</source>
+        <translation>Als Vorlage übernehmen</translation>
+    </message>
+    <message>
+        <source>Searching…</source>
+        <translation>Suche…</translation>
+    </message>
+    <message>
+        <source>%1 of %2 parts. Only parts with DXF data are listed.</source>
+        <translation>%1 von %2 Teilen. Nur Teile mit DXF-Daten werden gezeigt.</translation>
+    </message>
+    <message>
+        <source>The download needs your EPLAN Data Portal token: enter it once in Part import &gt; From the EPLAN Data Portal (&quot;Remember the token&quot;).</source>
+        <translation>Der Download braucht dein EPLAN-Data-Portal-Token: einmal unter Bauteil-Import &gt; Aus dem EPLAN Data Portal eintragen („Token merken“).</translation>
+    </message>
+    <message>
+        <source>Downloading %1…</source>
+        <translation>Lade %1…</translation>
+    </message>
+    <message>
+        <source>Enclosure from the EPLAN Data Portal</source>
+        <translation>Schaltschrank aus dem EPLAN Data Portal</translation>
     </message>
 </context>
 </TS>

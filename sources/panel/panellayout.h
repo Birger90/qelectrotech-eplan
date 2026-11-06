@@ -93,6 +93,9 @@ class PanelLayout
 		QList<PanelHole> holes() const {return m_holes;}
 		QList<QRectF> keepouts() const {return m_keepouts;}
 		QStringList warnings() const {return m_warnings;}
+			/// the template contour without its round holes, in the
+			/// surface's coordinates (zero point and direction as set)
+		PanelOutline outline() const {return m_outline;}
 
 			///Cut list: length-variable parts by article with their lengths
 		QStringList cutList() const;
@@ -113,6 +116,7 @@ class PanelLayout
 		QList<PanelHole> m_holes;
 		QList<QRectF> m_keepouts;      ///< mm
 		QStringList m_warnings;
+		PanelOutline m_outline;
 };
 
 #endif // PANELLAYOUT_H

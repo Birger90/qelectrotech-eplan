@@ -238,9 +238,13 @@ void PanelLayout::collect()
 		if (d.on_rail && !d.patterns.isEmpty() && !has_rail_variant)
 			m_warnings << QStringLiteral("%1: liegt auf einer Hutschiene, hat aber keine Hutschienen-Variante")
 							  .arg(d.designation);
+		const bool touches_rail = d.on_rail;
 		if (use >= 0) {
 			d.variant = d.patterns.at(use).variant;
 			d.on_rail = d.patterns.at(use).din_rail;
+			if (touches_rail && !d.on_rail)
+				m_warnings << QStringLiteral("%1: geschraubt (\"%2\"), liegt aber auf einer Hutschiene")
+								  .arg(d.designation, d.variant);
 			if (!d.on_rail && d.patterns.at(use).holes.isEmpty())
 				m_warnings << QStringLiteral("%1: frei auf der Fläche, Variante \"%2\" ohne Bohrbild")
 								  .arg(d.designation, d.variant);
@@ -249,6 +253,59 @@ void PanelLayout::collect()
 							  .arg(d.designation);
 		}
 		m_devices << d;
+	}
+
+		//devices in reading order: top to bottom, left to right
+	std::sort(m_devices.begin(), m_devices.end(), [](const PanelDevice &a, const PanelDevice &b) {
+		if (qAbs(a.rect_mm.top() - b.rect_mm.top()) > 1) return a.rect_mm.top() > b.rect_mm.top();
+		return a.rect_mm.left() < b.rect_mm.left();
+	});
+		//The contour of a template plate: its round holes are drilled with
+		//the rest when the plate is made in house, or are there already
+		//and keep everything else away from them
+	if (!m_data.outline.isEmpty()) {
+		const PanelOutline o = m_data.outline.stretched(m_width, m_height);
+		const double W = m_width, H = m_height;
+		const int origin = m_data.origin;
+		auto map = [&](const QPointF &p) {
+			switch (origin) {
+				case 1:  return QPointF(p.x(), H - p.y());
+				case 2:  return QPointF(W - p.x(), H - p.y());
+				case 3:  return QPointF(W - p.x(), p.y());
+				default: return p;
+			}
+		};
+		m_outline.width = W;
+		m_outline.height = H;
+		m_outline.name = o.name;
+		for (const QLineF &l : o.lines) m_outline.lines << QLineF(map(l.p1()), map(l.p2()));
+		const QString source = o.name.isEmpty() ? QStringLiteral("Vorlage") : o.name;
+		for (const PanelOutline::Arc &a : o.arcs) {
+			PanelOutline::Arc b = a;
+			b.centre = map(a.centre);
+			if (a.isCircle()) {
+				if (m_data.outline_machined) {
+					PanelHole h;
+					h.type = PanelHole::Drill;
+					h.d1 = 2 * a.r;
+					h.x = b.centre.x();
+					h.y = b.centre.y();
+					h.source = source;
+					addHole(h);
+				} else {
+					m_keepouts << QRectF(b.centre - QPointF(a.r + 2, a.r + 2), QSizeF(2 * a.r + 4, 2 * a.r + 4));
+				}
+				continue;
+			}
+				//mirroring turns an arc round: new angles, the other way
+			switch (origin) {
+				case 1: b.a0 = -a.a1; b.a1 = -a.a0; break;
+				case 2: b.a0 = a.a0 + 180; b.a1 = a.a1 + 180; break;
+				case 3: b.a0 = 180 - a.a1; b.a1 = 180 - a.a0; break;
+				default: break;
+			}
+			m_outline.arcs << b;
+		}
 	}
 
 	for (const PanelProfile &p : std::as_const(m_profiles)) addProfileHoles(p);

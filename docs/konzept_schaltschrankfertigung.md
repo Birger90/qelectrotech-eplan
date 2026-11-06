@@ -254,3 +254,28 @@ STEP: OCCT-Beispiel und Hersteller-STEP gelesen (920 / 6330 Dreiecke). EDZ S7-12
 **Offen**: Menüs und 3D-Fenster noch nicht von Hand durchgeklickt; Kollisionsprüfung mit den Abstandsflächen
 (`P_ARTICLE_SPACING_*`); senkrechte Hutschienen beim automatischen Platzieren; Tür/Gehäuse aus Rittal-Daten;
 Konturen (Typ 7) im DXF.
+
+## 10. Schaltschrank und Montageplatte aus dem Data Portal (Stand 06.11.2026)
+
+**Schaltschrank einfügen…** (erster Menüpunkt, wie EPLAN „Einfügen > Schaltschrank“): Rittal-Schrank im EPLAN Data Portal
+suchen (Liste mit BHT-Maßen), übernehmen. Das DXF-Paket des Schranks hat die Aufbau-Ansichten A (Front mit Tür),
+B (bei TS 8/VX „mit Montageplatte“: die Montageplatte), C/D (oben/unten), E/F (Seiten). Gespeichert unter
+`Dokumente\panel-templates\enclosures\<Typ - Beschreibung>\A.dxf … F.dxf + info.txt`.
+Beim Einfügen entstehen der Schrank (Rolle `enclosure`, Frontkontur, Tiefe aus „BHT“) und mittig darin die
+Montageplatte (Kontur aus Ansicht B, gekaufte Platte: ihre Löcher werden Sperrflächen; abwählbar „mitfertigen“).
+Gemessen: Platte = Schrank − 101 mm (Breite) / − 104 mm (Höhe) bei TS 8614200 (400×2000 → 299×1896),
+TS 8845500 (800×1400 → 699×1296), VX SE 5857600 (800×1200 → 699×1096), VX 8606000 (600×2000 → 499×1896).
+Schränke ohne Plattenansicht (z. B. VX25 zweitürig 8900120, B = Rückseite): Plattenmaß nach dieser Regel
+vorbelegt, als Schätzung gekennzeichnet und editierbar. 3D: Rahmen mit den echten Maßen, Rückwand, Platte darin.
+
+**Montagefläche einfügen…** hat drei Grundlagen: nur Maße; Maße + Vorlage (die Ecken der Vorlage mit Löchern,
+Radien und Ausklinkungen werden auf die neuen Außenmaße „gestreckt“, die langen Kanten wachsen – bei TS sind die
+Ecken von 1800 und 2000 mm Höhe identisch); Vorlagenplatte unverändert. Vorlagen kommen aus dem Data Portal (Rittal
+Montageplatten KL, KX, TS, GA, PK als eigener Artikel) oder aus einer eigenen DXF (`Dokumente\panel-templates\*.dxf`).
+Die Kontur geht in die DXF (Layer FELD als LINE/ARC statt Rechteck), Kreise der Vorlage als Bohrungen (selbst gefertigt)
+oder Sperrflächen (gekauft).
+
+**Grenzen**: Die Data-Portal-API liefert keine 3D-Daten der Schränke (die stecken in EPLAN-3D-Makros); AX- und
+VX25-Platten gibt es nicht als eigene DXF-Artikel. Der Bohrbild-Nullpunkt „unten links am Bauteil“ ist durch die
+EPLAN-Hilfe (partsmanagementgui_r_bohrbild) bestätigt. Darstellung angelehnt an Pro Panel: Kanäle türkis mit
+Kennzeichen, Hutschienen orange, Platte hellgrau.

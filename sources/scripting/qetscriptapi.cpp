@@ -387,6 +387,18 @@ bool QetScriptApi::setSurfaceTemplate(int folioIndex, int shapeIndex, const QStr
 	return true;
 }
 
+QString QetScriptApi::resizePanelDevice(int folioIndex, const QString &elementUuid, double widthMm, double heightMm)
+{
+	if (!m_project || widthMm <= 0 || heightMm <= 0) return QString();
+	Element *element = findElement(folioIndex, elementUuid);
+	if (!element) return QString();
+	DiagramContext info = element->elementInformations();
+	info.addValue(QStringLiteral("width_mm"), QString::number(widthMm, 'f', 1).replace(QLatin1Char('.'), QLatin1Char(',')), false);
+	info.addValue(QStringLiteral("height_mm"), QString::number(heightMm, 'f', 1).replace(QLatin1Char('.'), QLatin1Char(',')), false);
+	Element *n = PanelMenu::replaceDevice(element, info);
+	return n ? n->uuid().toString() : QString();
+}
+
 /**
 	@brief QetScriptApi::placeTerminalStrip
 	A terminal strip of @p count terminals on the first DIN rail of the

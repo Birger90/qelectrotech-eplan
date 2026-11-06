@@ -25,6 +25,7 @@
 
 class Diagram;
 class QETDiagramEditor;
+class DiagramContext;
 class QetShapeItem;
 class Element;
 
@@ -62,6 +63,17 @@ class PanelMenu : public QMenu
 		static QString placeTerminalStrip(Diagram *diagram, const QString &designation, int count,
 										  const QString &order, const QString &manufacturer,
 										  double width_mm = 5.2, double height_mm = 60);
+			/// the device drawn anew with the sizes (width_mm, height_mm) of
+			/// @p info, at the same place, as one undo step; null when it
+			/// could not be built
+		static Element *replaceDevice(Element *device, const DiagramContext &info);
+			/// a terminal strip of terminals that each have their own part
+			/// (order number, manufacturer); empty ones are drawn plain
+		static QString placeTerminalStrip(Diagram *diagram, const QString &designation,
+										  const QList<QPair<QString, QString>> &terminals);
+			/// the element that carries the part of @p e: the master of a
+			/// contact, else @p e itself
+		static Element *partHolder(Element *e);
 
 	private:
 		Diagram *diagram() const;
@@ -76,6 +88,9 @@ class PanelMenu : public QMenu
 		void insertKeepout();
 		void placeDevices();
 		void placeTerminalStrips();
+		void assignArticle();
+		bool assignArticleTo(const QList<Element *> &targets);
+		void missingArticles();
 		void editSelected();
 		void editShape(QetShapeItem *shape);
 		void editDevice(Element *element);

@@ -397,6 +397,9 @@ class QetScriptApi : public QObject
 		Q_INVOKABLE QString readPanelTemplate(const QString &dxfPath) const;
 		Q_INVOKABLE QString placeTerminalStrip(int folioIndex, const QString &designation, int count,
 											   const QString &order = QString(), const QString &manufacturer = QString());
+			// a device of a cabinet layout drawn anew in a new size (mm);
+			// returns the uuid of the new element, empty when not possible
+		Q_INVOKABLE QString resizePanelDevice(int folioIndex, const QString &elementUuid, double widthMm, double heightMm);
 		Q_INVOKABLE QString panelDeviceView(const QString &orderNumber, const QString &manufacturer = QString()) const;
 		Q_INVOKABLE QString folioUuid(int index) const;
 		Q_INVOKABLE int folioIndex(const QString &uuid) const;

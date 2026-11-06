@@ -30201,6 +30201,81 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
         <source>Without an order number the terminals are drawn 5.2 x 60 mm.</source>
         <translation>Ohne Bestellnummer werden die Klemmen 5,2 x 60 mm gezeichnet.</translation>
     </message>
+    <message>
+        <source>Assign part...</source>
+        <translation>Artikel zuweisen...</translation>
+    </message>
+    <message>
+        <source>Give the selected devices or terminals their part (manufacturer and order number) from the EPLAN Data Portal</source>
+        <translation>Den markierten Betriebsmitteln oder Klemmen ihren Artikel (Hersteller und Bestellnummer) aus dem EPLAN Data Portal zuweisen</translation>
+    </message>
+    <message>
+        <source>Devices without part...</source>
+        <translation>Betriebsmittel ohne Artikel...</translation>
+    </message>
+    <message>
+        <source>The devices and terminals of the project that have no order number yet: the cabinet layout knows nothing of their size</source>
+        <translation>Betriebsmittel und Klemmen des Projekts ohne Bestellnummer: der Schaltschrankaufbau kennt ihre Größe nicht</translation>
+    </message>
+    <message>
+        <source>%1: %2 terminals, %3 mm long, %4 kinds of terminal</source>
+        <translation>%1: %2 Klemmen, %3 mm lang, %4 Klemmentypen</translation>
+    </message>
+    <message>
+        <source>change the size of %1</source>
+        <translation>Größe von %1 ändern</translation>
+    </message>
+    <message>
+        <source>Select the devices or terminals in the schematic first.</source>
+        <translation>Zuerst die Betriebsmittel oder Klemmen im Schaltplan markieren.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n devices</source>
+        <translation>
+            <numerusform>%n Betriebsmittel</numerusform>
+            <numerusform>%n Betriebsmittel</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>assign the part %1</source>
+        <translation>Artikel %1 zuweisen</translation>
+    </message>
+    <message>
+        <source>Devices without part</source>
+        <translation>Betriebsmittel ohne Artikel</translation>
+    </message>
+    <message>
+        <source>Device</source>
+        <translation>Betriebsmittel</translation>
+    </message>
+    <message>
+        <source>Terminal</source>
+        <translation>Klemme</translation>
+    </message>
+    <message>
+        <source>%1 without part, %2 with part.</source>
+        <translation>%1 ohne Artikel, %2 mit Artikel.</translation>
+    </message>
+    <message>
+        <source>Assign part to the selected...</source>
+        <translation>Den markierten Artikel zuweisen...</translation>
+    </message>
+    <message>
+        <source>Parts of the terminals</source>
+        <translation>Artikel der Klemmen</translation>
+    </message>
+    <message>
+        <source>without part</source>
+        <translation>ohne Artikel</translation>
+    </message>
+    <message>
+        <source>The terminals of the project are drawn with the part each one has (Assign part); a terminal without part is drawn 5.2 x 60 mm. For a strip added by hand, type the order number of its terminals.</source>
+        <translation>Die Klemmen des Projekts werden mit ihrem jeweiligen Artikel gezeichnet (Artikel zuweisen); eine Klemme ohne Artikel wird 5,2 x 60 mm gezeichnet. Bei einer von Hand ergänzten Leiste die Bestellnummer ihrer Klemmen eintragen.</translation>
+    </message>
+    <message>
+        <source>Folio</source>
+        <translation>Blatt</translation>
+    </message>
 </context>
 <context>
     <name>PanelTemplateDialog</name>
@@ -30255,6 +30330,69 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <message>
         <source>Enclosure from the EPLAN Data Portal</source>
         <translation>Schaltschrank aus dem EPLAN Data Portal</translation>
+    </message>
+</context>
+<context>
+    <name>ArticleDialog</name>
+    <message>
+        <source>Part of %1 from the EPLAN Data Portal</source>
+        <translation>Artikel für %1 aus dem EPLAN Data Portal</translation>
+    </message>
+    <message>
+        <source>Order number, type or text, e.g. 3RT2015-1BB41</source>
+        <translation>Bestellnummer, Typ oder Text, z. B. 3RT2015-1BB41</translation>
+    </message>
+    <message>
+        <source>Short name of the manufacturer (SIE = Siemens, WEI = Weidmüller), empty: all</source>
+        <translation>Kurzname des Herstellers (SIE = Siemens, WEI = Weidmüller), leer: alle</translation>
+    </message>
+    <message>
+        <source>Exact</source>
+        <translation>Exakt</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <translation>Suchen</translation>
+    </message>
+    <message>
+        <source>Manufacturer</source>
+        <translation>Hersteller</translation>
+    </message>
+    <message>
+        <source>Order number</source>
+        <translation>Bestellnummer</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Typ</translation>
+    </message>
+    <message>
+        <source>Designation</source>
+        <translation>Kennzeichen</translation>
+    </message>
+    <message>
+        <source>Product group</source>
+        <translation>Produktgruppe</translation>
+    </message>
+    <message>
+        <source>Assign</source>
+        <translation>Zuweisen</translation>
+    </message>
+    <message>
+        <source>Type the order number or the type of the part and search.</source>
+        <translation>Bestellnummer oder Typ des Artikels eingeben und suchen.</translation>
+    </message>
+    <message>
+        <source>Searching…</source>
+        <translation>Suche…</translation>
+    </message>
+    <message>
+        <source>Nothing found. Switch off &quot;Exact&quot; or search by type.</source>
+        <translation>Nichts gefunden. „Exakt“ ausschalten oder nach dem Typ suchen.</translation>
+    </message>
+    <message>
+        <source>%1 of %2 parts.</source>
+        <translation>%1 von %2 Artikeln.</translation>
     </message>
 </context>
 </TS>

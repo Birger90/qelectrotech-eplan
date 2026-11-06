@@ -20,6 +20,7 @@
 #include "panel3dview.h"
 #include "panelcommands.h"
 #include "panelimport.h"
+#include "articledialog.h"
 #include "paneldxf.h"
 #include "panellayout.h"
 #include "panelstep.h"
@@ -36,9 +37,13 @@
 #include "../qetgraphicsitem/qetshapeitem.h"
 #include "../qetproject.h"
 #include "../TerminalStrip/terminalstrip.h"
+#include "../TerminalStrip/physicalterminal.h"
+#include "../TerminalStrip/realterminal.h"
 #include "../qetversion.h"
 #include "../undocommand/addgraphicsobjectcommand.h"
 #include "../undocommand/changeelementinformationcommand.h"
+#include "../undocommand/deleteqgraphicsitemcommand.h"
+#include "../diagramcontent.h"
 
 #include <QPointer>
 #include <QCheckBox>
@@ -500,6 +505,12 @@ PanelMenu::PanelMenu(QETDiagramEditor *editor) :
 	add(tr("Place devices from the schematic..."),
 		tr("Put the devices of the project on the mounting surface at their real size, snapped onto the DIN rails"),
 		&PanelMenu::placeDevices);
+	add(tr("Assign part..."),
+		tr("Give the selected devices or terminals their part (manufacturer and order number) from the EPLAN Data Portal"),
+		&PanelMenu::assignArticle);
+	add(tr("Devices without part..."),
+		tr("The devices and terminals of the project that have no order number yet: the cabinet layout knows nothing of their size"),
+		&PanelMenu::missingArticles);
 	add(tr("Place terminal strips..."),
 		tr("The terminal strips of the project as rows of terminals on the DIN rails, with the manufacturer's drawing of the terminal"),
 		&PanelMenu::placeTerminalStrips);
@@ -1088,6 +1099,16 @@ QString PanelMenu::placeTerminalStrip(Diagram *d, const QString &designation, in
 									  const QString &order, const QString &manufacturer,
 									  double width_mm, double height_mm)
 {
+	Q_UNUSED(width_mm) Q_UNUSED(height_mm)
+	QList<QPair<QString, QString>> terminals;
+	for (int i = 0; i < count; ++i) terminals << qMakePair(order, manufacturer);
+	return placeTerminalStrip(d, designation, terminals);
+}
+
+QString PanelMenu::placeTerminalStrip(Diagram *d, const QString &designation,
+									  const QList<QPair<QString, QString>> &terminals)
+{
+	const int count = int(terminals.size());
 	if (!d || !d->project() || count <= 0) return QString();
 	QList<QetShapeItem *> surfaces = PanelLayout::surfaces(d);
 	if (surfaces.isEmpty()) return tr("%1: no mounting surface on the folio").arg(designation);
@@ -1095,31 +1116,46 @@ QString PanelMenu::placeTerminalStrip(Diagram *d, const QString &designation, in
 	const PanelLayout layout(surface);
 	const double k = layout.mmPerUnit() > 0 ? layout.mmPerUnit() : 1;
 
-		// one terminal: the manufacturer's drawing, else a plain one
-	PanelOutline one;
-	if (!order.isEmpty()) one = PanelImport::fetchDeviceView(order, manufacturer);
-	double tw = width_mm, th = height_mm;
-	if (!one.isEmpty() && one.width > 0 && one.height > 0 && one.width < 40) {tw = one.width; th = one.height;}
-	else {
-		one = PanelOutline();
-		one.width = tw;
-		one.height = th;
-		one.lines << QLineF(0, 0, tw, 0) << QLineF(tw, 0, tw, th) << QLineF(tw, th, 0, th) << QLineF(0, th, 0, 0)
-				  << QLineF(0, th * 0.25, tw, th * 0.25) << QLineF(0, th * 0.75, tw, th * 0.75);
-	}
+		// each terminal: the manufacturer's drawing of its part, else a
+		// plain one 5.2 x 60 mm; in a row only the lines that carry the
+		// shape, the small details run together into a black bar
+	QHash<QString, PanelOutline> views;
+	auto viewOf = [&views](const QString &order, const QString &maker) {
+		const QString key = order + QLatin1Char('|') + maker;
+		if (!views.contains(key)) {
+			PanelOutline one;
+			if (!order.isEmpty()) one = PanelImport::fetchDeviceView(order, maker);
+			if (one.isEmpty() || one.width <= 0 || one.height <= 0 || one.width >= 40) {
+				one = PanelOutline();
+				one.width = 5.2;
+				one.height = 60;
+				one.lines << QLineF(0, 0, 5.2, 0) << QLineF(5.2, 0, 5.2, 60) << QLineF(5.2, 60, 0, 60) << QLineF(0, 60, 0, 0)
+						  << QLineF(0, 15, 5.2, 15) << QLineF(0, 45, 5.2, 45);
+			}
+			views.insert(key, one);
+		}
+		return views.value(key);
+	};
 	PanelOutline strip;
-	strip.width = tw * count;
-	strip.height = th;
-		// in a row of terminals only the lines that carry the shape: the
-		// small details of each terminal run together into a black bar
-	const double detail = qMin(2.0, th * 0.04);
-	for (int i = 0; i < count; ++i) {
-		const QPointF shift(tw * i, 0);
+	QStringList kinds;
+	double x = 0, th = 0;
+	for (const auto &t : terminals) th = qMax(th, viewOf(t.first, t.second).height);
+	for (const auto &t : terminals) {
+		const PanelOutline one = viewOf(t.first, t.second);
+		const double detail = qMin(2.0, one.height * 0.04);
+			// terminals of different heights stand on one rail centre line
+		const QPointF shift(x, (th - one.height) / 2);
 		for (const QLineF &l : one.lines)
 			if (l.length() >= detail) strip.lines << l.translated(shift);
 		for (PanelOutline::Arc a : one.arcs)
 			if (a.r >= 0.8) {a.centre += shift; strip.arcs << a;}
+		x += one.width;
+		if (!kinds.contains(t.first)) kinds << t.first;
 	}
+	strip.width = x;
+	strip.height = th;
+	const QString order = kinds.size() == 1 ? kinds.first() : QString();
+	const QString manufacturer = kinds.size() == 1 ? terminals.first().second : QString();
 
 	QPointF pos;
 	const double ws = strip.width / k, hs = strip.height / k;
@@ -1158,7 +1194,199 @@ QString PanelMenu::placeTerminalStrip(Diagram *d, const QString &designation, in
 	new AddGraphicsObjectCommand(element, d, pos, cmd);
 	d->undoStack().push(cmd);
 	d->project()->setModified(true);
-	return tr("%1: %2 terminals of %3 x %4 mm").arg(designation).arg(count).arg(num(tw), num(th));
+	return tr("%1: %2 terminals, %3 mm long, %4 kinds of terminal").arg(designation).arg(count).arg(num(strip.width)).arg(kinds.size());
+}
+
+Element *PanelMenu::replaceDevice(Element *device, const DiagramContext &info)
+{
+	auto *d = device ? qobject_cast<Diagram *>(device->scene()) : nullptr;
+	if (!d || !d->project()) return nullptr;
+	const double w = infoNumber(info, QStringLiteral("width_mm")), h = infoNumber(info, QStringLiteral("height_mm"));
+	if (w <= 0 || h <= 0) return nullptr;
+		// the scale of the surface the device lies on
+	double k = 0;
+	const QPointF at = device->sceneBoundingRect().center();
+	for (QetShapeItem *s : PanelLayout::surfaces(d))
+		if (sceneRectOf(s).contains(at)) {k = s->panelData().mm_per_unit; break;}
+	if (k <= 0 && !PanelLayout::surfaces(d).isEmpty()) k = PanelLayout::surfaces(d).first()->panelData().mm_per_unit;
+	if (k <= 0) return nullptr;
+
+	PanelOutline graphic;
+	const QString order = info.value(QStringLiteral("manufacturer_reference")).toString();
+	if (!order.isEmpty() && !info.value(QStringLiteral("panel_of")).toString().startsWith(QStringLiteral("strip:")))
+		graphic = PanelImport::fetchDeviceView(order, info.value(QStringLiteral("manufacturer")).toString());
+
+	XmlElementCollection *collection = d->project()->embeddedElementCollection();
+	if (!collection) return nullptr;
+	const QString dir_path = QStringLiteral("import/Cabinet layout");
+	if (!collection->exist(dir_path)) {
+		NamesList names;
+		names.addName(QStringLiteral("en"), QStringLiteral("Cabinet layout"));
+		names.addName(QStringLiteral("de"), QStringLiteral("Schaltschrankaufbau"));
+		if (!collection->createDir(QStringLiteral("import"), QStringLiteral("Cabinet layout"), names)) return nullptr;
+	}
+	QString label = info.value(QStringLiteral("label")).toString();
+	if (label.isEmpty()) label = device->actualLabel();
+	const QDomElement patterns = device->location().xml().firstChildElement(QStringLiteral("drillingpatterns"));
+	QDomDocument doc;
+	const QDomElement def = panelDeviceDefinition(doc, label, device->name(), w, h,
+												  infoNumber(info, QStringLiteral("depth_mm")), k, info, patterns, graphic);
+	const QString file_name = QET::stringToFileName(label) + QLatin1Char('-')
+							  + QUuid::createUuid().toString(QUuid::Id128).left(8) + QStringLiteral(".elmt");
+	if (!collection->addElementDefinition(dir_path, file_name, def)) return nullptr;
+	int state = 0;
+	Element *element = ElementFactory::Instance()->createElement(
+		ElementsLocation(dir_path + QLatin1Char('/') + file_name, d->project()), nullptr, &state);
+	if (state || !element) {delete element; return nullptr;}
+	const QPointF pos = device->pos();
+	element->setPos(pos);
+	d->addItem(element);
+	auto *macro = new QUndoCommand(tr("change the size of %1").arg(label));
+	new AddGraphicsObjectCommand(element, d, pos, macro);
+	DiagramContent content;
+	content.m_elements << device;
+	new DeleteQGraphicsItemCommand(d, content, macro);
+	d->undoStack().push(macro);
+	d->project()->setModified(true);
+	return element;
+}
+
+Element *PanelMenu::partHolder(Element *e)
+{
+	if (e && e->linkType() == Element::Slave && !e->linkedElements().isEmpty())
+		return e->linkedElements().first();
+	return e;
+}
+
+/**
+	@brief PanelMenu::assignArticle
+	EPLAN's part selection for the selected devices (or terminals): one
+	part from the Data Portal, its manufacturer and order number written
+	into the device. A contact gives it to its coil (the main function).
+*/
+void PanelMenu::assignArticle()
+{
+	Diagram *d = diagram();
+	if (!d) return;
+	QList<Element *> targets;
+	for (QGraphicsItem *item : d->selectedItems())
+		if (auto *e = dynamic_cast<Element *>(item))
+			if (Element *h = partHolder(e))
+				if (!targets.contains(h)) targets << h;
+	if (targets.isEmpty()) {
+		QMessageBox::information(m_editor, QString(title()).remove(QLatin1Char('&')),
+								 tr("Select the devices or terminals in the schematic first."));
+		return;
+	}
+	assignArticleTo(targets);
+}
+
+bool PanelMenu::assignArticleTo(const QList<Element *> &targets)
+{
+	if (targets.isEmpty()) return false;
+	const DiagramContext first = targets.first()->elementInformations();
+	QString search = first.value(QStringLiteral("manufacturer_reference")).toString();
+	if (search.isEmpty()) search = first.value(QStringLiteral("designation")).toString();
+	const QString what = targets.size() == 1 ? targets.first()->actualLabel()
+											 : tr("%n devices", nullptr, int(targets.size()));
+	ArticleDialog dialog(m_editor, what, search);
+	if (dialog.exec() != QDialog::Accepted) return false;
+	const DataPortalPart part = dialog.part();
+	if (part.order_number.isEmpty()) return false;
+
+	QHash<Diagram *, QUndoCommand *> macros;
+	for (Element *e : targets) {
+		auto *folio = qobject_cast<Diagram *>(e->scene());
+		const DiagramContext old_info = e->elementInformations();
+		DiagramContext new_info = old_info;
+		new_info.addValue(QStringLiteral("manufacturer"), part.manufacturer, false);
+		new_info.addValue(QStringLiteral("manufacturer_reference"), part.order_number, false);
+		if (!part.designation.isEmpty())
+			new_info.addValue(QStringLiteral("designation"), part.designation, false);
+		new_info.addValue(QStringLiteral("eplan_part_number"), part.part_number, false);
+			// sizes typed for the old part do not fit the new one
+		if (old_info.value(QStringLiteral("manufacturer_reference")).toString() != part.order_number)
+			for (const QString &key : {QStringLiteral("width_mm"), QStringLiteral("height_mm"), QStringLiteral("depth_mm")})
+				new_info.addValue(key, QString(), false);
+		if (new_info == old_info) continue;
+		if (!folio) {e->setElementInformations(new_info); continue;}
+		if (!macros.contains(folio)) macros.insert(folio, new QUndoCommand(tr("assign the part %1").arg(part.order_number)));
+		new ChangeElementInformationCommand(e, old_info, new_info, macros.value(folio));
+	}
+	for (auto it = macros.constBegin(); it != macros.constEnd(); ++it) it.key()->undoStack().push(it.value());
+	return true;
+}
+
+/**
+	@brief PanelMenu::missingArticles
+	What the cabinet layout cannot know: the devices and terminals of the
+	project without an order number. A double click shows the device, the
+	button gives the selected ones their part.
+*/
+void PanelMenu::missingArticles()
+{
+	Diagram *d = diagram();
+	if (!d || !d->project()) return;
+	QDialog dialog(m_editor);
+	dialog.setWindowTitle(tr("Devices without part"));
+	dialog.resize(760, 520);
+	auto *table = new QTableWidget(0, 4, &dialog);
+	table->setHorizontalHeaderLabels({tr("Device"), tr("Kind"), tr("Folio"), tr("Designation")});
+	table->horizontalHeader()->setStretchLastSection(true);
+	table->verticalHeader()->hide();
+	table->setSelectionBehavior(QAbstractItemView::SelectRows);
+	table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	auto *status = new QLabel(&dialog);
+	QList<QPointer<Element>> elements;
+	auto fill = [&]() {
+		table->setRowCount(0);
+		elements.clear();
+		int with = 0;
+		QSet<Element *> seen;
+		for (Diagram *folio : d->project()->folios()) {
+			if (!PanelLayout::surfaces(folio).isEmpty()) continue;
+			for (Element *e : folio->elements()) {
+				const int t = e->linkType();
+				if (!(t == Element::Simple || t == Element::Master || t == Element::Terminale)) continue;
+				if (e->actualLabel().trimmed().isEmpty() || seen.contains(e)) continue;
+				seen << e;
+				if (!e->elementInformations().value(QStringLiteral("manufacturer_reference")).toString().trimmed().isEmpty()) {++with; continue;}
+				const int r = table->rowCount();
+				table->insertRow(r);
+				table->setItem(r, 0, new QTableWidgetItem(e->actualLabel()));
+				table->setItem(r, 1, new QTableWidgetItem(t == Element::Terminale ? tr("Terminal") : tr("Device")));
+				table->setItem(r, 2, new QTableWidgetItem(QString::number(folio->folioIndex() + 1)));
+				table->setItem(r, 3, new QTableWidgetItem(e->name()));
+				elements << e;
+			}
+		}
+		status->setText(tr("%1 without part, %2 with part.").arg(table->rowCount()).arg(with));
+	};
+	fill();
+	connect(table, &QTableWidget::cellDoubleClicked, &dialog, [&](int row, int) {
+		Element *e = elements.value(row);
+		auto *folio = e ? qobject_cast<Diagram *>(e->scene()) : nullptr;
+		if (!folio) return;
+		emit folio->showDiagram(folio);
+		folio->clearSelection();
+		e->setSelected(true);
+		for (QGraphicsView *v : folio->views()) v->centerOn(e);
+	});
+	auto *assign = new QPushButton(tr("Assign part to the selected..."), &dialog);
+	connect(assign, &QPushButton::clicked, &dialog, [&]() {
+		QList<Element *> chosen;
+		for (const QModelIndex &i : table->selectionModel()->selectedRows())
+			if (Element *e = elements.value(i.row())) chosen << e;
+		if (assignArticleTo(chosen)) fill();
+	});
+	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close, &dialog);
+	connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+	auto *box = new QVBoxLayout(&dialog);
+	box->addWidget(table, 1);
+	box->addWidget(status);
+	box->addWidget(assign);
+	box->addWidget(buttons);
+	dialog.exec();
 }
 
 /**
@@ -1180,7 +1408,7 @@ void PanelMenu::placeTerminalStrips()
 	dialog.setWindowTitle(tr("Place terminal strips"));
 	dialog.resize(640, 460);
 	auto *table = new QTableWidget(0, 4, &dialog);
-	table->setHorizontalHeaderLabels({tr("Terminal strip"), tr("Terminals"), tr("Order number of the terminal"), tr("Manufacturer")});
+	table->setHorizontalHeaderLabels({tr("Terminal strip"), tr("Terminals"), tr("Parts of the terminals"), tr("Manufacturer")});
 	table->horizontalHeader()->setStretchLastSection(true);
 	table->verticalHeader()->hide();
 	auto addRow = [table](const QString &name, int count, const QString &order, const QString &maker) {
@@ -1194,15 +1422,42 @@ void PanelMenu::placeTerminalStrips()
 		table->setItem(r, 2, new QTableWidgetItem(order));
 		table->setItem(r, 3, new QTableWidgetItem(maker));
 	};
+		// the strips of the project: each terminal keeps the part it was
+		// given (terminal catalog or "Assign part")
+	QHash<int, QList<QPair<QString, QString>>> parts_of_row;
 	for (TerminalStrip *strip : d->project()->terminalStrip())
 		if (strip && strip->physicalTerminalCount() > 0) {
 			QString name = strip->name();
 			if (!name.startsWith(QLatin1Char('-'))) name.prepend(QLatin1Char('-'));
+			QList<QPair<QString, QString>> parts;
+			QMap<QString, int> kinds;
+			for (const auto &phy : strip->physicalTerminal()) {
+				QString order, maker;
+				for (const auto &real : phy->realTerminals()) {
+					const DiagramContext info = real->terminalData().m_informations;
+					order = info.value(QStringLiteral("manufacturer_reference")).toString().trimmed();
+					maker = info.value(QStringLiteral("manufacturer")).toString().trimmed();
+					if (!order.isEmpty()) break;
+				}
+				parts << qMakePair(order, maker);
+				kinds[order.isEmpty() ? tr("without part") : order] += 1;
+			}
+			QStringList summary;
+			for (auto it = kinds.constBegin(); it != kinds.constEnd(); ++it)
+				summary << QStringLiteral("%1 x %2").arg(it.value()).arg(it.key());
+			parts_of_row.insert(table->rowCount(), parts);
 			addRow(name, strip->physicalTerminalCount(), QString(), QString());
+			const int last = table->rowCount() - 1;
+			auto *info = new QTableWidgetItem(summary.join(QStringLiteral(", ")));
+			info->setFlags(info->flags() & ~Qt::ItemIsEditable);
+			table->setItem(last, 2, info);
+			table->item(last, 1)->setFlags(table->item(last, 1)->flags() & ~Qt::ItemIsEditable);
 		}
 	auto *add_row = new QPushButton(tr("Add a strip"), &dialog);
 	connect(add_row, &QPushButton::clicked, &dialog, [addRow]() {addRow(QStringLiteral("-X"), 10, QString(), QString());});
-	auto *hint = new QLabel(tr("Without an order number the terminals are drawn 5.2 x 60 mm."), &dialog);
+	auto *hint = new QLabel(tr("The terminals of the project are drawn with the part each one has (Assign part); "
+							   "a terminal without part is drawn 5.2 x 60 mm. For a strip added by hand, type "
+							   "the order number of its terminals."), &dialog);
 	hint->setWordWrap(true);
 	auto *box = new QVBoxLayout(&dialog);
 	box->addWidget(table, 1);
@@ -1217,10 +1472,12 @@ void PanelMenu::placeTerminalStrips()
 	QStringList report;
 	for (int r = 0; r < table->rowCount(); ++r) {
 		if (table->item(r, 0)->checkState() != Qt::Checked) continue;
-		const QString line = placeTerminalStrip(d, table->item(r, 0)->text().trimmed(),
-												table->item(r, 1)->text().toInt(),
-												table->item(r, 2) ? table->item(r, 2)->text().trimmed() : QString(),
-												table->item(r, 3) ? table->item(r, 3)->text().trimmed() : QString());
+		const QString line = parts_of_row.contains(r)
+			? placeTerminalStrip(d, table->item(r, 0)->text().trimmed(), parts_of_row.value(r))
+			: placeTerminalStrip(d, table->item(r, 0)->text().trimmed(),
+								 table->item(r, 1)->text().toInt(),
+								 table->item(r, 2) ? table->item(r, 2)->text().trimmed() : QString(),
+								 table->item(r, 3) ? table->item(r, 3)->text().trimmed() : QString());
 		if (!line.isEmpty()) report << line;
 	}
 	refreshHoleView();
@@ -1808,6 +2065,13 @@ void PanelMenu::editDevice(Element *element)
 	new_info.addValue(QStringLiteral("depth_mm"), dep->value() > 0 ? num(dep->value()) : QString(), false);
 	new_info.addValue(QStringLiteral("step_file"), step->text().trimmed(), false);
 	if (new_info == old_info) return;
+		// a new size: the device is drawn anew in it
+	if ((infoNumber(new_info, QStringLiteral("width_mm")) != infoNumber(old_info, QStringLiteral("width_mm"))
+		 || infoNumber(new_info, QStringLiteral("height_mm")) != infoNumber(old_info, QStringLiteral("height_mm")))
+		&& replaceDevice(element, new_info)) {
+		refreshHoleView();
+		return;
+	}
 	if (auto *d = qobject_cast<Diagram *>(element->scene()))
 		d->undoStack().push(new ChangeElementInformationCommand(element, old_info, new_info));
 	else

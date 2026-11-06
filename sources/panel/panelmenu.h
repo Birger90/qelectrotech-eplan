@@ -74,10 +74,15 @@ class PanelMenu : public QMenu
 			/// the element that carries the part of @p e: the master of a
 			/// contact, else @p e itself
 		static Element *partHolder(Element *e);
+			/// "Place devices from the schematic" on @p diagram; with
+			/// @p interactive false no dialog: every device with an order
+			/// number or a size is placed, with the manufacturer's drawing;
+			/// returns a report
+		static QString placeDevicesOn(Diagram *diagram, QWidget *parent, bool interactive);
 
 	private:
 		Diagram *diagram() const;
-		QetShapeItem *targetSurface(Diagram *d) const;
+		static QetShapeItem *targetSurface(Diagram *d);
 		QetShapeItem *addShape(Diagram *d, const QRectF &scene_rect, bool ellipse,
 							   const PanelData &data, const QString &undo_text);
 

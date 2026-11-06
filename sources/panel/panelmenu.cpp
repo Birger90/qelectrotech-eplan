@@ -35,6 +35,7 @@
 #include "../qetdiagrameditor.h"
 #include "../qetgraphicsitem/element.h"
 #include "../qetgraphicsitem/qetshapeitem.h"
+#include "../qetgraphicsitem/terminalelement.h"
 #include "../qetproject.h"
 #include "../TerminalStrip/terminalstrip.h"
 #include "../TerminalStrip/physicalterminal.h"
@@ -46,6 +47,7 @@
 #include "../diagramcontent.h"
 
 #include <QPointer>
+#include <limits>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDialog>
@@ -559,7 +561,7 @@ Diagram *PanelMenu::diagram() const
 	The surface a new part goes on: the selected one, the one under a
 	selected item, else the first surface of the folio.
 */
-QetShapeItem *PanelMenu::targetSurface(Diagram *d) const
+QetShapeItem *PanelMenu::targetSurface(Diagram *d)
 {
 	const QList<QetShapeItem *> surfaces = PanelLayout::surfaces(d);
 	if (surfaces.isEmpty()) return nullptr;
@@ -1497,12 +1499,24 @@ void PanelMenu::placeTerminalStrips()
 */
 void PanelMenu::placeDevices()
 {
-	Diagram *d = diagram();
-	if (!d || !d->project()) return;
+	placeDevicesOn(diagram(), m_editor, true);
+	refreshHoleView();
+}
+
+QString PanelMenu::placeDevicesOn(Diagram *d, QWidget *parent, bool interactive)
+{
+	QStringList report;
+	auto say = [&](bool warning, const QString &text) {
+		report << text;
+		if (!interactive) return;
+		if (warning) QMessageBox::warning(parent, tr("Cabinet layout"), text);
+		else QMessageBox::information(parent, tr("Cabinet layout"), text);
+	};
+	if (!d || !d->project()) return report.join(QLatin1Char('\n'));
 	QetShapeItem *surface = targetSurface(d);
 	if (!surface) {
-		QMessageBox::information(m_editor, QString(title()).remove(QLatin1Char('&')), tr("Insert a mounting surface on this folio first."));
-		return;
+		say(false, tr("Insert a mounting surface on this folio first."));
+		return report.join(QLatin1Char('\n'));
 	}
 	QETProject *project = d->project();
 
@@ -1561,6 +1575,10 @@ void PanelMenu::placeDevices()
 			const int t = e->linkType();
 			if (!(t == Element::Simple || t == Element::Master || t == Element::Terminale)) continue;
 			if (e->actualLabel().trimmed().isEmpty()) continue;
+				// a terminal of a terminal strip goes onto the rail with its
+				// strip ("Place terminal strips"), not on its own
+			if (auto *te = qobject_cast<TerminalElement *>(e))
+				if (te->realTerminal() && te->realTerminal()->parentStrip()) continue;
 			const Tag tag = tagOf(e, folio);
 			if (tag.bmk.isEmpty()) continue;
 			if (!enclosure_location.isEmpty() && !tag.location.isEmpty()
@@ -1582,12 +1600,12 @@ void PanelMenu::placeDevices()
 	std::sort(rows.begin(), rows.end(), [](const Row &a, const Row &b) {
 		return QString::localeAwareCompare(a.label, b.label) < 0;});
 	if (rows.isEmpty()) {
-		QMessageBox::information(m_editor, QString(title()).remove(QLatin1Char('&')), tr("The project has no devices with a designation."));
-		return;
+		say(false, tr("The project has no devices with a designation."));
+		return report.join(QLatin1Char('\n'));
 	}
 
 	const bool has_token = !QSettings().value(QStringLiteral("eplanimport/dataportal_token")).toString().isEmpty();
-	QDialog dialog(m_editor);
+	QDialog dialog(parent);
 	dialog.setWindowTitle(tr("Place devices on %1").arg(PanelLayout(surface).name()));
 	dialog.resize(780, 560);
 	auto *table = new QTableWidget(int(rows.size()), 6, &dialog);
@@ -1660,17 +1678,17 @@ void PanelMenu::placeDevices()
 	box->addWidget(hint);
 	box->addWidget(graphics);
 	box->addWidget(buttons);
-	if (dialog.exec() != QDialog::Accepted) return;
+	if (interactive && dialog.exec() != QDialog::Accepted) return QString();
 
 	XmlElementCollection *collection = project->embeddedElementCollection();
-	if (!collection) return;
+	if (!collection) return report.join(QLatin1Char('\n'));
 	const QString dir_name = QStringLiteral("Cabinet layout");
 	const QString dir_path = QStringLiteral("import/") + dir_name;
 	if (!collection->exist(dir_path)) {
 		NamesList names;
 		names.addName(QStringLiteral("en"), dir_name);
 		names.addName(QStringLiteral("de"), QStringLiteral("Schaltschrankaufbau"));
-		if (!collection->createDir(QStringLiteral("import"), dir_name, names)) return;
+		if (!collection->createDir(QStringLiteral("import"), dir_name, names)) return report.join(QLatin1Char('\n'));
 	}
 
 	const PanelLayout layout(surface);
@@ -1721,7 +1739,8 @@ void PanelMenu::placeDevices()
 		if (auto *shape = dynamic_cast<QetShapeItem *>(item))
 			if (shape->panelData().role == PanelData::Enclosure) housing << shape->panelData().article;
 	housing.remove(QString());
-	QProgressDialog progress(tr("Placing devices…"), tr("Cancel"), 0, int(rows.size()), m_editor);
+	QProgressDialog progress(tr("Placing devices…"), tr("Cancel"), 0, int(rows.size()), parent);
+	if (!interactive) progress.setMinimumDuration(std::numeric_limits<int>::max());
 	progress.setWindowModality(Qt::WindowModal);
 	progress.setMinimumDuration(500);
 	for (int i = 0; i < rows.size(); ++i)
@@ -1805,17 +1824,15 @@ void PanelMenu::placeDevices()
 	}
 	progress.setValue(int(rows.size()));
 	if (!skipped.isEmpty())
-		QMessageBox::warning(m_editor, QString(title()).remove(QLatin1Char('&')), tr("Not placed (no size or not readable): %1")
+		say(true, tr("Not placed (no size or not readable): %1")
 							 .arg(skipped.join(QStringLiteral(", "))));
 	if (!too_big.isEmpty())
-		QMessageBox::information(m_editor, QString(title()).remove(QLatin1Char('&')),
-								 tr("Larger than the mounting plate, not placed: %1")
+		say(false, tr("Larger than the mounting plate, not placed: %1")
 								 .arg(too_big.join(QStringLiteral(", "))));
 	if (!no_graphic.isEmpty())
-		QMessageBox::information(m_editor, QString(title()).remove(QLatin1Char('&')),
-								 tr("No vector drawing in the Data Portal (shown as a rectangle of its size): %1")
+		say(false, tr("No vector drawing in the Data Portal (shown as a rectangle of its size): %1")
 								 .arg(no_graphic.join(QStringLiteral(", "))));
-	refreshHoleView();
+	return report.join(QLatin1Char('\n'));
 }
 
 /* ------------------------------------------------------------------ */

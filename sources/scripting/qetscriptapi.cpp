@@ -476,6 +476,14 @@ QString QetScriptApi::importPartFromDataPortal(const QString &orderNumber, const
 	return finish(QString());
 }
 
+QString QetScriptApi::placePanelDevices(int folioIndex)
+{
+	if (!m_project) return QString();
+	const QList<Diagram *> diagrams = m_project->folios();
+	if (folioIndex < 0 || folioIndex >= diagrams.count()) return QString();
+	return PanelMenu::placeDevicesOn(built(diagrams.at(folioIndex)), nullptr, false);
+}
+
 /**
 	@brief QetScriptApi::placeTerminalStrip
 	A terminal strip of @p count terminals on the first DIN rail of the

@@ -405,6 +405,9 @@ class QetScriptApi : public QObject
 			// menu does); returns a JSON summary {ok, written[], error}
 		Q_INVOKABLE QString importPartFromDataPortal(const QString &orderNumber, const QString &manufacturer,
 													 const QString &collectionDir, const QString &category = QString());
+			// "Place devices from the schematic" without a dialog: every device
+			// of the enclosure's location with an order number or a size
+		Q_INVOKABLE QString placePanelDevices(int folioIndex);
 		Q_INVOKABLE QString panelDeviceView(const QString &orderNumber, const QString &manufacturer = QString()) const;
 		Q_INVOKABLE QString folioUuid(int index) const;
 		Q_INVOKABLE int folioIndex(const QString &uuid) const;

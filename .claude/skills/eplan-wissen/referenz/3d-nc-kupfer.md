@@ -463,6 +463,111 @@ des 3D-Modells erscheint (Modell-, Bohr-, Kupferansicht, Legenden; siehe `schalt
 - **STEP/DSE/NC** betreffen den QET-Nachbau nicht; nur relevant, wenn Kunden Bohrbilder oder DXF der Montageplatte
   liefern (DXF-Ebenen je Bauteil/Bohrung → evtl. als Vorlage für den maßstäblichen Aufbau nutzbar) **(Vermutung)**.
 
+## 14a. Ergänzungen (2026-11-06): Montagedaten, Bohrbild-Nullpunkt, Platzierabläufe, Student Handbook
+
+Kurz-Quellen ohne Pfad beziehen sich auf die Hilfe 2025: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2025/Content/htm/
+
+**Montagedaten am Artikel (Registerkarte Montagedaten)**
+- **Aufklipshöhe** (ID 22211, `P_ARTICLE_SNAPHEIGHT`): legt die Lage des Geräts in der Seiten- bzw. Ober-/Unteransicht
+  fest. Auf einer Tragschiene sitzt das Gerät dadurch automatisch in der richtigen Einbautiefe; wird die Schiene getauscht,
+  wandert das Gerät in der Tiefe mit. Bezug ist **nicht** die Schienenunterseite, sondern die Schienen-Oberkante, von der
+  aus der Wert gemessen wird. Nur für Pro Panel (3D), ohne Wirkung im 2D-Schaltschrankaufbau. Den Begriff „Einrasthöhe“
+  verwendet die Hilfe nicht.
+- **Mittenversatz** (ID 22215, `P_ARTICLE_SNAPHEIGHTMIDDLEOFFSET` / `ARTICLE_MIDDLEOFFSET`): Verschiebung des Geräts in der
+  **Frontansicht** gegenüber der Tragschienen-Mitte, wenn es nicht mittig sitzen soll. Nur Pro Panel, ohne Wirkung im 2D.
+  Vorzeichen/Richtung nennt die Hilfe nicht.
+- **Einbautiefe**: Standard 0 mm; zählt in 3D nur ohne 3D-Grafikmakro; gibt an, wie weit das Bauteil entgegen Z (bezogen
+  auf die Montagefläche) in ein anderes hineinragt.
+- **Einbauabstände** ab/ah (Breite/Höhe, mm); Platzbedarf dann (b+ab)·(h+ah), sonst b·h (Extras > Platzbedarf).
+  **Externe Platzierung** schließt den Artikel aus der Schaltschrankaufbau-Auswertung aus (Motoren, Generatoren).
+  **Textur**: Bild auf die Vorderseite des Quaders, wenn nur Abmessungen vorliegen. Bei Schranksockeln aus der
+  Zubehörplatzierung Höhe und Tiefe tauschen. Grafikmakro kann auch eine Kontur-Extrusion (*.fc2) sein.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partsmanagementgui_r_montagedaten.htm
+
+**Bohrbild am Artikel – Nullpunkt der Koordinaten**
+- Registerkarte Bohrbild (XML `<drillingPosition>`): **X-/Y-Position** = Mittelpunkt des Durchbruchs bzw. Nullpunkt der
+  benutzerdefinierten Kontur, bezogen auf den **Nullpunkt des Bauteils (unten links)**. Ob „unten links“ an der Gerätefront
+  oder an der Einbaufläche gemessen wird, sagt die Seite nicht. **(Vermutung)**: gemeint ist die Ecke unten links des
+  Geräteumrisses in der Frontansicht (Blick auf die Montagefläche), weil Durchbrüche in der Montagefläche liegen und
+  die Einbaufläche das Gerät auf diese Fläche setzt.
+  Dimensionen: Bohren/Gewinde = Durchmesser; Rechteck/Langloch = Breite + Höhe (+ Fase bzw. Radius); Sechseck/Achteck =
+  Kantenlänge. **Wiederholungsabstand**, **Endabstand** (Mindestabstand der letzten Bohrung zum **rechten** Rand, z. B.
+  bei Kanälen) und **Jedes n-te Loch** wirken nur bei längenvariablen Teilen. **Immer fertigen**: auch wenn das Gerät auf
+  einem nicht NC-relevanten Träger sitzt (z. B. Tragschiene), sucht EPLAN die nächste NC-relevante Montagefläche.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partsmanagementgui_r_bohrbild.htm
+- Registerkarte **Fertigung**: je Artikelvariante beliebig viele Bohrbilder (= Montagevarianten), je Bohrbild **Offset X/Y**,
+  damit ein Bohrbild für verschieden große Artikel passt. Ein Bohrbild ist kein Artikel.
+  Quelle: articlesgui_r_fertigung.htm
+- **Bohrbildkasten** (Makroprojekt): Nullpunkt standardmäßig **links unten auf dem Kastenrahmen**, verschiebbar über
+  „Aktiv“ + X/Y; Name = Dateiname des Bohrbilds; erzeugt *.fc1 in $MD_MACROS. Bohrbilder lassen sich auch aus
+  Perforex-/Secarex-NC-Dateien erzeugen (Dienstprogramme > Bohrbilder / Konturen erzeugen), Bohrtyp/Durchmesser aus dem
+  Maschinenschema.
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cabinetgui_r_bohrbildkasten.htm,
+  https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cabinetgui_d_bohrbilderzeugen.htm
+- NC-Einstellungen „DXF allgemein“: AutoCAD 2013–2017 oder 2018/2019, Codepage CP_ANSI_1252, Dateinamen aus Nummer /
+  Bauteilbezeichnung / Eigenschaften, Unterverzeichnisse keine / Projektstruktur / Eigenschaften. Zum Koordinaten-
+  Nullpunkt sagt die Seite nichts (er hängt an der **Feldgröße**, Abschnitt 8).
+  Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/ncgui_r_dxfallgemein.htm
+
+**Platzierabläufe (Stand Hilfe 2025)**
+- **Schaltschrank**: Einfügen > Betriebsmittel > Schaltschrank → Artikelauswahl → Anfasspunkt mit [A]: hinten links,
+  hinten rechts, vorne rechts, vorne links. „Korpus“ (AE, CM) = Gehäuse + Tür + Montageplatte, „Einzelteil“ (TS 8) =
+  Profile, Wände, Türen, Montageplatte – die **Montageplatte kommt mit dem Schrankartikel** und ist über „Bauteil ist
+  unverschiebbar am übergeordneten Bauteil befestigt“ fixiert (einzeln löschbar). Gruppierungskennzeichen
+  „S<Schranknummer>“ geht auf alle Teile und alles darin Platzierte über; Verschieben nimmt die Bestückung mit.
+  Quelle: cabinetgui_h_schaltschrankplatzieren.htm
+- **Montageplatte einzeln**: Einfügen > Betriebsmittel > Montageplatte (Artikel) oder **Freie Montageplatte** (Breite,
+  Höhe, Tiefe = Blechstärke; Artikel später zuweisbar). Vorschau in Artikelgröße, vier Anfasspunkte als graue Quadrate,
+  aktiver rot (Standard unten links), [A] im Uhrzeigersinn: unten links → oben links → oben rechts → unten rechts.
+  In der Nähe eines Eckpunkts von Schrankprofil oder zweiter Platte erscheint ein **roter 3D-Fangpunkt**, die Platte
+  rastet dort ein.
+  Quelle: cabinetgui_h_montageplattenplatzieren.htm
+- **Längenvariable Teile** (Tragschiene, Verdrahtungskanal, C-Profil, benutzerdefinierte Schiene): Einfügen >
+  Betriebsmittel > … → Artikel → Vorschau ohne Länge → [A] Anfasspunkt Mitte/Oben/Unten (quer zur Schiene) →
+  Startpunkt → aufziehen → Endpunkt; Artikel bleibt am Cursor. **[Strg] + zwei Geometriepunkte** = Punkt in deren Mitte
+  (z. B. Bohrungsmitte). „Länge übernehmen“ (nur parallel verschiebbar) und „Mittig platzieren“ zwischen zwei vorhandenen
+  Teilen. Durchbrüche aus dem Bohrbild automatisch; liegt einer auf einer Durchbruchsperrfläche, setzt EPLAN einen
+  Ersatzdurchbruch daneben. Kürzen/Einpassen nachträglich siehe Abschnitt 2.
+  Quelle: cabinetgui_h_varbtplatzieren.htm
+- **Gerät**: Einfügezentrum > Geräte → Vorschau (3D-Makro, sonst Quader aus H/B/T, sonst Dialog Abmessungen), aktiver
+  Anfasspunkt rot; [A] läuft über die neun Punkte der Grundfläche. Fallen Montagepunkt, Bezugspunkt, Raster und
+  Montagefläche zusammen, kommt eine Auswahlliste. Mehrere Montagevarianten → Bohrbild-Auswahl (abschaltbar, dann immer
+  das erste); gespeichert als „Verwendetes Bohrbild“ unter Artikelreferenzdaten.
+  Quelle: cabinetgui_h_geraetplatzieren.htm
+- **Platzieroptionen** (Kontextmenü): Drehwinkel (0/±45/±90/±135/180° oder frei; gesperrt bei Schränken, längenvariablen
+  Teilen – dort 0/90/180/−90° per Maus – und Bohrungen), Anfasspunkt, **Offset X/Y/Z** (ab Anfasspunkt; ignoriert bei
+  Koordinateneingabe), „Bezüglich Einbauabstand“ (Einbauabstand als Offset), „Bezüglich Originalposition“, „Erweiterte
+  Anfasspunkt-Logik“ (Bindung an Montage-/Bezugspunkte aufheben), „In Schrankhierarchie eingliedern“ (Platten/Schränke).
+  **Mehrfachplatzierung**: Anzahl, Abstand, Abstandsbezug **Zwischenraum** (Standard, Kante–Kante) oder **Mittenabstand**,
+  Platzierungsmodus links→rechts, rechts→links, oben→unten, unten→oben (nicht für Schränke/Platten) oder Einzeln.
+  Quelle: cabinetgui_d_platzieroptionen.htm
+- **Nicht gefunden** (weder Hilfe 2.9/2025 noch frei zugängliches offizielles „Pro Panel Getting Started“): Standardfarben
+  von Kanälen/Schienen/Platten im Bauraum, ein expliziter „Einrast“-Fangmodus für Geräte auf Tragschienen, Vorzeichen des
+  Mittenversatzes. Ein offizielles Getting-Started-PDF (Stand 2012) existiert nur als Fremdkopie (Scribd), nicht auf einer
+  EPLAN-Domain; die EPLAN-Leistungsbeschreibung Pro Panel 2022 (eplan.com) war nicht mehr abrufbar (404).
+
+**Aus dem Student Handbook (EPLAN Education Handbook, Stand 16.12.2021; Marketingtext, keine Bedienschritte)**
+URL: https://www.eplan.com.tr/fileadmin/eplan_content_international/tr/data/Student_Handbook.pdf
+- Pro Panel: 3D-Aufbau von Schaltschränken, Schaltanlagen und Energieverteilungen; Gehäusedaten aus dem webbasierten
+  **Rittal Configuration System** (u. a. VX und Kleingehäuse) lassen sich direkt nach Pro Panel übernehmen und sind Basis
+  für Bohrbilder und Ansichten für die Werkstatt. (Student Handbook, S. 36)
+- Pro Panel liefert virtuelle 3D-Verdrahtung und flexible Kupferschienen; Daten gehen an Konfektionier- und
+  Bearbeitungsmaschinen; deckt Elektro- **und Fluid**-Aufbau ab. (Student Handbook, S. 37)
+- Pro Panel kann Daten aus Fremdsystemen (CAE, ERP, Excel-Listen) einlesen und daraus den 3D-Aufbau beginnen (Stückliste
+  lesen, Aufbau bauen); Ausgabe als DXF/DWG an M-CAD/E-CAD oder direkt an Rittal-Perforex-Bearbeitungszentren; dazu
+  Daten für Kupferbearbeitung, Kabel-/Drahtkonfektion, automatische Klemmenleistenbestückung und robotergestützte
+  Verdrahtung. (Student Handbook, S. 38)
+- Im Quizteil genannte Fertigungsdaten (Antworten dort nicht als richtig markiert, daher nur als Themenliste): NC für
+  Flachteile und Gehäuse, **Ablängen von Kabelkanälen und Tragschienen**, Bearbeitung von Klemmleisten, Drahtlängen aus
+  optimalen Verlegewegen. (Student Handbook, S. 49–50)
+- **Smart Wiring** nutzt das 3D-Modell, geht aber auch ohne (Excel-Verbindungslisten, Umbauten); zeigt je Verbindung
+  Quelle/Ziel, Querschnitt, Farbe, Anschlussbezeichnung, Aderendbehandlung und Verlegeweg; vergleicht Projektstände;
+  Serverbetrieb mit QR-Code zum Projekt. (Student Handbook, S. 39–40)
+
+**Bedeutung für QET**: Für eine Pro-Panel-ähnliche 2D-Platzierung genügen pro Artikel Breite/Höhe/Tiefe, Einbauabstände,
+Aufklipshöhe (nur für Seitenansicht/Tiefe), Mittenversatz (Frontansicht, quer zur Schiene) und die Bohrbild-Liste mit
+Koordinaten ab Bauteil-Nullpunkt unten links – alles in `part.xml` enthalten und beim EDZ-Import mitnehmbar.
+
 ## 15. Quellen
 
 3D-Montageaufbau:

@@ -560,6 +560,24 @@ Varianten aufklappbar. Die „erste Variante“ als Standard deckt sich mit dem 
 sind mögliche maschinenlesbare Quellen aus EPLAN, falls statt des PDFs Projektdaten geliefert werden; `.epj`
 enthält die Logik vollständig (Vermutung, Format hier nicht beschrieben).
 
+## 21a. Ergänzung: Student Handbook (Seitenmakros, Platzhalter, eBUILD, Technische Kenngrößen)
+
+Quelle: EPLAN Education Handbook „Student Handbook“, Stand 16.12.2021,
+https://www.eplan.com.tr/fileadmin/eplan_content_international/tr/data/Student_Handbook.pdf
+
+- **Seitenmakros** sind fertig gezeichnete Schaltplanseiten einer Teilfunktion (z. B. Einspeisung) mit allen Geräten und
+  Verbindungen; leicht erstellt und per Mail austauschbar. (Student Handbook, S. 18)
+- Kurs-Beispiel für Makros: dreipoliger Leistungs-Schließer als Makro; Makros mit **Platzhalterobjekten** für variable
+  Werte. (S. 13)
+- Symbole liegen in **acht Varianten** (Drehungen/Spiegelungen) vor. (S. 20)
+- **Technische Kenngröße** am Betriebsmittel kommt aus dem Artikel; manuell eingetragene Werte werden beim Artikelabgleich
+  aus der Artikelverwaltung **überschrieben**. (S. 28)
+- **eBUILD** (Free): erzeugt Schaltpläne (Elektro und Fluid) aus Makros nach Regeln; zwei Teile – **Designer** (Regeln,
+  Konfigurationsvariablen auf Basis normaler Makros) und **Project Builder** (Auswahl, Erzeugen von Teilschaltungen,
+  Seiten oder ganzen Projekten per Knopfdruck); Seitenbeschreibungen und Funktionstexte lassen sich mit vorgeben. (S. 29–33)
+- **Bedeutung für QET**: Seitenmakro ≈ QET-Folio-Vorlage bzw. Copy eines Folios; Platzhalterobjekte ≈ Variablen in
+  QET-Elementen/Folio-Textfeldern **(Vermutung zur Entsprechung)**.
+
 ## 22. Quellen
 
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/macrosgui_k_start.htm

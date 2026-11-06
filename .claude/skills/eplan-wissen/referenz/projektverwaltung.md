@@ -643,6 +643,31 @@ Wurde ein Projekt nicht ordnungsgemäß geschlossen (z. B. Stromausfall), bietet
 - *Projekt packen und sichern* (nur bei „korrigieren“): erstellt vorher eine gepackte Sicherung – Standard und empfohlen.
 Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/eservicesgui_d_projektueberpruefen.htm
 
+## 17. Ergänzung: Student Handbook (Basisprojekte, Stammdaten, Backstage, Cloud-Werkzeuge)
+
+Quelle: EPLAN Education Handbook „Student Handbook“, Stand 16.12.2021,
+https://www.eplan.com.tr/fileadmin/eplan_content_international/tr/data/Student_Handbook.pdf (Marketing-/Kursbeschreibung,
+keine Bedienschritte; Seitenzahlen = PDF-Seiten).
+
+- **Projektvorlagen/Basisprojekte**: Datensicherung *.zw1 enthält Seiten, Symbolbibliotheken und Geräte; mitgelieferte
+  Beispielvorlagen für NFPA, IEC, GOST u. a.; eigene Basisprojekte nach eigenen Vorgaben anlegbar. (S. 10, 17)
+- **Seitentypen** unterscheiden sich in automatisch erzeugte (Auswertungen) und interaktive Seiten. (S. 12)
+- **Stammdaten im Projekt**: beim Anlegen werden Formulare, Normblätter, Symbolbibliotheken usw. aus den zentralen
+  Stammdaten ins Projekt kopiert – Arbeit ohne Serverzugriff möglich. Ändern sich die Systemstammdaten, hilft der
+  **Stammdatenabgleich** (einzeln oder alles); umgekehrt lassen sich Projektstammdaten in die Systemstammdaten übernehmen
+  (z. B. Daten eines Kunden). Stammdaten sind Dateien, per Mail austauschbar; im Basisprojekt mitgeführt bleiben sie für
+  externe Dienstleister konsistent. (S. 41–42)
+- **Backstage-Ansicht** (Datei-Menü): Projekt öffnen/wiederherstellen, Projekteigenschaften, Projektstatus, Einstellungen
+  Projekt/Benutzer/Arbeitsplatz/Firma; Sichern mit Optionen, was gesichert wird; Drucken mit angehängten Dateien;
+  Import/Export (*.aml, *.xlsx, *.xml, DXF), BMK-Liste exportieren; Extras: Basisprojekt erzeugen, Projekt komprimieren/
+  bereinigen, Projektdaten synchronisieren, Stammdaten sichern/wiederherstellen, Systemmeldungen, Skripte/Add-ons,
+  Rechteverwaltung. (S. 10–11)
+- Auswertungen orientieren sich an IEC 61355 (Dokumentenarten). (S. 14)
+- **eVIEW** (Cloud, kostenlos): Redlining mit Status (von anderen bearbeitbar) und **Greenlining** (ohne Status, nicht
+  bearbeitbar); Kommentare und Änderungsinfos werden im Projekt gespeichert; Projekte als *.zw1 in der Cloud. (S. 46, 55)
+- **eMANAGE**: Cloud-Projektablage ab Plattform 2.9 SP1, Free- und Vollversion; Vollversion u. a. Stammdaten
+  synchronisieren/teilen. (S. 58–59; Quizangaben, nicht als richtig markiert)
+
 ## Quellen
 
 Projekt korrigieren:

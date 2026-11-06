@@ -333,6 +333,36 @@ Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/ht
 
 **Bedeutung für QET**: angedockte Eigenschaftsblöcke entsprechen am ehesten einer Textgruppe im Element (gemeinsam verschiebbar); für 2D-Aufbaupläne genügt die Beschriftung mit BMK bzw. Positionsnummer (siehe Abschnitt 12).
 
+## 13a. Ergänzungen (2026-11-06): Student Handbook und Pro-Panel-Ablauf
+
+Quelle Handbuch: EPLAN Education Handbook „Student Handbook“, Stand 16.12.2021,
+https://www.eplan.com.tr/fileadmin/eplan_content_international/tr/data/Student_Handbook.pdf
+
+- 2D-Aufbauseiten liegen im selben Electric-P8-Projekt wie der Schaltplan; die Bauteile bleiben mit den
+  Schaltplankomponenten verknüpft. Die 2D-„Footprint“-Makros kommen aus der Artikelverwaltung, ein Aufbau ist auch
+  **ohne Schaltplan** möglich. (Student Handbook, S. 34)
+- Die Projektprüfung (Meldungsverwaltung) gilt auch für die Geräte auf der 2D-Montageplatte. Die Schaltschranklegende
+  listet alle Geräte auf **Montageplatte, Türen und Schrankflächen**. (Student Handbook, S. 35)
+- Auswertungen lassen sich als eingebettete Auswertung direkt neben die Montageplatte setzen (Gerätelegende auf dem
+  Aufbaublatt). (Student Handbook, S. 43) – deckt sich mit Abschnitt 7 (Fensterlegende).
+- Das Bild auf S. 34 zeigt die typische Anordnung: Aufbauseite in eigener Struktur (Seitenname „Mounting panel“),
+  Montageplatte als Rechteck mit sichtbarem BMK (z. B. „-UR1“) und Kettenmaßen, rechts daneben die Legende „Enclosure
+  legend“ mit Spalten Position/BMK/Artikel. (Beobachtet im Student Handbook, S. 34)
+
+**Pro-Panel-Ablauf als Arbeitsreihenfolge** (zusammengesetzt aus der Hilfe; Einzelquellen in `3d-nc-kupfer.md` 2, 3, 8,
+9, 14a):
+1. Bauraum anlegen (Bauraum-Navigator) – Strukturkennzeichen des Bauraums = Ort der Mechanik.
+2. Schaltschrank aus der Artikelverwaltung einfügen (Montageplatte ist Teil des Schrankartikels) oder Montageplatte
+   einzeln/frei setzen; Montagefläche der Platte aktivieren.
+3. Längenvariable Teile: Verdrahtungskanäle und Tragschienen per Start-/Endpunkt aufziehen, „Länge übernehmen“,
+   „Mittig platzieren“, „Einpassen“ an Plattenkante/Nachbarkanal, „Gleichmäßig verteilen“.
+4. Geräte aus dem 3D-Montageaufbau-Navigator (Schaltplan-BM mit Artikel) auf Schienen/Platte setzen; Lage aus Anfasspunkt,
+   Aufklipshöhe (Tiefe) und Mittenversatz (quer zur Schiene); Einbauabstände und Kollisionskontrolle beachten,
+   Sperrflächen sperren Bereiche.
+5. Durchbrüche entstehen aus den Bohrbildern der Artikel; Bohrsperrflächen und Feldgröße/Nullschnitt prüfen.
+6. Modell-Ansichten und 2D-Bohransicht auf Seiten setzen, Legende/Montageliste auswerten, NC-Daten (Perforex,
+   Steinhauer, DXF, Bohrschablone) und ggf. Athex/Kupfer-Daten exportieren.
+
 ## 14. Quellen
 
 2D-Schaltschrankaufbau:

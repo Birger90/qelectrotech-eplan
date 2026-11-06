@@ -46,7 +46,7 @@ Abschnitt lesen, die großen Tabellen (IDs, XML, Meldungen) per Grep durchsuchen
 | Drucken, DXF/DWG (Ebenen EPLANxxx, Blockattribute), EPDZ | [dxf-dwg-druck.md](referenz/dxf-dwg-druck.md) |
 | Mehrsprachige Texte, Übersetzung, Wörterbuch | [uebersetzung.md](referenz/uebersetzung.md) |
 | Schaltschrankaufbau 2D, Montageplatte, Legenden/Positionsnummern | [schaltschrankaufbau.md](referenz/schaltschrankaufbau.md) |
-| 3D-Montageaufbau, Kupfer, Kontureditor, NC, STEP, PXF | [3d-nc-kupfer.md](referenz/3d-nc-kupfer.md) |
+| 3D-Montageaufbau, Kupfer, Kontureditor, NC, STEP, PXF; Aufklipshöhe/Mittenversatz, Bohrbild-Nullpunkt, Platzierabläufe (14a) | [3d-nc-kupfer.md](referenz/3d-nc-kupfer.md) |
 | Vorplanung, Segmente, R&I | [vorplanung.md](referenz/vorplanung.md) |
 
 **Bauteil-Import und Daten**

@@ -712,6 +712,19 @@ Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/h
 
 **Bedeutung für QET**: „Artikel erzeugen“ entspricht im Fork dem Zurückschreiben eines Elements mit Artikeldaten in die Benutzersammlung; die erste Artikelreferenz ist die führende Nummer. Der Data-Portal-Zugang selbst ist für QET irrelevant (der Fork importiert heruntergeladene EDZ/Makros).
 
+## 18a. Ergänzung: Data Portal und Artikelverwaltung laut Student Handbook
+
+Quelle: EPLAN Education Handbook „Student Handbook“, Stand 16.12.2021,
+https://www.eplan.com.tr/fileadmin/eplan_content_international/tr/data/Student_Handbook.pdf
+
+- Data Portal (Stand 2021): über eine Million Datensätze von über 300 Herstellern, mit 2D- und 3D-Makros, Eigenschaften,
+  Bildern und Dokumenten; Geräte direkt in den Schaltplan oder zuerst in die Artikelverwaltung übernehmen. (S. 23–25)
+- Kabel aus dem Data Portal bringen die Aderdaten mit; Kabeltyp tauschen = Kabelartikel ersetzen. (S. 26)
+- Funktionstexte hängen am Gerät und erscheinen in Auswertungen (z. B. Geräteliste neben dem BMK); normale Texte sind
+  nicht mit Geräten verknüpft. (S. 27)
+- Auswertungen lassen sich filtern und sortieren, u. a. SPS-Kartenübersicht mit freien Anschlüssen; jede Auswertung ist
+  als XML, Text oder Excel exportierbar (z. B. für Beschriftungsmaschinen). (S. 44–45)
+
 ## 99. Quellen
 Artikelverwaltung:
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partsmanagementgui_k_artverwnutzen.htm

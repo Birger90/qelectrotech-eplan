@@ -288,6 +288,18 @@ Diese Referenz beschreibt, wie EPLAN aus dem Schaltplan Verlegewege, Leitungslä
 
 **Bedeutung für QET:** Die EPLAN-Beschriftung ist eine reine Dateiausgabe und nicht Teil des PDF. Für einen QET-Export von Etiketten (Klemmen, BMK, Drähte, Kabel) ist das Modell aber eine gute Vorlage: ein Schema je Auswertungstyp, Kopf/Etikett/Fuß, Formatelemente mit Länge, fester Breite und Trennzeichen, „Seitenumbruch bei BMK-Wechsel“ (z. B. ein Excel-Blatt je Klemmenleiste mit BMK als Blattname), Excel-Vorlagen mit `#H#`/`###`/`#F#`. Eine Umsetzung im Fork (z. B. als Skript-Button, der CSV/XLSX aus Klemmleisten schreibt) sollte diese Platzhalterlogik übernehmen, dann lassen sich vorhandene EPLAN-Excel-Vorlagen weiterverwenden **(Vorschlag)**. Wichtig: Die Ausgabe folgt der **Auswahl**, also in QET erst Leiste/Seiten wählen, dann exportieren.
 
+## 7a. Ergänzung: Smart Wiring laut Student Handbook
+
+Quelle: EPLAN Education Handbook „Student Handbook“, Stand 16.12.2021,
+https://www.eplan.com.tr/fileadmin/eplan_content_international/tr/data/Student_Handbook.pdf
+
+- Smart Wiring stellt die Verdrahtung visuell dar und greift auf das 3D-Modell aus Pro Panel zu; ohne 3D-Aufbau gehen
+  auch Excel-Listen mit Verbindungsdaten (z. B. für Umbauten bestehender Schränke). (Student Handbook, S. 39)
+- Je Verbindung: Quelle/Ziel, Querschnitt, Farbe, Anschlussbezeichnung, Aderendbehandlung, Verlegeweg; Vergleich neuer mit
+  altem Projektstand; Serverbetrieb, Projektaufruf per QR-Code. (Student Handbook, S. 40)
+- Bedeutung für QET: Die Verbindungsliste (Quelle, Ziel, Querschnitt, Farbe, Aderendbehandlung) ist genau der Datensatz,
+  den ein QET-Drahtlisten-Export liefern müsste.
+
 ## 8. Zusammenfassung für den QET-Nachbau
 
 - Topologie-Seiten, 3D-Bauraum, Drahtkonfektionierung und Beschriftung erzeugen im EPLAN-PDF höchstens **Eigenschaftswerte** (Länge, Verlegeweg, Verlegeart, Bündel, Kabelbaumname) und **Auswertungsblätter** (Streckenliste, Streckenplan, Verlegte Kabel, Verbindungsliste, Kabeldarstellungsplan). Diese Werte wörtlich übernehmen und nicht nachrechnen. Quellen: siehe Abschnitte 2–7.

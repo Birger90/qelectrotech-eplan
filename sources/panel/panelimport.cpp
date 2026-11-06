@@ -21,6 +21,9 @@
 #include "../import/eplandxf/dataportalclient.h"
 #include "../qetapp.h"
 
+#include <QDirIterator>
+#include <QDomDocument>
+
 #include <QDialogButtonBox>
 #include <QEventLoop>
 #include <QTimer>
@@ -558,11 +561,132 @@ QString PanelImport::devicesDirectory()
 	return templatesDirectory() + QStringLiteral("/devices");
 }
 
+PanelOutline PanelImport::collectionDeviceView(const QString &order_number, const QString &manufacturer)
+{
+	Q_UNUSED(manufacturer)
+	auto norm = [](QString t) {
+		static const QRegularExpression strip(QStringLiteral("[\\s.\\-]"));
+		return t.remove(strip).toUpper();
+	};
+	const QString key = norm(order_number);
+	if (key.isEmpty()) return PanelOutline();
+
+		// one look through the collections per run: order number -> layout views
+	static QHash<QString, QStringList> index;
+	static bool indexed = false;
+	if (!indexed) {
+		indexed = true;
+		static const QRegularExpression ref(QStringLiteral("name=\"manufacturer_reference\"[^>]*>([^<]+)<"));
+		for (const QString &dir : {QETApp::companyElementsDir(), QETApp::customElementsDir()}) {
+			QDirIterator it(dir, {QStringLiteral("*.elmt")}, QDir::Files, QDirIterator::Subdirectories);
+			while (it.hasNext()) {
+				const QString path = it.next();
+				if (!QFileInfo(path).fileName().contains(QLatin1String("Aufbau"), Qt::CaseInsensitive)) continue;
+				if (path.contains(QLatin1String("/Plaene/"))) continue;
+				QFile f(path);
+				if (!f.open(QIODevice::ReadOnly)) continue;
+				const QString head = QString::fromUtf8(f.read(8192));
+				const QRegularExpressionMatch m = ref.match(head);
+				if (m.hasMatch()) index[norm(m.captured(1))] << path;
+			}
+		}
+	}
+	QStringList candidates = index.value(key);
+	if (candidates.isEmpty()) return PanelOutline();
+		// the manufacturer's own view first (view A), a page-scaled copy last
+	static const QRegularExpression other_view(QStringLiteral("_[B-F]6"));
+	std::stable_sort(candidates.begin(), candidates.end(), [](const QString &a, const QString &b) {
+		auto rank = [](const QString &p) {
+			const QString n = QFileInfo(p).fileName();
+			return (n.contains(QLatin1String("Schrankplan")) ? 2 : 0) + (n.contains(other_view) ? 1 : 0);
+		};
+		return rank(a) < rank(b);
+	});
+	for (const QString &path : std::as_const(candidates)) {
+		QFile f(path);
+		if (!f.open(QIODevice::ReadOnly)) continue;
+		QDomDocument doc;
+		if (!doc.setContent(&f)) continue;
+		const QDomElement def = doc.documentElement();
+		double w_mm = 0, h_mm = 0;
+		for (QDomElement i = def.firstChildElement(QStringLiteral("elementInformations")).firstChildElement(QStringLiteral("elementInformation"));
+			 !i.isNull(); i = i.nextSiblingElement(QStringLiteral("elementInformation"))) {
+			const QString v = i.text().trimmed().replace(QLatin1Char(','), QLatin1Char('.'));
+			if (i.attribute(QStringLiteral("name")) == QLatin1String("width_mm")) w_mm = v.toDouble();
+			if (i.attribute(QStringLiteral("name")) == QLatin1String("height_mm")) h_mm = v.toDouble();
+		}
+		const bool page_copy = QFileInfo(path).fileName().contains(QLatin1String("Schrankplan"));
+		if (page_copy && (w_mm <= 0 || h_mm <= 0)) continue;   // scale unknown
+
+			// the drawing in element units
+		QList<QLineF> lines;
+		QList<PanelOutline::Arc> arcs;
+		QRectF bounds;
+		auto grow = [&bounds](const QRectF &r) {bounds = bounds.isNull() ? r : bounds.united(r);};
+		auto num = [](const QDomElement &e, const char *a) {return e.attribute(QLatin1String(a)).toDouble();};
+		const QDomElement desc = def.firstChildElement(QStringLiteral("description"));
+		for (QDomElement e = desc.firstChildElement(); !e.isNull(); e = e.nextSiblingElement()) {
+			const QString t = e.tagName();
+			if (t == QLatin1String("line")) {
+				const QLineF l(num(e, "x1"), num(e, "y1"), num(e, "x2"), num(e, "y2"));
+				lines << l; grow(QRectF(l.p1(), l.p2()).normalized().adjusted(-0.01, -0.01, 0.01, 0.01));
+			} else if (t == QLatin1String("rect")) {
+				const QRectF r(num(e, "x"), num(e, "y"), num(e, "width"), num(e, "height"));
+				lines << QLineF(r.topLeft(), r.topRight()) << QLineF(r.topRight(), r.bottomRight())
+					  << QLineF(r.bottomRight(), r.bottomLeft()) << QLineF(r.bottomLeft(), r.topLeft());
+				grow(r);
+			} else if (t == QLatin1String("polygon")) {
+				QList<QPointF> pts;
+				for (int i = 1; e.hasAttribute(QStringLiteral("x%1").arg(i)); ++i)
+					pts << QPointF(e.attribute(QStringLiteral("x%1").arg(i)).toDouble(), e.attribute(QStringLiteral("y%1").arg(i)).toDouble());
+				for (int i = 0; i + 1 < pts.size(); ++i) {lines << QLineF(pts[i], pts[i + 1]); grow(QRectF(pts[i], pts[i + 1]).normalized());}
+				if (pts.size() > 2 && e.attribute(QStringLiteral("closed")) != QLatin1String("false")) lines << QLineF(pts.last(), pts.first());
+			} else if (t == QLatin1String("ellipse") || t == QLatin1String("circle") || t == QLatin1String("arc")) {
+				const double x = num(e, "x"), y = num(e, "y");
+				const double d = t == QLatin1String("circle") ? num(e, "diameter") : num(e, "width");
+				const double hgt = t == QLatin1String("circle") ? d : num(e, "height");
+				const QRectF r(x, y, d, hgt);
+				grow(r);
+				PanelOutline::Arc a;
+				a.centre = r.center();
+				a.r = (d + hgt) / 4;
+				if (t == QLatin1String("arc")) {
+					a.a0 = num(e, "start");
+					a.a1 = a.a0 + num(e, "angle");
+				} else {a.a0 = 0; a.a1 = 360;}
+				arcs << a;
+			}
+		}
+		if (bounds.isEmpty() || (lines.isEmpty() && arcs.isEmpty())) continue;
+		const double sx = page_copy ? bounds.width() / w_mm : 2.5;
+		const double sy = page_copy ? bounds.height() / h_mm : 2.5;
+		if (sx <= 0 || sy <= 0) continue;
+		PanelOutline o;
+		o.name = order_number;
+		o.width = bounds.width() / sx;
+		o.height = bounds.height() / sy;
+		auto mm = [&](const QPointF &p) {return QPointF((p.x() - bounds.left()) / sx, (bounds.bottom() - p.y()) / sy);};
+		for (const QLineF &l : std::as_const(lines)) o.lines << QLineF(mm(l.p1()), mm(l.p2()));
+		for (PanelOutline::Arc a : std::as_const(arcs)) {
+			a.centre = mm(a.centre);
+			a.r /= (sx + sy) / 2;
+				// y turns over: an arc of the element runs the other way
+			if (!a.isCircle()) {const double a0 = a.a0; a.a0 = -a.a1; a.a1 = -a0;}
+			o.arcs << a;
+		}
+		return o;
+	}
+	return PanelOutline();
+}
+
 PanelOutline PanelImport::fetchDeviceView(const QString &order_number, const QString &manufacturer,
 										  QString *error)
 {
 	const QString order = order_number.trimmed();
 	if (order.isEmpty()) return PanelOutline();
+		// the parts already in the collections come first: no download
+	const PanelOutline own = collectionDeviceView(order, manufacturer);
+	if (!own.isEmpty()) return frontView(own);
 	QString key = (manufacturer.trimmed() + QLatin1Char('_') + order);
 	key.replace(QRegularExpression(QStringLiteral("[^A-Za-z0-9_.+-]")), QStringLiteral("_"));
 	const QString cached = QDir(devicesDirectory()).filePath(key + QStringLiteral(".dxf"));

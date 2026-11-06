@@ -806,6 +806,15 @@ QString QETApp::companyElementsDir()
 	{
 		m_company_element_dir_is_set = true;
 
+			// a folder given by the environment (e.g. by a start script next
+			// to a company collection kept outside the installation) wins
+		const QString env = qEnvironmentVariable("QET_COMPANY_ELEMENTS_DIR");
+		if (!env.isEmpty() && QDir(env).exists()) {
+			m_company_element_dir = QDir::fromNativeSeparators(env);
+			if (!m_company_element_dir.endsWith("/")) m_company_element_dir.append("/");
+			return m_company_element_dir;
+		}
+
 		QSettings settings;
 		QString path = settings.value(
 						   "elements-collections/company-collection-path",

@@ -76,6 +76,12 @@ class PanelImport
 		static PanelOutline fetchDeviceView(const QString &order_number, const QString &manufacturer,
 											QString *error = nullptr);
 		static QString devicesDirectory();
+			/// the panel layout view of a part from the element collections
+			/// (company, then user): an element of that order number whose
+			/// name says "Aufbau" (layout). Imported views are 2.5 px per mm
+			/// (EPLAN layout macros); a view with width_mm/height_mm is
+			/// scaled to them. Empty when there is none.
+		static PanelOutline collectionDeviceView(const QString &order_number, const QString &manufacturer);
 			/// the device itself out of a manufacturer's drawing that holds
 			/// more (a drawing frame, side views, dimensions): the connected
 			/// part with the most detail and all that lies inside it

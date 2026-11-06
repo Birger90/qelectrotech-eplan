@@ -35,10 +35,12 @@
 #include "../qetgraphicsitem/element.h"
 #include "../qetgraphicsitem/qetshapeitem.h"
 #include "../qetproject.h"
+#include "../TerminalStrip/terminalstrip.h"
 #include "../qetversion.h"
 #include "../undocommand/addgraphicsobjectcommand.h"
 #include "../undocommand/changeelementinformationcommand.h"
 
+#include <QPointer>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDialog>
@@ -469,6 +471,12 @@ PanelMenu::PanelMenu(QETDiagramEditor *editor) :
 	QMenu(tr("Ca&binet layout"), editor),
 	m_editor(editor)
 {
+		// a double click on a duct, rail or surface opens its own editor
+	QetShapeItem::panel_editor = [self = QPointer<PanelMenu>(this)](QetShapeItem *shape) {
+		if (!self || shape->panelData().role == PanelData::Enclosure) return false;
+		self->editShape(shape);
+		return true;
+	};
 	auto add = [this](const QString &text, const QString &tip, auto slot) {
 		QAction *a = addAction(text);
 		a->setStatusTip(tip);
@@ -492,6 +500,9 @@ PanelMenu::PanelMenu(QETDiagramEditor *editor) :
 	add(tr("Place devices from the schematic..."),
 		tr("Put the devices of the project on the mounting surface at their real size, snapped onto the DIN rails"),
 		&PanelMenu::placeDevices);
+	add(tr("Place terminal strips..."),
+		tr("The terminal strips of the project as rows of terminals on the DIN rails, with the manufacturer's drawing of the terminal"),
+		&PanelMenu::placeTerminalStrips);
 	add(tr("Insert cut-out..."), tr("A hole or cut-out in the mounting surface (e.g. 22.5 mm for a push button)"),
 		&PanelMenu::insertCutout);
 	add(tr("Insert keep-out area..."), tr("An area of the mounting surface where no hole may be drilled"),
@@ -1031,6 +1042,192 @@ void PanelMenu::insertKeepout()
 
 /* ------------------------------------------------------------------ */
 
+namespace {
+
+	/// the first place on a horizontal DIN rail of @p surface with room for
+	/// a device of ws x hs scene units: after what is on the rail already,
+	/// between the ducts above and below it
+bool freeRailSpot(QetShapeItem *surface, double ws, double hs, QPointF *pos)
+{
+	const PanelLayout layout(surface);
+	const double k = layout.mmPerUnit() > 0 ? layout.mmPerUnit() : 1;
+	const QRectF plate = sceneRectOf(surface);
+	QList<QRectF> rails;
+	for (const PanelProfile &p : layout.profiles())
+		if (p.data.role == PanelData::DinRail && p.shape) {
+			const QRectF r = sceneRectOf(p.shape);
+			if (r.width() >= r.height()) rails << r;
+		}
+	std::sort(rails.begin(), rails.end(), [](const QRectF &a, const QRectF &b) {return a.top() < b.top();});
+	for (const QRectF &r : std::as_const(rails)) {
+		double above = r.top() - plate.top(), below = plate.bottom() - r.bottom();
+		for (const PanelProfile &o : layout.profiles()) {
+			if (!o.shape) continue;
+			const QRectF q = sceneRectOf(o.shape);
+			if (q == r || q.right() <= r.left() || q.left() >= r.right()) continue;
+			if (q.bottom() <= r.top()) above = qMin(above, r.top() - q.bottom());
+			else if (q.top() >= r.bottom()) below = qMin(below, q.top() - r.bottom());
+		}
+		if (hs > r.height() + 2 * qMin(above, below)) continue;
+		double cursor = r.left() + 5 / k;
+		for (const PanelDevice &dev : layout.devices()) {
+			const QRectF dr = QRectF(layout.toScene(dev.rect_mm.topLeft()), layout.toScene(dev.rect_mm.bottomRight())).normalized();
+			if (dr.intersects(r)) cursor = qMax(cursor, dr.right());
+		}
+		if (cursor + ws <= r.right() - 2 / k) {
+			*pos = QPointF(cursor, r.center().y() - hs / 2);
+			return true;
+		}
+	}
+	return false;
+}
+
+} // namespace
+
+QString PanelMenu::placeTerminalStrip(Diagram *d, const QString &designation, int count,
+									  const QString &order, const QString &manufacturer,
+									  double width_mm, double height_mm)
+{
+	if (!d || !d->project() || count <= 0) return QString();
+	QList<QetShapeItem *> surfaces = PanelLayout::surfaces(d);
+	if (surfaces.isEmpty()) return tr("%1: no mounting surface on the folio").arg(designation);
+	QetShapeItem *surface = surfaces.first();
+	const PanelLayout layout(surface);
+	const double k = layout.mmPerUnit() > 0 ? layout.mmPerUnit() : 1;
+
+		// one terminal: the manufacturer's drawing, else a plain one
+	PanelOutline one;
+	if (!order.isEmpty()) one = PanelImport::fetchDeviceView(order, manufacturer);
+	double tw = width_mm, th = height_mm;
+	if (!one.isEmpty() && one.width > 0 && one.height > 0 && one.width < 40) {tw = one.width; th = one.height;}
+	else {
+		one = PanelOutline();
+		one.width = tw;
+		one.height = th;
+		one.lines << QLineF(0, 0, tw, 0) << QLineF(tw, 0, tw, th) << QLineF(tw, th, 0, th) << QLineF(0, th, 0, 0)
+				  << QLineF(0, th * 0.25, tw, th * 0.25) << QLineF(0, th * 0.75, tw, th * 0.75);
+	}
+	PanelOutline strip;
+	strip.width = tw * count;
+	strip.height = th;
+		// in a row of terminals only the lines that carry the shape: the
+		// small details of each terminal run together into a black bar
+	const double detail = qMin(2.0, th * 0.04);
+	for (int i = 0; i < count; ++i) {
+		const QPointF shift(tw * i, 0);
+		for (const QLineF &l : one.lines)
+			if (l.length() >= detail) strip.lines << l.translated(shift);
+		for (PanelOutline::Arc a : one.arcs)
+			if (a.r >= 0.8) {a.centre += shift; strip.arcs << a;}
+	}
+
+	QPointF pos;
+	const double ws = strip.width / k, hs = strip.height / k;
+	if (!freeRailSpot(surface, ws, hs, &pos))
+		return tr("%1: no DIN rail with %2 mm free").arg(designation, num(strip.width));
+
+	XmlElementCollection *collection = d->project()->embeddedElementCollection();
+	if (!collection) return QString();
+	const QString dir_name = QStringLiteral("Cabinet layout");
+	const QString dir_path = QStringLiteral("import/") + dir_name;
+	if (!collection->exist(dir_path)) {
+		NamesList names;
+		names.addName(QStringLiteral("en"), dir_name);
+		names.addName(QStringLiteral("de"), QStringLiteral("Schaltschrankaufbau"));
+		if (!collection->createDir(QStringLiteral("import"), dir_name, names)) return QString();
+	}
+	DiagramContext info;
+	info.addValue(QStringLiteral("manufacturer_reference"), order, false);
+	info.addValue(QStringLiteral("manufacturer"), manufacturer, false);
+	info.addValue(QStringLiteral("panel_of"), QStringLiteral("strip:") + designation, false);
+	info.addValue(QStringLiteral("terminal_count"), QString::number(count), false);
+	QDomDocument doc;
+	const QDomElement def = panelDeviceDefinition(doc, designation,
+												  tr("Terminal strip %1 (%2 terminals)").arg(designation).arg(count),
+												  strip.width, strip.height, 0, k, info, QDomElement(), strip);
+	const QString file_name = QET::stringToFileName(designation) + QLatin1Char('-')
+							  + QUuid::createUuid().toString(QUuid::Id128).left(8) + QStringLiteral(".elmt");
+	if (!collection->addElementDefinition(dir_path, file_name, def)) return QString();
+	const ElementsLocation location(dir_path + QLatin1Char('/') + file_name, d->project());
+	int state = 0;
+	Element *element = ElementFactory::Instance()->createElement(location, nullptr, &state);
+	if (state || !element) {delete element; return QString();}
+	element->setPos(pos);
+	d->addItem(element);
+	auto *cmd = new QUndoCommand(tr("place terminal strip %1").arg(designation));
+	new AddGraphicsObjectCommand(element, d, pos, cmd);
+	d->undoStack().push(cmd);
+	d->project()->setModified(true);
+	return tr("%1: %2 terminals of %3 x %4 mm").arg(designation).arg(count).arg(num(tw), num(th));
+}
+
+/**
+	@brief PanelMenu::placeTerminalStrips
+	The terminal strips (EPLAN: terminal strip definition and its terminals)
+	go onto the DIN rails as rows of terminals. Offered: the terminal strips
+	of the project; more rows can be added by hand.
+*/
+void PanelMenu::placeTerminalStrips()
+{
+	Diagram *d = diagram();
+	if (!d || !d->project()) return;
+	if (PanelLayout::surfaces(d).isEmpty()) {
+		QMessageBox::information(m_editor, QString(title()).remove(QLatin1Char('&')),
+								 tr("Insert a mounting surface on this folio first."));
+		return;
+	}
+	QDialog dialog(m_editor);
+	dialog.setWindowTitle(tr("Place terminal strips"));
+	dialog.resize(640, 460);
+	auto *table = new QTableWidget(0, 4, &dialog);
+	table->setHorizontalHeaderLabels({tr("Terminal strip"), tr("Terminals"), tr("Order number of the terminal"), tr("Manufacturer")});
+	table->horizontalHeader()->setStretchLastSection(true);
+	table->verticalHeader()->hide();
+	auto addRow = [table](const QString &name, int count, const QString &order, const QString &maker) {
+		const int r = table->rowCount();
+		table->insertRow(r);
+		auto *c0 = new QTableWidgetItem(name);
+		c0->setFlags(c0->flags() | Qt::ItemIsUserCheckable);
+		c0->setCheckState(Qt::Checked);
+		table->setItem(r, 0, c0);
+		table->setItem(r, 1, new QTableWidgetItem(QString::number(count)));
+		table->setItem(r, 2, new QTableWidgetItem(order));
+		table->setItem(r, 3, new QTableWidgetItem(maker));
+	};
+	for (TerminalStrip *strip : d->project()->terminalStrip())
+		if (strip && strip->physicalTerminalCount() > 0) {
+			QString name = strip->name();
+			if (!name.startsWith(QLatin1Char('-'))) name.prepend(QLatin1Char('-'));
+			addRow(name, strip->physicalTerminalCount(), QString(), QString());
+		}
+	auto *add_row = new QPushButton(tr("Add a strip"), &dialog);
+	connect(add_row, &QPushButton::clicked, &dialog, [addRow]() {addRow(QStringLiteral("-X"), 10, QString(), QString());});
+	auto *hint = new QLabel(tr("Without an order number the terminals are drawn 5.2 x 60 mm."), &dialog);
+	hint->setWordWrap(true);
+	auto *box = new QVBoxLayout(&dialog);
+	box->addWidget(table, 1);
+	box->addWidget(add_row);
+	box->addWidget(hint);
+	auto *buttons = okCancel(&dialog);
+	buttons->button(QDialogButtonBox::Ok)->setText(tr("Place"));
+	box->addWidget(buttons);
+	if (table->rowCount() == 0) addRow(QStringLiteral("-X1"), 10, QString(), QString());
+	if (dialog.exec() != QDialog::Accepted) return;
+
+	QStringList report;
+	for (int r = 0; r < table->rowCount(); ++r) {
+		if (table->item(r, 0)->checkState() != Qt::Checked) continue;
+		const QString line = placeTerminalStrip(d, table->item(r, 0)->text().trimmed(),
+												table->item(r, 1)->text().toInt(),
+												table->item(r, 2) ? table->item(r, 2)->text().trimmed() : QString(),
+												table->item(r, 3) ? table->item(r, 3)->text().trimmed() : QString());
+		if (!line.isEmpty()) report << line;
+	}
+	refreshHoleView();
+	if (!report.isEmpty())
+		showText(m_editor, tr("Place terminal strips"), report.join(QLatin1Char('\n')));
+}
+
 /**
 	@brief PanelMenu::placeDevices
 	EPLAN "place from the device navigator": every device of the project
@@ -1448,16 +1645,22 @@ void PanelMenu::editShape(QetShapeItem *shape)
 		if (auto *d = qobject_cast<Diagram *>(shape->scene()))
 			for (QetShapeItem *s : PanelLayout::surfaces(d))
 				if (s != shape && sceneRectOf(s).contains(scene.center())) {k_part = s->panelData().mm_per_unit; break;}
-	auto *len_w = mmBox(scene.width() * k_part, 10000, 1, &dialog);
-	auto *len_h = mmBox(scene.height() * k_part, 10000, 1, &dialog);
+		// a rail or duct: its length along the long side and its width;
+		// a rail has the width of its profile (TS 35)
+	const bool profile = data.role == PanelData::DinRail || data.role == PanelData::Duct
+		|| data.role == PanelData::CProfile;
+	const bool upright = profile && scene.height() > scene.width();
+	auto *len_w = mmBox((upright ? scene.height() : scene.width()) * k_part, 10000, 1, &dialog);
+	auto *len_h = mmBox((upright ? scene.width() : scene.height()) * k_part, 10000, 1, &dialog);
+	if (data.role == PanelData::DinRail) len_h->setEnabled(false);
 
 	form->addRow(tr("Role"), role);
 	form->addRow(tr("Designation"), designation);
 	form->addRow(tr("Manufacturer"), manufacturer);
 	form->addRow(tr("Article number"), article);
 	form->addRow(tr("STEP model"), stepPicker(step, &dialog));
-	form->addRow(tr("Width"), len_w);
-	form->addRow(tr("Height"), len_h);
+	form->addRow(profile ? tr("Length") : tr("Width"), len_w);
+	form->addRow(profile ? tr("Width") : tr("Height"), len_h);
 	auto *g_surface = new QGroupBox(tr("Mounting surface"), &dialog);
 	auto *fs = new QFormLayout(g_surface);
 	fs->addRow(tr("Scale"), scale);
@@ -1551,10 +1754,12 @@ void PanelMenu::editShape(QetShapeItem *shape)
 	const double k = new_role == PanelData::Surface ? nd.mm_per_unit : k_part;
 	const QRectF old_rect = shape->rect();
 	const QRectF local = old_rect.normalized();
-	const QRectF new_rect(local.topLeft(), QSizeF(len_w->value() / k, len_h->value() / k));
+	const double w_mm = upright ? len_h->value() : len_w->value();
+	const double h_mm = upright ? len_w->value() : len_h->value();
+	const QRectF new_rect(local.topLeft(), QSizeF(w_mm / k, h_mm / k));
 	const double old_w_mm = scene.width() * k_part, old_h_mm = scene.height() * k_part;
 		// a new size, or a new scale of a surface which keeps its size in mm
-	if (qAbs(len_w->value() - old_w_mm) > 0.05 || qAbs(len_h->value() - old_h_mm) > 0.05
+	if (qAbs(w_mm - old_w_mm) > 0.05 || qAbs(h_mm - old_h_mm) > 0.05
 		|| qAbs(k - k_part) > 1e-9)
 		new QPropertyUndoCommand(shape, "rect", old_rect, new_rect, macro);
 	if (Diagram *d = qobject_cast<Diagram *>(shape->scene())) d->undoStack().push(macro);

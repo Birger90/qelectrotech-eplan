@@ -17,6 +17,8 @@
 */
 #include "panellayout.h"
 
+#include "../diagramcontext.h"
+
 #include <QTransform>
 
 #include "../diagram.h"
@@ -100,6 +102,70 @@ QList<PanelPattern> PanelLayout::patternsOf(Element *element)
 		 p = p.nextSiblingElement(QStringLiteral("pattern")))
 		out << PanelPattern::fromXml(p);
 	return out;
+}
+
+QPointF PanelLayout::railSnap(Diagram *diagram, Element *element)
+{
+	if (!diagram || !element) return QPointF();
+	QRectF box = element->sceneBoundingRect();
+	for (QetShapeItem *surface : surfaces(diagram))
+	{
+		const QRectF plate = sceneRectOf(surface);
+		if (!plate.contains(box.center())) continue;
+		const PanelData data = surface->panelData();
+		const double k = data.mm_per_unit > 0 ? data.mm_per_unit : 1;
+			//the footprint from the device's size, as the layout sees it
+		const DiagramContext info = element->elementInformations();
+		const double w = infoNumber(info, QStringLiteral("width_mm")), h = infoNumber(info, QStringLiteral("height_mm"));
+		if (w > 0 && h > 0) {
+			QTransform t;
+			t.translate(element->scenePos().x(), element->scenePos().y());
+			t.rotate(element->rotation());
+			box = t.mapRect(QRectF(0, 0, w / k, h / k));
+		}
+		const double near = 20 / k, catch_x = 15 / k;
+			//the rail: horizontal, under the device or just beside it
+		QRectF rail;
+		double best = 1e300;
+		for (QGraphicsItem *item : diagram->items()) {
+			auto *shape = dynamic_cast<QetShapeItem *>(item);
+			if (!shape || shape->panelData().role != PanelData::DinRail) continue;
+			const QRectF r = sceneRectOf(shape);
+			if (r.width() < r.height() || !plate.contains(r.center())) continue;
+			if (r.right() < box.left() || r.left() > box.right()) continue;
+			if (box.bottom() + near < r.top() || box.top() - near > r.bottom()) continue;
+			const double d = qAbs(box.center().y() - r.center().y());
+			if (d < best) {best = d; rail = r;}
+		}
+		if (rail.isNull()) return QPointF();
+		const double offset = infoNumber(info, QStringLiteral("middle_offset_mm")) / k;
+		const double dy = rail.center().y() - offset - box.center().y();
+			//sideways: against the nearest neighbour on the rail, or its start
+		double dx = 0, nearest = catch_x;
+		auto consider = [&](double target_edge, double own_edge) {
+			const double d = target_edge - own_edge;
+			if (qAbs(d) < nearest) {nearest = qAbs(d); dx = d;}
+		};
+		consider(rail.left() + 5 / k, box.left());
+		for (QGraphicsItem *item : diagram->items()) {
+			auto *other = dynamic_cast<Element *>(item);
+			if (!other || other == element || other->parentItem()) continue;
+			QRectF ob = other->sceneBoundingRect();
+			const DiagramContext oi = other->elementInformations();
+			const double ow = infoNumber(oi, QStringLiteral("width_mm")), oh = infoNumber(oi, QStringLiteral("height_mm"));
+			if (ow > 0 && oh > 0) {
+				QTransform t;
+				t.translate(other->scenePos().x(), other->scenePos().y());
+				t.rotate(other->rotation());
+				ob = t.mapRect(QRectF(0, 0, ow / k, oh / k));
+			}
+			if (!ob.intersects(rail)) continue;
+			consider(ob.right(), box.left());    // to the right of it
+			consider(ob.left(), box.right());    // to the left of it
+		}
+		return QPointF(dx, dy);
+	}
+	return QPointF();
 }
 
 QString PanelLayout::name() const

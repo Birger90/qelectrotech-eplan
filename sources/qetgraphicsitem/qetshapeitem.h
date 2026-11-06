@@ -25,6 +25,7 @@
 
 #include <QPen>
 #include <QUuid>
+#include <functional>
 #include <optional>
 #include <utility>
 
@@ -173,6 +174,9 @@ class QetShapeItem : public QetGraphicsItem
 		virtual bool toDXF (const QString &filepath,const QPen &pen);
 
 		void editProperty() override;
+			///Opens the cabinet layout editor of a panel part (set by the
+			///cabinet layout menu); true when it handled the shape
+		static std::function<bool(QetShapeItem *)> panel_editor;
 		QString name() const override;
 
 		void setP2      (const QPointF &P2);

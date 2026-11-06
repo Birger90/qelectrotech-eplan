@@ -77,6 +77,11 @@ class PanelLayout
 
 		static QList<QetShapeItem *> surfaces(Diagram *diagram);
 		static QList<PanelPattern> patternsOf(Element *element);
+			/// where a device dropped near a DIN rail snaps to: its centre on
+			/// the rail's centre line, its side against a neighbour or the
+			/// rail's start when close; the move in scene units, null when
+			/// there is no rail near it
+		static QPointF railSnap(Diagram *diagram, Element *element);
 
 		QetShapeItem *surface() const {return m_surface;}
 		PanelData surfaceData() const {return m_data;}

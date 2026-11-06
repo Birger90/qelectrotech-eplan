@@ -3451,9 +3451,12 @@ bool QetShapeItem::toDXF(const QString &filepath,const QPen &pen)
 	@brief QetShapeItem::editProperty
 	Edit the property of this item
 */
+std::function<bool(QetShapeItem *)> QetShapeItem::panel_editor;
+
 void QetShapeItem::editProperty()
 {
 	if (diagram() -> isReadOnly()) return;
+	if (isPanelPart() && panel_editor && panel_editor(this)) return;
 
 	PropertiesEditorDialog ped(new ShapeGraphicsItemPropertiesWidget(this), diagram()->views().at(0));
 	ped.exec();

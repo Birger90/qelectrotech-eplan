@@ -54,6 +54,14 @@ class PanelMenu : public QMenu
 			/// mm per scene unit for a drawing scale 1:@p n
 		static double mmPerUnitForScale(double n);
 		static double scaleForMmPerUnit(double mm_per_unit);
+			/// put a terminal strip of @p count terminals on the first DIN rail
+			/// of the folio's mounting surface with room for it: the
+			/// manufacturer's drawing of one terminal (by order number) in a
+			/// row, else plain terminals of @p width_mm x @p height_mm.
+			/// @return a line for the report, empty when nothing was placed
+		static QString placeTerminalStrip(Diagram *diagram, const QString &designation, int count,
+										  const QString &order, const QString &manufacturer,
+										  double width_mm = 5.2, double height_mm = 60);
 
 	private:
 		Diagram *diagram() const;
@@ -67,6 +75,7 @@ class PanelMenu : public QMenu
 		void insertCutout();
 		void insertKeepout();
 		void placeDevices();
+		void placeTerminalStrips();
 		void editSelected();
 		void editShape(QetShapeItem *shape);
 		void editDevice(Element *element);

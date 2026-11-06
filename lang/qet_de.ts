@@ -30149,6 +30149,58 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
         <source>all locations</source>
         <translation>alle Orte</translation>
     </message>
+    <message>
+        <source>Place terminal strips...</source>
+        <translation>Klemmenleisten platzieren...</translation>
+    </message>
+    <message>
+        <source>The terminal strips of the project as rows of terminals on the DIN rails, with the manufacturer&apos;s drawing of the terminal</source>
+        <translation>Die Klemmenleisten des Projekts als Klemmenreihen auf den Hutschienen, mit der Herstellerzeichnung der Klemme</translation>
+    </message>
+    <message>
+        <source>%1: no mounting surface on the folio</source>
+        <translation>%1: keine Montagefläche auf dem Blatt</translation>
+    </message>
+    <message>
+        <source>%1: no DIN rail with %2 mm free</source>
+        <translation>%1: keine Hutschiene mit %2 mm Platz</translation>
+    </message>
+    <message>
+        <source>Terminal strip %1 (%2 terminals)</source>
+        <translation>Klemmenleiste %1 (%2 Klemmen)</translation>
+    </message>
+    <message>
+        <source>place terminal strip %1</source>
+        <translation>Klemmenleiste %1 platzieren</translation>
+    </message>
+    <message>
+        <source>%1: %2 terminals of %3 x %4 mm</source>
+        <translation>%1: %2 Klemmen zu %3 x %4 mm</translation>
+    </message>
+    <message>
+        <source>Place terminal strips</source>
+        <translation>Klemmenleisten platzieren</translation>
+    </message>
+    <message>
+        <source>Terminal strip</source>
+        <translation>Klemmenleiste</translation>
+    </message>
+    <message>
+        <source>Terminals</source>
+        <translation>Klemmen</translation>
+    </message>
+    <message>
+        <source>Order number of the terminal</source>
+        <translation>Bestellnummer der Klemme</translation>
+    </message>
+    <message>
+        <source>Add a strip</source>
+        <translation>Leiste hinzufügen</translation>
+    </message>
+    <message>
+        <source>Without an order number the terminals are drawn 5.2 x 60 mm.</source>
+        <translation>Ohne Bestellnummer werden die Klemmen 5,2 x 60 mm gezeichnet.</translation>
+    </message>
 </context>
 <context>
     <name>PanelTemplateDialog</name>

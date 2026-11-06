@@ -456,7 +456,7 @@ PanelOutline PanelImport::frontView(const PanelOutline &drawing)
 		for (const QLineF &l : drawing.lines)
 			if (inside(QRectF(l.p1(), l.p2()).normalized())) out.lines << l.translated(-shift);
 		for (PanelOutline::Arc a : drawing.arcs)
-			if (inside(QRectF(a.centre - QPointF(a.r, a.r), QSizeF(2 * a.r, 2 * a.r)))) {
+			if (inside(arcBounds(a))) {
 				a.centre -= shift;
 				out.arcs << a;
 			}
@@ -477,7 +477,7 @@ PanelOutline PanelImport::frontView(const PanelOutline &drawing)
 	}
 	for (int i = 0; i < drawing.arcs.size(); ++i) {
 		const PanelOutline::Arc &a = drawing.arcs.at(i);
-		items.append({QRectF(a.centre - QPointF(a.r, a.r), QSizeF(2 * a.r, 2 * a.r)), -1, i});
+		items.append({arcBounds(a), -1, i});
 	}
 	const int n = int(items.size());
 	if (n < 2) return drawing;

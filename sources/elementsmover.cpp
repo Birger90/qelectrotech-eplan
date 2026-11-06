@@ -28,6 +28,7 @@
 #include "bridge/bridgeundocommands.h"
 #include "diagram.h"
 #include "itemgroups.h"
+#include "panel/panellayout.h"
 #include "qetgraphicsitem/conductor.h"
 #include "qetgraphicsitem/conductortextitem.h"
 #include "qetgraphicsitem/diagramimageitem.h"
@@ -350,6 +351,20 @@ void ElementsMover::endMovement()
 		if (cable) cable->doneLineGesture();
 	}
 	m_moved_cables.clear();
+
+		//A device of a cabinet layout dropped on or near a DIN rail snaps
+		//onto it, against its neighbour -- in the same move, one undo step
+	if (m_moved_content.m_elements.size() == 1 && m_diagram && !m_current_movement.isNull())
+	{
+		Element *moved = m_moved_content.m_elements.first();
+		const QPointF snap = PanelLayout::railSnap(m_diagram, moved);
+		if (!snap.isNull()) {
+			applyMovement(snap);
+			if (m_movement_driver)
+				m_movement_driver->QGraphicsItem::setPos(m_movement_driver->pos() + snap);
+			m_current_movement += snap;
+		}
+	}
 
 		//empty command to be used has parent of commands below
 	QUndoCommand *undo_object{new QUndoCommand()};

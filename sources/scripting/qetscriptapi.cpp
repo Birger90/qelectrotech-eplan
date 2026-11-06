@@ -57,6 +57,7 @@
 #include "../panel/panellayout.h"
 #include "../panel/panelstep.h"
 #include "../panel/panelimport.h"
+#include "../panel/panelmenu.h"
 #include <QDir>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -384,6 +385,21 @@ bool QetScriptApi::setSurfaceTemplate(int folioIndex, int shapeIndex, const QStr
 	else
 		shape->setPanelData(data);
 	return true;
+}
+
+/**
+	@brief QetScriptApi::placeTerminalStrip
+	A terminal strip of @p count terminals on the first DIN rail of the
+	folio's mounting surface with room for it (see PanelMenu).
+	@return what was placed, or why not
+*/
+QString QetScriptApi::placeTerminalStrip(int folioIndex, const QString &designation, int count,
+										 const QString &order, const QString &manufacturer)
+{
+	if (!m_project) return QString();
+	const QList<Diagram *> diagrams = m_project->folios();
+	if (folioIndex < 0 || folioIndex >= diagrams.count()) return QString();
+	return PanelMenu::placeTerminalStrip(built(diagrams.at(folioIndex)), designation, count, order, manufacturer);
 }
 
 /**

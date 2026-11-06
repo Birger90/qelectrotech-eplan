@@ -395,6 +395,8 @@ class QetScriptApi : public QObject
 			// a template, stretched to its size; machined: make its holes too
 		Q_INVOKABLE bool setSurfaceTemplate(int folioIndex, int shapeIndex, const QString &dxfPath, bool machined = true);
 		Q_INVOKABLE QString readPanelTemplate(const QString &dxfPath) const;
+		Q_INVOKABLE QString placeTerminalStrip(int folioIndex, const QString &designation, int count,
+											   const QString &order = QString(), const QString &manufacturer = QString());
 		Q_INVOKABLE QString panelDeviceView(const QString &orderNumber, const QString &manufacturer = QString()) const;
 		Q_INVOKABLE QString folioUuid(int index) const;
 		Q_INVOKABLE int folioIndex(const QString &uuid) const;

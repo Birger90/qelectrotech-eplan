@@ -1409,6 +1409,8 @@ void PanelMenu::placeTerminalStrips()
 	dialog.resize(640, 460);
 	auto *table = new QTableWidget(0, 4, &dialog);
 	table->setHorizontalHeaderLabels({tr("Terminal strip"), tr("Terminals"), tr("Parts of the terminals"), tr("Manufacturer")});
+	table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
+	table->horizontalHeader()->setStretchLastSection(false);
 	table->horizontalHeader()->setStretchLastSection(true);
 	table->verticalHeader()->hide();
 	auto addRow = [table](const QString &name, int count, const QString &order, const QString &maker) {

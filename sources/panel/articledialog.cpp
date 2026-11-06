@@ -66,6 +66,10 @@ ArticleDialog::ArticleDialog(QWidget *parent, const QString &what, const QString
 	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Cancel, this);
 	m_take = buttons->addButton(tr("Assign"), QDialogButtonBox::AcceptRole);
 	m_take->setEnabled(false);
+		// Enter in the search field searches, it does not assign
+	m_take->setAutoDefault(false);
+	go->setAutoDefault(true);
+	go->setDefault(true);
 	connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 	connect(m_take, &QPushButton::clicked, this, &ArticleDialog::take);
 	connect(m_list, &QTreeWidget::itemSelectionChanged, this, [this]() {

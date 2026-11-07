@@ -301,7 +301,10 @@ void Panel3DWidget::paintGL()
 	{
 		const Panel3DBody &b = m_bodies.at(i);
 		QColor c = b.colour;
-		if (i == m_selected) c = QColor(230, 120, 30);
+			// the selection lights up everything of the same item: a whole
+			// terminal strip, a device with its BaseUnit
+		if (i == m_selected || (m_selected >= 0 && b.item && b.item == m_bodies.at(m_selected).item))
+			c = QColor(230, 120, 30);
 		gl->glEnable(GL_LIGHTING);
 		if (b.opacity < 1.0f) {
 			gl->glEnable(GL_BLEND);

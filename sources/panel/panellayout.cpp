@@ -528,6 +528,64 @@ void PanelLayout::collect()
 		if (qAbs(a.rect_mm.top() - b.rect_mm.top()) > 1) return a.rect_mm.top() > b.rect_mm.top();
 		return a.rect_mm.left() < b.rect_mm.left();
 	});
+
+		//Layout check, like EPLAN's collision check: parts lying on each
+		//other or in a cable duct, parts beyond the surface, terminal
+		//strips too short for their terminals (widths from the models)
+	{
+		const auto clash = [](const QRectF &a, const QRectF &b) {
+			const QRectF i = a.normalized().intersected(b.normalized());
+			return i.width() > 0.5 && i.height() > 0.5;
+		};
+		const auto nameOf = [](const PanelDevice &d) {
+			return d.designation.isEmpty() ? QStringLiteral("(ohne Kennzeichen)") : d.designation;
+		};
+		const QRectF area(0, 0, m_width, m_height);
+		QList<QRectF> ducts;
+		QStringList duct_names;
+		for (const PanelProfile &p : std::as_const(m_profiles)) {
+			if (p.data.role != PanelData::Duct) continue;
+			const double half = p.width_mm / 2;
+			const QPointF s = p.start_mm, e = p.end_mm;
+			const bool horizontal = qAbs(e.x() - s.x()) >= qAbs(e.y() - s.y());
+			ducts << (horizontal ? QRectF(QPointF(qMin(s.x(), e.x()), s.y() - half), QPointF(qMax(s.x(), e.x()), s.y() + half))
+								 : QRectF(QPointF(s.x() - half, qMin(s.y(), e.y())), QPointF(s.x() + half, qMax(s.y(), e.y()))));
+			duct_names << (p.data.designation.isEmpty() ? QStringLiteral("Kabelkanal") : p.data.designation);
+		}
+		for (int i = 0; i < m_devices.size(); ++i) {
+			const PanelDevice &a = m_devices.at(i);
+			const QRectF ra = a.rect_mm.normalized();
+			if (ra.isEmpty()) continue;
+			if (!area.adjusted(-0.5, -0.5, 0.5, 0.5).contains(ra))
+				m_warnings << QStringLiteral("%1: ragt über die Montagefläche hinaus").arg(nameOf(a));
+			const auto by = [](const QRectF &x, const QRectF &y) {
+				const QRectF i = x.normalized().intersected(y.normalized());
+				return QStringLiteral("%1 × %2 mm").arg(i.width(), 0, 'f', 1).arg(i.height(), 0, 'f', 1);
+			};
+			for (int j = i + 1; j < m_devices.size(); ++j)
+				if (clash(ra, m_devices.at(j).rect_mm))
+					m_warnings << QStringLiteral("%1: überschneidet sich mit %2 (%3)")
+									  .arg(nameOf(a), nameOf(m_devices.at(j)), by(ra, m_devices.at(j).rect_mm));
+			for (int k = 0; k < ducts.size(); ++k)
+				if (clash(ra, ducts.at(k)))
+					m_warnings << QStringLiteral("%1: liegt im %2 (%3)").arg(nameOf(a), duct_names.at(k), by(ra, ducts.at(k)));
+			if (!a.terminals.isEmpty()) {
+				double need = 0;
+				int unknown = 0;
+				for (const QString &t : a.terminals) {
+					const QString file = PanelStep::findModel(t);
+					const double w = file.isEmpty() ? 0 : PanelStep::thinnestSide(file);
+					if (w > 0) need += w; else ++unknown;
+				}
+				const double room = qMax(ra.width(), ra.height());
+				if (need > room + 0.5)
+					m_warnings << QStringLiteral("%1: Klemmenleiste zu kurz – %2 Klemmen brauchen %3 mm, Platz %4 mm%5")
+									  .arg(nameOf(a)).arg(a.terminals.size())
+									  .arg(need, 0, 'f', 1).arg(room, 0, 'f', 1)
+									  .arg(unknown ? QStringLiteral(" (%1 ohne Modell nicht mitgezählt)").arg(unknown) : QString());
+			}
+		}
+	}
 		//The contour of a template plate: its round holes are drilled with
 		//the rest when the plate is made in house, or are there already
 		//and keep everything else away from them

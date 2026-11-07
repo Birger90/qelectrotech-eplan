@@ -127,6 +127,27 @@ QString PanelStep::findModel(const QString &reference, const QString &manufactur
 	return files.first();
 }
 
+/**
+	@brief PanelStep::thinnestSide
+	The smallest side of the model's bounding box in mm (a terminal's width
+	along the rail), 0 when the model cannot be read. Kept per file.
+*/
+double PanelStep::thinnestSide(const QString &path)
+{
+	static QHash<QString, double> sides;
+	const QString key = QFileInfo(path).absoluteFilePath();
+	auto it = sides.constFind(key);
+	if (it != sides.constEnd()) return it.value();
+	const PanelMesh mesh = load(path);
+	double side = 0;
+	if (!mesh.isEmpty()) {
+		const QVector3D s = mesh.max - mesh.min;
+		side = qMin(double(s.x()), qMin(double(s.y()), double(s.z())));
+	}
+	sides.insert(key, side);
+	return side;
+}
+
 bool PanelStep::available()
 {
 #ifdef QET_WITH_OCCT

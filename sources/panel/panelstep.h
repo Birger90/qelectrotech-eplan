@@ -48,6 +48,7 @@ class PanelStep
 		static PanelMesh load(const QString &path, QString *error = nullptr);
 		static QString findModel(const QString &reference, const QString &manufacturer = QString());
 		static QStringList modelDirs();
+		static double thinnestSide(const QString &path);
 };
 
 #endif // PANELSTEP_H

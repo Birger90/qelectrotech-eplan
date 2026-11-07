@@ -97,6 +97,19 @@ float hitBox(const QVector3D &o, const QVector3D &d, const QVector3D &lo, const 
 	height and depth best (models come in many axis conventions) and move
 	it into the box: centred in x/y, standing on the bottom of the box.
 */
+/// add a box (12 triangles) to a mesh
+void appendBox(PanelMesh &m, const QVector3D &lo, const QVector3D &hi)
+{
+	const QVector3D c[8] = {{lo.x(), lo.y(), lo.z()}, {hi.x(), lo.y(), lo.z()}, {hi.x(), hi.y(), lo.z()}, {lo.x(), hi.y(), lo.z()},
+							{lo.x(), lo.y(), hi.z()}, {hi.x(), lo.y(), hi.z()}, {hi.x(), hi.y(), hi.z()}, {lo.x(), hi.y(), hi.z()}};
+	const int f[6][4] = {{4, 5, 6, 7}, {1, 0, 3, 2}, {5, 1, 2, 6}, {0, 4, 7, 3}, {7, 6, 2, 3}, {0, 1, 5, 4}};
+	const QVector3D n[6] = {{0, 0, 1}, {0, 0, -1}, {1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}};
+	for (int s = 0; s < 6; ++s)
+		for (int t : {0, 1, 2, 0, 2, 3}) {m.vertices << c[f[s][t]]; m.normals << n[s];}
+	if (m.vertices.size() == 36) {m.min = lo; m.max = hi;}
+	for (int k = 0; k < 3; ++k) {m.min[k] = qMin(m.min[k], lo[k]); m.max[k] = qMax(m.max[k], hi[k]);}
+}
+
 PanelMesh fitMesh(const PanelMesh &in, const QVector3D &lo, const QVector3D &hi)
 {
 	const QVector3D want = hi - lo;
@@ -413,6 +426,11 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 	{
 		const PanelLayout layout(surface);
 		const PanelData sd = layout.surfaceData();
+		if (notes)
+			for (const QString &w : layout.warnings())
+				if (w.contains(QLatin1String("überschneidet")) || w.contains(QLatin1String("liegt im "))
+					|| w.contains(QLatin1String("zu kurz")) || w.contains(QLatin1String("ragt über")))
+					*notes << w;
 		const float w = float(layout.widthMm()), h = float(layout.heightMm());
 		const float t = float(qMax(0.5, sd.thickness));
 
@@ -466,6 +484,31 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 				const PanelMesh mesh = PanelStep::load(resolve(p.data.step_file), &error);
 				if (!mesh.isEmpty()) b.mesh = fitMesh(mesh, b.min, b.max);
 				else if (notes) *notes << error;
+			}
+				// a cable duct without a model: floor, slotted side walls
+				// (fingers) and the lid -- drawn like a slotted duct, the
+				// slot pitch is only for the picture
+			if (p.data.role == PanelData::Duct && b.mesh.isEmpty()) {
+				PanelMesh m;
+				const float wall = 1.8f, lid = 2.5f, finger = 8.0f, slot = 4.0f;
+				const bool along_x = horizontal;
+				const float len0 = along_x ? b.min.x() : b.min.y(), len1 = along_x ? b.max.x() : b.max.y();
+				const float w0 = along_x ? b.min.y() : b.min.x(), w1 = along_x ? b.max.y() : b.max.x();
+				const float z0 = b.min.z(), z1 = b.max.z();
+				auto box = [&](float l0, float l1, float a0, float a1, float h0, float h1) {
+					const QVector3D lo = along_x ? QVector3D(l0, a0, h0) : QVector3D(a0, l0, h0);
+					const QVector3D hi = along_x ? QVector3D(l1, a1, h1) : QVector3D(a1, l1, h1);
+					appendBox(m, lo, hi);
+				};
+				box(len0, len1, w0, w1, z0, z0 + wall);                       // floor
+				box(len0, len1, w0, w1, z1 - lid, z1);                        // lid
+				for (float l = len0; l < len1; l += finger + slot) {          // fingers
+					const float e = qMin(l + finger, len1);
+					box(l, e, w0, w0 + wall, z0 + wall, z1 - lid);
+					box(l, e, w1 - wall, w1, z0 + wall, z1 - lid);
+				}
+				b.mesh = m;
+				b.colour = QColor(172, 176, 180);   // light grey PVC
 			}
 			bodies << b;
 		}

@@ -480,6 +480,23 @@ void PanelLayout::collect()
 			t.translate(element->scenePos().x(), element->scenePos().y());
 			t.rotate(element->rotation());
 			r = t.mapRect(QRectF(0, 0, d.width_mm / k, d.height_mm / k));
+		} else if (!d.step_file.isEmpty()) {
+				// no size given: the manufacturer's model gives the real
+				// outline, centred on the drawn symbol -- the two sides of the
+				// model that fit the drawing best (the third is its depth)
+			const QVector3D s = PanelStep::size(d.step_file);
+			if (!s.isNull()) {
+				const double dw = r.width() * k, dh = r.height() * k;
+				double best = 1e300, bw = 0, bh = 0;
+				for (int a = 0; a < 3; ++a)
+					for (int b = 0; b < 3; ++b) {
+						if (a == b) continue;
+						const double e = qAbs(s[a] - dw) + qAbs(s[b] - dh);
+						if (e < best) {best = e; bw = s[a]; bh = s[b];}
+					}
+				const QPointF c = r.center();
+				r = QRectF(c.x() - bw / k / 2, c.y() - bh / k / 2, bw / k, bh / k);
+			}
 		}
 		d.rect_mm = QRectF(toMm(r.topLeft()), toMm(r.bottomRight())).normalized();
 		if (d.width_mm <= 0) d.width_mm = d.rect_mm.width();
@@ -562,8 +579,11 @@ void PanelLayout::collect()
 				const QRectF i = x.normalized().intersected(y.normalized());
 				return QStringLiteral("%1 × %2 mm").arg(i.width(), 0, 'f', 1).arg(i.height(), 0, 'f', 1);
 			};
+				// parts of one device (same tag, e.g. a frame and the module
+				// in it) belong together and may overlap
 			for (int j = i + 1; j < m_devices.size(); ++j)
-				if (clash(ra, m_devices.at(j).rect_mm))
+				if (!(a.designation.size() && a.designation == m_devices.at(j).designation)
+					&& clash(ra, m_devices.at(j).rect_mm))
 					m_warnings << QStringLiteral("%1: überschneidet sich mit %2 (%3)")
 									  .arg(nameOf(a), nameOf(m_devices.at(j)), by(ra, m_devices.at(j).rect_mm));
 			for (int k = 0; k < ducts.size(); ++k)

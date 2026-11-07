@@ -49,6 +49,7 @@ class PanelStep
 		static QString findModel(const QString &reference, const QString &manufacturer = QString());
 		static QStringList modelDirs();
 		static double thinnestSide(const QString &path);
+		static QVector3D size(const QString &path);
 };
 
 #endif // PANELSTEP_H

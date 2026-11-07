@@ -148,6 +148,23 @@ double PanelStep::thinnestSide(const QString &path)
 	return side;
 }
 
+/**
+	@brief PanelStep::size
+	The bounding box of the model in mm (its own axes), null when it cannot
+	be read. Kept per file.
+*/
+QVector3D PanelStep::size(const QString &path)
+{
+	static QHash<QString, QVector3D> sizes;
+	const QString key = QFileInfo(path).absoluteFilePath();
+	auto it = sizes.constFind(key);
+	if (it != sizes.constEnd()) return it.value();
+	const PanelMesh mesh = load(path);
+	const QVector3D s = mesh.isEmpty() ? QVector3D() : mesh.max - mesh.min;
+	sizes.insert(key, s);
+	return s;
+}
+
 bool PanelStep::available()
 {
 #ifdef QET_WITH_OCCT

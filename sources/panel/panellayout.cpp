@@ -27,6 +27,11 @@
 #include "../qetgraphicsitem/element.h"
 #include "../qetgraphicsitem/qetshapeitem.h"
 #include "../qetapp.h"
+#include "../qetproject.h"
+#include "../TerminalStrip/terminalstrip.h"
+#include "../TerminalStrip/physicalterminal.h"
+#include "../TerminalStrip/realterminal.h"
+#include "../properties/elementdata.h"
 
 #include <QDateTime>
 #include <QFile>
@@ -368,6 +373,70 @@ void PanelLayout::collect()
 		}
 	}
 
+		// Parts mounted with a device and the terminals of a strip come from
+		// the project itself when the layout element does not name them:
+		// the schematic element with the same order number and device tag
+		// (its "accessories" and "artikel_N" informations) and QElectroTech's
+		// terminal strip of the same name, terminal by terminal.
+	const auto orderKey = [](const QString &s) {
+		static const QRegularExpression other(QStringLiteral("[^A-Z0-9]"));
+		return s.toUpper().remove(other);
+	};
+	const auto tagOf = [](const QString &label) {
+		const int i = label.lastIndexOf(QLatin1Char('-'));
+		return i < 0 ? label.trimmed() : label.mid(i).trimmed();
+	};
+	QHash<QString, QStringList> project_accessories;   // order key | device tag -> order numbers
+	bool accessories_read = false;
+	auto readAccessories = [&]() {
+		accessories_read = true;
+		if (!diagram->project()) return;
+		static const QRegularExpression artikel(QStringLiteral("^artikel_[0-9]+$"));
+		for (Diagram *d : diagram->project()->diagrams()) {
+			for (QGraphicsItem *it : d->items()) {
+				auto *e = dynamic_cast<Element *>(it);
+				if (!e) continue;
+				const DiagramContext ci = e->elementInformations();
+				const QString own = ci.value(QStringLiteral("manufacturer_reference")).toString();
+				if (own.isEmpty()) continue;
+				QStringList extra;
+				for (const QString &k : ci.keys()) {
+					if (k == QLatin1String("accessories")) {
+						for (const QString &a : ci.value(k).toString().split(QRegularExpression(QStringLiteral("[;,\n]")), Qt::SkipEmptyParts))
+							extra << a.trimmed();
+					} else if (artikel.match(k).hasMatch()) {
+						extra << ci.value(k).toString().trimmed();
+					}
+				}
+				extra.removeAll(QString());
+				if (extra.isEmpty()) continue;
+				const QString key = orderKey(own) + QLatin1Char('|') + tagOf(e->actualLabel().isEmpty() ? ci.value(QStringLiteral("label")).toString() : e->actualLabel());
+				QStringList &list = project_accessories[key];
+				for (const QString &a : extra)
+					if (orderKey(a) != orderKey(own) && !list.contains(a)) list << a;
+			}
+		}
+	};
+	auto stripTerminals = [&](const QString &strip_name) {
+		QStringList list;
+		if (!diagram->project()) return list;
+		QString name = strip_name.trimmed();
+		while (name.startsWith(QLatin1Char('-'))) name.remove(0, 1);
+		for (TerminalStrip *strip : diagram->project()->terminalStrip()) {
+			if (!strip || strip->name().trimmed() != name) continue;
+			for (const auto &physical : strip->physicalTerminal()) {
+				QString ref;
+				for (const auto &real : physical->realTerminals()) {
+					ref = real->terminalData().m_informations.value(QStringLiteral("manufacturer_reference")).toString().trimmed();
+					if (!ref.isEmpty()) break;
+				}
+				list << (ref.isEmpty() ? QStringLiteral("-") : ref);
+			}
+			break;
+		}
+		return list;
+	};
+
 	for (QGraphicsItem *item : diagram->items())
 	{
 		auto *element = dynamic_cast<Element *>(item);
@@ -390,6 +459,16 @@ void PanelLayout::collect()
 			if (!a.trimmed().isEmpty()) d.accessories << a.trimmed();
 		for (const QString &t : info.value(QStringLiteral("terminals")).toString().split(QLatin1Char(';'), Qt::SkipEmptyParts))
 			if (!t.trimmed().isEmpty()) d.terminals << t.trimmed();
+		const QString panel_of = info.value(QStringLiteral("panel_of")).toString();
+		if (d.terminals.isEmpty() && panel_of.startsWith(QLatin1String("strip:")))
+			d.terminals = stripTerminals(panel_of.mid(6));
+		if (d.accessories.isEmpty()) {
+			const QString own = info.value(QStringLiteral("manufacturer_reference")).toString();
+			if (!own.isEmpty()) {
+				if (!accessories_read) readAccessories();
+				d.accessories = project_accessories.value(orderKey(own) + QLatin1Char('|') + tagOf(panel_of.isEmpty() ? d.designation : panel_of));
+			}
+		}
 		if (d.step_file.isEmpty())
 			d.step_file = PanelStep::findModel(info.value(QStringLiteral("manufacturer_reference")).toString(),
 											   info.value(QStringLiteral("manufacturer")).toString());

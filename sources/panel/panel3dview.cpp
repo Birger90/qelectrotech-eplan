@@ -422,10 +422,16 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 		return QDir(base_dir).filePath(file);
 	};
 
+		// surfaces outside the cabinet (door, side walls) go onto the
+		// enclosure of the mounting plate once that is placed
+	QList<QetShapeItem *> outer;
+	bool have_enclosure = false;
+	QVector3D enc_lo, enc_hi;
 	for (QetShapeItem *surface : PanelLayout::surfaces(diagram))
 	{
 		const PanelLayout layout(surface);
 		const PanelData sd = layout.surfaceData();
+		if (!sd.face.isEmpty()) {outer << surface; continue;}
 		if (notes)
 			for (const QString &w : layout.warnings())
 				if (w.contains(QLatin1String("überschneidet")) || w.contains(QLatin1String("liegt im "))
@@ -643,6 +649,9 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 				bodies << wall;
 				break;
 			}
+			have_enclosure = true;
+			enc_lo = lo;
+			enc_hi = hi;
 				// the manufacturer's model of the enclosure (by its order
 				// number), see-through so the inside stays visible
 			if (!enclosure_model.isEmpty()) {
@@ -658,6 +667,8 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 					cab.item = enclosure_item;
 					cab.name = enclosure_name;
 					bodies << cab;
+					enc_lo = cab.min;
+					enc_hi = cab.max;
 					offset_x += w + 150 + 160;
 					continue;
 				}
@@ -684,6 +695,79 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 			}
 		}
 		offset_x += w + 150 + (enclosure ? 160 : 0);
+	}
+
+		// Door and side walls: the surface is stretched over that face of
+		// the enclosure (its drawing only has to have the right
+		// proportions); each device stands on it with its front outwards
+		// and its body inside the cabinet
+	for (QetShapeItem *surface : std::as_const(outer))
+	{
+		const PanelLayout layout(surface);
+		const PanelData sd = layout.surfaceData();
+		if (!have_enclosure) {
+			if (notes) *notes << tr("%1: a door or wall surface needs the enclosure on the same folio").arg(layout.name());
+			continue;
+		}
+		const bool door = sd.face == QLatin1String("door");
+		const bool left = sd.face == QLatin1String("left");
+		const QVector3D size = enc_hi - enc_lo;
+		const float su = float((door ? size.x() : size.z()) / qMax(1.0, layout.widthMm()));
+		const float sv = float(size.y() / qMax(1.0, layout.heightMm()));
+		const float skin = 2.0f;   // sheet of the door or wall
+			// a point on the surface (u right, v up, w outwards) in the scene
+		auto place = [&](float u, float v, float out) {
+			const float y = enc_lo.y() + v;
+			if (door) return QVector3D(enc_lo.x() + u, y, enc_hi.z() + out);
+			if (left) return QVector3D(enc_lo.x() - out, y, enc_lo.z() + u);
+			return QVector3D(enc_hi.x() + out, y, enc_hi.z() - u);
+		};
+		auto turn = [&](const QVector3D &n) {
+			if (door) return n;
+			if (left) return QVector3D(-n.z(), n.y(), n.x());
+			return QVector3D(n.z(), n.y(), -n.x());
+		};
+		for (const PanelDevice &d : layout.devices())
+		{
+			const QRectF r = d.rect_mm.normalized();
+			const float u0 = float(r.left()) * su, v0 = float(r.top()) * sv;
+			Panel3DBody b;
+			b.item = d.element;
+			b.name = d.designation;
+			b.colour = QColor(90, 110, 140);
+			PanelMesh mesh;
+			if (!d.step_file.isEmpty()) {
+				QString error;
+				const PanelMesh m = PanelStep::load(d.step_file, &error);
+				if (!m.isEmpty()) mesh = fitMesh(m, QVector3D(0, 0, 0), QVector3D(float(r.width()), float(r.height()), 0));
+				else if (notes) *notes << error;
+			}
+			if (mesh.isEmpty()) {
+					// no model: a box reaching into the cabinet
+				const float depth = d.depth_mm > 0 ? float(d.depth_mm) : 40.0f;
+				appendBox(mesh, QVector3D(0, 0, 0), QVector3D(float(r.width()), float(r.height()), depth));
+			} else {
+				b.colour = QColor(120, 125, 135);
+			}
+				// the front (highest z of the model) lies on the outside of
+				// the sheet, the rest goes inwards
+			const float front = mesh.max.z();
+			PanelMesh placed;
+			QVector3D lo(1e30f, 1e30f, 1e30f), hi(-1e30f, -1e30f, -1e30f);
+			for (int i = 0; i < mesh.vertices.size(); ++i) {
+				const QVector3D v = mesh.vertices.at(i);
+				const QVector3D p = place(u0 + v.x() - mesh.min.x(), v0 + v.y() - mesh.min.y(), v.z() - front + skin);
+				placed.vertices << p;
+				placed.normals << turn(mesh.normals.value(i));
+				for (int k = 0; k < 3; ++k) {lo[k] = qMin(lo[k], p[k]); hi[k] = qMax(hi[k], p[k]);}
+			}
+			placed.min = lo;
+			placed.max = hi;
+			b.mesh = placed;
+			b.min = lo;
+			b.max = hi;
+			bodies << b;
+		}
 	}
 	return bodies;
 }

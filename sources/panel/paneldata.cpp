@@ -168,6 +168,7 @@ QDomElement PanelData::toXml(QDomDocument &document) const
 	if (!article.isEmpty()) e.setAttribute(QStringLiteral("article"), article);
 	if (!manufacturer.isEmpty()) e.setAttribute(QStringLiteral("manufacturer"), manufacturer);
 	if (!step_file.isEmpty()) e.setAttribute(QStringLiteral("step"), step_file);
+	if (!face.isEmpty()) e.setAttribute(QStringLiteral("face"), face);
 	switch (role) {
 		case Surface:
 			e.setAttribute(QStringLiteral("mm_per_unit"), num(mm_per_unit));
@@ -215,6 +216,7 @@ PanelData PanelData::fromXml(const QDomElement &e)
 	d.article = e.attribute(QStringLiteral("article"));
 	d.manufacturer = e.attribute(QStringLiteral("manufacturer"));
 	d.step_file = e.attribute(QStringLiteral("step"));
+	d.face = e.attribute(QStringLiteral("face")).trimmed().toLower();
 	d.mm_per_unit = dbl(e, "mm_per_unit", 0.4);
 	d.thickness = dbl(e, "thickness", 3);
 	d.machined = e.attribute(QStringLiteral("machined"), QStringLiteral("1")) != QLatin1String("0");

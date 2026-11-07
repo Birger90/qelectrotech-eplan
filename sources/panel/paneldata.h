@@ -146,6 +146,7 @@ struct PanelData
 
 		//3D: a STEP model shown instead of a box (path, may use %QET_STEP%)
 	QString step_file;
+	QString face;             ///< a surface outside the cabinet: "door", "left" or "right" wall; empty: inside
 
 		//Surface made from a template: its contour, stretched to the size
 		//of the surface; machined: its holes and cut-outs are made too (a

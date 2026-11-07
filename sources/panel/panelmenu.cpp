@@ -26,6 +26,8 @@
 #include "panellayout.h"
 #include "panelstep.h"
 #include "panelassistant.h"
+#include <QCoreApplication>
+#include <QStatusBar>
 #include "../ElementsCollection/xmlelementcollection.h"
 #include "../NameList/nameslist.h"
 #include "../QPropertyUndoCommand/qpropertyundocommand.h"
@@ -2413,6 +2415,11 @@ void PanelMenu::show3D()
 {
 	Diagram *d = diagram();
 	if (!d) return;
+		// the first view reads every STEP model: say so instead of a frozen
+		// window
+	m_editor->statusBar()->showMessage(tr("Loading the 3D models..."));
+	QCoreApplication::processEvents();
 	auto *dialog = new Panel3DDialog(d, m_editor);
+	m_editor->statusBar()->clearMessage();
 	dialog->show();
 }

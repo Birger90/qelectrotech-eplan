@@ -34,6 +34,7 @@
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QGraphicsView>
+#include <QGuiApplication>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMatrix4x4>
@@ -923,7 +924,9 @@ Panel3DDialog::Panel3DDialog(Diagram *diagram, QWidget *parent) :
 void Panel3DDialog::reload()
 {
 	QStringList notes;
+	QGuiApplication::setOverrideCursor(Qt::WaitCursor);
 	const QList<Panel3DBody> bodies = build(m_diagram, &notes, !m_enclosure || m_enclosure->isChecked());
+	QGuiApplication::restoreOverrideCursor();
 	m_view->setBodies(bodies);
 	QString text;
 	if (bodies.isEmpty())

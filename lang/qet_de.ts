@@ -30332,6 +30332,10 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
         <source>Single steps</source>
         <translation>Einzelschritte</translation>
     </message>
+    <message>
+        <source>Loading the 3D models...</source>
+        <translation>Lade die 3D-Modelle…</translation>
+    </message>
 </context>
 <context>
     <name>PanelTemplateDialog</name>
@@ -30528,7 +30532,7 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     </message>
     <message>
         <source> rows</source>
-        <translation> Reihen</translation>
+        <translation> Reihe(n)</translation>
     </message>
     <message>
         <source>duct %1 mm</source>

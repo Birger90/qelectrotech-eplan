@@ -530,7 +530,10 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 				QString error;
 				const PanelMesh mesh = PanelStep::load(resolve(d.step_file), &error);
 				if (!mesh.isEmpty()) {
-					b.mesh = fitMesh(mesh, b.min, no_depth ? QVector3D(b.max.x(), b.max.y(), b.min.z()) : b.max);
+						// the footprint on the plate decides how the model stands;
+						// its depth is the model's own (a depth in the layout may
+						// be a placeholder and would lay a tall device flat)
+					b.mesh = fitMesh(mesh, b.min, QVector3D(b.max.x(), b.max.y(), b.min.z()));
 					b.max.setZ(qMax(b.max.z(), b.mesh.max.z()));
 					b.colour = QColor(120, 125, 135);
 				} else if (notes) *notes << error;

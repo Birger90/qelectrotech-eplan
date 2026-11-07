@@ -22,6 +22,7 @@
 #include <QDateTime>
 #include <QDir>
 #include <QDirIterator>
+#include <QFile>
 #include <QFileInfo>
 #include <QHash>
 #include <QRegularExpression>
@@ -33,6 +34,7 @@
 #include <OSD.hxx>
 #ifdef _WIN32
 #include <float.h>
+#include <algorithm>
 #endif
 #include <BRepMesh_IncrementalMesh.hxx>
 #include <BRep_Tool.hxx>
@@ -116,7 +118,42 @@ QString PanelStep::findModel(const QString &reference, const QString &manufactur
 			}
 		}
 	}
-	const QStringList files = index.value(key);
+	QStringList files = index.value(key);
+	if (files.isEmpty()) {
+			// same housing, other order number (e.g. SIRIUS by frame size):
+			// "gleiche_modelle.txt" in a model folder, lines
+			// "<order number or prefix*> = <order number of the model>"
+		static QHash<QString, QString> same;			// key -> model key
+		static QList<QPair<QString, QString>> prefixes;	// prefix -> model key
+		if (changed || (same.isEmpty() && prefixes.isEmpty())) {
+			same.clear();
+			prefixes.clear();
+			for (const QString &d : dirs) {
+				QFile f(QDir(d).filePath(QStringLiteral("gleiche_modelle.txt")));
+				if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) continue;
+				const QStringList lines = QString::fromUtf8(f.readAll()).split(QLatin1Char('\n'));
+				for (QString line : lines) {
+					line = line.section(QLatin1Char('#'), 0, 0).trimmed();
+					const int eq = line.indexOf(QLatin1Char('='));
+					if (eq < 1) continue;
+					const QString left = line.left(eq).trimmed();
+					const QString model = orderKey(line.mid(eq + 1));
+					if (left.endsWith(QLatin1Char('*')))
+						prefixes << qMakePair(orderKey(left.chopped(1)), model);
+					else
+						same.insert(orderKey(left), model);
+				}
+			}
+				// longest prefix first
+			std::sort(prefixes.begin(), prefixes.end(),
+					  [](const auto &a, const auto &b) {return a.first.size() > b.first.size();});
+		}
+		QString model = same.value(key);
+		if (model.isEmpty())
+			for (const auto &p : prefixes)
+				if (key.startsWith(p.first)) {model = p.second; break;}
+		files = index.value(model);
+	}
 	if (files.isEmpty()) return QString();
 	const QString maker = orderKey(manufacturer);
 	if (!maker.isEmpty())

@@ -2415,6 +2415,13 @@ void PanelMenu::show3D()
 {
 	Diagram *d = diagram();
 	if (!d) return;
+		// opened from a schematic folio: show the folio that holds the
+		// mounting surface instead of an empty view
+	if (PanelLayout::surfaces(d).isEmpty() && d->project()) {
+		for (Diagram *other : d->project()->diagrams()) {
+			if (!PanelLayout::surfaces(other).isEmpty()) { d = other; break; }
+		}
+	}
 		// the first view reads every STEP model: say so instead of a frozen
 		// window
 	m_editor->statusBar()->showMessage(tr("Loading the 3D models..."));

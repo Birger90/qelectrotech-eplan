@@ -94,6 +94,7 @@ class PanelLayout
 			QString link;          ///< the part that joins them
 		};
 		static const QList<DeviceCombination> &deviceCombinations();
+		static QList<PanelPattern> tablePatterns(const QString &order_number);
 
 		QetShapeItem *surface() const {return m_surface;}
 		PanelData surfaceData() const {return m_data;}

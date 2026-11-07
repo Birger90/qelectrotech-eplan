@@ -65,6 +65,7 @@ struct PanelPattern
 {
 	QString variant;         ///< e.g. "DIN rail", "Screw mounting"
 	bool din_rail = false;   ///< the variant snaps onto a DIN rail: no holes
+	bool centred = false;    ///< hole positions from the device's centre (table), not its insertion point
 	QList<PanelHole> holes;
 
 	QDomElement toXml(QDomDocument &document) const;

@@ -124,6 +124,71 @@ QList<PanelPattern> PanelLayout::patternsOf(Element *element)
 	A line: main device;added device;side;x mm;y mm;link part;source --
 	order numbers with * and ? as wildcards.
 */
+/**
+	Drilling patterns and cut-outs from bohrbilder.csv in the company and
+	the user collection, for parts whose element holds none (no EDZ data):
+	order number;variant;kind;size 1;size 2;x;y;source -- kind Loch (drill,
+	size 1 = diameter), Gewinde (thread M<size 1>), Rechteck (cut-out
+	size 1 x size 2), Langloch (slot); x and y in mm from the centre of the
+	device, y up. Order numbers may use * and ?. Read again when changed.
+*/
+QList<PanelPattern> PanelLayout::tablePatterns(const QString &order_number)
+{
+	struct Row {QRegularExpression ref; QString variant; PanelHole hole;};
+	static QList<Row> rows;
+	static QMap<QString, QDateTime> stamps;
+	const QStringList files = {QETApp::companyElementsDir() + QStringLiteral("bohrbilder.csv"),
+							   QETApp::customElementsDir() + QStringLiteral("bohrbilder.csv")};
+	bool changed = stamps.isEmpty();
+	for (const QString &f : files)
+		if (stamps.value(f) != QFileInfo(f).lastModified()) changed = true;
+	if (changed) {
+		rows.clear();
+		stamps.clear();
+		for (const QString &f : files) {
+			stamps.insert(f, QFileInfo(f).lastModified());
+			QFile file(f);
+			if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) continue;
+			QTextStream in(&file);
+			while (!in.atEnd()) {
+				const QString line = in.readLine().trimmed();
+				if (line.isEmpty() || line.startsWith(QLatin1Char('#'))) continue;
+				const QStringList p = line.split(QLatin1Char(';'));
+				if (p.size() < 7) continue;
+				auto num = [&](int i) {return p.value(i).trimmed().replace(QLatin1Char(','), QLatin1Char('.')).toDouble();};
+				Row r;
+				const QString rx = QRegularExpression::wildcardToRegularExpression(p.at(0).trimmed(), QRegularExpression::UnanchoredWildcardConversion);
+				r.ref = QRegularExpression(QLatin1Char('^') + rx + QLatin1Char('$'), QRegularExpression::CaseInsensitiveOption);
+				r.variant = p.at(1).trimmed();
+				const QString kind = p.at(2).trimmed().toLower();
+				r.hole.type = kind.startsWith(QLatin1String("gew")) ? PanelHole::Thread
+							: kind.startsWith(QLatin1String("rech")) ? PanelHole::Rectangle
+							: kind.startsWith(QLatin1String("lang")) ? PanelHole::Slot : PanelHole::Drill;
+				r.hole.d1 = num(3);
+				r.hole.d2 = num(4);
+				r.hole.x = num(5);
+				r.hole.y = num(6);
+				if (r.ref.isValid() && r.hole.d1 > 0) rows << r;
+			}
+		}
+	}
+	QList<PanelPattern> out;
+	for (const Row &r : std::as_const(rows)) {
+		if (!r.ref.match(order_number.trimmed()).hasMatch()) continue;
+		int at = -1;
+		for (int i = 0; i < out.size(); ++i) if (out.at(i).variant == r.variant) at = i;
+		if (at < 0) {
+			PanelPattern p;
+			p.variant = r.variant;
+			p.centred = true;
+			out << p;
+			at = out.size() - 1;
+		}
+		out[at].holes << r.hole;
+	}
+	return out;
+}
+
 const QList<PanelLayout::DeviceCombination> &PanelLayout::deviceCombinations()
 {
 	static QList<DeviceCombination> list;
@@ -437,6 +502,7 @@ void PanelLayout::collect()
 		return list;
 	};
 
+	QList<int> loose;   // devices free on the surface without holes
 	for (QGraphicsItem *item : diagram->items())
 	{
 		auto *element = dynamic_cast<Element *>(item);
@@ -502,6 +568,8 @@ void PanelLayout::collect()
 		if (d.width_mm <= 0) d.width_mm = d.rect_mm.width();
 		if (d.height_mm <= 0) d.height_mm = d.rect_mm.height();
 		d.patterns = patternsOf(element);
+		if (d.patterns.isEmpty())
+			d.patterns = tablePatterns(info.value(QStringLiteral("manufacturer_reference")).toString());
 
 			//On a DIN rail when the rail runs through the device
 		for (const PanelProfile &p : std::as_const(m_profiles)) {
@@ -534,10 +602,30 @@ void PanelLayout::collect()
 				m_warnings << QStringLiteral("%1: frei auf der Fläche, Variante \"%2\" ohne Bohrbild")
 								  .arg(d.designation, d.variant);
 		} else if (!d.on_rail && !d.designation.isEmpty()) {
-			m_warnings << QStringLiteral("%1: frei auf der Fläche, aber kein Bohrbild im Bauteil")
-							  .arg(d.designation);
+			loose << m_devices.size();   // decided below: it may hang on another device
 		}
 		m_devices << d;
+	}
+		//A device without holes next to a partner it may hang on
+		//(geraetekombinationen.csv, e.g. a contactor under its motor
+		//starter) is held by that partner
+	for (int i : std::as_const(loose)) {
+		const PanelDevice &d = m_devices.at(i);
+		const QString own = d.element ? d.element->elementInformations().value(QStringLiteral("manufacturer_reference")).toString().trimmed() : QString();
+		bool held = false;
+		for (int j = 0; j < m_devices.size() && !held; ++j) {
+			if (j == i) continue;
+			const PanelDevice &o = m_devices.at(j);
+			if (!d.rect_mm.normalized().adjusted(-1.5, -1.5, 1.5, 1.5).intersects(o.rect_mm.normalized())) continue;
+				// a part of the same device (a module in its frame)
+			if (!d.designation.isEmpty() && o.designation == d.designation) {held = true; break;}
+			const QString theirs = o.element ? o.element->elementInformations().value(QStringLiteral("manufacturer_reference")).toString().trimmed() : QString();
+			for (const DeviceCombination &c : deviceCombinations())
+				if ((c.main.match(theirs).hasMatch() && c.added.match(own).hasMatch())
+					|| (c.main.match(own).hasMatch() && c.added.match(theirs).hasMatch())) {held = true; break;}
+		}
+		if (!held)
+			m_warnings << QStringLiteral("%1: frei auf der Fläche, aber kein Bohrbild im Bauteil").arg(d.designation);
 	}
 
 		//devices in reading order: top to bottom, left to right
@@ -735,6 +823,19 @@ void PanelLayout::addDeviceHoles(const PanelDevice &d)
 		if (p.variant != d.variant) continue;
 		const double rad = qDegreesToRadians(d.angle);
 		const double c = qCos(rad), s = qSin(rad);
+		if (p.centred) {
+				//table patterns: from the centre of the outline, y up
+			const QPointF centre = d.rect_mm.normalized().center();
+			for (PanelHole h : p.holes) {
+				const double x = h.x, y = h.y;
+				h.x = centre.x() + x * c + y * s;
+				h.y = centre.y() - x * s + y * c;
+				h.angle += d.angle;
+				h.source = d.designation;
+				addHole(h);
+			}
+			return;
+		}
 		for (PanelHole h : p.holes)
 		{
 				//scene: y down, rotation clockwise; pattern: y up

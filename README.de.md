@@ -64,6 +64,17 @@ In QET und im exportierten PDF:
 
 Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem normalen Blatt:
 
+- *Schaltschrank aufbauen…*: der ganze Aufbau in sechs geführten Schritten mit Haken – Schrank mit Montageplatte
+  (Rittal über die Bestellnummer), Hutschienen und Kanäle als Raster (Kanäle am Rand und zwischen den Reihen, eine
+  Schiene je Reihe), Geräte und Klemmenleisten aus dem Schaltplan, Prüfung, 3D und Export. Die Einzelbefehle
+  stehen unter *Einzelschritte*.
+- *Aufbauprüfung* als Seitenleiste: Teile übereinander, im Kanal, über die Fläche hinaus, ohne Bohrbild,
+  Klemmenleiste zu kurz für ihre Klemmen (Breiten aus den Modellen); ein Klick wählt das Teil aus und zeigt es, die
+  Liste folgt jeder Änderung. Teile desselben Geräts und an ihrem Partner hängende Geräte (Kombinationsliste) gelten
+  als in Ordnung.
+- Ein einfacher Klick auf Kanal, Schiene oder Fläche zeigt rechts deren eigene Eigenschaften: Bezeichnung, Länge,
+  Breite, Höhe, Artikel, bei Flächen die Lage (Platte, Tür, Seitenwand links/rechts); jede Änderung ist ein
+  Rückgängig-Schritt.
 - Montageflächen (Platte, Tür, Wand) im Maßstab, Hutschienen, Kabelkanäle und C-Profile mit Befestigungsreihe
   (Gewinde oder Durchgangsloch, Abstand, Randabstand, Nullschnitt), Ausschnitte (rund, Rechteck, Langloch, Sechs-
   und Achtkant) und Sperrflächen – normale Formen mit einer `<panel>`-Rolle, also verschieb-, kopier- und rückgängig
@@ -77,8 +88,21 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
 - Bohransicht über dem Blatt, Fertigungsbericht mit Warnungen (Loch in Sperrfläche, Überschneidung, Gerät ohne
   Bohrbild), Export: je Montagefläche eine DXF (R12, mm, Layer je Bohrungsart) plus Bohrliste und Schnittliste.
 - 3D-Ansicht (Qt OpenGL) mit Platte, Schienen, Kanälen und Geräten; STEP-Modelle der Teile, wenn mit Open CASCADE
-  gebaut (MSYS2-Paket `opencascade`, CMake findet es selbst). Klick wählt das Teil auf dem Blatt.
-- Skript-API: `setShapePanel`, `shapePanel`, `panelReport`, `exportPanelDxf`, `stepInfo`.
+  gebaut (MSYS2-Paket `opencascade`, CMake findet es selbst). Klick wählt das Teil auf dem Blatt und hebt die ganze
+  Klemmenleiste bzw. das Gerät mit Träger hervor.
+  - Modelle werden über die Bestellnummer im Ordner `3D` neben der Firmensammlung gefunden
+    (`3D/<Hersteller>/<Bestellnummer>.stp`, mit oder ohne Bindestriche) oder in `QET_3D_DIR`; die Grundfläche auf der
+    Platte bestimmt, wie ein Modell steht, die Tiefe ist seine eigene. Ohne Maßangabe nimmt ein Gerät den Umriss
+    aus dem Modell.
+  - Der Schrank (über seinen Artikel) erscheint halbdurchsichtig; Tür und Seitenwände sind eigene Montageflächen
+    (`face="door|left|right"`), ihre Geräte zeigen nach außen.
+  - Zubehör (`accessories`, `artikel_N` am Schaltplan-Gerät) wird mit eingebaut, z. B. die ET-200SP-BaseUnit unter
+    ihrem Modul; Klemmenleisten zeigen jede Klemme der QElectroTech-Klemmenleiste mit ihrem Modell.
+  - Kanäle ohne Modell als geschlitzte Kanäle mit Deckel. Export als glTF (`.glb`) für jeden 3D-Betrachter.
+- `bohrbilder.csv` in Firmen- oder Benutzersammlung: Bohrungen, Gewinde und Ausschnitte für Teile ohne Bohrbild
+  (Bestellnummer mit Platzhaltern, Maße von der Gerätemitte, Quelle je Zeile – Werte aus Datenblättern).
+- Skript-API: `setShapePanel`, `shapePanel`, `panelReport`, `exportPanelDxf`, `stepInfo`, `exportPanel3D`,
+  `addPanelGrid`.
 
 ## Werkzeuge
 
@@ -90,6 +114,14 @@ In `tools/symbole/`:
   (Spule, Kontakt, Schutzschalter, SPS-Baugruppe, SPS-Kanal, Gerätepin).
 - `anschluesse_ergaenzen.py`, `nachzeichnen_symbole.py`: Anschlüsse ergänzen, eigene Symbole nachzeichnen
   (`bauteile/nachgezeichnet/`).
+
+## MCP-Server
+
+Unter `misc/qet-mcp/` liegt ein Model-Context-Protocol-Server (nur Python-Standardbibliothek), mit dem ein
+KI-Assistent QElectroTech-Projekte lesen, prüfen und ändern kann: Projektinfo, Elemente, Leiter, Unterschiede
+(Diff), Export ohne Oberfläche, Bearbeiten, Symbole bauen, Suche und Import im EPLAN Data Portal, Regel- und
+Layoutprüfung, SQL auf die Projektdatenbank, Skript-Knöpfe und ein Live-Modus auf dem geöffneten Projekt.
+Einrichtung und alle Werkzeuge: [misc/qet-mcp/README.md](misc/qet-mcp/README.md).
 
 ## Für KI-Assistenten
 

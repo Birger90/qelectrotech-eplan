@@ -30312,6 +30312,26 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
         <source>Cabinet layout</source>
         <translation>Schaltschrankaufbau</translation>
     </message>
+    <message>
+        <source>Build cabinet...</source>
+        <translation>Schaltschrank aufbauen…</translation>
+    </message>
+    <message>
+        <source>The cabinet layout in a few guided steps: enclosure, rails and ducts, devices, terminal strips, check, 3D, export</source>
+        <translation>Der Schaltschrankaufbau in wenigen geführten Schritten: Schrank, Schienen und Kanäle, Geräte, Klemmenleisten, Prüfung, 3D, Export</translation>
+    </message>
+    <message>
+        <source>Layout check</source>
+        <translation>Aufbauprüfung</translation>
+    </message>
+    <message>
+        <source>A side panel with every finding of the layout; a click shows the part</source>
+        <translation>Seitenleiste mit allen Befunden des Aufbaus; ein Klick zeigt das Teil</translation>
+    </message>
+    <message>
+        <source>Single steps</source>
+        <translation>Einzelschritte</translation>
+    </message>
 </context>
 <context>
     <name>PanelTemplateDialog</name>
@@ -30452,6 +30472,277 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <message>
         <source>The zero point of the mounting plate was not found on the layout page.</source>
         <translation>Der Nullpunkt der Montageplatte wurde auf der Aufbauseite nicht gefunden.</translation>
+    </message>
+</context>
+<context>
+    <name>PanelCheckDock</name>
+    <message>
+        <source>Layout check</source>
+        <translation>Aufbauprüfung</translation>
+    </message>
+    <message>
+        <source>Click a finding to select the part on the folio</source>
+        <translation>Befund anklicken: das Teil wird auf dem Blatt ausgewählt</translation>
+    </message>
+    <message>
+        <source>Check again</source>
+        <translation>Erneut prüfen</translation>
+    </message>
+    <message>
+        <source>No folio.</source>
+        <translation>Kein Blatt.</translation>
+    </message>
+    <message>
+        <source>This folio has no cabinet layout yet. Use "Build cabinet..." to start.</source>
+        <translation>Dieses Blatt hat noch keinen Schaltschrankaufbau. Mit „Schaltschrank aufbauen…“ beginnen.</translation>
+    </message>
+    <message>
+        <source>No findings: the layout is fine.</source>
+        <translation>Keine Befunde: der Aufbau ist in Ordnung.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n finding(s) - click one to show the part.</source>
+        <translation>
+            <numerusform>%n Befund – anklicken zeigt das Teil.</numerusform>
+            <numerusform>%n Befunde – anklicken zeigt das Teil.</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>PanelAssistant</name>
+    <message>
+        <source>Build cabinet</source>
+        <translation>Schaltschrank aufbauen</translation>
+    </message>
+    <message>
+        <source>Enclosure and mounting plate</source>
+        <translation>Schrank und Montageplatte</translation>
+    </message>
+    <message>
+        <source>Choose the enclosure, e.g. a Rittal VX by its order number; its mounting plate comes with it.</source>
+        <translation>Schrank wählen, z. B. Rittal VX über die Bestellnummer; die Montageplatte kommt mit.</translation>
+    </message>
+    <message>
+        <source>Choose...</source>
+        <translation>Auswählen…</translation>
+    </message>
+    <message>
+        <source> rows</source>
+        <translation> Reihen</translation>
+    </message>
+    <message>
+        <source>duct %1 mm</source>
+        <translation>Kanal %1 mm</translation>
+    </message>
+    <message>
+        <source>Create</source>
+        <translation>Anlegen</translation>
+    </message>
+    <message>
+        <source>DIN rails and cable ducts</source>
+        <translation>Hutschienen und Kabelkanäle</translation>
+    </message>
+    <message>
+        <source>Ducts on the edges and between the rows, one DIN rail per row. Move or stretch them afterwards as you like.</source>
+        <translation>Kanäle am Rand und zwischen den Reihen, eine Hutschiene je Reihe. Danach beliebig verschieben oder ziehen.</translation>
+    </message>
+    <message>
+        <source>Devices from the schematic</source>
+        <translation>Geräte aus dem Schaltplan</translation>
+    </message>
+    <message>
+        <source>Every device with an order number goes onto the rails at its real size, with the manufacturer's drawing.</source>
+        <translation>Jedes Gerät mit Bestellnummer kommt in echter Größe auf die Schienen, mit der Herstellerzeichnung.</translation>
+    </message>
+    <message>
+        <source>Place</source>
+        <translation>Platzieren</translation>
+    </message>
+    <message>
+        <source>Terminal strips</source>
+        <translation>Klemmenleisten</translation>
+    </message>
+    <message>
+        <source>The terminal strips of the project onto the rails, terminal by terminal as in the terminal plans.</source>
+        <translation>Die Klemmenleisten des Projekts auf die Schienen, Klemme für Klemme wie im Klemmenplan.</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>Prüfen</translation>
+    </message>
+    <message>
+        <source>Parts on each other, in a duct, beyond the plate, without holes. Click a finding to see the part.</source>
+        <translation>Teile übereinander, im Kanal, über die Platte hinaus, ohne Bohrbild. Befund anklicken zeigt das Teil.</translation>
+    </message>
+    <message>
+        <source>Check list</source>
+        <translation>Prüfliste</translation>
+    </message>
+    <message>
+        <source>3D view</source>
+        <translation>3D-Ansicht</translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <translation>Exportieren</translation>
+    </message>
+    <message>
+        <source>3D and manufacturing</source>
+        <translation>3D und Fertigung</translation>
+    </message>
+    <message>
+        <source>Look at the cabinet in 3D, then export the drilling files (DXF), hole and cut lists.</source>
+        <translation>Den Schrank in 3D ansehen, dann Bohrdateien (DXF), Loch- und Zuschnittlisten exportieren.</translation>
+    </message>
+    <message>
+        <source>Done.</source>
+        <translation>Erledigt.</translation>
+    </message>
+    <message>
+        <source>Mounting plate found, no enclosure yet.</source>
+        <translation>Montageplatte vorhanden, noch kein Schrank.</translation>
+    </message>
+    <message>
+        <source>Not yet.</source>
+        <translation>Noch nicht.</translation>
+    </message>
+    <message>
+        <source>No findings.</source>
+        <translation>Keine Befunde.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n rail(s) and duct(s) on the plate.</source>
+        <translation>
+            <numerusform>%n Schiene/Kanal auf der Platte.</numerusform>
+            <numerusform>%n Schienen und Kanäle auf der Platte.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n device(s) on the plate.</source>
+        <translation>
+            <numerusform>%n Gerät auf der Platte.</numerusform>
+            <numerusform>%n Geräte auf der Platte.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n terminal strip(s) on the plate.</source>
+        <translation>
+            <numerusform>%n Klemmenleiste auf der Platte.</numerusform>
+            <numerusform>%n Klemmenleisten auf der Platte.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n finding(s) to look at.</source>
+        <translation>
+            <numerusform>%n Befund ansehen.</numerusform>
+            <numerusform>%n Befunde ansehen.</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <source>rails and ducts as a grid</source>
+        <translation>Schienen und Kanäle als Raster</translation>
+    </message>
+</context>
+<context>
+    <name>PanelShapePropertiesWidget</name>
+    <message>
+        <source>Mounting plate (inside)</source>
+        <translation>Montageplatte (innen)</translation>
+    </message>
+    <message>
+        <source>Door</source>
+        <translation>Tür</translation>
+    </message>
+    <message>
+        <source>Left side wall</source>
+        <translation>Seitenwand links</translation>
+    </message>
+    <message>
+        <source>Right side wall</source>
+        <translation>Seitenwand rechts</translation>
+    </message>
+    <message>
+        <source>Height above the surface</source>
+        <translation>Höhe über der Fläche</translation>
+    </message>
+    <message>
+        <source>Where</source>
+        <translation>Lage</translation>
+    </message>
+    <message>
+        <source>Kind</source>
+        <translation>Art</translation>
+    </message>
+    <message>
+        <source>Designation</source>
+        <translation>Bezeichnung</translation>
+    </message>
+    <message>
+        <source>Manufacturer</source>
+        <translation>Hersteller</translation>
+    </message>
+    <message>
+        <source>Article number</source>
+        <translation>Artikelnummer</translation>
+    </message>
+    <message>
+        <source>All manufacturing data...</source>
+        <translation>Alle Fertigungsdaten…</translation>
+    </message>
+    <message>
+        <source>Fixing holes, spacing, scale, STEP model -- the full dialog (also by double click)</source>
+        <translation>Befestigungslöcher, Abstand, Maßstab, STEP-Modell – der ausführliche Dialog (auch per Doppelklick)</translation>
+    </message>
+    <message>
+        <source>Cabinet layout part</source>
+        <translation>Teil des Schaltschrankaufbaus</translation>
+    </message>
+    <message>
+        <source>Mounting surface</source>
+        <translation>Montagefläche</translation>
+    </message>
+    <message>
+        <source>DIN rail</source>
+        <translation>Hutschiene</translation>
+    </message>
+    <message>
+        <source>Cable duct</source>
+        <translation>Kabelkanal</translation>
+    </message>
+    <message>
+        <source>C profile</source>
+        <translation>C-Profil</translation>
+    </message>
+    <message>
+        <source>Cut-out</source>
+        <translation>Ausschnitt</translation>
+    </message>
+    <message>
+        <source>Keep-out area</source>
+        <translation>Sperrfläche</translation>
+    </message>
+    <message>
+        <source>Enclosure</source>
+        <translation>Schaltschrank</translation>
+    </message>
+    <message>
+        <source>Length</source>
+        <translation>Länge</translation>
+    </message>
+    <message>
+        <source>Width</source>
+        <translation>Breite</translation>
+    </message>
+    <message>
+        <source>Height</source>
+        <translation>Höhe</translation>
+    </message>
+    <message>
+        <source>change size of %1</source>
+        <translation>Größe von %1 ändern</translation>
     </message>
 </context>
 </TS>

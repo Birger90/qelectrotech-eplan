@@ -1115,6 +1115,10 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/panel/panelstep.h
   ${QET_DIR}/sources/panel/panel3dview.cpp
   ${QET_DIR}/sources/panel/panel3dview.h
+  ${QET_DIR}/sources/panel/panelshapewidget.cpp
+  ${QET_DIR}/sources/panel/panelshapewidget.h
+  ${QET_DIR}/sources/panel/panelassistant.cpp
+  ${QET_DIR}/sources/panel/panelassistant.h
   ${QET_DIR}/sources/panel/panelmenu.cpp
   ${QET_DIR}/sources/panel/panelmenu.h
   ${QET_DIR}/sources/panel/panelimport.cpp

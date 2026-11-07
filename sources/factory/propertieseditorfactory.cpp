@@ -43,6 +43,7 @@
 #include "../ui/inditextpropertieswidget.h"
 #include "../ui/multielementinfowidget.h"
 #include "../ui/shapegraphicsitempropertieswidget.h"
+#include "../panel/panelshapewidget.h"
 
 #include <QGraphicsItem>
 #include <QSet>
@@ -221,6 +222,17 @@ PropertiesEditorWidget *PropertiesEditorFactory::propertiesEditor(
 			QList<QetShapeItem *> shapes_list;
 			for (QGraphicsItem *qgi : items) {
 				shapes_list.append(static_cast<QetShapeItem*>(qgi));
+			}
+				// one part of the cabinet layout (duct, rail, surface ...):
+				// its own panel with length, width and part
+			if (shapes_list.size() == 1 && !shapes_list.first()->panelData().isNull())
+			{
+				if (class_name == PanelShapePropertiesWidget::staticMetaObject.className())
+				{
+					static_cast<PanelShapePropertiesWidget*>(editor)->setItem(shapes_list.first());
+					return editor;
+				}
+				return new PanelShapePropertiesWidget(shapes_list.first(), parent);
 			}
 
 			if (class_name == ShapeGraphicsItemPropertiesWidget::staticMetaObject.className())

@@ -25,6 +25,7 @@
 #include "paneldxf.h"
 #include "panellayout.h"
 #include "panelstep.h"
+#include "panelassistant.h"
 #include "../ElementsCollection/xmlelementcollection.h"
 #include "../NameList/nameslist.h"
 #include "../QPropertyUndoCommand/qpropertyundocommand.h"
@@ -507,8 +508,24 @@ PanelMenu::PanelMenu(QETDiagramEditor *editor) :
 		self->editShape(shape);
 		return true;
 	};
-	auto add = [this](const QString &text, const QString &tip, auto slot) {
-		QAction *a = addAction(text);
+		// the everyday commands on top, the single steps below in a submenu
+	QAction *assistant = addAction(tr("Build cabinet..."));
+	assistant->setStatusTip(tr("The cabinet layout in a few guided steps: enclosure, rails and ducts, devices, terminal strips, check, 3D, export"));
+	connect(assistant, &QAction::triggered, this, &PanelMenu::showAssistant);
+	m_check_action = addAction(tr("Layout check"));
+	m_check_action->setCheckable(true);
+	m_check_action->setStatusTip(tr("A side panel with every finding of the layout; a click shows the part"));
+	connect(m_check_action, &QAction::toggled, this, &PanelMenu::showChecks);
+	QAction *view3d = addAction(tr("3D view..."));
+	view3d->setStatusTip(tr("The cabinet layout of this folio in 3D, with the STEP models of the parts"));
+	connect(view3d, &QAction::triggered, this, &PanelMenu::show3D);
+	QAction *exp = addAction(tr("Export manufacturing data (DXF)..."));
+	exp->setStatusTip(tr("One DXF per mounting surface with every hole, a hole list and a cut list"));
+	connect(exp, &QAction::triggered, this, &PanelMenu::exportManufacturing);
+	addSeparator();
+	QMenu *steps = addMenu(tr("Single steps"));
+	auto add = [this, steps](const QString &text, const QString &tip, auto slot) {
+		QAction *a = steps->addAction(text);
 		a->setStatusTip(tip);
 		connect(a, &QAction::triggered, this, slot);
 		m_edit_actions << a;
@@ -520,7 +537,7 @@ PanelMenu::PanelMenu(QETDiagramEditor *editor) :
 	add(tr("Insert mounting surface..."),
 		tr("A mounting plate, door or wall of the given size, drawn to scale on this folio"),
 		&PanelMenu::insertSurface);
-	addSeparator();
+	steps->addSeparator();
 	add(tr("Insert DIN rail..."), tr("A DIN rail (TS 35) on the mounting surface, with its fixing holes"),
 		[this]() {insertProfile(PanelData::DinRail);});
 	add(tr("Insert cable duct..."), tr("A wiring duct on the mounting surface, with its fixing holes"),
@@ -546,31 +563,68 @@ PanelMenu::PanelMenu(QETDiagramEditor *editor) :
 		&PanelMenu::insertCutout);
 	add(tr("Insert keep-out area..."), tr("An area of the mounting surface where no hole may be drilled"),
 		&PanelMenu::insertKeepout);
-	addSeparator();
+	steps->addSeparator();
 	add(tr("Manufacturing data of the selection..."),
 		tr("Role and data of the selected shape, or mounting variant, size and STEP model of the selected device"),
 		&PanelMenu::editSelected);
-	addSeparator();
-	m_hole_view = addAction(tr("Drilling view"));
+	steps->addSeparator();
+	m_hole_view = steps->addAction(tr("Drilling view"));
 	m_hole_view->setCheckable(true);
 	m_hole_view->setStatusTip(tr("Show the holes and the device outlines over the cabinet layout"));
 	connect(m_hole_view, &QAction::toggled, this, &PanelMenu::toggleHoleView);
-	QAction *report = addAction(tr("Manufacturing report..."));
+	QAction *report = steps->addAction(tr("Manufacturing report..."));
 	report->setStatusTip(tr("Holes, cut list and warnings of every mounting surface"));
 	connect(report, &QAction::triggered, this, &PanelMenu::showReport);
-	QAction *view3d = addAction(tr("3D view..."));
-	view3d->setStatusTip(tr("The cabinet layout of this folio in 3D, with the STEP models of the parts"));
-	connect(view3d, &QAction::triggered, this, &PanelMenu::show3D);
-	addSeparator();
-	QAction *exp = addAction(tr("Export manufacturing data (DXF)..."));
-	exp->setStatusTip(tr("One DXF per mounting surface with every hole, a hole list and a cut list"));
-	connect(exp, &QAction::triggered, this, &PanelMenu::exportManufacturing);
+	m_edit_actions << assistant;
 	updateActions();
+}
+
+/**
+	@brief PanelMenu::showAssistant
+	"Build cabinet...": the guided steps, each one running the command of
+	this menu that does it.
+*/
+void PanelMenu::showAssistant()
+{
+	Diagram *d = diagram();
+	if (!d) return;
+	PanelAssistant::Actions a;
+	a.enclosure = [this]() {insertEnclosure();};
+	a.devices = [this]() {placeDevices();};
+	a.terminals = [this]() {placeTerminalStrips();};
+	a.checks = [this]() {if (m_check_action) m_check_action->setChecked(true); showChecks(true);};
+	a.view3d = [this]() {show3D();};
+	a.manufacturing = [this]() {exportManufacturing();};
+	auto *assistant = new PanelAssistant(d, a, m_editor);
+	assistant->show();
+}
+
+/**
+	@brief PanelMenu::showChecks
+	The check list as a side panel of the editor, following the folio
+	that is open.
+*/
+void PanelMenu::showChecks(bool on)
+{
+	if (!m_check_dock) {
+		if (!on) return;
+		m_check_dock = new PanelCheckDock(m_editor);
+		m_editor->addDockWidget(Qt::RightDockWidgetArea, m_check_dock);
+		connect(m_check_dock, &QDockWidget::visibilityChanged, this, [this](bool visible) {
+			if (m_check_action && m_check_action->isChecked() != visible && !visible) m_check_action->setChecked(false);
+		});
+	}
+	m_check_dock->setVisible(on);
+	if (on) {
+		m_check_dock->setDiagram(diagram());
+		m_check_dock->raise();
+	}
 }
 
 void PanelMenu::updateActions()
 {
 	Diagram *d = diagram();
+	if (m_check_dock && m_check_dock->isVisible()) m_check_dock->setDiagram(d);
 	const bool editable = d && d->project() && !d->project()->isReadOnly();
 	for (QAction *a : std::as_const(m_edit_actions)) a->setEnabled(editable);
 	if (m_hole_view && m_hole_view->isChecked()) refreshHoleView();

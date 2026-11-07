@@ -61,6 +61,7 @@
 #include "../panel/panellayout.h"
 #include "../panel/panelstep.h"
 #include "../panel/panel3dview.h"
+#include "../panel/panelassistant.h"
 #include "../panel/panelimport.h"
 #include "../panel/panelmenu.h"
 #include "../import/eplandxf/eplanpartimporter.h"
@@ -361,6 +362,26 @@ QStringList QetScriptApi::exportPanelDxf(int folioIndex, const QString &outDir, 
 		else log(QStringLiteral("qet.exportPanelDxf: %1: %2").arg(path, error));
 	}
 	return written;
+}
+
+/**
+	@brief QetScriptApi::addPanelGrid
+	Rails and ducts as a grid on the mounting plate of the folio, like the
+	step "DIN rails and cable ducts" of "Build cabinet...": ducts on the
+	edges and between the rows, one rail per row. @p rows 0: as many as fit.
+	@return the number of parts added
+*/
+int QetScriptApi::addPanelGrid(int folioIndex, int rows, double ductMm)
+{
+	if (!m_project) return 0;
+	const QList<Diagram *> diagrams = m_project->folios();
+	if (folioIndex < 0 || folioIndex >= diagrams.count()) return 0;
+	for (QetShapeItem *s : PanelLayout::surfaces(diagrams.at(folioIndex))) {
+		if (!s->panelData().face.isEmpty()) continue;
+		const int n = rows > 0 ? rows : PanelAssistant::suggestedRows(PanelLayout(s).heightMm(), ductMm);
+		return PanelAssistant::addGrid(s, n, ductMm);
+	}
+	return 0;
 }
 
 /**

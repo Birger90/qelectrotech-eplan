@@ -84,12 +84,16 @@ class PanelMenu : public QMenu
 			/// number or a size is placed, with the manufacturer's drawing;
 			/// returns a report
 		static QString placeDevicesOn(Diagram *diagram, QWidget *parent, bool interactive);
+			/// a shape of the cabinet layout (surface, rail, duct, ...) on
+			/// @p d as one undo step, coloured like EPLAN Pro Panel
+		static QetShapeItem *addShape(Diagram *d, const QRectF &scene_rect, bool ellipse,
+									  const PanelData &data, const QString &undo_text);
 
 	private:
 		Diagram *diagram() const;
 		static QetShapeItem *targetSurface(Diagram *d);
-		QetShapeItem *addShape(Diagram *d, const QRectF &scene_rect, bool ellipse,
-							   const PanelData &data, const QString &undo_text);
+		void showAssistant();
+		void showChecks(bool on);
 
 		void insertEnclosure();
 		void insertSurface();
@@ -114,6 +118,8 @@ class PanelMenu : public QMenu
 		QETDiagramEditor *m_editor = nullptr;
 		QList<QAction *> m_edit_actions;
 		QAction *m_hole_view = nullptr;
+		QAction *m_check_action = nullptr;
+		QPointer<class PanelCheckDock> m_check_dock;
 		QList<QPointer<QObject>> m_overlays;
 };
 

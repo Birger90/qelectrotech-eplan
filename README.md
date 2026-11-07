@@ -52,6 +52,15 @@
 >   number.
 >
 > **Cabinet layout and panel manufacturing** (menu *Cabinet layout*, the EPLAN Pro Panel 2D workflow)
+> - *Build cabinet...*: the whole layout in six guided steps with a tick each -- enclosure with mounting plate
+>   (Rittal by order number), DIN rails and ducts as a grid (ducts on the edges and between the rows, one rail per
+>   row), devices and terminal strips of the schematic, check, 3D and export. The single commands stay under
+>   *Single steps*.
+> - *Layout check* as a side panel: parts on each other, in a duct, beyond the surface, without holes, terminal
+>   strips too short for their terminals (widths from the models); a click selects and shows the part, the list
+>   follows every change. Parts of one device and a device hung onto its partner (combination list) are fine.
+> - A single click on a duct, rail or surface shows its own properties in the side panel: name, length, width,
+>   height, part, and for a surface where it is (plate, door, left/right wall); every change is one undo step.
 > - Mounting surfaces (plate, door, wall) to scale, DIN rails, cable ducts and C profiles with their fixing rows
 >   (thread or through hole, spacing, end distance, zero cut), cut-outs (round, rectangle, slot, hex, oct) and
 >   keep-out areas -- ordinary shapes carrying a `<panel>` role, so they move, copy and undo like any shape.
@@ -64,8 +73,20 @@
 > - Drilling view over the sheet, manufacturing report with warnings (hole in a keep-out area, overlaps, device
 >   without pattern), export: one DXF R12 in mm per surface (layers per hole kind) plus hole list and cut list.
 > - 3D view (Qt OpenGL) of plate, rails, ducts and devices; STEP models of parts are shown when QElectroTech is
->   built with Open CASCADE (MSYS2 package `opencascade`, found automatically by CMake). A click selects on the sheet.
-> - Script API: `setShapePanel`, `shapePanel`, `panelReport`, `exportPanelDxf`, `stepInfo`.
+>   built with Open CASCADE (MSYS2 package `opencascade`, found automatically by CMake). A click selects on the sheet
+>   and lights up the whole terminal strip or the device with its carrier.
+>   - Models are found by order number in the folder `3D` next to the company collection
+>     (`3D/<manufacturer>/<order number>.stp`, with or without dashes) or `QET_3D_DIR`; the footprint on the plate
+>     decides how a model stands, its depth is its own. Without a size a device takes its outline from the model.
+>   - The enclosure (by its article) is drawn see-through; door and side walls are mounting surfaces of their own
+>     (`face="door|left|right"`), their devices face outwards.
+>   - Accessories (`accessories`, `artikel_N` of the schematic device) are mounted with the device, e.g. an ET 200SP
+>     BaseUnit under its module; terminal strips show every terminal of QElectroTech's terminal strip with its model.
+>   - Ducts without a model are drawn as slotted ducts with lid. Export as glTF (`.glb`) for any 3D viewer.
+> - `bohrbilder.csv` in the company or user collection: holes, threads and cut-outs for parts without a pattern
+>   (order number with wildcards, from the device centre, source per line -- values from data sheets).
+> - Script API: `setShapePanel`, `shapePanel`, `panelReport`, `exportPanelDxf`, `stepInfo`, `exportPanel3D`,
+>   `addPanelGrid`.
 >
 > **Tools** (`tools/symbole/`)
 > - `pdf_symbol.py` / `pdf_blatt.py`: take symbols or whole sheets 1:1 from a vector PDF (e.g. an EPLAN plan), with
@@ -74,6 +95,12 @@
 >   contact, protection device, PLC module, PLC channel, device pin).
 > - `anschluesse_ergaenzen.py`, `nachzeichnen_symbole.py`: add missing terminals, redraw your own symbols
 >   (`bauteile/nachgezeichnet/`).
+>
+> **MCP server** (`misc/qet-mcp/`): a Model Context Protocol server (Python standard library only) that lets an
+> AI assistant read, check and change QElectroTech projects -- project info, elements, conductors, diffs, headless
+> exports, edits, symbol building, EPLAN Data Portal search and import, design-rule and layout checks, SQL over the
+> project database, script buttons, and a live mode on the open project. Set it up and see every tool in
+> [misc/qet-mcp/README.md](misc/qet-mcp/README.md).
 >
 > **For AI assistants**: two skills in `.claude/skills/` (Claude Code loads them in a clone; other tools: read the
 > `SKILL.md`, it points to its sub files):

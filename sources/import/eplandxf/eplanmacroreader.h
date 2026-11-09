@@ -40,6 +40,13 @@ class EplanMacroReader
 {
 	public:
 		bool read(const QString &path);
+		/**
+			Reads the 2D panel layout variant (MacroFuncType 6) instead: the
+			front view the manufacturer draws as sub-objects of a graphic
+			(lines S31, arcs S32, rectangles S89, texts S30), in mm, y up.
+			Fails when the macro has no such variant or it holds no drawing.
+		*/
+		bool readLayout(const QString &path);
 		QString errorString() const { return m_error; }
 		EplanSymbolData symbol() const { return m_symbol; }
 		/// identifying letters of the black box ("T"), empty when it has none

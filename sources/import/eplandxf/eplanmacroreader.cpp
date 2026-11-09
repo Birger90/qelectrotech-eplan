@@ -21,6 +21,9 @@
 #include <QFile>
 #include <QMap>
 #include <QRegularExpression>
+#include <QtMath>
+
+#include <cmath>
 
 namespace {
 	/// "x/y" or "x/y/z" -> point (EPLAN mm, y up)
@@ -222,5 +225,116 @@ bool EplanMacroReader::read(const QString &path)
 	}
 	m_symbol.pin_fields = false;
 	m_symbol.source = QStringLiteral("Generated from the manufacturer's EPLAN macro");
+	return true;
+}
+
+bool EplanMacroReader::readLayout(const QString &path)
+{
+	m_symbol = EplanSymbolData();
+	m_letters.clear();
+	m_description.clear();
+	m_skipped.clear();
+	m_error.clear();
+
+	QFile f(path);
+	QDomDocument doc;
+	if (!f.open(QIODevice::ReadOnly) || !doc.setContent(&f)
+	    || doc.documentElement().tagName() != QLatin1String("EplanPxfRoot")) {
+		m_error = QStringLiteral("%1 is not an EPLAN macro").arg(path);
+		return false;
+	}
+	const QDomElement root = doc.documentElement();
+	// MacroFuncType 6 = "2D-Montageaufbau" (panel layout); Siemens ships it
+	// as "<type>_2D.ema" next to the 3D macro
+	QDomElement variant;
+	for (QDomElement v = root.firstChildElement(QStringLiteral("MacroVariant")); !v.isNull();
+	     v = v.nextSiblingElement(QStringLiteral("MacroVariant"))) {
+		if (v.attribute(QStringLiteral("MacroFuncType")) == QLatin1String("6")) {
+			variant = v;
+			break;
+		}
+	}
+	if (variant.isNull()) {
+		m_error = QStringLiteral("The macro has no panel layout variant");
+		return false;
+	}
+	m_description = language(variant.attribute(QStringLiteral("Description"),
+						    root.attribute(QStringLiteral("Description"))))
+			.section(QLatin1Char('\n'), 0, 0).trimmed();
+
+	// every element below the variant, in document order
+	QVector<QDomElement> all;
+	for (QDomElement e = variant.firstChildElement(); !e.isNull();) {
+		all << e;
+		if (!e.firstChildElement().isNull()) {
+			e = e.firstChildElement();
+			continue;
+		}
+		while (!e.isNull() && e != variant && e.nextSiblingElement().isNull())
+			e = e.parentNode().toElement();
+		if (e.isNull() || e == variant) break;
+		e = e.nextSiblingElement();
+	}
+	// the view is drawn by the graphic objects (O5); the function's frame and
+	// the macro box (O37) are not part of it
+	QStringList owners;
+	for (const QDomElement &e : std::as_const(all))
+		if (e.tagName() == QLatin1String("O5")) owners << e.attribute(QStringLiteral("A1"));
+
+	QMap<QString, int> skipped;
+	for (const QDomElement &e : std::as_const(all)) {
+		const QString tag = e.tagName();
+		if (!tag.startsWith(QLatin1Char('S')) || !owners.contains(e.attribute(QStringLiteral("R7")))) continue;
+		if (tag == QLatin1String("S31x5")) {  // line
+			QPointF a, b;
+			if (point(e.attribute(QStringLiteral("A531")), &a) && point(e.attribute(QStringLiteral("A532")), &b))
+				m_symbol.lines << QLineF(a, b);
+		} else if (tag == QLatin1String("S32x5")) {  // arc: start/end angle (rad), centre, radius
+			QPointF c, r;
+			if (!point(e.attribute(QStringLiteral("A555")), &c) || !point(e.attribute(QStringLiteral("A556")), &r))
+				continue;
+			const double radius = r.x();
+			const double a0 = e.attribute(QStringLiteral("A553")).toDouble();
+			double a1 = e.attribute(QStringLiteral("A554")).toDouble();
+			while (a1 <= a0) a1 += 2 * M_PI;  // counter-clockwise from start to end
+			if (a1 - a0 >= 2 * M_PI - 1e-6) {
+				m_symbol.circles << qMakePair(c, radius);
+				continue;
+			}
+			const int n = qMax(2, int(std::ceil((a1 - a0) / (M_PI / 18))));  // 10° steps
+			QPointF prev(c.x() + radius * std::cos(a0), c.y() + radius * std::sin(a0));
+			for (int k = 1; k <= n; ++k) {
+				const double t = a0 + (a1 - a0) * k / n;
+				const QPointF p(c.x() + radius * std::cos(t), c.y() + radius * std::sin(t));
+				m_symbol.lines << QLineF(prev, p);
+				prev = p;
+			}
+		} else if (tag == QLatin1String("S89x5")) {  // rectangle
+			QPointF a, b;
+			if (!point(e.attribute(QStringLiteral("A1651")), &a) || !point(e.attribute(QStringLiteral("A1652")), &b))
+				continue;
+			if (e.attribute(QStringLiteral("A1656")) == QLatin1String("1"))
+				m_symbol.filled << QRectF(a, b).normalized();
+			else
+				addRect(m_symbol.lines, a, b);
+		} else if (tag == QLatin1String("S30x5")) {  // text
+			QPointF at;
+			const QString s = language(e.attribute(QStringLiteral("A511"))).trimmed();
+			if (s.isEmpty() || !point(e.attribute(QStringLiteral("A501")), &at)) continue;
+			m_symbol.texts << text(s, at, 0);
+		} else {
+			++skipped[tag];
+		}
+	}
+	for (auto it = skipped.cbegin(); it != skipped.cend(); ++it)
+		m_skipped << QStringLiteral("%1 x %2").arg(it.value()).arg(it.key());
+	if (m_symbol.lines.isEmpty() && m_symbol.circles.isEmpty()) {
+		m_error = QStringLiteral("The panel layout of the macro holds no drawing");
+		return false;
+	}
+	m_symbol.pin_fields = false;
+	// the scale of the panel layout views (Data Portal, DWG): true size side by side
+	m_symbol.scale = 2.5;
+	m_symbol.source = QStringLiteral("Generated from the manufacturer's EPLAN panel layout macro");
 	return true;
 }

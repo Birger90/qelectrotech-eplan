@@ -764,9 +764,35 @@ bool EplanPartImporter::importEdz(const QString &edz_path, const QString &manufa
 			QDirIterator::Subdirectories);
 	while (it.hasNext()) {
 		const QString ema = it.next();
+		// the 2D panel layout (front view) may sit in its own macro
+		// ("<type>_2D.ema") or next to the schematic in the same one
+		EplanMacroReader layout;
+		const bool has_layout = layout.readLayout(ema);
+		{
+			if (has_layout) {
+				const EplanSymbolData data = layout.symbol();
+				const QString element_name = QStringLiteral("%1 Aufbau").arg(type);
+				const QVector<QPair<QString, QString>> info {
+					{QStringLiteral("manufacturer"), manufacturer},
+					{QStringLiteral("manufacturer_reference"), has_part ? part.orderNumber() : type},
+					{QStringLiteral("designation"), has_part && !part.typeNumber().isEmpty() ? part.typeNumber() : type},
+					{QStringLiteral("description"), layout.description()}};
+				QDomDocument doc = EplanElementBuilder::build(
+					data, {{QStringLiteral("de"), element_name}, {QStringLiteral("en"), element_name}}, info);
+				if (has_part) part.appendMountingData(doc);
+				const QString out = QDir(folder).filePath(safe(element_name) + QStringLiteral(".elmt"));
+				if (!writeElement(doc, out, &m_error)) return false;
+				m_written << out;
+				m_messages << QStringLiteral("%1: panel layout from the EPLAN macro (%2 lines)")
+						      .arg(element_name).arg(data.lines.size());
+				if (!layout.skipped().isEmpty())
+					m_messages << QStringLiteral("not taken over: %1").arg(layout.skipped().join(QStringLiteral(", ")));
+			}
+		}
 		EplanMacroReader reader;
 		if (!reader.read(ema)) {
-			m_messages << QStringLiteral("%1: %2").arg(QFileInfo(ema).fileName(), reader.errorString());
+			if (!has_layout)
+				m_messages << QStringLiteral("%1: %2").arg(QFileInfo(ema).fileName(), reader.errorString());
 			continue;
 		}
 		EplanSymbolData data = reader.symbol();

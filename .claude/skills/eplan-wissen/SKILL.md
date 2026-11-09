@@ -64,6 +64,7 @@ Abschnitt lesen, die großen Tabellen (IDs, XML, Meldungen) per Grep durchsuchen
 | Aufgabe / Frage | Datei |
 |---|---|
 | Prüfliste für QET-Nachbauten, Prüfläufe, Schemata | [pruefungen.md](referenz/pruefungen.md) |
+| EPLAN-Projektarchiv **.zw1** lesen (7z + EOD-Tabellen, Satzkopf, Eigenschaftsstrom, Verbindungen, Artikel, Kabel); Import nach QET: `Datenorlagen\eplan_zw1\eplan_nach_qet.py` bzw. `EPLAN-Import.cmd` | [zw1-projektarchiv.md](referenz/zw1-projektarchiv.md) |
 | Meldung Pnnnnnn: Ursache, Korrektur, QET-Prüfweg (alle 586; 130 als **Regel** markiert) | [meldungen.md](referenz/meldungen.md) (Grep) |
 | Projektarten, Dateiendungen, Vorlagen, Sichern/Packen, Normwechsel, Projektkorrektur | [projektverwaltung.md](referenz/projektverwaltung.md) |
 | Revision, Änderungsmarkierung, Vergleich ohne UUIDs | [revision.md](referenz/revision.md) |

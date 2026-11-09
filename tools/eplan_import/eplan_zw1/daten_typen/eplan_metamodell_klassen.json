@@ -1,0 +1,9200 @@
+{
+"quelle": "EPLAN 2025 ETrDMMetau.erx: ??_F<Klasse>Meta-Hüllen (Klassennummer im edx), Registrierungen im Aufrufgraph des Meta-Konstruktors (Tiefe 14); Vererbungsketten aus MSVC-RTTI (ETrDM*/EDm*-Module). Unvollständig: Felder, die Basisklassen über andere Wege registrieren (z. B. ee86 bei DMFunction), fehlen.",
+"klassen": {
+"214": {
+"meta": "DMArticleAccessoryListPositionMeta",
+"kette": [
+"DMArticleAccessoryListPosition",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"227": {
+"meta": "DMArticleAccessoryPlacementPositionMeta",
+"kette": [
+"DMArticleAccessoryPlacementPosition",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"215": {
+"meta": "DMArticleAccessoryPositionMeta",
+"kette": [
+"DMArticleAccessoryPosition",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"274": {
+"meta": "DMArticleDbObjectMeta",
+"kette": [
+"DMArticleDbObject",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xf265": [
+"h16"
+],
+"0xf266": [
+"i8"
+],
+"0xf268": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"195": {
+"meta": "DMArticleDoorPositionMeta",
+"kette": [
+"DMArticleDoorPosition",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"158": {
+"meta": "DMArticleDrillingPositionMeta",
+"kette": [
+"DMArticleDrillingPosition",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"271": {
+"meta": "DMArticleLibraryMeta",
+"kette": [
+"DMArticleLibrary",
+"DMDatabaseMainObject",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"197": {
+"meta": "DMArticleLockedMountingAreaPositionMeta",
+"kette": [
+"DMArticleLockedMountingAreaPosition",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"117": {
+"meta": "DMArticleMeta",
+"kette": [
+"DMArticle",
+"DMArticleDbObject",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xf265": [
+"h16"
+],
+"0xf266": [
+"i8"
+],
+"0xf268": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"196": {
+"meta": "DMArticleMountingPanelPositionMeta",
+"kette": [
+"DMArticleMountingPanelPosition",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"224": {
+"meta": "DMArticlePartConstructionPositionMeta",
+"kette": [
+"DMArticlePartConstructionPosition",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"242": {
+"meta": "DMArticleSafetyRelatedValuePositionMeta",
+"kette": [
+"DMArticleSafetyRelatedValuePosition",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"198": {
+"meta": "DMArticleSupportBarPositionMeta",
+"kette": [
+"DMArticleSupportBarPosition",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"159": {
+"meta": "DMArticleTerminalPositionMeta",
+"kette": [
+"DMArticleTerminalPosition",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"1": {
+"meta": "DMBaseMeta",
+"kette": [],
+"typen": {
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+]
+}
+},
+"5": {
+"meta": "DMBlockMeta",
+"kette": [
+"DMBlock",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+]
+}
+},
+"247": {
+"meta": "DMBlockUser2BlockRefMeta",
+"kette": [
+"DMBlockUser2BlockRef",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+]
+}
+},
+"171": {
+"meta": "DMCabBarBaseMeta",
+"kette": [
+"DMCabBarBase",
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser"
+],
+"typen": {
+"0xf48c": [
+"d8"
+],
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"172": {
+"meta": "DMCabBaseMeta",
+"kette": [
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase"
+],
+"typen": {
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"174": {
+"meta": "DMCabBusBarMeta",
+"kette": [
+"DMCabBusBar",
+"DMCabBarBase",
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase"
+],
+"typen": {
+"0xf48c": [
+"d8"
+],
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"188": {
+"meta": "DMCabBusBarSystemMeta",
+"kette": [
+"DMCabBusBarSystem",
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser"
+],
+"typen": {
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"180": {
+"meta": "DMCabComponentMeta",
+"kette": [
+"DMCabComponent",
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser"
+],
+"typen": {
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"189": {
+"meta": "DMCabCopperBundleMeta",
+"kette": [
+"DMCabCopperBundle",
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser"
+],
+"typen": {
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"173": {
+"meta": "DMCabDuctMeta",
+"kette": [
+"DMCabDuct",
+"DMCabBarBase",
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase"
+],
+"typen": {
+"0xf48c": [
+"d8"
+],
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"186": {
+"meta": "DMCabExternalConnPtInstanceMeta",
+"kette": [
+"DMCabExternalConnPtInstance",
+"DmgExternalInstance",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser"
+],
+"typen": {
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"183": {
+"meta": "DMCabInstallationSpaceMeta",
+"kette": [
+"DMCabInstallationSpace",
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser"
+],
+"typen": {
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"273": {
+"meta": "DMCabInterruptionPointMeta",
+"kette": [
+"DMCabInterruptionPoint",
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser"
+],
+"typen": {
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"184": {
+"meta": "DMCabMountingPanelMeta",
+"kette": [
+"DMCabMountingPanel",
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser"
+],
+"typen": {
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"178": {
+"meta": "DMCabMountingRailMeta",
+"kette": [
+"DMCabMountingRail",
+"DMCabBarBase",
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase"
+],
+"typen": {
+"0xf48c": [
+"d8"
+],
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"239": {
+"meta": "DMCabRoutingAccessoryMeta",
+"kette": [
+"DMCabRoutingAccessory",
+"DMCabComponent",
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase"
+],
+"typen": {
+"0xf64b": [
+"d8"
+],
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"185": {
+"meta": "DMCabRoutingSegmentMeta",
+"kette": [
+"DMCabRoutingSegment",
+"DMCabSegment",
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase"
+],
+"typen": {
+"0xf49b": [
+"i4"
+],
+"0xf498": [
+"p24"
+],
+"0xf499": [
+"p24"
+],
+"0xf49d": [
+"d8"
+],
+"0xf49c": [
+"i4"
+],
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"238": {
+"meta": "DMCabRoutingSplineMeta",
+"kette": [
+"DMCabRoutingSpline",
+"DMCabRoutingSegment",
+"DMCabSegment",
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase"
+],
+"typen": {
+"0xf49b": [
+"i4"
+],
+"0xf498": [
+"p24"
+],
+"0xf499": [
+"p24"
+],
+"0xf49d": [
+"d8"
+],
+"0xf49c": [
+"i4"
+],
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"187": {
+"meta": "DMCabSegmentMeta",
+"kette": [
+"DMCabSegment",
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser"
+],
+"typen": {
+"0xf498": [
+"p24"
+],
+"0xf499": [
+"p24"
+],
+"0xf49d": [
+"d8"
+],
+"0xf49c": [
+"i4"
+],
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"179": {
+"meta": "DMCabinetMeta",
+"kette": [
+"DMCabinet",
+"DMCabBase",
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser"
+],
+"typen": {
+"0xf416": [
+"s2"
+],
+"0xf48d": [
+"kv"
+],
+"0xf496": [
+"kv"
+],
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"166": {
+"meta": "DMConnection3DMeta",
+"kette": [
+"DMConnection3D",
+"DMConnectionRouting",
+"DMConnection",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xf458": [
+"?"
+],
+"0xf45b": [
+"?"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xeb34": [
+"b1"
+],
+"0xeb29": [
+"s2"
+],
+"0xeb2a": [
+"ref"
+],
+"0xeb2b": [
+"ref"
+],
+"0xeb2c": [
+"s2"
+],
+"0xeb2d": [
+"s2"
+],
+"0xeb2e": [
+"ref"
+],
+"0xeb2f": [
+"s2"
+],
+"0xeb30": [
+"s2"
+],
+"0xeaf6": [
+"kv"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeb33": [
+"?"
+],
+"0xeb36": [
+"?"
+],
+"0xfa1a": [
+"?"
+],
+"0xfa2c": [
+"?"
+],
+"0xfa50": [
+"?"
+],
+"0xfa51": [
+"liste:FV?$allo"
+],
+"0xeb38": [
+"i4"
+],
+"0xeb39": [
+"ref"
+],
+"0xeb3a": [
+"ref"
+],
+"0xeb3b": [
+"b1"
+],
+"0xeb3c": [
+"b1"
+],
+"0xeb3d": [
+"str"
+],
+"0xfa03": [
+"str"
+],
+"0xfa04": [
+"str"
+],
+"0xfa05": [
+"ref"
+],
+"0xfa06": [
+"i4"
+],
+"0xfa0e": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xfa12": [
+"s2"
+],
+"0xfa15": [
+"kv"
+],
+"0xfa16": [
+"kv"
+],
+"0xfa1b": [
+"ref"
+],
+"0xfa1c": [
+"ref"
+],
+"0xfa1d": [
+"str"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"233": {
+"meta": "DMConnectionCablingMeta",
+"kette": [
+"DMConnectionCabling",
+"DMConnectionRouting",
+"DMConnection",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xf458": [
+"?"
+],
+"0xf45b": [
+"?"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xeb34": [
+"b1"
+],
+"0xeb29": [
+"s2"
+],
+"0xeb2a": [
+"ref"
+],
+"0xeb2b": [
+"ref"
+],
+"0xeb2c": [
+"s2"
+],
+"0xeb2d": [
+"s2"
+],
+"0xeb2e": [
+"ref"
+],
+"0xeb2f": [
+"s2"
+],
+"0xeb30": [
+"s2"
+],
+"0xeaf6": [
+"kv"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeb33": [
+"?"
+],
+"0xeb36": [
+"?"
+],
+"0xfa1a": [
+"?"
+],
+"0xfa2c": [
+"?"
+],
+"0xfa50": [
+"?"
+],
+"0xfa51": [
+"liste:FV?$allo"
+],
+"0xeb38": [
+"i4"
+],
+"0xeb39": [
+"ref"
+],
+"0xeb3a": [
+"ref"
+],
+"0xeb3b": [
+"b1"
+],
+"0xeb3c": [
+"b1"
+],
+"0xeb3d": [
+"str"
+],
+"0xfa03": [
+"str"
+],
+"0xfa04": [
+"str"
+],
+"0xfa05": [
+"ref"
+],
+"0xfa06": [
+"i4"
+],
+"0xfa0e": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xfa12": [
+"s2"
+],
+"0xfa15": [
+"kv"
+],
+"0xfa16": [
+"kv"
+],
+"0xfa1b": [
+"ref"
+],
+"0xfa1c": [
+"ref"
+],
+"0xfa1d": [
+"str"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"18": {
+"meta": "DMConnectionMeta",
+"kette": [
+"DMConnection",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xeb34": [
+"b1"
+],
+"0xeb29": [
+"s2"
+],
+"0xeb2a": [
+"ref"
+],
+"0xeb2b": [
+"ref"
+],
+"0xeb2c": [
+"s2"
+],
+"0xeb2d": [
+"s2"
+],
+"0xeb2e": [
+"ref"
+],
+"0xeb2f": [
+"s2"
+],
+"0xeb30": [
+"s2"
+],
+"0xeaf6": [
+"kv"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeb33": [
+"?"
+],
+"0xeb36": [
+"?"
+],
+"0xfa1a": [
+"?"
+],
+"0xfa2c": [
+"?"
+],
+"0xfa50": [
+"?"
+],
+"0xfa51": [
+"liste:FV?$allo"
+],
+"0xeb38": [
+"i4"
+],
+"0xeb39": [
+"ref"
+],
+"0xeb3a": [
+"ref"
+],
+"0xeb3b": [
+"b1"
+],
+"0xeb3c": [
+"b1"
+],
+"0xeb3d": [
+"str"
+],
+"0xfa03": [
+"str"
+],
+"0xfa04": [
+"str"
+],
+"0xfa05": [
+"ref"
+],
+"0xfa06": [
+"i4"
+],
+"0xfa0e": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xfa12": [
+"s2"
+],
+"0xfa15": [
+"kv"
+],
+"0xfa16": [
+"kv"
+],
+"0xfa1b": [
+"ref"
+],
+"0xfa1c": [
+"ref"
+],
+"0xfa1d": [
+"str"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"232": {
+"meta": "DMConnectionRoutingMeta",
+"kette": [
+"DMConnectionRouting",
+"DMConnection",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser"
+],
+"typen": {
+"0xf458": [
+"?"
+],
+"0xf45b": [
+"?"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xeb34": [
+"b1"
+],
+"0xeb29": [
+"s2"
+],
+"0xeb2a": [
+"ref"
+],
+"0xeb2b": [
+"ref"
+],
+"0xeb2c": [
+"s2"
+],
+"0xeb2d": [
+"s2"
+],
+"0xeb2e": [
+"ref"
+],
+"0xeb2f": [
+"s2"
+],
+"0xeb30": [
+"s2"
+],
+"0xeaf6": [
+"kv"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeb33": [
+"?"
+],
+"0xeb36": [
+"?"
+],
+"0xfa1a": [
+"?"
+],
+"0xfa2c": [
+"?"
+],
+"0xfa50": [
+"?"
+],
+"0xfa51": [
+"liste:FV?$allo"
+],
+"0xeb38": [
+"i4"
+],
+"0xeb39": [
+"ref"
+],
+"0xeb3a": [
+"ref"
+],
+"0xeb3b": [
+"b1"
+],
+"0xeb3c": [
+"b1"
+],
+"0xeb3d": [
+"str"
+],
+"0xfa03": [
+"str"
+],
+"0xfa04": [
+"str"
+],
+"0xfa05": [
+"ref"
+],
+"0xfa06": [
+"i4"
+],
+"0xfa0e": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xfa12": [
+"s2"
+],
+"0xfa15": [
+"kv"
+],
+"0xfa16": [
+"kv"
+],
+"0xfa1b": [
+"ref"
+],
+"0xfa1c": [
+"ref"
+],
+"0xfa1d": [
+"str"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"53": {
+"meta": "DMContextPropertyInstanceMeta",
+"kette": [
+"DMContextPropertyInstance",
+"DmgPropertyInstance",
+"DmgBaseText",
+"DmgVisibleInstance",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject"
+],
+"typen": {
+"0xee17": [
+"s2"
+],
+"0xee18": [
+"b1"
+],
+"0xee19": [
+"b1"
+],
+"0xee1a": [
+"b1"
+],
+"0xee1b": [
+"i4"
+],
+"0xed65": [
+"s2"
+],
+"0xed66": [
+"s2"
+],
+"0xed63": [
+"s2"
+],
+"0xed64": [
+"s2"
+],
+"0xec55": [
+"p16"
+],
+"0xec56": [
+"ref"
+],
+"0xec57": [
+"s2"
+],
+"0xec5a": [
+"s2"
+],
+"0xec59": [
+"cpp:VDmgTextInfo"
+],
+"0xebfb": [
+"s2"
+],
+"0xebfc": [
+"s2"
+],
+"0xebfd": [
+"s2"
+],
+"0xebfe": [
+"dt16"
+],
+"0xebff": [
+"dt5"
+],
+"0xec00": [
+"b1"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"169": {
+"meta": "DMContourDefinitionMeta",
+"kette": [
+"DMContourDefinition",
+"DMFormBase",
+"DmgDocument",
+"DmgGroup",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject"
+],
+"typen": {
+"0xede5": [
+"b1"
+],
+"0xede6": [
+"str"
+],
+"0xec0f": [
+"s2"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"270": {
+"meta": "DMDatabaseMainObjectMeta",
+"kette": [
+"DMDatabaseMainObject",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"132": {
+"meta": "DMDeviceGroupMeta",
+"kette": [
+"DMDeviceGroup",
+"DmgGroup",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser"
+],
+"typen": {
+"0xec0f": [
+"s2"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"33": {
+"meta": "DMDynConnectLineMeta",
+"kette": [
+"DMDynConnectLine",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+]
+}
+},
+"10": {
+"meta": "DMEPropertyUserMeta",
+"kette": [
+"DMEPropertyUser",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+]
+}
+},
+"75": {
+"meta": "DMEvaluationBlockMeta",
+"kette": [
+"DMEvaluationBlock",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+]
+}
+},
+"81": {
+"meta": "DMFctDefCategoryGenusNameMeta",
+"kette": [
+"DMFctDefCategoryGenusName",
+"DMFctDefCategoryInfoRangeBase",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xf065": [
+"s2"
+],
+"0xf066": [
+"s2"
+],
+"0xf067": [
+"kl:.?AV?$DbSimpleData@$0P@V?$DbDataValuePro"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"79": {
+"meta": "DMFctDefCategoryGroupNameMeta",
+"kette": [
+"DMFctDefCategoryGroupName",
+"DMFctDefCategoryInfoRangeBase",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xf065": [
+"s2"
+],
+"0xf066": [
+"s2"
+],
+"0xf067": [
+"kl:.?AV?$DbSimpleData@$0P@V?$DbDataValuePro"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"77": {
+"meta": "DMFctDefCategoryInfoBaseMeta",
+"kette": [
+"DMFctDefCategoryInfoBase",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xf001": [
+"s2"
+],
+"0xf002": [
+"kl:.?AV?$DbSimpleData@$0P@V?$DbDataValuePro"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"82": {
+"meta": "DMFctDefCategoryInfoRangeBaseMeta",
+"kette": [
+"DMFctDefCategoryInfoRangeBase",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xf065": [
+"s2"
+],
+"0xf066": [
+"s2"
+],
+"0xf067": [
+"kl:.?AV?$DbSimpleData@$0P@V?$DbDataValuePro"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"78": {
+"meta": "DMFctDefCategoryNameMeta",
+"kette": [
+"DMFctDefCategoryName",
+"DMFctDefCategoryInfoBase",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xf001": [
+"s2"
+],
+"0xf002": [
+"kl:.?AV?$DbSimpleData@$0P@V?$DbDataValuePro"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"50": {
+"meta": "DMFormBaseMeta",
+"kette": [
+"DMFormBase",
+"DmgDocument",
+"DmgGroup",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xede5": [
+"b1"
+],
+"0xede6": [
+"str"
+],
+"0xec0f": [
+"s2"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"134": {
+"meta": "DMFormInsertionPointMeta",
+"kette": [
+"DMFormInsertionPoint",
+"DmgVisibleGeoInstance",
+"DmgVisibleInstance",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xf2ae": [
+"b1"
+],
+"0xf2af": [
+"b1"
+],
+"0xf2b0": [
+"p16"
+],
+"0xf2b1": [
+"str"
+],
+"0xfa2d": [
+"str"
+],
+"0xfa2e": [
+"str"
+],
+"0xfa2f": [
+"str"
+],
+"0xfa30": [
+"str"
+],
+"0xebfb": [
+"s2"
+],
+"0xebfc": [
+"s2"
+],
+"0xebfd": [
+"s2"
+],
+"0xebfe": [
+"dt16"
+],
+"0xebff": [
+"dt5"
+],
+"0xec00": [
+"b1"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"51": {
+"meta": "DMFormMeta",
+"kette": [
+"DMForm",
+"DMFormBase",
+"DmgDocument",
+"DmgGroup",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject"
+],
+"typen": {
+"0xede5": [
+"b1"
+],
+"0xede6": [
+"str"
+],
+"0xec0f": [
+"s2"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"128": {
+"meta": "DMFormRectMeta",
+"kette": [
+"DMFormRect",
+"DmgRectangle",
+"DmgVisibleGeoInstance",
+"DmgVisibleInstance",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject"
+],
+"typen": {
+"0xebfb": [
+"s2"
+],
+"0xebfc": [
+"s2"
+],
+"0xebfd": [
+"s2"
+],
+"0xebfe": [
+"dt16"
+],
+"0xebff": [
+"dt5"
+],
+"0xec00": [
+"b1"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"21": {
+"meta": "DMFrameMeta",
+"kette": [
+"DMFrame",
+"DMFormBase",
+"DmgDocument",
+"DmgGroup",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject"
+],
+"typen": {
+"0xede5": [
+"b1"
+],
+"0xede6": [
+"str"
+],
+"0xec0f": [
+"s2"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"160": {
+"meta": "DMFunction3DMeta",
+"kette": [
+"DMFunction3D",
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase"
+],
+"typen": {
+"0xfa18": [
+"dt22"
+],
+"0xf411": [
+"ref"
+],
+"0xf412": [
+"p24"
+],
+"0xf413": [
+"p24"
+],
+"0xf414": [
+"p24"
+],
+"0xf417": [
+"i4"
+],
+"0xf418": [
+"s2"
+],
+"0xfa19": [
+"b1"
+],
+"0xed12": [
+"s2"
+],
+"0xed1b": [
+"h16"
+],
+"0xed1c": [
+"h16"
+],
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"17": {
+"meta": "DMFunctionMeta",
+"kette": [
+"DMFunction",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject"
+],
+"typen": {
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+],
+"0xeb17": [
+"cpp:VDMLogicalDefinition"
+],
+"0xeb16": [
+"b1"
+],
+"0xeaf3": [
+"b1"
+],
+"0xeb20": [
+"s2"
+],
+"0xeb22": [
+"str"
+],
+"0xeb18": [
+"liste:FV?$allo"
+],
+"0xeb19": [
+"?"
+],
+"0xeb1a": [
+"?"
+],
+"0xeb1b": [
+"obj"
+],
+"0xeb1e": [
+"p16"
+],
+"0xeb1f": [
+"p16"
+],
+"0xeb23": [
+"i4"
+],
+"0xeb24": [
+"ref"
+],
+"0xfa2a": [
+"ref"
+],
+"0xf419": [
+"str"
+],
+"0xfa17": [
+"str"
+],
+"0xfa44": [
+"str"
+],
+"0xeb27": [
+"liste:V"
+],
+"0xfa31": [
+"cpp:W4DMWriteProtectionKind"
+],
+"0xefc5": [
+"s2"
+]
+}
+},
+"24": {
+"meta": "DMGInstanceMeta",
+"kette": [],
+"typen": {
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"25": {
+"meta": "DMGVisibleInstanceMeta",
+"kette": [],
+"typen": {
+"0xebfb": [
+"s2"
+],
+"0xebfc": [
+"s2"
+],
+"0xebfd": [
+"s2"
+],
+"0xebfe": [
+"dt16"
+],
+"0xebff": [
+"dt5"
+],
+"0xec00": [
+"b1"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"269": {
+"meta": "DMGroup3DMeta",
+"kette": [
+"DMGroup3D",
+"DmgGroup",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser"
+],
+"typen": {
+"0xf411": [
+"ref"
+],
+"0xec0f": [
+"s2"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"88": {
+"meta": "DMLocationBoxMeta",
+"kette": [
+"DMLocationBox",
+"DMFunctionBase",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject"
+],
+"typen": {
+"0xeaf0": [
+"kv"
+],
+"0xeaf1": [
+"str"
+],
+"0xeaf4": [
+"b1"
+],
+"0xeaf6": [
+"kv"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+]
+}
+},
+"123": {
+"meta": "DMLockedMountingAreaMeta",
+"kette": [
+"DMLockedMountingArea",
+"DmgRectangle",
+"DmgVisibleGeoInstance",
+"DmgVisibleInstance",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject"
+],
+"typen": {
+"0xebfb": [
+"s2"
+],
+"0xebfc": [
+"s2"
+],
+"0xebfd": [
+"s2"
+],
+"0xebfe": [
+"dt16"
+],
+"0xebff": [
+"dt5"
+],
+"0xec00": [
+"b1"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"255": {
+"meta": "DMMacroBoxShadowMeta",
+"kette": [
+"DMMacroBoxShadow",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xed1a": [
+"ref"
+],
+"0xed11": [
+"s2"
+],
+"0xed12": [
+"s2"
+],
+"0xed18": [
+"s2"
+],
+"0xed1d": [
+"i4"
+],
+"0xed1e": [
+"s2"
+],
+"0xed1c": [
+"h16"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"194": {
+"meta": "DMNetDefinitionPointMeta",
+"kette": [
+"DMNetDefinitionPoint",
+"DMPotentialDefinition",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject"
+],
+"typen": {
+"0xf0fb": [
+"str"
+],
+"0xf0fc": [
+"str"
+],
+"0xf0fd": [
+"str"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+]
+}
+},
+"137": {
+"meta": "DMOptionBaseMeta",
+"kette": [
+"DMOptionBase",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xf30e": [
+"str"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"140": {
+"meta": "DMOptionFragmentMeta",
+"kette": [
+"DMOptionFragment",
+"DMOptionBase",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xf30e": [
+"str"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"138": {
+"meta": "DMOptionGroupMeta",
+"kette": [
+"DMOptionGroup",
+"DMOptionBase",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xf30e": [
+"str"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"83": {
+"meta": "DMPathTextMeta",
+"kette": [
+"DMPathText",
+"DmgText",
+"DmgBaseText",
+"DmgVisibleInstance",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject"
+],
+"typen": {
+"0xec5f": [
+"kl:.?AV?$DbSimpleData@$0P@V?$DbDataValuePro"
+],
+"0xec55": [
+"p16"
+],
+"0xec56": [
+"ref"
+],
+"0xec57": [
+"s2"
+],
+"0xec5a": [
+"s2"
+],
+"0xec59": [
+"cpp:VDmgTextInfo"
+],
+"0xebfb": [
+"s2"
+],
+"0xebfc": [
+"s2"
+],
+"0xebfd": [
+"s2"
+],
+"0xebfe": [
+"dt16"
+],
+"0xebff": [
+"dt5"
+],
+"0xec00": [
+"b1"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"231": {
+"meta": "DMPipeJunctionMeta",
+"kette": [
+"DMPipeJunction",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+]
+}
+},
+"221": {
+"meta": "DMPlaMacroVariantInfoMeta",
+"kette": [
+"DMPlaMacroVariantInfo",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMFctTemplateOwner"
+],
+"typen": {
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+]
+}
+},
+"218": {
+"meta": "DMPlaObjectMeta",
+"kette": [
+"DMPlaObject",
+"DMPlaBase",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"256": {
+"meta": "DMPlaObjectRecyclerMeta",
+"kette": [
+"DMPlaObjectRecycler",
+"DMPlaObject",
+"DMPlaBase",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"217": {
+"meta": "DMPlaSpecificationMeta",
+"kette": [
+"DMPlaSpecification",
+"DMPlaDataObject",
+"DMPlaBase",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"108": {
+"meta": "DMPlaceHolderBaseReferenceMeta",
+"kette": [
+"DMPlaceHolderBaseReference",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xf1d0": [
+"obj"
+]
+}
+},
+"106": {
+"meta": "DMPlaceHolderMeta",
+"kette": [
+"DMPlaceHolder",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+]
+}
+},
+"114": {
+"meta": "DMPlaceHolderRecordMeta",
+"kette": [
+"DMPlaceHolderRecord",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xf23b": [
+"str"
+],
+"0xf23c": [
+"liste:V"
+]
+}
+},
+"52": {
+"meta": "DMPlaceHolderTextMeta",
+"kette": [
+"DMPlaceHolderText",
+"DmgText",
+"DmgBaseText",
+"DmgVisibleInstance",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject"
+],
+"typen": {
+"0xec5f": [
+"kl:.?AV?$DbSimpleData@$0P@V?$DbDataValuePro"
+],
+"0xec55": [
+"p16"
+],
+"0xec56": [
+"ref"
+],
+"0xec57": [
+"s2"
+],
+"0xec5a": [
+"s2"
+],
+"0xec59": [
+"cpp:VDmgTextInfo"
+],
+"0xebfb": [
+"s2"
+],
+"0xebfc": [
+"s2"
+],
+"0xebfd": [
+"s2"
+],
+"0xebfe": [
+"dt16"
+],
+"0xebff": [
+"dt5"
+],
+"0xec00": [
+"b1"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"141": {
+"meta": "DMPlcCommunicationEntityMeta",
+"kette": [
+"DMPlcCommunicationEntity",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"145": {
+"meta": "DMPltFunctionMeta",
+"kette": [
+"DMPltFunction",
+"DMPlt",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject"
+],
+"typen": {
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+]
+}
+},
+"143": {
+"meta": "DMPltMeta",
+"kette": [
+"DMPlt",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+]
+}
+},
+"93": {
+"meta": "DMPotentialDefinitionMeta",
+"kette": [
+"DMPotentialDefinition",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xf0fb": [
+"str"
+],
+"0xf0fc": [
+"str"
+],
+"0xf0fd": [
+"str"
+],
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+]
+}
+},
+"192": {
+"meta": "DMPotentialNetMeta",
+"kette": [
+"DMPotentialNet",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"228": {
+"meta": "DMProducedWiresListMeta",
+"kette": [
+"DMProducedWiresList",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"14": {
+"meta": "DMProjectMeta",
+"kette": [
+"DMProject",
+"DMDatabaseMainObject",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"2": {
+"meta": "DMPropertyUserMeta",
+"kette": [],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"259": {
+"meta": "DMProtectedGroup3DMeta",
+"kette": [
+"DMProtectedGroup3D",
+"DMProtectedGroup",
+"DMGroup3D",
+"DmgGroup",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject"
+],
+"typen": {
+"0xf6ba": [
+"str"
+],
+"0xf6bc": [
+"str"
+],
+"0xebf8": [
+"cpp:W4DmgInstanceQueryBits@DmgInstance"
+],
+"0xf411": [
+"ref"
+],
+"0xec0f": [
+"s2"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xf543": [
+"dtNone"
+],
+"0xf544": [
+"liste:V"
+],
+"0xf545": [
+"liste:GV?$allo"
+],
+"0xf53d": [
+"str"
+],
+"0xf540": [
+"ref"
+],
+"0xf542": [
+"dt15"
+],
+"0xf54a": [
+"dt24"
+],
+"0xf546": [
+"s2"
+],
+"0xf547": [
+"s2"
+],
+"0xed1b": [
+"h16"
+]
+}
+},
+"202": {
+"meta": "DMProtectedGroupMeta",
+"kette": [
+"DMProtectedGroup",
+"DMGroup3D",
+"DmgGroup",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xf6ba": [
+"str"
+],
+"0xf6bc": [
+"str"
+],
+"0xebf8": [
+"cpp:W4DmgInstanceQueryBits@DmgInstance"
+],
+"0xf411": [
+"ref"
+],
+"0xec0f": [
+"s2"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xf543": [
+"dtNone"
+],
+"0xf544": [
+"liste:V"
+],
+"0xf545": [
+"liste:GV?$allo"
+],
+"0xf53d": [
+"str"
+],
+"0xf540": [
+"ref"
+],
+"0xf542": [
+"dt15"
+],
+"0xf54a": [
+"dt24"
+],
+"0xf546": [
+"s2"
+],
+"0xf547": [
+"s2"
+],
+"0xed1b": [
+"h16"
+]
+}
+},
+"130": {
+"meta": "DMStrandConnectorSymbolReferenceMeta",
+"kette": [
+"DMStrandConnectorSymbolReference",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+]
+}
+},
+"131": {
+"meta": "DMStrandInterConnectorSymbolReferenceMeta",
+"kette": [
+"DMStrandInterConnectorSymbolReference",
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+]
+}
+},
+"42": {
+"meta": "DMSymbolReferenceMeta",
+"kette": [
+"DMSymbolReference",
+"DmgBaseReference",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser"
+],
+"typen": {
+"0xef11": [
+"cpp:VDmgTransform"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+],
+"0xef4d": [
+"s2"
+],
+"0xef4e": [
+"s2"
+],
+"0xef4f": [
+"b1"
+],
+"0xed78": [
+"b1"
+],
+"0xed79": [
+"s2"
+],
+"0xed7a": [
+"b1"
+],
+"0xecb9": [
+"obj"
+]
+}
+},
+"45": {
+"meta": "DMSymbolVariantMeta",
+"kette": [
+"DMSymbolVariant",
+"DmgGroup",
+"DmgInstance",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser"
+],
+"typen": {
+"0xec0f": [
+"s2"
+],
+"0xebf1": [
+"ref"
+],
+"0xebf2": [
+"ref"
+],
+"0xebf4": [
+"b1"
+],
+"0xebf5": [
+"b1"
+],
+"0xebf6": [
+"b1"
+],
+"0xebf7": [
+"i4"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"102": {
+"meta": "DMUserBaseMeta",
+"kette": [
+"DMUserBase",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xf187": [
+"str"
+],
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"212": {
+"meta": "DMUserPropDefTableEntryMeta",
+"kette": [
+"DMUserPropDefTableEntry",
+"DMPropertyUser",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser",
+"IDMPropertyUser",
+"IProperty"
+],
+"typen": {
+"0xea6b": [
+"kv"
+],
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+],
+"0xea61": [
+"ref"
+],
+"0xea63": [
+"s2"
+],
+"0xea6d": [
+"i4"
+],
+"0xea65": [
+"obj"
+],
+"0xea62": [
+"ref"
+],
+"0xea66": [
+"ref"
+],
+"0xea69": [
+"ref"
+]
+}
+},
+"211": {
+"meta": "DMUserPropDefTableMeta",
+"kette": [
+"DMUserPropDefTable",
+"DMBase",
+"DMEmbeddedBase",
+"DMIDataUser",
+"DMMemberBase",
+"DbMemberBase",
+"EObject",
+"IEPropertyIdUser"
+],
+"typen": {
+"0xea64": [
+"s2"
+],
+"0xea6e": [
+"i4"
+],
+"0xea67": [
+"ref"
+]
+}
+}
+}
+}

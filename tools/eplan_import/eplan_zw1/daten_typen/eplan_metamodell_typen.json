@@ -1,0 +1,5849 @@
+{
+"quelle": "EPLAN 2025 ETrDMMetau.erx: DMMetaBase::addSimpleData/addReferenceData/setReference2, DbData-Unterklassen (RTTI DbSimpleData<DataType, ProxyPtrToMember<Klasse, Typ>>), lokale Registrierhelfer; ausgewertet mit capstone/pefile. DataType: 1 bool, 2 char, 3 short, 4 long, 6 double, 7 EString, 10 DbObjectId, 13 EPoint, 14 ETime, 17 EPropertyList, 25 EMD5Hash",
+"typen": {
+"0xf259": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMAddress",
+"DMArticle",
+"DMArticleAccessoryList",
+"DMArticleAccessoryPlacement",
+"DMArticleConstruction",
+"DMArticleTerminal",
+"DMDeletedArticleDbObject"
+]
+},
+"0xea6b": {
+"typen": [
+"kv"
+],
+"klassen": [
+"DMEPropertyUser"
+]
+},
+"0xf3fd": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMArticleDrillingPosition"
+]
+},
+"0xf265": {
+"typen": [
+"h16"
+],
+"klassen": [
+"DMArticleDbObject"
+]
+},
+"0xf266": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMArticleDbObject"
+]
+},
+"0xf268": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMArticleDbObject"
+]
+},
+"0xf0a1": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMArticleHierarchy"
+]
+},
+"0xf0a4": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMArticleHierarchy"
+]
+},
+"0xf0a2": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMArticleHierarchy"
+]
+},
+"0xf0a3": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMArticleHierarchy"
+]
+},
+"0xf0a8": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMArticleHierarchy"
+]
+},
+"0xf0a5": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMArticleHierarchy"
+]
+},
+"0xf0a6": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMArticleHierarchy"
+]
+},
+"0xf0a7": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMArticleHierarchy"
+]
+},
+"0xf25a": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMArticle",
+"DMDeletedArticleDbObject"
+]
+},
+"0xf25b": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMFunctionTemplate"
+]
+},
+"0xf25c": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMArticleHierarchy"
+]
+},
+"0xf25d": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMArticleDoorPosition"
+]
+},
+"0xf25e": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMArticleMountingPanelPosition"
+]
+},
+"0xf25f": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMArticleLockedMountingAreaPosition"
+]
+},
+"0xf260": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMArticleSupportBarPosition"
+]
+},
+"0xf261": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMArticleAccessoryPosition"
+]
+},
+"0xf262": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMArticlePartConstructionPosition"
+]
+},
+"0xf264": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMArticleSafetyRelatedValuePosition"
+]
+},
+"0xef62": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xef57": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMArticleReference"
+]
+},
+"0xef58": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMArticleReference"
+]
+},
+"0xef59": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMArticleReference"
+]
+},
+"0xef5a": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMArticleReference"
+]
+},
+"0xef5b": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMArticleReference"
+]
+},
+"0xef5c": {
+"typen": [
+"kv"
+],
+"klassen": [
+"DMArticleReference"
+]
+},
+"0xef5e": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMArticleReference"
+]
+},
+"0xef5f": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMArticleReference"
+]
+},
+"0xef60": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMArticleReference"
+]
+},
+"0xef61": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DMArticleReference"
+]
+},
+"0xf407": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMArticleTerminalPosition"
+]
+},
+"0xea61": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xea63": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xea6d": {
+"typen": [
+"i4"
+],
+"klassen": []
+},
+"0xea65": {
+"typen": [
+"obj"
+],
+"klassen": []
+},
+"0xea62": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xea66": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xea69": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xeb1d": {
+"typen": [
+"b1"
+],
+"klassen": []
+},
+"0xea9d": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMBlock"
+]
+},
+"0xea9e": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMBlock"
+]
+},
+"0xea9f": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMBlock"
+]
+},
+"0xeaa3": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMBlock"
+]
+},
+"0xeaa4": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMBlock"
+]
+},
+"0xeaa5": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMBlock"
+]
+},
+"0xead9": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMBlockUser2BlockRef",
+"DMConnPart2ConnRef",
+"DMPlaObject2ObjectRef"
+]
+},
+"0xeada": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMBlockUser2BlockRef",
+"DMConnPart2ConnRef",
+"DMPlaObject2ObjectRef"
+]
+},
+"0xf551": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMCablingSegment"
+]
+},
+"0xf552": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMCablingSegment"
+]
+},
+"0xf64b": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMCabRoutingAccessory"
+]
+},
+"0xf6f7": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMChangeHistoryEntry"
+]
+},
+"0xf6f8": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMChangeHistoryEntry"
+]
+},
+"0xf6f5": {
+"typen": [
+"kv"
+],
+"klassen": [
+"DMChangeHistoryEntry"
+]
+},
+"0xf6f6": {
+"typen": [
+"kv"
+],
+"klassen": [
+"DMChangeHistoryEntry"
+]
+},
+"0xf6ec": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMChangeItemEntry"
+]
+},
+"0xf6ed": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMChangeItemEntry"
+]
+},
+"0xf6ef": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMChangeItemEntry"
+]
+},
+"0xf6eb": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMChangeItem"
+]
+},
+"0xf6f0": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMChangeSettingEntry"
+]
+},
+"0xf69d": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMComparisonEntryDetails"
+]
+},
+"0xf69e": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMComparisonEntryDetails"
+]
+},
+"0xf69f": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMComparisonEntryDetails"
+]
+},
+"0xf6a0": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMComparisonEntryDetails"
+]
+},
+"0xf68d": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMComparisonEntry"
+]
+},
+"0xf68e": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMComparisonEntry"
+]
+},
+"0xf68f": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMComparisonEntry"
+]
+},
+"0xf690": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMComparisonEntry"
+]
+},
+"0xf691": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMComparisonEntry"
+]
+},
+"0xf693": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMComparisonEntry"
+]
+},
+"0xf694": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMComparisonEntry"
+]
+},
+"0xf695": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMComparisonEntry"
+]
+},
+"0xf696": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMComparisonEntry"
+]
+},
+"0xf697": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMComparisonEntry"
+]
+},
+"0xf698": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMComparisonEntry"
+]
+},
+"0xf699": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMComparisonEntry"
+]
+},
+"0xf687": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMComparison"
+]
+},
+"0xf688": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMComparison"
+]
+},
+"0xf689": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMComparison"
+]
+},
+"0xf68a": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMComparison"
+]
+},
+"0xf68b": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMComparison"
+]
+},
+"0xf459": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMConnection3D"
+]
+},
+"0xf45a": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMConnection3D"
+]
+},
+"0xf45c": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMConnection3D"
+]
+},
+"0xf45d": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMConnection3D"
+]
+},
+"0xf45e": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMConnection3D"
+]
+},
+"0xf45f": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMConnection3D"
+]
+},
+"0xfa35": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMConnection3D"
+]
+},
+"0xfa41": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DMConnection3D"
+]
+},
+"0xfa42": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DMConnection3D"
+]
+},
+"0xed12": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMConnection3D",
+"DMFunction3D",
+"DMMacroBox",
+"DMMacroBoxShadow",
+"DMPlaceHolder3D"
+]
+},
+"0xed1b": {
+"typen": [
+"h16"
+],
+"klassen": [
+"DMConnection3D",
+"DMFunction3D",
+"DMMacroBox",
+"DMPage",
+"DMPlaceHolder3D"
+]
+},
+"0xed1c": {
+"typen": [
+"h16"
+],
+"klassen": [
+"DMConnection3D",
+"DMFunction3D",
+"DMMacroBoxShadow",
+"DMPage",
+"DMPlaceHolder3D"
+]
+},
+"0xee67": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMConnectionDefinitionPoint"
+]
+},
+"0xeb29": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xeaf4": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaPlacement"
+]
+},
+"0xeb34": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xeb2a": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xeb2b": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xeb2c": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xeb2d": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xeb2e": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xeb2f": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xeb30": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xeaf6": {
+"typen": [
+"kv"
+],
+"klassen": [
+"DMConnection",
+"DMFunctionBase",
+"DMMergedConnection",
+"DMMergedFunction"
+]
+},
+"0xeb38": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xeb39": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xeb3a": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xeb3b": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xeb3c": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xeb3d": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMConnection",
+"DMUser"
+]
+},
+"0xfa03": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xfa04": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xfa05": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xfa06": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xfa0e": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xfa2a": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMProcessDefinition"
+]
+},
+"0xfa12": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xfa15": {
+"typen": [
+"kv"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xfa16": {
+"typen": [
+"kv"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xfa1b": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xfa1c": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xfa1d": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMConnection"
+]
+},
+"0xf26d": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMConnectionPointInstance"
+]
+},
+"0xf26e": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMConnectionPointInstance"
+]
+},
+"0xf26f": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMConnectionPointInstance"
+]
+},
+"0xeb01": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xeb02": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xeb03": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xeb04": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xeb05": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xeb06": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xeb07": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xeb08": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xeb09": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xeb0a": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xeb0b": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xeb0c": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xeb0d": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xeb0e": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xeb0f": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xeb10": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xf169": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMContactImage"
+]
+},
+"0xf16a": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DMContactImage"
+]
+},
+"0xf16b": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMContactImage"
+]
+},
+"0xf16c": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMContactImage"
+]
+},
+"0xf461": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMContextPropertyInstance3D"
+]
+},
+"0xf462": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DMContextPropertyInstance3D"
+]
+},
+"0xf463": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DMContextPropertyInstance3D"
+]
+},
+"0xee17": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMContextPropertyInstance"
+]
+},
+"0xee18": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMContextPropertyInstance"
+]
+},
+"0xee19": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMContextPropertyInstance"
+]
+},
+"0xee1a": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMContextPropertyInstance"
+]
+},
+"0xee1b": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMContextPropertyInstance"
+]
+},
+"0xf51f": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMContourDefinitionPoint"
+]
+},
+"0xf520": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMContourDefinitionPoint"
+]
+},
+"0xf521": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMContourDefinitionPoint"
+]
+},
+"0xf267": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMDeletedArticleDbObject"
+]
+},
+"0xf533": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMDeletedObjectInfo"
+]
+},
+"0xf28b": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMDeviceListEntry"
+]
+},
+"0xf0bf": {
+"typen": [
+"p16"
+],
+"klassen": []
+},
+"0xf0c0": {
+"typen": [
+"p16"
+],
+"klassen": []
+},
+"0xf6a5": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMDrillPatternBox"
+]
+},
+"0xf6a6": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMDrillPatternBox"
+]
+},
+"0xf6a7": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMDrillPatternBox"
+]
+},
+"0xf6a8": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DMDrillPatternBox"
+]
+},
+"0xea64": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xea6e": {
+"typen": [
+"i4"
+],
+"klassen": []
+},
+"0xea67": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xefda": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefdb": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefdc": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefdd": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefde": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefdf": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefe0": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefe1": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefe3": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefe4": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefe5": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefe6": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefe7": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefe8": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2eb": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefe9": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefea": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xefeb": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2ed": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2ee": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2ef": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2f4": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2f6": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2f7": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2db": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2dc": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2ec": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2dd": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2e2": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2de": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2df": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2e0": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2e1": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2e3": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2f0": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2f1": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2f2": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2f3": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2f5": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2e4": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2e5": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2e6": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2e7": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2e8": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf2e9": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xfa3e": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xfa3f": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMEvaluationBlock"
+]
+},
+"0xf001": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMFctDefCategoryInfoBase"
+]
+},
+"0xf065": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMFctDefCategoryInfoRangeBase"
+]
+},
+"0xf066": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMFctDefCategoryInfoRangeBase"
+]
+},
+"0xf03d": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMFctDefGroupInfo"
+]
+},
+"0xf03e": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMFctDefGroupInfo"
+]
+},
+"0xefc5": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xede5": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFormBase"
+]
+},
+"0xede6": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFormBase"
+]
+},
+"0xf2ae": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFormInsertionPoint"
+]
+},
+"0xf2af": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFormInsertionPoint"
+]
+},
+"0xf2b0": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DMFormInsertionPoint"
+]
+},
+"0xf2b1": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFormInsertionPoint"
+]
+},
+"0xfa2d": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFormInsertionPoint"
+]
+},
+"0xfa2e": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFormInsertionPoint"
+]
+},
+"0xfa2f": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFormInsertionPoint"
+]
+},
+"0xfa30": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFormInsertionPoint"
+]
+},
+"0xf0d8": {
+"typen": [
+"b1"
+],
+"klassen": []
+},
+"0xf290": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFormRect"
+]
+},
+"0xf291": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFormRect"
+]
+},
+"0xf293": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMFormRect"
+]
+},
+"0xf294": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFormRect"
+]
+},
+"0xfa0a": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMFormRect"
+]
+},
+"0xf27c": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFormReference"
+]
+},
+"0xf27d": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFormReference"
+]
+},
+"0xf27e": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMFormReference"
+]
+},
+"0xeb67": {
+"typen": [
+"p16"
+],
+"klassen": []
+},
+"0xeb69": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFrame"
+]
+},
+"0xeb6a": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFrame"
+]
+},
+"0xeb6b": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFrame"
+]
+},
+"0xf411": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMFunction3D",
+"DMGroup3D",
+"DMPlaceHolder3D"
+]
+},
+"0xf412": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DMFunction3D"
+]
+},
+"0xf413": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DMFunction3D"
+]
+},
+"0xf414": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DMFunction3D"
+]
+},
+"0xf417": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMFunction3D"
+]
+},
+"0xf418": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMFunction3D"
+]
+},
+"0xfa19": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFunction3D"
+]
+},
+"0xeaf0": {
+"typen": [
+"kv"
+],
+"klassen": [
+"DMFunctionBase"
+]
+},
+"0xeaf1": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFunctionBase"
+]
+},
+"0xee99": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFunctionDefinitionLibrary"
+]
+},
+"0xee73": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFunctionDefinition"
+]
+},
+"0xee74": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFunctionDefinition"
+]
+},
+"0xee75": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFunctionDefinition"
+]
+},
+"0xee76": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFunctionDefinition"
+]
+},
+"0xee77": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFunctionDefinition"
+]
+},
+"0xee79": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMFunctionDefinition"
+]
+},
+"0xee7a": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMFunctionDefinition"
+]
+},
+"0xee7b": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMFunctionDefinition"
+]
+},
+"0xee7c": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMFunctionDefinition"
+]
+},
+"0xee7d": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFunctionDefinition"
+]
+},
+"0xee7e": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFunctionDefinition"
+]
+},
+"0xeb1e": {
+"typen": [
+"p16"
+],
+"klassen": []
+},
+"0xeb1f": {
+"typen": [
+"p16"
+],
+"klassen": []
+},
+"0xeb23": {
+"typen": [
+"i4"
+],
+"klassen": []
+},
+"0xeb16": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFunction"
+]
+},
+"0xeaf3": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFunction"
+]
+},
+"0xeb20": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMFunction",
+"DMMergedFunction"
+]
+},
+"0xeb22": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFunction"
+]
+},
+"0xeb1b": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMFunctionTemplate"
+]
+},
+"0xeb24": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xf419": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFunction"
+]
+},
+"0xfa17": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFunction"
+]
+},
+"0xfa44": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMFunction"
+]
+},
+"0xf160": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMFunctionTemplate"
+]
+},
+"0xf162": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMFunctionTemplate"
+]
+},
+"0xf163": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMFunctionTemplate"
+]
+},
+"0xf605": {
+"typen": [
+"s2"
+],
+"klassen": [
+"Dmg3DBRep"
+]
+},
+"0xf606": {
+"typen": [
+"str"
+],
+"klassen": [
+"Dmg3DBRep"
+]
+},
+"0xf0ea": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DmgBaseImage"
+]
+},
+"0xf0eb": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DmgBaseImage"
+]
+},
+"0xedbd": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMGraphTermDef"
+]
+},
+"0xedbe": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DMGraphTermDef"
+]
+},
+"0xedbf": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMGraphTermDef"
+]
+},
+"0xf6b5": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMGUIDMapper"
+]
+},
+"0xf6b7": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMGUIDMapper"
+]
+},
+"0xef75": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMInterruptionPoint"
+]
+},
+"0xeab5": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMLocation"
+]
+},
+"0xeab1": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMLocation"
+]
+},
+"0xeab4": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMLocation"
+]
+},
+"0xeab2": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMLocation"
+]
+},
+"0xeab3": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMLocation"
+]
+},
+"0xeab6": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMLocation"
+]
+},
+"0xee85": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMLogicalDefinition"
+]
+},
+"0xee87": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMLogicalDefinition"
+]
+},
+"0xee86": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMConnectionPoint"
+]
+},
+"0xed1f": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMMacroBoxNewShadow"
+]
+},
+"0xed1a": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMMacroBox",
+"DMMacroBoxShadow"
+]
+},
+"0xed11": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMMacroBox",
+"DMMacroBoxShadow"
+]
+},
+"0xed18": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMMacroBoxShadow"
+]
+},
+"0xed1d": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMMacroBoxShadow"
+]
+},
+"0xed1e": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMMacroBox",
+"DMMacroBoxShadow"
+]
+},
+"0xf540": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMMacroBox"
+]
+},
+"0xed0a": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMMacroBox"
+]
+},
+"0xed0b": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMMacroBox"
+]
+},
+"0xed0c": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMMacroBox"
+]
+},
+"0xed0d": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DMMacroBox"
+]
+},
+"0xed10": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMMacroBox"
+]
+},
+"0xed13": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMMacroBox"
+]
+},
+"0xed15": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMMacroBox"
+]
+},
+"0xed0f": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMMacroBox"
+]
+},
+"0xf6e1": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMMacroLibrary"
+]
+},
+"0xf6e2": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMMacroLibrary"
+]
+},
+"0xf5af": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMMacroOriginInfo",
+"DMPlaMacroInfo"
+]
+},
+"0xed5a": {
+"typen": [
+"p16"
+],
+"klassen": []
+},
+"0xf0e7": {
+"typen": [
+"str"
+],
+"klassen": []
+},
+"0xf0e9": {
+"typen": [
+"d8"
+],
+"klassen": []
+},
+"0xf30e": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMOptionBase"
+]
+},
+"0xf32b": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xf330": {
+"typen": [
+"b1"
+],
+"klassen": []
+},
+"0xf331": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xf30f": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xf321": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMOption"
+]
+},
+"0xf322": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMOption"
+]
+},
+"0xf323": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMOption"
+]
+},
+"0xea8f": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPage"
+]
+},
+"0xea90": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMPage"
+]
+},
+"0xea91": {
+"typen": [
+"kv"
+],
+"klassen": [
+"DMPage"
+]
+},
+"0xea92": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMPage"
+]
+},
+"0xea93": {
+"typen": [
+"i4"
+],
+"klassen": []
+},
+"0xea94": {
+"typen": [
+"i4"
+],
+"klassen": []
+},
+"0xea95": {
+"typen": [
+"i4"
+],
+"klassen": []
+},
+"0xea96": {
+"typen": [
+"i4"
+],
+"klassen": []
+},
+"0xea97": {
+"typen": [
+"i4"
+],
+"klassen": []
+},
+"0xea98": {
+"typen": [
+"i4"
+],
+"klassen": []
+},
+"0xea99": {
+"typen": [
+"i4"
+],
+"klassen": []
+},
+"0xea9a": {
+"typen": [
+"i4"
+],
+"klassen": []
+},
+"0xea9b": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMPage"
+]
+},
+"0xfa2b": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPage"
+]
+},
+"0xeeaf": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPage"
+]
+},
+"0xeeb0": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xf1d0": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMPlaceHolderPropertyEntry"
+]
+},
+"0xf1c3": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DMPlaceHolder"
+]
+},
+"0xf1c4": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaMacroPlaceholderInfo",
+"DMPlaceHolder"
+]
+},
+"0xf1c9": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaceHolder"
+]
+},
+"0xf1c6": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMPlaceHolderRecord"
+]
+},
+"0xf1c7": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMPlaceHolderObjectReference"
+]
+},
+"0xfa49": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaceHolder"
+]
+},
+"0xfa4a": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaceHolder"
+]
+},
+"0xfa4c": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaceHolder"
+]
+},
+"0xf1d2": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMPlaceHolderObjectReference"
+]
+},
+"0xf1d7": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaceHolderPropertyEntry"
+]
+},
+"0xf1d8": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaceHolderPropertyEntry"
+]
+},
+"0xf23b": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaceHolderRecord"
+]
+},
+"0xee14": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xfa34": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaceHolderText"
+]
+},
+"0xfa33": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaceHolderText"
+]
+},
+"0xfa13": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMPlaceHolderText"
+]
+},
+"0xfa14": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaceHolderText"
+]
+},
+"0xfa11": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaceHolderText"
+]
+},
+"0xee16": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaceHolderText"
+]
+},
+"0xee15": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaceHolderText"
+]
+},
+"0xee13": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaceHolderText"
+]
+},
+"0xee12": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaceHolderText"
+]
+},
+"0xee11": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaceHolderText"
+]
+},
+"0xee10": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaceHolderText"
+]
+},
+"0xee0f": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaceHolderText"
+]
+},
+"0xee0e": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaceHolderText"
+]
+},
+"0xee0d": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaceHolderText"
+]
+},
+"0xf632": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaMacroPlaceholderInfo"
+]
+},
+"0xeadb": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMPlaObject2ObjectRef"
+]
+},
+"0xf66a": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMPlaPipeClass",
+"DMPlaSpecification",
+"DMPlaSubstance"
+]
+},
+"0xf6c3": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaPipeClass"
+]
+},
+"0xf6c5": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMPlaPipeClass"
+]
+},
+"0xf660": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaPlacement"
+]
+},
+"0xf637": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaPlcIoEntry"
+]
+},
+"0xf638": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaPlcIoEntry"
+]
+},
+"0xf639": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaPlcIoEntry"
+]
+},
+"0xf63a": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaPlcIoEntry"
+]
+},
+"0xf63b": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaPlcIoEntry"
+]
+},
+"0xf63f": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaPlcIoEntry"
+]
+},
+"0xf640": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaPlcIoEntry"
+]
+},
+"0xfa4d": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaPlcIoEntry"
+]
+},
+"0xfa4e": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaPlcIoEntry"
+]
+},
+"0xf63d": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaPlcIoEntry"
+]
+},
+"0xf63e": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaPlcIoEntry"
+]
+},
+"0xfa32": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaPlcIoEntry"
+]
+},
+"0xf62d": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaMacroPlaceholderRecord"
+]
+},
+"0xf62e": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaMacroPlaceholderRecord"
+]
+},
+"0xf62f": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaMacroPlaceholderRecord"
+]
+},
+"0xf6cd": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaSubstance"
+]
+},
+"0xf6d2": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMPlaSubstance"
+]
+},
+"0xf24c": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xf245": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcIoEntry"
+]
+},
+"0xf246": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcIoEntry"
+]
+},
+"0xf24f": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcIoEntry"
+]
+},
+"0xf250": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcIoEntry"
+]
+},
+"0xf247": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcIoEntry"
+]
+},
+"0xf248": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcIoEntry"
+]
+},
+"0xf252": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcIoEntry"
+]
+},
+"0xf253": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcIoEntry"
+]
+},
+"0xf254": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcIoEntry"
+]
+},
+"0xf24b": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcIoEntry"
+]
+},
+"0xf24a": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMPlcIoEntry"
+]
+},
+"0xf251": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcIoEntry"
+]
+},
+"0xf24e": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMPlcIoEntry"
+]
+},
+"0xf24d": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMPlcIoEntry"
+]
+},
+"0xf673": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlcStruct"
+]
+},
+"0xf674": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcStruct"
+]
+},
+"0xf675": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcStruct"
+]
+},
+"0xf67d": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcStruct"
+]
+},
+"0xf67e": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcStruct"
+]
+},
+"0xf676": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcStruct"
+]
+},
+"0xf677": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcStruct"
+]
+},
+"0xf678": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcStruct"
+]
+},
+"0xf67b": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlcStruct"
+]
+},
+"0xf67c": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcStruct"
+]
+},
+"0xf67a": {
+"typen": [
+"kv"
+],
+"klassen": [
+"DMPlcStruct"
+]
+},
+"0xf679": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMPlcStruct"
+]
+},
+"0xf67f": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlcStruct"
+]
+},
+"0xf0fb": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPotentialDefinition"
+]
+},
+"0xf0fc": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPotentialDefinition"
+]
+},
+"0xf0fd": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPotentialDefinition"
+]
+},
+"0xf503": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPotentialNet"
+]
+},
+"0xf504": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMPotentialNet"
+]
+},
+"0xf505": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPotentialNet"
+]
+},
+"0xf6d7": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMProductGroup"
+]
+},
+"0xf6d8": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMProductGroup"
+]
+},
+"0xf5a1": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaPropertyConfig",
+"DMProductGroupPropertyConfig"
+]
+},
+"0xf19b": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf19c": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf19d": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf19e": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf19f": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf1a0": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf1a1": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf1a2": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf1a3": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf1a4": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf1a5": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf1a6": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf1a7": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf1a8": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf1a9": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf1aa": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf1ab": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf1ad": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf1ac": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xf1ae": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xfa43": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMProjectMessage"
+]
+},
+"0xeae5": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMProject"
+]
+},
+"0xeae6": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMProject"
+]
+},
+"0xeae7": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMProject"
+]
+},
+"0xf3f3": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPropertyView"
+]
+},
+"0xf3f4": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPropertyView"
+]
+},
+"0xf3f5": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPropertyView"
+]
+},
+"0xf3f6": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPropertyView"
+]
+},
+"0xf3f7": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPropertyView"
+]
+},
+"0xf3f8": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPropertyView"
+]
+},
+"0xf6ba": {
+"typen": [
+"str"
+],
+"klassen": []
+},
+"0xf6bc": {
+"typen": [
+"str"
+],
+"klassen": []
+},
+"0xf53d": {
+"typen": [
+"str"
+],
+"klassen": []
+},
+"0xf546": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xf547": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xef4d": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xef4e": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xef4f": {
+"typen": [
+"b1"
+],
+"klassen": []
+},
+"0xf1e1": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMSearchResult"
+]
+},
+"0xf1e2": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMSearchResult"
+]
+},
+"0xf1e3": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMSearchResult"
+]
+},
+"0xf1ec": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMSearchResult"
+]
+},
+"0xf1e4": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMSearchResult"
+]
+},
+"0xf1e5": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMSearchResult"
+]
+},
+"0xf1e6": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMSearchResult"
+]
+},
+"0xf1e7": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMSearchResult"
+]
+},
+"0xf1e8": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMSearchResult"
+]
+},
+"0xf1e9": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMSearchResult"
+]
+},
+"0xf1ea": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMSearchResult"
+]
+},
+"0xf1eb": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMSearchResult"
+]
+},
+"0xeda0": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMSymbolLibrary"
+]
+},
+"0xeb52": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMSymbol"
+]
+},
+"0xeb51": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMSymbol"
+]
+},
+"0xeb55": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMSymbol"
+]
+},
+"0xeb57": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMSymbol"
+]
+},
+"0xed78": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMSymbolReference"
+]
+},
+"0xed79": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMSymbolReference"
+]
+},
+"0xed7a": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMSymbolReference"
+]
+},
+"0xecb9": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMGraphTermDef"
+]
+},
+"0xed95": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xed97": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMGraphTermDef"
+]
+},
+"0xed96": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMSymbolVariant"
+]
+},
+"0xed98": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMSymbolVariant"
+]
+},
+"0xed99": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMSymbolVariant"
+]
+},
+"0xed9a": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DMSymbolVariant"
+]
+},
+"0xed9b": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMSymbolVariant"
+]
+},
+"0xf1af": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMTextLookUp"
+]
+},
+"0xf1b0": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMTextLookUp"
+]
+},
+"0xf1b1": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMTextLookUp"
+]
+},
+"0xf1b2": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMTextLookUp"
+]
+},
+"0xf1b3": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMTextLookUp"
+]
+},
+"0xf187": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMUserBase"
+]
+},
+"0xf191": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMUserData"
+]
+},
+"0xf192": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMUserData"
+]
+},
+"0xeb3e": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMUser"
+]
+},
+"0xeb3f": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMUser"
+]
+},
+"0xeb40": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMUser"
+]
+},
+"0xeb41": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMUser"
+]
+},
+"0xeb42": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMUser"
+]
+},
+"0xeb43": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMUser"
+]
+},
+"0xeb44": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMUser"
+]
+},
+"0xeb45": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMUser"
+]
+},
+"0xeb4a": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMUser"
+]
+},
+"0xeb4b": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMUser"
+]
+},
+"0xeb4c": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMUser"
+]
+},
+"0xeb4f": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMUser"
+]
+},
+"0xf58d": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMUserPropDefTableEntry"
+]
+},
+"0xf58e": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMUserPropDefTableEntry"
+]
+},
+"0xf593": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMUserPropDefTableEntry"
+]
+},
+"0xf591": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMUserPropDefTableEntry"
+]
+},
+"0xf594": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMUserPropDefTableEntry"
+]
+},
+"0xf595": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMUserPropDefTableEntry"
+]
+},
+"0xfa39": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMUserPropDefTableEntry"
+]
+},
+"0xfa3a": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMUserPropDefTableEntry"
+]
+},
+"0xfa45": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMUserPropDefTableEntry"
+]
+},
+"0xfa46": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMUserPropDefTableEntry"
+]
+},
+"0xfa47": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMUserPropDefTableEntry"
+]
+},
+"0xfa0f": {
+"typen": [
+"p16"
+],
+"klassen": []
+},
+"0xfa10": {
+"typen": [
+"p16"
+],
+"klassen": []
+},
+"0xf4ff": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMViewPartReference",
+"DmgViewPlacement"
+]
+},
+"0xf4f4": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMViewPartReference"
+]
+},
+"0xec8e": {
+"typen": [
+"b1"
+],
+"klassen": []
+},
+"0xec8c": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgArc"
+]
+},
+"0xec8d": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgArc"
+]
+},
+"0xec89": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgArc"
+]
+},
+"0xec8a": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgArc"
+]
+},
+"0xec8b": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgArc"
+]
+},
+"0xec01": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgArc",
+"DmgPolyLine",
+"DmgRectangle"
+]
+},
+"0xf439": {
+"typen": [
+"str"
+],
+"klassen": [
+"DmgBaseComment"
+]
+},
+"0xf43b": {
+"typen": [
+"str"
+],
+"klassen": [
+"DmgBaseComment"
+]
+},
+"0xf43c": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DmgBaseComment"
+]
+},
+"0xf43d": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DmgBaseComment"
+]
+},
+"0xf43f": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgBaseComment"
+]
+},
+"0xf138": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgBaseDimensionItem"
+]
+},
+"0xec55": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgBaseText"
+]
+},
+"0xec56": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DmgBaseText"
+]
+},
+"0xec57": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgBaseText"
+]
+},
+"0xec5a": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgBaseText"
+]
+},
+"0xf440": {
+"typen": [
+"b1"
+],
+"klassen": []
+},
+"0xf444": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgComment"
+]
+},
+"0xf43e": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgComment"
+]
+},
+"0xf446": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgComment"
+]
+},
+"0xf44b": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgComment"
+]
+},
+"0xf44c": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgComment"
+]
+},
+"0xf173": {
+"typen": [
+"p16"
+],
+"klassen": []
+},
+"0xf174": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xf175": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xf176": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgDimensionCircle"
+]
+},
+"0xf177": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgDimensionCircle"
+]
+},
+"0xf178": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgDimensionCircle"
+]
+},
+"0xf179": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgDimensionCircle"
+]
+},
+"0xf17a": {
+"typen": [
+"str"
+],
+"klassen": [
+"DmgDimensionCircle"
+]
+},
+"0xf17b": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgDimensionCircle"
+]
+},
+"0xf155": {
+"typen": [
+"p16"
+],
+"klassen": []
+},
+"0xf156": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xf157": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xf158": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgDimensionGroup"
+]
+},
+"0xf141": {
+"typen": [
+"p16"
+],
+"klassen": []
+},
+"0xf142": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xf143": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xf144": {
+"typen": [
+"p16"
+],
+"klassen": []
+},
+"0xf145": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xf146": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xf147": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgDimensionItem"
+]
+},
+"0xf148": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgDimensionItem"
+]
+},
+"0xf149": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgDimensionItem"
+]
+},
+"0xf14a": {
+"typen": [
+"str"
+],
+"klassen": [
+"DmgDimensionItem"
+]
+},
+"0xf14b": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgDimensionItem"
+]
+},
+"0xf14c": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgDimensionItem"
+]
+},
+"0xf12f": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xf12d": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgDimensionPoint"
+]
+},
+"0xf12e": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgDimensionPoint"
+]
+},
+"0xf105": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xf106": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xf109": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xf10a": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xf10d": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xf10e": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xf115": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf116": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf117": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf118": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf119": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf11a": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf11b": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf11c": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf11d": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf11e": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf120": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf121": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf122": {
+"typen": [
+"str"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf123": {
+"typen": [
+"str"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf124": {
+"typen": [
+"str"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf125": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgDimensionSetting"
+]
+},
+"0xf2f9": {
+"typen": [
+"str"
+],
+"klassen": [
+"DmgExternalDocument"
+]
+},
+"0xf2fa": {
+"typen": [
+"str"
+],
+"klassen": [
+"DmgExternalDocument"
+]
+},
+"0xf2fb": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DmgExternalDocument"
+]
+},
+"0xf2fc": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgExternalDocument"
+]
+},
+"0xf2fd": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgExternalDocument"
+]
+},
+"0xf3ee": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DmgExternalInstance"
+]
+},
+"0xf3e9": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DmgExternalInstance"
+]
+},
+"0xf3ea": {
+"typen": [
+"kv"
+],
+"klassen": [
+"DmgExternalInstance"
+]
+},
+"0xf3eb": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DmgExternalInstance"
+]
+},
+"0xf3ec": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DmgExternalInstance"
+]
+},
+"0xf3ed": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgExternalInstance"
+]
+},
+"0xf3f0": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DmgExternalInstance"
+]
+},
+"0xf3f1": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DmgExternalInstance"
+]
+},
+"0xf3e8": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DmgExternalInstance"
+]
+},
+"0xec0f": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgGroup"
+]
+},
+"0xf282": {
+"typen": [
+"str"
+],
+"klassen": [
+"DmgHyperlink"
+]
+},
+"0xf283": {
+"typen": [
+"str"
+],
+"klassen": [
+"DmgHyperlink"
+]
+},
+"0xebf1": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xebf2": {
+"typen": [
+"ref"
+],
+"klassen": []
+},
+"0xebf4": {
+"typen": [
+"b1"
+],
+"klassen": []
+},
+"0xebf5": {
+"typen": [
+"b1"
+],
+"klassen": []
+},
+"0xebf6": {
+"typen": [
+"b1"
+],
+"klassen": []
+},
+"0xebf7": {
+"typen": [
+"i4"
+],
+"klassen": []
+},
+"0xec73": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgLine"
+]
+},
+"0xec74": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgLine"
+]
+},
+"0xed4f": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgMatrix2x2"
+]
+},
+"0xed50": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgMatrix2x2"
+]
+},
+"0xed51": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgMatrix2x2"
+]
+},
+"0xed52": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgMatrix2x2"
+]
+},
+"0xeff3": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xeff4": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xefed": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DmgPersistentLayer"
+]
+},
+"0xefee": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgPersistentLayer"
+]
+},
+"0xefef": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgPersistentLayer"
+]
+},
+"0xeff9": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgPersistentLayer"
+]
+},
+"0xeff0": {
+"typen": [
+"str"
+],
+"klassen": [
+"DmgPersistentLayer"
+]
+},
+"0xeff2": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgPersistentLayer"
+]
+},
+"0xeffa": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgPersistentLayer"
+]
+},
+"0xeffb": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgPersistentLayer"
+]
+},
+"0xeccf": {
+"typen": [
+"b1"
+],
+"klassen": []
+},
+"0xed65": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgPropertyInstance"
+]
+},
+"0xed66": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgPropertyInstance"
+]
+},
+"0xed63": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgPropertyInstance"
+]
+},
+"0xed64": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgPropertyInstance"
+]
+},
+"0xf0d3": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgRectangle"
+]
+},
+"0xf0d4": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgRectangle"
+]
+},
+"0xf0d5": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgRectangle"
+]
+},
+"0xf0d6": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgRectangle"
+]
+},
+"0xf0d7": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgRectangle"
+]
+},
+"0xea76": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMGroupReference"
+]
+},
+"0xea77": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMGroupReference"
+]
+},
+"0xea78": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMGroupReference"
+]
+},
+"0xf0dd": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgShielding"
+]
+},
+"0xf0de": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DmgShielding"
+]
+},
+"0xfa0d": {
+"typen": [
+"i4"
+],
+"klassen": []
+},
+"0xee21": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgTextInfo"
+]
+},
+"0xee22": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgTextInfo"
+]
+},
+"0xee23": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgTextInfo"
+]
+},
+"0xee24": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgTextInfo"
+]
+},
+"0xee25": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgTextInfo"
+]
+},
+"0xee26": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgTextInfo"
+]
+},
+"0xee27": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgTextInfo"
+]
+},
+"0xee28": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgTextInfo"
+]
+},
+"0xee29": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DmgTextInfo"
+]
+},
+"0xf4ed": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DmgViewPlacement"
+]
+},
+"0xf4ee": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DmgViewPlacement"
+]
+},
+"0xf4ef": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DmgViewPlacement"
+]
+},
+"0xf4f0": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DmgViewPlacement"
+]
+},
+"0xf4f1": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DmgViewPlacement"
+]
+},
+"0xf4f2": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DmgViewPlacement"
+]
+},
+"0xf4f3": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DmgViewPlacement"
+]
+},
+"0xf4f5": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgViewPlacement"
+]
+},
+"0xf4f8": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgViewPlacement"
+]
+},
+"0xf4f9": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgViewPlacement"
+]
+},
+"0xf4fa": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DmgViewPlacement"
+]
+},
+"0xf4fb": {
+"typen": [
+"str"
+],
+"klassen": [
+"DmgViewPlacement"
+]
+},
+"0xf4fc": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgViewPlacement"
+]
+},
+"0xebfb": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DmgVisibleInstance"
+]
+},
+"0xebfc": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xebfd": {
+"typen": [
+"s2"
+],
+"klassen": []
+},
+"0xec00": {
+"typen": [
+"b1"
+],
+"klassen": []
+},
+"0xf597": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMArticleAccessoryListPosition",
+"DMArticleAccessoryPlacementPosition"
+]
+},
+"0xf48e": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DMCabArea"
+]
+},
+"0xf48c": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMCabBarBase"
+]
+},
+"0xf416": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMCabBase"
+]
+},
+"0xf48d": {
+"typen": [
+"kv"
+],
+"klassen": [
+"DMCabBase"
+]
+},
+"0xf496": {
+"typen": [
+"kv"
+],
+"klassen": [
+"DMCabBase"
+]
+},
+"0xf4a0": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DMCabBusBar"
+]
+},
+"0xf48f": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMCabDrill"
+]
+},
+"0xf490": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMCabDrill"
+]
+},
+"0xf491": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMCabDrill"
+]
+},
+"0xf492": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMCabDrill"
+]
+},
+"0xf493": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMCabDrill"
+]
+},
+"0xf489": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DMCabPlane"
+]
+},
+"0xf48a": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DMCabPlane"
+]
+},
+"0xf48b": {
+"typen": [
+"p16"
+],
+"klassen": [
+"DMCabPlane"
+]
+},
+"0xf49b": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMCabRoutingSegment"
+]
+},
+"0xf498": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DMCabSegment"
+]
+},
+"0xf499": {
+"typen": [
+"p24"
+],
+"klassen": [
+"DMCabSegment"
+]
+},
+"0xf49d": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMCabSegment"
+]
+},
+"0xf49c": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMCabSegment"
+]
+},
+"0xf5ab": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaMacroVariantInfo"
+]
+},
+"0xf5ac": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaMacroVariantInfo"
+]
+},
+"0xf5ae": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMPlaMacroPlaceholderInfo"
+]
+},
+"0xf579": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMPlaObjectDefinition"
+]
+},
+"0xf57a": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaObjectDefinition"
+]
+},
+"0xf57e": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaObjectDefinition"
+]
+},
+"0xf57f": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaObjectDefinition"
+]
+},
+"0xf580": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaObjectDefinition"
+]
+},
+"0xf583": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaObjectDefinition"
+]
+},
+"0xf584": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMPlaObjectDefinition"
+]
+},
+"0xf587": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaObjectDefinition"
+]
+},
+"0xf588": {
+"typen": [
+"s2"
+],
+"klassen": [
+"DMPlaObjectDefinition"
+]
+},
+"0xf589": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaObjectDefinition"
+]
+},
+"0xf5b6": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMPlaObject"
+]
+},
+"0xf5b7": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMPlaObject"
+]
+},
+"0xf5b8": {
+"typen": [
+"d8"
+],
+"klassen": [
+"DMPlaObject"
+]
+},
+"0xf5bc": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaObject"
+]
+},
+"0xf5ba": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaObject"
+]
+},
+"0xf5bd": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMPlaObject"
+]
+},
+"0xf5cd": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMPlaObject"
+]
+},
+"0xf5ce": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaObject"
+]
+},
+"0xf5ca": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMFunctionTemplate"
+]
+},
+"0xf5cb": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMPlaPlcIoEntry"
+]
+},
+"0xf5cc": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMPlaMacroPlaceholderRecord"
+]
+},
+"0xf5cf": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMPlaObject"
+]
+},
+"0xf5d0": {
+"typen": [
+"ref"
+],
+"klassen": [
+"DMPlaObject"
+]
+},
+"0xf5a2": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaPropertyConfig"
+]
+},
+"0xf5a4": {
+"typen": [
+"b1"
+],
+"klassen": [
+"DMPlaPropertyConfig"
+]
+},
+"0xf5a5": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaPropertyConfig"
+]
+},
+"0xf5a6": {
+"typen": [
+"i4"
+],
+"klassen": [
+"DMPlaPropertyConfig"
+]
+},
+"0xf669": {
+"typen": [
+"str"
+],
+"klassen": [
+"DMPlaSpecification"
+]
+},
+"0xf66b": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMFunctionTemplate"
+]
+},
+"0xf66c": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMPlaPlcIoEntry"
+]
+},
+"0xf66d": {
+"typen": [
+"obj"
+],
+"klassen": [
+"DMPlaMacroPlaceholderRecord"
+]
+},
+"0xf66e": {
+"typen": [
+"i8"
+],
+"klassen": [
+"DMPlaSpecification"
+]
+}
+}
+}

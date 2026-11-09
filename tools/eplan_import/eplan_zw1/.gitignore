@@ -1,0 +1,6 @@
+# Arbeitsdaten des Imports (Kundendaten) nie committen
+_eplan_import*/
+*.pkl
+out/
+x/
+__pycache__/

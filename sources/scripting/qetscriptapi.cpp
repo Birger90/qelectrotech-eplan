@@ -299,7 +299,7 @@ QString QetScriptApi::panelReport(int folioIndex) const
 	const QList<Diagram *> diagrams = m_project->folios();
 	if (folioIndex < 0 || folioIndex >= diagrams.count()) return QString();
 	QJsonArray surfaces;
-	for (QetShapeItem *surface : PanelLayout::surfaces(diagrams.at(folioIndex)))
+	for (QetShapeItem *surface : PanelLayout::surfaces(built(diagrams.at(folioIndex))))
 	{
 		const PanelLayout layout(surface);
 		QJsonObject s;
@@ -350,7 +350,7 @@ QStringList QetScriptApi::exportPanelDxf(int folioIndex, const QString &outDir, 
 	PanelDxf::Options options;
 	options.labels = labels;
 	int n = 0;
-	for (QetShapeItem *surface : PanelLayout::surfaces(diagrams.at(folioIndex)))
+	for (QetShapeItem *surface : PanelLayout::surfaces(built(diagrams.at(folioIndex))))
 	{
 		const PanelLayout layout(surface);
 		QString name = layout.name();
@@ -376,7 +376,7 @@ int QetScriptApi::addPanelGrid(int folioIndex, int rows, double ductMm)
 	if (!m_project) return 0;
 	const QList<Diagram *> diagrams = m_project->folios();
 	if (folioIndex < 0 || folioIndex >= diagrams.count()) return 0;
-	for (QetShapeItem *s : PanelLayout::surfaces(diagrams.at(folioIndex))) {
+	for (QetShapeItem *s : PanelLayout::surfaces(built(diagrams.at(folioIndex)))) {
 		if (!s->panelData().face.isEmpty()) continue;
 		const int n = rows > 0 ? rows : PanelAssistant::suggestedRows(PanelLayout(s).heightMm(), ductMm);
 		return PanelAssistant::addGrid(s, n, ductMm);
@@ -397,7 +397,7 @@ QString QetScriptApi::exportPanel3D(int folioIndex, const QString &path, bool en
 	const QList<Diagram *> diagrams = m_project->folios();
 	if (folioIndex < 0 || folioIndex >= diagrams.count()) return QStringLiteral("ERROR: no such folio");
 	QStringList notes;
-	const QList<Panel3DBody> bodies = Panel3DDialog::build(diagrams.at(folioIndex), &notes, enclosure);
+	const QList<Panel3DBody> bodies = Panel3DDialog::build(built(diagrams.at(folioIndex)), &notes, enclosure);
 	if (bodies.isEmpty()) return QStringLiteral("ERROR: no mounting surface on this folio");
 	int models = 0;
 	for (const Panel3DBody &b : bodies) if (!b.mesh.isEmpty()) ++models;

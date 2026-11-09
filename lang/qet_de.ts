@@ -14051,6 +14051,10 @@ Verfügbare Optionen:
 <context>
     <name>QETDiagramEditor</name>
     <message>
+        <source>Manufacturer portals…</source>
+        <translation>Herstellerportale…</translation>
+    </message>
+    <message>
         <source>Cable list (choose types)...</source>
         <translation>Kabelliste (Typen wählen)…</translation>
     </message>
@@ -30747,6 +30751,401 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <message>
         <source>change size of %1</source>
         <translation>Größe von %1 ändern</translation>
+    </message>
+</context>
+<context>
+    <name>ManufacturerPortals</name>
+    <message>
+        <source>EPLAN Data Portal</source>
+        <translation>EPLAN Data Portal</translation>
+    </message>
+    <message>
+        <source>Personal Access Token</source>
+        <translation>Persönliches Zugriffstoken (PAT)</translation>
+    </message>
+    <message>
+        <source>Official API: search and DXF packages with part data (Siemens, Rittal and many more). The token comes from your ePulse profile.</source>
+        <translation>Offizielle Schnittstelle: Suche und DXF-Pakete mit Artikeldaten (Siemens, Rittal und viele mehr). Das Token kommt aus deinem ePulse-Profil.</translation>
+    </message>
+    <message>
+        <source>Siemens SiePortal</source>
+        <translation>Siemens SiePortal</translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <translation>Passwort</translation>
+    </message>
+    <message>
+        <source>Public files of static.siemens.com (EPLAN macro, DXF, STEP), from the links of the SiePortal product page. SiePortal refuses programs and has no CAx API: the links come from the browser (link file). The password stays in the store, QElectroTech does not send it.</source>
+        <translation>Öffentliche Dateien von static.siemens.com (EPLAN-Makro, DXF, STEP), nach den Links der SiePortal-Produktseite. SiePortal lässt keine Programme zu und hat keine CAx-Schnittstelle: Die Links kommen aus dem Browser (Linkdatei). Das Passwort bleibt im Speicher, QElectroTech sendet es nicht.</translation>
+    </message>
+    <message>
+        <source>Rittal</source>
+        <translation>Rittal</translation>
+    </message>
+    <message>
+        <source>No API of its own: the EPLAN data of Rittal comes from the Data Portal. The password stays in the store, QElectroTech does not send it.</source>
+        <translation>Keine eigene Schnittstelle: Die EPLAN-Daten von Rittal kommen aus dem Data Portal. Das Passwort bleibt im Speicher, QElectroTech sendet es nicht.</translation>
+    </message>
+    <message>
+        <source>3Dfindit</source>
+        <translation>3Dfindit</translation>
+    </message>
+    <message>
+        <source>No API for users: the part opens in the browser, QElectroTech counts the CAD requests (50 per 24 h and account) and takes the downloaded STEP files into the 3D folder.</source>
+        <translation>Keine Schnittstelle für Nutzer: Das Bauteil öffnet sich im Browser, QElectroTech zählt die CAD-Anforderungen (50 je 24 h und Konto) und übernimmt die geladenen STEP-Dateien in den 3D-Ordner.</translation>
+    </message>
+    <message>
+        <source>No token.</source>
+        <translation>Kein Token.</translation>
+    </message>
+    <message>
+        <source>The Data Portal does not accept the token (HTTP %1).</source>
+        <translation>Das Data Portal nimmt das Token nicht an (HTTP %1).</translation>
+    </message>
+    <message>
+        <source>The Data Portal cannot be reached: %1</source>
+        <translation>Das Data Portal ist nicht erreichbar: %1</translation>
+    </message>
+    <message>
+        <source>The Data Portal answers HTTP %1.</source>
+        <translation>Das Data Portal antwortet mit HTTP %1.</translation>
+    </message>
+    <message>
+        <source>The limit of %1 CAD requests per 24 h is reached; the next one is free at %2.</source>
+        <translation>Das Limit von %1 CAD-Anforderungen je 24 h ist erreicht; die nächste ist ab %2 frei.</translation>
+    </message>
+    <message>
+        <source>No data folder for the request log.</source>
+        <translation>Kein Datenordner für das Anforderungsprotokoll.</translation>
+    </message>
+    <message>
+        <source>The request log cannot be written: %1</source>
+        <translation>Das Anforderungsprotokoll kann nicht geschrieben werden: %1</translation>
+    </message>
+</context>
+<context>
+    <name>PartFetcher</name>
+    <message>
+        <source>The list cannot be read: %1</source>
+        <translation>Die Liste kann nicht gelesen werden: %1</translation>
+    </message>
+    <message>
+        <source>No parts in the list.</source>
+        <translation>Keine Bauteile in der Liste.</translation>
+    </message>
+    <message>
+        <source>HTTP %1 for %2</source>
+        <translation>HTTP %1 für %2</translation>
+    </message>
+    <message>
+        <source>%1 cannot be written: %2</source>
+        <translation>%1 kann nicht geschrieben werden: %2</translation>
+    </message>
+    <message>
+        <source>not in the Data Portal</source>
+        <translation>nicht im Data Portal</translation>
+    </message>
+    <message>
+        <source>no Data Portal token (Part import &gt; Manufacturer portals)</source>
+        <translation>kein Data-Portal-Token (Bauteil-Import &gt; Herstellerportale)</translation>
+    </message>
+    <message>
+        <source>the download failed</source>
+        <translation>der Download ist fehlgeschlagen</translation>
+    </message>
+    <message>
+        <source>no manufacturer or order number</source>
+        <translation>kein Hersteller oder keine Bestellnummer</translation>
+    </message>
+    <message>
+        <source>symbol: in the collection (%1)</source>
+        <translation>Symbol: in der Sammlung (%1)</translation>
+    </message>
+    <message>
+        <source>STEP: there (%1)</source>
+        <translation>STEP: vorhanden (%1)</translation>
+    </message>
+    <message>
+        <source>Siemens: no SiePortal links for this part; collect them in the browser (tools/herstellerportale/sieportal_links.js) into %1</source>
+        <translation>Siemens: keine SiePortal-Links für dieses Bauteil; im Browser sammeln (tools/herstellerportale/sieportal_links.js) nach %1</translation>
+    </message>
+    <message>
+        <source>would load %1</source>
+        <translation>würde %1 laden</translation>
+    </message>
+    <message>
+        <source>loaded %1 (%2 KB)</source>
+        <translation>%1 geladen (%2 KB)</translation>
+    </message>
+    <message>
+        <source>not loaded: %1</source>
+        <translation>nicht geladen: %1</translation>
+    </message>
+    <message>
+        <source>would import the EPLAN macro into %1</source>
+        <translation>würde das EPLAN-Makro nach %1 importieren</translation>
+    </message>
+    <message>
+        <source>would import a DXF into %1</source>
+        <translation>würde ein DXF nach %1 importieren</translation>
+    </message>
+    <message>
+        <source>would load the Data Portal package into %1</source>
+        <translation>würde das Data-Portal-Paket nach %1 laden</translation>
+    </message>
+    <message>
+        <source>symbol: EPLAN macro %1 imported into %2</source>
+        <translation>Symbol: EPLAN-Makro %1 nach %2 importiert</translation>
+    </message>
+    <message>
+        <source>%1: %2</source>
+        <translation>%1: %2</translation>
+    </message>
+    <message>
+        <source>symbol: DXF %1 imported into %2</source>
+        <translation>Symbol: DXF %1 nach %2 importiert</translation>
+    </message>
+    <message>
+        <source>symbol: Data Portal package imported into %1</source>
+        <translation>Symbol: Data-Portal-Paket nach %1 importiert</translation>
+    </message>
+    <message>
+        <source>Data Portal package: %1</source>
+        <translation>Data-Portal-Paket: %1</translation>
+    </message>
+    <message>
+        <source>Data Portal: %1</source>
+        <translation>Data Portal: %1</translation>
+    </message>
+    <message>
+        <source>Data Portal: no DXF data for this part</source>
+        <translation>Data Portal: keine DXF-Daten für dieses Bauteil</translation>
+    </message>
+    <message>
+        <source>STEP: %1 is only a placeholder (%2 KB), not taken</source>
+        <translation>STEP: %1 ist nur ein Platzhalter (%2 KB), nicht übernommen</translation>
+    </message>
+    <message>
+        <source>would store the STEP model as %1</source>
+        <translation>würde das STEP-Modell als %1 ablegen</translation>
+    </message>
+    <message>
+        <source>STEP: stored as %1</source>
+        <translation>STEP: abgelegt als %1</translation>
+    </message>
+    <message>
+        <source>STEP: %1 cannot be written</source>
+        <translation>STEP: %1 kann nicht geschrieben werden</translation>
+    </message>
+    <message>
+        <source>STEP: request it on 3Dfindit in the browser (%1 of %2 requests left today)</source>
+        <translation>STEP: bei 3Dfindit im Browser anfordern (heute noch %1 von %2 Anforderungen)</translation>
+    </message>
+</context>
+<context>
+    <name>PortalCredentials</name>
+    <message>
+        <source>The credential store refused the account (error %1).</source>
+        <translation>Der Anmeldeinformationsspeicher hat das Konto abgelehnt (Fehler %1).</translation>
+    </message>
+    <message>
+        <source>No credential store on this system.</source>
+        <translation>Kein Anmeldeinformationsspeicher auf diesem System.</translation>
+    </message>
+    <message>
+        <source>The account cannot be removed (error %1).</source>
+        <translation>Das Konto kann nicht entfernt werden (Fehler %1).</translation>
+    </message>
+</context>
+<context>
+    <name>PortalsDialog</name>
+    <message>
+        <source>Manufacturer portals</source>
+        <translation>Herstellerportale</translation>
+    </message>
+    <message>
+        <source>One account per portal. Passwords and tokens are kept in the Windows Credential Manager, never in the settings. QElectroTech uses official interfaces and public files only; it does not fill in login forms and solves no CAPTCHAs.</source>
+        <translation>Ein Konto je Portal. Passwörter und Tokens liegen in der Windows-Anmeldeinformationsverwaltung, nie in den Einstellungen. QElectroTech nutzt nur offizielle Schnittstellen und öffentliche Dateien; es füllt keine Anmeldeformulare aus und löst keine CAPTCHAs.</translation>
+    </message>
+    <message>
+        <source>Choose…</source>
+        <translation>Wählen…</translation>
+    </message>
+    <message>
+        <source>e.g. SIE, RIT; empty: all manufacturers</source>
+        <translation>z. B. SIE, RIT; leer: alle Hersteller</translation>
+    </message>
+    <message>
+        <source>Only show what would be loaded</source>
+        <translation>Nur anzeigen, was geladen würde</translation>
+    </message>
+    <message>
+        <source>Fetch missing parts</source>
+        <translation>Fehlende Bauteile holen</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation>Anhalten</translation>
+    </message>
+    <message>
+        <source>The parts and what was loaded for them are listed here.</source>
+        <translation>Hier stehen die Bauteile und was für sie geladen wurde.</translation>
+    </message>
+    <message>
+        <source>List of missing parts:</source>
+        <translation>Fehlliste:</translation>
+    </message>
+    <message>
+        <source>Manufacturers:</source>
+        <translation>Hersteller:</translation>
+    </message>
+    <message>
+        <source>Status:</source>
+        <translation>Status:</translation>
+    </message>
+    <message>
+        <source>User name or e-mail</source>
+        <translation>Benutzername oder E-Mail</translation>
+    </message>
+    <message>
+        <source>User:</source>
+        <translation>Benutzer:</translation>
+    </message>
+    <message>
+        <source>stored; type to replace</source>
+        <translation>gespeichert; zum Ersetzen neu eingeben</translation>
+    </message>
+    <message>
+        <source>Log in</source>
+        <translation>Anmelden</translation>
+    </message>
+    <message>
+        <source>Store account</source>
+        <translation>Konto speichern</translation>
+    </message>
+    <message>
+        <source>Log out</source>
+        <translation>Abmelden</translation>
+    </message>
+    <message>
+        <source>Open portal</source>
+        <translation>Portal öffnen</translation>
+    </message>
+    <message>
+        <source>CAD requests:</source>
+        <translation>CAD-Anforderungen:</translation>
+    </message>
+    <message>
+        <source>order number of the part requested</source>
+        <translation>Bestellnummer des angeforderten Bauteils</translation>
+    </message>
+    <message>
+        <source>Count a request</source>
+        <translation>Anforderung zählen</translation>
+    </message>
+    <message>
+        <source>Counts a CAD request made in the browser. Above %1 in 24 h QElectroTech refuses further ones.</source>
+        <translation>Zählt eine im Browser gestellte CAD-Anforderung. Über %1 in 24 h lehnt QElectroTech weitere ab.</translation>
+    </message>
+    <message>
+        <source>Request:</source>
+        <translation>Anforderung:</translation>
+    </message>
+    <message>
+        <source>Links:</source>
+        <translation>Links:</translation>
+    </message>
+    <message>
+        <source>Add links…</source>
+        <translation>Links hinzufügen…</translation>
+    </message>
+    <message>
+        <source>Paste the links of the SiePortal download dialog (static.siemens.com), each line &quot;&lt;order number&gt; &lt;link&gt;&quot;.</source>
+        <translation>Die Links aus dem SiePortal-Downloaddialog (static.siemens.com) einfügen, je Zeile &quot;&lt;Bestellnummer&gt; &lt;Link&gt;&quot;.</translation>
+    </message>
+    <message>
+        <source>Open link folder</source>
+        <translation>Linkordner öffnen</translation>
+    </message>
+    <message>
+        <source>Enter the Personal Access Token first.</source>
+        <translation>Erst das persönliche Zugriffstoken eingeben.</translation>
+    </message>
+    <message>
+        <source>Enter the user name first.</source>
+        <translation>Erst den Benutzernamen eingeben.</translation>
+    </message>
+    <message>
+        <source>No credential store on this system.</source>
+        <translation>Kein Anmeldeinformationsspeicher auf diesem System.</translation>
+    </message>
+    <message>
+        <source>Not logged in.</source>
+        <translation>Nicht angemeldet.</translation>
+    </message>
+    <message>
+        <source>Logged in (token in the Credential Manager).</source>
+        <translation>Angemeldet (Token in der Anmeldeinformationsverwaltung).</translation>
+    </message>
+    <message>
+        <source>Account stored.</source>
+        <translation>Konto gespeichert.</translation>
+    </message>
+    <message>
+        <source>Account %1 stored.</source>
+        <translation>Konto %1 gespeichert.</translation>
+    </message>
+    <message>
+        <source>%1 of %2 used in the last 24 h, %3 left.</source>
+        <translation>%1 von %2 in den letzten 24 h genutzt, noch %3.</translation>
+    </message>
+    <message>
+        <source>Next request at %1.</source>
+        <translation>Nächste Anforderung ab %1.</translation>
+    </message>
+    <message>
+        <source>%1 parts with links in %2. QElectroTech loads the public files of these links itself.</source>
+        <translation>%1 Bauteile mit Links in %2. QElectroTech lädt die öffentlichen Dateien dieser Links selbst.</translation>
+    </message>
+    <message>
+        <source>3Dfindit</source>
+        <translation>3Dfindit</translation>
+    </message>
+    <message>
+        <source>SiePortal links</source>
+        <translation>SiePortal-Links</translation>
+    </message>
+    <message>
+        <source>One link per line, after the order number:
+3RV2011-0FA10 https://static.siemens.com/mimes/imagedb_stp/…</source>
+        <translation>Ein Link je Zeile, nach der Bestellnummer:
+3RV2011-0FA10 https://static.siemens.com/mimes/imagedb_stp/…</translation>
+    </message>
+    <message>
+        <source>%1 lines taken, %2 left out: only links of static.siemens.com/mimes after an order number.</source>
+        <translation>%1 Zeilen übernommen, %2 ausgelassen: nur Links von static.siemens.com/mimes nach einer Bestellnummer.</translation>
+    </message>
+    <message>
+        <source>List of missing parts</source>
+        <translation>Fehlliste</translation>
+    </message>
+    <message>
+        <source>Text files (*.txt);;All files (*)</source>
+        <translation>Textdateien (*.txt);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <source>
+%1 parts: %2 done, %3 partly, %4 there already, %5 not found, %6 planned.</source>
+        <translation>
+%1 Bauteile: %2 fertig, %3 teilweise, %4 schon vorhanden, %5 nicht gefunden, %6 geplant.</translation>
+    </message>
+</context>
+<context>
+    <name>DataPortalDialog</name>
+    <message>
+        <source>Keeps the token in the Windows Credential Manager, not in the settings.</source>
+        <translation>Speichert das Token in der Windows-Anmeldeinformationsverwaltung, nicht in den Einstellungen.</translation>
     </message>
 </context>
 </TS>

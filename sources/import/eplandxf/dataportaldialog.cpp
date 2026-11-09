@@ -16,6 +16,8 @@
 	along with QElectroTech. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "dataportaldialog.h"
+#include "../portals/manufacturerportals.h"
+#include "../portals/portalcredentials.h"
 
 #include "../../qetapp.h"
 #include "../../qetmessagebox.h"
@@ -60,7 +62,7 @@ DataPortalDialog::DataPortalDialog(QWidget *parent) :
 	m_client->setLanguage(QLocale(QETApp::langFromSetting()).name());
 
 	QSettings settings;
-	const QString stored = settings.value(QLatin1String(TOKEN_KEY)).toString();
+	const QString stored = ManufacturerPortals::dataPortalToken();	// Credential Manager
 
 	// the token is a password: never shown in clear
 	m_token = new QLineEdit(stored, this);
@@ -69,7 +71,7 @@ DataPortalDialog::DataPortalDialog(QWidget *parent) :
 	m_token->setClearButtonEnabled(true);
 	m_remember = new QCheckBox(tr("Remember the token"), this);
 	m_remember->setChecked(true);
-	m_remember->setToolTip(tr("Keeps the token in the settings of QElectroTech on this computer."));
+	m_remember->setToolTip(tr("Keeps the token in the Windows Credential Manager, not in the settings."));
 	auto *token_row = new QHBoxLayout;
 	token_row->addWidget(m_token, 1);
 	token_row->addWidget(m_remember);
@@ -204,10 +206,14 @@ void DataPortalDialog::storeToken()
 {
 	QSettings settings;
 	const QString token = m_token->text().trimmed();
-	if (m_remember->isChecked() && !token.isEmpty())
-		settings.setValue(QLatin1String(TOKEN_KEY), token);
-	else
-		settings.remove(QLatin1String(TOKEN_KEY));
+		// the token goes into the credential store, never into the settings
+	if (m_remember->isChecked() && !token.isEmpty()) {
+		if (token != PortalCredentials::load(QStringLiteral("dataportal")).secret)
+			PortalCredentials::store(QStringLiteral("dataportal"), PortalAccount{QString(), token});
+	} else {
+		PortalCredentials::remove(QStringLiteral("dataportal"));
+	}
+	settings.remove(QLatin1String(TOKEN_KEY));
 	settings.setValue(QLatin1String(MANUFACTURER_KEY), manufacturerFilter());
 	settings.setValue(QLatin1String(ONLY_DXF_KEY), m_only_dxf->isChecked());
 	settings.setValue(QLatin1String(EXACT_KEY), m_exact->isChecked());

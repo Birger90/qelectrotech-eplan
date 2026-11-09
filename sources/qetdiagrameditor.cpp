@@ -40,6 +40,7 @@
 #include <QGridLayout>
 #include "ElementsCollection/elementscollectionwidget.h"
 #include "import/eplandxf/dataportaldialog.h"
+#include "import/portals/portalsdialog.h"
 #include "import/eplandxf/eplanimportdialog.h"
 #include "ElementsCollection/elementpickerpopup.h"
 #include "shortcutbarsettings.h"
@@ -2120,6 +2121,14 @@ void QETDiagramEditor::setUpMenu()
 	connect(menu_part_import->addAction(tr("From the EPLAN Data Portal…")),
 		&QAction::triggered, this, [this]() {
 			DataPortalDialog dialog(this);
+			dialog.exec();
+			if (!dialog.writtenPaths().isEmpty() && m_element_collection_widget)
+				m_element_collection_widget->reload();
+		});
+	// accounts of the manufacturer portals, and fetching missing parts
+	connect(menu_part_import->addAction(tr("Manufacturer portals…")),
+		&QAction::triggered, this, [this]() {
+			PortalsDialog dialog(this);
 			dialog.exec();
 			if (!dialog.writtenPaths().isEmpty() && m_element_collection_widget)
 				m_element_collection_widget->reload();

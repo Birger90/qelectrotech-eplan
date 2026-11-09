@@ -29,6 +29,9 @@
 #include "diagramcontext.h"
 #include "editor/terminalnamecheck.h"
 #include "import/eplandxf/eplanpartimporter.h"
+#include "import/portals/manufacturerportals.h"
+#include "import/portals/partfetcher.h"
+#include "import/portals/portalcredentials.h"
 #include "dxfexport.h"
 #include "exportproperties.h"
 #include "pdf_links.h"
@@ -93,6 +96,11 @@ const QHash<QString, QString> &exportFlags()
 		{"--info", "info"},
 		{"--check-elements", "check"},
 		{"--import-eplan", "importeplan"},
+		{"--fetch-parts", "fetchparts"},
+		{"--portal-status", "portalstatus"},
+		{"--portal-login", "portallogin"},
+		{"--portal-logout", "portallogout"},
+		{"--portal-request", "portalrequest"},
 		{"--resave", "resave"},
 		{"--recover", "recover"},
 		{"--history", "history"},
@@ -1321,6 +1329,159 @@ int run(const QStringList &args)
 			err << source << ": " << importer.errorString() << "\n";
 			return 1;
 		}
+		return 0;
+	}
+
+	// --fetch-parts works off a list of missing parts: the manufacturer data
+	// (EPLAN macro, DXF, STEP) loaded from the portals and imported, as
+	// "Part import > Manufacturer portals" does; --portal-* show and keep
+	// the accounts of the portals (the secret is read from stdin, never
+	// from the command line)
+	if (format == "fetchparts") {
+		QStringList positional;
+		QHash<QString, QString> opts;
+		QSet<QString> switches;
+		for (int i = 0; i < rest.size(); ++i) {
+			const QString &a = rest.at(i);
+			if (a == "--dry-run" || a == "--force" || a == "--no-dataportal")
+				switches.insert(a.mid(2));
+			else if (a.startsWith("--") && i + 1 < rest.size())
+				opts.insert(a.mid(2), rest.at(++i));
+			else
+				positional << a;
+		}
+		if (positional.isEmpty()) {
+			err << "Usage: qelectrotech --fetch-parts <list.txt> [--collection DIR] [--raw-dir DIR] "
+			       "[--3d-dir DIR] [--links FILE] [--manufacturer SIE,RIT] [--limit N] [--pause MS] "
+			       "[--dry-run] [--force] [--no-dataportal] [--report FILE] [--json]\n";
+			return 2;
+		}
+		QString error;
+		const QList<FetchItem> items = PartFetcher::readList(positional.at(0), &error);
+		if (items.isEmpty()) {
+			err << positional.at(0) << ": " << error << "\n";
+			return 1;
+		}
+		FetchOptions options;
+		options.collection_dir = opts.value("collection");
+		options.raw_dir = opts.value("raw-dir");
+		options.model_dir = opts.value("3d-dir");
+		if (opts.contains("links")) options.link_files << opts.value("links");
+		const QStringList makers = opts.value("manufacturer").split(',', Qt::SkipEmptyParts);
+		for (const QString &m : makers)
+			options.makers << m.trimmed();
+		options.limit = opts.value("limit").toInt();
+		if (opts.contains("pause")) options.pause_ms = qMax(0, opts.value("pause").toInt());
+		options.dry_run = switches.contains("dry-run");
+		options.force = switches.contains("force");
+		options.use_dataportal = !switches.contains("no-dataportal");
+		PartFetcher fetcher;
+		if (!json)
+			QObject::connect(&fetcher, &PartFetcher::progress, [](int done, int total, const QString &line) {
+				err << "[" << done << "/" << total << "] " << line << "\n";
+				err.flush();
+			});
+		const QList<FetchResult> results = fetcher.run(items, options);
+		const QJsonObject report = PartFetcher::toJson(results);
+		QString text;
+		for (const FetchResult &r : results) {
+			text += QStringLiteral("%1  %2 %3\n").arg(r.status, -8).arg(r.maker, r.order);
+			for (const QString &n : r.notes) text += QStringLiteral("          %1\n").arg(n);
+		}
+		QStringList summary;
+		const QJsonObject counts = report.value("summary").toObject();
+		for (auto it = counts.constBegin(); it != counts.constEnd(); ++it)
+			summary << QStringLiteral("%1 %2").arg(it.value().toInt()).arg(it.key());
+		text += QStringLiteral("\n%1 parts: %2; 3Dfindit requests left today: %3\n")
+				.arg(results.size()).arg(summary.join(", ")).arg(report.value("3dfindit_left").toInt());
+		if (opts.contains("report")) {
+			QSaveFile f(opts.value("report"));
+			if (f.open(QIODevice::WriteOnly)) {
+				f.write(json ? QJsonDocument(report).toJson() : text.toUtf8());
+				f.commit();
+			}
+		}
+		if (json) out << QJsonDocument(report).toJson();
+		else out << text;
+		out.flush();
+		return 0;
+	}
+	if (format == "portalstatus") {
+		const QJsonObject status = ManufacturerPortals::statusAll();
+		if (json) {
+			out << QJsonDocument(status).toJson();
+		} else {
+			if (!status.value("credential_store").toBool()) out << "No credential store on this system.\n";
+			const QJsonArray portals = status.value("portals").toArray();
+			for (const QJsonValue &v : portals) {
+				const QJsonObject p = v.toObject();
+				out << p.value("id").toString() << ": "
+				    << (p.value("logged_in").toBool() ? "logged in" : "not logged in");
+				if (!p.value("user").toString().isEmpty()) out << " as " << p.value("user").toString();
+				if (p.contains("limit"))
+					out << ", " << p.value("used").toInt() << " of " << p.value("limit").toInt()
+					    << " CAD requests used in 24 h, " << p.value("left").toInt() << " left";
+				out << "\n";
+			}
+		}
+		out.flush();
+		return 0;
+	}
+	if (format == "portallogin" || format == "portallogout") {
+		const QString id = rest.value(0);
+		if (ManufacturerPortals::portal(id).id.isEmpty()) {
+			err << "Usage: qelectrotech " << flag << " <dataportal|siemens|rittal|3dfindit>"
+			    << (format == "portallogin" ? " [--user NAME]  (password or token on stdin)" : "") << "\n";
+			return 2;
+		}
+		QString error;
+		if (format == "portallogout") {
+			if (!PortalCredentials::remove(id, &error)) {
+				err << error << "\n";
+				return 1;
+			}
+			out << id << ": logged out\n";
+			out.flush();
+			return 0;
+		}
+		PortalAccount account = PortalCredentials::load(id);
+		const int user_at = int(rest.indexOf("--user"));
+		if (user_at > 0 && user_at + 1 < rest.size()) account.user = rest.at(user_at + 1);
+		QTextStream in(stdin);
+		const QString secret = in.readLine().trimmed();
+		if (!secret.isEmpty()) account.secret = secret;
+		if (id == "dataportal") {
+			error = ManufacturerPortals::checkDataPortalToken(account.secret);
+			if (!error.isEmpty()) {
+				err << id << ": " << error << "\n";
+				return 1;
+			}
+		} else if (account.user.isEmpty()) {
+			err << id << ": --user is needed\n";
+			return 2;
+		}
+		if (!PortalCredentials::store(id, account, &error)) {
+			err << id << ": " << error << "\n";
+			return 1;
+		}
+		out << id << ": account stored in the credential store\n";
+		out.flush();
+		return 0;
+	}
+	if (format == "portalrequest") {
+		const QString id = rest.value(0);
+		const QString order = rest.value(1);
+		if (ManufacturerPortals::portal(id).daily_limit <= 0 || order.isEmpty()) {
+			err << "Usage: qelectrotech --portal-request 3dfindit <order number>\n";
+			return 2;
+		}
+		QString error;
+		if (!ManufacturerPortals::registerRequest(id, order, &error)) {
+			err << id << ": " << error << "\n";
+			return 1;
+		}
+		out << id << ": " << ManufacturerPortals::requestsLeft(id) << " requests left\n";
+		out.flush();
 		return 0;
 	}
 

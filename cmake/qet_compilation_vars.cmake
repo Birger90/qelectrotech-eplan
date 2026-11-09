@@ -157,6 +157,14 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/import/eplandxf/eplanelementbuilder.h
   ${QET_DIR}/sources/import/eplandxf/eplanpartimporter.cpp
   ${QET_DIR}/sources/import/eplandxf/eplanpartimporter.h
+  ${QET_DIR}/sources/import/portals/manufacturerportals.cpp
+  ${QET_DIR}/sources/import/portals/manufacturerportals.h
+  ${QET_DIR}/sources/import/portals/partfetcher.cpp
+  ${QET_DIR}/sources/import/portals/partfetcher.h
+  ${QET_DIR}/sources/import/portals/portalcredentials.cpp
+  ${QET_DIR}/sources/import/portals/portalcredentials.h
+  ${QET_DIR}/sources/import/portals/portalsdialog.cpp
+  ${QET_DIR}/sources/import/portals/portalsdialog.h
   ${QET_DIR}/sources/import/edz/edzarchive.cpp
   ${QET_DIR}/sources/import/edz/edzarchive.h
   ${QET_DIR}/sources/import/edz/edzpart.cpp

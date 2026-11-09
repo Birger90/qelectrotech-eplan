@@ -55,6 +55,11 @@ namespace CLIExport {
 		  qelectrotech --info           <project.qet> [output.json]
 		  qelectrotech --check-elements <element.elmt | directory>
 		  qelectrotech --import-eplan   <package.zip | folder | file.dxf> <collection_dir> [--category C] [--manufacturer M --type T] [--edz part.edz]
+		  qelectrotech --fetch-parts    <list.txt> [--collection DIR] [--raw-dir DIR] [--3d-dir DIR] [--links FILE] [--manufacturer SIE,RIT] [--limit N] [--dry-run] [--force] [--report FILE] [--json]
+		  qelectrotech --portal-status  [--json]
+		  qelectrotech --portal-login   <portal> [--user NAME]   (password or token on stdin)
+		  qelectrotech --portal-logout  <portal>
+		  qelectrotech --portal-request 3dfindit <order number>
 		  qelectrotech --resave         <project.qet> <output.qet>
 		  qelectrotech --recover        <damaged.qetz> <output.qet>
 		  qelectrotech --set-titleblock <project.qet> <output.qet> key=value...

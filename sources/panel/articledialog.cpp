@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "articledialog.h"
+#include "../import/portals/manufacturerportals.h"
 
 #include "../qetapp.h"
 
@@ -38,7 +39,7 @@ ArticleDialog::ArticleDialog(QWidget *parent, const QString &what, const QString
 	resize(900, 520);
 	m_client = new DataPortalClient(this);
 	m_client->setLanguage(QLocale(QETApp::langFromSetting()).name());
-	const QString token = QSettings().value(QStringLiteral("eplanimport/dataportal_token")).toString();
+	const QString token = ManufacturerPortals::dataPortalToken();
 	if (!token.isEmpty()) m_client->setToken(token);
 
 	m_search = new QLineEdit(search, this);

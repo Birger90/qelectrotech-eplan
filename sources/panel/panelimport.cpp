@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "panelimport.h"
+#include "../import/portals/manufacturerportals.h"
 
 #include "../container/miniz/miniz.h"
 #include "../import/eplandxf/dataportalclient.h"
@@ -696,7 +697,7 @@ PanelOutline PanelImport::fetchDeviceView(const QString &order_number, const QSt
 		if (error) *error = QStringLiteral("no panel layout drawing in the Data Portal");
 		return PanelOutline();
 	}
-	const QString token = QSettings().value(QStringLiteral("eplanimport/dataportal_token")).toString();
+	const QString token = ManufacturerPortals::dataPortalToken();
 	if (token.isEmpty()) {
 		if (error) *error = QStringLiteral("no Data Portal token");
 		return PanelOutline();
@@ -962,7 +963,7 @@ void PanelTemplateDialog::download()
 {
 	const QList<QTreeWidgetItem *> sel = m_list->selectedItems();
 	if (sel.isEmpty()) return;
-	const QString token = QSettings().value(QStringLiteral("eplanimport/dataportal_token")).toString();
+	const QString token = ManufacturerPortals::dataPortalToken();
 	if (token.isEmpty()) {
 		m_status->setText(tr("The download needs your EPLAN Data Portal token: enter it once in "
 							 "Part import > From the EPLAN Data Portal (\"Remember the token\")."));

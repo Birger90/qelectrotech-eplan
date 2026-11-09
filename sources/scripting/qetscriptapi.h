@@ -407,6 +407,19 @@ class QetScriptApi : public QObject
 			// menu does); returns a JSON summary {ok, written[], error}
 		Q_INVOKABLE QString importPartFromDataPortal(const QString &orderNumber, const QString &manufacturer,
 													 const QString &collectionDir, const QString &category = QString());
+			// manufacturer portals (Part import > Manufacturer portals): status of
+			// the accounts as JSON (no secrets), the 3Dfindit request limit, and
+			// fetching missing parts (EPLAN macro, DXF, STEP) into the own data;
+			// options: JSON {collection, raw_dir, model_dir, links, manufacturers,
+			// limit, dry_run, force, use_dataportal, pause_ms}. Logging in is
+			// only possible in the dialog or with --portal-login.
+		Q_INVOKABLE QString portalStatus() const;
+		Q_INVOKABLE bool portalLoggedIn(const QString &portal) const;
+		Q_INVOKABLE int portalRequestsLeft(const QString &portal) const;
+		Q_INVOKABLE bool portalCountRequest(const QString &portal, const QString &orderNumber);
+		Q_INVOKABLE QString fetchParts(const QString &listPath, const QString &optionsJson = QString());
+		Q_INVOKABLE QString fetchPart(const QString &orderNumber, const QString &manufacturer,
+									  const QString &optionsJson = QString());
 			// "Place devices from the schematic" without a dialog: every device
 			// of the enclosure's location with an order number or a size
 		Q_INVOKABLE QString placePanelDevices(int folioIndex);

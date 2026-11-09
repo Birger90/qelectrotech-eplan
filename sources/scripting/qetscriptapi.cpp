@@ -16,6 +16,8 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "qetscriptapi.h"
+#include "../import/portals/manufacturerportals.h"
+#include "../import/portals/partfetcher.h"
 
 #include <QSettings>
 #include <QTemporaryDir>
@@ -462,7 +464,7 @@ QString QetScriptApi::importPartFromDataPortal(const QString &orderNumber, const
 	};
 	const QString order = orderNumber.trimmed();
 	if (order.isEmpty() || collectionDir.trimmed().isEmpty()) return finish(QStringLiteral("no order number or folder"));
-	const QString token = QSettings().value(QStringLiteral("eplanimport/dataportal_token")).toString();
+	const QString token = ManufacturerPortals::dataPortalToken();
 	if (token.isEmpty()) return finish(QStringLiteral("no Data Portal token"));
 
 	DataPortalClient client;
@@ -520,6 +522,77 @@ QString QetScriptApi::importPartFromDataPortal(const QString &orderNumber, const
 	for (const QString &w : importer.writtenPaths()) written.append(w);
 	result.insert(QStringLiteral("written"), written);
 	return finish(QString());
+}
+
+namespace {
+FetchOptions fetchOptions(const QString &json)
+{
+	FetchOptions o;
+	const QJsonObject j = QJsonDocument::fromJson(json.toUtf8()).object();
+	o.collection_dir = j.value(QStringLiteral("collection")).toString();
+	o.raw_dir = j.value(QStringLiteral("raw_dir")).toString();
+	o.model_dir = j.value(QStringLiteral("model_dir")).toString();
+	const QJsonValue links = j.value(QStringLiteral("links"));
+	if (links.isString()) o.link_files << links.toString();
+	for (const QJsonValue &v : links.toArray()) o.link_files << v.toString();
+	const QJsonValue makers = j.value(QStringLiteral("manufacturers"));
+	if (makers.isString()) o.makers = makers.toString().split(QLatin1Char(','), Qt::SkipEmptyParts);
+	for (const QJsonValue &v : makers.toArray()) o.makers << v.toString();
+	for (QString &m : o.makers) m = m.trimmed();
+	o.limit = j.value(QStringLiteral("limit")).toInt();
+	o.pause_ms = j.value(QStringLiteral("pause_ms")).toInt(o.pause_ms);
+	o.dry_run = j.value(QStringLiteral("dry_run")).toBool();
+	o.force = j.value(QStringLiteral("force")).toBool();
+	o.use_dataportal = j.value(QStringLiteral("use_dataportal")).toBool(true);
+	return o;
+}
+}
+
+QString QetScriptApi::portalStatus() const
+{
+	return QString::fromUtf8(QJsonDocument(ManufacturerPortals::statusAll()).toJson(QJsonDocument::Compact));
+}
+
+bool QetScriptApi::portalLoggedIn(const QString &portal) const
+{
+	return ManufacturerPortals::loggedIn(portal);
+}
+
+int QetScriptApi::portalRequestsLeft(const QString &portal) const
+{
+	return ManufacturerPortals::requestsLeft(portal);
+}
+
+bool QetScriptApi::portalCountRequest(const QString &portal, const QString &orderNumber)
+{
+	QString error;
+	if (ManufacturerPortals::registerRequest(portal, orderNumber, &error)) return true;
+	log(QStringLiteral("qet.portalCountRequest: %1").arg(error));
+	return false;
+}
+
+QString QetScriptApi::fetchParts(const QString &listPath, const QString &optionsJson)
+{
+	QString error;
+	const QList<FetchItem> items = PartFetcher::readList(listPath, &error);
+	if (items.isEmpty()) {
+		QJsonObject o;
+		o.insert(QStringLiteral("error"), error);
+		return QString::fromUtf8(QJsonDocument(o).toJson(QJsonDocument::Compact));
+	}
+	PartFetcher fetcher;
+	const QList<FetchResult> results = fetcher.run(items, fetchOptions(optionsJson));
+	return QString::fromUtf8(QJsonDocument(PartFetcher::toJson(results)).toJson(QJsonDocument::Compact));
+}
+
+QString QetScriptApi::fetchPart(const QString &orderNumber, const QString &manufacturer, const QString &optionsJson)
+{
+	FetchItem item;
+	item.order = orderNumber.simplified();
+	item.maker = manufacturer.trimmed();
+	PartFetcher fetcher;
+	const QList<FetchResult> results = fetcher.run({item}, fetchOptions(optionsJson));
+	return QString::fromUtf8(QJsonDocument(PartFetcher::toJson(results)).toJson(QJsonDocument::Compact));
 }
 
 QString QetScriptApi::importEplanLayout(int folioIndex, const QString &eplanProject)

@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "panelmenu.h"
+#include "../import/portals/manufacturerportals.h"
 
 #include "panel3dview.h"
 #include "panelcommands.h"
@@ -1778,7 +1779,7 @@ QString PanelMenu::placeDevicesOn(Diagram *d, QWidget *parent, bool interactive)
 		return report.join(QLatin1Char('\n'));
 	}
 
-	const bool has_token = !QSettings().value(QStringLiteral("eplanimport/dataportal_token")).toString().isEmpty();
+	const bool has_token = !ManufacturerPortals::dataPortalToken().isEmpty();
 	QDialog dialog(parent);
 	dialog.setWindowTitle(tr("Place devices on %1").arg(PanelLayout(surface).name()));
 	dialog.resize(780, 560);

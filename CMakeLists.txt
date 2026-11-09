@@ -378,6 +378,10 @@ target_link_libraries(
     ${QET_PRIVATE_LIBRARIES}
     ${QET_SPACEMOUSE_LIBRARIES}
 )
+# Manufacturer portals: accounts in the Windows Credential Manager
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME}_objects PUBLIC advapi32)
+endif()
 
 target_include_directories(
     ${PROJECT_NAME}_objects

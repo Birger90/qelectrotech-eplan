@@ -41,9 +41,11 @@ for e in AR.values():
     if not e['props']: st['Referenz nicht dekodiert'] += 1; continue
     d = pd(e)
     pn = d[0xef59][0] if 0xef59 in d else ''
-    fid = d[0xef57][0][1] if 0xef57 in d else None
+    # ef57/ef60 sind laut Metamodell Verweise (ref); ein anders dekodierter Satz liefert keinen Verweis
+    ref = lambda k: d[k][0][1] if k in d and isinstance(d[k][0], tuple) else None
+    fid, pg = ref(0xef57), ref(0xef60)
+    if 0xef57 in d and fid is None: st['Funktionsverweis nicht als Verweis dekodiert'] += 1
     b = bmk(fid)[0] if fid in F and F[fid]['props'] else ''
-    pg = d[0xef60][0][1] if 0xef60 in d else None
     s = stamm.get(pn, {})
     if not pn: st['Referenz ohne Artikelnummer'] += 1
     elif s: st['Artikel im Stamm gefunden'] += 1

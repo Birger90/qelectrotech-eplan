@@ -564,7 +564,7 @@ bool EplanPartImporter::importDxf(const QString &dxf_path, const QString &edz_pa
 	const QString device = reader.deviceTag();
 	const QVector<QPair<QString, QString>> info {
 		{QStringLiteral("manufacturer"), manufacturer},
-		{QStringLiteral("manufacturer_reference"), order_nr},
+		{QStringLiteral("manufacturer_reference"), order_nr.isEmpty() ? type : order_nr},
 		{QStringLiteral("designation"), type_nr},
 		{QStringLiteral("description"), name},
 		{QStringLiteral("label"), QLatin1Char('-') + (device.isEmpty() ? QStringLiteral("KF")
@@ -599,7 +599,11 @@ bool EplanPartImporter::importDxf(const QString &dxf_path, const QString &edz_pa
 			return false;
 		}
 		sortPins(data.pins);
-		return write(data, partName(type, data.pins));
+		// a drawing without connection points is a view of the device (a
+		// manufacturer's front view for the panel layout), named like the
+		// panel layout macros so the layout finds it by its order number
+		return write(data, data.pins.isEmpty() ? QStringLiteral("%1 Aufbau").arg(type)
+							 : partName(type, data.pins));
 	}
 
 	std::sort(boxes.begin(), boxes.end(), [](const QRectF &a, const QRectF &b) {

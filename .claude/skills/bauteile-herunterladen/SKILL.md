@@ -64,7 +64,32 @@ importiert EDZ/DXF in die Firmensammlung und legt STEP nach `3D\<H>\<Nr>.stp`. L
 - Fertige Dateien gesammelt im Aktivitäten-Panel (Glocke); Chrome braucht „automatische Downloads erlauben“.
 - Einige Hersteller (WAGO u. a.) bieten dort zusätzlich „EPLAN EDZ“ – mitnehmen, neben die .stp legen.
 - Platzhalter (wenige KB) aussortieren (3RV20/24/28, 5SY, 3SU1401-1BB50; 6ES7512 ohne 3D). Nicht bei 3Dfindit:
-  Rittal, Murrelektronik, Pilz, Finder (teils leer), SEW, Kraus & Naimer, Fiessler, Cybelec, LazerSafe, Givi Misure.
+  Rittal, Murrelektronik, Pilz, Finder (teils leer), SEW, Kraus & Naimer, Fiessler, Cybelec, LazerSafe, Givi Misure,
+  ABB, Eaton/Moeller (nur ein allgemeiner „Eaton's CAD“-Katalog), STEGO, Hager.
+
+### 3Dfindit-Ablauf (erprobt 10.11.2026, 48 Teile)
+
+- Formate einmal im Zahnrad-Dialog neben „CAD“ wählen: **STEP AP214 + DXF AUTOCAD 2010-2012 (2D)** (max. 5).
+  Ein Paket enthält dann `<nr>.stp` + `<nr>_front|right|top.dxf`; zählt als **eine** Anforderung.
+- Je Teil: `https://www.3dfindit.com/de/search?q=<nr>` → 5 s → Ergebniskarte per JS klicken
+  (`a[href*=digitaltwin]`, Text ohne Leerzeichen enthält Hersteller + Nr; Einträge mit „Download“ sind das
+  Aktivitäten-Panel, ausfiltern) → 7–8 s → Knopf `CAD(n)` bzw. `CAD` per JS klicken → 3 s.
+- Danach erscheint je nach Hersteller ein Zusatz-Dialog „Optional: Zusätzliche Formate“ (Shadow-DOM, per JS nicht
+  greifbar → Koordinaten). Phoenix: nur „SymRepDXF1“, Knopf „CAD-Dateien erzeugen“ bei (783, 269) im 1565×784-Raster.
+  **WAGO**: „EPLAN EDZ (zip)“ anhaken (592, 231) – muss **jedes Mal** neu gesetzt werden –, Knopf dann bei (782, 338).
+  Weidmüller: kein Dialog. Der Dialog zeigt „noch N von 50 Downloads“ – zum Mitzählen.
+- **Varianten-Falle:** Produktfamilien öffnen oft eine andere Zeile (750-626 → 750-626/020-000). Vor dem CAD-Klick
+  `document.title` mit der Nr vergleichen; sonst die Tabellenzeile mit exakter Nr anklicken. Abbrechen per X kostet nichts.
+- Abgekündigte Teile (WAGO 750-66x/000-003) sind nicht ladbar; der Dialog nennt den Ersatz (/000-004) – den laden
+  und in `gleiche_modelle.txt` zuordnen, wenn die Maße (BREITE/HOEHE/TIEFE) gleich sind.
+- Herunterladen: Aktivitäten-Panel öffnen, alle Knöpfe „Download“ per JS nacheinander klicken (2 s Abstand; Tab muss
+  sichtbar bleiben, sonst bremst Chrome). Dateien: `Downloads\3dfindit-<HERSTELLER>-<nr>-<id>.zip` (WAGO: `/` → `_`).
+- Maße für die Ansichtswahl stehen im `mident` der Panel-Links: ETIM `BAF016` = Breite, `BAA020` = Höhe, `BAB577` = Tiefe;
+  WAGO `BREITE/HOEHE/TIEFE`. Fast immer passt „front“; bei WAGO „right“ (Gehäuse mit Rastnasen etwas größer).
+  Beim Vergleich Bögen nicht als Vollkreise zählen (sonst wird „front“ zu groß gerechnet).
+- WAGO-Pakete enthalten `<nr>_edz.zip` → entpacken, `.edz` mit dem Fork importieren (liefert Schaltbild, kein 2D-Aufbau).
+- Skript `tdf_laden.py` (Scratchpad) + `tdf_mass.txt` (`nr B H T`): STEP → `Daten\3D\<H>\<nr>.stp`, EDZ-Import,
+  passende DXF-Ansicht → `<nr>_Aufbau.elmt`.
 
 ## SEW-EURODRIVE (ohne Anmeldung)
 

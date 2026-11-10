@@ -88,6 +88,14 @@ importiert EDZ/DXF in die Firmensammlung und legt STEP nach `3D\<H>\<Nr>.stp`. L
   WAGO `BREITE/HOEHE/TIEFE`. Fast immer passt „front“; bei WAGO „right“ (Gehäuse mit Rastnasen etwas größer).
   Beim Vergleich Bögen nicht als Vollkreise zählen (sonst wird „front“ zu groß gerechnet).
 - WAGO-Pakete enthalten `<nr>_edz.zip` → entpacken, `.edz` mit dem Fork importieren (liefert Schaltbild, kein 2D-Aufbau).
+- **WAGO 750: Maße und Ansicht (geprüft 10.11.2026, 41 Module).** 3Dfindit-`mident` ist bei Altmodellen falsch
+  (HOEHE=64/TIEFE=100 vertauscht); neuere „_HI“-Modelle (Dateiname `…-750-1657_HI-<id>.zip`, Suffix entfernen)
+  stimmen. Maßgeblich sind WAGOs EPLAN-Artikeldaten in der EDZ (`*.part.xml`: `P_ARTICLE_WIDTH/HEIGHT/DEPTH`):
+  E/A-Module 12 × 100 × 68,96 mm, Buskoppler 50,5 bzw. 61,5 × 100. Die Schrankansicht ist die DXF-Ansicht **„top“**
+  (liegt quer, 100 × 14,8 mm inkl. Rastnasen) → **+90° drehen** (LED-/Beschriftungsfeld nach oben), dann importieren.
+  „right“ (14,8 × 69) ist die Seitenansicht – falsch. Skript `wago_aufbau.py` (Scratchpad): misst alle Ansichten,
+  liest die EDZ-Maße, wählt Breite × 100, dreht per `ezdxf` (`Matrix44.z_rotate`) und importiert.
+  Offen: Aufbau ist 14,8 statt 12 mm breit (Rastnase) – beim Aneinanderreihen auf der Schiene beachten.
 - Skript `tdf_laden.py` (Scratchpad) + `tdf_mass.txt` (`nr B H T`): STEP → `Daten\3D\<H>\<nr>.stp`, EDZ-Import,
   passende DXF-Ansicht → `<nr>_Aufbau.elmt`.
 

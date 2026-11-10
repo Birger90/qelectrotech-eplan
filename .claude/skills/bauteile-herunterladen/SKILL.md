@@ -113,6 +113,16 @@ importiert EDZ/DXF in die Firmensammlung und legt STEP nach `3D\<H>\<Nr>.stp`. L
   STEP → Daten\3D\Siemens\<nr>.stp), `edz_import.py <Hersteller>` (alle EDZ → Sammlung, Kategorie aus vorhandenem
   Ordner bzw. Präfix).
 
+## WAGO (wago.com)
+
+- Produktseite `https://www.wago.com/de/p/<nr mit _ statt />` → Reiter „Downloads“ → „CAD/CAE-Daten“: nur zwei Links,
+  „2D/3D Modelle“ → `https://wago.partcommunity.com/?catalog=wago&part=<nr>` (CADENAS) und „EPLAN Data Portal“.
+- **wago.partcommunity.com verlangt beim Download eine myWAGO-Anmeldung** (Fenster „Anmelden oder Konto erstellen“,
+  E-Mail) – nie selbst ausfüllen. Ohne Anmeldung: WAGO über **3Dfindit** holen (gleiche CADENAS-Daten, inkl. EPLAN EDZ).
+- Abgekündigte Artikel (Hinweis „Der Artikel ist abgekündigt“) haben keine Downloads; Nachfolger steht unter
+  „Alternativartikel“. Bei gleichem Gehäuse: STEP über `gleiche_modelle.txt`, Aufbau als Kopie des Nachfolger-Aufbaus
+  mit eigener Bestellnummer und Vermerk in der Beschreibung (so 750-66x/000-003 → 750-662/000-004, 10.11.2026).
+
 ## Rittal (rittal.com, Anmeldung nicht nötig)
 
 - Produktseite: `https://www.rittal.com/de-de/product/show/variantdetail.action?productID=<Artikelnr ohne SV>`

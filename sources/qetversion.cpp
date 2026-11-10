@@ -50,6 +50,17 @@ namespace QetVersion
 		return str;
 	}
 
+	QString forkVersion()
+	{
+		// Raise with every release tag vX.Y.Z of the fork, see VERSIONIERUNG.md
+		return QStringLiteral("1.0.0");
+	}
+
+	QString displayedVersionWithFork()
+	{
+		return displayedVersion() + QStringLiteral(" (Fork ") + forkVersion() + QStringLiteral(")");
+	}
+
 	/**
 	 * @brief toXmlAttribute
 	 * Write @a version as an attribute of @a xml

@@ -29,6 +29,7 @@
 #include "scripting/scriptlibrary.h"
 #include "scripting/scriptmanagerdialog.h"
 #include "scripting/liveserver.h"
+#include "assistant/assistantdock.h"
 #include "scripting/macrorecorder.h"
 #include "scripting/assistantinfo.h"
 #endif
@@ -42,6 +43,7 @@
 #include "import/eplandxf/dataportaldialog.h"
 #include "import/portals/portalsdialog.h"
 #include "import/eplandxf/eplanimportdialog.h"
+#include "import/eplanproject/eplanprojectimportdialog.h"
 #include "ElementsCollection/elementpickerpopup.h"
 #include "shortcutbarsettings.h"
 #include "diagramtoolbarsettings.h"
@@ -102,6 +104,7 @@
 #include "ui/conductorcolortoolbutton.h"
 #include "ui/diagrambgcolorbutton.h"
 #include "ui/duplicatelabelsdialog.h"
+#include "ui/potentialcheckdialog.h"
 #include "ui/duplicateoffsetdialog.h"
 #include "ui/jumptoelementdialog.h"
 #include "ui/diagrampropertieseditordockwidget.h"
@@ -335,6 +338,7 @@ QETDiagramEditor::QETDiagramEditor(const QStringList &files, QWidget *parent) :
 	setUpSelectionPropertiesEditor();
 	setUpAutonumberingWidget();
 	setUpDeviceNavigatorDock();
+	setUpAssistantDock();
 
 	setUpActions();
 	setUpToolBar();
@@ -523,8 +527,26 @@ void QETDiagramEditor::setUpAutonumberingWidget()
 }
 
 /**
-	@brief QETDiagramEditor::setUpActions
-	Set up all Qaction
+	@brief QETDiagramEditor::setUpAssistantDock
+	The built-in assistant (Claude), on the right, hidden until shown from
+	the Display menu
+*/
+void QETDiagramEditor::setUpAssistantDock()
+{
+	m_assistant_dock = new AssistantDock(this);
+	m_assistant_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+	m_assistant_dock->setFeatures(
+		QDockWidget::DockWidgetClosable |
+		QDockWidget::DockWidgetMovable |
+		QDockWidget::DockWidgetFloatable);
+	addDockWidget(Qt::RightDockWidgetArea, m_assistant_dock);
+	m_assistant_dock->toggleViewAction()->setStatusTip(tr("Show or hide the assistant (Claude)"));
+	m_assistant_dock->hide();
+}
+
+/**
+	@brief QETDiagramEditor::setUpDeviceNavigatorDock
+	Set up the device navigator dock widget
 */
 void QETDiagramEditor::setUpDeviceNavigatorDock()
 {
@@ -536,10 +558,19 @@ void QETDiagramEditor::setUpDeviceNavigatorDock()
 		QDockWidget::DockWidgetFloatable);
 	addDockWidget(Qt::LeftDockWidgetArea, m_device_navigator_dock);
 	tabifyDockWidget(qdw_pa, m_device_navigator_dock);
+	m_device_navigator_dock->hide();
 
-	applyDeviceNavigatorSetting();
+	connect(m_device_navigator_dock, &QDockWidget::visibilityChanged, this, [this](bool visible) {
+		if (visible && currentProject() && m_device_navigator_dock) {
+			m_device_navigator_dock->setProject(currentProject());
+		}
+	});
 }
 
+/**
+	@brief QETDiagramEditor::applyDeviceNavigatorSetting
+	Show the device navigator when the setting asks for it (upstream)
+*/
 void QETDiagramEditor::applyDeviceNavigatorSetting()
 {
 	if (!m_device_navigator_dock) return;
@@ -551,6 +582,10 @@ void QETDiagramEditor::applyDeviceNavigatorSetting()
 	}
 }
 
+/**
+	@brief QETDiagramEditor::setUpActions
+	Set up all Qaction
+*/
 void QETDiagramEditor::setUpActions()
 {
 		//Export to another file type (jpeg, dxf etc...)
@@ -761,6 +796,12 @@ void QETDiagramEditor::setUpActions()
 		else delete undo;
 	});
 
+	m_show_as_dot = new QAction(tr("Show as a dot"), this);
+	m_show_as_dot->setCheckable(true);
+	m_show_as_dot->setStatusTip(tr("Draws the selected T-junctions as their lines and a dot where they meet", "status bar tip"));
+	ShortcutManager::instance().registerAction(m_show_as_dot, "diagrameditor.show_as_dot", tr("Diagram editors"), QKeySequence());
+	connect(m_show_as_dot, &QAction::triggered, this, &QETDiagramEditor::showSelectedAsDot);
+
 	m_text_clearance = new QAction(tr("Keep texts clear of wires..."), this);
 	m_text_clearance->setStatusTip(tr("Move the texts that sit on a wire off it, in one undo step", "status bar tip"));
 	ShortcutManager::instance().registerAction(m_text_clearance, "diagrameditor.text_clearance", tr("Diagram editors"), QKeySequence());
@@ -794,23 +835,29 @@ void QETDiagramEditor::setUpActions()
 		if (!DuplicateOffsetDialog::hasSavedStepOffset()) {
 			DuplicateOffsetDialog dialog(this);
 			if (dialog.exec() != QDialog::Accepted) return;
-			DuplicateOffsetDialog::saveStepOffset(dialog.stepOffset());
+			dialog.save();
 		}
-		dv->duplicate(DuplicateOffsetDialog::savedStepOffset());
+			//A setting, off by default: the offset is then learned from
+			//the move given to the copy just made, not the spacing
+		if (DuplicateOffsetDialog::savedRepeatsMove())
+			dv->duplicateRepeatingMove();
+		else
+			dv->duplicate(DuplicateOffsetDialog::savedStepOffset());
 	});
 
 		//Reopens the dialog above on demand, to change the spacing or
 		//direction a later Ctrl+D should use. Enabled unconditionally
 		//(see slot_updateComplexActions()): it only ever writes a
 		//setting, so it does not need a diagram open or anything
-		//selected the way m_duplicate itself does.
+		//selected the way m_duplicate itself does. Ctrl+Shift+D, beside
+		//Ctrl+D: it only opens the dialog, it does not duplicate.
 	m_configure_duplicate = new QAction(tr("Configure duplication..."), this);
-	ShortcutManager::instance().registerAction(m_configure_duplicate, "diagrameditor.configure_duplicate", tr("Diagram editors"), QKeySequence());
+	ShortcutManager::instance().registerAction(m_configure_duplicate, "diagrameditor.configure_duplicate", tr("Diagram editors"), Qt::CTRL | Qt::SHIFT | Qt::Key_D);
 	m_configure_duplicate->setStatusTip(tr("Choose the spacing and direction used by Duplicate", "status bar tip"));
 	connect(m_configure_duplicate, &QAction::triggered, [this]() {
 		DuplicateOffsetDialog dialog(this);
 		if (dialog.exec() == QDialog::Accepted) {
-			DuplicateOffsetDialog::saveStepOffset(dialog.stepOffset());
+			dialog.save();
 		}
 	});
 
@@ -1074,6 +1121,35 @@ void QETDiagramEditor::setUpActions()
 	m_hidden_kinds_label = new QLabel(this);
 	m_hidden_kinds_label->setToolTip(tr("See Display > Show"));
 	statusBar()->addPermanentWidget(m_hidden_kinds_label);
+		//The selection filter: what a click, a selection rectangle and
+		//Select All pick, e.g. symbols without their texts
+	m_selection_filter_menu = new QMenu(tr("Selection filter"), this);
+	auto selection_filter_group = new QActionGroup(m_selection_filter_menu);
+	const QList<QPair<Diagram::SelectionFilter, QString>> selection_filters {
+		{Diagram::SelectionFilter::All,         tr("Everything")},
+		{Diagram::SelectionFilter::Automatic,   tr("Automatic: symbols with their texts")},
+		{Diagram::SelectionFilter::Symbols,     tr("Symbols")},
+		{Diagram::SelectionFilter::Conductors,  tr("Conductors")},
+		{Diagram::SelectionFilter::FreeTexts,   tr("Free texts")},
+		{Diagram::SelectionFilter::SymbolTexts, tr("Symbol texts")}};
+	for (const auto &selection_filter : selection_filters) {
+		QAction *action = m_selection_filter_menu->addAction(selection_filter.second);
+		action->setCheckable(true);
+		action->setData(int(selection_filter.first));
+		selection_filter_group->addAction(action);
+		connect(action, &QAction::triggered, this, [this, selection_filter] {
+			Diagram::setSelectionFilter(selection_filter.first);
+			updateSelectionFilterButton();
+		});
+	}
+	m_selection_filter_button = new QToolButton(this);
+	m_selection_filter_button->setMenu(m_selection_filter_menu);
+	m_selection_filter_button->setPopupMode(QToolButton::InstantPopup);
+	m_selection_filter_button->setToolButtonStyle(Qt::ToolButtonTextOnly);
+	m_selection_filter_button->setAutoRaise(true);
+	m_selection_filter_button->setToolTip(tr("What a click, a selection rectangle and Select All pick"));
+	statusBar()->addPermanentWidget(m_selection_filter_button);
+	updateSelectionFilterButton();
 		//The grid step beside the zoom, always in sight; a click on it
 		//picks another, as on the toolbar
 	m_grid_status_button = new QToolButton(this);
@@ -1162,6 +1238,17 @@ void QETDiagramEditor::setUpActions()
 				dialog->show();
 			}
 		});
+	// Mixed potential types on one potential
+	m_check_potentials = new QAction(tr("Check potential types..."), this);
+	m_check_potentials->setObjectName(QStringLiteral("checkPotentialTypes"));
+	ShortcutManager::instance().registerAction(m_check_potentials, "diagrameditor.check_potential_types", tr("Diagram editors"), QKeySequence());
+	connect(m_check_potentials, &QAction::triggered, this, [this]() {
+		if (ProjectView *view = currentProjectView()) {
+			auto *dialog = new PotentialCheckDialog(view->project(), this);
+			dialog->setAttribute(Qt::WA_DeleteOnClose);
+			dialog->show();
+		}
+	});
 		//The texts of the project in other languages
 	m_project_languages = new QAction(tr("Project languages..."), this);
 	m_project_languages->setStatusTip(tr("Show the texts of the project in another language"));
@@ -1772,6 +1859,7 @@ void QETDiagramEditor::setUpActions()
 	QAction *select_invert  = m_select_actions_group.addAction( QET::Icons::EditSelectInvert,   tr("Invert selection") );
 	QAction *select_all_conductors  = m_select_actions_group.addAction( QET::Icons::Conductor,      tr("Select all conductors") );
 	QAction *select_all_text_fields = m_select_actions_group.addAction( QET::Icons::PartTextField,  tr("Select all text fields") );
+	m_select_same_symbols = m_select_actions_group.addAction( QET::Icons::Element, tr("Select the same symbols") );
 
 	ShortcutManager::instance().registerAction(select_all, "diagrameditor.select_all", tr("Diagram editors"), QKeySequence::SelectAll);
 	ShortcutManager::instance().registerAction(select_nothing, "diagrameditor.select_nothing", tr("Diagram editors"), QKeySequence::Deselect);
@@ -1780,18 +1868,21 @@ void QETDiagramEditor::setUpActions()
 		//point of registering them is so a user can bind one if they want.
 	ShortcutManager::instance().registerAction(select_all_conductors, "diagrameditor.select_all_conductors", tr("Diagram editors"), QKeySequence());
 	ShortcutManager::instance().registerAction(select_all_text_fields, "diagrameditor.select_all_text_fields", tr("Diagram editors"), QKeySequence());
+	ShortcutManager::instance().registerAction(m_select_same_symbols, "diagrameditor.select_same_symbols", tr("Diagram editors"), QKeySequence());
 
 	select_all    ->setStatusTip( tr("Selects all elements on the sheet", "status bar tip") );
 	select_nothing->setStatusTip( tr("Deselect all elements on the sheet", "status bar tip") );
 	select_invert ->setStatusTip( tr("Inverts selection of elements", "status bar tip") );
 	select_all_conductors ->setStatusTip( tr("Selects all conductors on the sheet, deselects the rest", "status bar tip") );
 	select_all_text_fields->setStatusTip( tr("Selects all text fields on the sheet, deselects the rest", "status bar tip") );
+	m_select_same_symbols ->setStatusTip( tr("Selects every symbol on the sheet of the same kind as a selected one, deselects the rest", "status bar tip") );
 
 	select_all    ->setData("select_all");
 	select_nothing->setData("deselect");
 	select_invert ->setData("invert_selection");
 	select_all_conductors ->setData("select_all_conductors");
 	select_all_text_fields->setData("select_all_text_fields");
+	m_select_same_symbols ->setData("select_same_symbols");
 
 	connect(&m_select_actions_group, &QActionGroup::triggered, this, &QETDiagramEditor::selectGroupTriggered);
 
@@ -2159,6 +2250,22 @@ void QETDiagramEditor::setUpMenu()
 	menu_fichier -> addActions(m_file_actions_group.actions());
 	menu_fichier -> addSeparator();
 	//menu_fichier -> addAction(import_diagram);
+		//A packed EPLAN project (.zw1) as a new QElectroTech project
+	QAction *import_eplan_project = menu_fichier->addAction(
+		QET::Icons::DocumentOpen, tr("Import EPLAN project (.zw1)…"));
+	import_eplan_project->setObjectName(QStringLiteral("import_eplan_project"));
+	import_eplan_project->setStatusTip(tr("Reads a packed EPLAN project and opens it as a QElectroTech project"));
+	connect(import_eplan_project, &QAction::triggered, this, [this]() {
+		EplanProjectImportDialog dialog(this);
+		// the file dialog over the import dialog: cancelled, the import
+		// dialog still takes a dropped file
+		QTimer::singleShot(0, &dialog, [&dialog]() { dialog.chooseArchive(); });
+		if (dialog.exec() != QDialog::Accepted || dialog.resultPath().isEmpty()) return;
+		// the import may have written parts into the company collection
+		if (m_element_collection_widget) m_element_collection_widget->reload();
+		openAndAddProject(dialog.resultPath());
+	});
+	menu_fichier -> addSeparator();
 	menu_fichier -> addAction(m_export_to_images);
 	menu_fichier -> addAction(m_export_to_pdf);
 	menu_fichier -> addAction(m_export_delivery);
@@ -2203,6 +2310,8 @@ void QETDiagramEditor::setUpMenu()
 		//is unchanged.
 	QMenu *select_menu = menu_edition -> addMenu(QET::Icons::EditSelectAll, tr("Selection"));
 	select_menu -> addActions(m_select_actions_group.actions());
+	select_menu -> addSeparator();
+	select_menu -> addMenu(m_selection_filter_menu);
 	menu_edition -> addSeparator();
 	menu_edition -> addAction(m_delete_selection);
 	menu_edition -> addAction(m_rotate_selection);
@@ -2210,6 +2319,7 @@ void QETDiagramEditor::setUpMenu()
 	menu_edition -> addAction(m_rotate_texts);
 	menu_edition -> addAction(m_mirror_horizontal);
 	menu_edition -> addAction(m_mirror_vertical);
+	menu_edition -> addAction(m_show_as_dot);
 	menu_edition -> addAction(m_find_element);
 	menu_edition -> addAction(m_contact_display);
 	menu_edition -> addAction(m_edit_selection);
@@ -2261,6 +2371,7 @@ void QETDiagramEditor::setUpMenu()
 	menu_project -> addAction(m_remove_diagram_from_project);
 	menu_project -> addAction(m_clean_project);
 	menu_project->addAction(m_find_duplicate_labels);
+	menu_project->addAction(m_check_potentials);
 	menu_project->addAction(m_project_languages);
 	menu_project -> addSeparator();
 	menu_project -> addAction(m_csv_export);
@@ -2309,6 +2420,9 @@ void QETDiagramEditor::setUpMenu()
 	diagram_tool_bar      -> toggleViewAction() -> setStatusTip(tr("Display or hide the Diagram toolbar"));
 	qdw_pa           -> toggleViewAction() -> setStatusTip(tr("Show or hide the elements panel"));
 	qdw_undo         -> toggleViewAction() -> setStatusTip(tr("Display or hide the undo list"));
+	if (m_device_navigator_dock) {
+		m_device_navigator_dock->toggleViewAction()->setStatusTip(tr("Show or hide the device navigator"));
+	}
 
 
 	// menu Affichage
@@ -2335,6 +2449,9 @@ void QETDiagramEditor::setUpMenu()
 	if (m_device_navigator_dock) {
 		menu_affichage -> addAction(m_device_navigator_dock->toggleViewAction());
 	}
+	if (m_assistant_dock) {
+		menu_affichage -> addAction(m_assistant_dock->toggleViewAction());
+	}
 	menu_affichage -> addSeparator();
 	menu_affichage -> addActions(m_zoom_actions_group.actions());
 
@@ -2353,9 +2470,16 @@ void QETDiagramEditor::closeEvent(QCloseEvent *qce)
 		//nothing, and File > Quit records those of every window itself
 		//(QETApp::closeEveryEditor())
 	QStringList open_here;
-	for (ProjectView *project_view : openedProjects())
-		if (!project_view->project()->filePath().isEmpty())
-			open_here << project_view->project()->filePath();
+		//and the folio each one shows, to show it again
+	QVariantMap folio_at_quit = QSettings().value(QStringLiteral("projects/folio_at_quit")).toMap();
+	for (ProjectView *project_view : openedProjects()) {
+		const QString file = project_view->project()->filePath();
+		if (file.isEmpty())
+			continue;
+		open_here << file;
+		if (DiagramView *view = project_view->currentDiagram())
+			folio_at_quit.insert(file, project_view->project()->folioIndex(view->diagram()));
+	}
 
 	// quitte directement s'il n'y a aucun projet ouvert
 	bool can_quit = true;
@@ -2377,6 +2501,7 @@ void QETDiagramEditor::closeEvent(QCloseEvent *qce)
 	if (can_quit) {
 		if (QETApp::diagramEditors().size() <= 1)
 			QSettings().setValue(QStringLiteral("projects/open_at_quit"), open_here);
+		QSettings().setValue(QStringLiteral("projects/folio_at_quit"), folio_at_quit);
 		writeSettings();
 		setAttribute(Qt::WA_DeleteOnClose);
 		qce -> accept();
@@ -3101,7 +3226,7 @@ bool QETDiagramEditor::addProject(QETProject *project, bool update_panel)
 		pa -> elementsPanel().projectWasOpened(project);
 		if (currentDiagramView() != nullptr)
 		m_autonumbering_dock->setProject(project, project_view);
-		if (m_device_navigator_dock) {
+		if (m_device_navigator_dock && m_device_navigator_dock->isVisible()) {
 			m_device_navigator_dock->setProject(project);
 		}
 	}
@@ -3335,6 +3460,8 @@ void QETDiagramEditor::selectGroupTriggered(QAction *action)
 		diagram->selectAllConductors();
 	else if (value == "select_all_text_fields")
 		diagram->selectAllTextFields();
+	else if (value == "select_same_symbols")
+		diagram->selectSameSymbols();
 }
 
 /**
@@ -3871,6 +3998,7 @@ void QETDiagramEditor::slot_updateActions()
 		//Project menu
 	m_project_edit_properties     -> setEnabled(opened_project);
 	m_find_duplicate_labels->setEnabled(opened_project);
+	m_check_potentials->setEnabled(opened_project);
 	m_project_languages->setEnabled(opened_project);
 	m_project_history             -> setEnabled(opened_project);
 	m_export_delivery             -> setEnabled(opened_project);
@@ -3976,7 +4104,9 @@ void QETDiagramEditor::slot_updateComplexActions()
 			    << m_edit_selection
 			    << m_group_selected_texts
 			    << m_group_selection
-			    << m_ungroup_selection;
+			    << m_ungroup_selection
+			    << m_select_same_symbols
+			    << m_show_as_dot;
 		for(QAction *action : action_list)
 			action->setEnabled(false);
 		m_align_actions_group.setEnabled(false);
@@ -4002,6 +4132,17 @@ void QETDiagramEditor::slot_updateComplexActions()
 	m_apply_text_format->setEnabled(!ro && ((selected_elements_count >= 1 && ElementTextFormatPattern::hasPattern()) ||
 	                                        (selected_dimensions_count >= 1 && DimensionFormatPattern::hasPattern())));
 	m_place_texts->setEnabled(!ro && selected_elements_count >= 1);
+	m_select_same_symbols->setEnabled(selected_elements_count >= 1);
+	{
+		bool any = false, all = true;
+		for (Element *element : dc.m_elements)
+			if (element->dotPoint()) {
+				any = true;
+				all &= element->isShownAsDot();
+			}
+		m_show_as_dot->setEnabled(!ro && any);
+		m_show_as_dot->setChecked(any && all);
+	}
 	m_text_destination->setEnabled(!ro);
 	m_text_clearance->setEnabled(!ro);
 	m_mirror_horizontal->setEnabled(!ro && selected_elements_count);
@@ -6024,6 +6165,24 @@ void QETDiagramEditor::updateGridStepButton()
 }
 
 /**
+	@brief QETDiagramEditor::updateSelectionFilterButton
+	Check the selection filter in use in its menu, and name it on the
+	status bar button.
+*/
+void QETDiagramEditor::updateSelectionFilterButton()
+{
+	const int filter = int(Diagram::selectionFilter());
+	QString name;
+	for (QAction *action : m_selection_filter_menu->actions()) {
+		action->setChecked(action->data().toInt() == filter);
+		if (action->isChecked()) {
+			name = action->text().section(QLatin1Char(':'), 0, 0);
+		}
+	}
+	m_selection_filter_button->setText(tr("Select: %1").arg(name));
+}
+
+/**
 	@brief QETDiagramEditor::updateTextGridButton
 	Show the current text grid on its toolbar button and check it in its menu.
 */
@@ -6077,6 +6236,26 @@ void QETDiagramEditor::copyTextFormat()
 		slot_updateComplexActions();
 		statusBar()->showMessage(tr("Text format of \"%1\" copied").arg(sourceElmt->name()), 3000);
 	}
+}
+
+/**
+	@brief QETDiagramEditor::showSelectedAsDot
+	Draw the selected T-junctions as a dot, or as their own drawing
+	again, in one undo step.
+*/
+void QETDiagramEditor::showSelectedAsDot(bool dot)
+{
+	DiagramView *dv = currentDiagramView();
+	if (!dv || dv->diagram()->isReadOnly())
+		return;
+	auto *command = new QUndoCommand(dot ? tr("Show as a dot") : tr("Show the T-junction symbol"));
+	for (Element *element : DiagramContent(dv->diagram()).m_elements)
+		if (element->dotPoint() && element->isShownAsDot() != dot)
+			new QPropertyUndoCommand(element, "shownAsDot", element->isShownAsDot(), dot, command);
+	if (command->childCount())
+		dv->diagram()->undoStack().push(command);
+	else
+		delete command;
 }
 
 /**

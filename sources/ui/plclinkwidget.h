@@ -20,24 +20,23 @@
 
 #include "abstractelementpropertieseditorwidget.h"
 
-#include <QHash>
 #include <QPointer>
-#include <QSet>
+#include <QVector>
 
-class QTreeWidgetItem;
-class QTreeWidget;
-class QLineEdit;
-class QPushButton;
-class QLabel;
 class QCheckBox;
+class QComboBox;
+class QLabel;
+class QPushButton;
 class Element;
 
 /**
 	@brief The PlcLinkWidget class
-	Provides a dedicated widget for linking a PLC-Slave to a PLC-Master IO entry.
-	Displays all PLC-Masters as expandable items, each showing their IO entries.
-	Each IO entry can only be linked to one slave. Already-linked entries are
-	shown as struck-through and greyed out.
+	Puts a PLC channel (PLC slave) on a channel of a PLC module (PLC
+	master) of the project. The module and then the channel are chosen in
+	two lists; choosing the channel links at once, one undo step. A
+	channel already in use shows who uses it and cannot be chosen. A
+	linked channel takes the module's label, the channel's address and its
+	terminals.
 */
 class PlcLinkWidget : public AbstractElementPropertiesEditorWidget
 {
@@ -52,38 +51,32 @@ class PlcLinkWidget : public AbstractElementPropertiesEditorWidget
 		QUndoCommand *associatedUndo() const override;
 		QString title() const override;
 
+		/// The kind of channel a slave stands for, from its terminal
+		/// names: 1 inputs (DI, I...), 2 outputs (DQ, DO, Q...), 0 unknown
+		static int channelDirection(const Element *slave);
+
 	public slots:
 		void updateUi() override;
 
 	private:
-		void buildPlcTree();
-		void hideButtons();
-		void showButtons();
-		bool isChildLinked(QTreeWidgetItem *child) const;
+		void fillModules();
+		void fillChannels();
+		void channelChosen(int combo_index);
+		void unlink();
+		void showModule();
+		Element *currentMaster() const;
+		int currentChannel() const;
 
-	private slots:
-		void on_m_search_field_textEdited(const QString &text);
-		void on_m_tree_widget_customContextMenuRequested(const QPoint &pos);
-		void on_m_unlink_pb_clicked();
-		void on_m_show_this_pb_clicked();
-		void on_m_hide_linked_cb_toggled(bool checked);
+		QLabel *m_state = nullptr;
+		QPushButton *m_unlink_pb = nullptr;
+		QPushButton *m_show_module_pb = nullptr;
+		QComboBox *m_module_cb = nullptr;
+		QComboBox *m_channel_cb = nullptr;
+		QCheckBox *m_all_cb = nullptr;
+		QLabel *m_hint = nullptr;
 
-	private:
-		QLabel *m_label{nullptr};
-		QPushButton *m_unlink_pb{nullptr};
-		QPushButton *m_show_this_pb{nullptr};
-		QCheckBox *m_hide_linked_cb{nullptr};
-		QLineEdit *m_search_field{nullptr};
-		QTreeWidget *m_tree_widget{nullptr};
-		QLabel *m_hidden_masters_label{nullptr};
-
-		// Maps IO child items to (master, io_index)
-		struct PlcIoEntry {
-			QPointer<Element> master;
-			int ioIndex = -1;
-		};
-		QHash<QTreeWidgetItem*, PlcIoEntry> m_io_entry_hash;
-		QSet<QTreeWidgetItem*> m_linked_children;
+		QVector<QPointer<Element>> m_modules;	///< in the order of m_module_cb
+		bool m_filling = false;
 
 		Element *m_element_to_link = nullptr;
 		int m_pending_io_index = -1;

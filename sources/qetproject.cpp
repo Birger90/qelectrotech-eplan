@@ -225,7 +225,7 @@ QETProject::QETProject(KAutoSaveFile *backup, QObject *parent) :
 		//Failed to open from the backup, try to open the crashed
 	if (m_state != ProjectState::Ok)
 	{
-		QFile file(backup->managedFile().path());
+		QFile file(QET::autosaveManagedFilePath(backup->managedFile()));
 		m_state = openFile(&file);
 		if(m_state != ProjectState::Ok)
 		{
@@ -235,7 +235,7 @@ QETProject::QETProject(KAutoSaveFile *backup, QObject *parent) :
 		}
 	}
 		//Set the real path, instead of the path of the backup.
-	setFilePath(backup->managedFile().path());
+	setFilePath(QET::autosaveManagedFilePath(backup->managedFile()));
 	delete  backup;
 
 		//Set the project to read only mode if the file it.
@@ -455,6 +455,8 @@ void QETProject::init()
 		//An edit may give a folio shown partners not built
 	connect(m_undo_stack, &QUndoStack::indexChanged, this, [this]() {m_folios_shown.clear();});
 	connect(m_undo_stack, &QUndoStack::cleanChanged, this, &QETProject::undoStackChanged);
+		//An edit can change which wires a source reaches
+	connect(m_undo_stack, &QUndoStack::indexChanged, this, &QETProject::scheduleDerivedPotentialTypes);
 
 		//What counts as a change for writeBackup(): the undo stack moving,
 		//setModified(true), and the embedded collections, which can change
@@ -2681,10 +2683,10 @@ void QETProject::autoFolioNumberingSelectedFolios(int from,
 }
 
 /**
-	@brief QETProject::Origin
+	@brief QETProject::origin
 	@return specifies the origin for the sheet
 */
-ProjectOrigin::Mode QETProject::Origin() const { return m_origin; }
+ProjectOrigin::Mode QETProject::origin() const { return m_origin; }
 
 /**
 	@brief QETProject::setOrigin
@@ -2697,7 +2699,13 @@ void QETProject::setOrigin(ProjectOrigin::Mode mode)
 	if (mode == m_origin) { return; }
 	m_origin = mode;
 	storeSettings();
-	for (Diagram* diagram : diagrams()) { diagram->update(); }
+	for (Diagram* diagram : folios())
+	{
+		diagram->refreshContents();
+		diagram->border_and_titleblock.setOrigin(mode);
+		diagram->update();
+	}
+	m_data_base.updateDBForce();
 }
 
 /**
@@ -3722,7 +3730,7 @@ namespace {
 /**
 	@brief sameDefinition
 	@return true if @p a and @p b describe the same element: same tags,
-	attributes and texts. The uuids of the terminals are left out: an
+	attributes and texts, whatever the indentation and comments. The uuids of the terminals are left out: an
 	embedded element gets missing ones filled in, and keeps its own when it
 	is replaced (see TerminalUuids).
 */
@@ -3749,10 +3757,20 @@ bool sameDefinition(const QDomElement &a, const QDomElement &b)
 		}
 	}
 
-	QDomNode a_child = a.firstChild();
-	QDomNode b_child = b.firstChild();
+		//The indentation between tags is no part of the element: a copy
+		//embedded in a project keeps it as text, the file it came from
+		//may not, or be indented otherwise
+	const auto significant = [](QDomNode node) {
+		while (!node.isNull()
+			   && (node.isComment()
+				   || (node.isText() && node.nodeValue().trimmed().isEmpty())))
+			node = node.nextSibling();
+		return node;
+	};
+	QDomNode a_child = significant(a.firstChild());
+	QDomNode b_child = significant(b.firstChild());
 	for ( ; !a_child.isNull() && !b_child.isNull() ;
-		  a_child = a_child.nextSibling(), b_child = b_child.nextSibling())
+		  a_child = significant(a_child.nextSibling()), b_child = significant(b_child.nextSibling()))
 	{
 		if (a_child.nodeType() != b_child.nodeType()) return false;
 		if (a_child.isElement()) {
@@ -4129,6 +4147,10 @@ void QETProject::readProjectXml(QDomDocument &xml_project)
 	m_data_base.setUpdateBlocked(false);
 	m_data_base.updateDB(xml_project);
 	m_data_base.endPrefill(unloadedFolioCount() > 0);
+		//The types wires take from the sources, once the database holds
+		//the whole project: worked out earlier, during the load's event
+		//processing, they would come from half-filled tables
+	scheduleDerivedPotentialTypes();
 		//The link rows now hold the partners on folios not built: a
 		//symbol keeps no list of its own (QETZ-DB-FIRST stage 2a-3)
 	for (Diagram *diagram : builtFolios())
@@ -4643,10 +4665,10 @@ void QETProject::readOriginXml(QDomDocument& xml_project)
 {
 	const QDomElement style =
 		xml_project.documentElement().firstChildElement(
-			QStringLiteral("style"));
+			QStringLiteral("cell_origin"));
 	m_origin = style.isNull() 
 		    ? ProjectOrigin::Mode::TopLeft 
-			: ProjectOrigin::fromString(style.attribute(QStringLiteral("origin")));
+			: ProjectOrigin::fromString(style.attribute(QStringLiteral("corner")));
 }
 
 /**
@@ -5051,9 +5073,9 @@ void QETProject::writeOriginXml(QDomElement& xml_element)
 		return; 
 	}
 	QDomElement style = xml_element.ownerDocument().createElement(
-		QStringLiteral("style"));
+		QStringLiteral("cell_origin"));
 	style.setAttribute(
-		QStringLiteral("origin"),
+		QStringLiteral("corner"),
 		ProjectOrigin::toString(m_origin));
 	xml_element.appendChild(style);
 }
@@ -5176,6 +5198,57 @@ void QETProject::setPotentialTypes(const PotentialTypes &potential_types)
 	for (Diagram *diagram : folios()) {
 		diagram->update();
 	}
+	scheduleDerivedPotentialTypes();
+}
+
+QString QETProject::derivedPotentialType(const QUuid &wire)
+{
+	if (m_potential_types.mode() != PotentialTypes::Mode::AtSource)
+		return QString();
+	if (m_derived_potential_types_due)
+		refreshDerivedPotentialTypes();
+	return m_derived_potential_types.value(wire);
+}
+
+void QETProject::scheduleDerivedPotentialTypes()
+{
+	if (m_potential_types.mode() != PotentialTypes::Mode::AtSource) {
+		if (!m_derived_potential_types.isEmpty()) {
+			m_derived_potential_types.clear();
+			for (Diagram *diagram : folios())
+				diagram->update();
+		}
+		m_derived_potential_types_due = false;
+		return;
+	}
+	if (m_derived_potential_types_due)
+		return;
+	m_derived_potential_types_due = true;
+		//Several edits in a row (a paste, a script) are worked out once
+	QTimer::singleShot(0, this, [this]() {
+		if (m_derived_potential_types_due)
+			refreshDerivedPotentialTypes();
+	});
+}
+
+/**
+	@brief QETProject::refreshDerivedPotentialTypes
+	One pass over the project database (projectDataBase::derivedPotentialTypes()),
+	never over the folios; the folios built are drawn again only when a
+	wire's derived type changed.
+*/
+void QETProject::refreshDerivedPotentialTypes()
+{
+	m_derived_potential_types_due = false;
+	if (m_potential_types.mode() != PotentialTypes::Mode::AtSource)
+		return;
+	QHash<QUuid, QString> derived = m_data_base.derivedPotentialTypes().type_of;
+	if (derived == m_derived_potential_types)
+		return;
+	m_derived_potential_types.swap(derived);
+	for (Diagram *diagram : folios())
+		if (diagram->isLoaded())
+			diagram->update();
 }
 
 /**

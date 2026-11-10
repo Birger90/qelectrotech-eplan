@@ -479,6 +479,50 @@ void Diagram::drawBackground(QPainter *p, const QRectF &r) {
 	p -> restore();
 }
 
+namespace {
+		/// While it lives, the items under the mouse that the selection
+		/// filter leaves out take no mouse button, so the scene gives the
+		/// press or double-click to what lies under them.
+	class FilteredOutOfClick
+	{
+		public:
+			FilteredOutOfClick(Diagram *diagram, QGraphicsSceneMouseEvent *event)
+			{
+				if (Diagram::selectionFilter() == Diagram::SelectionFilter::All) {
+					return;
+				}
+				QTransform view_transform;
+				if (event->widget()) {
+					if (auto view = qobject_cast<QGraphicsView *>(event->widget()->parentWidget())) {
+						view_transform = view->transform();
+					}
+				}
+				const QList<QGraphicsItem *> under = diagram->items(
+					event->scenePos(), Qt::IntersectsItemShape,
+					Qt::DescendingOrder, view_transform);
+				for (QGraphicsItem *item : under) {
+					QGraphicsObject *object = item->toGraphicsObject();
+					if (object && object->acceptedMouseButtons() != Qt::NoButton
+						&& Diagram::filterPick(item) == Diagram::FilterPick::None) {
+						m_items.append({object, object->acceptedMouseButtons()});
+						object->setAcceptedMouseButtons(Qt::NoButton);
+					}
+				}
+			}
+			~FilteredOutOfClick()
+			{
+				for (const auto &item : std::as_const(m_items)) {
+					if (item.first) {
+						item.first->setAcceptedMouseButtons(item.second);
+					}
+				}
+			}
+
+		private:
+			QList<QPair<QPointer<QGraphicsObject>, Qt::MouseButtons>> m_items;
+	};
+}
+
 /**
 	@brief Diagram::mouseDoubleClickEvent
 	This event is managed by diagram event interface if any.
@@ -515,6 +559,7 @@ void Diagram::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 		return;
 	}
 
+	const FilteredOutOfClick filtered_out(this, event);
 	QGraphicsScene::mouseDoubleClickEvent(event);
 }
 
@@ -554,6 +599,7 @@ void Diagram::mousePressEvent(QGraphicsSceneMouseEvent *event)
 			m_member_to_pick = member->toGraphicsObject();
 		}
 	}
+	const FilteredOutOfClick filtered_out(this, event);
 	QGraphicsScene::mousePressEvent(event);
 	completeGroupSelection();
 }
@@ -704,6 +750,11 @@ void Diagram::keyPressEvent(QKeyEvent *event)
 									  Diagram::xKeyGrid).toInt();
 		int yKeyGrid = settings.value(QStringLiteral("diagrameditor/key_Ygrid"),
 									  Diagram::yKeyGrid).toInt();
+			//Or by the folio's grid step (Display > Grid step), when set so
+		if (settings.value(QStringLiteral("diagrameditor/key_follows_grid"), false).toBool()) {
+			xKeyGrid = FolioGrid::step(settings.value(FolioGrid::x_key), Diagram::xGrid);
+			yKeyGrid = FolioGrid::step(settings.value(FolioGrid::y_key), Diagram::yGrid);
+		}
 		switch(event->key())
 		{
 			case Qt::Key_Left:
@@ -3120,6 +3171,7 @@ void Diagram::selectAll()
 
 	blockSignals(true);
 	foreach(QGraphicsItem *qgi, items()) qgi -> setSelected(true);
+	filterSelection();
 	blockSignals(false);
 	emit(selectionChanged());
 }
@@ -3196,6 +3248,31 @@ void Diagram::selectAllTextFields()
 	blockSignals(true);
 	for (auto item : items()) {
 		item -> setSelected(dynamic_cast<DiagramTextItem *>(item) != nullptr);
+	}
+	blockSignals(false);
+	emit selectionChanged();
+}
+
+/**
+	@brief Diagram::selectSameSymbols
+	Select every element on this diagram drawn from the same definition
+	as a selected element, deselecting anything else. Nothing changes
+	when no element is selected.
+*/
+void Diagram::selectSameSymbols()
+{
+	QSet<QString> locations;
+	for (QGraphicsItem *item : selectedItems()) {
+		if (auto *element = qgraphicsitem_cast<Element *>(item)) {
+			locations << element -> location().toString();
+		}
+	}
+	if (locations.isEmpty()) return;
+
+	blockSignals(true);
+	for (auto item : items()) {
+		auto *element = qgraphicsitem_cast<Element *>(item);
+		item -> setSelected(element && locations.contains(element -> location().toString()));
 	}
 	blockSignals(false);
 	emit selectionChanged();
@@ -3376,6 +3453,46 @@ void Diagram::loadFolioSeqHash(QHash<QString,
 				j++;
 			}
 		}
+}
+
+/**
+	@brief Diagram::setFolioSeqValues
+	What this folio has handed out of the numbering @p title, at level
+	@p level for @p owner ("element" or "conductor"), is @p values from
+	now on -- the hash this folio numbers from, and the rows the project
+	saves them in, which writeFolioCounters() writes back into the file.
+
+	Writing both is what insertFolioSeqHash() and folioSequentialsFromXml()
+	do, and it is what keeps a counter the user put back, or one which
+	went down because the folio was numbered over from the start, from
+	being overwritten by the value saved for it.
+*/
+void Diagram::setFolioSeqValues(const QString &owner,
+				const QString &level,
+				const QString &title,
+				const QStringList &values)
+{
+	const bool element = owner == QLatin1String("element");
+	const bool conductor = owner == QLatin1String("conductor");
+	if (!element && !conductor) {
+		return;
+	}
+	QHash<QString, QStringList> *hash = nullptr;
+	if (level == QLatin1String("unitfolio")) {
+		hash = element ? &m_elmt_unitfolio_max : &m_cnd_unitfolio_max;
+	} else if (level == QLatin1String("tenfolio")) {
+		hash = element ? &m_elmt_tenfolio_max : &m_cnd_tenfolio_max;
+	} else if (level == QLatin1String("hundredfolio")) {
+		hash = element ? &m_elmt_hundredfolio_max : &m_cnd_hundredfolio_max;
+	}
+	if (!hash) {
+		return;
+	}
+	hash->insert(title, values);
+	if (project() && project()->dataBase()) {
+		project()->dataBase()->setFolioCounterValues(
+				uuid(), owner, level, title, values);
+	}
 }
 
 /**
@@ -3898,6 +4015,126 @@ QPointF Diagram::snapToGrid(const QPointF &p)
 	int p_x = qRound(p.x() / xGrid) * xGrid;
 	int p_y = qRound(p.y() / yGrid) * yGrid;
 	return (QPointF(p_x, p_y));
+}
+
+namespace {
+		/// -1 until read from the settings
+	int s_selection_filter = -1;
+}
+
+/**
+	@brief Diagram::selectionFilter
+	@return what a click, a selection rectangle and Select All pick, see
+	SelectionFilter; All by default, as always before.
+*/
+Diagram::SelectionFilter Diagram::selectionFilter()
+{
+	if (s_selection_filter < 0) {
+		s_selection_filter = qBound(0, QSettings().value(
+			QStringLiteral("diagrameditor/selection_filter"), 0).toInt(), 5);
+	}
+	return static_cast<SelectionFilter>(s_selection_filter);
+}
+
+/**
+	@brief Diagram::setSelectionFilter
+	@param filter : see selectionFilter(); kept in the settings, for every
+	folio from the next click.
+*/
+void Diagram::setSelectionFilter(SelectionFilter filter)
+{
+	s_selection_filter = static_cast<int>(filter);
+	QSettings().setValue(QStringLiteral("diagrameditor/selection_filter"), s_selection_filter);
+}
+
+/**
+	@brief Diagram::filterPick
+	@param item
+	@return how the selection filter treats @a item. Only items the user
+	can select are filtered: handles, terminals and the like are left alone.
+*/
+Diagram::FilterPick Diagram::filterPick(const QGraphicsItem *item)
+{
+	const SelectionFilter filter = selectionFilter();
+	if (filter == SelectionFilter::All || !item
+		|| !(item->flags() & QGraphicsItem::ItemIsSelectable)) {
+		return FilterPick::Item;
+	}
+
+	const int type = item->type();
+	const bool symbol_text = type == DynamicElementTextItem::Type
+							 || type == ElementTextItemGroup::Type;
+	bool picked = false;
+	switch (filter) {
+		case SelectionFilter::All:
+		case SelectionFilter::Automatic:
+			if (symbol_text) return FilterPick::Owner;
+			picked = true;
+			break;
+		case SelectionFilter::Symbols:
+			if (symbol_text) return FilterPick::Owner;
+			picked = type == Element::Type;
+			break;
+		case SelectionFilter::Conductors:
+			picked = type == Conductor::Type;
+			break;
+		case SelectionFilter::FreeTexts:
+			picked = type == IndependentTextItem::Type;
+			break;
+		case SelectionFilter::SymbolTexts:
+			picked = symbol_text;
+			break;
+	}
+	return picked ? FilterPick::Item : FilterPick::None;
+}
+
+/**
+	@brief Diagram::pickAt
+	@return the topmost item at @a pos that the selection filter picks, a
+	symbol for one of its texts; the topmost item at all, as itemAt(), when
+	everything is picked.
+*/
+QGraphicsItem *Diagram::pickAt(const QPointF &pos, const QTransform &view_transform) const
+{
+	if (selectionFilter() == SelectionFilter::All) {
+		return itemAt(pos, view_transform);
+	}
+	const QList<QGraphicsItem *> under = items(pos, Qt::IntersectsItemShape,
+											   Qt::DescendingOrder, view_transform);
+	for (QGraphicsItem *item : under) {
+		switch (filterPick(item)) {
+			case FilterPick::Item:
+				return item;
+			case FilterPick::Owner:
+				if (auto text = qgraphicsitem_cast<DynamicElementTextItem *>(item)) {
+					if (text->parentElement()) return text->parentElement();
+				} else if (auto group = qgraphicsitem_cast<ElementTextItemGroup *>(item)) {
+					if (group->parentElement()) return group->parentElement();
+				}
+				return item;
+			case FilterPick::None:
+				break;
+		}
+	}
+	return nullptr;
+}
+
+/**
+	@brief Diagram::filterSelection
+	Deselect what the selection filter leaves out, the texts of symbols
+	too: a selection rectangle or Select All picks a symbol by itself, not
+	by its texts.
+*/
+void Diagram::filterSelection()
+{
+	if (selectionFilter() == SelectionFilter::All) return;
+
+	const QList<QGraphicsItem *> selected = selectedItems();
+	for (QGraphicsItem *item : selected) {
+		if (filterPick(item) != FilterPick::Item) {
+			item->setSelected(false);
+		}
+	}
 }
 
 namespace {

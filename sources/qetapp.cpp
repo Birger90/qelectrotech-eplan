@@ -24,6 +24,7 @@
 #include "elementscollectioncache.h"
 #include "factory/elementfactory.h"
 #include "factory/elementpicturefactory.h"
+#include "diagramview.h"
 #include "projectview.h"
 #include "qetdiagrameditor.h"
 #include "qeticons.h"
@@ -129,9 +130,6 @@ QString QETApp::m_user_macros_dir = QString();
 
 QETApp *QETApp::m_qetapp = nullptr;
 
-bool lang_is_set = false;
-QString system_language = QString();
-
 
 /**
 	@brief QETApp::QETApp
@@ -218,9 +216,10 @@ QETApp::QETApp() :
 /**
 	@brief QETApp::reopenLastProjects
 	When the setting is on, open again the projects that were open when
-	QElectroTech was last left (@see QETDiagramEditor::closeEvent). A
-	project already open, from a recovery file for instance, is not
-	opened twice; one that no longer exists is skipped without a word.
+	QElectroTech was last left (@see QETDiagramEditor::closeEvent), each
+	on the folio it showed then. A project already open, from a recovery
+	file for instance, is not opened twice; one that no longer exists is
+	skipped without a word.
 */
 void QETApp::reopenLastProjects()
 {
@@ -235,8 +234,22 @@ void QETApp::reopenLastProjects()
 		return;
 	QETDiagramEditor *editor = diagramEditors().isEmpty() ? new QETDiagramEditor()
 							      : diagramEditors().first();
-	for (const QString &file : std::as_const(files))
-		editor->openAndAddProject(file, false);
+	const QVariantMap folio_at_quit = settings.value(QStringLiteral("projects/folio_at_quit")).toMap();
+	for (const QString &file : std::as_const(files)) {
+		if (!editor->openAndAddProject(file, false))
+			continue;
+			//Show again the folio it showed when it was left
+		ProjectView *project_view = nullptr;
+		for (ProjectView *view : editor->openedProjects())
+			if (view->project()->filePath() == file)
+				project_view = view;
+		if (!project_view || !folio_at_quit.contains(file))
+			continue;
+		const QList<Diagram *> folios = project_view->project()->folios();
+		const int index = folio_at_quit.value(file).toInt();
+		if (index >= 0 && index < folios.size())
+			project_view->showDiagram(folios.at(index));
+	}
 }
 
 /**
@@ -366,19 +379,22 @@ void QETApp::setLanguage(const QString &desired_language) {
 */
 QString QETApp::langFromSetting()
 {
-	if (!lang_is_set)
+		//Read once, as before. The elements collection asks for it from its
+		//loading threads (NamesList::name()), which may make the first call
+		//all at once: a static is filled by one thread, the others wait.
+	static const QString system_language = []()
 	{
 		QSettings settings;
-		system_language = settings.value("lang", "system").toString();
-		if ((system_language == "system") || (system_language == QString())) {
+		QString language = settings.value("lang", "system").toString();
+		if ((language == "system") || (language == QString())) {
 			// Keep the full locale (e.g. "pt_BR"), not just the base language
 			// ("pt"): QET ships regional translations (pt_BR, nl_BE, nl_NL) and
 			// truncating here loaded the wrong one. setLanguage() falls back to
 			// the base language when no regional translation exists.
-			system_language = QLocale::system().name();
+			language = QLocale::system().name();
 		}
-		lang_is_set = true;
-	}
+		return language;
+	}();
 
 	return system_language;
 }
@@ -1454,13 +1470,19 @@ QString QETApp::languagesPath()
 bool QETApp::closeEveryEditor()
 {
 		//The projects open in every window, for the next start
-		//(reopenLastProjects()), written once they all closed
+		//(reopenLastProjects()), written once they all closed, and the
+		//folio each one shows
 	QStringList open_at_quit;
+	QVariantMap folio_at_quit = QSettings().value(QStringLiteral("projects/folio_at_quit")).toMap();
 	for (QETDiagramEditor *editor : diagramEditors())
-		for (ProjectView *project_view : editor->openedProjects())
-			if (!project_view->project()->filePath().isEmpty()
-			    && !open_at_quit.contains(project_view->project()->filePath()))
-				open_at_quit << project_view->project()->filePath();
+		for (ProjectView *project_view : editor->openedProjects()) {
+			const QString file = project_view->project()->filePath();
+			if (file.isEmpty() || open_at_quit.contains(file))
+				continue;
+			open_at_quit << file;
+			if (DiagramView *view = project_view->currentDiagram())
+				folio_at_quit.insert(file, project_view->project()->folioIndex(view->diagram()));
+		}
 	// make sure all windows are visible before leaving
 	// s'assure que toutes les fenetres soient visibles avant de quitter
 	restoreEveryEditor();
@@ -1474,8 +1496,11 @@ bool QETApp::closeEveryEditor()
 	foreach(QETElementEditor *e, elementEditors()) {
 		every_window_closed = every_window_closed && e -> close();
 	}
-	if (every_window_closed)
-		QSettings().setValue(QStringLiteral("projects/open_at_quit"), open_at_quit);
+	if (every_window_closed) {
+		QSettings settings;
+		settings.setValue(QStringLiteral("projects/open_at_quit"), open_at_quit);
+		settings.setValue(QStringLiteral("projects/folio_at_quit"), folio_at_quit);
+	}
 	return(every_window_closed);
 }
 
@@ -3289,15 +3314,8 @@ void QETApp::checkBackupFiles()
 	{
 		for (QETProject *project : registeredProjects().values())
 		{
-			/* We must adjust with the flag
-			 * QUrl::StripTrailingSlash to compare a path formatted
-			 * like the path returned by KAutoSaveFile
-			 */
-			const QString path = QUrl::fromLocalFile(
-						project->filePath()).adjusted(
-						QUrl::RemoveScheme
-						| QUrl::StripTrailingSlash).path();
-			if (kasf->managedFile() == path) {
+			if (QET::autosaveManagedFilePath(kasf->managedFile())
+				== project->filePath()) {
 				stale_files.removeOne(kasf);
 			}
 		}
@@ -3597,7 +3615,7 @@ void QETApp::printHelp()
 */
 void QETApp::printVersion()
 {
-	std::cout << qPrintable(QetVersion::displayedVersion()) << std::endl;
+	std::cout << qPrintable(QetVersion::displayedVersionWithFork()) << std::endl;
 }
 
 /**

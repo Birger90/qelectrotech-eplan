@@ -17,15 +17,15 @@
 */
 #include "diagramtextitem.h"
 
-#include "../diagram.h"
-#include "../diagramcommands.h"
+#include <diagram.h>
+#include <diagramcommands.h>
 #include "dynamicelementtextitem.h"
-#include "../qetproject.h"
-#include "../qetapp.h"
-#include "../richtext/richtexteditor_p.h"
-#include "../textanchor.h"
-#include "../utils/qetutils.h"
-#include "../QetGraphicsItemModeler/textresizehandles.h"
+#include <qetproject.h>
+#include <qetapp.h>
+#include <richtext/richtexteditor_p.h>
+#include <textanchor.h>
+#include <utils/qetutils.h>
+#include <QetGraphicsItemModeler/textresizehandles.h>
 
 #include <QAbstractTextDocumentLayout>
 #include <QStyleOptionGraphicsItem>
@@ -749,6 +749,7 @@ void DiagramTextItem::edit()
 		parent = scene()->views().first();
 
 	qdesigner_internal::RichTextEditorDialog editor(parent);
+	editor.setDefaultFont(font());
 	editor.setText(toHtml());
 
 	QVector<Qt::Alignment> alignments;

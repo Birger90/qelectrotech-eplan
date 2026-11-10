@@ -33,6 +33,10 @@ namespace QetVersion
 
 	QVersionNumber currentVersion();
 	QString displayedVersion();
+	// Version of this fork (see VERSIONIERUNG.md). Files written by QElectroTech
+	// keep the upstream version from displayedVersion().
+	QString forkVersion();
+	QString displayedVersionWithFork();
 
 	QVersionNumber versionZeroDotSix();
 

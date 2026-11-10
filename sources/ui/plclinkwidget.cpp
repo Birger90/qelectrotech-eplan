@@ -17,105 +17,111 @@
 */
 #include "plclinkwidget.h"
 
-#include "../qetgraphicsitem/masterelement.h"
-#include "../qetgraphicsitem/element.h"
-#include "../elementprovider.h"
-#include "../undocommand/linkelementcommand.h"
-#include "../diagram.h"
-#include "../qetproject.h"
-#include "../properties/elementdata.h"
+#include <qetgraphicsitem/element.h>
+#include <qetgraphicsitem/terminal.h>
+#include <elementprovider.h>
+#include <undocommand/linkelementcommand.h>
+#include <diagram.h>
+#include <qetproject.h>
+#include <properties/elementdata.h>
 
-#include <QTreeWidget>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QLabel>
 #include <QCheckBox>
-#include <QVBoxLayout>
+#include <QComboBox>
+#include <QFormLayout>
 #include <QHBoxLayout>
-#include <QGridLayout>
-#include <QMenu>
-#include <QAction>
-#include <QFont>
-#include <QTimer>
+#include <QLabel>
+#include <QPushButton>
+#include <QRegularExpression>
 #include <QSettings>
+#include <QStandardItemModel>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QGridLayout>
-#include <QMenu>
-#include <QAction>
+
+#include <algorithm>
+
+namespace {
+	/// 1 input, 2 output
+	int ioDirection(ElementData::PlcIOType type)
+	{
+		switch (type) {
+			case ElementData::SortieDigitale:
+			case ElementData::SortieAnalogique:
+			case ElementData::SortieUniverselle:
+				return 2;
+			default:
+				return 1;
+		}
+	}
+
+	bool isPlcModule(const Element *e)
+	{
+		return e && e->elementData().m_type == ElementData::Master
+			&& e->elementData().m_master_type == ElementData::PLC
+			&& !e->elementData().plcMasterData().ios.isEmpty();
+	}
+
+	/// the master @p slave is linked to and the channel it sits on
+	QPair<Element *, int> linkOf(Element *slave)
+	{
+		if (!slave) return {nullptr, -1};
+		for (Element *e : slave->linkedElements())
+			if (e->linkType() == Element::Master)
+				return {e, e->groupIndexForElement(slave)};
+		return {nullptr, -1};
+	}
+
+	QString folioOf(const Element *e)
+	{
+		return e && e->diagram() ? QString::number(e->diagram()->folioIndex() + 1) : QString();
+	}
+}
 
 PlcLinkWidget::PlcLinkWidget(Element *elmt, QWidget *parent)
 	: AbstractElementPropertiesEditorWidget(parent)
 {
-	auto *main_layout = new QGridLayout(this);
-
-	// Row 0: Status label + buttons (shown when already linked)
-	m_label = new QLabel(tr("This element is already linked"), this);
+	m_state = new QLabel(this);
+	m_state->setWordWrap(true);
 	m_unlink_pb = new QPushButton(tr("Unlink"), this);
-	m_show_this_pb = new QPushButton(tr("View this item"), this);
+	m_show_module_pb = new QPushButton(tr("Show the module"), this);
+	auto *state_row = new QHBoxLayout;
+	state_row->addWidget(m_state, 1);
+	state_row->addWidget(m_show_module_pb);
+	state_row->addWidget(m_unlink_pb);
 
-	main_layout->addWidget(m_label, 0, 0);
-	main_layout->addWidget(m_unlink_pb, 0, 1);
-	main_layout->addWidget(m_show_this_pb, 0, 2);
+	m_module_cb = new QComboBox(this);
+	m_module_cb->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+	m_channel_cb = new QComboBox(this);
+	m_channel_cb->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+	m_channel_cb->setModel(new QStandardItemModel(m_channel_cb));
+	m_all_cb = new QCheckBox(tr("Also offer channels of the other direction"), this);
+	m_all_cb->setChecked(QSettings().value(QStringLiteral("plclinkwidget/allChannels"), false).toBool());
 
-	// Row 1: Hide linked elements checkbox
-	m_hide_linked_cb = new QCheckBox(tr("Hide connected elements"), this);
-	main_layout->addWidget(m_hide_linked_cb, 1, 0, 1, 3);
+	auto *form = new QFormLayout;
+	form->addRow(tr("Module:"), m_module_cb);
+	form->addRow(tr("Channel:"), m_channel_cb);
+	form->addRow(QString(), m_all_cb);
 
-	// Row 2: Search field
-	m_search_field = new QLineEdit(this);
-	m_search_field->setPlaceholderText(tr("Search"));
-	main_layout->addWidget(m_search_field, 2, 0, 1, 3);
+	m_hint = new QLabel(this);
+	m_hint->setWordWrap(true);
+	QFont italic = m_hint->font();
+	italic.setItalic(true);
+	m_hint->setFont(italic);
 
-	// Row 3: Tree widget
-	m_tree_widget = new QTreeWidget(this);
-	m_tree_widget->setHeaderLabels({
-		tr("Label"), tr("Type"), tr("Address"),
-		tr("Function"), tr("Annotation"), tr("Terminals")
+	auto *layout = new QVBoxLayout(this);
+	layout->addLayout(state_row);
+	layout->addLayout(form);
+	layout->addWidget(m_hint);
+	layout->addStretch(1);
+
+	connect(m_unlink_pb, &QPushButton::clicked, this, &PlcLinkWidget::unlink);
+	connect(m_show_module_pb, &QPushButton::clicked, this, &PlcLinkWidget::showModule);
+	connect(m_module_cb, &QComboBox::currentIndexChanged, this, [this]() {
+		if (!m_filling) fillChannels();
 	});
-	m_tree_widget->setRootIsDecorated(true);
-	m_tree_widget->setIndentation(20);
-	m_tree_widget->setSelectionMode(QAbstractItemView::SingleSelection);
-	m_tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
-	m_tree_widget->header()->setStretchLastSection(false);
-	m_tree_widget->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-	m_tree_widget->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-	m_tree_widget->header()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-	m_tree_widget->header()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
-	m_tree_widget->header()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
-	m_tree_widget->header()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
-	main_layout->addWidget(m_tree_widget, 3, 0, 1, 3);
-
-	// Row 4: Hidden masters note
-	m_hidden_masters_label = new QLabel(
-		tr("Note: Master elements that have reached their maximum number of "
-		   "slaves are hidden."), this);
-	m_hidden_masters_label->setWordWrap(true);
-	QFont italic_font = m_hidden_masters_label->font();
-	italic_font.setItalic(true);
-	m_hidden_masters_label->setFont(italic_font);
-	m_hidden_masters_label->hide();
-	main_layout->addWidget(m_hidden_masters_label, 4, 0, 1, 3);
-
-	main_layout->setRowStretch(3, 1);
-
-	setMinimumWidth(500);
-
-	// Connections
-	connect(m_unlink_pb, &QPushButton::clicked,
-		this, &PlcLinkWidget::on_m_unlink_pb_clicked);
-	connect(m_show_this_pb, &QPushButton::clicked,
-		this, &PlcLinkWidget::on_m_show_this_pb_clicked);
-	connect(m_search_field, &QLineEdit::textEdited,
-		this, &PlcLinkWidget::on_m_search_field_textEdited);
-	connect(m_tree_widget, &QTreeWidget::customContextMenuRequested,
-		this, &PlcLinkWidget::on_m_tree_widget_customContextMenuRequested);
-	connect(m_hide_linked_cb, &QCheckBox::toggled,
-		this, &PlcLinkWidget::on_m_hide_linked_cb_toggled);
-
-	QSettings settings;
-	m_hide_linked_cb->setChecked(
-		settings.value(QStringLiteral("plclinkwidget/hideLinked"), false).toBool());
+	connect(m_channel_cb, &QComboBox::activated, this, &PlcLinkWidget::channelChosen);
+	connect(m_all_cb, &QCheckBox::toggled, this, [this](bool on) {
+		QSettings().setValue(QStringLiteral("plclinkwidget/allChannels"), on);
+		updateUi();
+	});
 
 	if (elmt)
 		setElement(elmt);
@@ -125,7 +131,6 @@ void PlcLinkWidget::setElement(Element *element)
 {
 	if (m_element == element)
 		return;
-
 	m_element = element;
 	updateUi();
 }
@@ -138,14 +143,15 @@ void PlcLinkWidget::apply()
 
 	m_element_to_link = nullptr;
 	m_pending_io_index = -1;
+	updateUi();
 }
 
 QUndoCommand *PlcLinkWidget::associatedUndo() const
 {
-	if (!m_element_to_link || m_pending_io_index < 0)
+	if (!m_element || !m_element_to_link || m_pending_io_index < 0)
 		return nullptr;
 
-	LinkElementCommand *undo = new LinkElementCommand(m_element);
+	auto *undo = new LinkElementCommand(m_element);
 	undo->setLink(m_element_to_link);
 	undo->setGroupIndex(m_pending_io_index);
 	return undo;
@@ -156,275 +162,186 @@ QString PlcLinkWidget::title() const
 	return tr("Programmable Logic Controller (PLC)");
 }
 
+int PlcLinkWidget::channelDirection(const Element *slave)
+{
+	if (!slave) return 0;
+	static const QRegularExpression out(QStringLiteral("^(DQ|DO|AQ|AO|Q|O|A)\\d*$"),
+					    QRegularExpression::CaseInsensitiveOption);
+	static const QRegularExpression in(QStringLiteral("^(DI|AI|I|E)\\d*$"),
+					   QRegularExpression::CaseInsensitiveOption);
+	for (const Terminal *t : slave->terminals()) {
+		const QString n = t->baseName().trimmed();
+		if (out.match(n).hasMatch()) return 2;
+		if (in.match(n).hasMatch()) return 1;
+	}
+	return 0;
+}
+
 void PlcLinkWidget::updateUi()
 {
-	if (m_element->isFree())
-		hideButtons();
-	else
-		showButtons();
-
-	buildPlcTree();
+	if (!m_element)
+		return;
+	const auto link = linkOf(m_element);
+	if (link.first) {
+		const auto &ios = link.first->elementData().plcMasterData().ios;
+		const QString channel = link.second >= 0 && link.second < ios.size()
+			? ios.at(link.second).address : QString();
+		m_state->setText(tr("On %1, channel %2 (folio %3)")
+				 .arg(link.first->actualLabel(), channel, folioOf(link.first)));
+	} else {
+		m_state->setText(tr("Not linked to a module yet: choose the module, then the channel."));
+	}
+	m_unlink_pb->setVisible(link.first != nullptr);
+	m_show_module_pb->setVisible(link.first != nullptr);
+	fillModules();
 }
 
 /**
-	@brief PlcLinkWidget::buildPlcTree
-	Build the tree showing all PLC-Masters with their IO entries.
-	IO entries already linked to a slave are shown as struck-through and greyed out.
+	Every PLC module of the project with channels of the slave's
+	direction, the one it is linked to selected.
 */
-void PlcLinkWidget::buildPlcTree()
+void PlcLinkWidget::fillModules()
 {
-	m_tree_widget->clear();
-	m_io_entry_hash.clear();
-	m_linked_children.clear();
+	m_filling = true;
+	Element *keep = currentMaster();
+	const auto link = linkOf(m_element);
+	if (link.first) keep = link.first;
 
-	if (!m_element || !m_element->diagram() || !m_element->diagram()->project())
-		return;
-
-	ElementProvider ep(m_element->diagram()->project());
-	QVector<QPointer<Element>> masters = ep.find(ElementData::Master);
-
-	QSet<int> used_io_indices;
-
-	for (Element *elmt : masters) {
-		if (!elmt || elmt->elementData().m_master_type != ElementData::PLC)
-			continue;
-
-		const auto &plc_data = elmt->elementData().plcMasterData();
-		if (plc_data.ios.isEmpty())
-			continue;
-
-		// Skip full masters
-		MasterElement *me = static_cast<MasterElement*>(elmt);
-		if (me->isFull()) {
-			m_hidden_masters_label->show();
-			continue;
+	m_module_cb->clear();
+	m_modules.clear();
+	if (m_element && m_element->diagram() && m_element->diagram()->project()) {
+		const int dir = m_all_cb->isChecked() ? 0 : channelDirection(m_element);
+		ElementProvider ep(m_element->diagram()->project());
+		QVector<QPointer<Element>> masters = ep.find(ElementData::Master);
+		std::sort(masters.begin(), masters.end(), [](const QPointer<Element> &a, const QPointer<Element> &b) {
+			const int fa = a && a->diagram() ? a->diagram()->folioIndex() : 0;
+			const int fb = b && b->diagram() ? b->diagram()->folioIndex() : 0;
+			if (fa != fb) return fa < fb;
+			return QString::localeAwareCompare(a ? a->actualLabel() : QString(),
+							   b ? b->actualLabel() : QString()) < 0;
+		});
+		for (Element *e : masters) {
+			if (!isPlcModule(e)) continue;
+			bool fits = dir == 0 || e == link.first;
+			for (const auto &io : e->elementData().plcMasterData().ios)
+				if (ioDirection(io.type) == dir) fits = true;
+			if (!fits) continue;
+			QString label = e->actualLabel();
+			if (label.isEmpty()) label = e->name();
+			const QString part = e->elementInformations()
+				.value(QStringLiteral("manufacturer_reference")).toString();
+			m_module_cb->addItem(part.isEmpty()
+				? tr("%1 (folio %2)").arg(label, folioOf(e))
+				: tr("%1  %2 (folio %3)").arg(label, part, folioOf(e)));
+			m_modules << e;
 		}
+	}
+	m_module_cb->setEnabled(!m_modules.isEmpty());
+	m_hint->setText(m_modules.isEmpty()
+		? tr("The project has no PLC module with channels of this kind. Place the module "
+		     "(e.g. its overview or device picture from the company collection) first.")
+		: QString());
+	const int idx = keep ? m_modules.indexOf(keep) : -1;
+	m_module_cb->setCurrentIndex(idx >= 0 ? idx : (m_modules.isEmpty() ? -1 : 0));
+	m_filling = false;
+	fillChannels();
+}
 
-		// Collect used IO indices for this master
-		used_io_indices.clear();
-		for (Element *linked : elmt->linkedElements()) {
-			int idx = elmt->groupIndexForElement(linked);
-			if (idx >= 0)
-				used_io_indices.insert(idx);
+/**
+	The channels of the chosen module; those in use show who uses them and
+	cannot be chosen, except the slave's own.
+*/
+void PlcLinkWidget::fillChannels()
+{
+	m_filling = true;
+	auto *model = static_cast<QStandardItemModel *>(m_channel_cb->model());
+	model->clear();
+	Element *master = currentMaster();
+	const auto link = linkOf(m_element);
+	int select = 0;
+	if (master) {
+		auto *placeholder = new QStandardItem(tr("— choose the channel —"));
+		placeholder->setData(-1, Qt::UserRole);
+		model->appendRow(placeholder);
+
+		QHash<int, Element *> used;
+		for (Element *slave : master->linkedElements()) {
+			const int i = master->groupIndexForElement(slave);
+			if (i >= 0) used.insert(i, slave);
 		}
-
-		// Create parent item for this PLC-Master
-		auto *parent_item = new QTreeWidgetItem(m_tree_widget);
-
-		// Show master label + diagram info
-		QString master_label = elmt->actualLabel();
-		if (master_label.isEmpty())
-			master_label = elmt->name();
-
-		QString folio_info;
-		if (elmt->diagram()) {
-			folio_info = QString::number(elmt->diagram()->folioIndex() + 1);
-		}
-		parent_item->setText(0, QString("%1 (%2)")
-			.arg(master_label)
-			.arg(folio_info));
-		QFont bold_font = parent_item->font(0);
-		bold_font.setBold(true);
-		parent_item->setFont(0, bold_font);
-		parent_item->setExpanded(false);
-
-		// Add child items for each IO entry
-		bool all_children_hidden = true;
-		for (int i = 0; i < plc_data.ios.size(); ++i) {
-			const auto &io = plc_data.ios.at(i);
-			auto *child_item = new QTreeWidgetItem(parent_item);
-
-			child_item->setText(1, ElementData::translatedPlcIOType(io.type));
-			child_item->setText(2, io.address);
-			child_item->setText(3, io.functionText);
-			child_item->setText(4, io.comment);
-
-			// Terminal names
-			child_item->setText(5, io.terminals.join(QStringLiteral(", ")));
-
-			PlcIoEntry entry;
-			entry.master = elmt;
-			entry.ioIndex = i;
-			m_io_entry_hash.insert(child_item, entry);
-
-			// If this IO is already linked to a slave
-			if (used_io_indices.contains(i)) {
-				m_linked_children.insert(child_item);
-				if (m_hide_linked_cb->isChecked()) {
-					child_item->setHidden(true);
-				} else {
-					all_children_hidden = false;
-					QFont strike_font = child_item->font(0);
-					strike_font.setStrikeOut(true);
-					child_item->setFont(0, strike_font);
-					child_item->setFont(1, strike_font);
-					child_item->setFont(2, strike_font);
-					child_item->setFont(3, strike_font);
-					child_item->setFont(4, strike_font);
-					child_item->setFont(5, strike_font);
-
-					QBrush grey_brush(Qt::gray);
-					for (int col = 0; col < 6; ++col)
-						child_item->setForeground(col, grey_brush);
-
-					// Show which slave is linked
-					for (Element *linked : elmt->linkedElements()) {
-						if (elmt->groupIndexForElement(linked) == i) {
-							child_item->setToolTip(0,
-								tr("Related to: %1").arg(linked->actualLabel()));
-							break;
-						}
-					}
-
-					child_item->setFlags(child_item->flags() & ~Qt::ItemIsSelectable);
-				}
-			} else {
-				all_children_hidden = false;
+		const int dir = m_all_cb->isChecked() ? 0 : channelDirection(m_element);
+		const auto &ios = master->elementData().plcMasterData().ios;
+		for (int i = 0; i < ios.size(); ++i) {
+			const auto &io = ios.at(i);
+			const bool own = master == link.first && i == link.second;
+			if (dir != 0 && ioDirection(io.type) != dir && !own) continue;
+			QString text = io.address.isEmpty() ? tr("Channel %1").arg(i + 1) : io.address;
+			if (!io.terminals.isEmpty())
+				text += tr("  terminals %1").arg(io.terminals.join(QStringLiteral(", ")));
+			if (!io.functionText.isEmpty())
+				text += QStringLiteral("  ") + io.functionText;
+			auto *item = new QStandardItem(text);
+			item->setData(i, Qt::UserRole);
+			Element *other = used.value(i);
+			if (other && other != m_element) {
+				item->setText(text + tr("  (used by %1, folio %2)")
+					      .arg(other->actualLabel(), folioOf(other)));
+				item->setFlags(item->flags() & ~(Qt::ItemIsEnabled | Qt::ItemIsSelectable));
 			}
-		}
-
-		// If checkbox is on and every child is linked (hidden), hide the master too
-		if (m_hide_linked_cb->isChecked() && all_children_hidden) {
-			parent_item->setHidden(true);
+			model->appendRow(item);
+			if (own) select = model->rowCount() - 1;
 		}
 	}
+	m_channel_cb->setEnabled(master != nullptr);
+	m_channel_cb->setCurrentIndex(master ? select : -1);
+	m_filling = false;
 }
 
-bool PlcLinkWidget::isChildLinked(QTreeWidgetItem *child) const
+void PlcLinkWidget::channelChosen(int combo_index)
 {
-	return m_linked_children.contains(child);
+	if (m_filling || !m_element) return;
+	Element *master = currentMaster();
+	const int io = m_channel_cb->itemData(combo_index, Qt::UserRole).toInt();
+	if (!master || io < 0) return;
+	const auto link = linkOf(m_element);
+	if (link.first == master && link.second == io) return;
+	m_element_to_link = master;
+	m_pending_io_index = io;
+	apply();
 }
 
-void PlcLinkWidget::hideButtons()
-{
-	m_label->hide();
-	m_unlink_pb->hide();
-	m_show_this_pb->hide();
-	m_search_field->show();
-}
-
-void PlcLinkWidget::showButtons()
-{
-	m_label->show();
-	m_unlink_pb->show();
-	m_show_this_pb->show();
-	m_search_field->hide();
-}
-
-void PlcLinkWidget::on_m_search_field_textEdited(const QString &text)
-{
-	for (int i = 0; i < m_tree_widget->topLevelItemCount(); ++i) {
-		QTreeWidgetItem *parent = m_tree_widget->topLevelItem(i);
-		bool any_child_visible = false;
-
-		for (int j = 0; j < parent->childCount(); ++j) {
-			QTreeWidgetItem *child = parent->child(j);
-			bool match = text.isEmpty();
-			if (!match) {
-				for (int col = 0; col < child->columnCount(); ++col) {
-					if (child->text(col).contains(text, Qt::CaseInsensitive)) {
-						match = true;
-						break;
-					}
-				}
-			}
-			bool hidden = m_hide_linked_cb->isChecked() && isChildLinked(child);
-			child->setHidden(!match || hidden);
-			if (match && !hidden) any_child_visible = true;
-		}
-
-		// Also check if parent label matches
-		if (!text.isEmpty() && parent->text(0).contains(text, Qt::CaseInsensitive)) {
-			for (int j = 0; j < parent->childCount(); ++j) {
-				QTreeWidgetItem *child = parent->child(j);
-				bool hidden = m_hide_linked_cb->isChecked() && isChildLinked(child);
-				if (!hidden) {
-					any_child_visible = true;
-					child->setHidden(false);
-				}
-			}
-		}
-
-		parent->setHidden(!any_child_visible);
-	}
-}
-
-void PlcLinkWidget::on_m_tree_widget_customContextMenuRequested(const QPoint &pos)
-{
-	QTreeWidgetItem *item = m_tree_widget->itemAt(pos);
-	if (!item)
-		return;
-
-	// Only show context menu for IO child items (not parent master items)
-	if (!m_io_entry_hash.contains(item))
-		return;
-
-	const PlcIoEntry &entry = m_io_entry_hash.value(item);
-
-	// Check if this IO is already linked
-	Element *master = entry.master;
-	if (!master)
-		return;
-
-	QSet<int> used_indices;
-	for (Element *linked : master->linkedElements()) {
-		int idx = master->groupIndexForElement(linked);
-		if (idx >= 0)
-			used_indices.insert(idx);
-	}
-
-	if (used_indices.contains(entry.ioIndex))
-		return; // Already linked, no actions
-
-	QMenu menu;
-	QAction *link_action = menu.addAction(tr("Log in"));
-
-	QAction *selected_action = menu.exec(m_tree_widget->viewport()->mapToGlobal(pos));
-	if (selected_action == link_action) {
-		m_element_to_link = master;
-		m_pending_io_index = entry.ioIndex;
-		apply();
-	}
-}
-
-void PlcLinkWidget::on_m_unlink_pb_clicked()
+void PlcLinkWidget::unlink()
 {
 	if (!m_element || m_element->isFree())
 		return;
 
-	LinkElementCommand *undo = new LinkElementCommand(m_element);
-
-	// Store the current group index so makeLink() can
-	// restore PLC variables and terminal labels on undo.
-	for (Element *elmt : m_element->linkedElements())
-	{
-		if (elmt->linkType() == Element::Master)
-		{
-			int idx = elmt->groupIndexForElement(m_element);
-			if (idx >= 0)
-				undo->setGroupIndex(idx);
-			break;
-		}
-	}
-
+	auto *undo = new LinkElementCommand(m_element);
+	// the current group index, so that makeLink() can restore the PLC
+	// variables and terminal labels on undo
+	const auto link = linkOf(m_element);
+	if (link.second >= 0)
+		undo->setGroupIndex(link.second);
 	undo->unlinkAll();
 	m_element->diagram()->undoStack().push(undo);
-
 	updateUi();
 }
 
-void PlcLinkWidget::on_m_show_this_pb_clicked()
+void PlcLinkWidget::showModule()
 {
-	if (!m_element || !m_element->diagram())
+	Element *master = linkOf(m_element).first;
+	if (!master || !master->diagram())
 		return;
-
-	m_element->diagram()->showMe();
-	m_element->setHighlighted(true);
+	master->diagram()->showMe();
+	master->setHighlighted(true);
 }
 
-void PlcLinkWidget::on_m_hide_linked_cb_toggled(bool checked)
+Element *PlcLinkWidget::currentMaster() const
 {
-	QSettings settings;
-	settings.setValue(QStringLiteral("plclinkwidget/hideLinked"), checked);
-	buildPlcTree();
+	const int i = m_module_cb ? m_module_cb->currentIndex() : -1;
+	return i >= 0 && i < m_modules.size() ? m_modules.at(i).data() : nullptr;
+}
+
+int PlcLinkWidget::currentChannel() const
+{
+	return m_channel_cb ? m_channel_cb->currentData(Qt::UserRole).toInt() : -1;
 }

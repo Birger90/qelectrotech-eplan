@@ -15,35 +15,37 @@
 	You should have received a copy of the GNU General Public License
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "../../bordercelllabels.h"
+#include <bordercelllabels.h>
 #include "generalconfigurationpage.h"
 
-#include "../../qetgraphicsitem/dynamicelementtextitem.h"
-#include "../../connectionsymbols.h"
-#include "../../scripting/liveserver.h"
-#include "../../scripting/assistantinfo.h"
+#include <qetgraphicsitem/dynamicelementtextitem.h>
+#include <connectionsymbols.h>
+#include <scripting/liveserver.h>
+#include <scripting/assistantinfo.h>
 
-#include "../../qetapp.h"
-#include "../../diagramview.h"
-#include "../dockfold.h"
-#include "../dockfit.h"
-#include "../../qetdiagrameditor.h"
-#include "../../qeticons.h"
+#include <qetapp.h>
+#include <diagramview.h>
+#include <ui/dockfold.h>
+#include <ui/dockfit.h>
+#include <qetdiagrameditor.h>
+#include <qeticons.h>
 #include "ui_generalconfigurationpage.h"
-#include "../../materiallist/materiallist.h"
-#include "../../cablelist/cabletypelist.h"
-#include "../../utils/qetsettings.h"
-#include "../../utils/qetutils.h"
-#include "../../utils/previousversions.h"
-#include "../../qetmessagebox.h"
-#include "../../foliogrid.h"
-#include "../../textgrid.h"
-#include "../../wiringrules.h"
-#include "../wiringruleswarning.h"
-#include "../../editor/terminalnamecheck.h"
-#include "../../ElementsCollection/qetlabelsfile.h"
-#include "../prefixconfigurationdialog.h"
-#include "../nokde/kcolorbutton.h"
+#include <materiallist/materiallist.h>
+#include <cablelist/cabletypelist.h>
+#include <utils/qetsettings.h>
+#include <utils/qetutils.h>
+#include <utils/previousversions.h>
+#include <qetmessagebox.h>
+#include <qetgraphicsitem/qgraphicsitemutility.h>
+#include <foliogrid.h>
+#include <textgrid.h>
+#include <wiringrules.h>
+#include <ui/wiringruleswarning.h>
+#include <editor/terminalnamecheck.h>
+#include <ElementsCollection/qetlabelsfile.h>
+#include <ui/prefixconfigurationdialog.h>
+#include <ui/nokde/kcolorbutton.h>
+#include <editor/elementscene.h>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileDialog>
@@ -52,9 +54,9 @@
 #include <QMessageBox>
 #include <QSettings>
 
-#include "../../diagram.h"
-#include "../../qetproject.h"
-#include "../../qetgraphicsitem/terminal.h"
+#include <diagram.h>
+#include <qetproject.h>
+#include <qetgraphicsitem/terminal.h>
 
 namespace {
 	/**
@@ -151,6 +153,10 @@ GeneralConfigurationPage::GeneralConfigurationPage(QWidget *parent) :
 	ui->DiagramEditor_textGrid_cb->setCurrentIndex(text_grid_index);
 	ui->DiagramEditor_xKeyGrid_sb->setValue(settings.value("diagrameditor/key_Xgrid", 10).toInt());
 	ui->DiagramEditor_yKeyGrid_sb->setValue(settings.value("diagrameditor/key_Ygrid", 10).toInt());
+		//The arrow keys by the folio's grid step: the fixed steps are then unused
+	connect(ui->m_key_follows_grid_cb, &QCheckBox::toggled, ui->DiagramEditor_xKeyGrid_sb, &QWidget::setDisabled);
+	connect(ui->m_key_follows_grid_cb, &QCheckBox::toggled, ui->DiagramEditor_yKeyGrid_sb, &QWidget::setDisabled);
+	ui->m_key_follows_grid_cb->setChecked(settings.value("diagrameditor/key_follows_grid", false).toBool());
 	ui->DiagramEditor_xKeyGridFine_sb->setValue(settings.value("diagrameditor/key_fine_Xgrid", 1).toInt());
 	ui->DiagramEditor_yKeyGridFine_sb->setValue(settings.value("diagrameditor/key_fine_Ygrid", 1).toInt());
 	ui->DiagramEditor_Grid_PointSize_min_sb->setValue(settings.value("diagrameditor/grid_pointsize_min", 1).toInt());
@@ -168,6 +174,8 @@ GeneralConfigurationPage::GeneralConfigurationPage(QWidget *parent) :
 	else
 		ui->m_use_windows_mode_rb->setChecked(true);
 	ui->m_selection_rectangle_cb->setCurrentIndex(static_cast<int>(DiagramView::selectionRectangle()));
+	ui->m_editor_like_folio_cb->setChecked(ElementScene::likeFolio());
+	ui->m_selection_frame_radius_sb->setValue(QGIUtility::selectionFrameRadius());
 	ui->m_zoom_out_beyond_folio->setChecked(settings.value("diagrameditor/zoom-out-beyond-of-folio", false).toBool());
 	ui->m_zoom_step_sb->setValue(DiagramView::zoomStep());
 	ui->m_terminal_conductor_color->setChecked(Terminal::takesConductorColor());
@@ -437,6 +445,8 @@ void GeneralConfigurationPage::applyConf()
 	settings.setValue("diagrameditor/highlight-integrated-elements", ui->m_highlight_integrated_elements->isChecked());
 	DiagramView::setSelectionRectangle(static_cast<DiagramView::SelectionRectangle>(
 		ui->m_selection_rectangle_cb->currentIndex()));
+	ElementScene::setLikeFolio(ui->m_editor_like_folio_cb->isChecked());
+	QGIUtility::setSelectionFrameRadius(ui->m_selection_frame_radius_sb->value());
 	settings.setValue("diagrameditor/zoom-out-beyond-of-folio", ui->m_zoom_out_beyond_folio->isChecked());
 	DiagramView::setZoomStep(ui->m_zoom_step_sb->value());
 	settings.setValue("diagrameditor/conductor_properties_panel", ui->m_conductor_properties_panel->isChecked());
@@ -491,6 +501,7 @@ void GeneralConfigurationPage::applyConf()
 	settings.setValue(TextGrid::settings_key, ui->DiagramEditor_textGrid_cb->currentData());
 	settings.setValue("diagrameditor/key_Xgrid", ui->DiagramEditor_xKeyGrid_sb->value());
 	settings.setValue("diagrameditor/key_Ygrid", ui->DiagramEditor_yKeyGrid_sb->value());
+	settings.setValue("diagrameditor/key_follows_grid", ui->m_key_follows_grid_cb->isChecked());
 	settings.setValue("diagrameditor/key_fine_Xgrid", ui->DiagramEditor_xKeyGridFine_sb->value());
 	settings.setValue("diagrameditor/key_fine_Ygrid", ui->DiagramEditor_yKeyGridFine_sb->value());
 	settings.setValue("diagrameditor/grid_pointsize_min", ui->DiagramEditor_Grid_PointSize_min_sb->value());

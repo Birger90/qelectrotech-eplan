@@ -68,6 +68,8 @@ class EplanPartImporter
 		QString errorString() const { return m_error; }
 
 	private:
+		bool finish();
+
 		QStringList m_written;
 		QStringList m_messages;
 		QString m_error;

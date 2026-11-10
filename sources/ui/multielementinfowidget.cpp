@@ -17,16 +17,16 @@
 */
 #include "multielementinfowidget.h"
 
-#include "../dataBase/projectdatabase.h"
-#include "../diagram.h"
-#include "../qet.h"
-#include "../qeticons.h"
-#include "../qetgraphicsitem/dynamicelementtextitem.h"
-#include "../qetgraphicsitem/element.h"
-#include "../qetgraphicsitem/elementtextitemgroup.h"
-#include "../qetinformation.h"
-#include "../qetproject.h"
-#include "../undocommand/changeelementinformationcommand.h"
+#include <dataBase/projectdatabase.h>
+#include <diagram.h>
+#include <qet.h>
+#include <qeticons.h>
+#include <qetgraphicsitem/dynamicelementtextitem.h>
+#include <qetgraphicsitem/element.h>
+#include <qetgraphicsitem/elementtextitemgroup.h>
+#include <qetinformation.h>
+#include <qetproject.h>
+#include <undocommand/changeelementinformationcommand.h>
 
 #include <QCheckBox>
 #include <QCompleter>
@@ -286,8 +286,6 @@ QUndoCommand *MultiElementInfoWidget::associatedUndo() const
 						continue;
 					}
 					txt = row->edit->text();
-					txt.remove(QStringLiteral("\r"));
-					txt.remove(QStringLiteral("\n"));
 					if (txt.isEmpty()) {
 						new_info.remove(row->key);
 					} else {

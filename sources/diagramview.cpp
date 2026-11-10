@@ -42,6 +42,7 @@
 #include "qetgraphicsitem/conductortextitem.h"
 #include "qetgraphicsitem/diagramimageitem.h"
 #include "qetgraphicsitem/independenttextitem.h"
+#include "qetgraphicsitem/elementtextitemgroup.h"
 #include "qeticons.h"
 #include "QetGraphicsItemModeler/qetgraphicshandleritem.h"
 #include "qetpalette.h"
@@ -50,6 +51,7 @@
 #include "titleblock/integrationmovetemplateshandler.h"
 #include "PropertiesEditor/propertieseditordialog.h"
 #include "ui/diagrampropertiesdialog.h"
+#include "ui/duplicateoffsetdialog.h"
 #include "ui/multielementinfowidget.h"
 #include "ui/multipastedialog.h"
 #include "undocommand/changeelementlocationcommand.h"
@@ -184,13 +186,24 @@ DiagramView::DiagramView(Diagram *diagram, QWidget *parent) :
 			m_context_toolbar->hide();
 		}
 	});
+	connect(m_diagram, &QGraphicsScene::selectionChanged,
+			this, &DiagramView::copySelectionChanged);
 
 	connect(m_diagram, &Diagram::showDiagram, this, &DiagramView::showDiagram);
 		//The diagram leaves group completion alone while a rubber band is
 		//dragged; finish it when the band is released (null rect).
 	connect(this, &QGraphicsView::rubberBandChanged, this, [this](QRect rect) {
 		if (rect.isNull()) {
+			m_diagram->filterSelection();
 			m_diagram->completeGroupSelection();
+		}
+	});
+		//What a selection rectangle catches goes through the selection
+		//filter as the rectangle grows, so what is left out never shows
+		//selected
+	connect(m_diagram, &QGraphicsScene::selectionChanged, this, [this] {
+		if (!rubberBandRect().isNull()) {
+			m_diagram->filterSelection();
 		}
 	});
 	connect(m_diagram, &QGraphicsScene::sceneRectChanged, this, &DiagramView::adjustSceneRect);
@@ -903,15 +916,86 @@ void DiagramView::pasteHere()
 */
 void DiagramView::duplicate(const QPoint &stepOffset)
 {
+	QSettings settings;
+	const int x_grid = FolioGrid::step(settings.value(FolioGrid::x_key), Diagram::xGrid);
+	const int y_grid = FolioGrid::step(settings.value(FolioGrid::y_key), Diagram::yGrid);
+	duplicateBy(QPointF(stepOffset.x() * x_grid, stepOffset.y() * y_grid), false);
+}
+
+/**
+	@brief DiagramView::duplicateRepeatingMove
+	Duplicate with the offset learned from the moves of the copies, as the
+	duplicate of a drawing program does (the setting
+	DuplicateOffsetDialog::savedRepeatsMove(); the spacing set in the
+	dialog is then not used). The first copy lands 4 grid steps right and
+	down; once the copy just made is moved, with the mouse or the arrow
+	keys, how far it then lies from its source is the offset of every
+	next copy, until another copy is moved. Not moved, the copies go on
+	at the same offset.
+*/
+void DiagramView::duplicateRepeatingMove()
+{
+	learnCopyMove();
+	QPointF offset;
+	if (!DuplicateOffsetDialog::learnedOffset(&offset)) {
+		QSettings settings;
+		offset = QPointF(4 * FolioGrid::step(settings.value(FolioGrid::x_key), Diagram::xGrid),
+						 4 * FolioGrid::step(settings.value(FolioGrid::y_key), Diagram::yGrid));
+	}
+	duplicateBy(offset, true);
+}
+
+/**
+	@brief DiagramView::learnCopyMove
+	If the copy the last duplicate made has been moved since it landed,
+	and does not stand on its source, keep how far it lies from its
+	source as the offset of the next copies.
+*/
+void DiagramView::learnCopyMove()
+{
+	if (!m_last_copy_learns || !m_last_copy_item
+		|| m_last_copy_item->scene() != m_diagram) return;
+	const QPointF pos = m_last_copy_item->pos();
+	if (pos == m_last_copy_landed) return;
+	const QPointF moved = pos - m_last_copy_source;
+	if (moved.isNull()) return;
+	DuplicateOffsetDialog::saveLearnedOffset(moved);
+	m_last_copy_landed = pos;
+}
+
+/**
+	@brief DiagramView::copySelectionChanged
+	Once the selection is no longer the copy the last duplicate made, the
+	move it was given is learned (learnCopyMove()) and the copy forgotten:
+	moving it later, or anything else, teaches nothing.
+*/
+void DiagramView::copySelectionChanged()
+{
+	if (!m_last_copy_item) return;
+	const QList<QGraphicsItem *> selection = m_diagram->selectedItems();
+	const QSet<QGraphicsItem *> selected(selection.cbegin(), selection.cend());
+	const QSet<QGraphicsItem *> copy(m_last_copy.cbegin(), m_last_copy.cend());
+	if (selected == copy) return;
+	learnCopyMove();
+	m_last_copy.clear();
+	m_last_copy_item.clear();
+}
+
+/**
+	@brief DiagramView::duplicateBy
+	The duplicate itself, @p offset in scene units. The copy, as it stands
+	selected afterwards, is remembered for duplicateRepeatingMove(); if
+	@p learns, the move it is given is learned.
+*/
+void DiagramView::duplicateBy(const QPointF &offset, bool learns)
+{
+	m_last_copy.clear();
+	m_last_copy_item.clear();
+
 	if (!isInteractive() || m_diagram->isReadOnly()) return;
 
 	const QList<QGraphicsItem *> selection = m_diagram->selectedItems();
 	if (selection.isEmpty()) return;
-
-	QSettings settings;
-	const int x_grid = FolioGrid::step(settings.value(FolioGrid::x_key), Diagram::xGrid);
-	const int y_grid = FolioGrid::step(settings.value(FolioGrid::y_key), Diagram::yGrid);
-	const QPointF offset(stepOffset.x() * x_grid, stepOffset.y() * y_grid);
 
 	// Mirrors copy(), but does not touch the system clipboard: Ctrl+D
 	// should not clobber whatever the user last copied with Ctrl+C.
@@ -932,18 +1016,33 @@ void DiagramView::duplicate(const QPoint &stepOffset)
 					   | DiagramContent::Images | DiagramContent::Shapes
 					   | DiagramContent::Tables | DiagramContent::TerminalStrip
 					   | DiagramContent::Dimensions;
-	for (QGraphicsItem *item : pasted.items(movable))
+		//Still on its source here: where the source stands
+	QGraphicsObject *moving = nullptr;
+	QPointF source;
+	const auto follow = [&moving, &source](QGraphicsItem *item) {
+		if (!moving && item->toGraphicsObject()) {
+			moving = item->toGraphicsObject();
+			source = moving->pos();
+		}
+	};
+	for (QGraphicsItem *item : pasted.items(movable)) {
+		follow(item);
 		item->setPos(item->pos() + offset);
+	}
 		//The new line is stamped beside the original like everything
 		//else -- and only after that, because where each colour label
 		//ends up decides which wire it is going to take
-	for (CablePart *part : std::as_const(cable_pasted))
-		if (part) part->setPos(part->pos() + offset);
+	for (CablePart *part : std::as_const(cable_pasted)) {
+		if (!part) continue;
+		follow(part);
+		part->setPos(part->pos() + offset);
+	}
 		//A bridge line goes along the same way: moving the line is
 		//moving the line, however the moving is done
 	for (Bridge *bridge : std::as_const(pasted_bridges)) {
 		for (BridgePart *part : BridgePart::allParts()) {
 			if (part && part->bridge() == bridge) {
+				follow(part);
 				part->setPos(part->pos() + offset);
 			}
 		}
@@ -988,6 +1087,17 @@ if (command) m_diagram->undoStack().push(command);
 		//and the cable fields written out once more.
 	CableCopy::repoint(wired);
 	adjustSceneRect();
+
+		//The copy, as it now stands selected, for the next
+		//duplicateRepeatingMove(): set last, so that the selection
+		//changes above do not take it for a new selection
+	if (command && moving) {
+		m_last_copy = m_diagram->selectedItems();
+		m_last_copy_item = moving;
+		m_last_copy_source = source;
+		m_last_copy_landed = moving->pos();
+		m_last_copy_learns = learns;
+	}
 }
 
 namespace {
@@ -1029,13 +1139,34 @@ void DiagramView::mousePressEvent(QMouseEvent *original)
 	}
 
 		//A press on a symbol drags it from here on: the crosshair goes to
-		//the terminal of it nearest the mouse. Not a press on one of its
+		//its insertion point, or to the terminal pressed by. Not a press on one of its
 		//terminals, which draws a wire, nor on one of its texts, which
 		//drags the text: the symbol stays where it is then
 	if (e->button() == Qt::LeftButton && !m_press_places && itemAt(e->pos())) {
 		m_press_places = true;
 		QGraphicsItem *pressed = itemAt(e->pos());
 		m_dragged_element = pressed->type() == Element::Type ? static_cast<Element *>(pressed) : nullptr;
+			//Pressed near one of its terminals: that one is the reference
+		m_reference_terminal = nullptr;
+		Element *symbol = m_dragged_element;
+		if (!symbol && pressed->type() == Terminal::Type)
+			symbol = static_cast<Terminal *>(pressed)->parentElement();
+		if (symbol) {
+				//Close to it (beside its own area, where a press draws a
+				//wire), whatever the zoom
+			constexpr qreal reach = 12;
+			const QPointF at = mapToScene(e->pos());
+			qreal best = reach + 1;
+			for (Terminal *t : symbol->terminals()) {
+				const qreal d = QLineF(t->dockConductor(), at).length();
+				if (d <= reach && d < best) {
+					best = d;
+					m_reference_terminal = t;
+				}
+			}
+			if (m_reference_terminal)
+				viewport()->update();
+		}
 		moveCrosshair(e->pos());
 	}
 
@@ -1220,11 +1351,17 @@ void DiagramView::mouseMoveEvent(QMouseEvent *original)
 		m_press_places = false;
 		m_dragged_element = nullptr;
 	}
-	moveCrosshair(e->pos());
+		//Qt repeats the last mouse move when the folio changes under a
+		//still mouse: after the arrow keys that must not take the
+		//crosshair back from the moved selection to the mouse
+	if (m_crosshair_held_at && *m_crosshair_held_at != QCursor::pos())
+		m_crosshair_held_at.reset();
+	if (!m_crosshair_held_at)
+		moveCrosshair(e->pos());
 		//The symbol moves after the crosshair did: put the crosshair on
 		//its terminal again once it stands where it goes
 	const auto follow_symbol = qScopeGuard([this, e] {
-		if (m_dragged_element)
+		if (m_dragged_element || (m_diagram && m_diagram->pendingElement()))
 			moveCrosshair(e->pos());
 	});
 	if (m_event_interface && m_event_interface->mouseMoveEvent(e)) {
@@ -1306,6 +1443,7 @@ void DiagramView::mouseMoveEvent(QMouseEvent *original)
 		QPainterPath selection_area;
 		selection_area.addPolygon(m_free_rubberband);
 		m_diagram->setSelectionArea(selection_area);
+		m_diagram->filterSelection();
 	}
 
 	else QGraphicsView::mouseMoveEvent(e);
@@ -1474,6 +1612,15 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *original)
 			m_press_places = false;
 			m_dragged_element = nullptr;
 			moveCrosshair(e->pos());
+				//Clicked by one of its terminals: the crosshair stays on
+				//it, ready for the arrow keys, until the mouse moves on
+			if (Terminal *reference = referenceTerminal(); reference && crosshairShown()) {
+				viewport()->update(crosshairArea(m_crosshair_pos));
+				m_crosshair_pos = reference->dockConductor();
+				m_crosshair_visible = true;
+				m_crosshair_held_at = QCursor::pos();
+				viewport()->update(crosshairArea(m_crosshair_pos));
+			}
 		}
 	});
 	if (m_event_interface && m_event_interface->mouseReleaseEvent(e)) return;
@@ -1832,29 +1979,19 @@ void DiagramView::keyPressEvent(QKeyEvent *e)
 			current_project->changeTabDown();
 			return;
 		case Qt::Key_Home:
-			if (dc.selectedTexts().isEmpty()) {
-				if (
-					qgraphicsitem_cast<IndependentTextItem *>(m_diagram->focusItem()) ||
-					qgraphicsitem_cast<ConductorTextItem *>(m_diagram->focusItem()) ||
-					qgraphicsitem_cast<DiagramTextItem *>(m_diagram->focusItem())
-					)
-					break;
-				current_project->changeFirstTab();
-				return;
-			}
-			else break;
 		case Qt::Key_End:
-			if (dc.selectedTexts().isEmpty()) {
-				if (
-					qgraphicsitem_cast<IndependentTextItem *>(m_diagram->focusItem()) ||
-					qgraphicsitem_cast<ConductorTextItem *>(m_diagram->focusItem()) ||
-					qgraphicsitem_cast<DiagramTextItem *>(m_diagram->focusItem())
-					)
-					break;
-				current_project->changeLastTab();
+				//A text being edited on the sheet -- free, wire or symbol
+				//text -- takes Home and End to move its cursor (#347).
+				//qgraphicsitem_cast matches one exact type only, so a
+				//symbol's text used to fall through to changing sheet.
+			if (dc.selectedTexts().isEmpty() && !textIsBeingEdited()) {
+				if (e->key() == Qt::Key_Home)
+					current_project->changeFirstTab();
+				else
+					current_project->changeLastTab();
 				return;
 			}
-			else break;
+			break;
 		case Qt::Key_ZoomOut:
 			zoomBy(-1);
 			return;
@@ -2452,19 +2589,17 @@ void DiagramView::moveCrosshair(const QPoint &viewport_pos)
 	m_caught_handle = handle;
 	QPointF pos = handle ? handle->scenePos()
 			     : Diagram::snapToGrid(mapToScene(viewport_pos));
-		//Dragging a symbol: on its terminal nearest the mouse, where that
-		//terminal lands, not on the mouse, which holds the symbol
-		//somewhere beside it
-	if (m_dragged_element && m_press_places && !handle) {
-		const QPointF mouse = mapToScene(viewport_pos);
-		qreal nearest = -1;
-		for (const Terminal *t : m_dragged_element->terminals()) {
-			const qreal d = QLineF(mouse, t->dockConductor()).length();
-			if (nearest < 0 || d < nearest) {
-				nearest = d;
-				pos = t->dockConductor();
-			}
-		}
+		//Dragging a symbol, or placing a new one: on its insertion point
+		//(its origin), the one point that lands on the grid, the same
+		//wherever the symbol was grabbed
+	Element *moving = m_dragged_element && m_press_places ? m_dragged_element.data()
+			: m_diagram ? m_diagram->pendingElement() : nullptr;
+	if (moving && !handle) {
+			//The press selects the symbol only after this: the terminal
+			//pressed on counts whether or not it is selected yet
+		Terminal *reference = m_reference_terminal;
+		pos = reference && reference->parentElement() == moving ? reference->dockConductor()
+									  : moving->scenePos();
 	}
 	if (m_crosshair_visible && pos == m_crosshair_pos)
 		return;
@@ -2537,11 +2672,16 @@ QMouseEvent *DiagramView::onCaughtHandle(QMouseEvent *e, std::unique_ptr<QMouseE
 
 /**
 	@brief DiagramView::crosshairOnMovedSelection
-	After the arrow keys moved the selection, the crosshair stands on the
-	point that moved: of the selected items, the one nearest where the
-	crosshair was -- a symbol's terminal, or else the item's own origin --
-	so that a symbol can be brought in line with another one by eye, with
-	the mouse left where it is. The next mouse move takes it back.
+	After the arrow keys moved the selection, the crosshair stands on a
+	point that moved, so that it can be brought in line with another item
+	by eye, with the mouse left where it is. The next mouse move takes it
+	back.
+	The point is on one item, the same from one key press to the next:
+	the leftmost selected symbol, or the leftmost of the other items when
+	no symbol is selected. On a symbol it is the terminal nearest where
+	the crosshair was; on a text, its middle, which is seen also on a text
+	that is not selected and so shows no frame; on anything else, its
+	origin.
 */
 void DiagramView::crosshairOnMovedSelection()
 {
@@ -2550,20 +2690,41 @@ void DiagramView::crosshairOnMovedSelection()
 	DiagramContent dc(m_diagram);
 	if (dc.hasTextEditing())
 		return;
-	QList<QPointF> points;
+	QGraphicsItem *reference = nullptr;
+	bool reference_is_symbol = false;
 	for (QGraphicsItem *item : m_diagram->selectedItems()) {
-		if (item->type() == Element::Type) {
-			const auto terminals = static_cast<Element *>(item)->terminals();
-			for (const Terminal *t : terminals)
-				points << t->dockConductor();
-			if (!terminals.isEmpty())
-				continue;
+		if (item->type() == Conductor::Type)
+			continue;
+		const bool symbol = item->type() == Element::Type;
+		if (reference && reference_is_symbol && !symbol)
+			continue;
+		const QRectF rect = item->sceneBoundingRect();
+		const QRectF reference_rect = reference ? reference->sceneBoundingRect() : QRectF();
+		if (!reference || (symbol && !reference_is_symbol)
+		    || rect.left() < reference_rect.left()
+		    || (rect.left() == reference_rect.left() && rect.top() < reference_rect.top())) {
+			reference = item;
+			reference_is_symbol = symbol;
 		}
-		if (item->type() != Conductor::Type)
-			points << item->scenePos();
 	}
-	if (points.isEmpty())
+	if (!reference)
 		return;
+	QList<QPointF> points;
+	if (reference_is_symbol) {
+			//The terminal pressed on, else its insertion point
+		Terminal *terminal = referenceTerminal();
+		if (terminal && terminal->parentElement() == reference)
+			points << terminal->dockConductor();
+		else
+			points << reference->scenePos();
+	}
+	if (points.isEmpty()) {
+		if (dynamic_cast<DiagramTextItem *>(reference)
+		    || reference->type() == ElementTextItemGroup::Type)
+			points << reference->sceneBoundingRect().center();
+		else
+			points << reference->scenePos();
+	}
 	const QPointF from = m_crosshair_visible ? m_crosshair_pos
 			: mapToScene(viewport()->rect().center());
 	QPointF pos = points.first();
@@ -2580,6 +2741,7 @@ void DiagramView::crosshairOnMovedSelection()
 	m_caught_handle = nullptr;
 	m_crosshair_pos = pos;
 	m_crosshair_visible = true;
+	m_crosshair_held_at = QCursor::pos();
 	viewport()->update(crosshairArea(m_crosshair_pos));
 }
 
@@ -2606,6 +2768,18 @@ void DiagramView::hideCrosshair()
 void DiagramView::drawForeground(QPainter *painter, const QRectF &rect)
 {
 	PaletteGraphicsView::drawForeground(painter, rect);
+		//The reference terminal of the selected symbol: a ring around it
+	if (Terminal *terminal = referenceTerminal()) {
+		QPainter *rp = scenePainter(painter);
+		rp->save();
+		QPen pen(QApplication::palette().color(QPalette::Highlight), 2);
+		pen.setCosmetic(true);
+		rp->setPen(pen);
+		rp->setBrush(Qt::NoBrush);
+		rp->setRenderHint(QPainter::Antialiasing, true);
+		rp->drawEllipse(terminal->dockConductor(), 4.0, 4.0);
+		rp->restore();
+	}
 	if (!m_crosshair_visible || !crosshairShown() || !m_diagram)
 		return;
 
@@ -2893,6 +3067,16 @@ bool DiagramView::selectedItemHasFocus()
 }
 
 /**
+	@return true if the item with the focus is a text being edited in
+	place, whatever kind of text it is.
+*/
+bool DiagramView::textIsBeingEdited() const
+{
+	const auto *text = dynamic_cast<QGraphicsTextItem *>(m_diagram -> focusItem());
+	return(text && (text -> textInteractionFlags() & Qt::TextEditable));
+}
+
+/**
 	@brief DiagramView::editSelection
 	Edit the selected item if he can be edited and if only  one item is selected
 */
@@ -2996,6 +3180,8 @@ QList<QAction *> DiagramView::contextMenuActions() const
 			list << m_generate_cabinet_thumbnail;
 			list << m_change_type_menu->menuAction();
 			list << qde->m_conductor_reset;
+			list << qde->m_select_same_symbols;
+			list << qde->m_show_as_dot;
 			list << m_separators.at(1);
 			list << qde->m_selection_actions_group.actions();
 			list << qde->m_align_menu->menuAction();
@@ -3147,7 +3333,7 @@ void DiagramView::contextMenuEvent(QContextMenuEvent *e)
 		if(e->isAccepted())
 		return;
 
-		if (auto qgi = m_diagram->itemAt(mapToScene(menu_pos), transform()))
+		if (auto qgi = m_diagram->pickAt(mapToScene(menu_pos), transform()))
 		{
 			if (!qgi->isSelected()) {
 				m_diagram->clearSelection();
@@ -3158,7 +3344,7 @@ void DiagramView::contextMenuEvent(QContextMenuEvent *e)
 				// is deselected and so delete all handlers, in this case,
 				// qgi become a dangling pointer.
 				// we need to call again itemAt.
-			if (auto item_ = m_diagram->itemAt(mapToScene(menu_pos), transform())) {
+			if (auto item_ = m_diagram->pickAt(mapToScene(menu_pos), transform())) {
 				item_->setSelected(true);
 			}
 		}
@@ -3743,4 +3929,19 @@ void DiagramView::mouseDoubleClickEvent(QMouseEvent *e)
 		return;
 	}
 	QGraphicsView::mouseDoubleClickEvent(e);
+}
+
+/**
+	@brief DiagramView::referenceTerminal
+	@return the terminal pressed on of a symbol that is still selected,
+	the point the crosshair stands on while it is moved; else nullptr
+*/
+Terminal *DiagramView::referenceTerminal() const
+{
+	if (!m_reference_terminal || !m_diagram)
+		return nullptr;
+	Element *symbol = m_reference_terminal->parentElement();
+	if (!symbol || !symbol->isSelected() || symbol->scene() != m_diagram)
+		return nullptr;
+	return m_reference_terminal;
 }

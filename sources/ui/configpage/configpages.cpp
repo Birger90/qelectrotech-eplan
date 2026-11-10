@@ -18,22 +18,22 @@
 
 #include "configpages.h"
 
-#include "../../NameList/nameslist.h"
-#include "../../bordertitleblock.h"
-#include "../../exportpropertieswidget.h"
-#include "../../properties/reportproperties.h"
-#include "../../qetapp.h"
-#include "../../qeticons.h"
-#include "../../qetproject.h"
-#include "../borderpropertieswidget.h"
-#include "../conductorpropertieswidget.h"
-#include "../potentialtypeswidget.h"
-#include "../reportpropertiewidget.h"
-#include "../titleblockpropertieswidget.h"
-#include "../xrefpropertieswidget.h"
+#include <NameList/nameslist.h>
+#include <bordertitleblock.h>
+#include <exportpropertieswidget.h>
+#include <properties/reportproperties.h>
+#include <qetapp.h>
+#include <qeticons.h>
+#include <qetproject.h>
+#include <ui/borderpropertieswidget.h>
+#include <ui/conductorpropertieswidget.h>
+#include <ui/potentialtypeswidget.h>
+#include <ui/reportpropertiewidget.h>
+#include <ui/titleblockpropertieswidget.h>
+#include <ui/xrefpropertieswidget.h>
 #include "guidespropertieswidget.h"
-#include "../autoNum/numerotationcontext.h"
-#include "../autoNum/ui/selectautonumw.h"
+#include <autoNum/numerotationcontext.h>
+#include <autoNum/ui/selectautonumw.h>
 #include <QFont>
 #include <QFontDialog>
 #include <QSizePolicy>
@@ -187,7 +187,8 @@ NewDiagramPage::NewDiagramPage(QETProject *project,
 
 	connect(ipw, &TitleBlockPropertiesWidget::openAutoNumFolioEditor, this, &NewDiagramPage::changeToAutoFolioTab);
 	bpw -> setTitleBlockSize(ipw -> currentTitleBlockHeight(),
-							 ipw -> currentTitleBlockEdge());
+							 ipw -> currentTitleBlockEdge(),
+							 ipw -> currentTitleBlockAlign());
 	connect(ipw, &TitleBlockPropertiesWidget::titleBlockSizeChanged,
 			bpw, &BorderPropertiesWidget::setTitleBlockSize);
 

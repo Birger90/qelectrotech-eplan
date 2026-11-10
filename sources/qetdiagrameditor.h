@@ -55,6 +55,7 @@ class ElementPickerPopup;
 class CommandSearchPopup;
 class AutoNumberingDockWidget;
 class DeviceNavigatorDockWidget;
+class AssistantDock;
 class TerminalNumberingDialog;
 
 class KAutoSaveFile;
@@ -121,6 +122,7 @@ class QETDiagramEditor : public QETMainWindow
 		void setUpSelectionPropertiesEditor();
 		void setUpAutonumberingWidget();
 		void setUpDeviceNavigatorDock();
+		void setUpAssistantDock();
 		void setUpActions       ();
 		void setUpToolBar       ();
 		void setUpMenu          ();
@@ -174,6 +176,7 @@ class QETDiagramEditor : public QETMainWindow
 		void slot_updateUndoStack();
 		void slot_updateModeActions();
 		void slot_updateComplexActions();
+		void showSelectedAsDot(bool dot);
 		void slot_updatePasteAction();
 		void pasteElementInformations();
 		void updatePasteElementInfoAction();
@@ -244,6 +247,7 @@ class QETDiagramEditor : public QETMainWindow
 	private slots:
 		void updateTextGridButton();
 		void updateGridStepButton();
+		void updateSelectionFilterButton();
 		void updateShownKinds();
 		void selectionChanged();
 
@@ -259,7 +263,9 @@ class QETDiagramEditor : public QETMainWindow
 		*m_apply_text_format = nullptr, ///< Apply label/text formatting template
 		*m_place_texts = nullptr,	///< Place the texts of the selected symbols at one of nine points
 		*m_text_destination = nullptr,	///< Choose the folio a selected free text leads to
-		*m_text_clearance = nullptr;	///< Move texts off the wires they sit on
+		*m_text_clearance = nullptr,	///< Move texts off the wires they sit on
+		*m_show_as_dot = nullptr,	///< Draw the selected T-junctions as a dot
+		*m_select_same_symbols = nullptr;	///< Select the symbols of the same kind as a selected one
 		
 		QActionGroup
 		m_row_column_actions_group, /// Action related to add/remove rows/column in diagram
@@ -282,6 +288,7 @@ class QETDiagramEditor : public QETMainWindow
 		m_file_actions_group;     ///Actions related to file (open, close, save...)
 		
 		QAction* m_find_duplicate_labels = nullptr;
+		QAction* m_check_potentials = nullptr;
 		QAction* m_project_languages = nullptr;
 
 		QAction
@@ -373,6 +380,8 @@ class QETDiagramEditor : public QETMainWindow
 		QAction *m_grid_snap = nullptr;			///< Snap to the grid, on or off
 		QMenu *m_grid_step_menu = nullptr;		///< Fine, medium or coarse grid
 		QToolButton *m_grid_step_button = nullptr;
+		QMenu *m_selection_filter_menu = nullptr;	///< What a click, a selection rectangle and Select All pick
+		QToolButton *m_selection_filter_button = nullptr;	///< Status bar: the selection filter, with the same menu
 		QToolButton *m_grid_status_button = nullptr;	///< Status bar: the grid step, with the same menu
 		QToolButton *m_snap_status_button = nullptr;	///< Status bar: snapping on or off, a magnet
 		QToolButton *m_text_grid_button = nullptr;
@@ -442,6 +451,7 @@ class QETDiagramEditor : public QETMainWindow
 		QUndoGroup undo_group;
 		AutoNumberingDockWidget *m_autonumbering_dock;
 		DeviceNavigatorDockWidget *m_device_navigator_dock = nullptr;
+		AssistantDock *m_assistant_dock = nullptr;
 		int activeSubWindowIndex;
 		SearchAndReplaceWidget m_search_and_replace_widget;
 };

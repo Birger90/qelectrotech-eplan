@@ -17,32 +17,32 @@
 */
 #include "element.h"
 
-#include "../bridge/bridgemanager.h"
-#include "../qetapp.h"
-#include "../qetproject.h"
-#include "../dataBase/projectdatabase.h"
-#include "../ElementsCollection/terminaluuids.h"
-#include "../PropertiesEditor/propertieseditordialog.h"
-#include "../autoNum/assignvariables.h"
-#include "../autoNum/elementautonumschemecommand.h"
-#include "../autoNum/numerotationcontextcommands.h"
-#include "../diagram.h"
-#include "../diagramcommands.h"
-#include "../diagramcontext.h"
-#include "../diagramposition.h"
-#include "../elementprovider.h"
-#include "../factory/elementpicturefactory.h"
-#include "../properties/terminaldata.h"
-#include "../properties/xrefproperties.h"
-#include "../qetinformation.h"
-#include "../qetgraphicsitem/conductor.h"
-#include "../qetgraphicsitem/terminal.h"
-#include "../ui/elementpropertieswidget.h"
-#include "../undocommand/changeelementinformationcommand.h"
-#include "../undocommand/setautonumcontextcommand.h"
+#include <bridge/bridgemanager.h>
+#include <qetapp.h>
+#include <qetproject.h>
+#include <dataBase/projectdatabase.h>
+#include <ElementsCollection/terminaluuids.h>
+#include <PropertiesEditor/propertieseditordialog.h>
+#include <autoNum/assignvariables.h>
+#include <autoNum/elementautonumschemecommand.h>
+#include <autoNum/numerotationcontextcommands.h>
+#include <diagram.h>
+#include <diagramcommands.h>
+#include <diagramcontext.h>
+#include <diagramposition.h>
+#include <elementprovider.h>
+#include <factory/elementpicturefactory.h>
+#include <properties/terminaldata.h>
+#include <properties/xrefproperties.h>
+#include <qetinformation.h>
+#include <qetgraphicsitem/conductor.h>
+#include <qetgraphicsitem/terminal.h>
+#include <ui/elementpropertieswidget.h>
+#include <undocommand/changeelementinformationcommand.h>
+#include <undocommand/setautonumcontextcommand.h>
 #include "crossrefitem.h"
 #include "terminalelement.h"
-#include "../TerminalStrip/terminalstrip.h"
+#include <TerminalStrip/terminalstrip.h>
 #include "dynamicelementtextitem.h"
 #include "elementtextitemgroup.h"
 #include "independenttextitem.h"
@@ -57,7 +57,7 @@
 #include <QTextDocument>
 #include <QTimer>
 #include <QPointer>
-#include "../diagramview.h"
+#include <diagramview.h>
 
 static const QString plcTerminalKeys[] = {
 	QETInformation::ELMT_PLC_T1,
@@ -65,9 +65,9 @@ static const QString plcTerminalKeys[] = {
 	QETInformation::ELMT_PLC_T3,
 	QETInformation::ELMT_PLC_T4
 };
-#include "../qetxml.h"
-#include "../positionorder.h"
-#include "../qetversion.h"
+#include <qetxml.h>
+#include <positionorder.h>
+#include <qetversion.h>
 #include "qgraphicsitemutility.h"
 #include <QDebug>
 
@@ -739,6 +739,13 @@ void Element::paint(
 	QBrush brush;
 	painter->setPen(pen);
 	painter->setBrush(brush);
+	if (const std::optional<QPointF> dot = m_shown_as_dot ? dotPoint() : std::nullopt) {
+		drawAsDot(painter, *dot);
+		painter->restore();
+		if (isSelected() || m_mouse_over)
+			QGIUtility::drawBoundingRectSelection(this, painter);
+		return;
+	}
 	const bool readable = !m_readable_transform.isIdentity();
 	const QPicture &picture = readable ? m_readable_picture : m_picture;
 	const QPicture &low_zoom_picture = readable ? m_readable_low_zoom_picture
@@ -773,6 +780,76 @@ void Element::paint(
 /**
 	@return Le rectangle delimitant le contour de l'element
 */
+/**
+	@brief Element::dotPoint
+	@return where the lines of a T-junction meet, in the element's
+	coordinates: a symbol with three terminals, one of them facing the
+	line between the other two. Nothing for any other symbol.
+*/
+std::optional<QPointF> Element::dotPoint() const
+{
+	if (m_terminals.size() != 3)
+		return std::nullopt;
+	QList<QPointF> points;
+	for (const Terminal *terminal : m_terminals)
+		points << mapFromScene(terminal->dockConductor());
+		//The line runs between the two terminals facing away from each
+		//other, the branch from the third one meets it in between
+	int a = -1, b = -1, c = -1;
+	for (int i = 0; i < 3 && a < 0; ++i) {
+		const int j = (i + 1) % 3;
+		if (Qet::isOpposed(m_terminals.at(i)->orientation(), m_terminals.at(j)->orientation())) {
+			a = i; b = j; c = (i + 2) % 3;
+		}
+	}
+	if (a < 0)
+		return std::nullopt;
+	const QPointF along = points.at(b) - points.at(a);
+	const qreal length2 = QPointF::dotProduct(along, along);
+	if (length2 <= 0)
+		return std::nullopt;
+	const qreal t = QPointF::dotProduct(points.at(c) - points.at(a), along) / length2;
+	if (t <= 0.01 || t >= 0.99)
+		return std::nullopt;
+	const QPointF meet = points.at(a) + t * along;
+	if (QLineF(meet, points.at(c)).length() < 1)
+		return std::nullopt;
+	return meet;
+}
+
+/**
+	@brief Element::setShownAsDot
+	Draw this T-junction as its three lines and a dot where they meet, or
+	again as its own drawing. Kept with the project.
+*/
+void Element::setShownAsDot(bool dot)
+{
+	if (m_shown_as_dot == dot)
+		return;
+	m_shown_as_dot = dot;
+	scheduleTextsStore();
+	update();
+}
+
+/**
+	@brief Element::drawAsDot
+	The lines from each terminal to @a meet and a filled dot there, the
+	size of the dot a wire junction gets.
+*/
+void Element::drawAsDot(QPainter *painter, const QPointF &meet) const
+{
+	QPen pen(Qt::black);
+	pen.setWidthF(1);
+	painter->setPen(pen);
+	painter->setRenderHint(QPainter::Antialiasing, false);
+	for (const Terminal *terminal : m_terminals)
+		painter->drawLine(mapFromScene(terminal->dockConductor()), meet);
+	painter->setRenderHint(QPainter::Antialiasing, true);
+	painter->setBrush(Qt::black);
+	painter->setPen(Qt::NoPen);
+	painter->drawEllipse(meet, 2.0, 2.0);
+}
+
 /**
 	@brief Element::drawingRect
 	@return the area its drawing covers, in this symbol's coordinates:
@@ -928,9 +1005,10 @@ void Element::drawHighlight(
 	painter -> setPen(Qt::NoPen);
 	painter -> setBrush(brush);
 	// Le dessin se fait a partir du rectangle delimitant
+	const int radius = QGIUtility::selectionFrameRadius();
 	painter -> drawRoundedRect(boundingRect().adjusted(1, 1, -1, -1),
-				   10,
-				   10);
+				   radius,
+				   radius);
 	painter -> restore();
 }
 
@@ -1542,6 +1620,7 @@ bool Element::fromXml(QDomElement &e,
 
 	QString fl = e.attribute(QStringLiteral("freezeLabel"), QStringLiteral("false"));
 	m_freeze_label = fl == QLatin1String("false") ? false : true;
+	m_shown_as_dot = e.attribute(QStringLiteral("shownAsDot")) == QLatin1String("true");
 
 		//Load Sequential Values
 	if (e.hasAttribute(QStringLiteral("sequ_1"))
@@ -1633,6 +1712,15 @@ bool Element::fromXml(QDomElement &e,
 		}
 	}
 
+		//The potential types set on its terminals (PotentialTypes::Mode::AtSource)
+	m_potential_sources.clear();
+	for (const QDomElement &source : QETXML::subChild(e, QStringLiteral("potentialSources"), QStringLiteral("source"))) {
+		const QUuid terminal(source.attribute(QStringLiteral("terminal")));
+		const QString type = source.attribute(QStringLiteral("type"));
+		if (!terminal.isNull() && !type.isEmpty())
+			m_potential_sources.insert(terminal, type);
+	}
+
 		//Load PLC master data override from diagram XML
 	if (m_data.m_type == ElementData::Master &&
 		m_data.m_master_type == ElementData::PLC)
@@ -1705,6 +1793,9 @@ QDomElement Element::toXml(
 
 		//frozen label
 	element.setAttribute(QStringLiteral("freezeLabel"), m_freeze_label? QStringLiteral("true") : QStringLiteral("false"));
+		//a T-junction drawn as a dot; left out otherwise
+	if (m_shown_as_dot)
+		element.setAttribute(QStringLiteral("shownAsDot"), QStringLiteral("true"));
 
 		// sequential num
 	QDomElement seq = m_autoNum_seq.toXml(document);
@@ -2673,6 +2764,33 @@ void Element::appendDataXml(QDomDocument &document, QDomElement &element) const
 		element.appendChild(properties);
 	}
 
+		//The potential types set on its terminals, in terminal order, then
+		//any whose terminal the definition no longer has, kept as read.
+		//Written only when there is one, so a symbol without saves as before
+	if (!m_potential_sources.isEmpty())
+	{
+		QDomElement sources = document.createElement(QStringLiteral("potentialSources"));
+		QHash<QUuid, QString> left = m_potential_sources;
+		const auto write = [&](const QUuid &terminal, const QString &type) {
+			QDomElement source = document.createElement(QStringLiteral("source"));
+			source.setAttribute(QStringLiteral("terminal"), terminal.toString());
+			source.setAttribute(QStringLiteral("type"), type);
+			sources.appendChild(source);
+		};
+		for (const Terminal *terminal : terminals()) {
+			const QUuid uuid = terminal->stableUuid();
+			const auto found = left.constFind(uuid);
+			if (found == left.constEnd()) continue;
+			write(uuid, found.value());
+			left.remove(uuid);
+		}
+		QList<QUuid> rest = left.keys();
+		std::sort(rest.begin(), rest.end(), [](const QUuid &a, const QUuid &b) {return a.toString() < b.toString();});
+		for (const QUuid &uuid : std::as_const(rest))
+			write(uuid, left.value(uuid));
+		element.appendChild(sources);
+	}
+
 		//Save PLC master data override for elements on diagram
 	if (m_data.m_type == ElementData::Master &&
 		m_data.m_master_type == ElementData::PLC)
@@ -2701,7 +2819,8 @@ void Element::appendDataXml(QDomDocument &document, QDomElement &element) const
 	@brief Element::ownValuesXml
 	@return an <element> made in @p document holding what toXml() writes
 	of this symbol that no other table of the project database holds: its
-	prefix, frozen label, whether it can be moved, and appendDataXml()
+	prefix, frozen label, whether it can be moved, whether it is shown as a
+	dot, and appendDataXml()
 */
 QDomElement Element::ownValuesXml(QDomDocument &document) const
 {
@@ -2709,8 +2828,47 @@ QDomElement Element::ownValuesXml(QDomDocument &document) const
 	element.setAttribute(QStringLiteral("prefix"), m_prefix);
 	element.setAttribute(QStringLiteral("freezeLabel"), m_freeze_label? QStringLiteral("true") : QStringLiteral("false"));
 	element.setAttribute(QStringLiteral("is_movable"), bool(is_movable_));
+	if (m_shown_as_dot)
+		element.setAttribute(QStringLiteral("shownAsDot"), QStringLiteral("true"));
 	appendDataXml(document, element);
 	return element;
+}
+
+/**
+	@brief Element::setPotentialSources
+	Set the potential types of this symbol's terminals, keyed by
+	Terminal::stableUuid(); an empty type name is no type. The project
+	database learns it with the symbol's other values, and a project that
+	takes its types from the sources works them out again.
+*/
+void Element::setPotentialSources(const QHash<QUuid, QString> &sources)
+{
+	QHash<QUuid, QString> clean;
+	for (auto it = sources.constBegin() ; it != sources.constEnd() ; ++it)
+		if (!it.key().isNull() && !it.value().isEmpty())
+			clean.insert(it.key(), it.value());
+	if (clean == m_potential_sources)
+		return;
+	m_potential_sources = clean;
+	scheduleTextsStore();
+	if (diagram() && diagram()->project())
+		diagram()->project()->scheduleDerivedPotentialTypes();
+}
+
+QVariantMap Element::potentialSourcesMap() const
+{
+	QVariantMap map;
+	for (auto it = m_potential_sources.constBegin() ; it != m_potential_sources.constEnd() ; ++it)
+		map.insert(it.key().toString(), it.value());
+	return map;
+}
+
+void Element::setPotentialSourcesMap(const QVariantMap &sources)
+{
+	QHash<QUuid, QString> hash;
+	for (auto it = sources.constBegin() ; it != sources.constEnd() ; ++it)
+		hash.insert(QUuid(it.key()), it.value().toString());
+	setPotentialSources(hash);
 }
 
 /**
@@ -3135,11 +3293,16 @@ void Element::setUpFormula(bool code_letter, QUndoCommand *parent_undo)
 		const QUuid scheme_id = autonum_project->elementAutoNumId(element_currentAutoNum);
 		setFormulaSchemeId(formula.isEmpty() ? QUuid() : scheme_id);
 
+			//A rule which counts per folio counts for the folio the element
+			//is placed on: its own counter, not wherever the project's counter
+			//was left by numbering some other folio.
+		NumerotationContext given = autonum::folioCounters(
+					nc, diagram(), element_currentAutoNum);
+
 			//The number given is the first whose label no other element of
 			//the project carries: a counter set back, or an element which
 			//was given a number by hand, must not make a second element
 			//with the same label. The counter then goes on from there.
-		NumerotationContext given = nc;
 		if (!formula.isEmpty())
 		{
 			const QSet<QString> held = ElementAutoNumSchemeCommand::labelsHeldBesides(
@@ -3174,6 +3337,10 @@ void Element::setUpFormula(bool code_letter, QUndoCommand *parent_undo)
 					   diagram(),
 					   element_currentAutoNum);
 		setSequenceStruct(numbers);
+			//Where this folio's own counter has got to: the numbers it has
+			//handed out, not only the highest it ever handed out, so that a
+			//counter put back by hand stays where the user put it.
+		autonum::storeFolioSequential(diagram(), element_currentAutoNum, numbers);
 
 		NumerotationContext new_context = ncc.next();
 		QETProject *project = diagram()->project();
@@ -3424,6 +3591,10 @@ QString Element::infoForDisplay(const QString &info_name)
 	if (info_name == QETInformation::ELMT_CONDUCTOR_TEXT) {
 		return conductorTextForDisplay();
 	}
+	if (m_data.m_type == ElementData::Terminal
+		&& QETInformation::isTerminalConductorInfo(info_name)) {
+		return conductorInfoForDisplay(info_name);
+	}
 
 	return m_data.m_informations.value(info_name).toString();
 }
@@ -3436,20 +3607,44 @@ QString Element::infoForDisplay(const QString &info_name)
 */
 QString Element::conductorTextForDisplay()
 {
-	if (m_data.m_type != ElementData::Terminal) {
+	return conductorInfoForDisplay(QETInformation::ELMT_CONDUCTOR_TEXT);
+}
+
+/**
+	@brief Element::conductorInfoForDisplay
+	@param info_name : one of QETInformation::terminalConductorInfoKeys()
+	@return the distinct values of the wire property @p info_name reads,
+	on every terminal of this terminal symbol or only on the connection
+	point it names, in the order of its terminals and joined with a
+	space; empty for any other symbol. Display only, nothing is stored.
+*/
+QString Element::conductorInfoForDisplay(const QString &info_name)
+{
+	QString property;
+	int connection = 0;
+	if (m_data.m_type != ElementData::Terminal
+		|| !QETInformation::isTerminalConductorInfo(info_name, &property, &connection)
+		|| connection > m_terminals.size()) {
 		return QString();
 	}
 
-	QStringList texts;
-	for (Terminal *terminal : m_terminals) {
+	const QList<Terminal *> terminals = connection
+			? QList<Terminal *>{m_terminals.at(connection - 1)}
+			: m_terminals;
+
+	QStringList values;
+	for (Terminal *terminal : terminals) {
 		for (Conductor *conductor : terminal->conductors()) {
-			const QString text = conductor->properties().text;
-			if (!text.isEmpty() && !texts.contains(text)) {
-				texts << text;
+			const ConductorProperties p = conductor->properties();
+			const QString value = property == QETInformation::COND_COLOR   ? p.m_wire_color
+								: property == QETInformation::COND_SECTION ? p.m_wire_section
+																			: p.text;
+			if (!value.isEmpty() && !values.contains(value)) {
+				values << value;
 			}
 		}
 	}
-	return texts.join(QLatin1Char(' '));
+	return values.join(QLatin1Char(' '));
 }
 
 /**
@@ -3461,6 +3656,13 @@ void Element::addDisplayValues(DiagramContext &dc)
 	dc.addValue(QETInformation::ELMT_LABEL,            labelForDisplay());
 	dc.addValue(QETInformation::ELMT_TERMINAL_NUMBER, terminalNumberForDisplay());
 	dc.addValue(QETInformation::ELMT_CONDUCTOR_TEXT,  conductorTextForDisplay());
+
+	if (m_data.m_type == ElementData::Terminal) {
+		for (const QString &key
+			 : QETInformation::terminalConductorInfoKeys(m_terminals.size())) {
+			dc.addValue(key, conductorInfoForDisplay(key));
+		}
+	}
 }
 
 /**
@@ -3786,11 +3988,11 @@ void Element::updateConductorTexts()
 {
 	if (m_data.m_type == ElementData::Terminal)
 	{
-			//Only the texts which read the wire number: the others
-			//have nothing to refresh
+			//Only the texts which read the wires: the others have
+			//nothing to refresh
 		for (DynamicElementTextItem *deti : m_dynamic_text_list) {
-			if (deti && (deti->infoName() == QETInformation::ELMT_CONDUCTOR_TEXT
-						 || deti->compositeText().contains(QETInformation::ELMT_CONDUCTOR_TEXT))) {
+			if (deti && (QETInformation::isTerminalConductorInfo(deti->infoName())
+						 || QETInformation::usesTerminalConductorInfo(deti->compositeText()))) {
 				deti->refreshConductorText();
 			}
 		}
@@ -3837,10 +4039,14 @@ void Element::drawPlcTable(QPainter *painter)
 	if (plc_data.ios.isEmpty())
 		return;
 
-	// Use plc_table positions from the .elmt file, or default to (0,0)
-	QList<QPointF> positions = m_plc_table_positions;
+	// The table goes where the .elmt has a plc_table part. A module drawn
+	// as the manufacturer's device (picture, overview) carries the channel
+	// table only for linking its channels and has no such part: nothing is
+	// drawn over it. The element editor adds the part to every PLC module
+	// it makes, so those keep their table.
+	const QList<QPointF> positions = m_plc_table_positions;
 	if (positions.isEmpty())
-		positions.append(QPointF(0, 0));
+		return;
 
 	const int COL_COUNT = 5;
 	const int COL_TYPE      = 0;

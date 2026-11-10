@@ -66,6 +66,19 @@ class LiveServer : public QObject
 		void setAskFirst(bool ask);
 		static QStringList allowedCommands();
 
+			/// The built-in assistant (AssistantDock): a channel of its own,
+			/// with its own token, not written to qet-assistant.json and
+			/// independent of the live-mode setting. Its requests never show
+			/// the "run this script?" window; instead nothing that changes
+			/// the project runs until setAssistantWritesAllowed(true), which
+			/// the dock calls once the user said yes. Saving, closing,
+			/// opening and printing stay the user's.
+			/// @return false if the channel could not be opened
+		bool openForAssistant(QString *socket_name, QString *token);
+		void closeForAssistant();
+		void setAssistantWritesAllowed(bool allowed) { m_assistant_writes = allowed; }
+		bool assistantWritesAllowed() const { return m_assistant_writes; }
+
 	signals:
 		void stateChanged(LiveServer::State state);
 			/// A request was handled: what was asked, and the answer sent
@@ -76,10 +89,12 @@ class LiveServer : public QObject
 		LiveServer();
 		~LiveServer() override;
 		bool start();
+		bool listen();
+		void closeIfUnused();
 		void setState(State state);
 		void newConnection();
 		void readClient();
-		void handle(const QJsonObject &request, qint64 received_ns);
+		void handle(const QJsonObject &request, qint64 received_ns, bool assistant);
 		void send(const QJsonObject &answer);
 		QJsonObject status();
 		QJsonObject runScript(const QString &name, const QString &source);
@@ -108,6 +123,8 @@ class LiveServer : public QObject
 		bool m_asked = false;
 		bool m_busy = false;
 		bool m_ask_first = true;	///< saved: QetSettings::liveAskFirst()
+		QString m_assistant_token;	///< the built-in assistant's, empty when closed
+		bool m_assistant_writes = false;
 };
 
 #endif // LIVESERVER_H

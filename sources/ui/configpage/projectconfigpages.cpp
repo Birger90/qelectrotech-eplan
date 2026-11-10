@@ -15,33 +15,33 @@
 	You should have received a copy of the GNU General Public License
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "../../container/qetcontainer.h"
+#include <container/qetcontainer.h>
 #include "projectconfigpages.h"
 
-#include "../autoNum/autonumschemecommand.h"
-#include "../autoNum/elementautonumschemecommand.h"
-#include "../autoNum/ui/counterwarning.h"
-#include "../autoNum/ui/renumberpreviewdialog.h"
-#include "../autoNum/numerotationcontext.h"
-#include "../autoNum/ui/autonumberingmanagementw.h"
-#include "../autoNum/ui/folioautonumbering.h"
-#include "../autoNum/ui/formulaautonumberingw.h"
-#include "../autoNum/ui/selectautonumw.h"
-#include "../project/projectpropertieshandler.h"
-#include "../qet.h"
-#include "../qeticons.h"
-#include "../qetproject.h"
-#include "../wiringrules.h"
-#include "../wiringruleswarning.h"
-#include "../qetgraphicsitem/element.h"
-#include "../diagram.h"
-#include "../borderpropertieswidget.h"
-#include "../conductorpropertieswidget.h"
-#include "../diagramcontextwidget.h"
-#include "../reportpropertiewidget.h"
-#include "../titleblockpropertieswidget.h"
-#include "../xrefpropertieswidget.h"
-#include "../projectorigin.h"
+#include <autoNum/autonumschemecommand.h>
+#include <autoNum/elementautonumschemecommand.h>
+#include <autoNum/ui/counterwarning.h>
+#include <autoNum/ui/renumberpreviewdialog.h>
+#include <autoNum/numerotationcontext.h>
+#include <autoNum/ui/autonumberingmanagementw.h>
+#include <autoNum/ui/folioautonumbering.h>
+#include <autoNum/ui/formulaautonumberingw.h>
+#include <autoNum/ui/selectautonumw.h>
+#include <project/projectpropertieshandler.h>
+#include <qet.h>
+#include <qeticons.h>
+#include <qetproject.h>
+#include <wiringrules.h>
+#include <ui/wiringruleswarning.h>
+#include <qetgraphicsitem/element.h>
+#include <diagram.h>
+#include <ui/borderpropertieswidget.h>
+#include <ui/conductorpropertieswidget.h>
+#include <ui/diagramcontextwidget.h>
+#include <ui/reportpropertiewidget.h>
+#include <ui/titleblockpropertieswidget.h>
+#include <ui/xrefpropertieswidget.h>
+#include <projectorigin.h>
 
 //#include "ui_autonumberingmanagementw.h"
 
@@ -188,7 +188,7 @@ void ProjectMainConfigPage::applyProjectConf()
 	}
 
 	const auto project_origin = ProjectOrigin::fromString(origin_cb_->currentData().toString());
-	if (m_project->Origin() != project_origin)
+	if (m_project->origin() != project_origin)
 	{
 		m_project->setOrigin(project_origin);
 		modified_project = true;
@@ -341,7 +341,7 @@ void ProjectMainConfigPage::initWidgets()
 											"informative label"));
 	wiring_rules_off_label_ -> setWordWrap(true);
 	//origin (of a coordinate system) settings
-	origin_label_ = new QLabel(tr("Origin (of a coordinate system):"));
+	origin_label_ = new QLabel(tr("Cell numbering starts from:"));
 	origin_cb_	  = new QComboBox();
 	origin_cb_->addItem(tr("Top-Left", "project origin"),
 						ProjectOrigin::toString(ProjectOrigin::Mode::TopLeft));
@@ -351,7 +351,7 @@ void ProjectMainConfigPage::initWidgets()
 						ProjectOrigin::toString(ProjectOrigin::Mode::BottomLeft));
 	origin_cb_->addItem(tr("Bottom-Right", "project origin"),
 						ProjectOrigin::toString(ProjectOrigin::Mode::BottomRight));
-	origin_cb_->setToolTip(tr("Which corner to use as the origin (coordinate system origin) "
+	origin_cb_->setToolTip(tr("From which corner to start numbering the cells: "
 							  "Top - Left corner(default), Top - Right, "
 							  "Bottom - Left, Bottom - Right.",
 							  "tooltip"));
@@ -452,7 +452,7 @@ void ProjectMainConfigPage::readValuesFromProject()
 		terminal_label_combined_rb_ -> setChecked(true);
 	}
 
-	const int project_origin_index = origin_cb_->findData(ProjectOrigin::toString(m_project->Origin()));
+	const int project_origin_index = origin_cb_->findData(ProjectOrigin::toString(m_project->origin()));
 	origin_cb_->setCurrentIndex(qMax(0, project_origin_index));
 
 		//The rules that apply: the project's own or the application's

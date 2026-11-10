@@ -18,7 +18,7 @@
 #ifndef TEXTEDITOR_H
 #define TEXTEDITOR_H
 
-#include "../elementitemeditor.h"
+#include <editor/elementitemeditor.h>
 
 #include <QPointer>
 #include <QWidget>
@@ -26,6 +26,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #ifdef BUILD_WITHOUT_KF
+#include <ui/nokde/kcolorbutton.h>
 #else
 #include <KColorButton>
 #endif
@@ -65,10 +66,7 @@ class TextEditor : public ElementItemEditor {
 		QSpinBox *m_size_sb;
 		QLineEdit *m_line_edit;
 		QPushButton *m_font_pb;
-#ifdef BUILD_WITHOUT_KF
-#else
 		KColorButton *m_color_pb;
-#endif
 };
 
 #endif // TEXTEDITOR_H

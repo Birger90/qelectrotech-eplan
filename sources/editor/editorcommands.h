@@ -17,8 +17,8 @@
 */
 #ifndef EDITOR_COMMANDS_H
 #define EDITOR_COMMANDS_H
-#include "../editor/graphicspart/customelementpart.h"
-#include "../qgimanager.h"
+#include <editor/graphicspart/customelementpart.h>
+#include <qgimanager.h>
 #include "elementcontent.h"
 #include "elementscene.h"
 #include "elementview.h"
@@ -33,7 +33,7 @@
 #include "graphicspart/partrectangle.h"
 #include "graphicspart/partterminal.h"
 #include "graphicspart/parttext.h"
-#include "../QPropertyUndoCommand/qpropertyundocommand.h"
+#include <QPropertyUndoCommand/qpropertyundocommand.h>
 #include "UndoCommand/deletepartscommand.h"
 
 
@@ -346,6 +346,22 @@ class ScaleElementCommand : public ElementEditionCommand
 		QList<CustomElementPart *> m_geometry_parts;
 			/// Values set directly, in the order they are applied
 		QList<PropertyChange> m_changes;
+};
+
+/**
+	This command sets the frame of the definition by hand, or gives it
+	back to the editor (a null rectangle).
+*/
+class FixedFrameCommand : public ElementEditionCommand
+{
+	public:
+		FixedFrameCommand(ElementScene *scene, const QRect &before, const QRect &after,
+				  QUndoCommand *parent = nullptr);
+		void undo() override;
+		void redo() override;
+
+	private:
+		QRect m_before, m_after;
 };
 
 #endif

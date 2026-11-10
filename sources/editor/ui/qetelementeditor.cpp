@@ -17,32 +17,33 @@
 */
 #include "qetelementeditor.h"
 #include "ui_qetelementeditor.h"
-#include "../elementscene.h"
-#include "../../qeticons.h"
-#include "../../shortcutmanager.h"
-#include "../elementview.h"
-#include "../../qetmessagebox.h"
-#include "../../qetapp.h"
-#include "../../qetmainwindow.h"
-#include "../../recentfiles.h"
-#include "../../elementscollectioncache.h"
-#include "../../factory/elementpicturefactory.h"
-#include "../graphicspart/customelementpart.h"
-#include "../elementitemeditor.h"
-#include "../styleeditor.h"
-#include "../esevent/eseventaddline.h"
-#include "../esevent/eseventaddrect.h"
-#include "../esevent/eseventaddellipse.h"
-#include "../esevent/eseventaddpolygon.h"
-#include "../esevent/eseventaddarc.h"
-#include "../esevent/eseventaddtext.h"
-#include "../esevent/eseventaddterminal.h"
-#include "../esevent/eseventadddynamictextfield.h"
-#include "../esevent/eseventmeasure.h"
-#include "../../elementdialog.h"
-#include "../graphicspart/partterminal.h"
-#include "../terminalnamecheck.h"
-#include "../arceditor.h"
+#include <editor/elementscene.h>
+#include <qeticons.h>
+#include <shortcutmanager.h>
+#include <editor/elementview.h>
+#include <qetmessagebox.h>
+#include <qetapp.h>
+#include <qetmainwindow.h>
+#include <recentfiles.h>
+#include <elementscollectioncache.h>
+#include <factory/elementpicturefactory.h>
+#include <editor/graphicspart/customelementpart.h>
+#include <editor/elementitemeditor.h>
+#include <editor/styleeditor.h>
+#include <editor/esevent/eseventaddline.h>
+#include <editor/esevent/eseventaddrect.h>
+#include <editor/esevent/eseventaddellipse.h>
+#include <editor/esevent/eseventaddpolygon.h>
+#include <editor/esevent/eseventaddarc.h>
+#include <editor/esevent/eseventaddtext.h>
+#include <editor/esevent/eseventaddterminal.h>
+#include <editor/esevent/eseventsetorigin.h>
+#include <editor/esevent/eseventadddynamictextfield.h>
+#include <editor/esevent/eseventmeasure.h>
+#include <elementdialog.h>
+#include <editor/graphicspart/partterminal.h>
+#include <editor/terminalnamecheck.h>
+#include <editor/arceditor.h>
 #include "ellipseeditor.h"
 #include "lineeditor.h"
 #include "polygoneditor.h"
@@ -50,16 +51,19 @@
 #include "terminaleditor.h"
 #include "texteditor.h"
 #include "dynamictextfieldeditor.h"
-#include "../../newelementwizard.h"
-#include "../editorcommands.h"
-#include "../../dxf/dxftoelmt.h"
-#include "../../qet_elementscaler/qet_elementscaler.h"
-#include "../UndoCommand/openelmtcommand.h"
+#include <newelementwizard.h>
+#include <editor/editorcommands.h>
+#include <dxf/dxftoelmt.h>
+#include <qet_elementscaler/qet_elementscaler.h>
+#include <editor/UndoCommand/openelmtcommand.h>
+#include <ElementsCollection/elementscollectionwidget.h>
 #include "scaleelementdialog.h"
-#include "../../toolbarsettings.h"
+#include <toolbarsettings.h>
 
 #include <QSettings>
 #include <QActionGroup>
+#include <QMenu>
+#include <QToolButton>
 #include <QFileDialog>
 #include <QSvgGenerator>
 #include <QHBoxLayout>
@@ -67,6 +71,8 @@
 #include <QDialogButtonBox>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
+#include <QCheckBox>
+#include <QSpinBox>
 
 /**
  * @brief QETElementEditor::QETElementEditor
@@ -77,6 +83,10 @@ QETElementEditor::QETElementEditor(QWidget *parent) :
 	ui(new Ui::QETElementEditor)
 {
 	ui->setupUi(this);
+		// The form's title is the start of every title updateTitle() builds
+		// ("QElectroTech - Element Editor - <name>"); without it the window
+		// was titled " - <name>"
+	m_min_title = windowTitle();
 	initGui();
 	setupActions();
 	setupConnection();
@@ -1200,6 +1210,13 @@ void QETElementEditor::setupActions()
 	connect(add_terminal,  &QAction::triggered, [this]() {m_elmt_scene->setEventInterface(new ESEventAddTerminal(m_elmt_scene));});
 	connect(add_dynamic_text_field, &QAction::triggered, [this]() {m_elmt_scene->setEventInterface(new ESEventAddDynamicTextField(m_elmt_scene));});
 
+		//Draw first, then say where the symbol is inserted
+	auto *set_origin = new QAction(QET::Icons::HotSpot, tr("Set the insertion point"), m_add_part_action_grp);
+	set_origin->setCheckable(true);
+	set_origin->setStatusTip(tr("Click a terminal or a corner: it becomes the point the symbol is placed by"));
+	connect(set_origin, &QAction::triggered, [this]() {m_elmt_scene->setEventInterface(new ESEventSetOrigin(m_elmt_scene));});
+	ShortcutManager::instance().registerAction(set_origin, "elementeditor.set_origin", tr("Element editors"), QKeySequence());
+
 	add_polygon -> setStatusTip(tr("Double-click to finish the shape, Right click to cancel the last point"));
 	add_text    -> setStatusTip(tr("Add non-editable element text in diagrams"));
 	add_dynamic_text_field -> setStatusTip(tr("Add element text that can be edited in diagrams"));
@@ -1287,6 +1304,55 @@ void QETElementEditor::setupActions()
 	});
 	ShortcutManager::instance().registerAction(configure_background_frame_action, "elementeditor.configure_background_frame", tr("Element editors"), QKeySequence());
 	ui->m_display_menu->addAction(configure_background_frame_action);
+
+		//The frame of the definition: what a click on the placed symbol
+		//hits. Worked out by the editor, or set by hand.
+	auto *frame_action = new QAction(tr("Selection frame..."), this);
+	frame_action->setStatusTip(tr("The frame a click on the placed symbol hits: worked out from the drawing, or set by hand"));
+	connect(frame_action, &QAction::triggered, this, [this]() {
+		QDialog dialog(this);
+		dialog.setWindowTitle(tr("Selection frame"));
+		auto *layout = new QFormLayout(&dialog);
+		auto *fixed = new QCheckBox(tr("Set by hand"), &dialog);
+		layout->addRow(fixed);
+		const QRect current = m_elmt_scene->definitionFrame();
+		const auto spin = [&dialog](int value, int minimum) {
+			auto *box = new QSpinBox(&dialog);
+			box->setRange(minimum, 10000);
+			box->setSingleStep(10);
+			box->setValue(value);
+			return box;
+		};
+		auto *left = spin(current.left(), -10000);
+		auto *top = spin(current.top(), -10000);
+		auto *width = spin(current.width(), 10);
+		auto *height = spin(current.height(), 10);
+		layout->addRow(tr("Left"), left);
+		layout->addRow(tr("Top"), top);
+		layout->addRow(tr("Width"), width);
+		layout->addRow(tr("Height"), height);
+		const auto enable = [=](bool on) {
+			for (QSpinBox *box : {left, top, width, height})
+				box->setEnabled(on);
+		};
+		connect(fixed, &QCheckBox::toggled, &dialog, enable);
+		fixed->setChecked(!m_elmt_scene->fixedFrame().isNull());
+		enable(fixed->isChecked());
+		auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+		connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+		connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+		layout->addRow(buttons);
+		if (dialog.exec() != QDialog::Accepted)
+			return;
+		const QRect after = fixed->isChecked()
+				? QRect(left->value(), top->value(), width->value(), height->value())
+				: QRect();
+		if (after != m_elmt_scene->fixedFrame())
+			m_elmt_scene->undoStack().push(
+					new FixedFrameCommand(m_elmt_scene, m_elmt_scene->fixedFrame(), after));
+	});
+	ShortcutManager::instance().registerAction(frame_action, "elementeditor.selection_frame", tr("Element editors"), QKeySequence());
+	ui->m_edit_menu->addAction(frame_action);
 }
 
 /**
@@ -1416,6 +1482,8 @@ void QETElementEditor::initGui()
 	tabifyDockWidget(ui->m_undo_dock, ui->m_parts_dock);
 	ui->m_parts_dock->setWidget(m_parts_list);
 
+	setUpCollectionDock();
+
 	updateInformations();
 	fillPartsList();
 
@@ -1446,7 +1514,140 @@ void QETElementEditor::initGui()
 			.arg(pos.y(), 0, 'f', 1));
 	});
 
+		//As on the folio: what a selection picks, the grid step, the zoom
+	auto *filter_button = new QToolButton(this);
+	filter_button->setPopupMode(QToolButton::InstantPopup);
+	filter_button->setToolButtonStyle(Qt::ToolButtonTextOnly);
+	filter_button->setAutoRaise(true);
+	filter_button->setToolTip(tr("What a click, a selection rectangle and Select All pick"));
+	auto *filter_menu = new QMenu(filter_button);
+	auto *filter_group = new QActionGroup(filter_menu);
+	const QList<QPair<ElementScene::SelectionFilter, QString>> filters {
+		{ElementScene::SelectionFilter::All,       tr("Everything")},
+		{ElementScene::SelectionFilter::Drawing,   tr("Drawing")},
+		{ElementScene::SelectionFilter::Texts,     tr("Texts")},
+		{ElementScene::SelectionFilter::Terminals, tr("Terminals")}};
+	const auto show_filter = [filter_button, filters] {
+		for (const auto &f : filters)
+			if (f.first == ElementScene::selectionFilter())
+				filter_button->setText(tr("Select: %1").arg(f.second));
+	};
+	for (const auto &f : filters) {
+		QAction *action = filter_menu->addAction(f.second);
+		action->setCheckable(true);
+		action->setChecked(f.first == ElementScene::selectionFilter());
+		filter_group->addAction(action);
+		connect(action, &QAction::triggered, this, [this, f, show_filter] {
+			ElementScene::setSelectionFilter(f.first);
+			m_elmt_scene->applySelectionFilter();
+			show_filter();
+		});
+	}
+	filter_button->setMenu(filter_menu);
+	show_filter();
+	statusBar()->addPermanentWidget(filter_button);
+
+	auto *grid_button = new QToolButton(this);
+	grid_button->setPopupMode(QToolButton::InstantPopup);
+	grid_button->setToolButtonStyle(Qt::ToolButtonTextOnly);
+	grid_button->setAutoRaise(true);
+	grid_button->setToolTip(tr("The step parts snap to; crosses mark the grid of 10, the folio's"));
+	auto *grid_menu = new QMenu(grid_button);
+	auto *grid_group = new QActionGroup(grid_menu);
+	for (const int step : {0, 10, 5, 2, 1}) {
+		QAction *action = grid_menu->addAction(step ? tr("Grid %1").arg(step)
+							    : tr("Grid following the zoom"));
+		action->setCheckable(true);
+		action->setChecked(step == ElementView::gridStep());
+		grid_group->addAction(action);
+		connect(action, &QAction::triggered, this, [this, step] {
+			ElementView::setGridStep(step);
+			m_view->viewport()->update();
+		});
+	}
+	grid_button->setMenu(grid_menu);
+	statusBar()->addPermanentWidget(grid_button);
+
+	auto *zoom_button = new QToolButton(this);
+	zoom_button->setPopupMode(QToolButton::InstantPopup);
+	zoom_button->setToolButtonStyle(Qt::ToolButtonTextOnly);
+	zoom_button->setAutoRaise(true);
+	zoom_button->setToolTip(tr("Zoom of the symbol on screen; a click offers fixed ones"));
+	auto *zoom_menu = new QMenu(zoom_button);
+	for (const int percent : {100, 200, 400, 800, 1600}) {
+		zoom_menu->addAction(tr("%1 %").arg(percent), this, [this, percent] {
+			m_view->zoom(percent / 100.0 / m_view->transform().m11());
+		});
+	}
+	zoom_menu->addSeparator();
+	zoom_menu->addAction(tr("Whole symbol"), this, [this] { m_view->zoomFit(); });
+	zoom_button->setMenu(zoom_menu);
+	statusBar()->addPermanentWidget(zoom_button);
+
+	const auto show_view_state = [this, grid_button, zoom_button] {
+		const int step = m_view->currentGridStep();
+		grid_button->setText(ElementView::gridStep() ? tr("Grid %1").arg(step)
+							     : tr("Grid %1 (zoom)").arg(step));
+		zoom_button->setText(tr("Zoom %1 %").arg(qRound(m_view->transform().m11() * 100)));
+	};
+	connect(m_view, &ElementView::viewStateChanged, this, show_view_state);
+	show_view_state();
+
 	statusBar()->showMessage(tr("Elements Editor", "status bar message"));
+}
+
+/**
+	@brief QETElementEditor::setUpCollectionDock
+	A dock with the collections, hidden until the user shows it (Display
+	menu, or Edit > Paste from > The collections panel). An element
+	double-clicked in it is pasted where the user then clicks; one dragged
+	onto the drawing is pasted where it is dropped (ElementView::dropEvent()).
+	The collections are loaded the first time the dock is shown.
+*/
+void QETElementEditor::setUpCollectionDock()
+{
+	m_collection_dock = new QDockWidget(tr("Collections"), this);
+	m_collection_dock->setObjectName(QStringLiteral("element_editor_collections"));
+	m_collection_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+	m_collection_widget = new ElementsCollectionWidget(m_collection_dock);
+	m_collection_dock->setWidget(m_collection_widget);
+	addDockWidget(Qt::RightDockWidgetArea, m_collection_dock);
+	tabifyDockWidget(ui->m_parts_dock, m_collection_dock);
+	m_collection_dock->hide();
+
+	connect(m_collection_dock, &QDockWidget::visibilityChanged, this, [this](bool visible) {
+		if (visible && !m_collection_loaded) {
+			m_collection_loaded = true;
+			m_collection_widget->reload();
+		}
+	});
+	connect(m_collection_widget, &ElementsCollectionWidget::insertElementRequested,
+			this, &QETElementEditor::pasteElement);
+
+	auto *show_dock = new QAction(tr("The collections panel"), this);
+	show_dock->setStatusTip(tr("Shows the collections: double-click an element, or drag it "
+							   "onto the drawing, to paste its parts"));
+	connect(show_dock, &QAction::triggered, this, [this]() {
+		m_collection_dock->show();
+		m_collection_dock->raise();
+	});
+	ui->m_paste_from_menu->addAction(show_dock);
+}
+
+/**
+	@brief QETElementEditor::pasteElement
+	Paste the parts of the element at @p location, where the user then
+	clicks. The clipboard is left alone.
+*/
+void QETElementEditor::pasteElement(const ElementsLocation &location)
+{
+		//isElement() also holds for a macro, which has no parts to paste
+	if (m_read_only || !location.collectionPath().endsWith(QLatin1String(".elmt")) || !location.exist()) {
+		return;
+	}
+	QDomDocument document_xml;
+	document_xml.appendChild(document_xml.importNode(location.xml(), true));
+	m_view->pasteInArea(document_xml);
 }
 
 /**

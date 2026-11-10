@@ -16,7 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "elementinfowidget.h"
-#include "../qet.h"
+#include <qet.h>
 #include "dockfit.h"
 #include <QCheckBox>
 #include <QComboBox>
@@ -24,20 +24,20 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QPushButton>
-#include "../autoNum/elementautonumschemecommand.h"
-#include "../undocommand/freezeelementlabelcommand.h"
-#include "../diagram.h"
-#include "../materiallist/materiallist.h"
-#include "../materiallist/materialselectiondialog.h"
-#include "../qetapp.h"
-#include "../qetgraphicsitem/element.h"
-#include "../qetmessagebox.h"
-#include "../dataBase/projectdatabase.h"
-#include "../qetinformation.h"
-#include "../qetproject.h"
-#include "../ui/projectpropertiesdialog.h"
-#include "../ui_elementinfowidget.h"
-#include "../undocommand/changeelementinformationcommand.h"
+#include <autoNum/elementautonumschemecommand.h>
+#include <undocommand/freezeelementlabelcommand.h>
+#include <diagram.h>
+#include <materiallist/materiallist.h>
+#include <materiallist/materialselectiondialog.h>
+#include <qetapp.h>
+#include <qetgraphicsitem/element.h>
+#include <qetmessagebox.h>
+#include <dataBase/projectdatabase.h>
+#include <qetinformation.h>
+#include <qetproject.h>
+#include <ui/projectpropertiesdialog.h>
+#include <ui_elementinfowidget.h>
+#include <undocommand/changeelementinformationcommand.h>
 #include "customelementinfopartwidget.h"
 #include "elementinfopartwidget.h"
 
@@ -749,11 +749,11 @@ DiagramContext ElementInfoWidget::currentInfo() const
 		//add value only if they're something to store
 		if (!eipw->text().isEmpty())
 		{
-			QString txt{eipw->text()};
-			//remove line feed and carriage return
-			txt.remove(QStringLiteral("\r"));
-			txt.remove(QStringLiteral("\n"));
-			info_.addValue(eipw->key(), txt);
+				//Kept as it is, line breaks included: every field
+				//is written back when any one is edited, so taking
+				//them out here lost them from fields nobody touched
+				//(bugtracker #348).
+			info_.addValue(eipw->key(), eipw->text());
 		}
 	}
 
@@ -761,10 +761,7 @@ DiagramContext ElementInfoWidget::currentInfo() const
 	{
 		if (custom->hasValidKey() && !custom->value().isEmpty())
 		{
-			QString txt{custom->value()};
-			txt.remove(QStringLiteral("\r"));
-			txt.remove(QStringLiteral("\n"));
-			info_.addValue(custom->key(), txt);
+			info_.addValue(custom->key(), custom->value());
 		}
 	}
 

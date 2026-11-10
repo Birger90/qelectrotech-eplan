@@ -17,6 +17,8 @@
 */
 #include "eplanpartimporter.h"
 
+#include "../plcchannels.h"
+
 #include "../../container/miniz/miniz.h"
 #include "../../container/qetzip.h"
 #include "../edz/edzarchive.h"
@@ -512,7 +514,7 @@ bool EplanPartImporter::importPackage(const QString &path, const QString &catego
 		m_error = QStringLiteral("No element could be built from the package");
 		return false;
 	}
-	return true;
+	return finish();
 }
 
 /**
@@ -655,7 +657,7 @@ bool EplanPartImporter::importDxf(const QString &dxf_path, const QString &edz_pa
 		m_error = QStringLiteral("No black-box part of the DXF has connection points");
 		return false;
 	}
-	return true;
+	return finish();
 }
 
 /**
@@ -732,7 +734,7 @@ bool EplanPartImporter::importDwg(const QString &dwg_path, const QString &wspak_
 	if (!writeElement(doc, out, &m_error)) return false;
 	m_written << out;
 	m_messages << QStringLiteral("%1: %2 terminals").arg(element_name).arg(data.pins.size());
-	return true;
+	return finish();
 }
 
 /// part data of a WSCAD Universe package, for the dialog
@@ -761,7 +763,7 @@ bool EplanPartImporter::importEdz(const QString &edz_path, const QString &manufa
 	// symbol the manufacturer draws, next to the generic one built from the
 	// part data above
 	EdzArchive archive;
-	if (!archive.extract(edz_path)) return true;
+	if (!archive.extract(edz_path)) return finish();
 	EdzPart part;
 	const bool has_part = part.parse(archive.partXmlPath());
 	QDirIterator it(archive.extractedDir(), {QStringLiteral("*.ema")}, QDir::Files,
@@ -819,5 +821,16 @@ bool EplanPartImporter::importEdz(const QString &edz_path, const QString &manufa
 		if (!reader.skipped().isEmpty())
 			m_messages << QStringLiteral("not taken over: %1").arg(reader.skipped().join(QStringLiteral(", ")));
 	}
+	return finish();
+}
+
+/**
+	The last step of every import: a PLC module among the written elements
+	gets its channel table, and so do the other drawings of the module in
+	its folder (see PlcChannels).
+*/
+bool EplanPartImporter::finish()
+{
+	m_messages << PlcChannels::applyToFolders(m_written);
 	return true;
 }

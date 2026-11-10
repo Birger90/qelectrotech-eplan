@@ -18,8 +18,8 @@
 #ifndef AUTONUMBERINGDOCKWIDGET_H
 #define AUTONUMBERINGDOCKWIDGET_H
 
-#include "../../projectview.h"
-#include "../../qetproject.h"
+#include <projectview.h>
+#include <qetproject.h>
 
 #include <QDockWidget>
 #include <QPointer>
@@ -104,6 +104,10 @@ class AutoNumberingDockWidget : public QDockWidget
 			/// Read/write the numerotation context named in combo_box.
 		NumerotationContext contextFor(QComboBox *combo_box, AutoNumCategory category) const;
 		void storeContext(QComboBox *combo_box, AutoNumCategory category, const NumerotationContext &context);
+			/// Write the folio-bound parts of @p context into the folio
+			/// being looked at, which counts them for itself (see
+			/// Diagram::setFolioSeqValues()).
+		void storeFolioCounters(const QString &title, const NumerotationContext &context);
 
 			/// Index of the counter the value field shows and edits: the last
 			/// part that actually progresses. Returns -1 when the context has

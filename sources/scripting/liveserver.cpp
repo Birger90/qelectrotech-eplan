@@ -21,13 +21,13 @@
 #include "macrorecorder.h"
 #include "qetscripting.h"
 #include "scriptlibrary.h"
-#include "../diagram.h"
-#include "../diagramview.h"
-#include "../qet.h"
-#include "../qetapp.h"
-#include "../qetdiagrameditor.h"
-#include "../qetproject.h"
-#include "../utils/qetsettings.h"
+#include <diagram.h>
+#include <diagramview.h>
+#include <qet.h>
+#include <qetapp.h>
+#include <qetdiagrameditor.h>
+#include <qetproject.h>
+#include <utils/qetsettings.h>
 
 #include <QApplication>
 #include <QFontDatabase>
@@ -63,8 +63,8 @@
 #include <QPrinter>
 #include <QDialogButtonBox>
 #include <QLabel>
-#include "../projectview.h"
-#include "../shortcutmanager.h"
+#include <projectview.h>
+#include <shortcutmanager.h>
 
 namespace {
 	/**
@@ -159,7 +159,10 @@ LiveServer &LiveServer::instance()
 LiveServer::LiveServer() :
 	m_ask_first(QetSettings::liveAskFirst())
 {
-	connect(qApp, &QCoreApplication::aboutToQuit, this, &LiveServer::stop);
+	connect(qApp, &QCoreApplication::aboutToQuit, this, [this]() {
+		m_assistant_token.clear();
+		stop();
+	});
 }
 
 LiveServer::~LiveServer()
@@ -222,7 +225,12 @@ void LiveServer::askAndStart(QWidget *parent)
 	}
 }
 
-bool LiveServer::start()
+/**
+	@brief LiveServer::listen
+	Open the local server if it is not open yet (for live mode, the
+	built-in assistant, or both).
+*/
+bool LiveServer::listen()
 {
 	if (m_server) return true;
 	m_server = new QLocalServer(this);
@@ -232,6 +240,50 @@ bool LiveServer::start()
 		m_server = nullptr;
 		return false;
 	}
+	connect(m_server, &QLocalServer::newConnection, this, &LiveServer::newConnection);
+	return true;
+}
+
+/**
+	@brief LiveServer::closeIfUnused
+	Close the local server once neither live mode nor the built-in
+	assistant holds a token for it.
+*/
+void LiveServer::closeIfUnused()
+{
+	if (!m_token.isEmpty() || !m_assistant_token.isEmpty()) return;
+	if (m_client) {
+		m_client->disconnectFromServer();
+		m_client->deleteLater();
+	}
+	if (m_server) {
+		m_server->close();
+		m_server->deleteLater();
+		m_server = nullptr;
+	}
+	m_buffer.clear();
+}
+
+bool LiveServer::openForAssistant(QString *socket_name, QString *token)
+{
+	if (!listen()) return false;
+	if (m_assistant_token.isEmpty()) m_assistant_token = randomHex(16);
+	if (socket_name) *socket_name = m_server->fullServerName();
+	if (token) *token = m_assistant_token;
+	return true;
+}
+
+void LiveServer::closeForAssistant()
+{
+	m_assistant_token.clear();
+	m_assistant_writes = false;
+	closeIfUnused();
+}
+
+bool LiveServer::start()
+{
+	if (!m_token.isEmpty()) return true;
+	if (!listen()) return false;
 	m_token = randomHex(16);
 
 		//Where the MCP server finds the channel: the "live" part of
@@ -241,7 +293,6 @@ bool LiveServer::start()
 		{QStringLiteral("token"), m_token},
 		{QStringLiteral("pid"), QCoreApplication::applicationPid()}});
 
-	connect(m_server, &QLocalServer::newConnection, this, &LiveServer::newConnection);
 	setState(Waiting);
 	return true;
 }
@@ -252,18 +303,10 @@ bool LiveServer::start()
 */
 void LiveServer::stop()
 {
-	if (m_client) {
-		m_client->disconnectFromServer();
-		m_client->deleteLater();
-	}
-	if (m_server) {
-		m_server->close();
-		m_server->deleteLater();
-		m_server = nullptr;
-	}
 	if (!m_token.isEmpty()) AssistantInfo::setLive(QJsonObject());
 	m_token.clear();
-	m_buffer.clear();
+		//The built-in assistant keeps its own channel (closeForAssistant)
+	closeIfUnused();
 	setState(Off);
 }
 
@@ -304,15 +347,20 @@ void LiveServer::readClient()
 		m_buffer.remove(0, newline + 1);
 		if (line.isEmpty()) continue;
 		const QJsonObject request = QJsonDocument::fromJson(line).object();
-		if (request.value(QStringLiteral("token")).toString() != m_token || m_token.isEmpty()) {
+		const QString token = request.value(QStringLiteral("token")).toString();
+		const bool assistant = !m_assistant_token.isEmpty() && token == m_assistant_token;
+		if (!assistant && (m_token.isEmpty() || token != m_token)) {
 			send(failure(QStringLiteral("bad token")));
 			m_client->disconnectFromServer();
 			return;
 		}
-		setState(Connected);
+			//The built-in assistant shows its own state in its dock
+		if (!assistant) setState(Connected);
 		const qint64 received = nowNs();
 			//Out of the socket handler before anything runs (see class doc)
-		QTimer::singleShot(0, this, [this, request, received]() { handle(request, received); });
+		QTimer::singleShot(0, this, [this, request, received, assistant]() {
+			handle(request, received, assistant);
+		});
 	}
 }
 
@@ -324,14 +372,35 @@ void LiveServer::send(const QJsonObject &answer)
 	}
 }
 
-void LiveServer::handle(const QJsonObject &request, qint64 received_ns)
+void LiveServer::handle(const QJsonObject &request, qint64 received_ns, bool assistant)
 {
 	const qint64 started = nowNs();
 	qint64 confirm_ns = 0;
 	const QString cmd = request.value(QStringLiteral("cmd")).toString();
+		//The built-in assistant: what changes the project needs the user's
+		//yes for this session (given in the dock); the rest is theirs
+	static const QStringList assistant_writes{
+		QStringLiteral("run_script"), QStringLiteral("run_stored"),
+		QStringLiteral("command"), QStringLiteral("undo_last")};
+	static const QStringList assistant_never{
+		QStringLiteral("new_project"), QStringLiteral("open_project"),
+		QStringLiteral("switch_project"), QStringLiteral("save_project"),
+		QStringLiteral("close_project"), QStringLiteral("print")};
 	QJsonObject answer;
 	if (m_busy) {
 		answer = failure(QStringLiteral("busy: the previous request is still running"));
+	} else if (assistant && assistant_never.contains(cmd)) {
+		answer = failure(QStringLiteral("not for the built-in assistant: saving, opening, "
+						"closing and printing are left to the user"));
+	} else if (assistant && assistant_writes.contains(cmd) && !m_assistant_writes) {
+		answer = failure(QStringLiteral("refused: the user has not allowed changes to the "
+						"project in this session"));
+	} else if (assistant && cmd == QLatin1String("run_script")) {
+			//Asked once in the dock, not for every script
+		m_busy = true;
+		answer = runScript(request.value(QStringLiteral("name")).toString(),
+				   request.value(QStringLiteral("source")).toString());
+		m_busy = false;
 	} else {
 		m_busy = true;
 		if (cmd == QLatin1String("status")) {

@@ -1,0 +1,38 @@
+# Änderungen im Fork
+
+Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
+Original-QElectroTech stehen in `ChangeLog*`.
+
+## 1.0.0 – 10.11.2026
+
+Erste gezählte Version. Sie fasst alle Fork-Funktionen zusammen, die vorher in einzelnen Branches lagen,
+auf dem Stand von QElectroTech 0.200.1-dev.
+
+**Neu in dieser Version**
+- Eingebauter Claude-Assistent als Andockfenster (Ansicht > Assistent). Er arbeitet über `mcp/qet-assistent/bruecke.py`,
+  der Schlüssel liegt in der Windows-Anmeldeinformationsverwaltung.
+- Datei > EPLAN-Projekt importieren (.zw1). Ein Dialog startet den Import und öffnet das Ergebnis.
+- SPS-Kanäle: Modul und Kanal im Fenster Auswahleigenschaften wählen, allgemeiner Ein-/Ausgangskanal. SPS-Module
+  bekommen ihre Kanaltabelle schon beim Import.
+- Die Fork-Version steht im Info-Dialog und bei `--version`.
+
+**Bauteil-Import**
+- EPLAN-Makros und EDZ-Pakete: Grafik aus DXF, Schaltplan aus `.ema`, Anschlüsse und Artikeldaten, 2D-Montageaufbau
+  als `<Typ>_Aufbau.elmt`.
+- DWG-Zeichnungen (AutoCAD 2004–2018) direkt, Artikeldaten aus WSCAD `.wspak`.
+- EPLAN Data Portal: Suche, Filter, Bildvorschau, Import, auch per Skript (`importPartFromDataPortal`).
+- Herstellerportale: Konten im Windows-Anmeldeinformationsspeicher, fehlende Bauteile automatisch holen
+  (`--fetch-parts`).
+
+**Schaltplan wie EPLAN**
+- Dreifachsprung am Bauteil und im PDF, Sprungziele für Texte und Bauteile, verknüpfte Folioverweise als Link.
+- Gefüllte Folioverweis-Pfeile, Gerätenavigator mit Filterschemata, SPS-E/A-Tabelle, Kontaktgruppen.
+- Kabeltyp-Fenster mit Herstellerkatalogen, Typ eines platzierten Elements tauschen.
+
+**Schaltschrankaufbau**
+- Montageflächen, Hutschienen, Kabelkanäle, Klemmenleisten, Tür und Seitenwände, Bohrbild, DXF-Fertigungsexport.
+- 3D-Ansicht mit STEP-Modellen der Hersteller, glTF-Export, Aufbauprüfung, Aufbau aus EPLAN-Projekten.
+
+**Werkzeuge und Skills**
+- MCP-Server `qet_mcp` mit Live-Modus, Skript-API, Data-Portal-Suche.
+- Skills `qet-schaltplan-zeichnen`, `eplan-wissen` und `bauteile-herunterladen` unter `.claude/skills/`.

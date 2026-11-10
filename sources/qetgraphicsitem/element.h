@@ -18,16 +18,17 @@
 #ifndef ELEMENT_H
 #define ELEMENT_H
 
-#include "../ElementsCollection/elementslocation.h"
-#include "../NameList/nameslist.h"
-#include "../autoNum/assignvariables.h"
-#include "../diagramcontext.h"
-#include "../dataBase/elementplacement.h"
-#include "../qet.h"
+#include <ElementsCollection/elementslocation.h>
+#include <NameList/nameslist.h>
+#include <autoNum/assignvariables.h>
+#include <diagramcontext.h>
+#include <dataBase/elementplacement.h>
+#include <qet.h>
 #include "qetgraphicsitem.h"
-#include "../properties/elementdata.h"
+#include <properties/elementdata.h>
 
 #include <QHash>
+#include <optional>
 #include <QSet>
 #include <QPicture>
 #include <algorithm>
@@ -50,10 +51,13 @@ class Element : public QetGraphicsItem
 {
 	friend class DiagramEventAddElement;
 	friend class DynamicElementTextItem;
+	friend class ElementTextItemGroup;
 
 	Q_OBJECT
 	Q_PROPERTY(bool horizontalMirror READ hasHorizontalMirror WRITE setHorizontalMirror NOTIFY mirrorChanged)
 	Q_PROPERTY(bool verticalMirror READ hasVerticalMirror WRITE setVerticalMirror NOTIFY mirrorChanged)
+	Q_PROPERTY(QVariantMap potentialSources READ potentialSourcesMap WRITE setPotentialSourcesMap)
+	Q_PROPERTY(bool shownAsDot READ isShownAsDot WRITE setShownAsDot)
 
 	public:
 			/**
@@ -165,6 +169,15 @@ class Element : public QetGraphicsItem
 			/// What this symbol saves that no other table holds, in an
 			/// <element> made in @p document, from its own members
 		QDomElement ownValuesXml(QDomDocument &document) const;
+			/// The potential types set on terminals of this placed symbol,
+			/// for a project that takes them from where the potential
+			/// starts (PotentialTypes::Mode::AtSource): Terminal::stableUuid()
+			/// to type name. Saved in the project, never in the definition.
+		QHash<QUuid, QString> potentialSources() const {return m_potential_sources;}
+		void setPotentialSources(const QHash<QUuid, QString> &sources);
+			/// The same, keyed by the uuid as text, for QPropertyUndoCommand
+		QVariantMap potentialSourcesMap() const;
+		void setPotentialSourcesMap(const QVariantMap &sources);
 		void setMovable(bool movable) override;
 		//@kind_information_ is used to store more information
 		//about the herited class like contactelement for know
@@ -192,6 +205,7 @@ class Element : public QetGraphicsItem
 		QString labelForDisplay();
 		QString terminalNumberForDisplay();
 		QString conductorTextForDisplay();
+		QString conductorInfoForDisplay(const QString &info_name);
 		void addDisplayValues(DiagramContext &dc);
 		QString infoForDisplay(const QString &info_name);
 		bool hasTerminalNumberText() const;
@@ -327,6 +341,11 @@ class Element : public QetGraphicsItem
 			/// symbol, or any symbol whose definition says so with the
 			/// kind information "corner" set to "true"
 		bool isCorner() const {return m_corner;}
+			/// A T-junction drawn as its lines and a dot where they meet,
+			/// instead of its own drawing
+		bool isShownAsDot() const {return m_shown_as_dot;}
+		void setShownAsDot(bool dot);
+		std::optional<QPointF> dotPoint() const;
 		/**
 		 * @brief takesSchemeNumber
 		 * Whether this element is given a number by an element numbering
@@ -406,6 +425,9 @@ class Element : public QetGraphicsItem
 		DiagramContext m_kind_informations;
 		autonum::sequentialNumbers m_autoNum_seq;
 		bool m_freeze_label = false;
+		bool m_shown_as_dot = false;
+		void drawAsDot(QPainter *painter, const QPointF &meet) const;
+		QHash<QUuid, QString> m_potential_sources;
 		QString m_F_str;
 
 	ElementsLocation m_location;

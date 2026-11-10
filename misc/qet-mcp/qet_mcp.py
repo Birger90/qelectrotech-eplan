@@ -4721,7 +4721,16 @@ def tool_script_remove(script_id: str) -> dict:
 # when the channel closes. Each action is one undo step in front of the user.
 
 def _live_session() -> dict:
-    """The live channel QElectroTech advertises in qet-assistant.json."""
+    """The live channel QElectroTech advertises in qet-assistant.json.
+
+    QET_LIVE_SOCKET and QET_LIVE_TOKEN, when both are set, name the channel
+    directly: the built-in assistant (misc/qet-assistent) is started by
+    QElectroTech with its own channel, which is not in the file.
+    """
+    socket_name = os.environ.get("QET_LIVE_SOCKET", "").strip()
+    token = os.environ.get("QET_LIVE_TOKEN", "").strip()
+    if socket_name and token:
+        return {"socket": socket_name, "token": token}
     info = assistant_info()
     path = assistant_info_file()
     if info is None:

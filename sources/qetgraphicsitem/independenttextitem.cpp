@@ -16,7 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "independenttextitem.h"
-#include "../shownkinds.h"
+#include <shownkinds.h>
 
 #include "../diagram.h"
 #include "../diagramcommands.h"

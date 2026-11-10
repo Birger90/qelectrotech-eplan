@@ -18,12 +18,14 @@
 #ifndef DIAGRAMVIEW_H
 #define DIAGRAMVIEW_H
 
-#include "../ElementsCollection/elementslocation.h"
+#include <ElementsCollection/elementslocation.h>
 #include "titleblock/templatelocation.h"
 
 #include <QClipboard>
 #include <QGraphicsObject>
 #include <QPointer>
+
+#include <optional>
 #include <memory>
 #include "palettegraphicsview.h"
 
@@ -43,6 +45,7 @@ class QMenu;
 	interactive way.
 */
 class Element;
+class Terminal;
 class DiagramView : public PaletteGraphicsView
 {
 	Q_OBJECT
@@ -84,6 +87,9 @@ class DiagramView : public PaletteGraphicsView
 		QString           m_pointed_description;
 		QPointF           m_crosshair_pos;
 		bool              m_crosshair_visible = false;
+			/// After the arrow keys, the crosshair stays on the moved
+			/// selection until the mouse itself moves away from here
+		std::optional<QPoint> m_crosshair_held_at;
 		void moveCrosshair(const QPoint &viewport_pos);
 			/// A handle near the mouse catches the crosshair and the
 			/// pointer, as a grid point does; a press then grabs it as if
@@ -96,6 +102,11 @@ class DiagramView : public PaletteGraphicsView
 			/// The symbol a press grabbed: while it is dragged, the
 			/// crosshair stands on its terminal nearest the mouse
 		QPointer<Element> m_dragged_element;
+			/// A press near one of a symbol's terminals makes it the point
+			/// the crosshair stands on while the symbol is moved (arrow
+			/// keys or mouse); a press elsewhere on it, the insertion point
+		QPointer<Terminal> m_reference_terminal;
+		Terminal *referenceTerminal() const;
 		QGraphicsObject *handleNear(const QPoint &viewport_pos) const;
 		QMouseEvent *onCaughtHandle(QMouseEvent *e, std::unique_ptr<QMouseEvent> &shifted);
 		void hideCrosshair();
@@ -128,8 +139,23 @@ class DiagramView : public PaletteGraphicsView
 		QTransform m_rulers_transform;
 		qreal m_shown_zoom = 0;
 		bool m_cell_lines_shown = false;
+			/// What the last duplicate selected, to tell when the selection
+			/// is no longer that copy. Compared only, never followed: the
+			/// items may be gone since.
+		QList<QGraphicsItem *> m_last_copy;
+			/// One item of that copy which a move moves, where the item it
+			/// was copied from stood, and where the copy landed
+		QPointer<QGraphicsObject> m_last_copy_item;
+		QPointF m_last_copy_source;
+		QPointF m_last_copy_landed;
+			/// That copy was made by duplicateRepeatingMove(): its move
+			/// is learned
+		bool m_last_copy_learns = false;
+		void duplicateBy(const QPointF &offset, bool learns);
+		void learnCopyMove();
+		void copySelectionChanged();
 
-		
+
 	public:
 		QString title() const;
 		void editDiagramProperties();
@@ -214,6 +240,7 @@ class DiagramView : public PaletteGraphicsView
 	
 	private:
 		void setPointedDescription(const QString &description);
+		bool textIsBeingEdited() const;
 		void handleElementDrop(QDropEvent *);
 		void updateFolioReportMenu();
 		void updateChangeTypeMenu();
@@ -287,6 +314,7 @@ class DiagramView : public PaletteGraphicsView
 		void paste(const QPointF & = QPointF(), QClipboard::Mode = QClipboard::Clipboard);
 		void pasteHere();
 		void duplicate(const QPoint &stepOffset);
+		void duplicateRepeatingMove();
 		void buildFolio();
 		void adjustSceneRect();
 		void updateWindowTitle();

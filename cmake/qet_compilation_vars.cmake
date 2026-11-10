@@ -149,6 +149,10 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/import/eplandxf/eplanmacroreader.h
   ${QET_DIR}/sources/import/eplandxf/eplanimportdialog.cpp
   ${QET_DIR}/sources/import/eplandxf/eplanimportdialog.h
+  ${QET_DIR}/sources/import/plcchannels.cpp
+  ${QET_DIR}/sources/import/plcchannels.h
+  ${QET_DIR}/sources/import/eplanproject/eplanprojectimportdialog.cpp
+  ${QET_DIR}/sources/import/eplanproject/eplanprojectimportdialog.h
   ${QET_DIR}/sources/import/eplandxf/dataportalclient.cpp
   ${QET_DIR}/sources/import/eplandxf/dataportalclient.h
   ${QET_DIR}/sources/import/eplandxf/dataportaldialog.cpp
@@ -161,6 +165,12 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/import/portals/manufacturerportals.h
   ${QET_DIR}/sources/import/portals/partfetcher.cpp
   ${QET_DIR}/sources/import/portals/partfetcher.h
+  ${QET_DIR}/sources/assistant/assistantbridge.cpp
+  ${QET_DIR}/sources/assistant/assistantbridge.h
+  ${QET_DIR}/sources/assistant/assistantdock.cpp
+  ${QET_DIR}/sources/assistant/assistantdock.h
+  ${QET_DIR}/sources/assistant/assistantsettingsdialog.cpp
+  ${QET_DIR}/sources/assistant/assistantsettingsdialog.h
   ${QET_DIR}/sources/import/portals/portalcredentials.cpp
   ${QET_DIR}/sources/import/portals/portalcredentials.h
   ${QET_DIR}/sources/import/portals/portalsdialog.cpp
@@ -520,6 +530,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/editor/esevent/eseventaddrect.h
   ${QET_DIR}/sources/editor/esevent/eseventaddterminal.cpp
   ${QET_DIR}/sources/editor/esevent/eseventaddterminal.h
+  ${QET_DIR}/sources/editor/esevent/eseventsetorigin.cpp
+  ${QET_DIR}/sources/editor/esevent/eseventsetorigin.h
   ${QET_DIR}/sources/editor/esevent/eseventaddtext.cpp
   ${QET_DIR}/sources/editor/esevent/eseventaddtext.h
   ${QET_DIR}/sources/editor/esevent/eseventinterface.cpp
@@ -635,6 +647,7 @@ set(QET_SRC_FILES
 
   ${QET_DIR}/sources/print/projectprintwindow.cpp
   ${QET_DIR}/sources/print/projectprintwindow.h
+  ${QET_DIR}/sources/print/printdrawing.h
 
   ${QET_DIR}/sources/project/projectpropertieshandler.cpp
   ${QET_DIR}/sources/project/projectpropertieshandler.h
@@ -970,6 +983,10 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/ui/prefixconfigurationdialog.h
   ${QET_DIR}/sources/ui/projectlanguagesdialog.cpp
   ${QET_DIR}/sources/ui/projectlanguagesdialog.h
+  ${QET_DIR}/sources/ui/potentialcheckdialog.cpp
+  ${QET_DIR}/sources/ui/potentialcheckdialog.h
+  ${QET_DIR}/sources/ui/potentialsourceswidget.cpp
+  ${QET_DIR}/sources/ui/potentialsourceswidget.h
   ${QET_DIR}/sources/ui/potentialtypeswidget.cpp
   ${QET_DIR}/sources/ui/potentialtypeswidget.h
   ${QET_DIR}/sources/ui/projectpropertiesdialog.cpp

@@ -17,11 +17,11 @@
 */
 #ifndef CONDUCTOR_H
 #define CONDUCTOR_H
-#include "../autoNum/assignvariables.h"
-#include "../conductorproperties.h"
-#include "../dataBase/conductorlayout.h"
-#include "../dataBase/conductorpath.h"
-#include "../properties/potentialtypes.h"
+#include <autoNum/assignvariables.h>
+#include <conductorproperties.h>
+#include <dataBase/conductorlayout.h>
+#include <dataBase/conductorpath.h>
+#include <properties/potentialtypes.h>
 
 #include <QGraphicsPathItem>
 #include <QSet>
@@ -195,7 +195,7 @@ class Conductor : public QGraphicsObject
 	public:
 		void setFreezeLabel(bool freeze);
 		bool isAutomatic() const { return m_automatic; }
-		void setAutomatic(bool automatic) { m_automatic = automatic; updateTextVisibility(); }
+		void setAutomatic(bool automatic);
 			/// Drawn grey while its symbol is dragged: an automatic wire
 			/// is worked out anew once the symbol is put down
 		bool isPreview() const { return m_preview; }

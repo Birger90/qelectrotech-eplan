@@ -242,6 +242,7 @@ if(WIN32)
     # listed as a source; MinGW needs it embedded through a resource file,
     # and ld then keeps it ahead of the toolchain's default manifest.
     set(QET_MANIFEST_FILE ${QET_DIR}/build-aux/windows/qelectrotech.exe.manifest)
+    set(QET_ICON_FILE ${QET_DIR}/ico/windows_icon/qelectrotech.ico)
     if(MSVC)
         target_sources(${PROJECT_NAME} PRIVATE ${QET_MANIFEST_FILE})
     else()

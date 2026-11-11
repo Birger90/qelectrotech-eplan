@@ -22,7 +22,7 @@ im privaten Daten-Repository (`QElectroTech\Daten`, nur auf dem NAS):
 - Vor jedem Push prüfen:
 
 ```bash
-git grep -I -n -E "COMA|Fliegl|Andritz|(2[0-9])[ _]37[ _][0-9]{3}|192\.168\." -- . ":!elements" ":!lang"
+git grep -I -n -E "COMA|Fliegl|Andritz|(2[0-9])[ _]37[ _][0-9]{3}|192\.168\." -- . ":!elements" ":!lang" ":!examples" ":!VERSIONIERUNG.md"
 ```
 
 Kein Treffer, dann pushen. Die Historie vor v1.0.0 enthält solche Daten. Sie liegt nur auf meko, als Tag

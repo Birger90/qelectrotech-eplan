@@ -12157,6 +12157,10 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>Montagefläche %1 einfügen</translation>
     </message>
     <message>
+        <source>Cabinet layout %1</source>
+        <translation>Schaltschrankaufbau %1</translation>
+    </message>
+    <message>
         <source>Size from</source>
         <translation>Maße ab</translation>
     </message>
@@ -12165,12 +12169,20 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>Kein gespeicherter Schrank mit mindestens diesen Maßen: „Data Portal…“ zeigt die Schränke des Herstellers in dieser Größe.</translation>
     </message>
     <message>
+        <source>This folio is in use: the enclosure gets a new folio &quot;Cabinet layout&quot; at the end of the project.</source>
+        <translation>Diese Seite ist belegt: der Schrank bekommt eine neue Seite „Schaltschrankaufbau“ am Ende des Projekts.</translation>
+    </message>
+    <message>
         <source>Plate of %1</source>
         <translation>Platte von %1</translation>
     </message>
     <message>
         <source>The data of this enclosure hold no mounting plate.</source>
         <translation>Die Daten dieses Schranks enthalten keine Montageplatte.</translation>
+    </message>
+    <message>
+        <source>This folio holds a schematic: the plate gets a new folio &quot;Cabinet layout&quot; at the end of the project.</source>
+        <translation>Diese Seite enthält einen Schaltplan: die Platte bekommt eine neue Seite „Schaltschrankaufbau“ am Ende des Projekts.</translation>
     </message>
     <message>
         <source>Insert a mounting surface on this folio first.</source>

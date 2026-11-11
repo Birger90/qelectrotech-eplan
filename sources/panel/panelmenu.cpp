@@ -42,11 +42,14 @@
 #include "../qetgraphicsitem/qetshapeitem.h"
 #include "../qetgraphicsitem/terminalelement.h"
 #include "../qetproject.h"
+#include "../projectview.h"
+#include "../titleblockproperties.h"
 #include "../TerminalStrip/terminalstrip.h"
 #include "../TerminalStrip/physicalterminal.h"
 #include "../TerminalStrip/realterminal.h"
 #include "../qetversion.h"
 #include "../undocommand/addgraphicsobjectcommand.h"
+#include "../undocommand/changetitleblockcommand.h"
 #include "../undocommand/changeelementinformationcommand.h"
 #include "../undocommand/deleteqgraphicsitemcommand.h"
 #include "../diagramcontent.h"
@@ -153,6 +156,71 @@ QDialogButtonBox *okCancel(QDialog *dialog)
 	QObject::connect(buttons, &QDialogButtonBox::accepted, dialog, &QDialog::accept);
 	QObject::connect(buttons, &QDialogButtonBox::rejected, dialog, &QDialog::reject);
 	return buttons;
+}
+
+	/// a folio that holds a cabinet layout: an enclosure or a mounting surface
+bool hasLayout(Diagram *d)
+{
+	for (QGraphicsItem *item : d->items())
+		if (auto *s = dynamic_cast<QetShapeItem *>(item)) {
+			const PanelData::Role role = s->panelData().role;
+			if (role == PanelData::Enclosure || role == PanelData::Surface) return true;
+		}
+	return false;
+}
+
+	/// a folio with something drawn on it: a schematic, or a layout
+bool folioInUse(Diagram *d)
+{
+	if (!d->elements().isEmpty() || !d->conductors().isEmpty()) return true;
+	for (QGraphicsItem *item : d->items())
+		if (dynamic_cast<QetShapeItem *>(item)) return true;
+	return false;
+}
+
+	/// Where a new enclosure or mounting plate goes. Every enclosure has a
+	/// folio of its own: the open one only while nothing is on it. A plate
+	/// alone joins the layout of the open folio, but never a schematic.
+bool needsNewFolio(Diagram *d, bool enclosure)
+{
+	if (!folioInUse(d)) return false;
+	return enclosure || !hasLayout(d);
+}
+
+	/// a new folio at the end of the project, titled "Cabinet layout +S1",
+	/// shown in the editor; @p current when the project takes none
+Diagram *newLayoutFolio(QETDiagramEditor *editor, Diagram *current, const QString &designation)
+{
+	QETProject *project = current->project();
+	Diagram *folio = project ? project->addNewDiagram() : nullptr;
+	if (!folio) return current;
+		// the title the way the title block dialog sets it: the tab and the
+		// folio list follow
+	const TitleBlockProperties old_title = folio->border_and_titleblock.exportTitleBlock();
+	TitleBlockProperties title = old_title;
+	title.title = PanelMenu::tr("Cabinet layout %1").arg(designation).trimmed();
+	folio->undoStack().push(new ChangeTitleBlockCommand(folio, old_title, title));
+	// (the folio came from the editor's current view: its project is shown)
+	if (ProjectView *view = editor->currentProjectView()) view->showDiagram(folio);
+	return folio;
+}
+
+	/// "+S1", or the next number no enclosure of the project has yet
+QString nextEnclosureDesignation(Diagram *d)
+{
+	QSet<QString> used;
+	if (QETProject *project = d->project()) {
+			// folios not built yet are left alone: looking must not load them
+		const QList<Diagram *> folios = project->unloadedFolioCount() == 0 ? project->diagrams()
+																		   : project->builtFolios();
+		for (Diagram *folio : folios)
+			for (QGraphicsItem *item : folio->items())
+				if (auto *s = dynamic_cast<QetShapeItem *>(item))
+					if (s->panelData().role == PanelData::Enclosure) used << s->panelData().designation;
+	}
+	int n = 1;
+	while (used.contains(QStringLiteral("+S%1").arg(n))) ++n;
+	return QStringLiteral("+S%1").arg(n);
 }
 
 /* ------------------------------------------------------------------ */
@@ -599,6 +667,7 @@ void PanelMenu::showAssistant()
 	a.checks = [this]() {if (m_check_action) m_check_action->setChecked(true); showChecks(true);};
 	a.view3d = [this]() {show3D();};
 	a.manufacturing = [this]() {exportManufacturing();};
+	a.current = [this]() {return diagram();};
 	auto *assistant = new PanelAssistant(d, a, m_editor);
 	assistant->show();
 }
@@ -728,7 +797,7 @@ void PanelMenu::insertEnclosure()
 	row->addWidget(portal);
 	auto *info = new QLabel(&dialog);
 	info->setWordWrap(true);
-	auto *designation = new QLineEdit(QStringLiteral("+S1"), &dialog);
+	auto *designation = new QLineEdit(nextEnclosureDesignation(d), &dialog);
 	auto *plate_name = new QLineEdit(QStringLiteral("-MP1"), &dialog);
 	auto *with_plate = new QCheckBox(tr("With its mounting plate"), &dialog);
 	with_plate->setChecked(true);
@@ -801,8 +870,16 @@ void PanelMenu::insertEnclosure()
 	load();
 	auto *box = new QVBoxLayout(&dialog);
 	box->addLayout(form);
+	if (needsNewFolio(d, true)) {
+		auto *where = new QLabel(tr("This folio is in use: the enclosure gets a new folio \"Cabinet layout\" "
+									"at the end of the project."), &dialog);
+		where->setWordWrap(true);
+		box->addWidget(where);
+	}
 	box->addWidget(okCancel(&dialog));
 	if (dialog.exec() != QDialog::Accepted || enclosure.isNull()) return;
+		// every enclosure on a folio of its own
+	if (needsNewFolio(d, true)) d = newLayoutFolio(m_editor, d, designation->text().trimmed());
 
 		// a scale at which the front view fits the folio
 	const QRectF area = d->border_and_titleblock.insideBorderRect().adjusted(20, 20, -20, -20);
@@ -990,8 +1067,16 @@ void PanelMenu::insertSurface()
 
 	auto *layout = new QVBoxLayout(&dialog);
 	layout->addLayout(form);
+	if (needsNewFolio(d, false)) {
+		auto *where = new QLabel(tr("This folio holds a schematic: the plate gets a new folio \"Cabinet layout\" "
+									"at the end of the project."), &dialog);
+		where->setWordWrap(true);
+		layout->addWidget(where);
+	}
 	layout->addWidget(okCancel(&dialog));
 	if (dialog.exec() != QDialog::Accepted) return;
+		// a plate never lands in a schematic
+	if (needsNewFolio(d, false)) d = newLayoutFolio(m_editor, d, designation->text().trimmed());
 
 	const QRectF area = d->border_and_titleblock.insideBorderRect().adjusted(20, 20, -20, -20);
 	double n = scale->currentData().toDouble();

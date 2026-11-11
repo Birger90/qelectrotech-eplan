@@ -223,6 +223,7 @@ PanelAssistant::PanelAssistant(Diagram *diagram, const Actions &actions, QWidget
 		auto *b = new QPushButton(text, this);
 		connect(b, &QPushButton::clicked, this, [this, run]() {
 			if (run) run();
+			if (m_actions.current) follow(m_actions.current());
 			update();
 		});
 		return b;
@@ -289,6 +290,15 @@ PanelAssistant::PanelAssistant(Diagram *diagram, const Actions &actions, QWidget
 
 	if (m_diagram) connect(&m_diagram->undoStack(), &QUndoStack::indexChanged, this, &PanelAssistant::update);
 	update();
+}
+
+/// go on with the folio the editor shows now
+void PanelAssistant::follow(Diagram *diagram)
+{
+	if (!diagram || diagram == m_diagram) return;
+	if (m_diagram) disconnect(&m_diagram->undoStack(), nullptr, this, nullptr);
+	m_diagram = diagram;
+	connect(&m_diagram->undoStack(), &QUndoStack::indexChanged, this, &PanelAssistant::update);
 }
 
 void PanelAssistant::update()

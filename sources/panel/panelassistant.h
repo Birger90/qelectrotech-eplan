@@ -80,6 +80,9 @@ class PanelAssistant : public QDialog
 			std::function<void()> checks;        ///< show the check list
 			std::function<void()> view3d;
 			std::function<void()> manufacturing; ///< export the manufacturing files
+				/// the folio open in the editor: a step may have made a new
+				/// one (an enclosure gets a folio of its own)
+			std::function<Diagram *()> current;
 		};
 		PanelAssistant(Diagram *diagram, const Actions &actions, QWidget *parent = nullptr);
 
@@ -92,6 +95,7 @@ class PanelAssistant : public QDialog
 
 	private:
 		void update();
+		void follow(Diagram *diagram);
 
 		QPointer<Diagram> m_diagram;
 		Actions m_actions;

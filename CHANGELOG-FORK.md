@@ -15,6 +15,11 @@ Original-QElectroTech stehen in `ChangeLog*`.
   gespeicherten Schranks als Vorlage (Löcher und Kanten des Herstellers, auf das eigene Maß gestreckt) und
   schlägt das vor, sobald eine Vorlage da ist; im Assistenten „Schaltschrank aufbauen“ hat Schritt 1 dafür den
   Knopf „Nur Platte…“.
+- Schaltschrankaufbau: jeder Schrank bekommt seine eigene Seite. Ist die offene Seite belegt (Schaltplan oder
+  schon ein Aufbau), legt „Schaltschrank einfügen“ am Projektende eine neue Seite „Schaltschrankaufbau +S1“ an
+  und wechselt dorthin; der nächste Schrank heißt +S2 und bekommt wieder eine eigene Seite. Eine einzelne
+  Platte kommt auf die offene Aufbauseite, aber nie in einen Schaltplan. Der Assistent arbeitet auf der neuen
+  Seite weiter.
 
 ## 1.7.1 – 11.11.2026
 

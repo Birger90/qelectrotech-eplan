@@ -35,6 +35,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QPlainTextEdit>
+#include <QProgressBar>
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QSettings>
@@ -121,6 +122,19 @@ EplanProjectImportDialog::EplanProjectImportDialog(QWidget *parent) :
 
 	m_status = new QLabel(this);
 	m_status->setWordWrap(true);
+	m_progress = new QProgressBar(this);
+	m_progress->setRange(0, 100);
+	m_progress->setValue(0);
+	m_progress->setTextVisible(true);
+	m_progress->setFormat(QStringLiteral("%p %"));
+	m_progress->setAlignment(Qt::AlignCenter);
+	m_progress->setMinimumHeight(22);
+	// green on every Windows style (Windows 11 would draw it in the accent colour)
+	m_progress->setStyleSheet(QStringLiteral(
+		"QProgressBar { border: 1px solid #8c8c8c; border-radius: 4px;"
+		" background: #e8e8e8; color: #000000; text-align: center; }"
+		"QProgressBar::chunk { background-color: #2ea043; border-radius: 3px; }"));
+	m_progress->setVisible(false);
 	m_log = new QPlainTextEdit(this);
 	m_log->setReadOnly(true);
 	m_log->setLineWrapMode(QPlainTextEdit::WidgetWidth);
@@ -135,6 +149,7 @@ EplanProjectImportDialog::EplanProjectImportDialog(QWidget *parent) :
 	layout->addWidget(intro);
 	layout->addLayout(form);
 	layout->addWidget(m_status);
+	layout->addWidget(m_progress);
 	layout->addWidget(m_log, 1);
 	layout->addWidget(buttons);
 
@@ -225,6 +240,33 @@ QString EplanProjectImportDialog::resultFromOutput(const QString &output)
 	auto it = done.globalMatch(output);
 	while (it.hasNext()) result = it.next().captured(1);
 	return result;
+}
+
+QString EplanProjectImportDialog::progressText(const QString &line, int *percent)
+{
+	static const QRegularExpression progress(
+		QStringLiteral("^FORTSCHRITT (\\d+) (\\w+)(?: (\\d+) (\\d+))?\\s*$"));
+	const auto m = progress.match(line);
+	if (!m.hasMatch()) return QString();
+	if (percent) *percent = qBound(0, m.captured(1).toInt(), 100);
+	const QString step = m.captured(2);
+	if (step == QLatin1String("lesen"))         return tr("Unpacking and reading the EPLAN archive");
+	if (step == QLatin1String("funktionen"))    return tr("Reading functions and articles");
+	if (step == QLatin1String("seiten"))        return tr("Sorting the pages");
+	if (step == QLatin1String("symbole"))       return tr("Reading symbols and page graphics");
+	if (step == QLatin1String("sammlung"))      return tr("Looking up parts in the company collection");
+	if (step == QLatin1String("portal"))        return tr("Looking up parts in the company collection and fetching missing ones from the EPLAN Data Portal");
+	if (step == QLatin1String("kaesten"))       return tr("Device boxes and black boxes");
+	if (step == QLatin1String("setzen"))
+		return tr("Placing functions (%1 of %2)").arg(m.captured(3), m.captured(4));
+	if (step == QLatin1String("grafik"))        return tr("Page graphics and title blocks");
+	if (step == QLatin1String("unterbrechung")) return tr("Interruption points");
+	if (step == QLatin1String("verbindungen"))  return tr("Drawing connections");
+	if (step == QLatin1String("listen"))        return tr("Terminal diagram, cable overview and parts list");
+	if (step == QLatin1String("schreiben"))     return tr("Writing the QElectroTech project");
+	if (step == QLatin1String("pdf"))           return tr("Writing the PDF");
+	if (step == QLatin1String("fertig"))        return tr("Done");
+	return step;
 }
 
 bool EplanProjectImportDialog::chooseArchive()
@@ -414,7 +456,10 @@ void EplanProjectImportDialog::start()
 
 	m_log->clear();
 	m_output.clear();
+	m_pending.clear();
 	m_result.clear();
+	m_progress->setValue(0);
+	m_progress->setVisible(true);
 	m_start->setEnabled(false);
 	QApplication::setOverrideCursor(Qt::BusyCursor);
 	const QString python = usablePython(script);
@@ -457,25 +502,48 @@ void EplanProjectImportDialog::start()
 void EplanProjectImportDialog::readOutput()
 {
 	if (!m_process) return;
-	const QString text = QString::fromUtf8(m_process->readAll());
-	if (text.isEmpty()) return;
-	m_output += text;
-	m_log->moveCursor(QTextCursor::End);
-	m_log->insertPlainText(text);
-	m_log->moveCursor(QTextCursor::End);
-	const QStringList lines = m_output.trimmed().split(QLatin1Char('\n'));
-	if (!lines.isEmpty() && !lines.last().trimmed().isEmpty())
-		m_status->setText(lines.last().trimmed().left(200));
+	m_pending += QString::fromUtf8(m_process->readAll());
+	// whole lines only: progress lines move the bar, all others go to the log
+	const int end = m_pending.lastIndexOf(QLatin1Char('\n'));
+	if (end < 0) return;
+	const QStringList lines = m_pending.left(end).split(QLatin1Char('\n'));
+	m_pending.remove(0, end + 1);
+	for (QString line : lines) {
+		line.remove(QLatin1Char('\r'));
+		int percent = 0;
+		const QString step = progressText(line, &percent);
+		if (!step.isEmpty()) {
+			m_progress->setValue(percent);
+			m_status->setText(step);
+			continue;
+		}
+		m_output += line + QLatin1Char('\n');
+		m_log->appendPlainText(line);
+	}
 }
 
 void EplanProjectImportDialog::processFinished(int exit_code, QProcess::ExitStatus status)
 {
 	readOutput();
+	if (!m_pending.isEmpty()) {		// a last line without line break
+		const QString rest = m_pending;
+		m_pending.clear();
+		for (const QString &line : rest.split(QLatin1Char('\n'), Qt::SkipEmptyParts)) {
+			int percent = 0;
+			if (progressText(line.trimmed(), &percent).isEmpty()) {
+				m_output += line + QLatin1Char('\n');
+				m_log->appendPlainText(line);
+			} else {
+				m_progress->setValue(percent);
+			}
+		}
+	}
 	m_process->deleteLater();
 	m_process = nullptr;
 	const QString result = resultFromOutput(m_output);
 	updateButtons();
 	if (status == QProcess::NormalExit && exit_code == 0 && QFileInfo(result).isFile()) {
+		m_progress->setValue(100);
 		m_result = QDir::cleanPath(QDir::fromNativeSeparators(result));
 		m_status->setText(tr("Done: %1").arg(QDir::toNativeSeparators(m_result)));
 		accept();

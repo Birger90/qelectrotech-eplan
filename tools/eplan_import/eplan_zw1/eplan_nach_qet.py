@@ -422,15 +422,22 @@ def _kontaktspiegel(P, F, funk, gr, einst, blatt, fn_seite, massstab, teile, ext
                                            "value": wert_})
 
 
+def _fortschritt(prozent, schritt):
+    """Eine Zeile für den Fortschrittsbalken des QET-Dialogs (Datei > EPLAN-Projekt importieren); der Dialog übersetzt den Schritt."""
+    print(f"FORTSCHRITT {int(prozent)} {schritt}", flush=True)
+
+
 def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_dekodieren=True, data_portal=False,
              bibliothek=True):
     """nur_seiten: Seitennummern (Text) für einen Probelauf ohne Listen; neu_dekodieren=False nutzt parsed.pkl;
     bibliothek: Bauteile der Firmensammlung nutzen und fehlende Schaltbilder dort ablegen;
     data_portal: fehlende Artikel vorher aus dem EPLAN Data Portal in die Sammlung holen."""
+    _fortschritt(2, "lesen")
     plannr = plannr or os.path.splitext(os.path.basename(archiv))[0]
     arbeit = arbeit or os.path.join(os.path.dirname(os.path.abspath(ziel_qet)), "_eplan_import")
     out = (importieren(archiv, arbeit) if neu_dekodieren or not os.path.exists(os.path.join(arbeit, "parsed.pkl"))
            else os.path.join(arbeit, "out"))
+    _fortschritt(15, "funktionen")
     P = pickle.load(open(os.path.join(arbeit, "parsed.pkl"), "rb"))
     F, PG, IP, PO = P["Function.eod"], P["Page.eod"], P.get("IPoint.eod", {}), P.get("Potential.eod", {})
     # 3D-Platzierungen (DMFunction3D, Montageaufbau) gehören nicht in den Schaltplan: erkennbar an Feldern, die laut
@@ -443,6 +450,7 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
         if r.get("Bestellnummer (22003)") and int(r["Funktion_id"]) in F:
             artikel[int(r["Funktion_id"])].append(r)
 
+    _fortschritt(20, "seiten")
     # Seiten in Blattreihenfolge
     seiten = []
     for pid, e in PG.items():
@@ -505,6 +513,7 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
     def im_blatt(p):
         return p and -5 <= p[0] <= 425 and 20 <= p[1] <= 300
 
+    _fortschritt(25, "symbole")
     # Symbolbibliotheken und Seitengrafik
     gr = G.Grafik(os.path.join(arbeit, "x"))
     gr.bibliotheken_zuordnen([e["props"] for e in F.values() if e["props"]])
@@ -790,6 +799,7 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
                     stat["sps_symb_verweis_text"] += 1               # Verweis auf andere Funktion: nicht umgesetzt
         return letzt_
 
+    _fortschritt(40, "portal" if data_portal else "sammlung")
     # Firmensammlung: vorhandene Bauteile zuerst; fehlende Artikel optional aus dem Data Portal holen
     sammlung = BIB.Sammlung() if bibliothek else None
     if sammlung is not None and data_portal:
@@ -1168,6 +1178,7 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
     def roh_von(fid):
         return [n.strip() for n in (funk.get(fid, {}).get("anschluesse") or "").split("|")]
 
+    _fortschritt(55, "kaesten")
     # Black Boxes: Gerätekasten (Funktionsdefinition 1303) bzw. SPS-Karte (301) samt allem, was in seiner
     # EPLAN-Makrogruppe steckt (Geräteanschlüsse, Kontakte, Grafik) -> EIN QET-Bauteil (Master)
     im_kasten, kasten_teil, kasten_gruppen = {}, {}, collections.defaultdict(set)
@@ -1320,8 +1331,12 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
             rolle_von[k_] = ("slave", zust, "power" if sn[:2] in ("SL", "OL") else "simple")
     bmk_im_kasten = set()
     # links oben zuerst, damit das BMK eines Geräts im Kasten an der ersten Funktion steht
+    _nf, _if = max(1, len(F)), 0
     for fid, e in sorted(F.items(), key=lambda fe: ((_pos(fe[1]["props"]) or (0, 0))[0] if fe[1]["props"] else 0,
                                                     -((_pos(fe[1]["props"]) or (0, 0))[1] if fe[1]["props"] else 0))):
+        _if += 1
+        if _if % 250 == 0:
+            _fortschritt(60 + 20 * _if // _nf, f"setzen {_if} {_nf}")
         seite = _wert(e["props"], 60402)
         p = _pos(e["props"])
         if not seite or seite[1] not in blatt or not im_blatt(p) or fid in kasten_teil:
@@ -1558,6 +1573,7 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
         nb_fehlt[(quelle, eig)] += 1
         return ""
 
+    _fortschritt(82, "grafik")
     # freie Seitengrafik, Symbole ohne Funktion (Winkel, Abzweige …) und Verbindungsdefinitionspunkte
     for pid, b in blatt.items():
         nbn = _kv(PG[pid]["props"], 60011).get("11016") or einst.get("TrDMProject.Frame", "")
@@ -1626,6 +1642,7 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
             for i in range(4):
                 pins[(oid, i)] = (t, 0)
 
+    _fortschritt(86, "unterbrechung")
     # Unterbrechungspunkte: Name = 20012+20013+20014 (z. B. „5L4+“); gleichnamige paarweise in Seitenfolge
     # (1↔2, 3↔4 …); Text wie EPLAN „Name / Querverweis“ (rechtsbündig: „Querverweis / Name“) an der Lage von 20010
     def ip_name(pr):
@@ -1703,6 +1720,7 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
         x, y = _px(p)
         pins[(oid, 0)] = (b.setze(PUNKT, x, y, anker=0, label=_wert(e["props"], 61691) or ""), 0)
 
+    _fortschritt(88, "verbindungen")
     # Verbindungen (nur innerhalb eines Blatts; blattübergreifend laufen sie über die Pfeile)
     gezeichnet = 0
     nicht = collections.Counter()          # Grund -> Anzahl nicht gezeichneter Verbindungen
@@ -1734,6 +1752,7 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
             gezeichnet += 1
     fehlt = sum(nicht.values())
 
+    _fortschritt(92, "listen")
     # Auswertungen aus EPLAN als Tabellenblätter
     n = 900
     if not nur_seiten:
@@ -1750,6 +1769,7 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
                r["Anzahl Referenzen"]] for r in _csv(out, "Stueckliste_summiert.csv")]
         n = L.seiten(plan, "Stückliste", "ZST", "", n, L.STUECK_SPALTEN, st)
 
+    _fortschritt(95, "schreiben")
     erg, _ = plan.erzeuge(os.path.basename(ziel_qet), pdf=False)
     # QETs eigene Verweistexte an den Pfeilen aus: der Querverweis steht als EPLAN-Text am Unterbrechungspunkt
     s_qet = open(erg, encoding="utf-8").read()
@@ -1795,8 +1815,10 @@ if __name__ == "__main__":
                                        os.path.splitext(os.path.basename(archiv))[0].replace(" ", "_")),
                    data_portal="--dataportal" in sys.argv, bibliothek="--ohne-sammlung" not in sys.argv)
     if "--pdf" in sys.argv:
+        _fortschritt(97, "pdf")
         from qet_direkt import q, BIN
         print("pdf:", q.tool_export(BIN, erg, "pdf", erg.replace(".qet", ".pdf"), timeout=3600).get("ok"))
+    _fortschritt(100, "fertig")
     print("fertig:", erg)
     if "--oeffnen" in sys.argv:
         import subprocess

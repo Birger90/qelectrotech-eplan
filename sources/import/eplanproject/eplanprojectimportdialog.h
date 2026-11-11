@@ -27,6 +27,7 @@ class QDropEvent;
 class QLabel;
 class QLineEdit;
 class QPlainTextEdit;
+class QProgressBar;
 class QPushButton;
 
 /**
@@ -66,6 +67,10 @@ class EplanProjectImportDialog : public QDialog
 					     bool collection);
 		/// the path after "fertig: " in the program's output, or empty
 		static QString resultFromOutput(const QString &output);
+		/// the text for a progress line "FORTSCHRITT <percent> <step> [i n]"
+		/// of the program, in the language of QElectroTech; @p percent gets
+		/// the percentage. Empty when @p line is no progress line.
+		static QString progressText(const QString &line, int *percent);
 
 	protected:
 		void reject() override;
@@ -93,10 +98,12 @@ class EplanProjectImportDialog : public QDialog
 		QCheckBox *m_collection = nullptr;
 		QLabel *m_status = nullptr;
 		QPlainTextEdit *m_log = nullptr;
+		QProgressBar *m_progress = nullptr;
 		QPushButton *m_start = nullptr;
 		QPushButton *m_close = nullptr;
 		QProcess *m_process = nullptr;
 		QString m_output;
+		QString m_pending;	///< output after the last line break
 		QString m_result;
 		bool m_target_edited = false;	///< the user chose the target themself
 };

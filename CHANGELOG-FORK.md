@@ -3,6 +3,15 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.1.0 – 11.11.2026
+
+- Datei > EPLAN-Projekt importieren zeigt einen grünen Fortschrittsbalken (0–100 %) und den laufenden Schritt.
+  Das Import-Programm meldet dazu Zeilen `FORTSCHRITT <prozent> <schritt>`.
+- Deutsche Oberfläche vollständig: alle 913 offenen Texte übersetzt (EPLAN-Import, Assistent, Data Portal,
+  Gerätenavigator, Brücken u. a.), drei falsche alte Übersetzungen korrigiert.
+- `tools/deploy_lokal.ps1` bringt Programm, Übersetzungen und Python-Teile nach build\deploy.
+  Vorher kam nur die exe dorthin, deshalb waren neue Fenster englisch.
+
 ## 1.0.1 – 11.11.2026
 
 - Die exe trägt wieder das QElectroTech-Programmsymbol (Explorer, Desktop-Verknüpfung, Taskleiste).

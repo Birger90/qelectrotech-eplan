@@ -44,6 +44,9 @@ Die Nummer steht an zwei Stellen. Beide werden zusammen mit dem Tag geändert:
 
 ## Ablauf
 
+Nach jedem Build `powershell -File tools\deploy_lokal.ps1` ausführen. Es kopiert Programm, Übersetzungen und
+Python-Teile nach `build\deploy`, von dort startet die Desktop-Verknüpfung.
+
 1. **Neue Arbeit:** `git switch -c feature/<thema> main`. Für einen eigenen Ordner:
    `git worktree add ../qelectrotech-eplan-<thema> -b feature/<thema> main`. Feature-Branches bleiben lokal
    oder liegen auf meko.

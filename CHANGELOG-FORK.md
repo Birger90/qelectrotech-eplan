@@ -3,6 +3,17 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.4.0 – 11.11.2026
+
+- Claude-Assistent über das eigene Claude-Konto (Pro/Max) statt eines API-Schlüssels: keine API-Kosten, die
+  Nutzung zählt gegen das Abo. Die Einrichtung hat dafür einen Knopf „Mit Claude verbinden“: Er installiert das
+  Python-Paket `claude-agent-sdk` (es bringt sein Claude Code mit) und öffnet die Claude-Anmeldung im Browser.
+  Danach wechselt das Fenster zum Chat. Die Brücke startet dazu mit `--konto`; Claude bekommt nur die
+  QET-Werkzeuge, keine Datei-, Shell- oder Webwerkzeuge, und ein API-Schlüssel aus der Umgebung wird
+  ausgeblendet. „Stattdessen einen API-Schlüssel verwenden“ schaltet zurück.
+- Nur in eigenen Builds mit `-DQET_CLAUDE_KONTO=ON` (dort voreingestellt): Anthropic erlaubt Programmen nicht
+  ohne Freigabe, die claude.ai-Anmeldung anzubieten. Ohne den Schalter bleibt es beim API-Schlüssel.
+
 ## 1.3.0 – 11.11.2026
 
 - EPLAN-Import: SPS-Karten werden SPS-Master mit Kanaltabelle (Adresse, Funktionstext, symbolische Adresse,

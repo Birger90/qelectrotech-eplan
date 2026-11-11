@@ -46,7 +46,8 @@ class AssistantBridge : public QObject
 		bool isRunning() const;
 			/// Start the bridge with \a env (which holds the API key: it is
 			/// handed to the child only, never logged).
-		bool start(const QProcessEnvironment &env, QString *error);
+		bool start(const QProcessEnvironment &env, QString *error,
+			   const QStringList &extra_args = QStringList());
 		void stop();
 		void send(const QJsonObject &message);
 			/// The last lines the bridge wrote to stderr, for an error report

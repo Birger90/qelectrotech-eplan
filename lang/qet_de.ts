@@ -685,7 +685,7 @@
     </message>
     <message>
         <source>Your question… (Enter sends, Shift+Enter: new line)</source>
-        <translation>Deine Frage… (Enter sendet, Umschalt+Enter: neue Zeile)</translation>
+        <translation type="vanished">Deine Frage… (Enter sendet, Umschalt+Enter: neue Zeile)</translation>
     </message>
     <message>
         <source>Stop</source>
@@ -7309,6 +7309,10 @@ Fortfahren?</translation>
         <translation>Ordnereigenschaften</translation>
     </message>
     <message>
+        <source>Manufacturer packages</source>
+        <translation>Herstellerpakete</translation>
+    </message>
+    <message>
         <source>Delete element?</source>
         <comment>message box title</comment>
         <translation>Bauteil löschen?</translation>
@@ -10937,6 +10941,173 @@ Diese Einstellung finden Sie unter QElectroTech Einstellungen &gt; Allgemein &gt
     </message>
 </context>
 <context>
+    <name>MacroPackageDialog</name>
+    <message>
+        <source>Part import from a manufacturer macro package</source>
+        <translation>Bauteil-Import aus einem Hersteller-Makropaket</translation>
+    </message>
+    <message>
+        <source>ZIP file with the EPLAN macros of a manufacturer</source>
+        <translation>ZIP-Datei mit den EPLAN-Makros eines Herstellers</translation>
+    </message>
+    <message>
+        <source>Choose ZIP…</source>
+        <translation>ZIP wählen…</translation>
+    </message>
+    <message>
+        <source>Folder…</source>
+        <translation>Ordner…</translation>
+    </message>
+    <message>
+        <source>Unpacked macro package (folder)</source>
+        <translation>Entpacktes Makropaket (Ordner)</translation>
+    </message>
+    <message>
+        <source>Some manufacturers offer all their EPLAN macros in one download instead of single parts in the EPLAN Data Portal. Beckhoff: on beckhoff.com open any product page &gt; Documentation and downloads &gt; Macros &gt; &quot;EPLAN macros from 2.7&quot; (ZIP; needs a myBeckhoff login). Download it once and choose it here; the package is remembered.</source>
+        <translation>Manche Hersteller bieten alle ihre EPLAN-Makros als einen Download an statt einzelner Artikel im EPLAN Data Portal. Beckhoff: auf beckhoff.com eine beliebige Produktseite öffnen &gt; Dokumentation und Downloads &gt; Makros &gt; „EPLAN Makros ab 2.7“ (ZIP; Anmeldung bei myBeckhoff nötig). Einmal herunterladen und hier wählen; das Paket wird gemerkt.</translation>
+    </message>
+    <message>
+        <source>Type, order number or text, e.g. EL1809 or &quot;analog 4-channel&quot;</source>
+        <translation>Typ, Bestellnummer oder Text, z. B. EL1809 oder „Analog 4-Kanal“</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Typ</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation>Beschreibung</translation>
+    </message>
+    <message>
+        <source>Category</source>
+        <translation>Kategorie</translation>
+    </message>
+    <message>
+        <source>Package:</source>
+        <translation>Paket:</translation>
+    </message>
+    <message>
+        <source>Search:</source>
+        <translation>Suchen:</translation>
+    </message>
+    <message>
+        <source>Import selected</source>
+        <translation>Auswahl importieren</translation>
+    </message>
+    <message>
+        <source>Import all</source>
+        <translation>Alle importieren</translation>
+    </message>
+    <message>
+        <source>Every article of the package. Articles whose type folder exists already are left as they are.</source>
+        <translation>Alle Artikel des Pakets. Artikel, deren Typordner schon vorhanden ist, bleiben unverändert.</translation>
+    </message>
+    <message>
+        <source>Choose the macro package first.</source>
+        <translation>Zuerst das Makropaket wählen.</translation>
+    </message>
+    <message>
+        <source>Unpacked macro package</source>
+        <translation>Entpacktes Makropaket</translation>
+    </message>
+    <message>
+        <source>Manufacturer macro package</source>
+        <translation>Hersteller-Makropaket</translation>
+    </message>
+    <message>
+        <source>Macro packages (*.zip)</source>
+        <translation>Makropakete (*.zip)</translation>
+    </message>
+    <message>
+        <source>Reading the package…</source>
+        <translation>Paket wird gelesen…</translation>
+    </message>
+    <message>
+        <source>This is no macro package:
+%1</source>
+        <translation>Das ist kein Makropaket:
+%1</translation>
+    </message>
+    <message>
+        <source>Order number: %1</source>
+        <translation>Bestellnummer: %1</translation>
+    </message>
+    <message>
+        <source>no macro: terminals from the part data only</source>
+        <translation>kein Makro: nur Anschlüsse aus den Artikeldaten</translation>
+    </message>
+    <message>
+        <source>%1 of %2 articles</source>
+        <translation>%1 von %2 Artikeln</translation>
+    </message>
+    <message>
+        <source>the first %1 are shown, narrow the search</source>
+        <translation>die ersten %1 werden angezeigt, Suche eingrenzen</translation>
+    </message>
+    <message>
+        <source>Accept the terms first.</source>
+        <translation>Zuerst die Bedingungen akzeptieren.</translation>
+    </message>
+    <message>
+        <source>Importing the macro package…</source>
+        <translation>Makropaket wird importiert…</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>The import failed:
+%1</source>
+        <translation>Der Import ist fehlgeschlagen:
+%1</translation>
+    </message>
+    <message>
+        <source>%1 articles imported (%2 elements), %3 left as they were because their type folder exists already, %4 failed.</source>
+        <translation>%1 Artikel importiert (%2 Bauteile), %3 unverändert gelassen, weil ihr Typordner schon vorhanden ist, %4 fehlgeschlagen.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n element(s) imported into</source>
+        <translation>
+            <numerusform>%n Bauteil importiert nach</numerusform>
+            <numerusform>%n Bauteile importiert nach</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>MacroPackageTree</name>
+    <message>
+        <source>Type or text, e.g. EL1809</source>
+        <translation>Typ oder Text, z. B. EL1809</translation>
+    </message>
+    <message>
+        <source>No macro package chosen yet: Part import &gt; From a manufacturer macro package (ZIP)…</source>
+        <translation>Noch kein Makropaket gewählt: Bauteil-Import &gt; Aus einem Hersteller-Makropaket (ZIP)…</translation>
+    </message>
+    <message>
+        <source>%1 articles in %2. Grey entries are not converted yet: a double click converts the type and shows it in the company collection.</source>
+        <translation>%1 Artikel in %2. Graue Einträge sind noch nicht umgewandelt: Ein Doppelklick wandelt den Typ um und zeigt ihn in der Firmensammlung.</translation>
+    </message>
+    <message>
+        <source>In the company collection. Double click: show it there.</source>
+        <translation>In der Firmensammlung. Doppelklick: dort anzeigen.</translation>
+    </message>
+    <message>
+        <source>Not converted yet. Double click: convert this type into the company collection.</source>
+        <translation>Noch nicht umgewandelt. Doppelklick: diesen Typ in die Firmensammlung umwandeln.</translation>
+    </message>
+    <message>
+        <source>Manufacturer macro package</source>
+        <translation>Hersteller-Makropaket</translation>
+    </message>
+    <message>
+        <source>%1 could not be converted:
+%2</source>
+        <translation>%1 konnte nicht umgewandelt werden:
+%2</translation>
+    </message>
+</context>
+<context>
     <name>MacroRecorder</name>
     <message>
         <source>Macro of %1</source>
@@ -13012,6 +13183,14 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     <message>
         <source>STEP: there (%1)</source>
         <translation>STEP: vorhanden (%1)</translation>
+    </message>
+    <message>
+        <source>would import the symbol from the macro package %1</source>
+        <translation>würde das Symbol aus dem Makropaket %1 importieren</translation>
+    </message>
+    <message>
+        <source>symbol: from the macro package %1</source>
+        <translation>Symbol: aus dem Makropaket %1</translation>
     </message>
     <message>
         <source>Siemens: no SiePortal links for this part; collect them in the browser (tools/herstellerportale/sieportal_links.js) into %1</source>
@@ -16544,6 +16723,10 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     <message>
         <source>From the EPLAN Data Portal…</source>
         <translation>Aus dem EPLAN Data Portal…</translation>
+    </message>
+    <message>
+        <source>From a manufacturer macro package (ZIP)…</source>
+        <translation>Aus einem Hersteller-Makropaket (ZIP)…</translation>
     </message>
     <message>
         <source>Show or hide the device navigator</source>

@@ -36,6 +36,7 @@ class ElementCollectionItem;
 class QProgressBar;
 class QETProject;
 class ElementsTreeView;
+class MacroPackageTree;
 
 /**
 	@brief The ElementsCollectionWidget class
@@ -121,6 +122,7 @@ class ElementsCollectionWidget : public QWidget
 
 	private:
 		void locationWasSaved(const ElementsLocation& location);
+		void showCollectionFolder(const QString &folder);
 		void activateIndex(const QModelIndex &index);
 		void showFlatResults(const QVector<ElementSearchHit> &hits);
 		void clearFlatResults();
@@ -136,6 +138,10 @@ class ElementsCollectionWidget : public QWidget
 		QTimer m_search_timer;
 		ElementsTreeView *m_tree_view;
 		ElementsTreeView *m_macros_tree_view = nullptr;
+			/// a manufacturer's macro package, converted type by type on demand
+		MacroPackageTree *m_package_tree = nullptr;
+			/// folder to show once the collections are loaded again
+		QString m_folder_after_loading;
 		QTabWidget *m_tab_widget = nullptr;
 			/// Flat ranked results, shown in place of the tree while searching
 		QListView *m_search_results = nullptr;

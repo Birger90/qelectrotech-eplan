@@ -3,6 +3,29 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.8.0 – 11.11.2026
+
+- Bauteil-Import: neue Quelle **Hersteller-Makropaket (ZIP)** – alle EPLAN-Makros eines Herstellers in einem
+  Download, zuerst Beckhoff („EPLAN Makros ab 2.7“, 1923 Makros, 2694 Artikel). Das Paket wird nur verzeichnet
+  (Typ, Bezeichnung, Produktfamilie; das Verzeichnis wird zwischengespeichert, solange die ZIP dieselbe ist) und
+  nie auf die Platte entpackt. Umgewandelt wird ein Typ erst, wenn man ihn verlangt:
+  - Bauteilsammlung, neuer Reiter „Herstellerpakete“: Hersteller > Produktfamilie > Typ, noch nicht umgewandelte
+    Typen grau mit Pfeil; Doppelklick wandelt genau diesen Typ in die Firmensammlung um und zeigt ihn dort.
+  - Menü „Bauteil-Import > Aus einem Hersteller-Makropaket (ZIP)…“: Paket wählen (wird gemerkt), suchen,
+    Auswahl importieren; „Alle importieren“ mit Fortschritt und Abbrechen.
+  - Kommandozeile: `--list-macro-package <zip|ordner> [--find TEXT]` und
+    `--import-eplan <sammlung> --macro-package <zip|ordner> (--type T … | --all) [--category C]`.
+  - `--fetch-parts` holt einen fehlenden Typ aus dem gemerkten Paket, bevor es die Portale fragt.
+- Je Artikel entstehen unter `Hersteller/Produktfamilie/Typ/`: ein Anschlusskasten aus den Artikeldaten und jede
+  Variante des Makros als eigenes Bauteil (Schaltbild, Einpolig, Übersicht, Aufbau; benannt wie beim
+  Data-Portal-Paket, z. B. „EL3064 Schaltbild I1-GND (E1)“), mit Bestellnummer, Typ, Bezeichnung und Maßen.
+  SPS-Karten bekommen ihre Kanaltabelle aus den Funktionsschablonen der Artikeldaten (EPLAN-Funktionsdefinition
+  300.1.2–5 = DE/DA/AE/AA, Kanal aus `idx1`). Ein vorhandener Typordner bleibt unverändert.
+- Makro-Leser: liest jede Variante jeder Darstellungsart, dazu die platzierten Grafiken (mit Maßstab und Drehung),
+  freie Linien, Bögen, Rechtecke und Texte; bisher nur die erste allpolige Variante ohne Grafik.
+- `tools/herstellerportale/frontansicht.py`: löst aus einem Maßbild-Bauteil (ganzes Zeichnungsblatt) die
+  Frontansicht für den Schaltschrankaufbau heraus, Maße aus der Zeichnung.
+
 ## 1.7.1 – 11.11.2026
 
 - EPLAN-Import: symbolische Adressen wie EPLAN (Zielverfolgung bis Sensor/Aktor bzw. Steckerklemme ohne

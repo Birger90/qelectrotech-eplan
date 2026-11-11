@@ -224,7 +224,8 @@ bool PlcChannels::setChannels(QDomDocument &element, const QVector<Channel> &cha
 	return true;
 }
 
-QStringList PlcChannels::applyToFolders(const QStringList &written_paths)
+QStringList PlcChannels::applyToFolders(const QStringList &written_paths,
+					const QVector<Channel> &given)
 {
 	QStringList report;
 	QSet<QString> folders;
@@ -243,17 +244,19 @@ QStringList PlcChannels::applyToFolders(const QStringList &written_paths)
 			if (!doc.setContent(&file)) continue;
 			docs.append({f, doc});
 		}
-		QVector<Channel> table;
-		QString source;
-		for (const auto &d : std::as_const(docs)) {
-			const QVector<Channel> c = fromElement(d.second);
-			if (c.size() > table.size()) {
-				table = c;
-				source = d.first;
+		QVector<Channel> table = given;
+		QString source = QStringLiteral("the part data");
+		if (table.isEmpty()) {
+			for (const auto &d : std::as_const(docs)) {
+				const QVector<Channel> c = fromElement(d.second);
+				if (c.size() > table.size()) {
+					table = c;
+					source = d.first;
+				}
 			}
+			// a single "DO1" is a signalling contact, not an I/O module
+			if (table.size() < 2) continue;
 		}
-		// a single "DO1" is a signalling contact, not an I/O module
-		if (table.size() < 2) continue;
 
 		QSet<QString> needed;
 		for (const Channel &c : std::as_const(table))

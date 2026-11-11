@@ -55,6 +55,8 @@ namespace CLIExport {
 		  qelectrotech --info           <project.qet> [output.json]
 		  qelectrotech --check-elements <element.elmt | directory>
 		  qelectrotech --import-eplan   <package.zip | folder | file.dxf> <collection_dir> [--category C] [--manufacturer M --type T] [--edz part.edz]
+		  qelectrotech --import-eplan   <collection_dir> --macro-package <zip | folder> (--type T [--type T2 ...] | --all) [--category C]
+		  qelectrotech --list-macro-package <zip | folder> [--find TEXT]
 		  qelectrotech --fetch-parts    <list.txt> [--collection DIR] [--raw-dir DIR] [--3d-dir DIR] [--links FILE] [--manufacturer SIE,RIT] [--limit N] [--dry-run] [--force] [--report FILE] [--json]
 		  qelectrotech --portal-status  [--json]
 		  qelectrotech --portal-login   <portal> [--user NAME]   (password or token on stdin)
@@ -105,6 +107,12 @@ namespace CLIExport {
 		      EPLAN Data Portal DXF package, or a single DXF with
 		      --manufacturer and --type) into
 		      <collection_dir>/<manufacturer>/<category>/<type>/.
+		      With --macro-package: articles out of a manufacturer's macro
+		      package (all EPLAN macros of a manufacturer in one ZIP, e.g.
+		      Beckhoff), by type or order number, or --all of them. An
+		      article whose type folder exists is left as it is.
+		list-macro-package: the articles of such a package, tab-separated
+		      (type, order number, category, description, macro).
 		resave: load and rewrite the project XML (round-trip integrity).
 		--ignore-lock: resave and set-titleblock leave a file alone when a lock
 		      file beside it (.~<name>.lock, made by a QElectroTech that has

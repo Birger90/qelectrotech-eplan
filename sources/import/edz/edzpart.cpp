@@ -204,13 +204,32 @@ bool EdzPart::parse(const QString &part_xml_path)
 		return false;
 	}
 	file.close();
+	return parsePart(doc.documentElement().firstChildElement(QStringLiteral("part")),
+			 QFileInfo(part_xml_path).absolutePath());
+}
 
-	const QDomElement part =
-		doc.documentElement().firstChildElement(QStringLiteral("part"));
+bool EdzPart::parse(const QByteArray &part_xml)
+{
+	m_error.clear();
+	QDomDocument doc;
+	if (!doc.setContent(part_xml)) {
+		m_error = QStringLiteral("Malformed part data");
+		return false;
+	}
+	return parsePart(doc.documentElement().firstChildElement(QStringLiteral("part")), QString());
+}
+
+/**
+	Read one <part> of an EPLAN.PartsManagement document.
+	@param dir folder that may hold the part's *.construction.xml; empty: none
+*/
+bool EdzPart::parsePart(const QDomElement &part, const QString &dir)
+{
 	if (part.isNull()) {
 		m_error = QStringLiteral("No <part> element in part.xml");
 		return false;
 	}
+	m_pins.clear();
 
 	m_part_number  = part.attribute(QStringLiteral("P_ARTICLE_PARTNR"));
 	m_manufacturer = part.attribute(QStringLiteral("P_ARTICLE_MANUFACTURER"));
@@ -238,9 +257,8 @@ bool EdzPart::parse(const QString &part_xml_path)
 		PanelPattern rail;
 		rail.variant = QStringLiteral("Hutschiene");
 		rail.din_rail = true;
-		const QDomElement construction = findConstruction(
-			QFileInfo(part_xml_path).absolutePath(),
-			part.attribute(QStringLiteral("P_ARTICLE_REF_CONSTRUCTION_NAME")));
+		const QDomElement construction = dir.isEmpty() ? QDomElement() : findConstruction(
+			dir, part.attribute(QStringLiteral("P_ARTICLE_REF_CONSTRUCTION_NAME")));
 		const QDomElement cpos = part.firstChildElement(QStringLiteral("constructionPosition"));
 		const double off_x = mmAttr(cpos, "offsetx"), off_y = mmAttr(cpos, "offsety");
 		PanelPattern screws;
@@ -312,6 +330,10 @@ bool EdzPart::parse(const QString &part_xml_path)
 			pin.designation = desig;
 			pin.description = k < descrs.size() ? descrs.at(k).trimmed() : QString();
 			pin.group = group;
+			pin.def_category = ft.attribute(QStringLiteral("functiondefcategory")).toInt();
+			pin.def_group = ft.attribute(QStringLiteral("functiondefgroup")).toInt();
+			pin.def_id = ft.attribute(QStringLiteral("functiondefid")).toInt();
+			pin.channel = ft.attribute(QStringLiteral("idx1")).trimmed();
 			m_pins.append(pin);
 		}
 	}

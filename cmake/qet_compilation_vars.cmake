@@ -149,6 +149,12 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/import/eplandxf/eplanmacroreader.h
   ${QET_DIR}/sources/import/eplandxf/eplanimportdialog.cpp
   ${QET_DIR}/sources/import/eplandxf/eplanimportdialog.h
+  ${QET_DIR}/sources/import/macropackage/macropackage.cpp
+  ${QET_DIR}/sources/import/macropackage/macropackage.h
+  ${QET_DIR}/sources/import/macropackage/macropackagedialog.cpp
+  ${QET_DIR}/sources/import/macropackage/macropackagedialog.h
+  ${QET_DIR}/sources/import/macropackage/macropackagetree.cpp
+  ${QET_DIR}/sources/import/macropackage/macropackagetree.h
   ${QET_DIR}/sources/import/plcchannels.cpp
   ${QET_DIR}/sources/import/plcchannels.h
   ${QET_DIR}/sources/import/eplanproject/eplanprojectimportdialog.cpp

@@ -20,6 +20,9 @@ Original-QElectroTech stehen in `ChangeLog*`.
   und wechselt dorthin; der nächste Schrank heißt +S2 und bekommt wieder eine eigene Seite. Eine einzelne
   Platte kommt auf die offene Aufbauseite, aber nie in einen Schaltplan. Der Assistent arbeitet auf der neuen
   Seite weiter.
+- Schaltschrankaufbau: „Montagefläche einfügen“ fragt nur noch Kennzeichen, Breite und Höhe. Löcher und Kanten
+  kommen von selbst von der gespeicherten Herstellerplatte, die dem Maß am nächsten liegt; Vorlage, Blechdicke,
+  Maßstab, Nullpunkt, Artikel und STEP stehen unter „Weitere Einstellungen“.
 
 ## 1.7.1 – 11.11.2026
 

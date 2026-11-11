@@ -68,6 +68,8 @@
 #include <QGraphicsObject>
 #include <QGroupBox>
 #include <QHBoxLayout>
+#include <QHash>
+#include <QSignalBlocker>
 #include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
@@ -986,20 +988,50 @@ void PanelMenu::insertSurface()
 	auto *article = new QLineEdit(&dialog);
 	auto *manufacturer = new QLineEdit(&dialog);
 	auto *step = new QLineEdit(&dialog);
-	form->addRow(tr("Made from"), basis);
-	form->addRow(tr("Template"), templ_row);
-	form->addRow(QString(), templ_info);
-	form->addRow(QString(), machined);
+		// what one needs to say: the name and the size. The plate gets the
+		// manufacturer's holes and edges by itself; all else is under
+		// "More options"
 	form->addRow(tr("Designation"), designation);
 	form->addRow(tr("Width"), w);
 	form->addRow(tr("Height"), h);
-	form->addRow(tr("Sheet thickness"), t);
-	form->addRow(tr("Scale"), scale);
-	form->addRow(tr("Zero point"), origin);
-	form->addRow(tr("Manufacturer"), manufacturer);
-	form->addRow(tr("Article number"), article);
-	form->addRow(tr("STEP model"), stepPicker(step, &dialog));
+	auto *standard = new QLabel(&dialog);
+	standard->setWordWrap(true);
+	form->addRow(QString(), standard);
+	auto *more_button = new QPushButton(tr("More options"), &dialog);
+	more_button->setCheckable(true);
+	more_button->setAutoDefault(false);
+	auto *more = new QWidget(&dialog);
+	auto *more_form = new QFormLayout(more);
+	more_form->setContentsMargins(0, 0, 0, 0);
+	more_form->addRow(tr("Made from"), basis);
+	more_form->addRow(tr("Template"), templ_row);
+	more_form->addRow(QString(), templ_info);
+	more_form->addRow(QString(), machined);
+	more_form->addRow(tr("Sheet thickness"), t);
+	more_form->addRow(tr("Scale"), scale);
+	more_form->addRow(tr("Zero point"), origin);
+	more_form->addRow(tr("Manufacturer"), manufacturer);
+	more_form->addRow(tr("Article number"), article);
+	more_form->addRow(tr("STEP model"), stepPicker(step, &dialog));
+	more->setVisible(false);
 
+		// the templates read so far, by file: the size fields ask again
+		// with every key
+	QHash<QString, PanelOutline> outlines;
+	auto outline_of = [&](const QString &file, QString *error) {
+		if (!outlines.contains(file)) {
+			const QString enclosure = enclosure_of(file);
+				// of an enclosure only what is a plate: view B of some
+				// enclosures is their back
+			outlines.insert(file, enclosure.isEmpty() ? PanelImport::readDxfFile(file, error)
+													  : PanelImport::readEnclosure(enclosure).plate);
+		}
+		if (error && error->isEmpty() && outlines.value(file).isEmpty())
+			*error = tr("The data of this enclosure hold no mounting plate.");
+		return outlines.value(file);
+	};
+		// the template is chosen for the user, until they choose one
+	bool own_choice = false;
 	PanelOutline outline;
 	auto load_template = [&]() {
 		outline = PanelOutline();
@@ -1007,14 +1039,7 @@ void PanelMenu::insertSurface()
 		const QString enclosure = enclosure_of(file);
 		if (!file.isEmpty()) {
 			QString error;
-			if (enclosure.isEmpty()) {
-				outline = PanelImport::readDxfFile(file, &error);
-			} else {
-					// only what is a plate: view B of some enclosures is
-					// their back
-				outline = PanelImport::readEnclosure(enclosure).plate;
-				error = tr("The data of this enclosure hold no mounting plate.");
-			}
+			outline = outline_of(file, &error);
 			if (outline.isEmpty()) templ_info->setText(error);
 			else templ_info->setText(tr("%1 x %2 mm, %n holes", nullptr, int(outline.circles().size()))
 									 .arg(num(outline.width), num(outline.height)));
@@ -1030,10 +1055,18 @@ void PanelMenu::insertSurface()
 		const bool as_is = basis->currentIndex() == 2 && !outline.isEmpty();
 		w->setEnabled(!as_is);
 		h->setEnabled(!as_is);
-		if (use && !outline.isEmpty() && (as_is || (w->value() == 500 && h->value() == 700))) {
+		if (use && !outline.isEmpty() && as_is) {
+			const QSignalBlocker bw(w), bh(h);
 			w->setValue(outline.width);
 			h->setValue(outline.height);
 		}
+		if (basis->currentIndex() == 0)
+			standard->setText(tr("A plain plate, without holes."));
+		else if (outline.isEmpty())
+			standard->setText(tr("No manufacturer's plate is stored yet, so this one stays plain. Insert an "
+								 "enclosure from the Data Portal once: its plate then is the pattern for all."));
+		else
+			standard->setText(tr("With the manufacturer's holes and edges (%1).").arg(templ->currentText()));
 			// a Data Portal template is named "<type> - <description>"
 			// (the plate of an enclosure has the enclosure's number: not taken)
 		if (use && !outline.isEmpty() && article->text().isEmpty() && enclosure.isEmpty()) {
@@ -1041,12 +1074,34 @@ void PanelMenu::insertSurface()
 			if (type.contains(QLatin1Char('.'))) article->setText(type.section(QLatin1Char('.'), 1));
 		}
 	};
+		// The stored plate nearest in size is the pattern: stretched the
+		// least, its holes and edges fit best.
+	auto pick_template = [&]() {
+		if (own_choice || basis->currentIndex() != 1) return;
+		int best = -1;
+		double best_d = 0;
+		for (int i = 0; i < templ->count(); ++i) {
+			const PanelOutline o = outline_of(templ->itemData(i).toString(), nullptr);
+			if (o.isEmpty()) continue;
+			const double dist = qAbs(o.width - w->value()) + qAbs(o.height - h->value());
+			if (best < 0 || dist < best_d) {best = i; best_d = dist;}
+		}
+		if (best >= 0 && best != templ->currentIndex()) templ->setCurrentIndex(best);
+	};
 	connect(basis, &QComboBox::currentIndexChanged, &dialog, load_template);
 	connect(templ, &QComboBox::currentIndexChanged, &dialog, load_template);
+	connect(templ, &QComboBox::activated, &dialog, [&]() {own_choice = true;});
+	connect(w, &QDoubleSpinBox::valueChanged, &dialog, pick_template);
+	connect(h, &QDoubleSpinBox::valueChanged, &dialog, pick_template);
+	connect(more_button, &QPushButton::toggled, &dialog, [&](bool on) {
+		more->setVisible(on);
+		dialog.adjustSize();
+	});
 	connect(from_portal, &QPushButton::clicked, &dialog, [&]() {
 		PanelTemplateDialog portal(&dialog);
 		if (portal.exec() == QDialog::Accepted && !portal.templateFile().isEmpty()) {
 			fill_templates(portal.templateFile());
+			own_choice = true;
 			if (manufacturer->text().isEmpty()) manufacturer->setText(QStringLiteral("Rittal"));
 			load_template();
 		}
@@ -1061,12 +1116,16 @@ void PanelMenu::insertSurface()
 		const QString stored = PanelImport::saveTemplate(QFileInfo(file).completeBaseName(), f.readAll(), &error);
 		if (stored.isEmpty()) {templ_info->setText(error); return;}
 		fill_templates(stored);
+		own_choice = true;
 		load_template();
 	});
+	pick_template();
 	load_template();
 
 	auto *layout = new QVBoxLayout(&dialog);
 	layout->addLayout(form);
+	layout->addWidget(more_button, 0, Qt::AlignLeft);
+	layout->addWidget(more);
 	if (needsNewFolio(d, false)) {
 		auto *where = new QLabel(tr("This folio holds a schematic: the plate gets a new folio \"Cabinet layout\" "
 									"at the end of the project."), &dialog);

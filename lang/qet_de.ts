@@ -12177,8 +12177,24 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>Platte von %1</translation>
     </message>
     <message>
+        <source>More options</source>
+        <translation>Weitere Einstellungen</translation>
+    </message>
+    <message>
         <source>The data of this enclosure hold no mounting plate.</source>
         <translation>Die Daten dieses Schranks enthalten keine Montageplatte.</translation>
+    </message>
+    <message>
+        <source>A plain plate, without holes.</source>
+        <translation>Glatte Platte, ohne Löcher.</translation>
+    </message>
+    <message>
+        <source>No manufacturer&apos;s plate is stored yet, so this one stays plain. Insert an enclosure from the Data Portal once: its plate then is the pattern for all.</source>
+        <translation>Noch ist keine Herstellerplatte gespeichert, deshalb bleibt diese Platte glatt. Einmal einen Schrank aus dem Data Portal einfügen: seine Platte ist dann das Muster für alle.</translation>
+    </message>
+    <message>
+        <source>With the manufacturer&apos;s holes and edges (%1).</source>
+        <translation>Mit den Löchern und Kanten des Herstellers (%1).</translation>
     </message>
     <message>
         <source>This folio holds a schematic: the plate gets a new folio &quot;Cabinet layout&quot; at the end of the project.</source>

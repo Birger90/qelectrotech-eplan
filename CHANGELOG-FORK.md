@@ -3,6 +3,19 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.8.0 – 11.11.2026
+
+- Schaltschrankaufbau: Schrank über seine Maße finden. „Schaltschrank einfügen“ hat die Felder Breite, Höhe und
+  Tiefe (mm, leer = beliebig); gezeigt werden die Schränke mit mindestens diesen Maßen, der passendste zuerst.
+- Schaltschrankaufbau: „Data Portal…“ listet statt einer Textsuche die Produktgruppe „Schaltschrank“ des
+  Herstellers mit den Spalten Breite, Höhe und Tiefe und grenzt sie sofort nach den Maßen und nach Wörtern
+  (z. B. „VX Edelstahl“) ein. Die Maße kommen aus der Artikelbeschreibung, weil das Data Portal kein Maßfeld
+  hat; die Reihenfolge wird erkannt (BHT, B x H x T, WHD, bei US-Artikeln HWD).
+- Schaltschrankaufbau: Montageplatte allein nach Wunschmaß. „Montagefläche einfügen“ nimmt die Platte eines
+  gespeicherten Schranks als Vorlage (Löcher und Kanten des Herstellers, auf das eigene Maß gestreckt) und
+  schlägt das vor, sobald eine Vorlage da ist; im Assistenten „Schaltschrank aufbauen“ hat Schritt 1 dafür den
+  Knopf „Nur Platte…“.
+
 ## 1.7.1 – 11.11.2026
 
 - EPLAN-Import: symbolische Adressen wie EPLAN (Zielverfolgung bis Sensor/Aktor bzw. Steckerklemme ohne

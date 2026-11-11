@@ -122,12 +122,23 @@ void DataPortalClient::search(const DataPortalQuery &q)
 		query.addQueryItem(QStringLiteral("filter[manufacturer]"), q.manufacturer.trimmed());
 	if (q.only_dxf) query.addQueryItem(QStringLiteral("filter[data_types]"), QStringLiteral("dxf_data"));
 	if (q.exact && !text.isEmpty()) query.addQueryItem(QStringLiteral("fuzziness"), QStringLiteral("0"));
-	query.addQueryItem(QStringLiteral("include"),
-			   QStringLiteral("manufacturer,product_group,picture_file.preview"));
+	if (!q.catalog.trimmed().isEmpty())
+		query.addQueryItem(QStringLiteral("filter[catalog_eplan]"), q.catalog.trimmed());
+	if (q.brief) {
+		// half the full reply: a whole product group in a few requests
+		query.addQueryItem(QStringLiteral("fields[parts]"), QStringLiteral(
+			"part_number,order_number,type_number,designation,description,data_supplier"));
+		// by relevance the pages of a long list overlap: two requests for one
+		// group then give some parts twice and leave others out
+		query.addQueryItem(QStringLiteral("sort"), QStringLiteral("part_number"));
+	} else {
+		query.addQueryItem(QStringLiteral("include"),
+				   QStringLiteral("manufacturer,product_group,picture_file.preview"));
+	}
 	query.addQueryItem(QStringLiteral("page[offset]"), QString::number(q.offset));
 	query.addQueryItem(QStringLiteral("page[limit]"), QString::number(q.limit));
 	QNetworkRequest req = request(QStringLiteral("/parts"));
-	req.setTransferTimeout(SEARCH_TIMEOUT_MS);
+	req.setTransferTimeout(q.limit > 100 ? TIMEOUT_MS : SEARCH_TIMEOUT_MS);
 	QUrl url = req.url();
 	url.setQuery(query);
 	req.setUrl(url);

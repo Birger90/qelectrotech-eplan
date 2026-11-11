@@ -1146,6 +1146,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/panel/panelassistant.h
   ${QET_DIR}/sources/panel/panelmenu.cpp
   ${QET_DIR}/sources/panel/panelmenu.h
+  ${QET_DIR}/sources/panel/enclosuresize.cpp
+  ${QET_DIR}/sources/panel/enclosuresize.h
   ${QET_DIR}/sources/panel/panelimport.cpp
   ${QET_DIR}/sources/panel/panelimport.h
   ${QET_DIR}/sources/panel/articledialog.cpp

@@ -18,18 +18,20 @@
 #ifndef PANELIMPORT_H
 #define PANELIMPORT_H
 
+#include "enclosuresize.h"
 #include "paneldata.h"
+#include "../import/eplandxf/dataportalclient.h"
 
 #include <QDialog>
 #include <QMap>
 #include <QStringList>
+#include <QVector>
+#include <QWidget>
 
-class DataPortalClient;
 class QLabel;
 class QLineEdit;
 class QPushButton;
 class QTreeWidget;
-struct DataPortalPart;
 
 /**
 	@brief Mounting plates from outside: a DXF of a plate (one's own, or
@@ -64,6 +66,15 @@ class PanelImport
 		};
 		static QString enclosuresDirectory();
 		static QStringList enclosureFolders();
+			/// the stored enclosures of at least @p size, the closest fit
+			/// first; all of them, by name, when @p size is null
+		static QStringList enclosureFolders(const EnclosureSize &size);
+			/// the sizes of a stored enclosure from its description, without
+			/// reading its drawings
+		static EnclosureSize enclosureSize(const QString &folder);
+			/// the mounting plate views (B.dxf) of the stored enclosures:
+			/// plate templates that came with an enclosure
+		static QStringList enclosurePlateFiles();
 		static Enclosure readEnclosure(const QString &folder);
 		static QString saveEnclosure(const QString &name, const QString &description,
 									 const QMap<QString, QByteArray> &views, QString *error = nullptr);
@@ -96,21 +107,58 @@ class PanelImport
 };
 
 /**
+	@brief Three fields for the width, height and depth of an enclosure in
+	millimetres; an empty field stands for "any".
+*/
+class EnclosureSizeFields : public QWidget
+{
+	Q_OBJECT
+
+	public:
+		explicit EnclosureSizeFields(QWidget *parent = nullptr);
+		EnclosureSize size() const;
+			/// does not emit changed()
+		void setSize(const EnclosureSize &size);
+
+	signals:
+		void changed();
+
+	protected:
+		void keyPressEvent(QKeyEvent *event) override;
+
+	private:
+		QLineEdit *m_width = nullptr;
+		QLineEdit *m_height = nullptr;
+		QLineEdit *m_depth = nullptr;
+};
+
+/**
 	@brief Search the EPLAN Data Portal for mounting plates (Rittal by
 	default), show them with their sizes, and store the chosen one's
 	front view as a plate template.
+
+	For enclosures it lists the Data Portal's product group "enclosure"
+	of the manufacturer instead of the hits of a text search, with the
+	sizes read from the descriptions, and narrows that list at once by
+	the width, height and depth asked for and by words: the Data Portal
+	itself cannot search by size.
 */
 class PanelTemplateDialog : public QDialog
 {
 	Q_OBJECT
 
 	public:
-		explicit PanelTemplateDialog(QWidget *parent = nullptr, bool enclosure = false);
+		explicit PanelTemplateDialog(QWidget *parent = nullptr, bool enclosure = false,
+									 const EnclosureSize &size = EnclosureSize());
+			/// the sizes asked for when the dialog closed
+		EnclosureSize sizeFilter() const;
 			/// the stored plate template (DXF), or the enclosure folder
 		QString templateFile() const {return m_file;}
 
 	private:
 		void runSearch();
+		void loadGroup(int offset);
+		void applyFilter();
 		void showParts(const QVector<DataPortalPart> &parts, int total, int offset);
 		void download();
 		void downloaded(const QByteArray &data, const QString &file_name);
@@ -126,6 +174,9 @@ class PanelTemplateDialog : public QDialog
 		QString m_pending_name;
 		QString m_pending_description;
 		bool m_enclosure = false;
+		EnclosureSizeFields *m_size = nullptr;
+		QVector<DataPortalPart> m_parts;   ///< the product group, as far as loaded
+		QString m_group_key;               ///< manufacturer and language of m_parts
 };
 
 #endif // PANELIMPORT_H

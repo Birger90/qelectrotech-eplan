@@ -74,6 +74,7 @@ class PanelAssistant : public QDialog
 	public:
 		struct Actions {
 			std::function<void()> enclosure;     ///< enclosure and mounting plate (dialog)
+			std::function<void()> surface;       ///< a mounting plate alone, of any size (dialog)
 			std::function<void()> devices;       ///< place the devices of the schematic
 			std::function<void()> terminals;     ///< place the terminal strips
 			std::function<void()> checks;        ///< show the check list

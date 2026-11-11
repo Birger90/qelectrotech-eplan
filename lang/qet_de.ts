@@ -7630,6 +7630,33 @@ Mit dem Import dieser Datei bestätigen Sie, dass:
     </message>
 </context>
 <context>
+    <name>EnclosureSizeFields</name>
+    <message>
+        <source>In millimetres; empty: any. Listed are the enclosures of at least this size, the closest fit first.</source>
+        <translation>In Millimetern; leer: beliebig. Gezeigt werden die Schränke mit mindestens diesen Maßen, der passendste zuerst.</translation>
+    </message>
+    <message>
+        <source>any</source>
+        <translation>beliebig</translation>
+    </message>
+    <message>
+        <source>Width</source>
+        <translation>Breite</translation>
+    </message>
+    <message>
+        <source>Height</source>
+        <translation>Höhe</translation>
+    </message>
+    <message>
+        <source>Depth</source>
+        <translation>Tiefe</translation>
+    </message>
+    <message>
+        <source>mm</source>
+        <translation>mm</translation>
+    </message>
+</context>
+<context>
     <name>EplanImportDialog</name>
     <message>
         <source>source</source>
@@ -11762,11 +11789,11 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     </message>
     <message>
         <source>Choose the enclosure, e.g. a Rittal VX by its order number; its mounting plate comes with it.</source>
-        <translation>Schrank wählen, z. B. Rittal VX über die Bestellnummer; die Montageplatte kommt mit.</translation>
+        <translation type="vanished">Schrank wählen, z. B. Rittal VX über die Bestellnummer; die Montageplatte kommt mit.</translation>
     </message>
     <message>
         <source>Choose...</source>
-        <translation>Auswählen…</translation>
+        <translation type="vanished">Auswählen…</translation>
     </message>
     <message>
         <source> rows</source>
@@ -11858,6 +11885,18 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
             <numerusform>%n Schiene/Kanal auf der Platte.</numerusform>
             <numerusform>%n Schienen und Kanäle auf der Platte.</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Enclosure...</source>
+        <translation>Schrank…</translation>
+    </message>
+    <message>
+        <source>Plate only...</source>
+        <translation>Nur Platte…</translation>
+    </message>
+    <message>
+        <source>Find the enclosure by its width, height and depth; its mounting plate comes with it. Or only a mounting plate of your own size, with the manufacturer&apos;s holes.</source>
+        <translation>Schrank über Breite, Höhe und Tiefe finden; die Montageplatte kommt mit. Oder nur eine Montageplatte im eigenen Maß, mit den Löchern des Herstellers.</translation>
     </message>
     <message numerus="yes">
         <source>%n device(s) on the plate.</source>
@@ -12116,6 +12155,22 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     <message>
         <source>insert mounting surface %1</source>
         <translation>Montagefläche %1 einfügen</translation>
+    </message>
+    <message>
+        <source>Size from</source>
+        <translation>Maße ab</translation>
+    </message>
+    <message>
+        <source>No stored enclosure of at least this size: &quot;Data Portal…&quot; lists the manufacturer&apos;s enclosures of this size.</source>
+        <translation>Kein gespeicherter Schrank mit mindestens diesen Maßen: „Data Portal…“ zeigt die Schränke des Herstellers in dieser Größe.</translation>
+    </message>
+    <message>
+        <source>Plate of %1</source>
+        <translation>Platte von %1</translation>
+    </message>
+    <message>
+        <source>The data of this enclosure hold no mounting plate.</source>
+        <translation>Die Daten dieses Schranks enthalten keine Montageplatte.</translation>
     </message>
     <message>
         <source>Insert a mounting surface on this folio first.</source>
@@ -12897,12 +12952,24 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>Montageplatte aus dem EPLAN Data Portal</translation>
     </message>
     <message>
+        <source>Narrow by words, e.g. VX stainless</source>
+        <translation>Mit Wörtern eingrenzen, z. B. VX Edelstahl</translation>
+    </message>
+    <message>
+        <source>Only the enclosures whose type or description holds every word</source>
+        <translation>Nur Schränke, deren Typ oder Beschreibung jedes Wort enthält</translation>
+    </message>
+    <message>
         <source>Short name of the manufacturer (RIT = Rittal), empty: all</source>
         <translation>Kurzname des Herstellers (RIT = Rittal), leer: alle</translation>
     </message>
     <message>
         <source>Search</source>
         <translation>Suchen</translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation>Laden</translation>
     </message>
     <message>
         <source>Manufacturer</source>
@@ -12917,12 +12984,48 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>Typ</translation>
     </message>
     <message>
+        <source>Width</source>
+        <translation>Breite</translation>
+    </message>
+    <message>
+        <source>Height</source>
+        <translation>Höhe</translation>
+    </message>
+    <message>
+        <source>Depth</source>
+        <translation>Tiefe</translation>
+    </message>
+    <message>
         <source>Description</source>
         <translation>Beschreibung</translation>
     </message>
     <message>
         <source>Use as template</source>
         <translation>Als Vorlage übernehmen</translation>
+    </message>
+    <message>
+        <source>Use this enclosure</source>
+        <translation>Diesen Schrank nehmen</translation>
+    </message>
+    <message>
+        <source>Loading the enclosures… (%1)</source>
+        <translation>Lade die Schränke… (%1)</translation>
+    </message>
+    <message>
+        <source>Loading the enclosures…</source>
+        <translation>Lade die Schränke…</translation>
+    </message>
+    <message>
+        <source>No enclosure of at least this size among the %1 of this manufacturer.</source>
+        <translation>Unter den %1 Schränken dieses Herstellers ist keiner mit mindestens diesen Maßen.</translation>
+    </message>
+    <message>
+        <source>%1 of %2 enclosures. Enter a width, height or depth to narrow the list.</source>
+        <translation>%1 von %2 Schränken. Breite, Höhe oder Tiefe eingeben, um die Liste einzugrenzen.</translation>
+    </message>
+    <message>
+        <source>%1 of %2 enclosures of at least this size, the closest fit first.</source>
+        <translation>%1 von %2 Schränken mit mindestens diesen Maßen, der passendste zuerst.</translation>
     </message>
     <message>
         <source>Searching…</source>

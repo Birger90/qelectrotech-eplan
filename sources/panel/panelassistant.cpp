@@ -228,9 +228,16 @@ PanelAssistant::PanelAssistant(Diagram *diagram, const Actions &actions, QWidget
 		return b;
 	};
 
+		// an enclosure with its plate, or a plate alone of one's own size
+	auto *first_box = new QWidget(this);
+	auto *first_row = new QHBoxLayout(first_box);
+	first_row->setContentsMargins(0, 0, 0, 0);
+	first_row->addWidget(button(tr("Enclosure..."), m_actions.enclosure));
+	first_row->addWidget(button(tr("Plate only..."), m_actions.surface));
 	step(tr("Enclosure and mounting plate"),
-		 tr("Choose the enclosure, e.g. a Rittal VX by its order number; its mounting plate comes with it."),
-		 button(tr("Choose..."), m_actions.enclosure));
+		 tr("Find the enclosure by its width, height and depth; its mounting plate comes with it. "
+			"Or only a mounting plate of your own size, with the manufacturer's holes."),
+		 first_box);
 
 	auto *grid_box = new QWidget(this);
 	auto *grid_row = new QHBoxLayout(grid_box);

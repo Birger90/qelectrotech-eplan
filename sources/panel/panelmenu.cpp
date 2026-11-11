@@ -593,6 +593,7 @@ void PanelMenu::showAssistant()
 	if (!d) return;
 	PanelAssistant::Actions a;
 	a.enclosure = [this]() {insertEnclosure();};
+	a.surface = [this]() {insertSurface();};
 	a.devices = [this]() {placeDevices();};
 	a.terminals = [this]() {placeTerminalStrips();};
 	a.checks = [this]() {if (m_check_action) m_check_action->setChecked(true); showChecks(true);};
@@ -709,9 +710,13 @@ void PanelMenu::insertEnclosure()
 	dialog.setWindowTitle(tr("Insert enclosure"));
 	auto *form = new QFormLayout;
 	auto *list = new QComboBox(&dialog);
-	auto fill = [list](const QString &select) {
+		// the enclosure is found by its sizes: the stored ones of at least
+		// that size here, all of the manufacturer in the Data Portal
+	auto *sizes = new EnclosureSizeFields(&dialog);
+	auto fill = [list, sizes](const QString &select) {
 		list->clear();
-		for (const QString &f : PanelImport::enclosureFolders()) list->addItem(QFileInfo(f).fileName(), f);
+		for (const QString &f : PanelImport::enclosureFolders(sizes->size()))
+			list->addItem(QFileInfo(f).fileName(), f);
 		const int i = list->findData(select);
 		if (i >= 0) list->setCurrentIndex(i);
 	};
@@ -734,6 +739,7 @@ void PanelMenu::insertEnclosure()
 	plate_size->addWidget(plate_w);
 	plate_size->addWidget(new QLabel(QStringLiteral("x"), &dialog));
 	plate_size->addWidget(plate_h);
+	form->addRow(tr("Size from"), sizes);
 	form->addRow(tr("Enclosure"), row);
 	form->addRow(QString(), info);
 	form->addRow(tr("Designation"), designation);
@@ -747,7 +753,10 @@ void PanelMenu::insertEnclosure()
 		enclosure = PanelImport::Enclosure();
 		const QString folder = list->currentData().toString();
 		if (folder.isEmpty()) {
-			info->setText(tr("No enclosure yet: choose one in the Data Portal."));
+			info->setText(sizes->size().isNull()
+						  ? tr("No enclosure yet: choose one in the Data Portal.")
+						  : tr("No stored enclosure of at least this size: \"Data Portal…\" lists "
+							   "the manufacturer's enclosures of this size."));
 		} else {
 			enclosure = PanelImport::readEnclosure(folder);
 			QString text = enclosure.description;
@@ -771,10 +780,21 @@ void PanelMenu::insertEnclosure()
 		machined->setEnabled(!enclosure.plate.isEmpty());
 	};
 	connect(list, &QComboBox::currentIndexChanged, &dialog, load);
+	connect(sizes, &EnclosureSizeFields::changed, &dialog, [&]() {
+		fill(list->currentData().toString());
+		load();
+	});
 	connect(portal, &QPushButton::clicked, &dialog, [&]() {
-		PanelTemplateDialog dp(&dialog, true);
+			// the Data Portal starts with the sizes asked for here
+		PanelTemplateDialog dp(&dialog, true, sizes->size());
 		if (dp.exec() == QDialog::Accepted && !dp.templateFile().isEmpty()) {
+			sizes->setSize(dp.sizeFilter());
 			fill(dp.templateFile());
+				// chosen there by other words: it is the one wanted
+			if (list->findData(dp.templateFile()) < 0) {
+				sizes->setSize(EnclosureSize());
+				fill(dp.templateFile());
+			}
 			load();
 		}
 	});
@@ -839,13 +859,29 @@ void PanelMenu::insertSurface()
 	basis->addItem(tr("Sizes, holes and edges like the template"));
 	basis->addItem(tr("Template plate as it is"));
 	auto *templ = new QComboBox(&dialog);
+		// the plate of a stored enclosure is a template too: a plate of any
+		// size then gets the manufacturer's holes and edges without a
+		// plate of its own from the Data Portal
+	auto enclosure_of = [](const QString &file) {
+		const QFileInfo info(file);
+		return info.fileName() == QLatin1String("B.dxf")
+			   && QDir(info.absolutePath()).absolutePath().startsWith(
+					  QDir(PanelImport::enclosuresDirectory()).absolutePath())
+			   ? info.absolutePath() : QString();
+	};
 	auto fill_templates = [templ](const QString &select) {
 		templ->clear();
 		for (const QString &f : PanelImport::templateFiles()) templ->addItem(PanelImport::templateName(f), f);
+		for (const QString &f : PanelImport::enclosurePlateFiles())
+			templ->addItem(tr("Plate of %1").arg(QFileInfo(QFileInfo(f).absolutePath()).fileName()
+												 .section(QStringLiteral(" - "), 0, 0)), f);
 		const int i = templ->findData(select);
 		if (i >= 0) templ->setCurrentIndex(i);
 	};
 	fill_templates(QString());
+		// with a template at hand the plate gets its holes: that is what a
+		// plate of one's own size is wanted with
+	if (templ->count() > 0) basis->setCurrentIndex(1);
 	auto *from_portal = new QPushButton(tr("Data Portal…"), &dialog);
 	from_portal->setToolTip(tr("Load a manufacturer's mounting plate (e.g. Rittal) as template"));
 	auto *from_file = new QPushButton(tr("DXF file…"), &dialog);
@@ -891,9 +927,17 @@ void PanelMenu::insertSurface()
 	auto load_template = [&]() {
 		outline = PanelOutline();
 		const QString file = templ->currentData().toString();
+		const QString enclosure = enclosure_of(file);
 		if (!file.isEmpty()) {
 			QString error;
-			outline = PanelImport::readDxfFile(file, &error);
+			if (enclosure.isEmpty()) {
+				outline = PanelImport::readDxfFile(file, &error);
+			} else {
+					// only what is a plate: view B of some enclosures is
+					// their back
+				outline = PanelImport::readEnclosure(enclosure).plate;
+				error = tr("The data of this enclosure hold no mounting plate.");
+			}
 			if (outline.isEmpty()) templ_info->setText(error);
 			else templ_info->setText(tr("%1 x %2 mm, %n holes", nullptr, int(outline.circles().size()))
 									 .arg(num(outline.width), num(outline.height)));
@@ -914,7 +958,8 @@ void PanelMenu::insertSurface()
 			h->setValue(outline.height);
 		}
 			// a Data Portal template is named "<type> - <description>"
-		if (use && !outline.isEmpty() && article->text().isEmpty()) {
+			// (the plate of an enclosure has the enclosure's number: not taken)
+		if (use && !outline.isEmpty() && article->text().isEmpty() && enclosure.isEmpty()) {
 			const QString type = outline.name.section(QStringLiteral(" - "), 0, 0);
 			if (type.contains(QLatin1Char('.'))) article->setText(type.section(QLatin1Char('.'), 1));
 		}

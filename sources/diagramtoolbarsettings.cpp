@@ -160,7 +160,11 @@ QStringList DiagramToolbarSettings::defaultIds(const QString &name)
 {
 	const QString sep = separatorId();
 	if (name == QLatin1String("toolbar")) {
-		return {QStringLiteral("diagrameditor.new_file"),
+			//Claude first: at the end it slips behind the toolbar's
+			//overflow arrow on narrower screens
+		return {QStringLiteral("widget:claude"),
+			sep,
+			QStringLiteral("diagrameditor.new_file"),
 			QStringLiteral("diagrameditor.open_file"),
 			QStringLiteral("diagrameditor.save_file"),
 			QStringLiteral("diagrameditor.save_file_as"),
@@ -265,6 +269,30 @@ void DiagramToolbarSettings::removeIds(const QString &name)
 	QSettings().remove(CONTENTS + name);
 }
 
+/**
+	@brief DiagramToolbarSettings::placeNewWidgets
+	A user who saved their own main toolbar before the Claude button
+	existed gets it once at its start; after that, where it is (or that it
+	was taken off) is the user's choice.
+*/
+void DiagramToolbarSettings::placeNewWidgets()
+{
+	QSettings settings;
+	const QString done = QStringLiteral("diagrameditor/toolbars_placed/claude");
+	if (settings.value(done).toBool()) return;
+	settings.setValue(done, true);
+	const QString main_name = QStringLiteral("toolbar");
+	if (!settings.contains(CONTENTS + main_name)) return;	//the defaults have it
+	QStringList all_names = builtInNames();
+	for (const Toolbar &toolbar : customToolbars()) all_names << toolbar.name;
+	for (const QString &name : all_names)
+		if (ids(name).contains(QStringLiteral("widget:claude"))) return;
+	QStringList main_ids = ids(main_name);
+	main_ids.prepend(separatorId());
+	main_ids.prepend(QStringLiteral("widget:claude"));
+	setIds(main_name, main_ids);
+}
+
 QString DiagramToolbarSettings::separatorId()
 {
 	return QStringLiteral("separator");
@@ -280,7 +308,8 @@ QStringList DiagramToolbarSettings::widgetIds()
 		QStringLiteral("widget:grid_step"),
 		QStringLiteral("widget:text_grid"),
 		QStringLiteral("widget:background_color"),
-		QStringLiteral("widget:conductor_color")};
+		QStringLiteral("widget:conductor_color"),
+		QStringLiteral("widget:claude")};
 }
 
 bool DiagramToolbarSettings::isWidget(const QString &id)
@@ -300,6 +329,8 @@ QString DiagramToolbarSettings::widgetTitle(const QString &id)
 		return QCoreApplication::translate("DiagramToolbarSettings", "Sheet background color");
 	if (id == QLatin1String("widget:conductor_color"))
 		return QCoreApplication::translate("DiagramToolbarSettings", "Conductor color");
+	if (id == QLatin1String("widget:claude"))
+		return QCoreApplication::translate("DiagramToolbarSettings", "Claude assistant");
 	return id;
 }
 

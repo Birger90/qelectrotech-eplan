@@ -18,7 +18,7 @@
 #include "assistantdock.h"
 
 #include "assistantbridge.h"
-#include "assistantsettingsdialog.h"
+#include "assistantsetuppage.h"
 #include "../diagram.h"
 #include "../diagramview.h"
 #include "../projectview.h"
@@ -28,11 +28,17 @@
 #include "../scripting/liveserver.h"
 
 #include <QCoreApplication>
+#include <QtMath>
+#include <cmath>
 #include <QDir>
 #include <QFileInfo>
 #include <QHBoxLayout>
 #include <QJsonArray>
 #include <QKeyEvent>
+#include <QPainter>
+#include <QPainterPath>
+#include <QSettings>
+#include <QStackedWidget>
 #include <QLabel>
 #include <QMessageBox>
 #include <QPlainTextEdit>
@@ -52,7 +58,13 @@ AssistantDock::AssistantDock(QETDiagramEditor *editor) :
 	// not "assistant_dock": that is the live mode's log dock, and two docks
 	// with one name mix up their places when the window state is restored
 	setObjectName(QStringLiteral("claude_assistant_dock"));
-	auto *body = new QWidget(this);
+	setWindowIcon(icon());
+	m_stack = new QStackedWidget(this);
+	m_setup = new AssistantSetupPage(m_stack);
+	m_stack->addWidget(m_setup);
+	auto *body = new QWidget(m_stack);
+	m_chat = body;
+	m_stack->addWidget(body);
 	auto *layout = new QVBoxLayout(body);
 	layout->setContentsMargins(4, 4, 4, 4);
 
@@ -64,8 +76,8 @@ AssistantDock::AssistantDock(QETDiagramEditor *editor) :
 	m_new->setText(tr("New"));
 	m_new->setToolTip(tr("Start a new conversation"));
 	m_settings = new QToolButton(body);
-	m_settings->setText(tr("Settings…"));
-	m_settings->setToolTip(tr("API key and Python of the assistant"));
+	m_settings->setText(tr("Settings"));
+	m_settings->setToolTip(tr("Back to the setup: API key, Python, package"));
 	top->addWidget(m_activity, 1);
 	top->addWidget(m_new);
 	top->addWidget(m_settings);
@@ -93,7 +105,7 @@ AssistantDock::AssistantDock(QETDiagramEditor *editor) :
 	buttons->addWidget(m_cancel);
 	buttons->addWidget(m_send);
 	layout->addLayout(buttons);
-	setWidget(body);
+	setWidget(m_stack);
 
 	m_render_timer = new QTimer(this);
 	m_render_timer->setSingleShot(true);
@@ -103,7 +115,16 @@ AssistantDock::AssistantDock(QETDiagramEditor *editor) :
 	connect(m_send, &QPushButton::clicked, this, &AssistantDock::sendQuestion);
 	connect(m_cancel, &QPushButton::clicked, this, &AssistantDock::cancel);
 	connect(m_new, &QToolButton::clicked, this, &AssistantDock::newConversation);
-	connect(m_settings, &QToolButton::clicked, this, &AssistantDock::openSettings);
+	connect(m_settings, &QToolButton::clicked, this, [this]() { showSetup(false); });
+	connect(m_setup, &AssistantSetupPage::completed, this, [this]() {
+		QSettings().setValue(QStringLiteral("assistant/setup_done"), true);
+		showChat();
+	});
+	connect(m_setup, &AssistantSetupPage::chatRequested, this, &AssistantDock::showChat);
+	connect(m_setup, &AssistantSetupPage::settingsChanged, this, &AssistantDock::settingsChanged);
+	connect(this, &QDockWidget::visibilityChanged, this, [this](bool visible) {
+		if (visible && !m_shown_once) firstShown();
+	});
 	connect(m_bridge, &AssistantBridge::message, this, &AssistantDock::onMessage);
 	connect(m_bridge, &AssistantBridge::stopped, this, &AssistantDock::onStopped);
 }
@@ -137,15 +158,11 @@ bool AssistantDock::ensureBridge()
 	if (m_bridge->isRunning()) return true;
 
 	QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-	QString key = AssistantSettingsDialog::apiKey();
+	const QString key = AssistantSetupPage::apiKey();
 	if (key.isEmpty() && env.value(QStringLiteral("ANTHROPIC_API_KEY")).isEmpty()) {
-		AssistantSettingsDialog dialog(this);
-		dialog.exec();
-		key = AssistantSettingsDialog::apiKey();
-		if (key.isEmpty()) {
-			add(Entry::Error, tr("No API key: the assistant cannot answer without one."));
-			return false;
-		}
+			//The question stays in the field for after the setup
+		showSetup();
+		return false;
 	}
 	if (!key.isEmpty()) env.insert(QStringLiteral("ANTHROPIC_API_KEY"), key);
 
@@ -236,15 +253,81 @@ void AssistantDock::newConversation()
 	render();
 }
 
-void AssistantDock::openSettings()
+/**
+	@brief AssistantDock::firstShown
+	The first time the dock is shown: straight to the chat when the setup
+	was done before and its quick checks still hold, else to the setup.
+	Whether the package is still there shows when the bridge starts.
+*/
+void AssistantDock::firstShown()
 {
-	AssistantSettingsDialog dialog(this);
-	if (dialog.exec() == QDialog::Accepted && m_bridge->isRunning() && !m_busy) {
-			//A new key or Python takes effect with a new bridge
-		m_bridge->stop();
-		LiveServer::instance().setAssistantWritesAllowed(false);
-		add(Entry::Note, tr("Settings saved; the next question starts a new conversation."));
+	m_shown_once = true;
+	if (QSettings().value(QStringLiteral("assistant/setup_done")).toBool()
+	    && AssistantSetupPage::quickCheck())
+		showChat();
+	else
+		showSetup();
+}
+
+void AssistantDock::showSetup(bool switch_when_done)
+{
+	m_shown_once = true;
+	m_stack->setCurrentWidget(m_setup);
+	m_setup->refresh(switch_when_done);
+}
+
+void AssistantDock::showChat()
+{
+	m_shown_once = true;
+	m_stack->setCurrentWidget(m_chat);
+	m_input->setFocus();
+}
+
+/**
+	@brief AssistantDock::settingsChanged
+	A new key or Python takes effect with a new bridge
+*/
+void AssistantDock::settingsChanged()
+{
+	if (!m_bridge->isRunning() || m_busy) return;
+	m_bridge->stop();
+	LiveServer::instance().setAssistantWritesAllowed(false);
+	add(Entry::Note, tr("Settings changed; the next question starts a new conversation."));
+}
+
+/**
+	@brief AssistantDock::icon
+	A speech bubble with a spark, drawn so that it needs no image file
+*/
+QIcon AssistantDock::icon()
+{
+	QIcon icon;
+	for (int size : {16, 22, 24, 32, 48}) {
+		QPixmap pixmap(size, size);
+		pixmap.fill(Qt::transparent);
+		QPainter painter(&pixmap);
+		painter.setRenderHint(QPainter::Antialiasing);
+		const qreal s = size;
+		QPainterPath bubble;
+		bubble.addRoundedRect(QRectF(s * 0.04, s * 0.06, s * 0.92, s * 0.70), s * 0.2, s * 0.2);
+		QPainterPath tail;
+		tail.moveTo(s * 0.22, s * 0.70);
+		tail.lineTo(s * 0.18, s * 0.96);
+		tail.lineTo(s * 0.46, s * 0.70);
+		tail.closeSubpath();
+		painter.fillPath(bubble.united(tail), QColor(0xD9, 0x77, 0x57));
+			//The spark: four rays and four shorter ones
+		painter.setPen(QPen(Qt::white, qMax(1.0, s / 11.0), Qt::SolidLine, Qt::RoundCap));
+		const QPointF c(s * 0.5, s * 0.41);
+		for (int i = 0 ; i < 8 ; ++i) {
+			const qreal length = (i % 2 ? 0.16 : 0.25) * s;
+			const qreal angle = i * M_PI / 4.0;
+			painter.drawLine(c, c + QPointF(std::cos(angle) * length, std::sin(angle) * length));
+		}
+		painter.end();
+		icon.addPixmap(pixmap);
 	}
+	return icon;
 }
 
 void AssistantDock::onMessage(const QJsonObject &message)

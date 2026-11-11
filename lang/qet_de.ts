@@ -633,11 +633,11 @@
     </message>
     <message>
         <source>Settings…</source>
-        <translation>Einstellungen…</translation>
+        <translation type="vanished">Einstellungen…</translation>
     </message>
     <message>
         <source>API key and Python of the assistant</source>
-        <translation>API-Schlüssel und Python des Assistenten</translation>
+        <translation type="vanished">API-Schlüssel und Python des Assistenten</translation>
     </message>
     <message>
         <source>Ask about the open drawing, or tell Claude what to draw. Every change Claude makes is one undo step.</source>
@@ -661,7 +661,7 @@
     </message>
     <message>
         <source>No API key: the assistant cannot answer without one.</source>
-        <translation>Kein API-Schlüssel: ohne ihn kann der Assistent nicht antworten.</translation>
+        <translation type="vanished">Kein API-Schlüssel: ohne ihn kann der Assistent nicht antworten.</translation>
     </message>
     <message>
         <source>The channel to the drawing could not be opened.</source>
@@ -677,7 +677,19 @@
     </message>
     <message>
         <source>Settings saved; the next question starts a new conversation.</source>
-        <translation>Einstellungen gespeichert; die nächste Frage beginnt ein neues Gespräch.</translation>
+        <translation type="vanished">Einstellungen gespeichert; die nächste Frage beginnt ein neues Gespräch.</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation>Einstellungen</translation>
+    </message>
+    <message>
+        <source>Back to the setup: API key, Python, package</source>
+        <translation>Zurück zur Einrichtung: API-Schlüssel, Python, Paket</translation>
+    </message>
+    <message>
+        <source>Settings changed; the next question starts a new conversation.</source>
+        <translation>Einstellungen geändert; die nächste Frage beginnt ein neues Gespräch.</translation>
     </message>
     <message>
         <source>writing…</source>
@@ -868,55 +880,174 @@ Jede Änderung ist ein eigener Rückgängig-Schritt (Strg+Z). Darf Claude den Pl
     <name>AssistantSettingsDialog</name>
     <message>
         <source>Assistant settings</source>
-        <translation>Einstellungen des Assistenten</translation>
+        <translation type="vanished">Einstellungen des Assistenten</translation>
     </message>
     <message>
         <source>The assistant uses Claude (Anthropic). It needs an API key from console.anthropic.com. The key is kept in the Windows Credential Manager, never in a file of QElectroTech.</source>
-        <translation>Der Assistent nutzt Claude (Anthropic). Er braucht einen API-Schlüssel von console.anthropic.com. Der Schlüssel liegt in der Windows-Anmeldeinformationsverwaltung, nie in einer Datei von QElectroTech.</translation>
+        <translation type="vanished">Der Assistent nutzt Claude (Anthropic). Er braucht einen API-Schlüssel von console.anthropic.com. Der Schlüssel liegt in der Windows-Anmeldeinformationsverwaltung, nie in einer Datei von QElectroTech.</translation>
     </message>
     <message>
         <source>API key:</source>
-        <translation>API-Schlüssel:</translation>
+        <translation type="vanished">API-Schlüssel:</translation>
     </message>
     <message>
         <source>not found</source>
-        <translation>nicht gefunden</translation>
+        <translation type="vanished">nicht gefunden</translation>
     </message>
     <message>
         <source>Choose…</source>
-        <translation>Wählen…</translation>
+        <translation type="vanished">Wählen…</translation>
     </message>
     <message>
         <source>Python:</source>
-        <translation>Python:</translation>
+        <translation type="vanished">Python:</translation>
     </message>
     <message>
         <source>Python program</source>
-        <translation>Python-Programm</translation>
+        <translation type="vanished">Python-Programm</translation>
     </message>
     <message>
         <source>The bridge needs the Python package “anthropic” (py -m pip install anthropic).</source>
-        <translation>Die Brücke braucht das Python-Paket „anthropic“ (py -m pip install anthropic).</translation>
+        <translation type="vanished">Die Brücke braucht das Python-Paket „anthropic“ (py -m pip install anthropic).</translation>
     </message>
     <message>
         <source>Remove key</source>
-        <translation>Schlüssel entfernen</translation>
+        <translation type="vanished">Schlüssel entfernen</translation>
     </message>
     <message>
         <source>No credential store on this system: set ANTHROPIC_API_KEY in the environment instead.</source>
-        <translation>Auf diesem System gibt es keinen Anmeldeinformationsspeicher: stattdessen ANTHROPIC_API_KEY in der Umgebung setzen.</translation>
+        <translation type="vanished">Auf diesem System gibt es keinen Anmeldeinformationsspeicher: stattdessen ANTHROPIC_API_KEY in der Umgebung setzen.</translation>
     </message>
     <message>
         <source>A key is stored. Leave the field empty to keep it.</source>
-        <translation>Ein Schlüssel ist hinterlegt. Feld leer lassen, um ihn zu behalten.</translation>
+        <translation type="vanished">Ein Schlüssel ist hinterlegt. Feld leer lassen, um ihn zu behalten.</translation>
     </message>
     <message>
         <source>No key stored yet.</source>
-        <translation>Noch kein Schlüssel hinterlegt.</translation>
+        <translation type="vanished">Noch kein Schlüssel hinterlegt.</translation>
     </message>
     <message>
         <source>The key could not be stored: %1</source>
-        <translation>Der Schlüssel ließ sich nicht speichern: %1</translation>
+        <translation type="vanished">Der Schlüssel ließ sich nicht speichern: %1</translation>
+    </message>
+    <message>
+        <source>Remove the stored API key?</source>
+        <translation type="vanished">Den hinterlegten API-Schlüssel entfernen?</translation>
+    </message>
+    <message>
+        <source>The key could not be removed: %1</source>
+        <translation type="vanished">Der Schlüssel ließ sich nicht entfernen: %1</translation>
+    </message>
+</context>
+<context>
+    <name>AssistantSetupPage</name>
+    <message>
+        <source>Set up Claude</source>
+        <translation>Claude einrichten</translation>
+    </message>
+    <message>
+        <source>Claude answers questions about the open drawing and draws for you. Three things are needed once; each step turns green when it is done.</source>
+        <translation>Claude beantwortet Fragen zum offenen Plan und zeichnet für Sie. Dafür sind einmalig drei Dinge nötig; jeder Schritt wird grün, sobald er erledigt ist.</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>Prüfen</translation>
+    </message>
+    <message>
+        <source>Test the key with one short request to Anthropic and store it</source>
+        <translation>Den Schlüssel mit einer kurzen Anfrage bei Anthropic testen und speichern</translation>
+    </message>
+    <message>
+        <source>Remove stored key</source>
+        <translation>Gespeicherten Schlüssel entfernen</translation>
+    </message>
+    <message>
+        <source>Choose Python…</source>
+        <translation>Python auswählen…</translation>
+    </message>
+    <message>
+        <source>Install now</source>
+        <translation>Jetzt installieren</translation>
+    </message>
+    <message>
+        <source>Runs: python -m pip install --upgrade anthropic</source>
+        <translation>Führt aus: python -m pip install --upgrade anthropic</translation>
+    </message>
+    <message>
+        <source>Check again</source>
+        <translation>Erneut prüfen</translation>
+    </message>
+    <message>
+        <source>To the chat</source>
+        <translation>Zum Chat</translation>
+    </message>
+    <message>
+        <source>done</source>
+        <translation>erledigt</translation>
+    </message>
+    <message>
+        <source>still to do</source>
+        <translation>noch offen</translation>
+    </message>
+    <message>
+        <source>checking…</source>
+        <translation>wird geprüft…</translation>
+    </message>
+    <message>
+        <source>All set: Claude is ready.</source>
+        <translation>Alles bereit: Claude kann loslegen.</translation>
+    </message>
+    <message>
+        <source>When every step is green, the chat opens by itself.</source>
+        <translation>Sobald alle Schritte grün sind, öffnet sich der Chat von selbst.</translation>
+    </message>
+    <message>
+        <source>1. API key</source>
+        <translation>1. API-Schlüssel</translation>
+    </message>
+    <message>
+        <source>A key is stored in the Windows Credential Manager. To change it, enter a new one and press Check.</source>
+        <translation>Ein Schlüssel ist in der Windows-Anmeldeinformationsverwaltung gespeichert. Zum Ändern einen neuen eingeben und „Prüfen“ drücken.</translation>
+    </message>
+    <message>
+        <source>The key comes from the environment variable ANTHROPIC_API_KEY.</source>
+        <translation>Der Schlüssel kommt aus der Umgebungsvariable ANTHROPIC_API_KEY.</translation>
+    </message>
+    <message>
+        <source>This system has no credential store: set the environment variable ANTHROPIC_API_KEY and start QElectroTech again.</source>
+        <translation>Dieses System hat keinen Anmeldeinformationsspeicher: die Umgebungsvariable ANTHROPIC_API_KEY setzen und QElectroTech neu starten.</translation>
+    </message>
+    <message>
+        <source>Create a key at %1 (sign in, then “API Keys” › “Create Key”), paste it here and press Check. It is kept in the Windows Credential Manager, never in a file.</source>
+        <translation>Einen Schlüssel auf %1 anlegen (anmelden, dann „API Keys“ › „Create Key“), hier einfügen und „Prüfen“ drücken. Er wird in der Windows-Anmeldeinformationsverwaltung gespeichert, nie in einer Datei.</translation>
+    </message>
+    <message>
+        <source>The key is valid but could not be stored: %1</source>
+        <translation>Der Schlüssel ist gültig, ließ sich aber nicht speichern: %1</translation>
+    </message>
+    <message>
+        <source>Anthropic does not accept this key. Copy it again from the console, completely.</source>
+        <translation>Anthropic nimmt diesen Schlüssel nicht an. Bitte noch einmal vollständig aus der Konsole kopieren.</translation>
+    </message>
+    <message>
+        <source>The key has no permission for the API (403).</source>
+        <translation>Der Schlüssel hat keine Berechtigung für die API (403).</translation>
+    </message>
+    <message>
+        <source>Anthropic is busy right now (%1). Please try again in a moment.</source>
+        <translation>Anthropic ist gerade ausgelastet (%1). Bitte gleich noch einmal versuchen.</translation>
+    </message>
+    <message>
+        <source>Anthropic answered with error %1.</source>
+        <translation>Anthropic antwortete mit Fehler %1.</translation>
+    </message>
+    <message>
+        <source>No connection to api.anthropic.com: %1</source>
+        <translation>Keine Verbindung zu api.anthropic.com: %1</translation>
+    </message>
+    <message>
+        <source>Claude</source>
+        <translation>Claude</translation>
     </message>
     <message>
         <source>Remove the stored API key?</source>
@@ -925,6 +1056,74 @@ Jede Änderung ist ein eigener Rückgängig-Schritt (Strg+Z). Darf Claude den Pl
     <message>
         <source>The key could not be removed: %1</source>
         <translation>Der Schlüssel ließ sich nicht entfernen: %1</translation>
+    </message>
+    <message>
+        <source>2. Python</source>
+        <translation>2. Python</translation>
+    </message>
+    <message>
+        <source>The chosen program “%1” does not exist. Choose another one.</source>
+        <translation>Das gewählte Programm „%1“ gibt es nicht. Bitte ein anderes wählen.</translation>
+    </message>
+    <message>
+        <source>No Python found. Install Python 3 from %1 (tick “Add python.exe to PATH”), then press Check again.</source>
+        <translation>Kein Python gefunden. Python 3 von %1 installieren („Add python.exe to PATH“ anhaken), dann „Erneut prüfen“ drücken.</translation>
+    </message>
+    <message>
+        <source>Only Windows&apos; shortcut to the Microsoft Store was found. Install Python 3 from %1, then press Check again.</source>
+        <translation>Gefunden wurde nur die Windows-Verknüpfung zum Microsoft Store. Python 3 von %1 installieren, dann „Erneut prüfen“ drücken.</translation>
+    </message>
+    <message>
+        <source>Found: %1</source>
+        <translation>Gefunden: %1</translation>
+    </message>
+    <message>
+        <source>Python program</source>
+        <translation>Python-Programm</translation>
+    </message>
+    <message>
+        <source>Programs (*.exe)</source>
+        <translation>Programme (*.exe)</translation>
+    </message>
+    <message>
+        <source>3. Python package “anthropic”</source>
+        <translation>3. Python-Paket „anthropic“</translation>
+    </message>
+    <message>
+        <source>Is checked once Python is there.</source>
+        <translation>Wird geprüft, sobald Python da ist.</translation>
+    </message>
+    <message>
+        <source>Installed, version %1.</source>
+        <translation>Installiert, Version %1.</translation>
+    </message>
+    <message>
+        <source>Not installed yet. The button installs it with pip (takes about a minute, needs internet).</source>
+        <translation>Noch nicht installiert. Der Knopf installiert es mit pip (dauert etwa eine Minute, braucht Internet).</translation>
+    </message>
+    <message>
+        <source>Python could not be started.</source>
+        <translation>Python ließ sich nicht starten.</translation>
+    </message>
+    <message>
+        <source>installing…</source>
+        <translation>wird installiert…</translation>
+    </message>
+    <message>
+        <source>Done.</source>
+        <translation>Erledigt.</translation>
+    </message>
+    <message>
+        <source>pip ended with code %1.</source>
+        <translation>pip endete mit Code %1.</translation>
+    </message>
+    <message>
+        <source>Program part missing</source>
+        <translation>Programmteil fehlt</translation>
+    </message>
+    <message>
+        <source>mcp/qet-assistent/bruecke.py was not found beside QElectroTech. Install QElectroTech again.</source>
+        <translation>mcp/qet-assistent/bruecke.py wurde neben QElectroTech nicht gefunden. Bitte QElectroTech neu installieren.</translation>
     </message>
 </context>
 <context>
@@ -4647,6 +4846,10 @@ Hold Shift and drag to move this text on its own</source>
     <message>
         <source>Conductor color</source>
         <translation>Leiterfarbe</translation>
+    </message>
+    <message>
+        <source>Claude assistant</source>
+        <translation>Claude-Assistent</translation>
     </message>
     <message>
         <source>Grid step</source>
@@ -16971,6 +17174,14 @@ Skripte aktivieren? Diese Einstellung kann unter „QElectroTech konfigurieren�
     <message>
         <source>JavaScript scripts (*.js);;All files (*)</source>
         <translation>JavaScript-Skripte (*.js);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <source>Claude</source>
+        <translation>Claude</translation>
+    </message>
+    <message>
+        <source>Claude: ask about the drawing or let Claude draw. Opens on the right; the first time it guides you through the setup.</source>
+        <translation>Claude: Fragen zum Plan stellen oder Claude zeichnen lassen. Öffnet sich rechts; beim ersten Mal führt es durch die Einrichtung.</translation>
     </message>
     <message>
         <source>Ignored: %1</source>

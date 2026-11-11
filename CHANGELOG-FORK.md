@@ -3,6 +3,17 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.2.0 – 11.11.2026
+
+- Neuer Knopf „Claude“ (Symbol und Text) ganz vorn in der Hauptwerkzeugleiste. Er öffnet und schließt den
+  Claude-Assistenten rechts. Wer seine Hauptwerkzeugleiste schon angepasst hatte, bekommt den Knopf einmal
+  vorn eingefügt; danach lässt er sich wie jeder andere Knopf verschieben oder entfernen.
+- Geführte Einrichtung im Assistenten statt des Einstellungsdialogs: API-Schlüssel (mit Link zu
+  console.anthropic.com und „Prüfen“, das den Schlüssel mit einer kurzen, kostenlosen Anfrage testet und erst dann
+  in der Windows-Anmeldeinformationsverwaltung speichert), Python und das Paket „anthropic“ (Knopf
+  „Jetzt installieren“ ruft pip auf und zeigt die Ausgabe). Jeder Schritt bekommt einen grünen Haken oder ein rotes
+  Kreuz; sind alle grün, wechselt das Fenster von selbst zum Chat. „Einstellungen“ im Chat führt zurück.
+
 ## 1.1.2 – 11.11.2026
 
 - EPLAN-Import: Ein SPS-Kanal ist jetzt EIN Bauteil – Kanalkasten, Kopfzeile (Karte, Typ), Anschluss, Klemme,

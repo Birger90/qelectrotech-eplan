@@ -19,14 +19,17 @@
 #define ASSISTANTDOCK_H
 
 #include <QDockWidget>
+#include <QIcon>
 #include <QJsonObject>
 #include <QList>
 
 class AssistantBridge;
+class AssistantSetupPage;
 class QETDiagramEditor;
 class QLabel;
 class QPlainTextEdit;
 class QPushButton;
+class QStackedWidget;
 class QTextBrowser;
 class QTimer;
 class QToolButton;
@@ -41,6 +44,10 @@ class QToolButton;
 	Behind it runs AssistantBridge (Python, Anthropic SDK). The dock shows
 	the conversation, which tool Claude is using, and has a button to
 	stop the answer.
+
+	Until the key, Python and the package are there, the dock shows the
+	guided setup (AssistantSetupPage) instead; once all is green it turns
+	into the chat by itself. "Settings" in the chat leads back to it.
 */
 class AssistantDock : public QDockWidget
 {
@@ -49,6 +56,9 @@ class AssistantDock : public QDockWidget
 	public:
 		explicit AssistantDock(QETDiagramEditor *editor);
 		~AssistantDock() override;
+
+			/// Claude's icon for the toolbar button and the dock
+		static QIcon icon();
 
 	protected:
 		bool eventFilter(QObject *watched, QEvent *event) override;
@@ -62,7 +72,10 @@ class AssistantDock : public QDockWidget
 		void sendQuestion();
 		void cancel();
 		void newConversation();
-		void openSettings();
+		void showSetup(bool switch_when_done = true);
+		void showChat();
+		void firstShown();
+		void settingsChanged();
 		bool ensureBridge();
 		void onMessage(const QJsonObject &message);
 		void onStopped(const QString &why);
@@ -75,6 +88,9 @@ class AssistantDock : public QDockWidget
 
 		QETDiagramEditor *m_editor;
 		AssistantBridge *m_bridge;
+		QStackedWidget *m_stack;
+		AssistantSetupPage *m_setup;
+		QWidget *m_chat;
 		QTextBrowser *m_history;
 		QPlainTextEdit *m_input;
 		QPushButton *m_send;
@@ -85,6 +101,7 @@ class AssistantDock : public QDockWidget
 		QTimer *m_render_timer;
 		QList<Entry> m_entries;
 		bool m_busy = false;
+		bool m_shown_once = false;
 		bool m_answer_open = false;	///< the last entry is the answer being streamed
 };
 

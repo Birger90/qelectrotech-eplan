@@ -169,8 +169,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/assistant/assistantbridge.h
   ${QET_DIR}/sources/assistant/assistantdock.cpp
   ${QET_DIR}/sources/assistant/assistantdock.h
-  ${QET_DIR}/sources/assistant/assistantsettingsdialog.cpp
-  ${QET_DIR}/sources/assistant/assistantsettingsdialog.h
+  ${QET_DIR}/sources/assistant/assistantsetuppage.cpp
+  ${QET_DIR}/sources/assistant/assistantsetuppage.h
   ${QET_DIR}/sources/import/portals/portalcredentials.cpp
   ${QET_DIR}/sources/import/portals/portalcredentials.h
   ${QET_DIR}/sources/import/portals/portalsdialog.cpp

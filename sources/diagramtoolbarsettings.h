@@ -63,6 +63,9 @@ class DiagramToolbarSettings
 		static void setIds(const QString &name, const QStringList &ids);
 		static void removeIds(const QString &name);
 
+			/// Put toolbar buttons added in a new version where a user
+			/// with saved toolbars sees them, once
+		static void placeNewWidgets();
 		static QString separatorId();
 		static QStringList widgetIds();
 		static bool isWidget(const QString &id);

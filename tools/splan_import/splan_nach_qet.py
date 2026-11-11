@@ -146,11 +146,52 @@ def symbol_fuer(bt, art):
 
 
 def _sym_box(pfad):
-    """Lage des Symbols relativ zum Einfügepunkt: (x0, y0, x1, y1)."""
+    """Lage des Symbols relativ zum Einfügepunkt: (x0, y0, x1, y1) – aus dem tatsächlich Gezeichneten. Der
+    deklarierte Rahmen (width/height) ist bei Herstellermakros oft viel größer (Kanalmakro S7-1200: 140 × 140 px
+    deklariert, 100 × 70 px gezeichnet) und kostet sonst je Zeile ein Drittel der Blatthöhe."""
     import xml.etree.ElementTree as ET
     r = ET.parse(S.datei(pfad)).getroot()
     hx, hy = float(r.get("hotspot_x", 0)), float(r.get("hotspot_y", 0))
-    return (-hx, -hy, float(r.get("width", 0)) - hx, float(r.get("height", 0)) - hy)
+    dekl = (-hx, -hy, float(r.get("width", 0)) - hx, float(r.get("height", 0)) - hy)
+    xs, ys = [], []
+
+    def f(e, k, v=0.0):
+        try:
+            return float(e.get(k, v))
+        except (TypeError, ValueError):
+            return v
+    for e in r.iter():
+        t = e.tag
+        if t == "line":
+            xs += [f(e, "x1"), f(e, "x2")]
+            ys += [f(e, "y1"), f(e, "y2")]
+        elif t in ("rect", "ellipse", "arc"):
+            xs += [f(e, "x"), f(e, "x") + f(e, "width")]
+            ys += [f(e, "y"), f(e, "y") + f(e, "height")]
+        elif t == "circle":
+            xs += [f(e, "x"), f(e, "x") + f(e, "diameter")]
+            ys += [f(e, "y"), f(e, "y") + f(e, "diameter")]
+        elif t == "polygon":
+            k = 1
+            while e.get(f"x{k}") is not None:
+                xs.append(f(e, f"x{k}"))
+                ys.append(f(e, f"y{k}"))
+                k += 1
+        elif t == "text":
+            xs += [f(e, "x"), f(e, "x") + 4 * len(e.get("text", ""))]
+            ys += [f(e, "y") - 8, f(e, "y")]
+        elif t == "dynamic_text":
+            w = f(e, "text_width", -1)
+            xs += [f(e, "x"), f(e, "x") + (w if w > 0 else 30)]
+            ys += [f(e, "y"), f(e, "y") + 12]
+        elif t == "terminal":
+            xs.append(f(e, "x"))
+            ys.append(f(e, "y"))
+    if not xs:
+        return dekl
+    g = (min(xs) - 4, min(ys) - 4, max(xs) + 4, max(ys) + 4)
+    # nie größer als deklariert (Texte am Rand werden sonst überschätzt)
+    return (max(g[0], dekl[0]), max(g[1], dekl[1]), min(g[2], dekl[2]), min(g[3], dekl[3]))
 
 
 # --- ein Blatt zeichnen --------------------------------------------------------------------------------
@@ -273,10 +314,16 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
         if eh[0].art != "kanal":
             geteilt.append(eh)
             continue
+        # Eingänge (Leitung nach oben) und Ausgänge (nach unten) in getrennte Zeilen: eine gemischte Zeile braucht
+        # oben und unten Platz für Verweispfeile und frisst ein ganzes Blatt
+        def _ri(g):
+            return S.symbol(g.pfad).anschluss(g.zu[id(g.bt.anschluesse[0])]).richtung
+        eh = sorted(eh, key=lambda g: 0 if _ri(g) == "n" else 1)
         stueck, breite = [], 0
         for g in eh:
-            w = g.box[2] - g.box[0] + 10
-            if stueck and breite + w > X_RECHTS - X_LINKS - 40:
+            g.ri = _ri(g)
+            w = g.box[2] - g.box[0] + 20
+            if stueck and (breite + w > X_RECHTS - X_LINKS - 40 or _ri(g) != _ri(stueck[-1])):
                 geteilt.append(stueck)
                 stueck, breite = [], 0
             stueck.append(g)
@@ -312,7 +359,9 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
         for k, eh in enumerate(gruppe):
             breite = breiten[k]
             rest = sum(breiten[k + 1:])             # was in dieser Zeile noch Platz braucht
-            if zeile and x + breite > X_RECHTS:
+            andere_richtung = eh[0].art == "kanal" and any(
+                z.art == "kanal" and z.ri != eh[0].ri for z in zeile)
+            if zeile and (x + breite > X_RECHTS or andere_richtung):
                 zeilen.append(zeile)
                 zeile, x = [], X_LINKS
             if eh[0].art == "klemme" and eh[0].leiste:
@@ -354,14 +403,28 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
         g = teil_von[id(a)]
         return S.symbol(g.pfad).anschluss(g.anschluss(a)).richtung
 
+    def frei_rechts(a, zeile):
+        """Platz rechts neben dem Anschluss bis zum nächsten Anschluss gleicher Richtung in der Zeile (px)"""
+        ax, r = platz[id(a)][0], richtung(a)
+        xs = [platz[id(b_)][0] for g in zeile for b_ in g.bt.anschluesse
+              if id(b_) in platz and b_ is not a and richtung(b_) == r and platz[id(b_)][0] > ax + 1]
+        return (min(xs) if xs else X_RECHTS + 60) - ax - 14
+
     def pfeile(zeile, richt):
-        """Hat die Zeile Verweispfeile nach oben/unten? Dann Platz für Pfeil + senkrechten Namen lassen."""
-        n = 0
+        """Platz für Verweispfeile nach oben/unten: Pfeil + Querverweis; der Name steht waagerecht rechts daneben
+        (umbrochen auf den freien Platz), nur wo kein Platz ist, senkrecht wie bisher (frisst viel Höhe)."""
+        senk, zeilen_n = 0, 0
         for g in zeile:
             for a in g.bt.anschluesse:
                 if a.netz and a.netz.namen and a.netz not in schienen and richtung(a) == richt:
-                    n = max(n, len(a.netz.name))
-        return 0 if not n else 60 + 7 * min(n, 20)   # längere Namen ragen in den Kanal, nicht ins Gerät
+                    z = _umbruch(a.netz.name, frei_rechts(a, zeile))
+                    if z is None:
+                        senk = max(senk, len(a.netz.name))
+                    else:
+                        zeilen_n = max(zeilen_n, len(z))
+        if senk:
+            return 60 + 7 * min(senk, 20)
+        return 0 if not zeilen_n else 110 + 10 * max(0, zeilen_n - 4)
 
     # Verbindungen je Netz als kürzester Baum (nicht als Kette), dann Kanäle zwischen den Zeilen belegen:
     # jede Leitung bekommt eine eigene Höhe (Spur), damit parallele Leitungen nie aufeinander liegen.
@@ -426,6 +489,8 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
             seite += 1                              # Folgeblatt
             y = y_start + n_spuren(r - 1) * 10
         seite_von[r] = seite
+        if os.environ.get("SPLAN_DEBUG"):
+            print("ZEILE", nummer, r, seite, len(zeile), "y", y, "oben", h_oben, pfeile(zeile, "n"), "unten", h_unten, pfeile(zeile, "s"), "spuren", n_spuren(r), "ende", y_ende, [(g.pfad.split("/")[-1][-14:], g.box[1], g.box[3]) for g in zeile])
         for g in zeile:
             g.y, g.seite = gy, seite
         kanal_y[r] = ky
@@ -501,10 +566,18 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
         nach_oben = S.symbol(g.pfad).anschluss(g.anschluss(a)).richtung == "n"
         richt = "von_oben" if nach_oben else "ab"
         ay = py - 40 if nach_oben else py + 40
-        t = b.pfeil(name, px, ay, richt, text=True)
+        z = _umbruch(name, frei_rechts(a, zeilen[zeile_von[id(g)]]))
+        t = b.pfeil(name, px, ay, richt, text=z is None)
+        if z is not None:                           # waagerecht rechts neben dem Pfeil, oben bündig
+            y0 = ay - 12 - 10 * (len(z) - 1) if nach_oben else ay + 4
+            for k, zeile_ in enumerate(z):
+                b.text(zeile_, px + 6, y0 + 10 * k, "verweis")
         b.draht(t, 0, g.teil, g.anschluss(a))
-        for extra in extras:
-            b.text(extra, px + 6, ay + (-30 if nach_oben else 20), "verweis")
+        for k, extra in enumerate(extras):
+            if z is not None:                       # unter (bzw. über) den Namenszeilen weiter
+                b.text(extra, px + 6, (y0 - 10 * (k + 1)) if nach_oben else (y0 + 10 * (len(z) + k)), "verweis")
+            else:
+                b.text(extra, px + 6, ay + (-30 if nach_oben else 20), "verweis")
 
 
     # Leitungen
@@ -575,6 +648,32 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
         if zeile:
             b.text(zeile, 40, yy, "daten")
     return b, geraete, [bi for bi in inh.bilder if not bi.get("_geraet")]
+
+
+ZEICHEN_PX = 4.3                                   # Breite eines Zeichens der Größe „verweis“ (7 pt)
+
+
+def _umbruch(text, breite):
+    """Text auf Zeilen der Breite `breite` (px) umbrechen; None, wenn nicht einmal 6 Zeichen nebeneinander passen."""
+    n = int(breite / ZEICHEN_PX)
+    if n < 6:
+        return None
+    zeilen, z = [], ""
+    for w in text.split():
+        while len(w) > n:                           # überlange Wörter hart teilen
+            if z:
+                zeilen.append(z)
+                z = ""
+            zeilen.append(w[:n])
+            w = w[n:]
+        if z and len(z) + 1 + len(w) > n:
+            zeilen.append(z)
+            z = w
+        else:
+            z = (z + " " + w) if z else w
+    if z:
+        zeilen.append(z)
+    return zeilen or [""]
 
 
 def _num(s):

@@ -27,7 +27,7 @@
 /// a manufacturer portal QElectroTech knows
 struct ManufacturerPortal
 {
-	QString id;            ///< dataportal, siemens, rittal, 3dfindit
+	QString id;            ///< dataportal, siemens, rittal, 3dfindit, beckhoff
 	QString name;          ///< shown name
 	QString login_url;     ///< the portal's own login page, for the browser
 	QString secret_label;  ///< "Password" or "Personal Access Token"

@@ -11027,6 +11027,14 @@ Mit dem MCP-Server qet: Lies es mit qet_recording_read, schreibe ein Skript, das
         <translation>Keine Schnittstelle für Nutzer: Das Bauteil öffnet sich im Browser, QElectroTech zählt die CAD-Anforderungen (50 je 24 h und Konto) und übernimmt die geladenen STEP-Dateien in den 3D-Ordner.</translation>
     </message>
     <message>
+        <source>Beckhoff</source>
+        <translation>Beckhoff</translation>
+    </message>
+    <message>
+        <source>Not in the Data Portal and no API: the EPLAN macros come as one package from the product page (myBeckhoff login, in the browser), the drawings (DXF, STEP) per housing without a login. The password stays in the store, QElectroTech does not send it.</source>
+        <translation>Nicht im Data Portal und keine Schnittstelle: die EPLAN-Makros kommen als ein Paket von der Produktseite (myBeckhoff-Anmeldung, im Browser), die Zeichnungen (DXF, STEP) je Gehäuseform ohne Anmeldung. Das Passwort bleibt im Speicher, QElectroTech sendet es nicht.</translation>
+    </message>
+    <message>
         <source>No token.</source>
         <translation>Kein Token.</translation>
     </message>

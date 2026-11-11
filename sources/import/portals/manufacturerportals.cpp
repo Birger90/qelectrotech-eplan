@@ -81,6 +81,16 @@ QList<ManufacturerPortal> ManufacturerPortals::portals()
 			"(50 per 24 h and account) and takes the downloaded STEP files into the 3D folder.");
 	cad.daily_limit = 50;
 	list << cad;
+
+	ManufacturerPortal bck;
+	bck.id = QStringLiteral("beckhoff");
+	bck.name = tr("Beckhoff");
+	bck.login_url = QStringLiteral("https://www.beckhoff.com");
+	bck.secret_label = tr("Password");
+	bck.access = tr("Not in the Data Portal and no API: the EPLAN macros come as one package from the product "
+			"page (myBeckhoff login, in the browser), the drawings (DXF, STEP) per housing without a login. "
+			"The password stays in the store, QElectroTech does not send it.");
+	list << bck;
 	return list;
 }
 

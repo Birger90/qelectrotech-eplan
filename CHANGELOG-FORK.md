@@ -30,6 +30,7 @@ Original-QElectroTech stehen in `ChangeLog*`.
 - Schaltschrankaufbau: „Geräte platzieren“ sieht alle Seiten des Projekts, auch noch nicht geladene (bisher
   fehlten deren Geräte beim ersten Aufruf). Klemmen stehen nicht mehr in der Geräteliste, sie kommen mit
   „Klemmenleisten platzieren“. Ein Schritt des Assistenten startet nicht ein zweites Mal, solange er läuft.
+- Herstellerportale: Beckhoff steht in der Liste (Konto für myBeckhoff; Makros als Paket, Zeichnungen je Gehäuseform).
 
 ## 1.7.1 – 11.11.2026
 

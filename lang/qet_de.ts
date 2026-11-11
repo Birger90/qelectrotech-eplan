@@ -12177,6 +12177,14 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>Platte von %1</translation>
     </message>
     <message>
+        <source>The series of the manufacturer whose fixings the plate gets, e.g. KX: terminal boxes, AX: compact enclosures, VX: baying enclosures</source>
+        <translation>Die Baureihe des Herstellers, deren Befestigungen die Platte bekommt, z. B. KX: Klemmenkästen, AX: Kompaktschränke, VX: Anreihschränke</translation>
+    </message>
+    <message>
+        <source>Series</source>
+        <translation>Baureihe</translation>
+    </message>
+    <message>
         <source>More options</source>
         <translation>Weitere Einstellungen</translation>
     </message>
@@ -12189,6 +12197,10 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>Glatte Platte, ohne Löcher.</translation>
     </message>
     <message>
+        <source>With the fixings of %1 (%2 x %3 mm): fetched from the Data Portal with OK.</source>
+        <translation>Mit den Befestigungen von %1 (%2 x %3 mm): wird mit OK aus dem Data Portal geholt.</translation>
+    </message>
+    <message>
         <source>No manufacturer&apos;s plate is stored yet, so this one stays plain. Insert an enclosure from the Data Portal once: its plate then is the pattern for all.</source>
         <translation>Noch ist keine Herstellerplatte gespeichert, deshalb bleibt diese Platte glatt. Einmal einen Schrank aus dem Data Portal einfügen: seine Platte ist dann das Muster für alle.</translation>
     </message>
@@ -12199,6 +12211,18 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     <message>
         <source>This folio holds a schematic: the plate gets a new folio &quot;Cabinet layout&quot; at the end of the project.</source>
         <translation>Diese Seite enthält einen Schaltplan: die Platte bekommt eine neue Seite „Schaltschrankaufbau“ am Ende des Projekts.</translation>
+    </message>
+    <message>
+        <source>Fetching %1 from the Data Portal…</source>
+        <translation>Hole %1 aus dem Data Portal…</translation>
+    </message>
+    <message>
+        <source>OK inserts the plate as it is now: %1</source>
+        <translation>OK fügt die Platte so ein, wie sie jetzt ist: %1</translation>
+    </message>
+    <message>
+        <source>plain</source>
+        <translation>glatt</translation>
     </message>
     <message>
         <source>Insert a mounting surface on this folio first.</source>
@@ -12375,6 +12399,13 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     <message>
         <source>none</source>
         <translation>keine</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n terminal(s) are not listed: they come with &quot;Place terminal strips&quot;.</source>
+        <translation>
+            <numerusform>%n Klemme ist nicht aufgeführt: sie kommt mit „Klemmenleisten platzieren“.</numerusform>
+            <numerusform>%n Klemmen sind nicht aufgeführt: sie kommen mit „Klemmenleisten platzieren“.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Devices without a size are proposed at 45 x 90 x 70 mm; correct the sizes here or in the part. They are snapped onto the DIN rails from left to right.</source>
@@ -13339,6 +13370,13 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
     <message>
         <source>Preview :</source>
         <translation>Übersicht:</translation>
+    </message>
+</context>
+<context>
+    <name>PlateFinder</name>
+    <message>
+        <source>The download needs your EPLAN Data Portal token: enter it once in Part import &gt; From the EPLAN Data Portal (&quot;Remember the token&quot;).</source>
+        <translation>Der Download braucht dein EPLAN-Data-Portal-Token: einmal unter Bauteil-Import &gt; Aus dem EPLAN Data Portal eintragen („Token merken“).</translation>
     </message>
 </context>
 <context>

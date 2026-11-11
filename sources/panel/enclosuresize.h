@@ -43,6 +43,15 @@ struct EnclosureSize
 		/// the sizes named in a description; null when it names none
 	static EnclosureSize fromText(const QString &text);
 
+		/// The width and height of a mounting plate named in its
+		/// description: "BH: 275x585 mm", "B x H: 899 x 1696 mm". Null
+		/// when it names none, or names the enclosure the plate is for
+		/// ("für BH: 800x300 mm"); the depth stays 0.
+	static EnclosureSize plateFromText(const QString &text);
+
+		/// the series of a part by its type number: "KX" of "KX.1570800"
+	static QString seriesOf(const QString &type_number);
+
 		/// How far @p of is larger than this size asked for, summed over
 		/// the sizes asked for (those above 0), in mm: 0 is an exact fit.
 		/// Below 0: @p of is smaller in one of them, or does not say.

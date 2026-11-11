@@ -222,7 +222,13 @@ PanelAssistant::PanelAssistant(Diagram *diagram, const Actions &actions, QWidget
 	auto button = [&](const QString &text, std::function<void()> run) {
 		auto *b = new QPushButton(text, this);
 		connect(b, &QPushButton::clicked, this, [this, run]() {
+				// one step at a time: while a step works (placing devices
+				// fetches drawings, and lets events through), a second click
+				// or a held Enter key must not start it again
+			if (m_running) return;
+			m_running = true;
 			if (run) run();
+			m_running = false;
 			if (m_actions.current) follow(m_actions.current());
 			update();
 		});

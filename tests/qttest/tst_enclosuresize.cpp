@@ -32,6 +32,8 @@ class tst_EnclosureSize : public QObject
 	private slots:
 		void fromText_data();
 		void fromText();
+		void plateFromText_data();
+		void plateFromText();
 		void excess();
 		void choose();
 		void chooseWithoutSize();
@@ -74,6 +76,35 @@ void tst_EnclosureSize::fromText()
 	QCOMPARE(s.height, height);
 	QCOMPARE(s.depth, depth);
 	QCOMPARE(s.isNull(), width == 0);
+}
+
+void tst_EnclosureSize::plateFromText_data()
+{
+	QTest::addColumn<QString>("text");
+	QTest::addColumn<double>("width");
+	QTest::addColumn<double>("height");
+
+	QTest::newRow("BH") << QStringLiteral("Montageplatte, für Klemmenkästen und Bus-Gehäuse, BH: 275x585 mm") << 275.0 << 585.0;
+	QTest::newRow("B x H") << QStringLiteral("Montageplatte für Anreihschrank, B x H: 899 x 1696 mm") << 899.0 << 1696.0;
+	QTest::newRow("bare") << QStringLiteral("Montageplatte, für Basicgehäuse, 600 x 1200 mm, Aluminium, 3 mm") << 600.0 << 1200.0;
+	QTest::newRow("module") << QStringLiteral("Montageplatten-Modul, 1 BE (250 mm), 2 HE (300 mm), Montageplatte BH: 188x226 mm") << 188.0 << 226.0;
+		// the size of the enclosure the plate is for is not the plate's
+	QTest::newRow("of the enclosure") << QStringLiteral("Montageplatte, für Klemmenkästen, für BH: 800x300 mm") << 0.0 << 0.0;
+	QTest::newRow("three sizes") << QStringLiteral("Schrank, BHT: 600x2000x600 mm") << 0.0 << 0.0;
+	QTest::newRow("none") << QStringLiteral("Zwischenstück, H: 1800 mm") << 0.0 << 0.0;
+}
+
+void tst_EnclosureSize::plateFromText()
+{
+	QFETCH(QString, text);
+	QFETCH(double, width);
+	QFETCH(double, height);
+	const EnclosureSize s = EnclosureSize::plateFromText(text);
+	QCOMPARE(s.width, width);
+	QCOMPARE(s.height, height);
+	QCOMPARE(s.depth, 0.0);
+	QCOMPARE(EnclosureSize::seriesOf(QStringLiteral("kx.1570800")), QStringLiteral("KX"));
+	QCOMPARE(EnclosureSize::seriesOf(QStringLiteral("1570800")), QString());
 }
 
 void tst_EnclosureSize::excess()

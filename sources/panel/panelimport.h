@@ -133,6 +133,65 @@ class EnclosureSizeFields : public QWidget
 };
 
 /**
+	@brief The mounting plates of a manufacturer in the EPLAN Data Portal
+	(its product group "mounting plates"), by series and size, and the
+	one nearest to a size asked for stored as plate template: a plate of
+	any size then gets the fixings of that series by itself.
+
+	The series is the first part of the type number ("KX" of KX.1570800):
+	the plates of one series have the same fixings at their corners, the
+	series differ. The list is loaded once per session; storing a plate
+	needs the user's Data Portal token.
+*/
+class PlateFinder : public QObject
+{
+	Q_OBJECT
+
+	public:
+		struct Plate
+		{
+			QString id, type, description;
+			double width = 0, height = 0;
+			bool isNull() const {return id.isEmpty();}
+				/// the name its template is stored under
+			QString name() const {return type + QStringLiteral(" - ") + description;}
+		};
+
+		explicit PlateFinder(QObject *parent = nullptr);
+			/// load the list (at once when it is there already); then ready()
+		void load();
+		bool isReady() const {return m_ready;}
+			/// the series that have plates with a size, by name
+		QStringList series() const;
+			/// the plate of @p series nearest to the size; null without one
+		Plate nearest(const QString &series, double width, double height) const;
+			/// its template file when it is stored already, else empty
+		static QString storedFile(const Plate &plate);
+			/// store @p plate as template; then fetched() or failed()
+		void fetch(const Plate &plate);
+		bool isBusy() const;
+
+			/// the plates among @p parts: those whose description names a
+			/// plate's width and height
+		static QVector<Plate> platesOf(const QVector<DataPortalPart> &parts);
+		static Plate nearestOf(const QVector<Plate> &plates, const QString &series, double width, double height);
+
+	signals:
+		void ready();
+		void fetched(const QString &file);
+		void failed(const QString &message);
+
+	private:
+		void loadPage(int offset);
+
+		DataPortalClient *m_client = nullptr;
+		QVector<DataPortalPart> m_loading;
+		QVector<Plate> m_plates;
+		Plate m_pending;
+		bool m_ready = false;
+};
+
+/**
 	@brief Search the EPLAN Data Portal for mounting plates (Rittal by
 	default), show them with their sizes, and store the chosen one's
 	front view as a plate template.

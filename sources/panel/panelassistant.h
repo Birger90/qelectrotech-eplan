@@ -103,6 +103,7 @@ class PanelAssistant : public QDialog
 		QList<QLabel *> m_states;
 		QSpinBox *m_rows = nullptr;
 		QComboBox *m_duct = nullptr;
+		bool m_running = false;   ///< a step is at work
 };
 
 #endif // PANELASSISTANT_H

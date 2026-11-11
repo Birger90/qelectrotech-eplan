@@ -23,6 +23,13 @@ Original-QElectroTech stehen in `ChangeLog*`.
 - Schaltschrankaufbau: „Montagefläche einfügen“ fragt nur noch Kennzeichen, Breite und Höhe. Löcher und Kanten
   kommen von selbst von der gespeicherten Herstellerplatte, die dem Maß am nächsten liegt; Vorlage, Blechdicke,
   Maßstab, Nullpunkt, Artikel und STEP stehen unter „Weitere Einstellungen“.
+- Schaltschrankaufbau: Platte mit den Befestigungen einer Baureihe. „Montagefläche einfügen“ hat die Auswahl
+  „Baureihe“ (KX, AX, VX …, aus der Produktgruppe „Montageplatten“ des Data Portal). Die Platte der Baureihe, die
+  dem eingegebenen Maß am nächsten liegt, wird mit OK aus dem Data Portal geholt (mit dem gespeicherten Token),
+  als Vorlage abgelegt und auf das eigene Maß gestreckt; ist sie schon da, geht es ohne Download.
+- Schaltschrankaufbau: „Geräte platzieren“ sieht alle Seiten des Projekts, auch noch nicht geladene (bisher
+  fehlten deren Geräte beim ersten Aufruf). Klemmen stehen nicht mehr in der Geräteliste, sie kommen mit
+  „Klemmenleisten platzieren“. Ein Schritt des Assistenten startet nicht ein zweites Mal, solange er läuft.
 
 ## 1.7.1 – 11.11.2026
 

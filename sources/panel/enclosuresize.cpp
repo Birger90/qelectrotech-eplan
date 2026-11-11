@@ -63,6 +63,31 @@ EnclosureSize EnclosureSize::fromText(const QString &text)
 	return s;
 }
 
+EnclosureSize EnclosureSize::plateFromText(const QString &text)
+{
+		//two numbers joined by "x", no third one after them
+	static const QRegularExpression pair(QStringLiteral(
+		"(?<![x×])(?<![x×]\\s)(?<![\\d.,])"
+		"(\\d{2,4}(?:[.,]\\d+)?)\\s*[x×]\\s*(\\d{2,4}(?:[.,]\\d+)?)(?!\\s*[x×]\\s*\\d)(?![.,]?\\d)"),
+		QRegularExpression::CaseInsensitiveOption);
+		//"für BH: 800x300": the size of the enclosure, not of the plate
+	static const QRegularExpression of_other(QStringLiteral("(?:\\bfür|\\bfor)\\s+[a-z /]{0,8}:?\\s*$"),
+		QRegularExpression::CaseInsensitiveOption | QRegularExpression::UseUnicodePropertiesOption);
+	EnclosureSize s;
+	const QRegularExpressionMatch m = pair.match(text);
+	if (!m.hasMatch()) return s;
+	if (of_other.match(text.left(m.capturedStart())).hasMatch()) return s;
+	s.width = number(m.captured(1), QString());
+	s.height = number(m.captured(2), QString());
+	return s;
+}
+
+QString EnclosureSize::seriesOf(const QString &type_number)
+{
+	const int dot = type_number.indexOf(QLatin1Char('.'));
+	return dot > 0 ? type_number.left(dot).toUpper() : QString();
+}
+
 double EnclosureSize::excess(const EnclosureSize &of) const
 {
 	double sum = 0;

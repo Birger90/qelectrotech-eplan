@@ -1231,3 +1231,146 @@ void PanelTemplateDialog::failed(const QString &message)
 	m_status->setText(message);
 	m_take->setEnabled(!m_list->selectedItems().isEmpty());
 }
+
+/* ------------------------------------------------------------------ */
+
+namespace {
+		/// the EPLAN Data Portal's product group "Mechanics > Housing > Mounting plates"
+	const char PLATE_GROUP[] = "400500136";
+	const char PLATE_MANUFACTURER[] = "RIT";
+
+		/// the plates loaded in this session, by language
+	QHash<QString, QVector<PlateFinder::Plate>> &plateCache()
+	{
+		static QHash<QString, QVector<PlateFinder::Plate>> cache;
+		return cache;
+	}
+}
+
+PlateFinder::PlateFinder(QObject *parent) :
+	QObject(parent)
+{
+	m_client = new DataPortalClient(this);
+	m_client->setLanguage(QLocale(QETApp::langFromSetting()).name());
+	connect(m_client, &DataPortalClient::searchFinished, this,
+			[this](const QVector<DataPortalPart> &parts, int total, int offset) {
+		m_loading += parts;
+		if (!parts.isEmpty() && m_loading.size() < total && m_loading.size() < GROUP_MOST) {
+			loadPage(offset + int(parts.size()));
+			return;
+		}
+		m_plates = platesOf(m_loading);
+		m_loading.clear();
+		plateCache().insert(QLocale(QETApp::langFromSetting()).name(), m_plates);
+		m_ready = true;
+		emit ready();
+	});
+	connect(m_client, &DataPortalClient::downloadFinished, this, [this](const QByteArray &data, const QString &) {
+		QString error;
+		const QByteArray view = PanelImport::plateViewFromPackage(data, &error);
+		const QString file = view.isEmpty() ? QString() : PanelImport::saveTemplate(m_pending.name(), view, &error);
+		if (file.isEmpty()) emit failed(error);
+		else emit fetched(file);
+	});
+	connect(m_client, &DataPortalClient::failed, this, &PlateFinder::failed);
+}
+
+bool PlateFinder::isBusy() const
+{
+	return m_client->isBusy();
+}
+
+void PlateFinder::load()
+{
+	const QString key = QLocale(QETApp::langFromSetting()).name();
+	if (plateCache().contains(key)) {
+		m_plates = plateCache().value(key);
+		m_ready = true;
+		emit ready();
+		return;
+	}
+	m_loading.clear();
+	loadPage(0);
+}
+
+void PlateFinder::loadPage(int offset)
+{
+	DataPortalQuery q;
+	q.manufacturer = QString::fromLatin1(PLATE_MANUFACTURER);
+	q.only_dxf = true;
+	q.catalog = QString::fromLatin1(PLATE_GROUP);
+	q.brief = true;
+	q.offset = offset;
+	q.limit = GROUP_PAGE;
+	m_client->search(q);
+}
+
+QVector<PlateFinder::Plate> PlateFinder::platesOf(const QVector<DataPortalPart> &parts)
+{
+	QVector<Plate> plates;
+	for (const DataPortalPart &p : parts) {
+		if (p.order_number.isEmpty() || EnclosureSize::seriesOf(p.type_number).isEmpty()) continue;
+		const EnclosureSize size = EnclosureSize::plateFromText(p.description);
+		if (size.isNull()) continue;
+		Plate plate;
+		plate.id = p.id;
+		plate.type = p.type_number;
+		plate.description = p.description;
+		plate.width = size.width;
+		plate.height = size.height;
+		plates << plate;
+	}
+	return plates;
+}
+
+QStringList PlateFinder::series() const
+{
+	QStringList out;
+	for (const Plate &p : m_plates) {
+		const QString s = EnclosureSize::seriesOf(p.type);
+		if (!out.contains(s)) out << s;
+	}
+	out.sort();
+	return out;
+}
+
+PlateFinder::Plate PlateFinder::nearestOf(const QVector<Plate> &plates, const QString &series,
+										  double width, double height)
+{
+	Plate best;
+	double best_d = 0;
+	for (const Plate &p : plates) {
+		if (EnclosureSize::seriesOf(p.type).compare(series, Qt::CaseInsensitive) != 0) continue;
+		const double d = qAbs(p.width - width) + qAbs(p.height - height);
+		if (best.isNull() || d < best_d) {best = p; best_d = d;}
+	}
+	return best;
+}
+
+PlateFinder::Plate PlateFinder::nearest(const QString &series, double width, double height) const
+{
+	return nearestOf(m_plates, series, width, height);
+}
+
+QString PlateFinder::storedFile(const Plate &plate)
+{
+	if (plate.isNull()) return QString();
+	const QString path = QDir(PanelImport::templatesDirectory()).filePath(safeName(plate.name()) + QStringLiteral(".dxf"));
+	return QFileInfo::exists(path) ? path : QString();
+}
+
+void PlateFinder::fetch(const Plate &plate)
+{
+	if (plate.isNull()) {emit failed(QStringLiteral("no plate")); return;}
+	const QString stored = storedFile(plate);
+	if (!stored.isEmpty()) {emit fetched(stored); return;}
+	const QString token = ManufacturerPortals::dataPortalToken();
+	if (token.isEmpty()) {
+		emit failed(tr("The download needs your EPLAN Data Portal token: enter it once in "
+					   "Part import > From the EPLAN Data Portal (\"Remember the token\")."));
+		return;
+	}
+	m_pending = plate;
+	m_client->setToken(token);
+	m_client->downloadDxf(plate.id);
+}

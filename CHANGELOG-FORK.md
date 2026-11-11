@@ -3,6 +3,17 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.5.0 – 11.11.2026
+
+- EPLAN-Import: Auch Steuerungen anderer Hersteller (z. B. Cybelec) werden SPS-Master. Ihre Kanaladresse steht in
+  EPLAN oft nicht als SPS-Adresse, sondern in der Anschlussbezeichnung bzw. -beschreibung (DO5.8, DI1.2); der
+  Import liest sie von dort.
+- EPLAN-Import: Funktionstexte der Kanäle (z. B. „Hand von CNC“) kommen mit – eigener Text, sonst der
+  Pfad-Funktionstext wie in EPLAN – und stehen in der Kanaltabelle der Karte.
+- Adresse, symbolische Adresse und Funktionstext eines verknüpften Kanals kommen nur aus der Kanaltabelle der Karte:
+  Beim Wechsel auf einen anderen Kanal wandern die Texte mit.
+- Nach jedem Import liegt `sps_bericht.txt` im Arbeitsordner: welche Kanäle nicht verknüpft sind und warum.
+
 ## 1.4.0 – 11.11.2026
 
 - Claude-Assistent über das eigene Claude-Konto (Pro/Max) statt eines API-Schlüssels: keine API-Kosten, die

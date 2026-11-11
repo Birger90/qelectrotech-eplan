@@ -617,7 +617,11 @@
     <name>AssistantDock</name>
     <message>
         <source>Assistant</source>
-        <translation>Assistent</translation>
+        <translation type="vanished">Assistent</translation>
+    </message>
+    <message>
+        <source>Claude assistant</source>
+        <translation>Claude-Assistent</translation>
     </message>
     <message>
         <source>New</source>
@@ -16494,6 +16498,10 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
             <numerusform>%n Bauteil nicht neu gezeichnet: Seine Anschlüsse haben sich geändert (ein Anschluss wurde hinzugefügt, entfernt oder verschoben).</numerusform>
             <numerusform>%n Bauteile nicht neu gezeichnet: Ihre Anschlüsse haben sich geändert (ein Anschluss wurde hinzugefügt, entfernt oder verschoben).</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Live mode</source>
+        <translation>Direktmodus</translation>
     </message>
     <message>
         <source>Remembered after a restart</source>

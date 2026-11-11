@@ -6037,7 +6037,7 @@ void QETDiagramEditor::setUpLiveIndicator()
 	update(LiveServer::instance().state());
 
 		//The Assistant dock: every action, and whether to be asked first
-	auto *dock = new QDockWidget(tr("Assistant"), this);
+	auto *dock = new QDockWidget(tr("Live mode"), this);
 	dock->setObjectName(QStringLiteral("assistant_dock"));
 	auto *content = new QWidget(dock);
 	auto *dock_layout = new QVBoxLayout(content);

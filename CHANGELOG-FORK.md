@@ -3,6 +3,12 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.1.1 – 11.11.2026
+
+- Das Claude-Fenster heißt jetzt „Claude-Assistent“ (Ansicht > Claude-Assistent), das Protokoll des Direktmodus
+  „Direktmodus“. Vorher hießen beide „Assistent“ und hatten dieselbe Kennung, sodass QET ihre Plätze beim Start
+  vertauschen konnte.
+
 ## 1.1.0 – 11.11.2026
 
 - Datei > EPLAN-Projekt importieren zeigt einen grünen Fortschrittsbalken (0–100 %) und den laufenden Schritt.

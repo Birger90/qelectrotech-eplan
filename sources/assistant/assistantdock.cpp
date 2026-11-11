@@ -45,11 +45,13 @@
 #include <QVBoxLayout>
 
 AssistantDock::AssistantDock(QETDiagramEditor *editor) :
-	QDockWidget(tr("Assistant"), editor),
+	QDockWidget(tr("Claude assistant"), editor),
 	m_editor(editor),
 	m_bridge(new AssistantBridge(this))
 {
-	setObjectName(QStringLiteral("assistant_dock"));
+	// not "assistant_dock": that is the live mode's log dock, and two docks
+	// with one name mix up their places when the window state is restored
+	setObjectName(QStringLiteral("claude_assistant_dock"));
 	auto *body = new QWidget(this);
 	auto *layout = new QVBoxLayout(body);
 	layout->setContentsMargins(4, 4, 4, 4);

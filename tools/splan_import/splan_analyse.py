@@ -240,6 +240,25 @@ def analysiere(blatt, nummer):
             for j in range(n):
                 if i != j and any(_abst_seg(e, a, b) <= TOL for a, b in segs[j]):
                     _union(parent, i, j)
+    # Überstand: Ein Leitungsende, das eine andere Leitung kreuzt und höchstens 1,5 mm dahinter endet, ist ein von
+    # Hand über die Schiene hinausgezogener Abgriff (belegt in Projekt A, Blatt „Motor Z“: Abgriffe von K3:A1 und
+    # S6:1 enden 0,5 bzw. 0,8 mm über der +24-V-Schiene; ohne diese Regel hingen beide in der Luft).
+    def _kreuzt(p1, p2, a, b):
+        def seite(u, v, w):
+            return (v[0] - u[0]) * (w[1] - u[1]) - (v[1] - u[1]) * (w[0] - u[0])
+        return seite(p1, p2, a) * seite(p1, p2, b) < 0 and seite(a, b, p1) * seite(a, b, p2) < 0
+    for i in range(n):
+        pts = leit[i]["pts"]
+        for e, vor, pfeil in ((pts[0], pts[1], leit[i].get("pfeil_anfang")),
+                              (pts[-1], pts[-2], leit[i].get("pfeil_ende"))):
+            if pfeil:
+                continue
+            for j in range(n):
+                if i != j and _wurzel(parent, i) != _wurzel(parent, j) and any(
+                        TOL < _abst_seg(e, a, b) <= 15 and _kreuzt(e, vor, a, b) for a, b in segs[j]):
+                    _union(parent, i, j)
+                    inh.fragen.append(f"Leitungsende bei {e[0] / 10:.0f}/{e[1] / 10:.0f} mm ragt über die gekreuzte "
+                                      f"Leitung hinaus – als verbunden gewertet.")
     for p in punkte:
         auf = [i for i in range(n) if any(_abst_seg(p, a, b) <= TOL for a, b in segs[i])]
         for i in auf[1:]:
@@ -266,8 +285,18 @@ def analysiere(blatt, nummer):
     def auf_leitung(e, i):
         return any(j != i and any(_abst_seg(e, a, b) <= TOL for a, b in segs[j]) for j in range(n))
 
+    def umkehrpunkte(pts):
+        """Innere Punkte, an denen der Linienzug auf sich selbst zurückläuft: so zeichnet man in sPlan eine Brücke,
+        die ein Gerät antippt und zurückkehrt (belegt in Projekt A, Treiber A8: Brücke Ena- -> Dir- als ein Zug
+        mit Umkehr am Anschluss Dir-; nur die Enden zu prüfen, übersah diesen Anschluss)."""
+        for a, m, b in zip(pts, pts[1:], pts[2:]):
+            v1, v2 = (a[0] - m[0], a[1] - m[1]), (b[0] - m[0], b[1] - m[1])
+            l1, l2 = math.hypot(*v1), math.hypot(*v2)
+            if l1 > 1 and l2 > 1 and (v1[0] * v2[0] + v1[1] * v2[1]) / (l1 * l2) > 0.98:
+                yield m
+
     for i in range(n):
-        for e in enden[i]:
+        for e in list(enden[i]) + list(umkehrpunkte(leit[i]["pts"])):
             kand = sorted(((bt.beruehrt(e), bt.nr, bt) for bt in inh.bauteile), key=lambda t: t[:2])
             if not kand or kand[0][0] > TOL:
                 continue

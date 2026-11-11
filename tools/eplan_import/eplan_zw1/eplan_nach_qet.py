@@ -289,6 +289,21 @@ def _datum(ts):
         return ""
 
 
+def _im_blatt(t, lage, h, ang, ausr):
+    """Mehrzeiliger Normblatttext: Zeilen, die unter den Blattrand (y < 0) laufen, druckt EPLAN nicht (Schriftfeld
+    „Anlagenbezeichnung“ mit vier Zeilen ab y = 13 mm, h = 2,5 mm: die vierte Zelle reicht bis -2 mm, im Original
+    fehlt sie). Zeilenhöhe = Zellhöhe 1,5 × h; nur waagerechte Texte."""
+    zeilen = t.split("\n")
+    if len(zeilen) < 2 or ang:
+        return t
+    zelle = G.ZELLE * h
+    a_ = ausr or 7
+    oben = lage[1] + (0 if a_ in (1, 2, 3) else len(zeilen) * zelle / 2 if a_ in (4, 5, 6)
+                      else len(zeilen) * zelle if a_ in (7, 8, 9) else h)
+    behalten = [z for i, z in enumerate(zeilen) if oben - (i + 1) * zelle >= -0.05]
+    return "\n".join(behalten)
+
+
 def _anschluss_schluessel(n):
     """Sortierung der Anschlussbezeichnungen: numerisch, alphanumerisch, leer (EPLAN-Hilfe
     xessettingsgui_k_querverweisarten)."""
@@ -802,6 +817,67 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
                     stat["sps_symb_verweis_text"] += 1               # Verweis auf andere Funktion: nicht umgesetzt
         return letzt_
 
+    def sps_signal(fid, idx):
+        """Signalart eines SPS-Anschlusses: aus der Anschlusslogik, sonst aus der Funktionsdefinition 300/1/n
+        (2 DE, 3 DA, 4 AE, 5 AA – die Definitionen stehen nicht in jedem Archiv)."""
+        sig_ = anschluss_logik(fid, idx).get(0xeb06)
+        if sig_ in FD.SIGNAL_EINGANG + FD.SIGNAL_AUSGANG:
+            return sig_
+        pr_ = F[fid]["props"]
+        if E.wert(pr_, 0xefc5) == 300 and E.wert(pr_, 0xefc6) == 1:
+            return {2: 6, 3: 7, 4: 8, 5: 9}.get(E.wert(pr_, 0xefc7))
+        return None
+
+    sps_gefunden = {}                                  # (SPS-Anschluss, Index) -> gefundener Sensor/Aktor
+
+    def sps_ziel_ermittelt(fid, idx):
+        """Symbolische Adresse (ermittelt, 20403) wie EPLAN (an einem Original-PDF geprüft, 15 Blätter):
+        - nur für SPS-Anschlüsse mit SPS-Adresse (20400); ohne Adresse (z. B. Kanäle einer Fremdsteuerung) leer;
+        - Suche vom Anschluss über die Verbindungen: Sensor (Eingang) bzw. Aktor (Ausgang) gefunden -> Ende;
+          weiter über „Zielverfolgung (SPS) nach“ (eb07), gleichnamige Abbruchstellen und durch Reihenklemmen (100)
+          bzw. Steckerstifte (101) OHNE eigene Anschlusslogik (Anschluss a <-> b derselben Etage); eine Klemme MIT
+          Logik ohne Weiterleitung (Steckerklemme 100/5) beendet die Suche;
+        - Ergebnis = Text der Funktion, an der die Suche endet, vollständig (=Anlage+Ort-BMK, ggf. :Stecker), ohne
+          den eigenen Anschluss: „=CA+MASCHINE-S171“, „=EB+CA-XSUB441:15“, „=SC+CA-A615:AX.4 X2“."""
+        if not G.text_de({k_: w_ for k_, i_, w_ in (E.wert(F[fid]["props"], 0xea6b) or [])}.get(20400) or "").strip():
+            return ""
+        sig_ = sps_signal(fid, idx)
+        if sig_ is None:
+            return ""
+        such_ = FD.SIGNAL_SENSOR if sig_ in FD.SIGNAL_EINGANG else FD.SIGNAL_AKTOR
+        gesehen_, offen_, letzt_ = {(fid, idx)}, [(fid, idx)], ""
+        while offen_:
+            for (o, k), text in nachbarn.get(offen_.pop(0), []):
+                if (o, k) in gesehen_:
+                    continue
+                gesehen_.add((o, k))
+                if o in ip_von:
+                    for o2 in ip_gleich[ip_von[o]]:
+                        if (o2, 0) not in gesehen_:
+                            gesehen_.add((o2, 0))
+                            offen_.append((o2, 0))
+                    continue
+                if o not in F or not F[o]["props"]:
+                    continue
+                an_ = ((funk.get(o, {}).get("anschluesse") or "").split("|") + [""] * (k + 1))[k].strip()
+                t_ = text or ""
+                t_ = t_[:-len(an_) - 1] if an_ and t_.endswith(":" + an_) else t_
+                c_ = anschluss_logik(o, k)
+                if c_.get(0xeb06) == such_:
+                    sps_gefunden[(fid, idx)] = o
+                    return t_
+                letzt_ = t_
+                pr_o = F[o]["props"]
+                if E.wert(pr_o, 0xefc5) in (100, 101) and not c_:
+                    weiter_ = [k ^ 1]                    # Klemme/Steckerstift ohne Logik: andere Seite (Etage)
+                else:
+                    weiter_ = [(c_.get(0xeb07) or 0) - 1]
+                for j_ in weiter_:
+                    if j_ >= 0 and (o, j_) not in gesehen_:
+                        gesehen_.add((o, j_))
+                        offen_.append((o, j_))
+        return letzt_
+
     _fortschritt(40, "portal" if data_portal else "sammlung")
     # Firmensammlung: vorhandene Bauteile zuerst; fehlende Artikel optional aus dem Data Portal holen
     sammlung = BIB.Sammlung() if bibliothek else None
@@ -915,19 +991,42 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
         qv = f"{'=' + anl if anl != a0 else ''}{'+' + ort if ort != o0 else ''}{t_seite}{nr}{t_pfad}{sp}"
         return f"({qv})" if einst.get("EsCrossReference.Format.ShowInBrackets") == "1" else qv
 
-    def pfadtext(f):
+    def pfadtext(f, links=False):
+        """Pfad-Funktionstext einer Funktion: der Text auf Ebene 110 im SELBEN Pfad (Spalte des Normblatts,
+        pfad_spalte) – Projekteinstellung „Pfad-Funktionstext auf den Schaltplanpfad erweitern“
+        (EsDMServices.PathtextUsePathArea = 1; ohne sie müsste der Text genau über dem Einfügepunkt stehen).
+        links=True: „Erweiterte Pfad-Funktionstextübernahme“ (PlcGui.ExtendedPathtextHandling) – der nächste Pfad
+        links mit Pfad-Funktionstext."""
         pid_, p_ = fn_seite.get(f), _pos(F[f]["props"]) if f in F and F[f]["props"] else None
         if not p_ or not pfadtexte.get(pid_):
             return ""
-        x_, t_ = min(pfadtexte[pid_], key=lambda xt: abs(xt[0] - p_[0]))
-        return t_.replace("\n", " ") if abs(x_ - p_[0]) < 42 else ""
+        def sp(x_):
+            try:
+                return int(pfad_spalte(pid_, x_))
+            except ValueError:
+                return None
+        eigene_ = sp(p_[0])
+        if eigene_ is None:
+            return ""
+        if not links:
+            gleich_ = [t_ for x_, t_ in sorted(pfadtexte[pid_]) if sp(x_) == eigene_]
+            return gleich_[0] if gleich_ else ""
+        kand_ = [(sp(x_), t_) for x_, t_ in pfadtexte[pid_] if sp(x_) is not None and sp(x_) < eigene_]
+        return max(kand_)[1] if kand_ else ""
 
     artikel_daten = {}                                   # Artikelnummer (22001) -> {(Eigenschaft, Index): Wert}
+    hersteller_namen = {}                                # Herstellerkurzname (22900) -> Herstellername (22908)
     for _, e_ in P.get("Article.eod", {}).items():
         kv_ = [t for x in (e_.get("props") or []) if x[1] == "kv" for t in x[2]]
         d_ = {(t[0], t[1]): t[2] for t in kv_ if isinstance(t[2], str)}
         if d_.get((22001, 0)):
             artikel_daten[d_[(22001, 0)]] = d_
+        elif d_.get((22900, 0)) and d_.get((22908, 0)):
+            hersteller_namen[d_[(22900, 0)]] = d_[(22908, 0)]   # Herstellersatz: Kurzname -> Name
+    for d_ in artikel_daten.values():
+        # 22222 Herstellername (ARTICLE_MANUFACTURER_NAME) = Name des Herstellersatzes zum Kurznamen 22007
+        if not d_.get((22222, 0)) and hersteller_namen.get(d_.get((22007, 0))):
+            d_[(22222, 0)] = hersteller_namen[d_[(22007, 0)]]
 
     gruppen_mit_grafik = {E.wert(p_, 0xebf1)[1] for _, (c_, p_) in gr.seite.items()
                           if p_ and E.wert(p_, 0xebf1) and E.wert(p_, 0xebf1)[0] == 26 and c_ not in (53, 26)}
@@ -943,24 +1042,24 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
             werte_idx = {(k_, i_): w_ for k_, i_, w_ in (E.wert(F[fid]["props"], 0xea6b) or [])}
         g_ = fid if nachbarn.get((fid, 0)) else (gegenstueck(fid) or fid)
         a0, o0, _ = alle_seiten.get(seite_pid, ("", "", ""))
+        if eig in (20201, 20403):
+            # 20201 zeigt laut Format 20202 „[20201<20403 …]“ die ermittelte Adresse; manuelle (20402) geht vor
+            w_e = werte_idx.get((20402, 0)) or sps_ziel_ermittelt(g_, 0)
+            return w_e
         manuell_ = werte_idx.get((20402, 0)) if eig == 20404 else None   # automatisch = manuell, sonst ermittelt
-        w = sps_ziel(g_, 0) if eig in (20403, 20404) and not manuell_ else None
         if manuell_:
             w = manuell_
-        elif w is None:
-            w = ziel(g_, 0, a0, o0)
-            if eig == 20404:                   # symbolische Adresse: Gerät ohne Anschluss/Ort
-                w = re.sub(r":.*$", "", w)
-                w = re.sub(r"\+" + re.escape(o0) + r"(?=-)", "", w) if o0 else w
         else:
-            stat["sps_symb_ermittelt"] += 1
+            # ermittelte Adresse ohne =Anlage/+Ort der Seite, Stecker und Anschluss bleiben (Original-PDF,
+            # Übersicht: „=EB-XSUB441:10“, „=SC-A615:AX.4 X2“, /60: „-1-X4:1“)
+            w = sps_ziel_ermittelt(g_, 0)
             w = re.sub(r"^=" + re.escape(a0) + r"(?=[+\-])", "", w) if a0 else w
             w = re.sub(r"\+" + re.escape(o0) + r"(?=-)", "", w) if o0 else w
         return w
 
     def funktionstext(fid, werte):
         """Funktionstext (automatisch) eines SPS-Anschlusses. Schaltplan: eigener Funktionstext (20011), sonst der
-        eigene Pfad-Funktionstext, erst dann der des Gegenstücks (Original Projekt D: /21 „Y-Achse sP“ aus dem Pfad,
+        eigene Pfad-Funktionstext, erst dann der des Gegenstücks (Original-PDF: /21 „Y-Achse sP“ aus dem Pfad,
         nicht „SP“ vom Gegenstück; /21 „Biegeende von CNC“ unter DO5.7). Übersicht: eigener Funktionstext, sonst der
         des Gegenstücks im Schaltplan. Trennstrich am Zeilenende verbindet (/22 „Nachlaufwegmessung“)."""
         def eigen(f_, w_=None):
@@ -968,12 +1067,40 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
                 w_ = {k_: v_ for k_, i_, v_ in (E.wert(F[f_]["props"], 0xea6b) or [])}
             return G.text_de(w_.get(20011) or "")
         g_ = gegenstueck(fid)
-        if uebersicht(F[fid]):
-            reihe_ = [lambda: eigen(fid, werte)] + ([lambda: eigen(g_), lambda: pfadtext(g_)] if g_ else []) + \
-                [lambda: pfadtext(fid)]
+
+        def partner():
+            # nichts im eigenen Pfad: Funktionstext (automatisch) des angeschlossenen Sensors/Aktors
+            # (SPS-Zielverfolgung)
+            for f_ in ([fid] + ([g_] if g_ else [])):
+                if (f_, 0) not in sps_gefunden:
+                    sps_ziel_ermittelt(f_, 0)
+                z_ = sps_gefunden.get((f_, 0))
+                if z_ and z_ in F and F[z_]["props"]:
+                    t_ = eigen(z_) or pfadtext(z_)
+                    if t_:
+                        return t_
+            return ""
+
+        def links():
+            # erweiterte Pfad-Funktionstextübernahme: der nächste Pfad links mit Pfad-Funktionstext
+            return pfadtext(fid, links=True) if einst.get("PlcGui.ExtendedPathtextHandling", "0") == "1" else ""
+        def ueb(f_):
+            # Übersichtsdarstellung: Übersichtssymbol oder Seite vom Typ SPS-Übersicht (Seitentyp ea8f = 3)
+            pg_ = PG.get(fn_seite.get(f_))
+            return uebersicht(F[f_]) or bool(pg_ and E.wert(pg_["props"], 0xea8f) == 3)
+        if ueb(fid):
+            # Übersicht: Funktionstext (automatisch) des Gegenstücks auf der allpoligen Seite, nach dessen Regeln;
+            # Pfadtexte der Übersichtsseite selbst zählen nicht
+            if g_ and not ueb(g_):
+                reihe_ = [lambda: eigen(fid, werte),
+                          lambda: funktionstext(g_, {k_: v_ for k_, i_, v_ in (E.wert(F[g_]["props"], 0xea6b) or [])})]
+            else:
+                # ohne Gegenstück im Schaltplan: Pfad-Funktionstext der Übersichtsseite selbst
+                reihe_ = [lambda: eigen(fid, werte)] + ([lambda: eigen(g_)] if g_ else []) + \
+                    [lambda: pfadtext(fid), partner]
         else:
             reihe_ = [lambda: eigen(fid, werte), lambda: pfadtext(fid)] + \
-                ([lambda: eigen(g_), lambda: pfadtext(g_)] if g_ else [])
+                ([lambda: eigen(g_)] if g_ else []) + [partner, links]
         w = next((t_ for t_ in (r_() for r_ in reihe_) if t_), "")
         w = re.sub(r"(?<=\w)-\s*\n\s*(?=\w)", "", w)
         w = re.sub(r"(?<=[a-zäöüß])- (?=[a-zäöüß])", "", w.replace("\n", " "))
@@ -1080,9 +1207,14 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
             elif eig == 20010 and werte.get(20010):
                 w = werte[20010]
             elif eig == 20010 and spsan:
-                a0, o0, _ = alle_seiten.get(seite[1], ("", "", ""))
-                w = re.sub(r"^=" + re.escape(a0) + r"(?=[+\-])", "", bmk) if a0 else bmk
-                w = re.sub(r"\+" + re.escape(o0) + r"(?=-)", "", w) if o0 else w
+                # sichtbares BMK nur, wenn EPLAN es an der Funktion gespeichert hat (eaf0); die Folgekanäle einer Karte
+                # übernehmen es vom ersten und zeigen keins (Original: „=SB-A3“ nur am ersten von acht Kanälen)
+                if fid in F and F[fid]["props"] and E.wert(F[fid]["props"], 0xeaf0) is None:
+                    w = ""
+                else:
+                    a0, o0, _ = alle_seiten.get(seite[1], ("", "", ""))
+                    w = re.sub(r"^=" + re.escape(a0) + r"(?=[+\-])", "", bmk) if a0 else bmk
+                    w = re.sub(r"\+" + re.escape(o0) + r"(?=-)", "", w) if o0 else w
             elif getattr(lagen, "relation", {}).get((eig, idx)) == 20064 and (eig, idx) in je_bmk[bmk]:
                 w = G.text_de(je_bmk[bmk][(eig, idx)])         # Wert der Hauptfunktion (RelationType MainFunction)
             elif (eig, idx) in werte_idx or eig in werte:      # jede platzierte Eigenschaft mit Wert (z. B. 20406)
@@ -1296,7 +1428,7 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
             funktion_ = next((t_ for t_ in (funktionstext(f_, {k_: w_ for k_, i_, w_ in
                                                              (E.wert(F[f_]["props"], 0xea6b) or [])})
                                             for f_ in schaltplan_) if t_), "")
-            kommentar_ = next((t_ for t_ in (symb_adresse(f_, fn_seite.get(f_)) for f_ in schaltplan_) if t_), "")
+            kommentar_ = next((t_ for t_ in (symb_adresse(f_, fn_seite.get(f_), 20201) for f_ in schaltplan_) if t_), "")
             kan.append({"type": typ_, "address": adr_, "function": funktion_, "comment": kommentar_,
                         "terminals": ansch_[:4] or [""], "name": name_})
         stat.clear()
@@ -1949,7 +2081,7 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
             for eig, idx, quelle, lage, h, ang, ausr in nb["platzhalter"]:
                 w = nb_wert(pid, eig, idx, quelle, lage, nb)
                 if w:
-                    fn.append(("T", lage, w, h, ang, ausr))
+                    fn.append(("T", lage, _im_blatt(w, lage, h, ang, ausr), h, ang, ausr))
             G.KONTEXT = {"art": "normblatt", "folio": b.folio}
             sh, inp = G.blatt_xml(fn)
             formen_je_blatt[b.folio] += sh

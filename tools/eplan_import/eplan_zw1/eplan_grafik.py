@@ -125,7 +125,7 @@ EBENENBREITE = {}
 
 
 def linienbreite(p):
-    """Linienbreite einer Grafik (mm): eigene Breite ebfe, sonst die der Ebene (eff5). Belegt am Original Projekt D:
+    """Linienbreite einer Grafik (mm): eigene Breite ebfe, sonst die der Ebene (eff5). Belegt an einem Original-PDF:
     /1 Balken ebfe 2,0 -> PDF 1,99 mm, /21 ebfe 0,13 -> 0,129 mm, ohne ebfe auf Ebene 100 (0,25) -> 0,249 mm."""
     b = E.wert(p, 0xebfe)
     if not isinstance(b, (int, float)) or b <= 0:
@@ -134,8 +134,8 @@ def linienbreite(p):
 
 
 def textstil(fmt):
-    """Schriftstil eines Textformats (ec59, Eigenschaft 60965): Bit 0 fett, Bit 1 kursiv (Original Projekt D:
-    „KUNDE GmbH“ 16385 -> Tahoma-Bold, „SIEMENS“ 1 -> Tahoma-Bold, normale Texte 16384)."""
+    """Schriftstil eines Textformats (ec59, Eigenschaft 60965): Bit 0 fett, Bit 1 kursiv (Original-PDF:
+    Firmenname 16385 -> Tahoma-Bold, „SIEMENS“ 1 -> Tahoma-Bold, normale Texte 16384)."""
     f = E.wert(fmt, 60965) if fmt else None
     f = f if isinstance(f, int) else 0
     return {"fett": bool(f & 1), "kursiv": bool(f & 2)}
@@ -829,8 +829,8 @@ class Grafik:
         return out
 
     def formularbilder(self, name, ab_y=20.0):
-        """Bilder des Formulars (Klasse 91, Eigner (51, id)), z. B. das Firmenlogo des Deckblatts (Projekt D:
-        „$(IMG)\\Logo Kunde.jpg“ im Formular KUNDE_002) -> [(x0, y0, x1, y1, datei)]."""
+        """Bilder des Formulars (Klasse 91, Eigner (51, id)), z. B. das Firmenlogo des Deckblatts
+        (ein $(IMG)-Bild im Deckblattformular) -> [(x0, y0, x1, y1, datei)]."""
         fid = self.formulare.get(name)
         if fid is None and isinstance(name, tuple):
             fid = self.formulare.get(name[0])
@@ -938,7 +938,7 @@ class Grafik:
                 # mehrere Ordner nur dann eindeutig, wenn die Bilder darin byte-gleich sind (Archiv-Doppel)
                 if len(k) == 1 or (k and all(len({inhalt(h, f) for h in k}) == 1 for f in fs)):
                     self._bildordner[g] = sorted(k)[0]
-        # „$IMG\Datei“ ohne Klammern (ältere Schreibweise, Projekt D: Schrankaufbau /65, Formular) = „$(IMG)\Datei“
+        # „$IMG\Datei“ ohne Klammern (ältere Schreibweise, z. B. Schrankaufbau und Formular) = „$(IMG)\Datei“
         m = re.match(r"^\$\(?([A-Z_]*IMG)\)?[\\/](.*)$", n or "", re.I)
         if not m:
             self.bilder_fehlend[n or "(leer)"] += 1

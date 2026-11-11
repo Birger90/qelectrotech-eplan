@@ -3,6 +3,15 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.7.1 – 11.11.2026
+
+- EPLAN-Import: symbolische Adressen wie EPLAN (Zielverfolgung bis Sensor/Aktor bzw. Steckerklemme ohne
+  Weiterleitung, vollständiger Text; nur für SPS-Anschlüsse mit SPS-Adresse).
+- EPLAN-Import: Herstellername (22222) aus dem Herstellersatz, BMK am SPS-Kanal nur, wo EPLAN es sichtbar gespeichert hat.
+- EPLAN-Import: Pfad-Funktionstext über den Pfad (Spalte des Normblatts) statt über einen Abstand; Übersichten
+  zeigen den Funktionstext des Gegenstücks.
+- EPLAN-Import: Normblatt-Platzhalter ohne Zeilen, die unter den Blattrand laufen (wie EPLAN).
+
 ## 1.7.0 – 11.11.2026
 
 - EPLAN-Import: Bilder aus Formularen (z. B. Firmenlogo auf dem Deckblatt) und Bilder mit der alten Pfadschreibweise

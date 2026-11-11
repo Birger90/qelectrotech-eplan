@@ -933,7 +933,9 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
         g_ = E.wert(pr, 0xebf1)
         return bool(g_ and g_[0] == 26 and g_[1] in gruppen_mit_grafik)
 
-    def _texte(fid, e, p, b, lagen, an, roh, namen, klemme, spsan, werte, bmk, seite):
+    def _texte(fid, e, p, b, lagen, an, roh, namen, klemme, spsan, werte, bmk, seite, sammel=None):
+        """sammel: Liste -> Texte als Grundformen ("T", Anker mm, Text, Höhe, Winkel, Ausrichtung) dort sammeln
+        (für ein Bauteil, z. B. den SPS-Kanal) statt als freie Texte aufs Blatt."""
         werte_idx = {(k_, i_): w_ for k_, i_, w_ in (E.wert(e["props"], 0xea6b) or [])}
         # Eigenschaftstexte an der EPLAN-Lage (Anschlusstexte relativ zum Anschlusspunkt)
         beschr = [w for w in E.wert(e["props"], 0xeb1a, alle=True) if isinstance(w, str)]
@@ -1162,8 +1164,11 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
                                  "box": getattr(lagen, "boxbreite", {}).get(key), "kasten": fid in box_rect,
                                  "im_kasten": fid in im_kasten, "sk": sk, "am": lagen[key][5]}
                 # Textwinkel ee22 (DmgTextInfo +0x18, rad gegen den Uhrzeigersinn) wie bei freien Texten
-                texte_je_blatt[b.folio].append(G.text_auf_blatt(w, (p[0] + tx, p[1] + ty), h, lagen[key][3] or 0.0,
-                                                                 ausr))
+                if sammel is not None:
+                    sammel.append(("T", (p[0] + tx, p[1] + ty), w, h, lagen[key][3] or 0.0, ausr))
+                else:
+                    texte_je_blatt[b.folio].append(G.text_auf_blatt(w, (p[0] + tx, p[1] + ty), h,
+                                                                     lagen[key][3] or 0.0, ausr))
                 if DIAGNOSE and any(d_ in w for d_ in DIAGNOSE):
                     print(f"DIAG {w!r} fid {fid} eig {key} anker ({p[0] + tx:.1f},{p[1] + ty:.1f}) h {h} "
                           f"ausr {ausr} lage {lagen[key][:2]} auf {lagen[key][6]}")
@@ -1182,6 +1187,7 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
     # Black Boxes: Gerätekasten (Funktionsdefinition 1303) bzw. SPS-Karte (301) samt allem, was in seiner
     # EPLAN-Makrogruppe steckt (Geräteanschlüsse, Kontakte, Grafik) -> EIN QET-Bauteil (Master)
     im_kasten, kasten_teil, kasten_gruppen = {}, {}, collections.defaultdict(set)
+    texte_im_bauteil = set()                          # Funktionen, deren Eigenschaftstexte schon im Bauteil stehen
     makros = collections.defaultdict(list)            # (seite, Makrogruppe) -> Kästen
     for bfid, (x0, y0, x1, y1, pid, ex_i) in box_rect.items():
         e = F[bfid]
@@ -1241,8 +1247,40 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
             if len(pts) == 1:
                 for i in range(1, len(rm)):
                     zuord[(m, i)] = zuord[(m, 0)]
+            # Eigenschaftstexte der Funktion im Kasten (SPS-Kanal: Adresse, Querverweis, symbolische Adresse,
+            # Funktionstext …) gehören ins Bauteil, nicht lose aufs Blatt (Birger: ein E/A-Feld ist ein Bauteil)
+            em = F[m]
+            werte_m = {}
+            for k_, i_, w_ in (E.wert(em["props"], 0xea6b) or []):
+                werte_m.setdefault(k_, w_)
+            r_m = funk.get(m, {})
+            klemme_m = bool(r_m.get("20030 Klemmen-/Anschlussbezeichnung")) or 20030 in werte_m
+            lagen_m = _lagen(gr.textlagen(vm[0], vm[2], em["props"]) if vm else {}, G.textlagen(em["props"]))
+            ges_m = []
+            _texte(m, em, pm, blatt[pid], lagen_m, gr.anschluesse(vm[0], vm[2]) if vm else [], rm,
+                   [n for n in rm if n], klemme_m, E.wert(em["props"], 0xefc5) == 300, werte_m, r_m.get("bmk", ""),
+                   _wert(em["props"], 60402), sammel=ges_m)
+            formen += [_verschoben(t_, rel) for t_ in ges_m]
+            texte_im_bauteil.add(m)
             im_kasten[m] = bfid
         kurz_b = sichtbar(bmk_b, pid, p0, bfid)
+        # Eigenschaftstexte des Kastens selbst (Kartentyp, Zusatzfelder, Artikel, Querverweis …) ebenfalls ins Bauteil
+        werte_b = {}
+        for k_, i_, w_ in (E.wert(pr, 0xea6b) or []):
+            werte_b.setdefault(k_, w_)
+        lagen_b = _lagen(gr.textlagen(vb[0], vb[2], pr) if vb else {}, G.textlagen(pr))
+        # Artikeltexte ohne Lage und ohne Bezug: unten im Kasten, Index 1 zuunterst
+        art_keys = sorted(k_ for k_, v_ in lagen_b.items() if 22000 <= k_[0] < 23000 and v_[6] is None
+                          and abs(v_[0]) < 1e-6 and abs(v_[1]) < 1e-6)
+        for j_, k_ in enumerate(art_keys):
+            x_, y_, h_, a_, au_, am_, auf_ = lagen_b[k_]
+            lagen_b[k_] = ((x0 + x1) / 2 - p0[0], y0 - p0[1] + 1.0 + j_ * h_ * 1.35, h_, a_, 8, am_, None)
+        if (20010, 0) in lagen_b:
+            werte_b[20010] = kurz_b                          # BMK als Text am Stapelanfang (wie EPLAN)
+        ges_b = []
+        _texte(bfid, F[bfid], p0, blatt[pid], lagen_b, [], roh_von(bfid), [n for n in roh_von(bfid) if n],
+               False, False, werte_b, bmk_b, (4, pid), sammel=ges_b)
+        formen += [_verschoben(t_, rel) for t_ in ges_b]
         xml = G.mit_rolle(G.element_xml(f"EPLAN Black Box {ge_b or bmk_b} ({pid}-{g})", formen, anschl,
                                         f"Black Box (Gerätekasten mit Makroinhalt) aus EPLAN-Projektimport, {bmk_b}",
                                         namen=namen_), ("master", "commutator"))
@@ -1271,26 +1309,87 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
                               label_xy=(round((x0 - p0[0]) * K) + 2, round(-(y1 - p0[1]) * K) - 14))
         for k_, nm in zuord.items():
             pins[k_] = (tb, nm)
-        # Eigenschaftstexte des Kastens selbst (Kartentyp, Zusatzfelder, Artikel, Querverweis …)
-        werte_b = {}
-        for k_, i_, w_ in (E.wert(pr, 0xea6b) or []):
-            werte_b.setdefault(k_, w_)
-        lagen_b = _lagen(gr.textlagen(vb[0], vb[2], pr) if vb else {}, G.textlagen(pr))
-        # Artikeltexte ohne Lage und ohne Bezug: unten im Kasten, Index 1 zuunterst
-        art_keys = sorted(k_ for k_, v_ in lagen_b.items() if 22000 <= k_[0] < 23000 and v_[6] is None
-                          and abs(v_[0]) < 1e-6 and abs(v_[1]) < 1e-6)
-        for j_, k_ in enumerate(art_keys):
-            x_, y_, h_, a_, au_, am_, auf_ = lagen_b[k_]
-            lagen_b[k_] = ((x0 + x1) / 2 - p0[0], y0 - p0[1] + 1.0 + j_ * h_ * 1.35, h_, a_, 8, am_, None)
-        if (20010, 0) in lagen_b:
-            werte_b[20010] = kurz_b                          # BMK als Text am Stapelanfang (wie EPLAN)
-        _texte(bfid, F[bfid], p0, blatt[pid], lagen_b, [], roh_von(bfid), [n for n in roh_von(bfid) if n],
-               False, False, werte_b, bmk_b, (4, pid))
         kasten_teil[bfid] = tb
         teile[bfid] = tb
         kasten_gruppen[pid].add(g)
         extra[pid][box_rect[bfid][5]] = None
         stat["blackbox"] += 1
+
+    # SPS-Kanal ohne eigenen Kasten (Kanalmakro des Moduls: SPS-Anschlüsse, Funktionsdefinition 300, samt
+    # Kanalkasten, Kopfzeile und Eigenschaftstexten in EINER Makrogruppe, z. B. „-A6 DQ 16x24 VDC“ mit Adresse,
+    # symbolischer Adresse, Klemme, Kanal) -> EIN QET-Bauteil. Birger: ein E/A-Feld ist ein Bauteil, kein
+    # Anschlusspunkt mit losen Texten und Formen (siehe Hilfe plcgui_k_arbeitsweise: Kanal = Makro des Moduls).
+    sps_kanal = set()
+    kanal_gruppen = collections.defaultdict(list)
+    for fid, e in F.items():
+        pr = e["props"]
+        if e["cls"] != 17 or not pr or fid in im_kasten or fid in kasten_teil or E.wert(pr, 0xefc5) != 300:
+            continue
+        pid, ref = fn_seite.get(fid), E.wert(pr, 0xebf1)
+        if pid in blatt and ref and ref[0] == 26 and ref[1] not in kasten_gruppen[pid] and im_blatt(_pos(pr)):
+            kanal_gruppen[(pid, ref[1])].append(fid)
+    for (pid, g), mitglieder in kanal_gruppen.items():
+        mitglieder.sort(key=lambda f: (_pos(F[f]["props"])[0], -_pos(F[f]["props"])[1]))
+        p0 = _pos(F[mitglieder[0]]["props"])
+        rel = (-p0[0], -p0[1])
+        formen = [_verschoben(f, rel) for f in gr.seitenformen(pid, nur=g)]
+        for i_, n_, v_, lage_ in gr.seitensymbole(pid, nur=g):
+            vv = gr.variante(i_, n_, v_)
+            if vv:
+                formen += [_verschoben(f, (lage_[0] + rel[0], lage_[1] + rel[1])) for f in gr.formen(vv[0], vv[2])]
+        anschl, namen_, zuord = [], [], {}
+        for m in mitglieder:
+            em = F[m]
+            pm = _pos(em["props"])
+            d = (pm[0] + rel[0], pm[1] + rel[1])
+            vm = gr.variante(E.wert(em["props"], 0xef4d), E.wert(em["props"], 0xef4e), E.wert(em["props"], 0xef4f))
+            pts = [(0.0, 0.0, 4)]
+            if vm:
+                formen += [_verschoben(f, d) for f in gr.formen(vm[0], vm[2])]
+                pts = gr.anschluesse(vm[0], vm[2]) or pts
+            rm = roh_von(m)
+            for i, (ax, ay, r_) in enumerate(pts):
+                if i >= max(1, len(rm)):
+                    break
+                nm = rm[i] if i < len(rm) and rm[i] else str(i + 1)
+                while nm in namen_:
+                    nm += "'"
+                anschl.append((d[0] + ax, d[1] + ay, r_))
+                namen_.append(nm)
+                zuord[(m, i)] = nm
+            if len(pts) == 1:
+                for i in range(1, len(rm)):
+                    zuord[(m, i)] = zuord[(m, 0)]
+            # Eigenschaftstexte des Kanals (BMK, Adresse, symbolische Adresse, Funktionstext, Klemme, Kanal …)
+            werte_m = {}
+            for k_, i_, w_ in (E.wert(em["props"], 0xea6b) or []):
+                werte_m.setdefault(k_, w_)
+            r_m = funk.get(m, {})
+            klemme_m = bool(r_m.get("20030 Klemmen-/Anschlussbezeichnung")) or 20030 in werte_m
+            lagen_m = _lagen(gr.textlagen(vm[0], vm[2], em["props"]) if vm else {}, G.textlagen(em["props"]))
+            gesammelt = []
+            _texte(m, em, pm, blatt[pid], lagen_m, gr.anschluesse(vm[0], vm[2]) if vm else [], rm,
+                   [n for n in rm if n], klemme_m, True, werte_m, r_m.get("bmk", ""), _wert(em["props"], 60402),
+                   sammel=gesammelt)
+            formen += [_verschoben(t_, rel) for t_ in gesammelt]
+            sps_kanal.add(m)
+        bmk_k = funk.get(mitglieder[0], {}).get("bmk", "")
+        xml = G.element_xml(f"EPLAN SPS-Kanal {bmk_k} {'/'.join(namen_)} ({pid}-{g})", formen, anschl,
+                            f"SPS-Kanal (E/A-Feld mit Adresse und Texten) aus EPLAN-Projektimport, {bmk_k}",
+                            namen=namen_)
+        sig = hashlib.md5(xml.encode("utf-8")).hexdigest()[:8]
+        rel_p = f"{SYMBOLE}/SPS-Kanal/{re.sub(r'[^A-Za-z0-9_+-]', '_', bmk_k)[:40]}_{sig}.elmt"
+        ziel_k = os.path.join(S.COMPANY, *rel_p.split("/"))
+        os.makedirs(os.path.dirname(ziel_k), exist_ok=True)
+        if not os.path.exists(ziel_k):
+            open(ziel_k, "w", encoding="utf-8").write(xml)
+        tk = blatt[pid].setze(S.U + rel_p, *_px(p0), label="", infos={"function_bmk": bmk_k})
+        for k_, nm in zuord.items():
+            pins[k_] = (tk, nm)
+        for m in mitglieder:
+            teile[m] = tk
+        kasten_gruppen[pid].add(g)
+        stat["sps_kanal"] += 1
 
     # Aufgeteilte Geräte: Hauptfunktion (ohne eb16) bzw. Black Box = Master, Kontakte als Nebenfunktion
     # (eb16 = 0, Funktionsdefinition 201 Schließer / 202 Öffner / 203–204 Wechsler) = Slaves gleichen BMKs
@@ -1339,8 +1438,8 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
             _fortschritt(60 + 20 * _if // _nf, f"setzen {_if} {_nf}")
         seite = _wert(e["props"], 60402)
         p = _pos(e["props"])
-        if not seite or seite[1] not in blatt or not im_blatt(p) or fid in kasten_teil:
-            continue                                   # Kästen sind schon als Black-Box-Bauteil gesetzt
+        if not seite or seite[1] not in blatt or not im_blatt(p) or fid in kasten_teil or fid in sps_kanal:
+            continue                                   # Kästen/SPS-Kanäle sind schon als ein Bauteil gesetzt
         if (panel_rolle(fid, e["props"]) or {}).get("role") in ("surface", "enclosure"):
             continue                                   # Montagefläche/Gehäuse sind Formen des Panelmodells
         b = blatt[seite[1]]
@@ -1389,7 +1488,8 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
             if True:
                 an_k = gr.anschluesse(v[0], v[2]) if v else []
                 lagen_k = _lagen(gr.textlagen(v[0], v[2], e["props"]) if v else {}, G.textlagen(e["props"]))
-                _texte(fid, e, p, b, lagen_k, an_k, roh, namen, klemme, spsan, werte, bmk, seite)
+                if fid not in texte_im_bauteil:
+                    _texte(fid, e, p, b, lagen_k, an_k, roh, namen, klemme, spsan, werte, bmk, seite)
                 lx = lagen_k.get((20010, 0))
                 schon_k = (im_kasten[fid], kurz)
                 if kurz and lx and fid not in box_rect and schon_k not in bmk_im_kasten:

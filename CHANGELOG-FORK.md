@@ -3,6 +3,13 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.1.2 – 11.11.2026
+
+- EPLAN-Import: Ein SPS-Kanal ist jetzt EIN Bauteil – Kanalkasten, Kopfzeile (Karte, Typ), Anschluss, Klemme,
+  Kanal, Adresse, symbolische Adresse und Funktionstext zusammen. Vorher kam nur ein Anschlusspunkt als Bauteil,
+  der Rest als lose Texte und Formen aufs Blatt. Gleiches für Gerätekästen/SPS-Kartenübersichten (Black Box):
+  die Texte ihrer Zeilen stehen im Bauteil.
+
 ## 1.1.1 – 11.11.2026
 
 - Das Claude-Fenster heißt jetzt „Claude-Assistent“ (Ansicht > Claude-Assistent), das Protokoll des Direktmodus

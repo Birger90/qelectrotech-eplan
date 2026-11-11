@@ -956,13 +956,25 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
         return w
 
     def funktionstext(fid, werte):
-        """Funktionstext (automatisch) eines SPS-Anschlusses: eigener Funktionstext bzw. der des Gegenstücks, sonst
-        Pfad-Funktionstext."""
+        """Funktionstext (automatisch) eines SPS-Anschlusses. Schaltplan: eigener Funktionstext (20011), sonst der
+        eigene Pfad-Funktionstext, erst dann der des Gegenstücks (Original Projekt D: /21 „Y-Achse sP“ aus dem Pfad,
+        nicht „SP“ vom Gegenstück; /21 „Biegeende von CNC“ unter DO5.7). Übersicht: eigener Funktionstext, sonst der
+        des Gegenstücks im Schaltplan. Trennstrich am Zeilenende verbindet (/22 „Nachlaufwegmessung“)."""
+        def eigen(f_, w_=None):
+            if w_ is None:
+                w_ = {k_: v_ for k_, i_, v_ in (E.wert(F[f_]["props"], 0xea6b) or [])}
+            return G.text_de(w_.get(20011) or "")
         g_ = gegenstueck(fid)
-        w = G.text_de(werte.get(20011) or "")
-        if not w and g_:
-            w = G.text_de({k_: w_ for k_, i_, w_ in (E.wert(F[g_]["props"], 0xea6b) or [])}.get(20011) or "")
-        return (w or pfadtext(g_ or fid)).replace("\n", " ")
+        if uebersicht(F[fid]):
+            reihe_ = [lambda: eigen(fid, werte)] + ([lambda: eigen(g_), lambda: pfadtext(g_)] if g_ else []) + \
+                [lambda: pfadtext(fid)]
+        else:
+            reihe_ = [lambda: eigen(fid, werte), lambda: pfadtext(fid)] + \
+                ([lambda: eigen(g_), lambda: pfadtext(g_)] if g_ else [])
+        w = next((t_ for t_ in (r_() for r_ in reihe_) if t_), "")
+        w = re.sub(r"(?<=\w)-\s*\n\s*(?=\w)", "", w)
+        w = re.sub(r"(?<=[a-zäöüß])- (?=[a-zäöüß])", "", w.replace("\n", " "))
+        return w.strip()
 
     def _texte(fid, e, p, b, lagen, an, roh, namen, klemme, spsan, werte, bmk, seite, sammel=None):
         """sammel: Liste -> Texte als Grundformen ("T", Anker mm, Text, Höhe, Winkel, Ausrichtung) dort sammeln
@@ -1214,8 +1226,29 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
                                       and g in gr.gruppen_kette(E.wert(e2["props"], 0xebf1))]
 
     # SPS-Karten: Kanäle (SPS-Anschlüsse, Funktionsdefinition 300, mit Adresse 20400) je BMK im ganzen Projekt
-    def sps_adresse(f_):
+    def sps_adresse_eigen(f_):
         return G.text_de({k_: w_ for k_, i_, w_ in (E.wert(F[f_]["props"], 0xea6b) or [])}.get(20400) or "").strip()
+
+    io_name = re.compile(r"^(?:[DA]?[IOQE]|IN|OUT|[EA])\s*\d", re.I)
+
+    def sps_beschreibung(f_):
+        return " ".join(w_.strip() for w_ in E.wert(F[f_]["props"], 0xeb1a, alle=True) if isinstance(w_, str)
+                        and w_.strip())
+
+    def sps_adresse(f_):
+        """Kanaladresse: SPS-Adresse (20400); ohne sie die Anschlussbezeichnung, wenn sie ein E/A-Name ist („DI1.2“),
+        sonst die Anschlussbeschreibung (20029, eb1a), wenn sie ein E/A-Name ist („DO5.7“ an Anschluss 7, Cybelec
+        MVA-AA6) oder die Signalart des Anschlusses DE/DA/AE/AA ist."""
+        a_ = sps_adresse_eigen(f_)
+        if a_:
+            return a_
+        n_ = " ".join(n for n in roh_von(f_) if n)
+        if n_ and io_name.match(n_):
+            return n_
+        d_ = sps_beschreibung(f_)
+        if d_ and (io_name.match(d_) or anschluss_logik(f_, 0).get(0xeb06) in FD.SIGNAL_EINGANG + FD.SIGNAL_AUSGANG):
+            return d_
+        return ""
 
     sps_anschluesse = collections.defaultdict(list)    # BMK -> SPS-Anschlüsse mit Adresse
     for f_, e_ in F.items():
@@ -1250,8 +1283,10 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
             typ_ = {6: "entree_digitale", 7: "sortie_digitale", 8: "entree_analogique",
                     9: "sortie_analogique"}.get(sig_)
             if not typ_:
-                analog_ = str(werte_.get(20405) or "BOOL").upper() not in ("BOOL", "BIT", "")
-                aus_ = bool(re.match(r"(OUT|DQ|DO|AQ|AO|Q|A)", name_ or adr_.upper()))
+                n_ = (name_ or adr_).upper()
+                analog_ = str(werte_.get(20405) or "BOOL").upper() not in ("BOOL", "BIT", "") or \
+                    bool(re.match(r"A[IOQEA]\s*\d", n_))
+                aus_ = not re.match(r"(IN|DI|AI|AE|I|E)", n_) and bool(re.match(r"(OUT|DQ|DO|AQ|AO|AA|Q|A)", n_))
                 typ_ = ("sortie_" if aus_ else "entree_") + ("analogique" if analog_ else "digitale")
             funktion_ = next((t_ for t_ in (funktionstext(f_, {k_: w_ for k_, i_, w_ in
                                                              (E.wert(F[f_]["props"], 0xea6b) or [])})
@@ -1422,7 +1457,10 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
     # Anschlusspunkt mit losen Texten und Formen (siehe Hilfe plcgui_k_arbeitsweise: Kanal = Makro des Moduls).
     sps_kanal = set()
     verknuepfte_karten = set()
-    kanal_werte = collections.defaultdict(lambda: ([], set()))   # (Karte, Kanal, Feld) -> (Karten, Werte der Kanäle)
+    kanal_werte = collections.defaultdict(lambda: ([], []))   # (Karte, Kanal, Feld) -> (Karten, Werte der Kanäle)
+    kanal_seite = []                                   # (Karten-BMK, Kanal, Werte dieser Seite, Teil)
+    sps_unverknuepft = []                              # (BMK, Adresse, Anschlüsse, Seite, Grund)
+    sps_abweichend = []                                # (BMK, Adresse, {Info: (Seite, Karte)})
     kanal_gruppen = collections.defaultdict(list)
     for fid, e in F.items():
         pr = e["props"]
@@ -1431,11 +1469,16 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
         pid, ref = fn_seite.get(fid), E.wert(pr, 0xebf1)
         if pid in blatt and ref and ref[0] == 26 and ref[1] not in kasten_gruppen[pid] and im_blatt(_pos(pr)):
             kanal_gruppen[(pid, ref[1])].append(fid)
-    def sps_info(key):
+    def sps_info(key, f_):
         """Eigenschaftstext eines SPS-Kanals -> Elementinformation des QET-SPS-Slaves (die Verknüpfung mit der Karte
-        überschreibt sie mit den Daten des gewählten Kanals; Element::setElementInformations, LinkElementCommand)."""
+        überschreibt sie mit den Daten des gewählten Kanals; Element::setElementInformations, LinkElementCommand).
+        Adresse: 20400, ohne SPS-Adresse die Anschlussbeschreibung (20039/20029, „DO5.7“); Anschluss: 20028 bzw.
+        20038 (Anschlussbezeichnungen, ein Anschluss); BMK: 20010 bzw. 20211."""
         eig, idx = key
         if eig == 20400:
+            return "plc_address"
+        if eig in (20039, 20029) and not sps_adresse_eigen(f_) and sps_adresse(f_) and \
+                sps_adresse(f_) == sps_beschreibung(f_):
             return "plc_address"
         if eig in (20201, 20403, 20404):
             return "plc_comment"
@@ -1443,7 +1486,9 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
             return "plc_function"
         if eig == 20028 and 1 <= idx <= 4:
             return f"plc_t{idx}"
-        if eig == 20010:
+        if eig == 20038 and len([n for n in roh_von(f_) if n]) == 1:
+            return "plc_t1"
+        if eig in (20010, 20211):
             return "label"
         return None
 
@@ -1495,7 +1540,7 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
                    [n for n in rm if n], klemme_m, True, werte_m, r_m.get("bmk", ""), _wert(em["props"], 60402),
                    sammel=gesammelt)
             for t_ in gesammelt:
-                info_ = sps_info(t_[6]) if len(t_) > 6 else None
+                info_ = sps_info(t_[6], m) if len(t_) > 6 else None
                 einzeilig_ = "\n" not in t_[2]
                 if info_ and (m == haupt_k or info_ == "label") and einzeilig_ and \
                         info_ not in infos_k and not (info_ == "label" and label_k):
@@ -1538,37 +1583,60 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
             if adr_ else None
         if mt_ is None or idx_ is None:
             stat["sps_kanal_ohne_karte"] += 1
+            grund_ = ("keine Adresse" if not adr_ else "Karte ohne Black Box im Projekt" if bmk_h not in
+                      sps_kanaele_von else "keine Black Box als Karte gesetzt" if mt_ is None else "Adresse fehlt in Karte")
+            sps_unverknuepft.append((bmk_h, adr_, "/".join(namen_), alle_seiten.get(pid, ("", "", ""))[2], grund_))
             continue
         tk.blatt.plan.sps_links.append((tk.blatt.folio, tk, mt_.blatt.folio, mt_, idx_))
         stat["sps_kanal_verknuepft"] += 1
         for info_, feld_ in (("plc_comment", "comment"), ("plc_function", "function")):
             if infos_k.get(info_):
-                kanal_werte[(mt_.ref, idx_, feld_)][1].add(infos_k[info_])
+                kanal_werte[(mt_.ref, idx_, feld_)][1].append(infos_k[info_])
                 kanal_werte[(mt_.ref, idx_, feld_)][0].append((mt_, bmk_h))
-        # nach dem Verknüpfen: Werte dieser Seite wieder einsetzen (die Karte liefert ihre, z. B. die symbolische
-        # Adresse ohne =Anlage dieser Seite); Kennzeichen als Benutzertext (sonst zeichnet QET am Slave den
-        # eigenen Querverweis und das Kennzeichen der Karte, DynamicElementTextItem::updateXref/labelSource)
-        for k_, w_ in infos_k.items():
-            tk.blatt.plan.lagen.append({"op": "set_info", "folio": tk.blatt.folio, "element": tk.ref, "key": k_,
-                                        "value": w_})
+        # Adresse, symbolische Adresse, Funktionstext und Anschluss kommen nach dem Verknüpfen NUR aus der Zeile der
+        # Karte (plc_*), damit ein Kanalwechsel die Texte des neuen Kanals zeigt; die Werte dieser Seite werden nicht
+        # wieder eingesetzt (Abweichungen zählt der Bericht). Kennzeichen als Benutzertext (sonst zeichnet QET am
+        # Slave den eigenen Querverweis und das Kennzeichen der Karte, DynamicElementTextItem::updateXref/labelSource)
+        kanal_seite.append((bmk_h, idx_, dict(infos_k), tk))
         _label_als_text(tk)
         verknuepfte_karten.add(mt_.ref)
 
     # Kanaltabelle der Karte: symbolische Adresse/Funktionstext so, wie der Kanal sie im Schaltplan zeigt (z. B.
-    # „+CA-T440:XCOMMAND:15“ statt des Geräts allein) – nur wenn alle Kanäle auf dieser Zeile dasselbe zeigen; vor allen
-    # übrigen Nacharbeiten, damit die Werte der Seiten danach wieder eingesetzt werden
+    # „+CA-T440:XCOMMAND:15“ statt des Geräts allein); zeigen mehrere Kanäle auf dieser Zeile Verschiedenes, gilt der
+    # erste (Bericht: Abweichungen). QET überträgt die geänderte Zeile in die verknüpften Kanäle (Element::setElementData)
     vorne_ = []
     for (ref_, idx_, feld_), (karten_, werte_) in kanal_werte.items():
         mt_, bmk_h = karten_[0]
         io_ = sps_kanaele_von[bmk_h][idx_]
-        if len(werte_) == 1 and next(iter(werte_)) != io_[feld_]:
-            io_[feld_] = next(iter(werte_))
+        if werte_[0] != io_[feld_]:
+            io_[feld_] = werte_[0]
             vorne_.append({"op": "set_plc_io", "folio": mt_.blatt.folio, "element": mt_.ref, "index": idx_,
                            "property": feld_, "value": io_[feld_]})
             stat["sps_karte_kanal_angeglichen"] += 1
     if vorne_:
         plan_ = next(iter(blatt.values())).plan
         plan_.lagen[0:0] = vorne_
+    # Kanäle, deren Seite etwas anderes zeigt als die Zeile der Karte (nach dem Verknüpfen gilt die Karte)
+    for bmk_h, idx_, seite_w, tk_ in kanal_seite:
+        io_ = sps_kanaele_von[bmk_h][idx_]
+        karte_w = {"plc_address": io_["address"], "plc_comment": io_["comment"], "plc_function": io_["function"],
+                   "plc_t1": io_["terminals"][0] if io_["terminals"] else ""}
+        abw_ = [k_ for k_, w_ in seite_w.items() if k_ in karte_w and w_ != karte_w[k_]]
+        if abw_:
+            stat["sps_kanal_seite_abweichend"] += 1
+            for k_ in abw_:
+                stat["sps_kanal_seite_abweichend_" + k_] += 1
+            sps_abweichend.append((bmk_h, io_["address"], {k_: (seite_w[k_], karte_w[k_]) for k_ in abw_}))
+    with open(os.path.join(arbeit, "sps_bericht.txt"), "w", encoding="utf-8") as f_:
+        f_.write("SPS-Karten (Master): " + ", ".join(f"{b_} {len(k_)} Kanäle" for b_, k_ in sps_kanaele_von.items()
+                                                    if b_ in sps_master) + "\n")
+        f_.write(f"SPS-Kanäle {stat['sps_kanal']}, verknüpft {stat['sps_kanal_verknuepft']}, "
+                 f"nicht verknüpft {len(sps_unverknuepft)}\n\nNicht verknüpft (BMK, Adresse, Anschlüsse, Seite, Grund):\n")
+        for z_ in sps_unverknuepft:
+            f_.write("  " + " | ".join(map(str, z_)) + "\n")
+        f_.write("\nSeite zeigt anderes als die Kartenzeile (nach dem Verknüpfen gilt die Karte):\n")
+        for z_ in sps_abweichend:
+            f_.write("  " + " | ".join(map(str, z_)) + "\n")
 
     # Kennzeichen der SPS-Karten: stand das BMK schon als Text im Kasten, Kennzeichenfeld leeren (Benutzertext);
     # verknüpfte Karten zeigen es als Benutzertext (kein QET-Querverweis am Kennzeichen)

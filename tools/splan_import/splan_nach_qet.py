@@ -26,6 +26,7 @@ sys.path.insert(0, os.path.join(HIER, "..", "eplan_import"))
 
 import splan8                                    # noqa: E402
 import splan_analyse as A                        # noqa: E402
+import makros as M                               # noqa: E402
 from planvorlagen import symbole as S            # noqa: E402
 from planvorlagen import symbolbau               # noqa: E402
 from planvorlagen.blatt import Plan, raster      # noqa: E402
@@ -37,6 +38,7 @@ MOTOR_DC = C + "391_consumers_actuators/10_engines/moteur_dc.elmt"
 NTC = C + "395_electronics_semiconductors/01_resistors/ntc.elmt"
 KASTEN_ORDNER = "sPlan-Import"                    # company://sPlan-Import/… : Gerätekästen ohne Herstellerdaten
 
+ZUORDNUNG = M.Zuordnung()                         # sPlan-Bauteil -> Herstellermakro (makros.py), je Lauf geladen
 X_LINKS, X_RECHTS = 110, 1480                     # nutzbare Breite (Schienenpfeile links/rechts frei)
 RAIL_UNTEN_Y = 900
 
@@ -157,6 +159,7 @@ class Geraet:
         self.bt, self.art, self.pfad, self.zu, self.label = bt, art, pfad, zu, label
         self.box = _sym_box(pfad)
         self.teil, self.leiste, self.x, self.y = None, None, 0, 0
+        self.infos, self.adressen = {}, {}         # Artikeldaten aus der Zuordnung; Kanal: id(Anschluss) -> Adresse
 
     def anschluss(self, a):
         return self.zu[id(a)]
@@ -186,6 +189,31 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
         if not bt.anschluesse and not bt.bez and not bt.wert:
             continue                                # reine Zeichnung ohne Anschluss (Rahmen, Logo …)
         art = klassifiziere(bt)
+        regel = ZUORDNUNG.finde(bt, int(nummer))
+        if regel and regel.kanaele:
+            # Herstellermakros: je Gruppe von Anschlüssen ein Makro (SPS: Kanalmakro je Ein-/Ausgang, EPLAN-Stil);
+            # alle Makros eines Geräts bilden eine Einheit wie eine Klemmleiste
+            gr, rest = M.gruppen(bt, regel, fragen, nummer)
+            for pfad, liste in gr:
+                teil = A.Bauteil.__new__(A.Bauteil)
+                teil.__dict__.update(bt.__dict__)
+                teil.anschluesse = [a for a, _, _ in liste]
+                teil.id = teil.parent = 0
+                g = Geraet(teil, "kanal", pfad, {id(a): an for a, an, _ in liste}, bt.bez)
+                g.leiste, g.infos = ("SPS", bt.bez, id(bt)), regel.infos()
+                g.adressen = {id(a): adr for a, _, adr in liste}
+                geraete.append(g)
+            if rest:
+                fragen.append(f"Blatt {nummer}: {bt.bez or bt.symbol}: Anschlüsse ohne Makro in der Zuordnung "
+                              f"({', '.join(a.name for a in rest)}) – als Kasten gezeichnet.")
+                teil = A.Bauteil.__new__(A.Bauteil)
+                teil.__dict__.update(bt.__dict__)
+                teil.anschluesse = rest
+                pfad, zu = kasten_symbol(teil)
+                g = Geraet(teil, "kasten", pfad, zu, bt.bez)
+                g.infos = regel.infos()
+                geraete.append(g)
+            continue
         if art == "klemmen":                        # mehrstöckig: je Ebene eine Reihenklemme
             for e in sorted({getattr(a, "ebene", 1) for a in bt.anschluesse}):
                 teil = A.Bauteil.__new__(A.Bauteil)
@@ -200,6 +228,8 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
         if pfad.startswith("company://" + KASTEN_ORDNER):
             art = "kasten"
         g = Geraet(bt, art, pfad, zu, bt.bez)
+        if regel:                                   # Normsymbol oder Kasten, aber mit Artikeldaten
+            g.infos = regel.infos()
         if art == "klemme":
             g.leiste = _leiste(bt)
         geraete.append(g)
@@ -228,11 +258,31 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
     einheiten = {}
     for g in geraete:
         reihe = getattr(g.bt, "_reihe", None)
-        schl = ("L", g.leiste or reihe) if g.art == "klemme" and (g.leiste or reihe) else ("G", id(g))
+        if g.art == "kanal":                       # Makros eines Geräts bleiben zusammen (Reihenfolge der Zuordnung)
+            schl = ("K", g.leiste)
+        else:
+            schl = ("L", g.leiste or reihe) if g.art == "klemme" and (g.leiste or reihe) else ("G", id(g))
         einheiten.setdefault(schl, []).append(g)
     einheiten = list(einheiten.values())
     for eh in einheiten:
         eh.sort(key=lambda g: (_num(g.bt.bez), _num(g.label)) if g.art == "klemme" else 0)
+    # Kanalmakros einer Baugruppe: in Stücke teilen, die in eine Zeile passen (sonst läuft eine CPU mit 20 Kanälen
+    # über den Blattrand); die Stücke stehen in derselben Zeilengruppe und brechen wie Einheiten um
+    geteilt = []
+    for eh in einheiten:
+        if eh[0].art != "kanal":
+            geteilt.append(eh)
+            continue
+        stueck, breite = [], 0
+        for g in eh:
+            w = g.box[2] - g.box[0] + 10
+            if stueck and breite + w > X_RECHTS - X_LINKS - 40:
+                geteilt.append(stueck)
+                stueck, breite = [], 0
+            stueck.append(g)
+            breite += w
+        geteilt.append(stueck)
+    einheiten = geteilt
 
     def yb(eh):
         return min(g.bt.bbox[1] for g in eh), max(g.bt.bbox[3] for g in eh)
@@ -258,7 +308,7 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
         if zeilen:
             gruppe.sort(key=schwerpunkt)
         zeile, x = [], X_LINKS
-        breiten = [sum(g.box[2] - g.box[0] + (10 if g.art == "klemme" else 60) for g in eh) + 30 for eh in gruppe]
+        breiten = [sum(g.box[2] - g.box[0] + ({"klemme": 10, "kanal": 20}.get(g.art, 60)) for g in eh) + 30 for eh in gruppe]
         for k, eh in enumerate(gruppe):
             breite = breiten[k]
             rest = sum(breiten[k + 1:])             # was in dieser Zeile noch Platz braucht
@@ -268,10 +318,10 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
             if eh[0].art == "klemme" and eh[0].leiste:
                 x += 50                             # Platz für den Leistennamen links
             for g in eh:
-                luecke = 10 if g.art == "klemme" else 60 + (int(len(g.bt.wert) * 4.5)
+                luecke = {"klemme": 10, "kanal": 20}.get(g.art) or 60 + (int(len(g.bt.wert) * 4.5)
                                                             if g.art != "kasten" and g.bt.wert else 0)
                 ziel = None                         # unter/über dem Partner ausrichten (senkrechte Leitung)
-                if g.art != "klemme":
+                if g.art not in ("klemme", "kanal"):
                     for a in g.bt.anschluesse:
                         for b_ in (a.netz.anschluesse if a.netz else []):
                             if id(b_) in platz and b_.bt is not g.bt:
@@ -311,7 +361,7 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
             for a in g.bt.anschluesse:
                 if a.netz and a.netz.namen and a.netz not in schienen and richtung(a) == richt:
                     n = max(n, len(a.netz.name))
-        return 0 if not n else 60 + 7 * min(n, 30)
+        return 0 if not n else 60 + 7 * min(n, 20)   # längere Namen ragen in den Kanal, nicht ins Gerät
 
     # Verbindungen je Netz als kürzester Baum (nicht als Kette), dann Kanäle zwischen den Zeilen belegen:
     # jede Leitung bekommt eine eigene Höhe (Spur), damit parallele Leitungen nie aufeinander liegen.
@@ -360,32 +410,60 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
     def n_spuren(k):
         return 1 + max((t for t, _, _ in spuren.get(k, [])), default=-1)
 
+    # Zeilen von oben nach unten; passt eine Zeile nicht mehr aufs Blatt, geht es auf einem Folgeblatt weiter
+    # (wie EPLAN: nichts wird zusammengeschoben, Verbindungen zum Folgeblatt laufen über Verweispfeile)
     y = y_start + n_spuren(-1) * 10
     kanal_y = {-1: y_start}
+    seite_von, seite = {}, 0
     for r, zeile in enumerate(zeilen):
         h_oben = max(-g.box[1] for g in zeile)
         h_unten = max(g.box[3] for g in zeile)
-        gy = raster(y + h_oben + 30 + pfeile(zeile, "n"))
+        for versuch in (0, 1):
+            gy = raster(y + h_oben + 30 + pfeile(zeile, "n"))
+            ky = raster(gy + h_unten + 20 + pfeile(zeile, "s"))
+            if versuch or ky + n_spuren(r) * 10 <= y_ende or not any(v == seite for v in seite_von.values()):
+                break
+            seite += 1                              # Folgeblatt
+            y = y_start + n_spuren(r - 1) * 10
+        seite_von[r] = seite
         for g in zeile:
-            g.y = gy
-        kanal_y[r] = raster(gy + h_unten + 20 + pfeile(zeile, "s"))
+            g.y, g.seite = gy, seite
+        kanal_y[r] = ky
         y = kanal_y[r] + n_spuren(r) * 10 + 20
-    if y > y_ende:
-        fragen.append(f"Blatt {nummer}: Inhalt ist höher als die Zeichenfläche; die Zeilen wurden "
-                      f"zusammengeschoben – bitte prüfen, ob das Blatt geteilt werden soll.")
-        f = (y_ende - y_start) / max(1, (y - y_start))
-        for zeile in zeilen:
-            for g in zeile:
-                g.y = raster(y_start + (g.y - y_start) * f)
-        for k in kanal_y:
-            kanal_y[k] = y_start + (kanal_y[k] - y_start) * f
+    blaetter = [b] + [plan.blatt(f"{inh.titel or 'Blatt ' + nummer} ({k + 1})", "", "", f"{nummer}.{k}")
+                      for k in range(1, seite + 1)]
+    if seite:
+        fragen.append(f"Blatt {nummer}: Inhalt passt nicht auf ein Blatt – auf {seite + 1} Blätter verteilt "
+                      f"(Verbindungen zwischen ihnen als Verweispfeile).")
+        for k, bb in enumerate(blaetter[1:], 1):    # Schienen auf jedem Folgeblatt
+            for j, nz in enumerate(oben):
+                bb.schiene(nz.name, y=80 + 20 * j)
+            for j, nz in enumerate(unten):
+                bb.schiene(nz.name, y=RAIL_UNTEN_Y - 20 * j)
+
+    def kanal_hoehe(k, r):
+        """Spur-y für Kanal k, gesehen von Zeile r (oberster Kanal eines Folgeblatts liegt unter den Schienen)"""
+        return kanal_y[k] if k >= 0 and seite_von.get(k) == seite_von.get(r) else y_start
 
     # setzen
     for g in geraete:
         infos = {"description": " ".join(g.bt.beschreibung)[:120]} if g.bt.beschreibung else {}
         if g.bt.zusatz:
             infos["designation"] = " ".join(g.bt.zusatz)[:80]
-        g.teil = b.setze(g.pfad, g.x, g.y, label=g.label, infos=infos)
+        infos.update(g.infos)
+        felder = None
+        if g.art == "kanal":
+            # Kanalmakro: Adresse, symbolische Adresse (sPlan kennt keine), Funktion = Ziel der Leitung
+            a = g.bt.anschluesse[0]
+            ziel = ""
+            if a.netz:
+                ziel = a.netz.name or ", ".join(str(x) for x in a.netz.anschluesse if x.bt.bez != g.bt.bez)
+            adr = " ".join(v for v in (g.adressen.get(id(x), "") for x in g.bt.anschluesse) if v)
+            felder = [adr, "", ziel if len(g.bt.anschluesse) == 1 else ""]
+            infos.pop("description", None)
+        b = blaetter[getattr(g, "seite", 0)]
+        g.blatt = b
+        g.teil = b.setze(g.pfad, g.x, g.y, label=g.label, infos=infos, felder=felder)
         for a in g.bt.anschluesse:
             platz[id(a)] = g.teil.pos(g.anschluss(a))
         if g.art in ("schliesser", "oeffner", "schalter", "ls3", "fi", "ntc", "motor1", "motor_dc", "spule"):
@@ -396,9 +474,9 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
                     continue
                 px, py = g.teil.pos(g.anschluss(a))
                 b.text(a.name, px + 3, py + (-14 if s.richtung == "n" else 2), "klemme")
-        if g.bt.wert and g.art != "kasten" and g.bt.wert.lower() not in ("schütz", "motor", "schliesser", "öffner"):
+        if g.bt.wert and g.art not in ("kasten", "kanal") and g.bt.wert.lower() not in ("schütz", "motor", "schliesser", "öffner"):
             b.text(g.bt.wert, g.x + g.box[2] + 4, g.y + g.box[1] + 12, "daten")
-        if g.bt.beschreibung and g.art != "klemme":
+        if g.bt.beschreibung and g.art not in ("klemme", "kanal"):
             b.text(" ".join(g.bt.beschreibung)[:40], g.x + g.box[0], g.y + g.box[3] + 6, "daten")
         if g.bt.id:
             kontakte_global.append((b, g))
@@ -408,7 +486,7 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
         if (g.leiste, g.y) not in gesehen:
             gesehen.add((g.leiste, g.y))
             if g.leiste:
-                b.rechts_text(g.leiste, g.x - 14, g.y - 8, "label")
+                g.blatt.rechts_text(g.leiste, g.x - 14, g.y - 8, "label")
             else:
                 fragen.append(f"Blatt {nummer}: Klemmen {g.bt.bez}… ohne erkennbaren Leistennamen.")
 
@@ -417,16 +495,37 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
         for a in g.bt.anschluesse:
             teil_von[id(a)] = g
 
+    def _pfeil_an(g, a, name, extras=()):
+        b = g.blatt
+        px, py = g.teil.pos(g.anschluss(a))
+        nach_oben = S.symbol(g.pfad).anschluss(g.anschluss(a)).richtung == "n"
+        richt = "von_oben" if nach_oben else "ab"
+        ay = py - 40 if nach_oben else py + 40
+        t = b.pfeil(name, px, ay, richt, text=True)
+        b.draht(t, 0, g.teil, g.anschluss(a))
+        for extra in extras:
+            b.text(extra, px + 6, ay + (-30 if nach_oben else 20), "verweis")
+
+
     # Leitungen
     for nz in inh.netze:
         pins = [a for a in nz.anschluesse if id(a) in teil_von]
         if nz in schienen:
             for a in pins:
                 g = teil_von[id(a)]
-                px, _ = g.teil.pos(g.anschluss(a))
-                t, an = b.abgriff(nz.name, px, "oben" if nz in unten else "unten")
-                b.draht(t, an, g.teil, g.anschluss(a))
+                px, py = g.teil.pos(g.anschluss(a))
+                richt = S.symbol(g.pfad).anschluss(g.anschluss(a)).richtung
+                if (nz in unten and richt == "n") or (nz not in unten and richt == "s"):
+                    # Anschluss zeigt von der Schiene weg: neben dem Kasten vorbei statt durch das Gerät
+                    xr = raster(g.x + g.box[2] + 10)
+                    yb = py - 20 if richt == "n" else py + 20
+                    t, an = g.blatt.abgriff(nz.name, xr, "oben" if nz in unten else "unten")
+                    g.blatt.leitung(t, an, g.teil, g.anschluss(a), ueber=[(xr, yb), (px, yb)])
+                    continue
+                t, an = g.blatt.abgriff(nz.name, px, "oben" if nz in unten else "unten")
+                g.blatt.draht(t, an, g.teil, g.anschluss(a))
             weitere = [x for x in dict.fromkeys(nz.namen[1:]) if x != nz.name]
+            b = blaetter[0]
             if weitere:
                 s = b.schienen[nz.name]
                 x0 = min([px for px, _ in s.abgriffe] + [s.x1]) if s.anfang is False else s.x1
@@ -441,22 +540,22 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
             # Verweispfeil am ersten Anschluss: nach oben weg, wenn der Anschluss oben liegt, sonst nach unten
             a = pins[0]
             g = teil_von[id(a)]
-            px, py = g.teil.pos(g.anschluss(a))
-            nach_oben = S.symbol(g.pfad).anschluss(g.anschluss(a)).richtung == "n"
-            richt = "von_oben" if nach_oben else "ab"
-            ay = py - 40 if nach_oben else py + 40
-            t = b.pfeil(nz.name, px, ay, richt, text=True)
-            b.draht(t, 0, g.teil, g.anschluss(a))
-            for extra in nz.namen[1:]:
-                b.text(extra, px + 6, ay + (-30 if nach_oben else 20), "verweis")
+            _pfeil_an(g, a, nz.name, nz.namen[1:])
 
     for p, q in paare:
         g1, g2 = teil_von[id(p)], teil_von[id(q)]
+        if g1.blatt is not g2.blatt:
+            # über die Blattgrenze: auf beiden Seiten ein Verweispfeil gleichen Namens (verknüpft beim Erzeugen)
+            name = p.netz.name if p.netz and p.netz.name else min(str(p), str(q))
+            _pfeil_an(g1, p, name)
+            _pfeil_an(g2, q, name)
+            continue
+        b = g1.blatt
         k = kanal_von.get((id(p), id(q))) or kanal_von.get((id(q), id(p)))
         if k is None:
             b.draht(g1.teil, g1.anschluss(p), g2.teil, g2.anschluss(q))
             continue
-        yt = kanal_y[k[0]] + 10 * k[1]
+        yt = kanal_hoehe(k[0], zeile_von[id(g1)]) + 10 * k[1]
         x1, x2 = platz[id(p)][0], platz[id(q)][0]
         if abs(x1 - x2) < 1:
             b.draht(g1.teil, g1.anschluss(p), g2.teil, g2.anschluss(q))
@@ -464,6 +563,7 @@ def zeichne_blatt(plan, inh, nummer, fragen, kontakte_global):
             b.leitung(g1.teil, g1.anschluss(p), g2.teil, g2.anschluss(q), ueber=[(x1, yt), (x2, yt)])
 
     # freie Texte ohne Bauteil: unten als Hinweis (nichts geht verloren)
+    b = blaetter[0]
     rest = [t["text"].replace("\n", " ").strip() for t in inh.texte if t["text"].strip()]
     if rest:
         zeile, yy = "", 948
@@ -615,11 +715,19 @@ def verknuepfe(kontakte_global, fragen):
         b.verbinde(m.teil, g.teil)
 
 
-def umsetzen(quelle, ziel, pdf=False, vergleich=None):
+def umsetzen(quelle, ziel, pdf=False, vergleich=None, makros=None, nur_vorlage=False):
+    global ZUORDNUNG
     _fortschritt(2, "lesen")
     pr = splan8.lese(quelle)
     ordner = os.path.dirname(os.path.abspath(ziel))
     os.makedirs(ordner, exist_ok=True)
+    if nur_vorlage:
+        inhalte = [(i, A.analysiere(bl, i)) for i, bl in enumerate(pr.blaetter, 1)]
+        p = M.vorlage_schreiben(makros or M.standardpfad(ziel).replace("_makros.json", "_makros_vorlage.json"),
+                                inhalte)
+        _fortschritt(100, "fertig")
+        return p
+    ZUORDNUNG = M.lade_fuer(ziel, makros)
     meta = metadaten(pr.blaetter[0])
     plan = Plan(meta["titel"] or os.path.splitext(os.path.basename(quelle))[0], ordner, schriftfeld(),
                 autor=meta["autor"] or "")
@@ -644,6 +752,9 @@ def umsetzen(quelle, ziel, pdf=False, vergleich=None):
                 doku_blatt(plan, f"{bl.name} – Bilder", f"{i}.1", bilder, [], bilder_ordner)
         plan.fragen += fr
     verknuepfe(kontakte_global, plan.fragen)
+    plan.artikel = [r for r in ZUORDNUNG.regeln if r.benutzt]
+    for r in ZUORDNUNG.unbenutzt():
+        plan.fragen.append(f"Zuordnung {r.wenn} passt auf kein Bauteil – Eintrag prüfen.")
     _fortschritt(80, "schreiben")
     erg, r = plan.erzeuge(os.path.basename(ziel), pdf=False)
     _fortschritt(88, "pruefen")
@@ -694,6 +805,10 @@ def fragen_schreiben(pfad, quelle, plan, meta):
               f"{sm.get('wires')} Leitungen gerade, {sm.get('labels_on_wires')} Texte auf Leitungen, "
               f"{sm.get('overlaps')} Überdeckungen.", ""]
     z += ["- " + f for f in plan.fragen]
+    artikel = getattr(plan, "artikel", [])
+    if artikel:
+        z += ["", "Artikel aus der Zuordnungsdatei (sPlan kennt keine Artikel; Begründung je Gerät – bitte bestätigen):"]
+        z += [f"- {r.wenn}: {r.hersteller} {r.artikel} {r.typ} – {r.beleg or 'ohne Beleg'}" for r in artikel]
     offen = getattr(plan, "offen", [])
     if offen:
         z += ["", "Verweispfeile ohne Gegenstück gleichen Namens auf einem anderen Blatt (das Ziel steht als Text",
@@ -723,13 +838,15 @@ def vergleich_pdf(original, neu, zuordnung, ziel):
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
-    vgl = None
-    if "--vergleich" in argv:
-        k = argv.index("--vergleich")
-        vgl = argv[k + 1]
-        del argv[k:k + 2]
+    opt = {}
+    for name in ("--vergleich", "--makros"):
+        if name in argv:
+            k = argv.index(name)
+            opt[name] = argv[k + 1]
+            del argv[k:k + 2]
     args = [a for a in argv if not a.startswith("--")]
     quelle = args[0]
     ziel = args[1] if len(args) > 1 else os.path.join(
         os.path.dirname(os.path.abspath(quelle)), "QET", _sicher(os.path.splitext(os.path.basename(quelle))[0]) + ".qet")
-    print("fertig:", umsetzen(quelle, ziel, pdf="--pdf" in argv, vergleich=vgl))
+    print("fertig:", umsetzen(quelle, ziel, pdf="--pdf" in argv, vergleich=opt.get("--vergleich"),
+                              makros=opt.get("--makros"), nur_vorlage="--makros-vorlage" in argv))

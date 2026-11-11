@@ -319,7 +319,13 @@ def analysiere(blatt, nummer):
                 continue
             namens_enden.append((i, e, leit[i]["pts"][1 if k == 0 else -2], False))
     # global nach Abstand zuordnen (eng stehende Pfeile: jeder Text gehört genau einer Leitung, §12)
-    paare = []
+    # Längs der Leitung stehende Texte: Bei eng stehenden Pfeilen liegt ein Text oft näher an der Nachbarleitung als
+    # an seiner eigenen. Der Zeichner setzt aber alle Texte einer Gruppe gleich neben ihre Leitung (gleicher Versatz
+    # quer zur Leitung, Seite und Abstand je Blatt verschieden). Deshalb: je Text den Versatz wählen, den die meisten
+    # Nachbartexte ebenfalls zu einer ihrer Leitungen haben, und daran messen. Belegt in Projekt A: Signalboard-
+    # Ausgänge „A8:Step/A8:Dir/A7:Step/A7:Dir“ (Grundlinie an der Leitung) und Netzteil „K1:3/X4:1“ (Oberkante an
+    # der Leitung) kommen beide richtig heraus.
+    paare, laengs = [], []
     for ni, (i, p, vor, pfeil) in enumerate(namens_enden):
         senkrecht = abs(p[0] - vor[0]) < abs(p[1] - vor[1])
         for ti, t in enumerate(freie_texte):
@@ -330,8 +336,32 @@ def analysiere(blatt, nummer):
             d = min(d, min(_abst_seg(x, a, b) for x in (p, vor) for a, b in zip(q, q[1:] + q[:1])))
             parallel = (abs(t["drehung"]) == 90) == senkrecht
             grenze = (140 if pfeil else 40) if parallel else 40
-            if d <= grenze:
-                paare.append((d + (0 if parallel else 30), ni, ti))
+            if d > grenze:
+                continue
+            if not parallel:
+                paare.append((d + 30, ni, ti))
+                continue
+            k = 0 if senkrecht else 1               # Achse quer zur Leitung
+            c = _mitte(q)
+            lo, hi = sorted((p[1 - k], vor[1 - k]))
+            laengs.append((ni, ti, p[k] - c[k], max(0.0, lo - c[1 - k], c[1 - k] - hi), d))
+    TOL_VERSATZ = 12          # 1,2 mm: gleicher Versatz Text <-> Leitung
+    versatz = {}
+    for ti in {ti for _, ti, _, _, _ in laengs}:
+        c0 = _mitte(freie_texte[ti]["pts"])
+        nachbarn = {tj for _, tj, _, _, _ in laengs
+                    if freie_texte[tj]["drehung"] == freie_texte[ti]["drehung"]
+                    and math.dist(_mitte(freie_texte[tj]["pts"]), c0) <= 300}
+        eigene = [s for _, tj, s, _, _ in laengs if tj == ti]
+        best = None
+        for s0 in eigene:
+            treffer = sum(1 for tj in nachbarn if any(abs(s - s0) <= TOL_VERSATZ for _, tk, s, _, _ in laengs if tk == tj))
+            schl = (-treffer, abs(s0))
+            if best is None or schl < best[0]:
+                best = (schl, s0)
+        versatz[ti] = best[1]
+    for ni, ti, s, entlang, d in laengs:
+        paare.append((abs(s - versatz[ti]) + entlang + 0.01 * d, ni, ti))
     paare.sort()
     vergeben_e, vergeben_t = set(), set()
     for d, ni, ti in paare:

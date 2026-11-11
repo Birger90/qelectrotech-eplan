@@ -23,6 +23,26 @@ Voraussetzungen: Python 3.11+ mit Pillow und pymupdf, der gebaute Fork und `qet_
 Gezeichnet wird mit der Blatt-API aus `../eplan_import/planvorlagen` (Raster, Schienen, Abgriffe, Verweispfeile,
 Master/Slave).
 
+## Herstellermakros (EPLAN-Stil)
+
+sPlan kennt keine Artikel. Welches Gerät ein Bauteil ist, steht als Aufdruck im Symbol („230VAC“, „RELAIS OUTPUTS“,
+„Weidmüller PRO MAX“) oder nur im Bild, und der Bibliotheksname kann falsch sein (Treiber „SMCI33-2“ mit Aufdruck
+„Leadshine Em542S“). Diese Entscheidung treffen Mensch oder KI mit Beleg in einer **Zuordnungsdatei**
+`<Ziel>_makros.json` (Aufbau in `makros.py`); der Import übersetzt sie dann deterministisch:
+
+```
+python splan_nach_qet.py <plan.spl8> <ziel.qet> --makros-vorlage   # Gerüst: alle Geräte mit Aufdrucken und Anschlüssen
+python splan_nach_qet.py <plan.spl8> <ziel.qet> [--makros <datei.json>] --pdf
+```
+
+- `kanaele`: je sPlan-Anschluss Makro, Makroanschluss und Adresse. SPS-Baugruppen werden so Kanalmakros (je Ein-/
+  Ausgang ein Makro mit Adresse und Funktionstext = Ziel der Leitung); Anschlüsse mit gleicher `gruppe` teilen sich ein
+  Makro (Versorgung L1/N/FE, Netzteil). Anschlüsse ohne Eintrag landen in einem Restkasten und in Offene_Fragen.txt.
+- `norm: true`: Normsymbol behalten, nur Artikeldaten setzen (z. B. FI-Schutzschalter mit nur Aufbaumakro).
+- Nur Artikel ohne `kanaele`: Gerätekasten mit Artikeldaten (Hersteller ohne Makros im Data Portal, z. B. Beckhoff).
+- Makros kommen aus der Firmensammlung (`company://Hersteller/Kategorie/Typ`), vorher per Data-Portal-Import holen.
+- Jeder Artikel steht mit seinem Beleg in Offene_Fragen.txt zur Bestätigung.
+
 ## Regeln beim Neuzeichnen
 
 - **Symbole**: Schließer/Öffner → IEC-Kontakt (Slave), Schütz → Spule (Master), Reihenklemme → Klemme (mehrstöckige

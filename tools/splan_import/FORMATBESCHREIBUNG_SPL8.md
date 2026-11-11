@@ -114,9 +114,14 @@ Der Import leitet die Verbindungen deshalb aus der Geometrie ab (`splan_analyse.
    alle Enden einer Seite (oben/unten) sind eine Schraube.
 4. Anschlussname: nächster sPlan-„Kontakt“ des Bauteils, sonst nächster Text im Bauteil; Sammeltexte wie „PE I L I N“
    werden in Einzelnamen an ihrer Lage im Text zerlegt. Ohne Text: Nummer nach Lage (→ Offene_Fragen.txt).
-5. Potentialname = Text am Pfeilende bzw. am freien Leitungsende. Die Zuordnung Text ↔ Pfeil erfolgt global nach dem
-   kleinsten Abstand, damit eng stehende Pfeile ihre Texte nicht tauschen (BELEGT: Netzteil T1 „+“ → „K1:3“,
-   „−“ → „X4:1“, gegengeprüft an der Klemmenliste des Blatts „24V Klemmen“: T1:− liegt auf X4).
+5. Potentialname = Text am Pfeilende bzw. am freien Leitungsende. Die Zuordnung Text ↔ Pfeil erfolgt global, damit
+   eng stehende Pfeile ihre Texte nicht tauschen. Längs der Leitung stehende Texte liegen oft näher an der
+   Nachbarleitung als an der eigenen; der Zeichner setzt aber alle Texte einer Gruppe mit gleichem Versatz neben ihre
+   Leitung (Seite und Abstand je Blatt verschieden: mal Grundlinie, mal Oberkante an der Leitung). Gemessen wird
+   deshalb der Versatz quer zur Leitung, der für die meisten Nachbartexte passt. BELEGT: Netzteil T1 „+“ → „K1:3“,
+   „−“ → „X4:1“ (gegengeprüft an der Klemmenliste des Blatts „24V Klemmen“: T1:− liegt auf X4) und Signalboard der
+   CPU A2 „0/1/2/3“ → „A8:Step/A8:Dir/A7:Step/A7:Dir“ (gegengeprüft am gedruckten PDF; reine Abstandsmessung hatte
+   sie um eine Leitung verschoben).
 6. Bilder (Typ 09), auf denen Leitungen enden, sind Geräte ohne Daten (Projekt A: Sicherheitsrelais K1/K2 als Foto);
    ihre Anschlussnamen stehen nur im Bild → Offene_Fragen.txt.
 

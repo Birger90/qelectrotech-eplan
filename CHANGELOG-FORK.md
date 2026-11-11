@@ -3,6 +3,13 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.6.0 – 11.11.2026
+
+- Claude-Assistent: Bilder und PDFs mitschicken. Ins Eingabefeld einfügen (Strg+V, z. B. ein Bildschirmfoto),
+  Dateien hineinziehen oder mit der Büroklammer wählen; die Anhänge stehen als kleine Knöpfe über dem Feld und
+  verschwinden per Klick wieder. Bilder werden auf höchstens 2000 px verkleinert (Fotos als JPEG), PDFs bis
+  20 MB, höchstens 10 Anhänge je Frage. Geht mit API-Schlüssel und über das Claude-Konto.
+
 ## 1.5.0 – 11.11.2026
 
 - EPLAN-Import: Auch Steuerungen anderer Hersteller (z. B. Cybelec) werden SPS-Master. Ihre Kanaladresse steht in

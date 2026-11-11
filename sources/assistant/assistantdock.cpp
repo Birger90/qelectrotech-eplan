@@ -27,7 +27,17 @@
 #include "../qetproject.h"
 #include "../scripting/liveserver.h"
 
+#include <QBuffer>
 #include <QCoreApplication>
+#include <QFileDialog>
+#include <QImage>
+#include <QImageReader>
+#include <QMimeData>
+#include <QMimeDatabase>
+#include <QStyle>
+#include <QUrl>
+
+#include <functional>
 #include <QtMath>
 #include <cmath>
 #include <QDir>
@@ -49,6 +59,36 @@
 #include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
+
+namespace {
+		/// the input field: pictures and files pasted or dragged in go to
+		/// the dock as attachments, text stays text
+	class AttachInput : public QPlainTextEdit
+	{
+		public:
+			using QPlainTextEdit::QPlainTextEdit;
+			std::function<bool(const QMimeData *)> take;
+
+		protected:
+			bool canInsertFromMimeData(const QMimeData *source) const override
+			{
+				if (source->hasImage()) return true;
+				for (const QUrl &url : source->urls())
+					if (url.isLocalFile()) return true;
+				return QPlainTextEdit::canInsertFromMimeData(source);
+			}
+			void insertFromMimeData(const QMimeData *source) override
+			{
+				if (take && take(source)) return;
+				QPlainTextEdit::insertFromMimeData(source);
+			}
+	};
+
+	constexpr int MAX_ATTACHMENTS = 10;
+	constexpr qint64 MAX_PDF_BYTES = 20 * 1024 * 1024;
+	constexpr int MAX_IMAGE_SIDE = 2000;
+	constexpr int MAX_IMAGE_BYTES = 3 * 1024 * 1024;	///< base64 makes 4 MB of it, under the 5 MB limit
+}
 
 AssistantDock::AssistantDock(QETDiagramEditor *editor) :
 	QDockWidget(tr("Claude assistant"), editor),
@@ -89,13 +129,26 @@ AssistantDock::AssistantDock(QETDiagramEditor *editor) :
 					 "draw. Every change Claude makes is one undo step."));
 	layout->addWidget(m_history, 1);
 
-	m_input = new QPlainTextEdit(body);
-	m_input->setPlaceholderText(tr("Your question… (Enter sends, Shift+Enter: new line)"));
+	m_attachment_bar = new QWidget(body);
+	auto *attachment_layout = new QHBoxLayout(m_attachment_bar);
+	attachment_layout->setContentsMargins(0, 0, 0, 0);
+	m_attachment_bar->hide();
+	layout->addWidget(m_attachment_bar);
+
+	auto *input = new AttachInput(body);
+	input->take = [this](const QMimeData *data) { return takeMimeData(data); };
+	m_input = input;
+	m_input->setPlaceholderText(tr("Your question… (Enter sends, Shift+Enter: new line; "
+				       "paste or drag in pictures and PDFs)"));
 	m_input->setMaximumHeight(90);
 	m_input->installEventFilter(this);
 	layout->addWidget(m_input);
 
 	auto *buttons = new QHBoxLayout();
+	m_attach = new QToolButton(body);
+	m_attach->setText(QStringLiteral("📎"));
+	m_attach->setToolTip(tr("Attach pictures or PDFs (also: Ctrl+V or drag them into the field)"));
+	buttons->addWidget(m_attach);
 	m_cancel = new QPushButton(tr("Stop"), body);
 	m_cancel->setToolTip(tr("Stop the answer"));
 	m_cancel->setEnabled(false);
@@ -113,6 +166,7 @@ AssistantDock::AssistantDock(QETDiagramEditor *editor) :
 	connect(m_render_timer, &QTimer::timeout, this, &AssistantDock::render);
 
 	connect(m_send, &QPushButton::clicked, this, &AssistantDock::sendQuestion);
+	connect(m_attach, &QToolButton::clicked, this, &AssistantDock::chooseFiles);
 	connect(m_cancel, &QPushButton::clicked, this, &AssistantDock::cancel);
 	connect(m_new, &QToolButton::clicked, this, &AssistantDock::newConversation);
 	connect(m_settings, &QToolButton::clicked, this, [this]() { showSetup(false); });
@@ -230,16 +284,33 @@ QJsonObject AssistantDock::context() const
 void AssistantDock::sendQuestion()
 {
 	const QString text = m_input->toPlainText().trimmed();
-	if (text.isEmpty() || m_busy) return;
+	if ((text.isEmpty() && m_attachments.isEmpty()) || m_busy) return;
 	if (!ensureBridge()) return;
 	m_input->clear();
-	add(Entry::User, text);
+	QJsonArray attachments;
+	QStringList names;
+	for (const Attachment &a : std::as_const(m_attachments)) {
+		attachments.append(QJsonObject{{QStringLiteral("name"), a.name},
+					       {QStringLiteral("mime"), a.mime},
+					       {QStringLiteral("data"), QString::fromLatin1(a.data.toBase64())}});
+		names << a.name;
+	}
+	m_attachments.clear();
+	updateAttachments();
+	QString shown = text;
+	if (!names.isEmpty()) {
+		if (!shown.isEmpty()) shown += QStringLiteral("  \n");
+		shown += QStringLiteral("📎 ") + names.join(QStringLiteral(", "));
+	}
+	add(Entry::User, shown);
 	m_answer_open = false;
 	setBusy(true);
 	m_activity->setText(tr("thinking…"));
-	m_bridge->send(QJsonObject{{QStringLiteral("type"), QStringLiteral("ask")},
-				   {QStringLiteral("text"), text},
-				   {QStringLiteral("kontext"), context()}});
+	QJsonObject ask{{QStringLiteral("type"), QStringLiteral("ask")},
+			{QStringLiteral("text"), text},
+			{QStringLiteral("kontext"), context()}};
+	if (!attachments.isEmpty()) ask.insert(QStringLiteral("anhaenge"), attachments);
+	m_bridge->send(ask);
 }
 
 void AssistantDock::cancel()
@@ -465,5 +536,156 @@ void AssistantDock::setBusy(bool busy)
 	m_send->setEnabled(!busy);
 	m_cancel->setEnabled(busy);
 	m_new->setEnabled(!busy);
+	m_attach->setEnabled(!busy);
 	m_settings->setEnabled(!busy);
+}
+
+AssistantDock::Attachment AssistantDock::imageAttachment(const QImage &image, const QString &name)
+{
+	QImage scaled = image;
+	if (qMax(scaled.width(), scaled.height()) > MAX_IMAGE_SIDE)
+		scaled = scaled.scaled(MAX_IMAGE_SIDE, MAX_IMAGE_SIDE, Qt::KeepAspectRatio,
+				       Qt::SmoothTransformation);
+	Attachment a{name, QStringLiteral("image/png"), QByteArray()};
+	{
+		QBuffer buffer(&a.data);
+		buffer.open(QIODevice::WriteOnly);
+		scaled.save(&buffer, "PNG");
+	}
+		//A photo is far smaller as JPEG; quality down until it fits
+	for (int quality = 90; a.data.size() > MAX_IMAGE_BYTES && quality >= 40; quality -= 15) {
+		QByteArray jpeg;
+		QBuffer buffer(&jpeg);
+		buffer.open(QIODevice::WriteOnly);
+		scaled.convertToFormat(QImage::Format_RGB888).save(&buffer, "JPEG", quality);
+		a.data = jpeg;
+		a.mime = QStringLiteral("image/jpeg");
+		if (!a.name.endsWith(QLatin1String(".jpg"), Qt::CaseInsensitive))
+			a.name = QFileInfo(name).completeBaseName() + QStringLiteral(".jpg");
+	}
+	return a;
+}
+
+bool AssistantDock::fileAttachment(const QString &path, Attachment *out, QString *error)
+{
+	const QFileInfo info(path);
+	const QString mime = QMimeDatabase().mimeTypeForFile(info).name();
+	if (mime == QLatin1String("application/pdf")) {
+		if (info.size() > MAX_PDF_BYTES) {
+			if (error) *error = tr("%1 is larger than 20 MB.").arg(info.fileName());
+			return false;
+		}
+		QFile file(path);
+		if (!file.open(QIODevice::ReadOnly)) {
+			if (error) *error = tr("%1 cannot be read.").arg(info.fileName());
+			return false;
+		}
+		*out = Attachment{info.fileName(), mime, file.readAll()};
+		return true;
+	}
+	QImageReader reader(path);
+	reader.setAutoTransform(true);	// photos taken upright stay upright
+	const QImage image = reader.read();
+	if (image.isNull()) {
+		if (error) *error = tr("%1 is neither a picture nor a PDF.").arg(info.fileName());
+		return false;
+	}
+	*out = imageAttachment(image, info.fileName());
+	return true;
+}
+
+/**
+	@brief AssistantDock::takeMimeData
+	What is pasted or dragged into the input field: a picture (a screenshot
+	from the clipboard) or files become attachments. False when there is
+	none of these, so the field takes it as text.
+*/
+bool AssistantDock::takeMimeData(const QMimeData *data)
+{
+	if (m_busy) return false;
+	QStringList files;
+	for (const QUrl &url : data->urls())
+		if (url.isLocalFile()) files << url.toLocalFile();
+	if (!files.isEmpty()) {
+		for (const QString &f : std::as_const(files)) {
+			Attachment a;
+			QString error;
+			if (fileAttachment(f, &a, &error)) addAttachment(a);
+			else add(Entry::Error, error);
+		}
+		return true;
+	}
+	if (data->hasImage()) {
+		const QImage image = qvariant_cast<QImage>(data->imageData());
+		if (image.isNull()) return false;
+		addAttachment(imageAttachment(image, tr("Picture %1.png").arg(m_attachments.size() + 1)));
+		return true;
+	}
+	return false;
+}
+
+void AssistantDock::addAttachment(const Attachment &attachment)
+{
+	if (m_attachments.size() >= MAX_ATTACHMENTS) {
+		add(Entry::Error, tr("At most %1 attachments per question.").arg(MAX_ATTACHMENTS));
+		return;
+	}
+	m_attachments.append(attachment);
+	updateAttachments();
+}
+
+void AssistantDock::chooseFiles()
+{
+	const QStringList files = QFileDialog::getOpenFileNames(this, tr("Attach pictures or PDFs"),
+		QSettings().value(QStringLiteral("assistant/attach_dir")).toString(),
+		tr("Pictures and PDFs (*.png *.jpg *.jpeg *.gif *.webp *.bmp *.pdf);;All files (*)"));
+	if (files.isEmpty()) return;
+	QSettings().setValue(QStringLiteral("assistant/attach_dir"), QFileInfo(files.first()).absolutePath());
+	for (const QString &f : files) {
+		Attachment a;
+		QString error;
+		if (fileAttachment(f, &a, &error)) addAttachment(a);
+		else add(Entry::Error, error);
+	}
+	m_input->setFocus();
+}
+
+/**
+	@brief AssistantDock::updateAttachments
+	One small button per attachment above the input field: a thumbnail
+	(or a file icon for a PDF) and the name; a click takes it off again.
+*/
+void AssistantDock::updateAttachments()
+{
+	auto *bar_layout = static_cast<QHBoxLayout *>(m_attachment_bar->layout());
+	while (QLayoutItem *item = bar_layout->takeAt(0)) {
+		delete item->widget();
+		delete item;
+	}
+	for (int i = 0 ; i < m_attachments.size() ; ++i) {
+		const Attachment &a = m_attachments.at(i);
+		auto *chip = new QToolButton(m_attachment_bar);
+		chip->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+		chip->setAutoRaise(true);
+		QString shown = a.name;
+		if (shown.size() > 22) shown = shown.left(20) + QStringLiteral("…");
+		chip->setText(shown + QStringLiteral("  ✕"));
+		chip->setToolTip(tr("%1 – click to remove").arg(a.name));
+		if (a.mime.startsWith(QLatin1String("image/"))) {
+			QImage thumb;
+			thumb.loadFromData(a.data);
+			chip->setIcon(QPixmap::fromImage(thumb.scaled(32, 32, Qt::KeepAspectRatio,
+								      Qt::SmoothTransformation)));
+		} else {
+			chip->setIcon(style()->standardIcon(QStyle::SP_FileIcon));
+		}
+		chip->setIconSize(QSize(24, 24));
+		connect(chip, &QToolButton::clicked, this, [this, i]() {
+			if (i < m_attachments.size()) m_attachments.removeAt(i);
+			updateAttachments();
+		});
+		bar_layout->addWidget(chip);
+	}
+	bar_layout->addStretch(1);
+	m_attachment_bar->setVisible(!m_attachments.isEmpty());
 }

@@ -117,6 +117,61 @@ class Einheiten(unittest.TestCase):
         import bruecke
         cls.b = bruecke
 
+    def test_anhaenge_als_bloecke(self):
+        bloecke, fehlt = self.b.anhang_bloecke([
+            {"name": "foto.png", "mime": "image/png", "data": "iVBORw0KGgo="},
+            {"name": "blatt.pdf", "mime": "application/pdf", "data": "JVBERi0x"},
+            {"name": "notiz.txt", "mime": "text/plain", "data": "aGFsbG8="},
+            {"name": "leer.jpg", "mime": "image/jpeg", "data": ""}])
+        self.assertEqual([b["type"] for b in bloecke], ["image", "document"])
+        self.assertEqual(bloecke[0]["source"], {"type": "base64", "media_type": "image/png",
+                                                "data": "iVBORw0KGgo="})
+        self.assertEqual(bloecke[1]["title"], "blatt.pdf")
+        self.assertEqual(fehlt, ["notiz.txt", "leer.jpg"])
+
+    def test_anhaenge_gehen_an_claude(self):
+        """Mit Schlüssel: die Bilder stehen in der Benutzernachricht der Anfrage."""
+        import copy
+        from types import SimpleNamespace
+        anfragen = []
+
+        def stream(**kw):
+            anfragen.append(copy.deepcopy(kw["messages"]))
+            usage = SimpleNamespace(input_tokens=0, output_tokens=0, cache_read_input_tokens=0)
+            return self.b._FakeStream(SimpleNamespace(
+                content=[SimpleNamespace(type="text", text="Ein Schaltschrank.")],
+                stop_reason="end_turn", usage=usage, model="test", stop_details=None))
+        client = SimpleNamespace(beta=SimpleNamespace(messages=SimpleNamespace(stream=stream)))
+        gesendet = []
+        alt = self.b.emit
+        self.b.emit = lambda **m: gesendet.append(m)
+        try:
+            g = self.b.Gespraech(client, None, [], {}, attrappe=True)
+            g.ask("", {"projekt": "Test"},
+                  [{"name": "schrank.jpg", "mime": "image/jpeg", "data": "/9j/4AAQ"}])
+        finally:
+            self.b.emit = alt
+        inhalt = anfragen[0][-1]["content"]
+        self.assertEqual([b["type"] for b in inhalt], ["text", "text", "image", "text"])
+        self.assertIn("schrank.jpg", inhalt[1]["text"])
+        self.assertEqual(inhalt[2]["source"]["media_type"], "image/jpeg")
+        self.assertTrue(inhalt[3]["text"])          # leere Frage: ein Satz zum Anhang
+        self.assertEqual(gesendet[-1]["type"], "done")
+
+    def test_konto_nachricht(self):
+        import asyncio
+        self.assertEqual(self.b.konto_nachricht("Hallo"), "Hallo")
+        bloecke = [{"type": "image", "source": {"type": "base64", "media_type": "image/png",
+                                                 "data": "iVBORw0KGgo="}},
+                   {"type": "text", "text": "Was ist das?"}]
+
+        async def sammeln():
+            return [m async for m in self.b.konto_nachricht(bloecke)]
+        nachrichten = asyncio.run(sammeln())
+        self.assertEqual(len(nachrichten), 1)
+        self.assertEqual(nachrichten[0]["type"], "user")
+        self.assertEqual(nachrichten[0]["message"], {"role": "user", "content": bloecke})
+
     def test_werkzeuge_ohne_programmpfad(self):
         tools, meta = self.b.build_tools("live")
         names = [t["name"] for t in tools]

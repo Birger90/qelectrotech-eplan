@@ -26,7 +26,9 @@
 class AssistantBridge;
 class AssistantSetupPage;
 class QETDiagramEditor;
+class QImage;
 class QLabel;
+class QMimeData;
 class QPlainTextEdit;
 class QPushButton;
 class QStackedWidget;
@@ -63,6 +65,21 @@ class AssistantDock : public QDockWidget
 	protected:
 		bool eventFilter(QObject *watched, QEvent *event) override;
 
+	public:
+			/// a picture or PDF that goes with the next question
+		struct Attachment {
+			QString name;
+			QString mime;		///< image/png, image/jpeg or application/pdf
+			QByteArray data;
+		};
+
+			/// the attachment for a picture: PNG, scaled so its long side is
+			/// at most 2000 px, as JPEG when the PNG gets too big
+		static Attachment imageAttachment(const QImage &image, const QString &name);
+			/// the attachment for a file: pictures as above, PDFs as they
+			/// are; false with @p error for anything else
+		static bool fileAttachment(const QString &path, Attachment *out, QString *error);
+
 	private:
 		struct Entry {
 			enum Kind { User, Assistant, Note, Error } kind;
@@ -70,6 +87,10 @@ class AssistantDock : public QDockWidget
 		};
 
 		void sendQuestion();
+		bool takeMimeData(const QMimeData *data);
+		void addAttachment(const Attachment &attachment);
+		void chooseFiles();
+		void updateAttachments();
 		void cancel();
 		void newConversation();
 		void showSetup(bool switch_when_done = true);
@@ -99,6 +120,9 @@ class AssistantDock : public QDockWidget
 		QToolButton *m_settings;
 		QLabel *m_activity;
 		QTimer *m_render_timer;
+		QToolButton *m_attach;
+		QWidget *m_attachment_bar;
+		QList<Attachment> m_attachments;
 		QList<Entry> m_entries;
 		bool m_busy = false;
 		bool m_shown_once = false;

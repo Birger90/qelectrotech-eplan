@@ -119,6 +119,17 @@ else()
     message(STATUS "Qt Qml module not available: JavaScript scripting (--run) disabled")
 endif()
 
+# The Claude assistant through the user's own Claude account (the Claude
+# Agent SDK starts its Claude Code, signed in with the user's subscription)
+# instead of an API key. Off by default: Anthropic does not allow programs
+# to offer the claude.ai sign-in without its approval, so only personal
+# builds switch it on (-DQET_CLAUDE_KONTO=ON).
+option(QET_CLAUDE_KONTO "Claude assistant through the user's own Claude account (personal builds only)" OFF)
+if(QET_CLAUDE_KONTO)
+    add_compile_definitions(QET_CLAUDE_KONTO)
+    message(STATUS "Claude assistant: own Claude account (QET_CLAUDE_KONTO)")
+endif()
+
 # The zip container of a .qetz project is read and written with the bundled
 # miniz (sources/container/miniz): in memory only, and without timestamps so
 # that saving the same project twice gives the same bytes. The names must not

@@ -1062,6 +1062,10 @@ Jede Änderung ist ein eigener Rückgängig-Schritt (Strg+Z). Darf Claude den Pl
         <translation>2. Python</translation>
     </message>
     <message>
+        <source>1. Python</source>
+        <translation>1. Python</translation>
+    </message>
+    <message>
         <source>The chosen program “%1” does not exist. Choose another one.</source>
         <translation>Das gewählte Programm „%1“ gibt es nicht. Bitte ein anderes wählen.</translation>
     </message>
@@ -1124,6 +1128,94 @@ Jede Änderung ist ein eigener Rückgängig-Schritt (Strg+Z). Darf Claude den Pl
     <message>
         <source>mcp/qet-assistent/bruecke.py was not found beside QElectroTech. Install QElectroTech again.</source>
         <translation>mcp/qet-assistent/bruecke.py wurde neben QElectroTech nicht gefunden. Bitte QElectroTech neu installieren.</translation>
+    </message>
+    <message>
+        <source>Connect with Claude</source>
+        <translation>Mit Claude verbinden</translation>
+    </message>
+    <message>
+        <source>Installs what is missing and signs in with your Claude account in the browser</source>
+        <translation>Installiert, was fehlt, und meldet dich im Browser mit deinem Claude-Konto an</translation>
+    </message>
+    <message>
+        <source>Connect Claude</source>
+        <translation>Claude verbinden</translation>
+    </message>
+    <message>
+        <source>Claude answers questions about the open drawing and draws for you. It uses your Claude subscription (Pro or Max): no API key and no extra costs, it counts against the usage of your plan. One click on the button sets everything up.</source>
+        <translation>Claude beantwortet Fragen zum offenen Plan und zeichnet für dich. Es nutzt dein Claude-Abo (Pro oder Max): kein API-Schlüssel und keine Zusatzkosten, es zählt gegen das Kontingent deines Abos. Ein Klick auf den Knopf richtet alles ein.</translation>
+    </message>
+    <message>
+        <source>Use an API key instead</source>
+        <translation>Stattdessen einen API-Schlüssel verwenden</translation>
+    </message>
+    <message>
+        <source>Use my Claude account instead (no API costs)</source>
+        <translation>Stattdessen mein Claude-Konto verwenden (keine API-Kosten)</translation>
+    </message>
+    <message>
+        <source>2. Claude for QElectroTech</source>
+        <translation>2. Claude für QElectroTech</translation>
+    </message>
+    <message>
+        <source>3. Signed in with your Claude account</source>
+        <translation>3. Mit deinem Claude-Konto angemeldet</translation>
+    </message>
+    <message>
+        <source>Python is missing: install it first (step 1).</source>
+        <translation>Python fehlt: bitte zuerst installieren (Schritt 1).</translation>
+    </message>
+    <message>
+        <source>Installed (claude-agent-sdk %1).</source>
+        <translation>Installiert (claude-agent-sdk %1).</translation>
+    </message>
+    <message>
+        <source>Not installed yet: the button above installs it.</source>
+        <translation>Noch nicht installiert: der Knopf oben installiert es.</translation>
+    </message>
+    <message>
+        <source>Connected.</source>
+        <translation>Verbunden.</translation>
+    </message>
+    <message>
+        <source>Connected as %1.</source>
+        <translation>Verbunden als %1.</translation>
+    </message>
+    <message>
+        <source>Plan: %1.</source>
+        <translation>Abo: %1.</translation>
+    </message>
+    <message>
+        <source>Not connected yet: the button above opens the sign-in page of Claude in your browser.</source>
+        <translation>Noch nicht verbunden: der Knopf oben öffnet die Anmeldeseite von Claude in deinem Browser.</translation>
+    </message>
+    <message>
+        <source>Cancelled.</source>
+        <translation>Abgebrochen.</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>The package could not be installed: see the output above.</source>
+        <translation>Das Paket ließ sich nicht installieren: siehe Ausgabe oben.</translation>
+    </message>
+    <message>
+        <source>Installing Claude for QElectroTech (about a minute)…</source>
+        <translation>Installiere Claude für QElectroTech (etwa eine Minute)…</translation>
+    </message>
+    <message>
+        <source>Not signed in. Press the button to try again.</source>
+        <translation>Nicht angemeldet. Zum erneuten Versuch den Knopf drücken.</translation>
+    </message>
+    <message>
+        <source>Your browser opens the Claude sign-in page. Sign in there and allow the access; this page goes on by itself.</source>
+        <translation>Dein Browser öffnet die Anmeldeseite von Claude. Dort anmelden und den Zugriff erlauben; diese Seite macht danach von selbst weiter.</translation>
+    </message>
+    <message>
+        <source>Open the sign-in page</source>
+        <translation>Anmeldeseite öffnen</translation>
     </message>
 </context>
 <context>

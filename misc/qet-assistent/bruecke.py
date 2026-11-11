@@ -34,6 +34,11 @@ Betriebsarten:
                         einer Projektdatei (für Tests)
     --attrappe          statt Claude eine feste Abfolge von Antworten
                         (Test ohne Schlüssel)
+    --konto             über das eigene Claude-Konto statt eines API-Schlüssels:
+                        das Python-Paket claude-agent-sdk startet sein Claude Code,
+                        das mit dem Claude-Abo angemeldet ist; kein Schlüssel nötig
+    --konto-status      nur ausgeben, ob SDK und Anmeldung da sind (eine JSON-Zeile)
+    --konto-login       nur anmelden (claude auth login, öffnet den Browser)
 """
 
 from __future__ import annotations
@@ -640,6 +645,269 @@ def _api_error_text(exc: Exception) -> str:
 
 
 # --------------------------------------------------------------------------
+# Konto: Claude über das eigene Claude-Konto (Claude Agent SDK)
+# --------------------------------------------------------------------------
+#
+# Statt die API mit einem Schlüssel anzusprechen, startet die Brücke das
+# Claude Code, das dem Python-Paket „claude-agent-sdk“ beiliegt. Es meldet
+# sich mit dem Claude-Konto des Benutzers an (claude auth login), die
+# Nutzung zählt gegen dessen Abo. Die Werkzeuge sind dieselben wie oben;
+# sie laufen im Prozess der Brücke als MCP-Server „qet“, die eingebauten
+# Werkzeuge von Claude Code (Dateien, Shell, Web) sind abgeschaltet.
+
+KONTO_SERVER = "qet"
+# Würde Claude Code einen Schlüssel aus der Umgebung finden, nähme es den
+# und rechnete über die API ab: im Kontobetrieb nie weitergeben.
+_KEY_VARS = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")
+
+
+def _konto_cli() -> str | None:
+    """Das Claude Code, das dem SDK beiliegt; sonst eines im PATH."""
+    try:
+        import claude_agent_sdk
+    except ImportError:
+        return None
+    exe = "claude.exe" if os.name == "nt" else "claude"
+    bundled = Path(claude_agent_sdk.__file__).resolve().parent / "_bundled" / exe
+    if bundled.is_file():
+        return str(bundled)
+    return shutil.which("claude")
+
+
+def _konto_env() -> dict:
+    return {k: v for k, v in os.environ.items() if k not in _KEY_VARS and k != "CLAUDECODE"}
+
+
+def konto_status() -> dict:
+    """Ist das SDK da, ist Claude Code angemeldet? Für die Einrichtung."""
+    import subprocess
+    out = {"sdk": False, "loggedIn": False}
+    try:
+        import claude_agent_sdk
+        out["sdk"] = True
+        out["version"] = getattr(claude_agent_sdk, "__version__", "")
+    except ImportError:
+        return out
+    cli = _konto_cli()
+    if not cli:
+        out["error"] = "Claude Code nicht gefunden"
+        return out
+    try:
+        res = subprocess.run([cli, "auth", "status"], capture_output=True, text=True,
+                             encoding="utf-8", errors="replace", timeout=60, env=_konto_env())
+        data = json.loads(res.stdout or "{}")
+    except Exception as exc:  # noqa: BLE001 - Meldung an die Einrichtung
+        out["error"] = f"{type(exc).__name__}: {exc}"
+        return out
+    out["loggedIn"] = bool(data.get("loggedIn"))
+    for key in ("authMethod", "email", "subscriptionType", "orgName"):
+        if data.get(key):
+            out[key] = data[key]
+    return out
+
+
+def konto_login() -> int:
+    """claude auth login mit dem Claude-Abo; öffnet den Browser. Die Ausgabe
+    geht durch, damit die Einrichtung den Link zeigen kann."""
+    import subprocess
+    cli = _konto_cli()
+    if not cli:
+        print("Claude Code nicht gefunden: erst das Paket claude-agent-sdk installieren.", flush=True)
+        return 2
+    return subprocess.call([cli, "auth", "login", "--claudeai"], env=_konto_env())
+
+
+def _mcp_content(blocks: list) -> list:
+    """tool_result-Blöcke -> MCP-Inhalt"""
+    out = []
+    for b in blocks:
+        if b.get("type") == "image":
+            src = b.get("source", {})
+            out.append({"type": "image", "data": src.get("data", ""),
+                        "mimeType": src.get("media_type", "image/png")})
+        else:
+            out.append({"type": "text", "text": b.get("text", "")})
+    return out
+
+
+class KontoGespraech:
+    """Ein Gespräch über das Claude-Konto, mit derselben Schnittstelle wie
+    Gespraech (ask, reset, cancel, confirm_answers). Der Client läuft in einer
+    eigenen asyncio-Schleife; ask() wartet in seinem Faden auf das Ende."""
+
+    def __init__(self, werkzeuge: Werkzeuge, tools: list, meta: dict):
+        import asyncio
+        self.asyncio = asyncio
+        self.werkzeuge = werkzeuge
+        self.tools = tools
+        self.tools_by_name = {t["name"]: t for t in tools}
+        self.meta = meta
+        self.client = True   # für main(): es gibt etwas, das antworten kann
+        self.cancel = threading.Event()
+        self.write_allowed = False
+        self.confirm_answers: "queue.Queue[dict]" = queue.Queue()
+        self._confirm_id = 0
+        self._sdk_client = None
+        self._loop = asyncio.new_event_loop()
+        threading.Thread(target=self._loop.run_forever, daemon=True).start()
+
+    # dieselbe Rückfrage vor der ersten Änderung wie bei Gespraech
+    _ask_write = Gespraech._ask_write
+
+    def _run(self, coro, timeout=None):
+        return self.asyncio.run_coroutine_threadsafe(coro, self._loop).result(timeout)
+
+    def _server(self):
+        from claude_agent_sdk import create_sdk_mcp_server, tool
+
+        def make(spec: dict):
+            name = spec["name"]
+            label, writes = self.meta.get(name, (name, False))
+
+            async def handler(args):
+                return await self.asyncio.to_thread(self._call_tool, name, label, writes, args)
+            return tool(name, spec.get("description", ""), spec["input_schema"])(handler)
+
+        return create_sdk_mcp_server(KONTO_SERVER, tools=[make(t) for t in self.tools])
+
+    def _call_tool(self, name: str, label: str, writes: bool, args: dict) -> dict:
+        args = dict(args or {})
+        problem = validate((self.tools_by_name.get(name) or {}).get("input_schema", {}), args)
+        if problem:
+            return {"content": [{"type": "text", "text": problem}], "is_error": True}
+        if writes and not self._ask_write(name, args):
+            emit(type="tool", phase="end", name=name, label=label, write=True, ok=False)
+            return {"content": [{"type": "text", "text": "Der Benutzer hat die Änderung am "
+                                 "Plan nicht erlaubt."}], "is_error": True}
+        emit(type="tool", phase="start", name=name, label=label, write=writes)
+        blocks, is_error = self.werkzeuge.call(name, args)
+        emit(type="tool", phase="end", name=name, label=label, write=writes, ok=not is_error)
+        return {"content": _mcp_content(blocks), "is_error": is_error}
+
+    async def _connect(self):
+        from claude_agent_sdk import ClaudeAgentOptions, ClaudeSDKClient
+        for var in _KEY_VARS:
+            os.environ.pop(var, None)
+        model = os.environ.get("QET_ASSISTENT_MODELL", "").strip() or None
+        options = ClaudeAgentOptions(
+            system_prompt=SYSTEM,
+            mcp_servers={KONTO_SERVER: self._server()},
+            strict_mcp_config=True,
+            tools=[],                    # keine Datei-, Shell- oder Webwerkzeuge
+            allowed_tools=[f"mcp__{KONTO_SERVER}__{t['name']}" for t in self.tools],
+            permission_mode="dontAsk",   # alles andere ablehnen, nie nachfragen
+            setting_sources=[],          # keine CLAUDE.md, Skills oder Hooks des Benutzers
+            include_partial_messages=True,
+            cwd=tempfile.gettempdir(),
+            cli_path=_konto_cli(),
+            model=model,
+            stderr=log,
+        )
+        client = ClaudeSDKClient(options=options)
+        await client.connect()
+        self._sdk_client = client
+
+    async def _disconnect(self):
+        if self._sdk_client is not None:
+            client, self._sdk_client = self._sdk_client, None
+            await client.disconnect()
+
+    def reset(self) -> None:
+        self.write_allowed = False
+        try:
+            self._run(self._disconnect(), timeout=30)
+        except Exception:  # noqa: BLE001
+            log(traceback.format_exc())
+
+    def ask(self, text: str, kontext: dict | None) -> None:
+        import concurrent.futures
+        self.cancel.clear()
+        prompt = text
+        if kontext:
+            prompt = ("Zustand in QElectroTech: " + json.dumps(kontext, ensure_ascii=False)
+                      + "\n\n" + text)
+        stop_reason, usage = None, {}
+        try:
+            if self._sdk_client is None:
+                emit(type="status", text="verbindet mit Claude …")
+                self._run(self._connect(), timeout=180)
+            emit(type="status", text="denkt nach …")
+            fut = self.asyncio.run_coroutine_threadsafe(self._turn(prompt), self._loop)
+            interrupted = False
+            while True:
+                try:
+                    stop_reason, usage = fut.result(timeout=0.2)
+                    break
+                except concurrent.futures.TimeoutError:
+                    if self.cancel.is_set() and not interrupted:
+                        interrupted = True
+                        self._run(self._sdk_client.interrupt(), timeout=30)
+            if interrupted:
+                stop_reason = "cancelled"
+        except Exception as exc:  # noqa: BLE001
+            log(traceback.format_exc())
+            emit(type="error", message=_konto_error_text(exc))
+            stop_reason = "error"
+            try:
+                self._run(self._disconnect(), timeout=30)
+            except Exception:  # noqa: BLE001
+                pass
+        emit(type="done", stop_reason=stop_reason, usage=usage or {})
+
+    async def _turn(self, prompt: str):
+        from claude_agent_sdk import AssistantMessage, ResultMessage, StreamEvent
+        await self._sdk_client.query(prompt)
+        stop_reason, usage = None, {}
+        shown = set()   # dieselbe Meldung kommt sonst doppelt (Antwort und Ergebnis)
+
+        def error(text):
+            nonlocal stop_reason
+            stop_reason = "error"
+            msg = _konto_error_text(text)
+            if msg not in shown:
+                shown.add(msg)
+                emit(type="error", message=msg)
+        async for msg in self._sdk_client.receive_response():
+            if isinstance(msg, StreamEvent):
+                ev = msg.event or {}
+                if msg.parent_tool_use_id:
+                    continue
+                if ev.get("type") == "content_block_delta":
+                    delta = ev.get("delta") or {}
+                    if delta.get("type") == "text_delta" and delta.get("text"):
+                        emit(type="text", delta=delta["text"])
+                elif ev.get("type") == "content_block_start":
+                    block = ev.get("content_block") or {}
+                    if block.get("type") == "tool_use":
+                        name = str(block.get("name", "")).split("__")[-1]
+                        emit(type="status", text="bereitet vor: "
+                             + self.meta.get(name, (name,))[0])
+            elif isinstance(msg, AssistantMessage) and msg.error:
+                error(msg.error)
+            elif isinstance(msg, ResultMessage):
+                if stop_reason != "error":
+                    stop_reason = msg.stop_reason or msg.subtype
+                usage = {k: v for k, v in (msg.usage or {}).items()
+                         if k in ("input_tokens", "output_tokens", "cache_read_input_tokens")}
+                if msg.is_error and msg.result:
+                    error(msg.result)
+        return stop_reason, usage
+
+
+def _konto_error_text(exc) -> str:
+    text = str(exc)
+    low = text.lower()
+    if any(s in low for s in ("not logged", "log in", "login", "authenticat", "401")):
+        return ("Claude ist nicht verbunden. Bitte unter „Einstellungen“ auf "
+                "„Mit Claude verbinden“ klicken.")
+    if "usage limit" in low or ("rate" in low and "limit" in low):
+        return "Das Nutzungskontingent deines Claude-Abos ist gerade ausgeschöpft."
+    if isinstance(exc, BaseException):
+        return f"{type(exc).__name__}: {exc}"
+    return text
+
+
+# --------------------------------------------------------------------------
 # Hauptschleife
 # --------------------------------------------------------------------------
 
@@ -649,6 +917,12 @@ def main(argv=None) -> int:
     ap.add_argument("--attrappe", action="store_true", help="feste Antworten statt Claude")
     ap.add_argument("--attrappe-element", default="",
                     help="Element, das die Attrappe setzt (z. B. common://...elmt)")
+    ap.add_argument("--konto", action="store_true",
+                    help="über das eigene Claude-Konto (Claude Agent SDK) statt API-Schlüssel")
+    ap.add_argument("--konto-status", action="store_true",
+                    help="nur ausgeben, ob das SDK da und Claude angemeldet ist (JSON)")
+    ap.add_argument("--konto-login", action="store_true",
+                    help="nur mit dem Claude-Konto anmelden (öffnet den Browser)")
     opts = ap.parse_args(argv)
 
     for stream in (sys.stdin, sys.stdout, sys.stderr):
@@ -656,6 +930,11 @@ def main(argv=None) -> int:
             stream.reconfigure(encoding="utf-8")
         except (AttributeError, ValueError):
             pass
+    if opts.konto_status:
+        print(json.dumps(konto_status(), ensure_ascii=False), flush=True)
+        return 0
+    if opts.konto_login:
+        return konto_login()
 
     # Die Brücke darf Skripte ausführen; ob sie den Plan ändern darf, fragt
     # QElectroTech den Benutzer (und erzwingt es im Live-Kanal).
@@ -675,7 +954,15 @@ def main(argv=None) -> int:
 
     has_key = bool(os.environ.get("ANTHROPIC_API_KEY", "").strip())
     client = None
-    if opts.attrappe:
+    konto_ok = False
+    if opts.konto and not opts.attrappe:
+        try:
+            import claude_agent_sdk  # noqa: F401
+            konto_ok = True
+        except ImportError:
+            emit(type="error", message="Das Python-Paket „claude-agent-sdk“ fehlt: "
+                 "unter „Einstellungen“ auf „Mit Claude verbinden“ klicken.")
+    elif opts.attrappe:
         client = Attrappe(opts.attrappe_element or "embed://import/element.elmt")
     else:
         try:
@@ -688,9 +975,14 @@ def main(argv=None) -> int:
                 client = anthropic.Anthropic()
     werkzeuge = Werkzeuge(mode, datei)
     tools, meta = build_tools(mode)
-    gespraech = Gespraech(client, werkzeuge, tools, meta, opts.attrappe)
-    emit(type="ready", model="attrappe" if opts.attrappe else MODEL, mode=mode,
-         key=client is not None, tools=[t["name"] for t in tools])
+    if konto_ok:
+        gespraech = KontoGespraech(werkzeuge, tools, meta)
+        modell = os.environ.get("QET_ASSISTENT_MODELL", "").strip() or "Claude-Konto"
+    else:
+        gespraech = Gespraech(client, werkzeuge, tools, meta, opts.attrappe)
+        modell = "attrappe" if opts.attrappe else MODEL
+    emit(type="ready", model=modell, mode=mode,
+         key=gespraech.client is not None, konto=konto_ok, tools=[t["name"] for t in tools])
 
     worker: threading.Thread | None = None
     for raw in sys.stdin:
@@ -708,8 +1000,8 @@ def main(argv=None) -> int:
                 emit(type="error", message="Es läuft noch eine Antwort.")
                 continue
             if gespraech.client is None:
-                emit(type="error", message="Kein API-Schlüssel hinterlegt "
-                     "(Assistent > Einstellungen).")
+                emit(type="error", message="Kein API-Schlüssel hinterlegt und kein "
+                     "Claude-Konto verbunden (Claude-Assistent > Einstellungen).")
                 emit(type="done", stop_reason="error", usage={})
                 continue
             worker = threading.Thread(target=gespraech.ask,

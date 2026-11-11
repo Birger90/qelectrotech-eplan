@@ -64,6 +64,8 @@ int main(int argc, char **argv)
 	QSettings::setDefaultFormat(QSettings::IniFormat);
 	QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, isolated.path());
 	QSettings().setValue(QStringLiteral("assistant/python"), python);
+		//First the API key way; the Claude account follows at the end
+	QSettings().setValue(QStringLiteral("assistant/mode"), QStringLiteral("api"));
 	QETProject::setBackupEnabled(false); QET::QetMessageBox::setNonInteractive(true);
 	try {
 		auto *qet = new QETApp; Q_UNUSED(qet);
@@ -152,8 +154,11 @@ int main(int argc, char **argv)
 		qputenv("ANTHROPIC_API_KEY", "sk-ant-attrappe-umgebung");
 		int completed = 0;
 		QObject::connect(page, &AssistantSetupPage::completed, page, [&completed]() { ++completed; });
-		page->refresh();
-		waitFor([stack, page]() { return stack->currentWidget() != page; }, 30000);
+			//As the dock does when it shows the setup by itself
+		page->refresh(true);
+		waitFor([stack, page]() { return stack->currentWidget() != page; }, 90000);
+		if (!page->isComplete())
+			std::printf("page: %s\n", qUtf8Printable(texts(page)));
 		check(page->isComplete(), "complete with key, Python and package");
 		check(completed == 1, "completed once");
 		check(stack->currentWidget() != page, "switched to the chat by itself");
@@ -175,6 +180,26 @@ int main(int argc, char **argv)
 		std::printf("PASS: Settings leads back to the setup: %s\n", qUtf8Printable(texts(page)));
 		dock->grab().save(output + "/5_einstellungen.png");
 		editor->grab().save(output + "/6_fenster_mit_dock.png");
+
+			//The Claude account (builds with QET_CLAUDE_KONTO): the page
+			//changes to "Connect with Claude"; signing in is not tried here
+		AssistantSetupPage::setKontoMode(true);
+		if (AssistantSetupPage::kontoMode()) {
+			qunsetenv("ANTHROPIC_API_KEY");
+			page->refresh(false);
+			waitFor([page]() { return !checking(page); }, 60000);
+			QApplication::processEvents();
+			QPushButton *connect_button = nullptr;
+			for (QPushButton *button : page->findChildren<QPushButton *>())
+				if (button->isVisibleTo(page) && (button->text() == QStringLiteral("Mit Claude verbinden")
+				    || button->text() == QStringLiteral("Connect with Claude")))
+					connect_button = button;
+			check(connect_button, "Connect with Claude button");
+			std::printf("PASS: Claude account page: %s\n", qUtf8Printable(texts(page)));
+			dock->grab().save(output + "/7_konto.png");
+		} else {
+			std::puts("SKIP: built without QET_CLAUDE_KONTO");
+		}
 
 			//The button closes it again
 		claude->click();

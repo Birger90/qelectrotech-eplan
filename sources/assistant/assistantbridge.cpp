@@ -88,7 +88,8 @@ QString AssistantBridge::bridgeScript()
 	return QString();
 }
 
-bool AssistantBridge::start(const QProcessEnvironment &env, QString *error)
+bool AssistantBridge::start(const QProcessEnvironment &env, QString *error,
+			    const QStringList &extra_args)
 {
 	if (isRunning()) return true;
 	bool store_shortcut = false;
@@ -123,7 +124,7 @@ bool AssistantBridge::start(const QProcessEnvironment &env, QString *error)
 	});
 
 	QStringList args = pythonArguments(python);
-	args << QStringLiteral("-u") << script;
+	args << QStringLiteral("-u") << script << extra_args;
 	m_process->start(python, args);
 	if (!m_process->waitForStarted(10000)) {
 		if (error) {

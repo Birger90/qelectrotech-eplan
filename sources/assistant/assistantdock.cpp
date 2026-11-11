@@ -158,13 +158,22 @@ bool AssistantDock::ensureBridge()
 	if (m_bridge->isRunning()) return true;
 
 	QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-	const QString key = AssistantSetupPage::apiKey();
-	if (key.isEmpty() && env.value(QStringLiteral("ANTHROPIC_API_KEY")).isEmpty()) {
-			//The question stays in the field for after the setup
-		showSetup();
-		return false;
+	QStringList args;
+	if (AssistantSetupPage::kontoMode()) {
+			//The Claude account: no key, and none from the environment
+			//either, or Claude Code would bill the API instead
+		env.remove(QStringLiteral("ANTHROPIC_API_KEY"));
+		env.remove(QStringLiteral("ANTHROPIC_AUTH_TOKEN"));
+		args << QStringLiteral("--konto");
+	} else {
+		const QString key = AssistantSetupPage::apiKey();
+		if (key.isEmpty() && env.value(QStringLiteral("ANTHROPIC_API_KEY")).isEmpty()) {
+				//The question stays in the field for after the setup
+			showSetup();
+			return false;
+		}
+		if (!key.isEmpty()) env.insert(QStringLiteral("ANTHROPIC_API_KEY"), key);
 	}
-	if (!key.isEmpty()) env.insert(QStringLiteral("ANTHROPIC_API_KEY"), key);
 
 	QString socket_name, token;
 	if (!LiveServer::instance().openForAssistant(&socket_name, &token)) {
@@ -187,7 +196,7 @@ bool AssistantDock::ensureBridge()
 	env.insert(QStringLiteral("QET_MCP_WORKSPACE"), workspace.join(QDir::listSeparator()));
 
 	QString error;
-	if (!m_bridge->start(env, &error)) {
+	if (!m_bridge->start(env, &error, args)) {
 		add(Entry::Error, error);
 		return false;
 	}

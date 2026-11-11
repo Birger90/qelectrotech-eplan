@@ -27,6 +27,7 @@ class QNetworkReply;
 class QPlainTextEdit;
 class QProcess;
 class QPushButton;
+class QStackedWidget;
 
 /**
 	@brief The AssistantSetupPage class
@@ -63,6 +64,10 @@ class AssistantSetupPage : public QWidget
 		static bool keyAvailable();
 			/// The steps that need no program run: key, Python, bridge
 		static bool quickCheck();
+			/// Claude through the user's own Claude account instead of an
+			/// API key (only in builds with QET_CLAUDE_KONTO; the default there)
+		static bool kontoMode();
+		static void setKontoMode(bool konto);
 
 	signals:
 			/// All steps turned green (see refresh())
@@ -86,6 +91,13 @@ class AssistantSetupPage : public QWidget
 		void checkBridge();
 		void setState(QLabel *label, State state);
 		void updateCompletion();
+		void showMode();
+		QWidget *buildKontoPage(QWidget *parent);
+		void checkKonto();
+		void connectKonto();
+		void kontoNext();
+		void runKonto(const QStringList &args, const QString &what);
+		void stopConnecting(const QString &message);
 
 		QLabel *m_key_state, *m_key_text;
 		QLineEdit *m_key;
@@ -97,12 +109,22 @@ class AssistantSetupPage : public QWidget
 		QLabel *m_bridge_state, *m_bridge_text;
 		QLabel *m_summary;
 		QPushButton *m_to_chat;
+		QLabel *m_title, *m_intro;
+		QStackedWidget *m_modes;
+		QPushButton *m_mode_switch;
+			//Claude account
+		QPushButton *m_connect;
+		QLabel *m_k_python_state, *m_k_python_text, *m_k_sdk_state, *m_k_sdk_text,
+		       *m_k_login_state, *m_k_login_text, *m_k_link;
+		QPlainTextEdit *m_k_output;
 
 		QNetworkAccessManager *m_network = nullptr;
 		QProcess *m_process = nullptr;
 		State m_key_ok = State::Unknown, m_python_ok = State::Unknown,
 		      m_package_ok = State::Unknown, m_bridge_ok = State::Unknown;
 		bool m_switch_when_done = false;
+		State m_k_python = State::Unknown, m_k_sdk = State::Unknown, m_k_login = State::Unknown;
+		bool m_connecting = false, m_tried_install = false, m_tried_login = false;
 };
 
 #endif // ASSISTANTSETUPPAGE_H

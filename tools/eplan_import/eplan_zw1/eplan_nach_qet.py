@@ -107,7 +107,7 @@ def _verschoben(f, d):
     def v(q):
         return (q[0] + d[0], q[1] + d[1])
     if f[0] == "L":
-        return ("L", v(f[1]), v(f[2]), f[3])
+        return ("L", v(f[1]), v(f[2])) + tuple(f[3:])          # Strichart, Farbe, Breite bleiben
     if f[0] == "A":
         return ("A", v(f[1])) + tuple(f[2:])
     if f[0] == "P":
@@ -149,12 +149,15 @@ def _lagen(symbol, eigene):
         aus.relation = dict(getattr(symbol, "relation", {}))
         aus.boxbreite = dict(getattr(symbol, "boxbreite", {}))
         aus.boxart = dict(getattr(symbol, "boxart", {}))
+        aus.stil = dict(getattr(symbol, "stil", {}))
         return aus
     aus = G.Lagen({k: v for k, v in symbol.items() if k[0] in (20028, 20029)})
     aus.update(eigene)
     aus.relation = dict(getattr(eigene, "relation", {}))
     aus.boxbreite = dict(getattr(eigene, "boxbreite", {}))
     aus.boxart = dict(getattr(eigene, "boxart", {}))
+    aus.stil = {**{k: v for k, v in getattr(symbol, "stil", {}).items() if k[0] in (20028, 20029)},
+                **getattr(eigene, "stil", {})}
     return aus
 
 
@@ -1190,10 +1193,12 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
                 # Textwinkel ee22 (DmgTextInfo +0x18, rad gegen den Uhrzeigersinn) wie bei freien Texten
                 if sammel is not None:
                     # 7. Feld: Eigenschaft (Nummer, Index) – der SPS-Kanal macht daraus Elementinformationen
-                    sammel.append(("T", (p[0] + tx, p[1] + ty), w, h, lagen[key][3] or 0.0, ausr, key))
+                    sammel.append(("T", (p[0] + tx, p[1] + ty), w, h, lagen[key][3] or 0.0, ausr, key,
+                                   getattr(lagen, "stil", {}).get(key, {})))
                 else:
                     texte_je_blatt[b.folio].append(G.text_auf_blatt(w, (p[0] + tx, p[1] + ty), h,
-                                                                     lagen[key][3] or 0.0, ausr))
+                                                                     lagen[key][3] or 0.0, ausr,
+                                                                     stil=getattr(lagen, "stil", {}).get(key)))
                 if DIAGNOSE and any(d_ in w for d_ in DIAGNOSE):
                     print(f"DIAG {w!r} fid {fid} eig {key} anker ({p[0] + tx:.1f},{p[1] + ty:.1f}) h {h} "
                           f"ausr {ausr} lage {lagen[key][:2]} auf {lagen[key][6]}")
@@ -1548,7 +1553,7 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
                         label_k = t_[2]
                     else:
                         infos_k[info_] = t_[2]
-                    t_ = ("D",) + tuple(t_[1:6]) + (info_,)
+                    t_ = ("D",) + tuple(t_[1:6]) + (info_, t_[7] if len(t_) > 7 else {})
                     stat["sps_kanal_info_text"] += 1
                 elif info_ and m == haupt_k:
                     stat["sps_kanal_info_fest"] += 1           # mehrzeilig bzw. doppelt: bleibt fester Text
@@ -1964,6 +1969,10 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
         formen += gr.platzhaltertexte(pid)                          # Auswertungsinhalte, Deckblatt
         if formular.get(pid):
             formen += gr.formulargrafik(formular[pid])              # Tabellenlinien der Auswertungsseite
+            for x0, y0, x1, y1, datei in gr.formularbilder(formular[pid]):   # Logo des Deckblatts …
+                bild = G.bild_xml(datei, x0, y0, x1, y1)
+                if bild:
+                    bilder_je_blatt[b.folio].append(bild)
             fp_ = gr.formularplatzhalter(formular[pid])             # Kopf: Formularname, Bearbeiter, Datum …
             for eig, idx, quelle, lage, h, ang, ausr in (fp_[2] if fp_ else []):
                 if quelle == 51:                                    # Eigenschaft des Formulars selbst

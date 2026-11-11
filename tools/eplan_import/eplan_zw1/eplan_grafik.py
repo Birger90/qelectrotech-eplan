@@ -120,6 +120,30 @@ NICHT_GEDRUCKT = set()
 # Projektdatum Ebene 454, eff4 65532, Text #E1E1E1).
 FARBE_VON_EBENE = 49534
 EBENENFARBE = {}
+# Ebene -> Linienbreite (Layer.eod eff5, mm): gilt für Grafik ohne eigene Breite (ebfe fehlt oder 0)
+EBENENBREITE = {}
+
+
+def linienbreite(p):
+    """Linienbreite einer Grafik (mm): eigene Breite ebfe, sonst die der Ebene (eff5). Belegt am Original Projekt D:
+    /1 Balken ebfe 2,0 -> PDF 1,99 mm, /21 ebfe 0,13 -> 0,129 mm, ohne ebfe auf Ebene 100 (0,25) -> 0,249 mm."""
+    b = E.wert(p, 0xebfe)
+    if not isinstance(b, (int, float)) or b <= 0:
+        b = EBENENBREITE.get(E.wert(p, 0xebfb))
+    return b if isinstance(b, (int, float)) and b > 0 else None
+
+
+def textstil(fmt):
+    """Schriftstil eines Textformats (ec59, Eigenschaft 60965): Bit 0 fett, Bit 1 kursiv (Original Projekt D:
+    „KUNDE GmbH“ 16385 -> Tahoma-Bold, „SIEMENS“ 1 -> Tahoma-Bold, normale Texte 16384)."""
+    f = E.wert(fmt, 60965) if fmt else None
+    f = f if isinstance(f, int) else 0
+    return {"fett": bool(f & 1), "kursiv": bool(f & 2)}
+
+
+def _stil(f):
+    """Zusatzangaben einer Grundform (letztes Feld, dict): breite (mm), fett, kursiv."""
+    return f[-1] if f and f[0] != "R" and isinstance(f[-1], dict) else {}
 SW_DRUCK = {65533: "#ffffff", 65532: "#e1e1e1"}
 
 
@@ -186,13 +210,14 @@ def form(cls, p, ausgeblendet=()):
         return None
     gestrichelt = (w(p, 0xebfd) or 0) not in (0, 65531)
     fb = farbe(w(p, 0xebfd), w(p, 0xebfb))           # Stiftfarbe (letztes Tupelfeld; None = schwarz)
+    st = {"breite": linienbreite(p)}
     if cls == 31:
-        return ("L", w(p, 0xec73) or (0.0, 0.0), w(p, 0xec74) or (0.0, 0.0), gestrichelt, fb)
+        return ("L", w(p, 0xec73) or (0.0, 0.0), w(p, 0xec74) or (0.0, 0.0), gestrichelt, fb, st)
     if cls == 32:
         r = w(p, 0xec8c)
         if not isinstance(r, float) or r <= 0:
             return None
-        return ("A", w(p, 0xec8b) or (0.0, 0.0), r, w(p, 0xec89) or 0.0, w(p, 0xec8a) or 0.0, gestrichelt, fb)
+        return ("A", w(p, 0xec8b) or (0.0, 0.0), r, w(p, 0xec89) or 0.0, w(p, 0xec8a) or 0.0, gestrichelt, fb, st)
     if cls in (34, 44):
         pts = [v for v in w(p, 0xeccd, alle=True) if isinstance(v, tuple)]
         if len(pts) < 2:
@@ -203,7 +228,7 @@ def form(cls, p, ausgeblendet=()):
                          for i in (0, 1)) for t in [k / 12 for k in range(13)]]
         geschlossen = len(pts) > 2 and math.dist(pts[0], pts[-1]) < 1e-6
         gefuellt = bool((w(p, 0xebf4) or 0) & 64) and geschlossen
-        return ("P", pts, geschlossen, gefuellt, gestrichelt, fb)
+        return ("P", pts, geschlossen, gefuellt, gestrichelt, fb, st)
     if cls in (89, 128):
         a, b = w(p, 0xf0d3), w(p, 0xf0d4)
         if not a or not b:
@@ -213,7 +238,7 @@ def form(cls, p, ausgeblendet=()):
         if ang:
             c, s = math.cos(ang), math.sin(ang)
             ecken = [(a[0] + (x - a[0]) * c - (y - a[1]) * s, a[1] + (x - a[0]) * s + (y - a[1]) * c) for x, y in ecken]
-        return ("P", ecken + [ecken[0]], True, False, gestrichelt, fb)
+        return ("P", ecken + [ecken[0]], True, bool((w(p, 0xebf4) or 0) & 64), gestrichelt, fb, st)
     if cls in (30, 83, 52):            # 52 = ausgewerteter Platzhaltertext (Formular/Auswertung)
         t = _ohne_klammern(text_de(w(p, 0xec5f) or ""))
         # „&…“-Texte (Makro-/Artikelkürzel wie „&KU.M25“) liegen fast alle auf der Ebene 1028 „Grafik.Steuertext“
@@ -230,13 +255,33 @@ def form(cls, p, ausgeblendet=()):
                 (cls == 52 or (w(p, 0xebf4) or 0) & 1):                        # auch ausgewertete Texte (52)
             t = umbrechen(t, w(fmt, 0xee27), w(fmt, 0xee21) or eb[0])
         return ("T", w(p, 0xec55) or (0.0, 0.0), t, w(fmt, 0xee21) or eb[0], w(fmt, 0xee22) or 0.0,
-                w(fmt, 0xee26) or eb[1], farbe(w(fmt, 0xee24), w(p, 0xebfb)))
+                w(fmt, 0xee26) or eb[1], farbe(w(fmt, 0xee24), w(p, 0xebfb)), textstil(fmt))
     return None
 
 
 # --- Ausgabe als QET-Element (relativ zum Einfügepunkt) ------------------------------------------------
 
-STIL = "line-style:{s};line-weight:thin;filling:{f};color:black"
+STIL = "line-style:{s};line-weight:{w};filling:{f};color:black"
+
+
+def strichstaerke(breite):
+    """EPLAN-Linienbreite (mm) -> QET-Strichstärke eines Elements (ElementPictureFactory: thin 0,5 px, normal 1 px,
+    hight 2 px, eleve 5 px; 1 px = 1/K mm = 0,27 mm). Ohne Breite: thin wie bisher."""
+    if not breite:
+        return "thin"
+    px = breite * K
+    return "thin" if px < 0.7 else "normal" if px < 1.5 else "hight" if px < 3.5 else "eleve"
+
+
+def schrift(pt, stil=None):
+    """QFont-Text (family,pointSize,pixelSize,styleHint,weight,italic,underline,strikeOut,fixedPitch,rawMode,
+    styleName) mit fett/kursiv aus dem EPLAN-Textformat."""
+    stil = stil or {}
+    fett, kursiv = bool(stil.get("fett")), bool(stil.get("kursiv"))
+    if not fett and not kursiv:
+        return f"{SCHRIFT},{_f(pt)},-1,5,50,0,0,0,0,0,Regular"
+    # ohne Stilnamen: mit „Bold“ wählte Qt beim PDF-Export eine schräge Tahoma (gemessen); Gewicht/Kursiv genügen
+    return f"{SCHRIFT},{_f(pt)},-1,5,{75 if fett else 50},{1 if kursiv else 0},0,0,0,0"
 
 
 def _f(v):
@@ -296,7 +341,7 @@ def element_xml(name, formen, anschluesse, beschreibung="", namen=None, infos=No
         if f[0] == "L":
             (x1, y1), (x2, y2) = P(*f[1]), P(*f[2])
             teile.append(f'<line x1="{_f(x1)}" y1="{_f(y1)}" x2="{_f(x2)}" y2="{_f(y2)}" length1="1.5" length2="1.5" '
-                         f'end1="none" end2="none" style="{STIL.format(s="dashed" if f[3] else "normal", f="none")}" '
+                         f'end1="none" end2="none" style="{STIL.format(s="dashed" if f[3] else "normal", f="none", w=strichstaerke(_stil(f).get("breite")))}" '
                          f'antialias="true"/>')
         elif f[0] == "A":
             (cx, cy), r = f[1], f[2]
@@ -304,7 +349,7 @@ def element_xml(name, formen, anschluesse, beschreibung="", namen=None, infos=No
             P(cx + r, cy + r)
             X, Y = cx * K - r * K, -cy * K - r * K
             a0, a1 = math.degrees(f[3]), math.degrees(f[4])
-            stil = STIL.format(s="dashed" if f[5] else "normal", f="none")
+            stil = STIL.format(s="dashed" if f[5] else "normal", f="none", w=strichstaerke(_stil(f).get("breite")))
             if abs(a1 - a0) < 1e-6 or abs(abs(a1 - a0) - 360) < 1e-6:
                 teile.append(f'<ellipse x="{_f(X)}" y="{_f(Y)}" width="{_f(2 * r * K)}" height="{_f(2 * r * K)}" '
                              f'style="{stil}" antialias="true"/>')
@@ -318,7 +363,7 @@ def element_xml(name, formen, anschluesse, beschreibung="", namen=None, infos=No
                 pts = pts[:-1]
             attr = " ".join(f'x{i + 1}="{_f(x)}" y{i + 1}="{_f(y)}"' for i, (x, y) in enumerate(pts))
             teile.append(f'<polygon {attr} closed="{"true" if f[2] else "false"}" antialias="true" '
-                         f'style="{STIL.format(s="dashed" if f[4] else "normal", f="black" if f[3] else "none")}"/>')
+                         f'style="{STIL.format(s="dashed" if f[4] else "normal", f="black" if f[3] else "none", w=strichstaerke(_stil(f).get("breite")))}"/>')
         elif f[0] == "T":
             (x, y), t, h, ang, ausr = f[1], f[2], f[3], f[4], f[5]
             pt, px, _, dy = _text_box(t, h, ausr)
@@ -334,7 +379,7 @@ def element_xml(name, formen, anschluesse, beschreibung="", namen=None, infos=No
                 tx, ty = X - ly * s_, Y + ly * c   # Grundlinienpunkt im gedrehten Textsystem
                 teile.append(f'<text text="{html.escape(zeile, quote=True)}" x="{_f(tx)}" y="{_f(ty)}" '
                              f'rotation="{_f(-math.degrees(ang) % 360)}"{ausr_attr} '
-                             f'font="{SCHRIFT},{_f(pt)},-1,5,50,0,0,0,0,0,Regular" color="#000000"/>')
+                             f'font="{schrift(pt, _stil(f))}" color="#000000"/>')
                 lx0 = -w * (0, 0.5, 1)[spalte]
                 for ex, ey in ((lx0, -px), (lx0 + w, 0.3 * px)):
                     xs.append(tx + ex * c - ey * s_)
@@ -363,7 +408,7 @@ def element_xml(name, formen, anschluesse, beschreibung="", namen=None, infos=No
             dyn.append(f'<dynamic_text x="{_f(tx)}" y="{_f(ty)}" z="3" text_width="-1" Halignment="{halign}" '
                        f'Valignment="AlignTop" frame="false" rotation="{_f(-math.degrees(ang) % 360)}" '
                        f'keep_visual_rotation="false" text_from="ElementInfo" uuid="{{{u_d}}}" '
-                       f'font="{SCHRIFT},{_f(pt)},-1,5,50,0,0,0,0,0,Regular"><text>{html.escape(t)}</text>'
+                       f'font="{schrift(pt, _stil(f))}"><text>{html.escape(t)}</text>'
                        f'<info_name>{html.escape(info_)}</info_name></dynamic_text>')
     for i, (x, y, r) in enumerate(anschluesse):
         X, Y = P(x, y)
@@ -400,9 +445,10 @@ def _px(x, y):
     return X0 + x * K, (H_MM - y) * K
 
 
-def _shape(typ, pts, gestrichelt=False, geschlossen=False, gefuellt=False, fb=None):
+def _shape(typ, pts, gestrichelt=False, geschlossen=False, gefuellt=False, fb=None, breite=None):
+    """breite: EPLAN-Linienbreite (mm) -> Stiftbreite in Szenen-px (K px je mm); ohne Breite 1 px wie bisher."""
     stil = "DashLine" if gestrichelt else "SolidLine"
-    pen = f'<pen style="{stil}" color="{fb or "#000000"}" widthF="1"/>'
+    pen = f'<pen style="{stil}" color="{fb or "#000000"}" widthF="{_f(max(0.3, breite * K)) if breite else 1}"/>'
     brush = f'<brush style="{"SolidPattern" if gefuellt else "NoBrush"}" color="{fb or "#000000"}"/>'
     if typ == "Polygon":
         punkte = "".join(f'<point x="{_f(x)}" y="{_f(y)}"/>' for x, y in pts)
@@ -419,8 +465,8 @@ def _bogen_punkte(c, r, a0, a1, n=None):
     return [(c[0] + r * math.cos(a0 + span * k / n), c[1] + r * math.sin(a0 + span * k / n)) for k in range(n + 1)]
 
 
-def _input(t, x, y, pt, ang=0.0, fb=None):
-    font = f"{SCHRIFT},{_f(pt)},-1,5,50,0,0,0,0,0,Regular"
+def _input(t, x, y, pt, ang=0.0, fb=None, stil=None):
+    font = schrift(pt, stil)
     inhalt = html.escape(t).replace("\n", "<br/>")
     if fb:                                  # <input> hat kein Farbattribut; QET liest den Text als HTML (setHtml)
         inhalt = f'<font color="{fb}">{inhalt}</font>'
@@ -428,7 +474,7 @@ def _input(t, x, y, pt, ang=0.0, fb=None):
             f'font="{font}" text="{html.escape(inhalt, quote=True)}"/>')
 
 
-def text_auf_blatt(t, anker, h_mm, ang, ausr, dx=0.0, dy=0.0, fb=None):
+def text_auf_blatt(t, anker, h_mm, ang, ausr, dx=0.0, dy=0.0, fb=None, stil=None):
     """Freier Text an EPLAN-Anker (mm) mit Ausrichtung -> <input> je Zeile. EPLAN richtet die ERSTE Zeile aus,
     weitere Zeilen laufen im Abstand 1,5 × Schrifthöhe nach unten (EPLAN: Zellhöhe der Schrift = 1,5 × Texthöhe,
     ETextGraphicsTools::setFont); jede Zeile wird für sich
@@ -457,7 +503,7 @@ def text_auf_blatt(t, anker, h_mm, ang, ausr, dx=0.0, dy=0.0, fb=None):
             continue
         lx = -breite_px(z, px) * (0, 0.5, 1)[spalte] - QET_RAND
         ly = ly0 + k * h_mm * ZELLE * K          # Zeilenhöhe = Zellhöhe 1,5 × Texthöhe (ETextGraphicsTools::setFont)
-        aus.append(_input(z, ax + lx * c - ly * s_, ay + lx * s_ + ly * c, pt, ang, fb))
+        aus.append(_input(z, ax + lx * c - ly * s_, ay + lx * s_ + ly * c, pt, ang, fb, stil))
     return "".join(aus)
 
 
@@ -474,22 +520,23 @@ def blatt_xml(formen, versatz=(0.0, 0.0)):
         if f[0] == "L":
             a, b = _px(f[1][0] + ox, f[1][1] + oy), _px(f[2][0] + ox, f[2][1] + oy)
             if math.dist(a, b) > 0.2:
-                shapes.append(_shape("Line", [a, b], f[3], fb=_fb(f, 4)))
+                shapes.append(_shape("Line", [a, b], f[3], fb=_fb(f, 4), breite=_stil(f).get("breite")))
         elif f[0] == "A":
             c, r = (f[1][0] + ox, f[1][1] + oy), f[2]
             if abs(f[4] - f[3]) < 1e-6:
                 p1, p2 = _px(c[0] - r, c[1] + r), _px(c[0] + r, c[1] - r)
-                shapes.append(_shape("Ellipse", [p1, p2], f[5], fb=_fb(f, 6)))
+                shapes.append(_shape("Ellipse", [p1, p2], f[5], fb=_fb(f, 6), breite=_stil(f).get("breite")))
             else:
                 shapes.append(_shape("Polygon", [_px(*q) for q in _bogen_punkte(c, r, f[3], f[4])], f[5],
-                                     fb=_fb(f, 6)))
+                                     fb=_fb(f, 6), breite=_stil(f).get("breite")))
         elif f[0] == "P":
             pts = [_px(x + ox, y + oy) for x, y in f[1]]
             if f[2]:
                 pts = pts[:-1]
-            shapes.append(_shape("Polygon", pts, f[4], f[2], f[3], fb=_fb(f, 5)))
+            shapes.append(_shape("Polygon", pts, f[4], f[2], f[3], fb=_fb(f, 5), breite=_stil(f).get("breite")))
         elif f[0] == "T":
-            inputs.append(text_auf_blatt(f[2], (f[1][0] + ox, f[1][1] + oy), f[3], f[4], f[5], fb=_fb(f, 6)))
+            inputs.append(text_auf_blatt(f[2], (f[1][0] + ox, f[1][1] + oy), f[3], f[4], f[5], fb=_fb(f, 6),
+                                         stil=_stil(f)))
         elif f[0] == "R":                                    # Rechteck mit Panel-Rolle (Fork-Schrankaufbau)
             a, b = _px(f[1][0] + ox, f[1][1] + oy), _px(f[2][0] + ox, f[2][1] + oy)
             p1 = (min(a[0], b[0]), min(a[1], b[1]))
@@ -603,6 +650,8 @@ class Grafik:
                     self.ausgeblendet.add(E.wert(p, 0xeff2))
                 EBENEN[E.wert(p, 0xeff2)] = (E.wert(p, 0xee21) or 2.5, E.wert(p, 0xee26) or 7)
                 EBENENFARBE[E.wert(p, 0xeff2)] = E.wert(p, 0xeff4)      # Farbe der Ebene (siehe farbe())
+                if isinstance(E.wert(p, 0xeff5), (int, float)):
+                    EBENENBREITE[E.wert(p, 0xeff2)] = E.wert(p, 0xeff5)  # Linienbreite der Ebene (mm)
         NICHT_GEDRUCKT.clear()
         NICHT_GEDRUCKT.update(self.ausgeblendet)
         # Symbolnummer (eb52) -> Satz-ID, Varianten je Symbol
@@ -779,6 +828,25 @@ class Grafik:
                     out.append(f)
         return out
 
+    def formularbilder(self, name, ab_y=20.0):
+        """Bilder des Formulars (Klasse 91, Eigner (51, id)), z. B. das Firmenlogo des Deckblatts (Projekt D:
+        „$(IMG)\\Logo Kunde.jpg“ im Formular KUNDE_002) -> [(x0, y0, x1, y1, datei)]."""
+        fid = self.formulare.get(name)
+        if fid is None and isinstance(name, tuple):
+            fid = self.formulare.get(name[0])
+        if fid is None:
+            return []
+        out = []
+        for _, (cls, p) in self.seite.items():
+            if not p or cls != 91 or E.wert(p, 0xebf2) != (51, fid) or E.wert(p, 0xebf6) == 1 \
+                    or E.wert(p, 0xebfb) in self.ausgeblendet:
+                continue
+            a, b = E.wert(p, 0xf0d3), E.wert(p, 0xf0d4)
+            datei = self.bilddatei(E.wert(p, 0xf0e7) or "")
+            if a and b and datei and min(a[1], b[1]) >= ab_y:
+                out.append((a[0], a[1], b[0], b[1], datei))
+        return out
+
     def formularplatzhalter(self, name, ab_y=20.0):
         """Platzhalter des Formulars selbst (Instance.eod Klasse 53, Eigner (51, id)) – Kopfzeilen, Formularname,
         Bearbeiter/Datum, Seiten- und Projekteigenschaften; EPLAN speichert für sie keinen ausgewerteten Text
@@ -852,7 +920,7 @@ class Grafik:
             self.bilder_fehlend = collections.Counter()
             gruppen = collections.defaultdict(set)
             for _, (cls, p) in self.seite.items():
-                m = re.match(r"^\$\(([A-Z_]*IMG)\)[\\/](.*)$", (E.wert(p, 0xf0e7) or "") if p and cls == 91 else "",
+                m = re.match(r"^\$\(?([A-Z_]*IMG)\)?[\\/](.*)$", (E.wert(p, 0xf0e7) or "") if p and cls == 91 else "",
                              re.I)                      # Windows-Pfad: Groß/klein egal („$(md_img)\pxc“)
                 if m:
                     *sub, f = re.split(r"[\\/]", m.group(2))
@@ -870,7 +938,8 @@ class Grafik:
                 # mehrere Ordner nur dann eindeutig, wenn die Bilder darin byte-gleich sind (Archiv-Doppel)
                 if len(k) == 1 or (k and all(len({inhalt(h, f) for h in k}) == 1 for f in fs)):
                     self._bildordner[g] = sorted(k)[0]
-        m = re.match(r"^\$\(([A-Z_]*IMG)\)[\\/](.*)$", n or "", re.I)
+        # „$IMG\Datei“ ohne Klammern (ältere Schreibweise, Projekt D: Schrankaufbau /65, Formular) = „$(IMG)\Datei“
+        m = re.match(r"^\$\(?([A-Z_]*IMG)\)?[\\/](.*)$", n or "", re.I)
         if not m:
             self.bilder_fehlend[n or "(leer)"] += 1
             return None
@@ -962,6 +1031,7 @@ class Lagen(dict):
     relation = {}
     boxbreite = {}                     # (Eigenschaft, Index) -> Breite der Ausrichtungsbox (ee27, mm): Umbruch
     boxart = {}                        # (Eigenschaft, Index) -> ee25 (DmgTextInfo +0x44, Umbruchart & 0x70)
+    stil = {}                          # (Eigenschaft, Index) -> {"fett", "kursiv"} (textstil)
 
 
 class Bezug(tuple):
@@ -1049,7 +1119,7 @@ def textlagen(props, satz=0):
             return x + bx, y + by, am
         ax, ay = anker(o)
         return x + ax, y + ay, E.wert(o, 0xed63) in (20028, 20029)
-    lagen, relation, boxbreite, boxart = {}, {}, {}, {}
+    lagen, relation, boxbreite, boxart, stil = {}, {}, {}, {}, {}
     for i, o in roh.items():
         if E.wert(o, 0xebf6) == 1:
             continue                  # ebf6 = Placement.Visibility (EPLAN-API): 1 unsichtbar (0 sichtbar, 2 nach Ebene)
@@ -1072,6 +1142,8 @@ def textlagen(props, satz=0):
             auf.richtung = kettenrichtung(i)
         if E.wert(o, 0xed65):
             relation[(eig, idx)] = E.wert(o, 0xed65)
+        if any(textstil(fmt).values()):
+            stil[(eig, idx)] = textstil(fmt)
         if E.wert(fmt, 0xee27):
             boxbreite[(eig, idx)] = E.wert(fmt, 0xee27)
             boxart[(eig, idx)] = E.wert(fmt, 0xee25) or 0
@@ -1081,4 +1153,5 @@ def textlagen(props, satz=0):
     aus.relation = relation
     aus.boxbreite = boxbreite
     aus.boxart = boxart
+    aus.stil = stil
     return aus

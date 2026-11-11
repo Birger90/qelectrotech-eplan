@@ -3,6 +3,14 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.7.0 – 11.11.2026
+
+- EPLAN-Import: Bilder aus Formularen (z. B. Firmenlogo auf dem Deckblatt) und Bilder mit der alten Pfadschreibweise
+  `$IMG\…` kommen mit (Testprojekt: 201 Bilder, 0 nicht auflösbar).
+- EPLAN-Import: Linienbreite wie in EPLAN (eigene Breite, sonst Breite der Ebene) für Blattgrafik und
+  Bauteilgrafik; dicke Balken und Rahmen sind wieder dick.
+- EPLAN-Import: fette und kursive Texte (Textformat 60965) bleiben fett/kursiv.
+
 ## 1.6.0 – 11.11.2026
 
 - Claude-Assistent: Bilder und PDFs mitschicken. Ins Eingabefeld einfügen (Strg+V, z. B. ein Bildschirmfoto),

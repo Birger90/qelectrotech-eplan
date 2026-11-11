@@ -5,7 +5,8 @@ QElectroTech startet dieses Skript als Unterprozess und spricht mit ihm in
 JSON-Zeilen (eine JSON-Nachricht je Zeile, UTF-8) über stdin/stdout.
 
 Von QElectroTech (stdin):
-    {"type": "ask", "text": "...", "kontext": {...}}   neue Frage
+    {"type": "ask", "text": "...", "kontext": {...},   neue Frage
+     "anhaenge": [{"name", "mime", "data"}]}           mit Bildern/PDFs (data: Base64)
     {"type": "cancel"}                                 laufende Antwort abbrechen
     {"type": "confirm_answer", "id": n, "allow": bool} Antwort auf "confirm"
     {"type": "reset"}                                  neues Gespräch
@@ -232,6 +233,38 @@ def _mcp_to_blocks(result: dict) -> tuple[list, bool]:
         else:
             blocks.append({"type": "text", "text": _short(part.get("text", ""))})
     return blocks or [{"type": "text", "text": "(leer)"}], bool(result.get("isError"))
+
+
+ANHANG_BILD = {"image/png", "image/jpeg", "image/gif", "image/webp"}
+
+
+def anhang_bloecke(anhaenge) -> tuple[list, list]:
+    """Bilder und PDFs aus dem Eingabefeld als Inhaltsblöcke für Claude.
+
+    Gibt (blöcke, nicht_verwendbar) zurück; nicht verwendbar sind andere
+    Dateiarten und leere Anhänge (Namen für die Meldung)."""
+    bloecke, fehlt = [], []
+    for a in anhaenge or []:
+        if not isinstance(a, dict):
+            continue
+        name = str(a.get("name", "Anhang"))[:200]
+        mime = str(a.get("mime", "")).lower()
+        data = a.get("data")
+        if not isinstance(data, str) or not data:
+            fehlt.append(name)
+        elif mime in ANHANG_BILD:
+            bloecke.append({"type": "image",
+                            "source": {"type": "base64", "media_type": mime, "data": data}})
+        elif mime == "application/pdf":
+            bloecke.append({"type": "document", "title": name,
+                            "source": {"type": "base64", "media_type": mime, "data": data}})
+        else:
+            fehlt.append(name)
+    return bloecke, fehlt
+
+
+def _anhang_namen(anhaenge) -> str:
+    return ", ".join(str(a.get("name", "Anhang")) for a in anhaenge or [] if isinstance(a, dict))
 
 
 def _json_block(out) -> list:
@@ -489,14 +522,20 @@ class Gespraech:
         self.write_allowed = bool(ans.get("allow"))
         return self.write_allowed
 
-    def ask(self, text: str, kontext: dict | None) -> None:
+    def ask(self, text: str, kontext: dict | None, anhaenge: list | None = None) -> None:
         self.cancel.clear()
         start_len = len(self.messages)
         content = []
         if kontext:
             content.append({"type": "text", "text": "Zustand in QElectroTech: "
                             + json.dumps(kontext, ensure_ascii=False)})
-        content.append({"type": "text", "text": text})
+        bloecke, fehlt = anhang_bloecke(anhaenge)
+        if fehlt:
+            emit(type="error", message="Nicht mitgeschickt (nur Bilder und PDF): " + ", ".join(fehlt))
+        if bloecke:
+            content.append({"type": "text", "text": "Angehängt: " + _anhang_namen(anhaenge)})
+            content.extend(bloecke)
+        content.append({"type": "text", "text": text or "Sieh dir den Anhang an."})
         self.messages.append({"role": "user", "content": content})
         answered = False
         json_retries = 0
@@ -819,13 +858,20 @@ class KontoGespraech:
         except Exception:  # noqa: BLE001
             log(traceback.format_exc())
 
-    def ask(self, text: str, kontext: dict | None) -> None:
+    def ask(self, text: str, kontext: dict | None, anhaenge: list | None = None) -> None:
         import concurrent.futures
         self.cancel.clear()
-        prompt = text
+        prompt = text or "Sieh dir den Anhang an."
         if kontext:
             prompt = ("Zustand in QElectroTech: " + json.dumps(kontext, ensure_ascii=False)
-                      + "\n\n" + text)
+                      + "\n\n" + prompt)
+        bloecke, fehlt = anhang_bloecke(anhaenge)
+        if fehlt:
+            emit(type="error", message="Nicht mitgeschickt (nur Bilder und PDF): " + ", ".join(fehlt))
+        if bloecke:
+            # Bilder und PDFs gehen als Inhaltsblöcke einer Benutzernachricht
+            prompt = ([{"type": "text", "text": "Angehängt: " + _anhang_namen(anhaenge)}]
+                      + bloecke + [{"type": "text", "text": prompt}])
         stop_reason, usage = None, {}
         try:
             if self._sdk_client is None:
@@ -854,9 +900,9 @@ class KontoGespraech:
                 pass
         emit(type="done", stop_reason=stop_reason, usage=usage or {})
 
-    async def _turn(self, prompt: str):
+    async def _turn(self, prompt):
         from claude_agent_sdk import AssistantMessage, ResultMessage, StreamEvent
-        await self._sdk_client.query(prompt)
+        await self._sdk_client.query(konto_nachricht(prompt))
         stop_reason, usage = None, {}
         shown = set()   # dieselbe Meldung kommt sonst doppelt (Antwort und Ergebnis)
 
@@ -892,6 +938,18 @@ class KontoGespraech:
                 if msg.is_error and msg.result:
                     error(msg.result)
         return stop_reason, usage
+
+
+def konto_nachricht(prompt):
+    """Text bleibt Text; Inhaltsblöcke (mit Anhängen) als eine Benutzernachricht
+    im Eingabestrom von Claude Code."""
+    if isinstance(prompt, str):
+        return prompt
+
+    async def strom():
+        yield {"type": "user", "message": {"role": "user", "content": prompt},
+               "parent_tool_use_id": None}
+    return strom()
 
 
 def _konto_error_text(exc) -> str:
@@ -1005,7 +1063,8 @@ def main(argv=None) -> int:
                 emit(type="done", stop_reason="error", usage={})
                 continue
             worker = threading.Thread(target=gespraech.ask,
-                                      args=(str(msg.get("text", "")), msg.get("kontext")),
+                                      args=(str(msg.get("text", "")), msg.get("kontext"),
+                                            msg.get("anhaenge")),
                                       daemon=True)
             worker.start()
         elif kind == "cancel":

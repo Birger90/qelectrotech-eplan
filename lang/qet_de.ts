@@ -616,6 +616,46 @@
 <context>
     <name>AssistantDock</name>
     <message>
+        <source>Your question… (Enter sends, Shift+Enter: new line; paste or drag in pictures and PDFs)</source>
+        <translation>Deine Frage … (Enter sendet, Umschalt+Enter: neue Zeile; Bilder und PDFs einfügen oder hineinziehen)</translation>
+    </message>
+    <message>
+        <source>Attach pictures or PDFs (also: Ctrl+V or drag them into the field)</source>
+        <translation>Bilder oder PDFs anhängen (auch: Strg+V oder ins Feld ziehen)</translation>
+    </message>
+    <message>
+        <source>%1 is larger than 20 MB.</source>
+        <translation>%1 ist größer als 20 MB.</translation>
+    </message>
+    <message>
+        <source>%1 cannot be read.</source>
+        <translation>%1 lässt sich nicht lesen.</translation>
+    </message>
+    <message>
+        <source>%1 is neither a picture nor a PDF.</source>
+        <translation>%1 ist weder ein Bild noch ein PDF.</translation>
+    </message>
+    <message>
+        <source>Picture %1.png</source>
+        <translation>Bild %1.png</translation>
+    </message>
+    <message>
+        <source>At most %1 attachments per question.</source>
+        <translation>Höchstens %1 Anhänge je Frage.</translation>
+    </message>
+    <message>
+        <source>Attach pictures or PDFs</source>
+        <translation>Bilder oder PDFs anhängen</translation>
+    </message>
+    <message>
+        <source>Pictures and PDFs (*.png *.jpg *.jpeg *.gif *.webp *.bmp *.pdf);;All files (*)</source>
+        <translation>Bilder und PDFs (*.png *.jpg *.jpeg *.gif *.webp *.bmp *.pdf);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <source>%1 – click to remove</source>
+        <translation>%1 – Klicken entfernt den Anhang</translation>
+    </message>
+    <message>
         <source>Assistant</source>
         <translation type="vanished">Assistent</translation>
     </message>

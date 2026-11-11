@@ -97,6 +97,13 @@ if(Python3_Interpreter_FOUND AND CMAKE_GENERATOR STREQUAL "Ninja")
       --fixture ${CMAKE_CURRENT_SOURCE_DIR}/fixtures/unlinked_contact_label.qet)
   set_tests_properties(tst_handlersizeintegration PROPERTIES TIMEOUT ${qet_probe_ctest_timeout} RESOURCE_LOCK qet_probe_ninja
     ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+  add_test(NAME tst_claudebutton
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_claude_button_probe.py
+      --build ${CMAKE_BINARY_DIR} --binary $<TARGET_FILE:qelectrotech>
+      --source ${CMAKE_CURRENT_SOURCE_DIR}/claude_button_probe.cpp
+      --bridge ${CMAKE_CURRENT_SOURCE_DIR}/../../misc/qet-assistent/bruecke.py)
+  set_tests_properties(tst_claudebutton PROPERTIES TIMEOUT ${qet_probe_ctest_timeout} RESOURCE_LOCK qet_probe_ninja
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
   add_test(NAME tst_attachedplainpaste
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/run_attached_plain_paste_probe.py
       --build ${CMAKE_BINARY_DIR} --binary $<TARGET_FILE:qelectrotech>

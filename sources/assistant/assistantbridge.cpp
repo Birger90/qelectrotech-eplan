@@ -61,6 +61,14 @@ QString AssistantBridge::pythonProgram(bool *store_shortcut)
 	return paths.python;
 }
 
+QStringList AssistantBridge::pythonArguments(const QString &python)
+{
+	if (QFileInfo(python).fileName().compare(QStringLiteral("py.exe"), Qt::CaseInsensitive) == 0
+	    || python == QLatin1String("py"))
+		return {QStringLiteral("-3")};
+	return {};
+}
+
 QString AssistantBridge::bridgeScript()
 {
 	const QString env = qEnvironmentVariable("QET_ASSISTENT_BRUECKE").trimmed();
@@ -114,10 +122,7 @@ bool AssistantBridge::start(const QProcessEnvironment &env, QString *error)
 		emit stopped(why);
 	});
 
-	QStringList args;
-	if (QFileInfo(python).fileName().compare(QStringLiteral("py.exe"), Qt::CaseInsensitive) == 0
-	    || python == QLatin1String("py"))
-		args << QStringLiteral("-3");
+	QStringList args = pythonArguments(python);
 	args << QStringLiteral("-u") << script;
 	m_process->start(python, args);
 	if (!m_process->waitForStarted(10000)) {

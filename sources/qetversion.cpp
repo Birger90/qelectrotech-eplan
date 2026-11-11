@@ -53,7 +53,7 @@ namespace QetVersion
 	QString forkVersion()
 	{
 		// Raise with every release tag vX.Y.Z of the fork, see VERSIONIERUNG.md
-		return QStringLiteral("1.1.1");
+		return QStringLiteral("1.2.0");
 	}
 
 	QString displayedVersionWithFork()

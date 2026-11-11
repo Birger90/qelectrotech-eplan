@@ -528,8 +528,8 @@ void QETDiagramEditor::setUpAutonumberingWidget()
 
 /**
 	@brief QETDiagramEditor::setUpAssistantDock
-	The built-in assistant (Claude), on the right, hidden until shown from
-	the Display menu
+	The built-in assistant (Claude), on the right, hidden until shown with
+	the Claude button of the main toolbar or from the Display menu
 */
 void QETDiagramEditor::setUpAssistantDock()
 {
@@ -541,6 +541,7 @@ void QETDiagramEditor::setUpAssistantDock()
 		QDockWidget::DockWidgetFloatable);
 	addDockWidget(Qt::RightDockWidgetArea, m_assistant_dock);
 	m_assistant_dock->toggleViewAction()->setStatusTip(tr("Show or hide the assistant (Claude)"));
+	m_assistant_dock->toggleViewAction()->setIcon(AssistantDock::icon());
 	m_assistant_dock->hide();
 }
 
@@ -2088,6 +2089,32 @@ void QETDiagramEditor::setUpToolBar()
 		//the selected conductors and sets the colour of the next one drawn.
 	m_conductor_color_button = new ConductorColorToolButton(this, this);
 	add_widget(QStringLiteral("widget:conductor_color"), m_conductor_color_button);
+		//Claude, right in view: opens the assistant on the right, the
+		//setup first if it is not done yet
+	if (m_assistant_dock) {
+		auto *claude = new QToolButton(this);
+		auto *claude_action = new QAction(AssistantDock::icon(), tr("Claude"), claude);
+		claude_action->setCheckable(true);
+		claude_action->setToolTip(tr("Claude: ask about the drawing or let Claude draw. "
+					     "Opens on the right; the first time it guides you "
+					     "through the setup."));
+		claude->setDefaultAction(claude_action);
+		claude->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+		claude->setAutoRaise(true);
+		QFont font = claude->font();
+		font.setBold(true);
+		claude->setFont(font);
+		connect(claude_action, &QAction::triggered, this, [this](bool checked) {
+			m_assistant_dock->setVisible(checked);
+			if (checked) {
+				m_assistant_dock->raise();
+				m_assistant_dock->activateWindow();
+			}
+		});
+		connect(m_assistant_dock, &QDockWidget::visibilityChanged, claude_action,
+			[claude_action](bool visible) { claude_action->setChecked(visible); });
+		add_widget(QStringLiteral("widget:claude"), claude);
+	}
 
 	addToolBar(Qt::TopToolBarArea, main_tool_bar);
 	addToolBar(Qt::TopToolBarArea, view_tool_bar);
@@ -2100,6 +2127,7 @@ void QETDiagramEditor::setUpToolBar()
 	addToolBar(Qt::TopToolBarArea, m_depth_tool_bar);
 
 	DiagramToolbarSettings::markWindow(this);
+	DiagramToolbarSettings::placeNewWidgets();
 	rebuildToolBars();
 
 	m_scripts_tool_bar = new QToolBar(tr("Scripts", "toolbar title"), this);

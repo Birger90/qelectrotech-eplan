@@ -56,6 +56,8 @@ class AssistantBridge : public QObject
 			/// AiAssistantSetup finds. \a store_shortcut is set when that
 			/// is only Windows' Microsoft Store shortcut.
 		static QString pythonProgram(bool *store_shortcut = nullptr);
+			/// What goes before the script: "-3" for Windows' py launcher
+		static QStringList pythonArguments(const QString &python);
 			/// bruecke.py: the setting, else beside this QElectroTech
 		static QString bridgeScript();
 

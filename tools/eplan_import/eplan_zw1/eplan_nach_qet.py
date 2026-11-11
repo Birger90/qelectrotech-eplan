@@ -112,7 +112,7 @@ def _verschoben(f, d):
         return ("A", v(f[1])) + tuple(f[2:])
     if f[0] == "P":
         return ("P", [v(q) for q in f[1]]) + tuple(f[2:])
-    return ("T", v(f[1])) + tuple(f[2:])
+    return (f[0], v(f[1])) + tuple(f[2:])           # Text ("T") bzw. Elementinformation ("D")
 
 
 def _symbolpfad(gr, lib, sid, vid, var, cache, rolle=None):
@@ -933,6 +933,37 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
         g_ = E.wert(pr, 0xebf1)
         return bool(g_ and g_[0] == 26 and g_[1] in gruppen_mit_grafik)
 
+    def symb_adresse(fid, seite_pid, eig=20404, werte_idx=None):
+        """Symbolische Adresse eines SPS-Anschlusses (20404; 20201/20403 ermittelt) wie EPLAN sie auf Seite seite_pid
+        zeigt: manuell (20402), sonst über die SPS-Zielverfolgung ermittelt, ohne =Anlage/+Ort der Seite."""
+        if werte_idx is None:
+            werte_idx = {(k_, i_): w_ for k_, i_, w_ in (E.wert(F[fid]["props"], 0xea6b) or [])}
+        g_ = fid if nachbarn.get((fid, 0)) else (gegenstueck(fid) or fid)
+        a0, o0, _ = alle_seiten.get(seite_pid, ("", "", ""))
+        manuell_ = werte_idx.get((20402, 0)) if eig == 20404 else None   # automatisch = manuell, sonst ermittelt
+        w = sps_ziel(g_, 0) if eig in (20403, 20404) and not manuell_ else None
+        if manuell_:
+            w = manuell_
+        elif w is None:
+            w = ziel(g_, 0, a0, o0)
+            if eig == 20404:                   # symbolische Adresse: Gerät ohne Anschluss/Ort
+                w = re.sub(r":.*$", "", w)
+                w = re.sub(r"\+" + re.escape(o0) + r"(?=-)", "", w) if o0 else w
+        else:
+            stat["sps_symb_ermittelt"] += 1
+            w = re.sub(r"^=" + re.escape(a0) + r"(?=[+\-])", "", w) if a0 else w
+            w = re.sub(r"\+" + re.escape(o0) + r"(?=-)", "", w) if o0 else w
+        return w
+
+    def funktionstext(fid, werte):
+        """Funktionstext (automatisch) eines SPS-Anschlusses: eigener Funktionstext bzw. der des Gegenstücks, sonst
+        Pfad-Funktionstext."""
+        g_ = gegenstueck(fid)
+        w = G.text_de(werte.get(20011) or "")
+        if not w and g_:
+            w = G.text_de({k_: w_ for k_, i_, w_ in (E.wert(F[g_]["props"], 0xea6b) or [])}.get(20011) or "")
+        return (w or pfadtext(g_ or fid)).replace("\n", " ")
+
     def _texte(fid, e, p, b, lagen, an, roh, namen, klemme, spsan, werte, bmk, seite, sammel=None):
         """sammel: Liste -> Texte als Grundformen ("T", Anker mm, Text, Höhe, Winkel, Ausrichtung) dort sammeln
         (für ein Bauteil, z. B. den SPS-Kanal) statt als freie Texte aufs Blatt."""
@@ -987,28 +1018,9 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
                     w = "\n".join(x for x in (querverweis(z_, seite[1]) for z_ in qv_ziele(fid, bmk)
                                                if qv_relevant(z_)) if x)
             elif eig in (20201, 20403, 20404) and spsan:
-                g_ = fid if nachbarn.get((fid, 0)) else (gegenstueck(fid) or fid)
-                a0, o0, _ = alle_seiten.get(seite[1], ("", "", ""))
-                manuell_ = werte_idx.get((20402, 0)) if eig == 20404 else None   # automatisch = manuell, sonst ermittelt
-                w = sps_ziel(g_, 0) if eig in (20403, 20404) and not manuell_ else None
-                if manuell_:
-                    w = manuell_
-                elif w is None:
-                    w = ziel(g_, 0, a0, o0)
-                    if eig == 20404:                   # symbolische Adresse: Gerät ohne Anschluss/Ort
-                        w = re.sub(r":.*$", "", w)
-                        w = re.sub(r"\+" + re.escape(o0) + r"(?=-)", "", w) if o0 else w
-                else:
-                    stat["sps_symb_ermittelt"] += 1
-                    w = re.sub(r"^=" + re.escape(a0) + r"(?=[+\-])", "", w) if a0 else w
-                    w = re.sub(r"\+" + re.escape(o0) + r"(?=-)", "", w) if o0 else w
+                w = symb_adresse(fid, seite[1], eig, werte_idx)
             elif eig == 20031 and spsan:
-                # Funktionstext (automatisch): eigener Funktionstext bzw. der des Gegenstücks, sonst Pfad-Funktionstext
-                g_ = gegenstueck(fid)
-                w = G.text_de(werte.get(20011) or "")
-                if not w and g_:
-                    w = G.text_de({k_: w_ for k_, i_, w_ in (E.wert(F[g_]["props"], 0xea6b) or [])}.get(20011) or "")
-                w = (w or pfadtext(g_ or fid)).replace("\n", " ")
+                w = funktionstext(fid, werte)
             elif eig == 20901:                                       # Zusatzfeld: genau dieser Index
                 w = G.text_de(werte_idx.get((eig, idx)) or je_bmk[bmk].get((eig, idx)) or "")
             elif 22000 <= eig < 23000:
@@ -1165,7 +1177,8 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
                                  "im_kasten": fid in im_kasten, "sk": sk, "am": lagen[key][5]}
                 # Textwinkel ee22 (DmgTextInfo +0x18, rad gegen den Uhrzeigersinn) wie bei freien Texten
                 if sammel is not None:
-                    sammel.append(("T", (p[0] + tx, p[1] + ty), w, h, lagen[key][3] or 0.0, ausr))
+                    # 7. Feld: Eigenschaft (Nummer, Index) – der SPS-Kanal macht daraus Elementinformationen
+                    sammel.append(("T", (p[0] + tx, p[1] + ty), w, h, lagen[key][3] or 0.0, ausr, key))
                 else:
                     texte_je_blatt[b.folio].append(G.text_auf_blatt(w, (p[0] + tx, p[1] + ty), h,
                                                                      lagen[key][3] or 0.0, ausr))
@@ -1194,14 +1207,89 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
         ref = E.wert(e["props"], 0xebf1)
         if e["cls"] == 17 and E.wert(e["props"], 0xefc5) in (1303, 301) and ref and ref[0] == 26 and pid in blatt:
             makros[(pid, ref[1])].append(bfid)
+    makro_mitglieder = {}
+    for (pid, g), kaesten_m in makros.items():
+        makro_mitglieder[(pid, g)] = [f for f, e2 in F.items() if f not in kaesten_m and fn_seite.get(f) == pid
+                                      and e2["props"] and _pos(e2["props"])
+                                      and g in gr.gruppen_kette(E.wert(e2["props"], 0xebf1))]
+
+    # SPS-Karten: Kanäle (SPS-Anschlüsse, Funktionsdefinition 300, mit Adresse 20400) je BMK im ganzen Projekt
+    def sps_adresse(f_):
+        return G.text_de({k_: w_ for k_, i_, w_ in (E.wert(F[f_]["props"], 0xea6b) or [])}.get(20400) or "").strip()
+
+    sps_anschluesse = collections.defaultdict(list)    # BMK -> SPS-Anschlüsse mit Adresse
+    for f_, e_ in F.items():
+        if e_["cls"] == 17 and e_["props"] and E.wert(e_["props"], 0xefc5) == 300 and fn_seite.get(f_) \
+                and sps_adresse(f_):
+            sps_anschluesse[funk.get(f_, {}).get("bmk", "")].append(f_)
+
+    def _natur(t_):
+        return [(0, int(x_)) if x_.isdigit() else (1, x_) for x_ in re.split(r"(\d+)", t_ or "") if x_]
+
+    def sps_kanaele(bmk_):
+        """Kanaltabelle der Karte bmk_: ein Eintrag je Adresse, in Kanalreihenfolge (Adresse natürlich sortiert);
+        Werte bevorzugt aus der Schaltplandarstellung (nicht Übersicht). Art aus der Signalart des Anschlusses
+        (Funktionsdefinition: DE/DA/AE/AA), sonst aus Kanalname (20407) bzw. Adresse."""
+        nach_adr = collections.OrderedDict()
+        for f_ in sorted(sps_anschluesse.get(bmk_, []), key=lambda f_: (not uebersicht(F[f_]), f_)):
+            nach_adr.setdefault(sps_adresse(f_), []).append(f_)
+        alt_stat = collections.Counter(stat)           # Werte nur lesen, Zähler des Berichts nicht verändern
+        kan = []
+        for adr_, fs_ in nach_adr.items():
+            schaltplan_ = [f_ for f_ in fs_ if not uebersicht(F[f_])] or fs_
+            ansch_ = []
+            for f_ in fs_:                              # Übersicht zuerst: dort stehen alle Anschlüsse der Karte
+                for n_ in roh_von(f_):
+                    if n_ and n_ not in ansch_:
+                        ansch_.append(n_)
+            werte_ = {}
+            for k_, i_, w_ in (E.wert(F[schaltplan_[0]]["props"], 0xea6b) or []):
+                werte_.setdefault(k_, w_)
+            sig_ = anschluss_logik(fs_[0], 0).get(0xeb06)
+            name_ = G.text_de(werte_.get(20407) or "").strip().upper()
+            typ_ = {6: "entree_digitale", 7: "sortie_digitale", 8: "entree_analogique",
+                    9: "sortie_analogique"}.get(sig_)
+            if not typ_:
+                analog_ = str(werte_.get(20405) or "BOOL").upper() not in ("BOOL", "BIT", "")
+                aus_ = bool(re.match(r"(OUT|DQ|DO|AQ|AO|Q|A)", name_ or adr_.upper()))
+                typ_ = ("sortie_" if aus_ else "entree_") + ("analogique" if analog_ else "digitale")
+            funktion_ = next((t_ for t_ in (funktionstext(f_, {k_: w_ for k_, i_, w_ in
+                                                             (E.wert(F[f_]["props"], 0xea6b) or [])})
+                                            for f_ in schaltplan_) if t_), "")
+            kommentar_ = next((t_ for t_ in (symb_adresse(f_, fn_seite.get(f_)) for f_ in schaltplan_) if t_), "")
+            kan.append({"type": typ_, "address": adr_, "function": funktion_, "comment": kommentar_,
+                        "terminals": ansch_[:4] or [""], "name": name_})
+        stat.clear()
+        stat.update(alt_stat)
+        kan.sort(key=lambda k_: _natur(k_["address"]))
+        return kan
+
+    # je Karten-BMK genau EINE Black Box als SPS-Master: die mit den meisten SPS-Anschlüssen (Übersicht der Karte),
+    # sonst eine SPS-Karte (Funktionsdefinition 301); andere Kästen gleichen BMKs bleiben Gerätekästen
+    sps_karte, sps_kanaele_von = {}, {}                # (Seite, Makrogruppe) -> BMK; BMK -> Kanaltabelle
+    kand_ = collections.defaultdict(list)
+    for (pid, g), kaesten_m in makros.items():
+        bmk_k = funk.get(sorted(kaesten_m, key=lambda f: (box_rect[f][0], -box_rect[f][3]))[0], {}).get("bmk", "")
+        n_sps = sum(1 for f_ in makro_mitglieder[(pid, g)]
+                    if E.wert(F[f_]["props"], 0xefc5) == 300 and sps_adresse(f_))
+        ist_301 = any(E.wert(F[k_]["props"], 0xefc5) == 301 for k_ in kaesten_m)
+        if bmk_k and sps_anschluesse.get(bmk_k) and (n_sps or ist_301):
+            kand_[bmk_k].append((n_sps, ist_301, -pid, -g, (pid, g)))
+    for bmk_k, ks_ in kand_.items():
+        kan_ = sps_kanaele(bmk_k)
+        if kan_:
+            sps_karte[max(ks_)[4]] = bmk_k
+            sps_kanaele_von[bmk_k] = kan_
+    sps_master = {}                                     # BMK -> gesetztes Teil der SPS-Karte
+    sps_master_label = {}                               # Teil -> Kennzeichen war sichtbar (sonst ausgeblendet)
+
     for (pid, g), kaesten_m in makros.items():
         kaesten_m.sort(key=lambda f: (box_rect[f][0], -box_rect[f][3]))
         bfid = kaesten_m[0]                            # Hauptkasten: links oben
         pr = F[bfid]["props"]
         p0 = _pos(pr)
         x0, y0, x1, y1 = box_rect[bfid][:4]
-        mitglieder = [f for f, e2 in F.items() if f not in kaesten_m and fn_seite.get(f) == pid and e2["props"]
-                      and _pos(e2["props"]) and g in gr.gruppen_kette(E.wert(e2["props"], 0xebf1))]
+        mitglieder = makro_mitglieder[(pid, g)]
         rel = (-p0[0], -p0[1])
         formen = []
         for kf in kaesten_m:
@@ -1281,9 +1369,14 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
         _texte(bfid, F[bfid], p0, blatt[pid], lagen_b, [], roh_von(bfid), [n for n in roh_von(bfid) if n],
                False, False, werte_b, bmk_b, (4, pid), sammel=ges_b)
         formen += [_verschoben(t_, rel) for t_ in ges_b]
+        # SPS-Karte (Übersicht der Karte): Master „plc“ mit der Kanaltabelle aller Kanäle ihres BMKs im Projekt;
+        # die SPS-Kanäle (Slaves) hängen daran, Auswahleigenschaften > SPS legt sie auf einen anderen freien Kanal
+        karte_ = sps_karte.get((pid, g))
+        rolle_b = ("master", "plc", sps_kanaele_von[karte_]) if karte_ else ("master", "commutator")
         xml = G.mit_rolle(G.element_xml(f"EPLAN Black Box {ge_b or bmk_b} ({pid}-{g})", formen, anschl,
-                                        f"Black Box (Gerätekasten mit Makroinhalt) aus EPLAN-Projektimport, {bmk_b}",
-                                        namen=namen_), ("master", "commutator"))
+                                        f"Black Box (Gerätekasten mit Makroinhalt) aus EPLAN-Projektimport, {bmk_b}"
+                                        + (", SPS-Karte" if karte_ else ""),
+                                        namen=namen_), rolle_b)
         sig = hashlib.md5(xml.encode("utf-8")).hexdigest()[:8]
         haupt_b = BIB.hauptartikel(artikel.get(bfid, []))
         for m in kaesten_m + mitglieder:
@@ -1305,8 +1398,16 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
                             "manufacturer_reference": haupt_b.get("Bestellnummer (22003)", ""),
                             "designation": haupt_b.get("Bezeichnung 1 (22004)", "")})
         lagen_b0 = _lagen(gr.textlagen(vb[0], vb[2], pr) if vb else {}, G.textlagen(pr))
-        tb = blatt[pid].setze(pfad_b, *_px(p0), label="" if {(20010, 0), (20211, 0), (20005, 0), (20006, 0)} & lagen_b0.keys() else kurz_b, infos=infos_b,
+        label_b = "" if {(20010, 0), (20211, 0), (20005, 0), (20006, 0)} & lagen_b0.keys() else kurz_b
+        # SPS-Karte: Kennzeichen immer setzen (Auswahleigenschaften > SPS zeigt die Karte mit ihrem BMK); steht das BMK
+        # schon als Text im Kasten, wird das Kennzeichenfeld nach dem Verknüpfen zu einem leeren Benutzertext
+        tb = blatt[pid].setze(pfad_b, *_px(p0), label=kurz_b if karte_ else label_b, infos=infos_b,
                               label_xy=(round((x0 - p0[0]) * K) + 2, round(-(y1 - p0[1]) * K) - 14))
+        if karte_:
+            sps_master[karte_] = tb
+            sps_master_label[tb.ref] = label_b
+            stat["sps_karte_master"] += 1
+            stat["sps_karte_kanaele"] += len(sps_kanaele_von[karte_])
         for k_, nm in zuord.items():
             pins[k_] = (tb, nm)
         kasten_teil[bfid] = tb
@@ -1320,6 +1421,8 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
     # symbolischer Adresse, Klemme, Kanal) -> EIN QET-Bauteil. Birger: ein E/A-Feld ist ein Bauteil, kein
     # Anschlusspunkt mit losen Texten und Formen (siehe Hilfe plcgui_k_arbeitsweise: Kanal = Makro des Moduls).
     sps_kanal = set()
+    verknuepfte_karten = set()
+    kanal_werte = collections.defaultdict(lambda: ([], set()))   # (Karte, Kanal, Feld) -> (Karten, Werte der Kanäle)
     kanal_gruppen = collections.defaultdict(list)
     for fid, e in F.items():
         pr = e["props"]
@@ -1328,8 +1431,28 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
         pid, ref = fn_seite.get(fid), E.wert(pr, 0xebf1)
         if pid in blatt and ref and ref[0] == 26 and ref[1] not in kasten_gruppen[pid] and im_blatt(_pos(pr)):
             kanal_gruppen[(pid, ref[1])].append(fid)
+    def sps_info(key):
+        """Eigenschaftstext eines SPS-Kanals -> Elementinformation des QET-SPS-Slaves (die Verknüpfung mit der Karte
+        überschreibt sie mit den Daten des gewählten Kanals; Element::setElementInformations, LinkElementCommand)."""
+        eig, idx = key
+        if eig == 20400:
+            return "plc_address"
+        if eig in (20201, 20403, 20404):
+            return "plc_comment"
+        if eig in (20031, 20011):
+            return "plc_function"
+        if eig == 20028 and 1 <= idx <= 4:
+            return f"plc_t{idx}"
+        if eig == 20010:
+            return "label"
+        return None
+
     for (pid, g), mitglieder in kanal_gruppen.items():
         mitglieder.sort(key=lambda f: (_pos(F[f]["props"])[0], -_pos(F[f]["props"])[1]))
+        # Kanal des Slaves: der erste SPS-Anschluss mit Adresse (sonst der erste); nur dessen Texte werden zu
+        # Elementinformationen, die übrigen (z. B. Versorgungsanschluss „6A“) bleiben feste Texte
+        haupt_k = next((m for m in mitglieder if sps_adresse(m)), mitglieder[0])
+        infos_k, label_k = {}, ""
         p0 = _pos(F[mitglieder[0]]["props"])
         rel = (-p0[0], -p0[1])
         formen = [_verschoben(f, rel) for f in gr.seitenformen(pid, nur=g)]
@@ -1371,25 +1494,92 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
             _texte(m, em, pm, blatt[pid], lagen_m, gr.anschluesse(vm[0], vm[2]) if vm else [], rm,
                    [n for n in rm if n], klemme_m, True, werte_m, r_m.get("bmk", ""), _wert(em["props"], 60402),
                    sammel=gesammelt)
-            formen += [_verschoben(t_, rel) for t_ in gesammelt]
+            for t_ in gesammelt:
+                info_ = sps_info(t_[6]) if len(t_) > 6 else None
+                einzeilig_ = "\n" not in t_[2]
+                if info_ and (m == haupt_k or info_ == "label") and einzeilig_ and \
+                        info_ not in infos_k and not (info_ == "label" and label_k):
+                    if info_ == "label":
+                        label_k = t_[2]
+                    else:
+                        infos_k[info_] = t_[2]
+                    t_ = ("D",) + tuple(t_[1:6]) + (info_,)
+                    stat["sps_kanal_info_text"] += 1
+                elif info_ and m == haupt_k:
+                    stat["sps_kanal_info_fest"] += 1           # mehrzeilig bzw. doppelt: bleibt fester Text
+                formen.append(_verschoben(t_, rel))
             sps_kanal.add(m)
         bmk_k = funk.get(mitglieder[0], {}).get("bmk", "")
-        xml = G.element_xml(f"EPLAN SPS-Kanal {bmk_k} {'/'.join(namen_)} ({pid}-{g})", formen, anschl,
-                            f"SPS-Kanal (E/A-Feld mit Adresse und Texten) aus EPLAN-Projektimport, {bmk_k}",
-                            namen=namen_)
+        infos_def = dict(infos_k)
+        if label_k:
+            infos_def["label"] = label_k
+        # SPS-Slave (kindInformation type plc): Auswahleigenschaften > SPS wählt Karte und Kanal
+        xml = G.mit_rolle(G.element_xml(f"EPLAN SPS-Kanal {bmk_k} {'/'.join(namen_)} ({pid}-{g})", formen, anschl,
+                                        f"SPS-Kanal (E/A-Feld mit Adresse und Texten) aus EPLAN-Projektimport, "
+                                        f"{bmk_k}", namen=namen_, infos=infos_def), ("slave", "NO", "plc"))
         sig = hashlib.md5(xml.encode("utf-8")).hexdigest()[:8]
         rel_p = f"{SYMBOLE}/SPS-Kanal/{re.sub(r'[^A-Za-z0-9_+-]', '_', bmk_k)[:40]}_{sig}.elmt"
         ziel_k = os.path.join(S.COMPANY, *rel_p.split("/"))
         os.makedirs(os.path.dirname(ziel_k), exist_ok=True)
         if not os.path.exists(ziel_k):
             open(ziel_k, "w", encoding="utf-8").write(xml)
-        tk = blatt[pid].setze(S.U + rel_p, *_px(p0), label="", infos={"function_bmk": bmk_k})
+        tk = blatt[pid].setze(S.U + rel_p, *_px(p0), label=label_k, infos={"function_bmk": bmk_k, **infos_k})
         for k_, nm in zuord.items():
             pins[k_] = (tk, nm)
         for m in mitglieder:
             teile[m] = tk
         kasten_gruppen[pid].add(g)
         stat["sps_kanal"] += 1
+        # mit der Karte gleichen BMKs verknüpfen, auf den Kanal mit derselben Adresse (group_index = Kanalindex)
+        bmk_h = funk.get(haupt_k, {}).get("bmk", "")
+        mt_ = sps_master.get(bmk_h)
+        adr_ = sps_adresse(haupt_k)
+        idx_ = next((i_ for i_, k_ in enumerate(sps_kanaele_von.get(bmk_h, [])) if k_["address"] == adr_), None) \
+            if adr_ else None
+        if mt_ is None or idx_ is None:
+            stat["sps_kanal_ohne_karte"] += 1
+            continue
+        tk.blatt.plan.sps_links.append((tk.blatt.folio, tk, mt_.blatt.folio, mt_, idx_))
+        stat["sps_kanal_verknuepft"] += 1
+        for info_, feld_ in (("plc_comment", "comment"), ("plc_function", "function")):
+            if infos_k.get(info_):
+                kanal_werte[(mt_.ref, idx_, feld_)][1].add(infos_k[info_])
+                kanal_werte[(mt_.ref, idx_, feld_)][0].append((mt_, bmk_h))
+        # nach dem Verknüpfen: Werte dieser Seite wieder einsetzen (die Karte liefert ihre, z. B. die symbolische
+        # Adresse ohne =Anlage dieser Seite); Kennzeichen als Benutzertext (sonst zeichnet QET am Slave den
+        # eigenen Querverweis und das Kennzeichen der Karte, DynamicElementTextItem::updateXref/labelSource)
+        for k_, w_ in infos_k.items():
+            tk.blatt.plan.lagen.append({"op": "set_info", "folio": tk.blatt.folio, "element": tk.ref, "key": k_,
+                                        "value": w_})
+        _label_als_text(tk)
+        verknuepfte_karten.add(mt_.ref)
+
+    # Kanaltabelle der Karte: symbolische Adresse/Funktionstext so, wie der Kanal sie im Schaltplan zeigt (z. B.
+    # „+CA-T440:XCOMMAND:15“ statt des Geräts allein) – nur wenn alle Kanäle auf dieser Zeile dasselbe zeigen; vor allen
+    # übrigen Nacharbeiten, damit die Werte der Seiten danach wieder eingesetzt werden
+    vorne_ = []
+    for (ref_, idx_, feld_), (karten_, werte_) in kanal_werte.items():
+        mt_, bmk_h = karten_[0]
+        io_ = sps_kanaele_von[bmk_h][idx_]
+        if len(werte_) == 1 and next(iter(werte_)) != io_[feld_]:
+            io_[feld_] = next(iter(werte_))
+            vorne_.append({"op": "set_plc_io", "folio": mt_.blatt.folio, "element": mt_.ref, "index": idx_,
+                           "property": feld_, "value": io_[feld_]})
+            stat["sps_karte_kanal_angeglichen"] += 1
+    if vorne_:
+        plan_ = next(iter(blatt.values())).plan
+        plan_.lagen[0:0] = vorne_
+
+    # Kennzeichen der SPS-Karten: stand das BMK schon als Text im Kasten, Kennzeichenfeld leeren (Benutzertext);
+    # verknüpfte Karten zeigen es als Benutzertext (kein QET-Querverweis am Kennzeichen)
+    for t_ in sps_master.values():
+        if not sps_master_label.get(t_.ref):
+            for prop_, wert_ in (("source", "text"), ("text", "")):
+                t_.blatt.plan.lagen.append({"op": "set_element_text", "folio": t_.blatt.folio, "element": t_.ref,
+                                            "index": S.symbol(t_.pfad).label_index, "property": prop_,
+                                            "value": wert_})
+        elif t_.ref in verknuepfte_karten:
+            _label_als_text(t_)
 
     # Aufgeteilte Geräte: Hauptfunktion (ohne eb16) bzw. Black Box = Master, Kontakte als Nebenfunktion
     # (eb16 = 0, Funktionsdefinition 201 Schließer / 202 Öffner / 203–204 Wechsler) = Slaves gleichen BMKs
@@ -1402,7 +1592,8 @@ def umsetzen(archiv, ziel_qet, plannr=None, arbeit=None, nur_seiten=None, neu_de
         if E.wert(pr, 0xefc5) in (100, 101, 300, 301, 400, 401, 8, 1302, 15):
             continue
         gruppen_bmk[funk.get(fid, {}).get("bmk", "")].append(fid)
-    box_bmk = {funk.get(bf, {}).get("bmk", ""): bf for bf in kasten_teil}
+    sps_teile = {id(t_) for t_ in sps_master.values()}
+    box_bmk = {funk.get(bf, {}).get("bmk", ""): bf for bf in kasten_teil if id(kasten_teil[bf]) not in sps_teile}
     for bmk_, fs in gruppen_bmk.items():
         if not bmk_:
             continue

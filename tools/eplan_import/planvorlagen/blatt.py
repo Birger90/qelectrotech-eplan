@@ -319,6 +319,7 @@ class Plan:
         self.blaetter, self.schrift, self.links = [], {}, []
         self.quellen, self.ziele = [], []          # (folio, Potentialname, Teil): gehende / kommende Pfeile
         self.lagen = []                           # Kennzeichen-Lagen, nach den Verknüpfungen gesetzt
+        self.sps_links = []                       # (folio, SPS-Kanal, folio, SPS-Karte, Kanalindex der Karte)
 
     def blatt(self, titel, anlage, ort, nummer):
         b = Blatt(self, len(self.blaetter), titel, anlage, ort, nummer)
@@ -341,6 +342,11 @@ class Plan:
             ops.append({"op": "link_elements", "folio": f, "element": q.ref, "to_folio": wahl[0], "to": wahl[2].ref})
         for f, slave, mf, master in self.links:
             ops.append({"op": "link_elements", "folio": f, "element": slave.ref, "to_folio": mf, "to": master.ref})
+        # SPS-Kanal auf einen bestimmten Kanal der Karte (group_index = Zeile der Kanaltabelle; QET übernimmt
+        # Adresse, Funktionstext, symbolische Adresse und Anschlüsse des Kanals in den Slave)
+        for f, slave, mf, master, idx in self.sps_links:
+            ops.append({"op": "link_plc_io", "folio": f, "element": slave.ref, "to_folio": mf, "to": master.ref,
+                        "io_index": idx})
         return ops
 
     def erzeuge(self, name, pdf=True):

@@ -3,6 +3,14 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.3.0 – 11.11.2026
+
+- EPLAN-Import: SPS-Karten werden SPS-Master mit Kanaltabelle (Adresse, Funktionstext, symbolische Adresse,
+  Klemme je Kanal, Art DI/DQ/AI/AQ aus EPLAN), SPS-Kanäle werden SPS-Slaves und sind beim Import schon mit
+  ihrer Karte und Kanalzeile verknüpft. Damit lässt sich ein importierter Kanal im Fenster Auswahleigenschaften
+  > SPS auf einen anderen freien Kanal legen. Kanäle ohne Karte im Projekt bleiben SPS-Slaves zum Verknüpfen
+  von Hand. Versorgungsanschlüsse ohne Adresse (L+, M, 1A …) stehen nicht in der Kanaltabelle.
+
 ## 1.2.0 – 11.11.2026
 
 - Neuer Knopf „Claude“ (Symbol und Text) ganz vorn in der Hauptwerkzeugleiste. Er öffnet und schließt den

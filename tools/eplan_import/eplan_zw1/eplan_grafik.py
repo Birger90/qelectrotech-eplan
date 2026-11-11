@@ -259,6 +259,17 @@ def mit_rolle(xml, rolle):
         return xml
     if rolle[0] == "master":
         kind = f'<kindInformation name="type">{rolle[1]}</kindInformation>'
+        if rolle[1] == "plc" and len(rolle) > 2:
+            # SPS-Karte: Kanaltabelle (ElementData::plcMasterDataFromXml) – je Kanal Art, Adresse, Funktionstext,
+            # symbolische Adresse (comment) und Anschlüsse; Index = group_index der verknüpften Kanäle
+            ios_ = "".join(
+                f'<plcIO type="{html.escape(io_["type"], quote=True)}" address="{html.escape(io_["address"], quote=True)}" '
+                f'functionText="{html.escape(io_["function"], quote=True)}" '
+                f'comment="{html.escape(io_["comment"], quote=True)}" crossRef="" '
+                f'terminalCount="{len(io_["terminals"])}">'
+                + "".join(f"<terminal>{html.escape(t_)}</terminal>" for t_ in io_["terminals"]) + "</plcIO>"
+                for io_ in rolle[2])
+            kind += f'<plcMasterData rowHeight="8.00"><plcIOs>{ios_}</plcIOs></plcMasterData>'
     else:
         kind = (f'<kindInformation name="type">{rolle[2]}</kindInformation>'
                 f'<kindInformation name="state">{rolle[1]}</kindInformation>'
@@ -267,10 +278,14 @@ def mit_rolle(xml, rolle):
     return xml.replace("    <description>", f"    <kindInformations>{kind}</kindInformations>\n    <description>", 1)
 
 
-def element_xml(name, formen, anschluesse, beschreibung="", namen=None):
+def element_xml(name, formen, anschluesse, beschreibung="", namen=None, infos=None):
     """formen in mm relativ zum Einfügepunkt; anschluesse = [(x_mm, y_mm, richtung)];
-    namen: Anschlussnamen (sonst 1, 2, …)."""
-    teile, xs, ys = [], [0.0], [0.0]
+    namen: Anschlussnamen (sonst 1, 2, …); infos: Elementinformationen des Bauteils {Name: Wert}.
+    Form ("D", Anker, Text, Höhe, Winkel, Ausrichtung, Info-Name): Text aus der Elementinformation (dynamic_text
+    text_from="ElementInfo") an der Lage, die der Text als feste Form hätte; ein "D" mit Info „label“ ersetzt das
+    Kennzeichen oben links."""
+    teile, xs, ys, dyn = [], [0.0], [0.0], []
+    mit_label = False
 
     def P(x, y):
         X, Y = x * K, -y * K
@@ -324,6 +339,32 @@ def element_xml(name, formen, anschluesse, beschreibung="", namen=None):
                 for ex, ey in ((lx0, -px), (lx0 + w, 0.3 * px)):
                     xs.append(tx + ex * c - ey * s_)
                     ys.append(ty + ex * s_ + ey * c)
+        elif f[0] == "D":
+            # Elementinformation als Text: QGraphicsTextItem, Lage = linke obere Ecke inkl. 4 px Rand, gedreht um diese
+            # Ecke – dieselbe Rechnung wie text_auf_blatt (freie Texte), damit der Text dort steht, wo die feste Form
+            # stand. Die Ausrichtung bleibt (QET hält beim Ändern des Werts die Kante bzw. Mitte fest).
+            (x, y), t, h, ang, ausr, info_ = f[1], f[2], f[3], f[4], f[5], f[6]
+            px, pt = schrift_px(h), schrift_pt(h)
+            spalte = ((ausr or 7) - 1) % 3
+            X, Y = P(x, y)
+            w = breite_px(t, px)
+            lx = -w * (0, 0.5, 1)[spalte] - QET_RAND
+            ly = grundlinie_px(h, ausr) - QET_RAND - px
+            r = -ang
+            c, s_ = math.cos(r), math.sin(r)
+            tx, ty = X + lx * c - ly * s_, Y + lx * s_ + ly * c
+            for ex, ey in ((QET_RAND, QET_RAND), (QET_RAND + w, QET_RAND + 1.3 * px)):
+                xs.append(tx + ex * c - ey * s_)
+                ys.append(ty + ex * s_ + ey * c)
+            halign = ("AlignLeft", "AlignHCenter", "AlignRight")[spalte]
+            u_d = uuid.uuid5(uuid.NAMESPACE_URL, f"{name}/info/{info_}/{len(dyn)}")
+            if info_ == "label":
+                mit_label = True
+            dyn.append(f'<dynamic_text x="{_f(tx)}" y="{_f(ty)}" z="3" text_width="-1" Halignment="{halign}" '
+                       f'Valignment="AlignTop" frame="false" rotation="{_f(-math.degrees(ang) % 360)}" '
+                       f'keep_visual_rotation="false" text_from="ElementInfo" uuid="{{{u_d}}}" '
+                       f'font="{SCHRIFT},{_f(pt)},-1,5,50,0,0,0,0,0,Regular"><text>{html.escape(t)}</text>'
+                       f'<info_name>{html.escape(info_)}</info_name></dynamic_text>')
     for i, (x, y, r) in enumerate(anschluesse):
         X, Y = P(x, y)
         u = uuid.uuid5(uuid.NAMESPACE_URL, f"{name}/{i}")
@@ -334,17 +375,23 @@ def element_xml(name, formen, anschluesse, beschreibung="", namen=None):
     y0, y1 = math.floor(min(ys) / 10) * 10 - 10, math.ceil(max(ys) / 10) * 10 + 10
     u = uuid.uuid5(uuid.NAMESPACE_URL, name)
     lab = uuid.uuid5(uuid.NAMESPACE_URL, name + "/label")
+    ei = ""
+    if infos:
+        ei = ("    <elementInformations>" + "".join(
+            f'<elementInformation name="{html.escape(k_, quote=True)}" show="1">{html.escape(str(v_))}'
+            '</elementInformation>' for k_, v_ in infos.items()) + "</elementInformations>\n")
+    label_dyn = "" if mit_label else (
+        f'\n        <dynamic_text x="{x0 + 2}" y="{y0 - 2}" z="3" text_width="-1" Halignment="AlignLeft" '
+        f'Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" '
+        f'uuid="{{{lab}}}" font="{SCHRIFT},7,-1,5,50,0,0,0,0,0,Regular"><text></text>'
+        f'<info_name>label</info_name></dynamic_text>')
     return (f'<definition version="0.100.0" type="element" link_type="simple" width="{x1 - x0}" height="{y1 - y0}" '
             f'hotspot_x="{-x0}" hotspot_y="{-y0}">\n'
             f'    <uuid uuid="{{{u}}}"/>\n    <names>\n        <name lang="de">{html.escape(name)}</name>\n'
-            f'        <name lang="en">{html.escape(name)}</name>\n    </names>\n'
+            f'        <name lang="en">{html.escape(name)}</name>\n    </names>\n' + ei +
             f'    <informations>{html.escape(beschreibung)}</informations>\n    <description>\n        '
-            + "\n        ".join(teile) +
-            f'\n        <dynamic_text x="{x0 + 2}" y="{y0 - 2}" z="3" text_width="-1" Halignment="AlignLeft" '
-            f'Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" '
-            f'uuid="{{{lab}}}" font="{SCHRIFT},7,-1,5,50,0,0,0,0,0,Regular"><text></text>'
-            f'<info_name>label</info_name></dynamic_text>\n'
-            f'    </description>\n</definition>\n')
+            + "\n        ".join(teile + dyn) + label_dyn +
+            f'\n    </description>\n</definition>\n')
 
 
 # --- Ausgabe als QET-Formen/Texte auf dem Blatt (Seitengrafik) -----------------------------------------

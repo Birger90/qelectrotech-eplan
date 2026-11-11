@@ -378,7 +378,7 @@ def kartenversorgung(b, x, karte, potentiale, y_pfeil=600, y_karte=800, funktion
 def _felder(pfad_):
     """Benutzerfelder des Übersichtsmakros: [(Index, Anschlussname, Spalte 0=Ziel/1=Funktion)]."""
     d = ET.parse(S.datei(pfad_)).getroot()
-    ans = [(a.get("name"), float(a.get("y"))) for a in d.iter("terminal")]
+    ans = [(a.get("name"), float(a.get("y"))) for a in d.iter("terminal") if a.get("y") is not None]
     out = []
     for i, t in enumerate(d.iter("dynamic_text")):
         if t.get("text_from") != "UserText":

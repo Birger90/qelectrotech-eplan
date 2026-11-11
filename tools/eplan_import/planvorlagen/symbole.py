@@ -36,7 +36,7 @@ class Symbol:
         # Mitte des Symbols relativ zum Einfügepunkt (für Texte mittig unter Kästen)
         self.mitte_x = float(root.get("width", 0)) / 2 - float(root.get("hotspot_x", 0))
         roh = [(a.get("name") or "", float(a.get("x")), float(a.get("y")), a.get("orientation"), a.get("uuid"))
-               for a in root.iter("terminal")]
+               for a in root.iter("terminal") if a.get("x") is not None]   # nicht <plcIO><terminal> der SPS-Karte
         # QETs Index-Reihenfolge: oben -> unten, dann links -> rechts
         roh.sort(key=lambda a: (round(a[2], 1), round(a[1], 1)))
         self.anschluesse = [Anschluss(n, x, y, o, u, i) for i, (n, x, y, o, u) in enumerate(roh)]

@@ -14870,6 +14870,14 @@ Verfügbare Optionen:
 <context>
     <name>QETDiagramEditor</name>
     <message>
+        <source>Import sPlan schematic (.spl8)…</source>
+        <translation>sPlan-Plan importieren (.spl8)…</translation>
+    </message>
+    <message>
+        <source>Reads an sPlan 8 schematic and draws it anew as a QElectroTech project</source>
+        <translation>Liest einen sPlan-8-Plan und zeichnet ihn als QElectroTech-Projekt neu</translation>
+    </message>
+    <message>
         <source>Show or hide the assistant (Claude)</source>
         <translation>Assistent (Claude) ein- oder ausblenden</translation>
     </message>
@@ -27104,6 +27112,193 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <message>
         <source>What:</source>
         <translation>Was:</translation>
+    </message>
+</context>
+<context>
+    <name>SplanImportDialog</name>
+    <message>
+        <source>Change…</source>
+        <translation>Ändern…</translation>
+    </message>
+    <message>
+        <source>Import an sPlan schematic</source>
+        <translation>sPlan-Plan importieren</translation>
+    </message>
+    <message>
+        <source>Reads an sPlan 8 schematic (.spl8) and draws it anew as a QElectroTech project: the same devices and connections on the grid, with cross references between coils and contacts. What the schematic leaves open is listed in Offene_Fragen.txt next to the project.</source>
+        <translation>Liest einen sPlan-8-Plan (.spl8) und zeichnet ihn als QElectroTech-Projekt neu: dieselben Geräte und Verbindungen im Raster, mit Querverweisen zwischen Spulen und Kontakten. Was der Plan offen lässt, steht in Offene_Fragen.txt neben dem Projekt.</translation>
+    </message>
+    <message>
+        <source>sPlan schematic (.spl8):</source>
+        <translation>sPlan-Plan (.spl8):</translation>
+    </message>
+    <message>
+        <source>Save as:</source>
+        <translation>Speichern als:</translation>
+    </message>
+    <message>
+        <source>Also write a PDF and a comparison with the original</source>
+        <translation>Zusätzlich PDF und Vergleich mit dem Original schreiben</translation>
+    </message>
+    <message>
+        <source>Import program:</source>
+        <translation>Importprogramm:</translation>
+    </message>
+    <message>
+        <source>Python:</source>
+        <translation>Python:</translation>
+    </message>
+    <message>
+        <source>found when the import starts</source>
+        <translation>wird beim Start gesucht</translation>
+    </message>
+    <message>
+        <source>The output of the import appears here.</source>
+        <translation>Hier erscheint die Ausgabe des Imports.</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <translation>Importieren</translation>
+    </message>
+    <message>
+        <source>Reading the sPlan schematic</source>
+        <translation>sPlan-Plan lesen</translation>
+    </message>
+    <message>
+        <source>Recognising devices and connections, laying out the sheets</source>
+        <translation>Geräte und Verbindungen erkennen, Blätter anordnen</translation>
+    </message>
+    <message>
+        <source>Writing the QElectroTech project</source>
+        <translation>QElectroTech-Projekt schreiben</translation>
+    </message>
+    <message>
+        <source>Checking and tidying the layout</source>
+        <translation>Layout prüfen und nachbessern</translation>
+    </message>
+    <message>
+        <source>Writing the PDF</source>
+        <translation>PDF schreiben</translation>
+    </message>
+    <message>
+        <source>Done</source>
+        <translation>Fertig</translation>
+    </message>
+    <message>
+        <source>sPlan 8 schematics (*.spl8);;All files (*)</source>
+        <translation>sPlan-8-Pläne (*.spl8);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <source>Save the imported project as</source>
+        <translation>Importiertes Projekt speichern als</translation>
+    </message>
+    <message>
+        <source>QElectroTech projects (*.qet)</source>
+        <translation>QElectroTech-Projekte (*.qet)</translation>
+    </message>
+    <message>
+        <source>Where is the import program?</source>
+        <translation>Wo liegt das Importprogramm?</translation>
+    </message>
+    <message>
+        <source>Import program (%1)</source>
+        <translation>Importprogramm (%1)</translation>
+    </message>
+    <message>
+        <source>Programs (*.exe)</source>
+        <translation>Programme (*.exe)</translation>
+    </message>
+    <message>
+        <source>Which Python should run the import?</source>
+        <translation>Mit welchem Python soll der Import laufen?</translation>
+    </message>
+    <message>
+        <source>Choose the sPlan schematic (.spl8).</source>
+        <translation>sPlan-Plan (.spl8) auswählen.</translation>
+    </message>
+    <message>
+        <source>The sPlan schematic %1 does not exist.</source>
+        <translation>Der sPlan-Plan %1 existiert nicht.</translation>
+    </message>
+    <message>
+        <source>Choose where the QElectroTech project is to be saved.</source>
+        <translation>Wählen, wo das QElectroTech-Projekt gespeichert wird.</translation>
+    </message>
+    <message>
+        <source>The import program (%1) was not found. Choose it with "Change…".</source>
+        <translation>Das Importprogramm (%1) wurde nicht gefunden. Mit „Ändern…“ auswählen.</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Schließen</translation>
+    </message>
+    <message>
+        <source>%1 does not start.</source>
+        <translation>%1 startet nicht.</translation>
+    </message>
+    <message>
+        <source>%1 did not answer.</source>
+        <translation>%1 antwortet nicht.</translation>
+    </message>
+    <message>
+        <source>Checking %1 …</source>
+        <translation>Prüfe %1 …</translation>
+    </message>
+    <message>
+        <source>No Python runs the import program:</source>
+        <translation>Kein Python kann das Importprogramm ausführen:</translation>
+    </message>
+    <message>
+        <source>Install what is missing, e.g. "py -m pip install pillow pymupdf", or choose another Python.</source>
+        <translation>Fehlendes nachinstallieren, z. B. „py -m pip install pillow pymupdf“, oder ein anderes Python wählen.</translation>
+    </message>
+    <message>
+        <source>%1 is open in QElectroTech. Close it first or choose another file.</source>
+        <translation>%1 ist in QElectroTech geöffnet. Erst schließen oder eine andere Datei wählen.</translation>
+    </message>
+    <message>
+        <source>%1 already exists. Replace it?</source>
+        <translation>%1 existiert schon. Ersetzen?</translation>
+    </message>
+    <message>
+        <source>The folder %1 cannot be created.</source>
+        <translation>Der Ordner %1 kann nicht angelegt werden.</translation>
+    </message>
+    <message>
+        <source>No usable Python found.</source>
+        <translation>Kein passendes Python gefunden.</translation>
+    </message>
+    <message>
+        <source>The import does not start: %1</source>
+        <translation>Der Import startet nicht: %1</translation>
+    </message>
+    <message>
+        <source>The import did not start.</source>
+        <translation>Der Import ist nicht gestartet.</translation>
+    </message>
+    <message>
+        <source>Importing %1 … this can take a few minutes.</source>
+        <translation>Importiere %1 … das kann einige Minuten dauern.</translation>
+    </message>
+    <message>
+        <source>Done: %1</source>
+        <translation>Fertig: %1</translation>
+    </message>
+    <message>
+        <source>The import was stopped.</source>
+        <translation>Der Import wurde abgebrochen.</translation>
+    </message>
+    <message>
+        <source>The import failed (exit code %1). The reason is in the output below.</source>
+        <translation>Der Import ist fehlgeschlagen (Rückgabewert %1). Der Grund steht in der Ausgabe unten.</translation>
+    </message>
+    <message>
+        <source>Stop the running import?</source>
+        <translation>Laufenden Import abbrechen?</translation>
     </message>
 </context>
 </TS>

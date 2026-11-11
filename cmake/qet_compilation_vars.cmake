@@ -153,6 +153,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/import/plcchannels.h
   ${QET_DIR}/sources/import/eplanproject/eplanprojectimportdialog.cpp
   ${QET_DIR}/sources/import/eplanproject/eplanprojectimportdialog.h
+  ${QET_DIR}/sources/import/splan/splanimportdialog.cpp
+  ${QET_DIR}/sources/import/splan/splanimportdialog.h
   ${QET_DIR}/sources/import/eplandxf/dataportalclient.cpp
   ${QET_DIR}/sources/import/eplandxf/dataportalclient.h
   ${QET_DIR}/sources/import/eplandxf/dataportaldialog.cpp

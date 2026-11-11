@@ -44,6 +44,7 @@
 #include "import/portals/portalsdialog.h"
 #include "import/eplandxf/eplanimportdialog.h"
 #include "import/eplanproject/eplanprojectimportdialog.h"
+#include "import/splan/splanimportdialog.h"
 #include "ElementsCollection/elementpickerpopup.h"
 #include "shortcutbarsettings.h"
 #include "diagramtoolbarsettings.h"
@@ -2262,6 +2263,19 @@ void QETDiagramEditor::setUpMenu()
 		QTimer::singleShot(0, &dialog, [&dialog]() { dialog.chooseArchive(); });
 		if (dialog.exec() != QDialog::Accepted || dialog.resultPath().isEmpty()) return;
 		// the import may have written parts into the company collection
+		if (m_element_collection_widget) m_element_collection_widget->reload();
+		openAndAddProject(dialog.resultPath());
+	});
+		//An sPlan 8 schematic (.spl8, Abacom) drawn anew as a QElectroTech project
+	QAction *import_splan = menu_fichier->addAction(
+		QET::Icons::DocumentOpen, tr("Import sPlan schematic (.spl8)…"));
+	import_splan->setObjectName(QStringLiteral("import_splan"));
+	import_splan->setStatusTip(tr("Reads an sPlan 8 schematic and draws it anew as a QElectroTech project"));
+	connect(import_splan, &QAction::triggered, this, [this]() {
+		SplanImportDialog dialog(this);
+		QTimer::singleShot(0, &dialog, [&dialog]() { dialog.chooseSource(); });
+		if (dialog.exec() != QDialog::Accepted || dialog.resultPath().isEmpty()) return;
+		// the import writes device boxes into the company collection (sPlan-Import)
 		if (m_element_collection_widget) m_element_collection_widget->reload();
 		openAndAddProject(dialog.resultPath());
 	});

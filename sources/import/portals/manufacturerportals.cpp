@@ -81,6 +81,18 @@ QList<ManufacturerPortal> ManufacturerPortals::portals()
 			"(50 per 24 h and account) and takes the downloaded STEP files into the 3D folder.");
 	cad.daily_limit = 50;
 	list << cad;
+
+	ManufacturerPortal key;
+	key.id = QStringLiteral("keyence");
+	key.name = tr("Keyence");
+	key.login_url = QStringLiteral("https://www.keyence.de/user/login/loginWithRegist/");
+	key.secret_label = tr("Password");
+	key.access = tr("CAD data (STEP) only for logged-in users of keyence.de, not in the Data Portal or on "
+			"3Dfindit. Keyence has no API and logs in through its web page only: log in and load the CAD "
+			"data in the browser, save the file (ZIP or STEP) into herstellerdaten/Keyence/<order number>; "
+			"\"Fetch missing parts\" stores it as 3D/Keyence/<order number>.stp. "
+			"The password stays in the store, QElectroTech does not send it.");
+	list << key;
 	return list;
 }
 
@@ -272,5 +284,7 @@ QString ManufacturerPortals::productUrl(const QString &id, const QString &order)
 	const QString o = QString::fromLatin1(QUrl::toPercentEncoding(compact));
 	if (id == QLatin1String("siemens"))
 		return QStringLiteral("https://sieportal.siemens.com/de-de/products-services/detail/") + o;
+	if (id == QLatin1String("keyence"))
+		return QStringLiteral("https://www.keyence.de/search/all/?q=") + o;
 	return portal(id).login_url;
 }

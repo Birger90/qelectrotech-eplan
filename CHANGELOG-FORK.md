@@ -31,6 +31,7 @@ Original-QElectroTech stehen in `ChangeLog*`.
   fehlten deren Geräte beim ersten Aufruf). Klemmen stehen nicht mehr in der Geräteliste, sie kommen mit
   „Klemmenleisten platzieren“. Ein Schritt des Assistenten startet nicht ein zweites Mal, solange er läuft.
 - Herstellerportale: Beckhoff steht in der Liste (Konto für myBeckhoff; Makros als Paket, Zeichnungen je Gehäuseform).
+- Herstellerportale: RS Components steht in der Liste (Händler; STEP/DXF vieler Hersteller nach der RS-Anmeldung im Browser).
 
 ## 1.7.1 – 11.11.2026
 

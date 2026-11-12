@@ -11035,6 +11035,14 @@ Mit dem MCP-Server qet: Lies es mit qet_recording_read, schreibe ein Skript, das
         <translation>Nicht im Data Portal und keine Schnittstelle: die EPLAN-Makros kommen als ein Paket von der Produktseite (myBeckhoff-Anmeldung, im Browser), die Zeichnungen (DXF, STEP) je Gehäuseform ohne Anmeldung. Das Passwort bleibt im Speicher, QElectroTech sendet es nicht.</translation>
     </message>
     <message>
+        <source>RS Components</source>
+        <translation>RS Components</translation>
+    </message>
+    <message>
+        <source>Distributor, no API for CAD data: the product page offers the model of many makers (STEP, DXF; from TraceParts) after the RS login, in the browser. Useful where the maker asks for an account of its own. The password stays in the store, QElectroTech does not send it.</source>
+        <translation>Händler, keine Schnittstelle für CAD-Daten: Die Produktseite bietet nach der RS-Anmeldung im Browser das Modell vieler Hersteller (STEP, DXF; von TraceParts). Hilfreich, wenn der Hersteller ein eigenes Konto verlangt. Das Passwort bleibt im Speicher, QElectroTech sendet es nicht.</translation>
+    </message>
+    <message>
         <source>No token.</source>
         <translation>Kein Token.</translation>
     </message>

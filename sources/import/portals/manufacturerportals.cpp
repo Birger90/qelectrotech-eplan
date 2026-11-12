@@ -91,6 +91,16 @@ QList<ManufacturerPortal> ManufacturerPortals::portals()
 			"page (myBeckhoff login, in the browser), the drawings (DXF, STEP) per housing without a login. "
 			"The password stays in the store, QElectroTech does not send it.");
 	list << bck;
+
+	ManufacturerPortal rs;
+	rs.id = QStringLiteral("rs");
+	rs.name = tr("RS Components");
+	rs.login_url = QStringLiteral("https://de.rs-online.com");
+	rs.secret_label = tr("Password");
+	rs.access = tr("Distributor, no API for CAD data: the product page offers the model of many makers "
+		       "(STEP, DXF; from TraceParts) after the RS login, in the browser. Useful where the maker "
+		       "asks for an account of its own. The password stays in the store, QElectroTech does not send it.");
+	list << rs;
 	return list;
 }
 

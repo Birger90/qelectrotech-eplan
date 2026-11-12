@@ -22,6 +22,7 @@
 #include "../../panel/panelstep.h"
 #include "../eplandxf/dataportalclient.h"
 #include "../eplandxf/eplanpartimporter.h"
+#include "../../container/qetzip.h"
 
 #include <QCoreApplication>
 #include <QDateTime>
@@ -74,6 +75,55 @@ bool on3Dfindit(const QString &maker)
 		QStringLiteral("ifm electronic"), QStringLiteral("SICK"), QStringLiteral("HARTING")};
 	return makers.contains(maker, Qt::CaseInsensitive);
 }
+
+	/// a STEP file name
+bool isStep(const QString &file)
+{
+	const QString s = QFileInfo(file).suffix().toLower();
+	return s == QLatin1String("stp") || s == QLatin1String("step");
+}
+
+	/**
+		Unpacks the STEP files of the ZIP archives in @p folder (a CAD
+		download saved from the browser, e.g. of keyence.de) next to them,
+		without overwriting. The Data Portal packages are left alone.
+		@return the files unpacked, or (@p dry_run) that would be
+	*/
+QStringList unpackStepArchives(const QString &folder, bool dry_run, QStringList *notes)
+{
+	QStringList out;
+	const QFileInfoList zips = QDir(folder).entryInfoList({QStringLiteral("*.zip")}, QDir::Files, QDir::Name);
+	for (const QFileInfo &zip : zips) {
+		if (zip.fileName().startsWith(QLatin1String("dataportal_"))) continue;
+		QList<QetZip::Entry> entries;
+		QString error;
+		if (!QetZip::read(zip.absoluteFilePath(), &entries, &error)) {
+			notes->append(QCoreApplication::translate("PartFetcher", "%1: %2").arg(zip.fileName(), error));
+			continue;
+		}
+		for (const QetZip::Entry &e : std::as_const(entries)) {
+			if (e.name.endsWith(QLatin1Char('/')) || !isStep(e.name)) continue;
+			const QString target = QDir(folder).filePath(safeName(QFileInfo(e.name).fileName()));
+			if (QFileInfo::exists(target)) continue;
+			if (dry_run) {
+				notes->append(QCoreApplication::translate("PartFetcher", "would unpack %1 from %2")
+					      .arg(QFileInfo(target).fileName(), zip.fileName()));
+				out << target;
+				continue;
+			}
+			QSaveFile f(target);
+			if (f.open(QIODevice::WriteOnly) && f.write(e.data) == e.data.size() && f.commit()) {
+				notes->append(QCoreApplication::translate("PartFetcher", "unpacked %1 from %2")
+					      .arg(QFileInfo(target).fileName(), zip.fileName()));
+				out << target;
+			} else {
+				notes->append(QCoreApplication::translate("PartFetcher", "%1 cannot be written")
+					      .arg(QDir::toNativeSeparators(target)));
+			}
+		}
+	}
+	return out;
+}
 }
 
 QJsonObject FetchResult::toJson() const
@@ -119,7 +169,8 @@ QString PartFetcher::makerName(const QString &maker)
 		{QStringLiteral("PIZ"), QStringLiteral("Pilz")},
 		{QStringLiteral("SEW"), QStringLiteral("SEW-EURODRIVE")},
 		{QStringLiteral("FIN"), QStringLiteral("Finder")},
-		{QStringLiteral("FES"), QStringLiteral("Festo")}};
+		{QStringLiteral("FES"), QStringLiteral("Festo")},
+		{QStringLiteral("KEY"), QStringLiteral("Keyence")}};
 	const QString m = maker.trimmed();
 	const QString n = names.value(m.toUpper());
 	return n.isEmpty() ? EplanPartImporter::manufacturerName(m) : n;
@@ -358,6 +409,7 @@ FetchResult PartFetcher::fetch(const FetchItem &item, const FetchOptions &option
 	const QString model_root = options.model_dir.isEmpty() ? ManufacturerPortals::modelDir() : options.model_dir;
 	const QString raw = QDir(raw_root).filePath(safeName(r.maker) + QLatin1Char('/') + order);
 	const bool siemens = r.maker == QLatin1String("Siemens");
+	const bool keyence = r.maker == QLatin1String("Keyence");
 	loadLinks(options);
 
 		// what is there already
@@ -471,11 +523,15 @@ FetchResult PartFetcher::fetch(const FetchItem &item, const FetchOptions &option
 
 		// the STEP model: the largest one, not a placeholder box
 	if (!has_step) {
+			// a CAD download saved as ZIP (keyence.de and others)
+		const QStringList unpacked = unpackStepArchives(raw, options.dry_run, &r.notes);
+		if (!unpacked.isEmpty()) {
+			if (options.dry_run) planned << unpacked;
+			scanRaw();
+		}
 		QString best;
 		for (const QString &f : std::as_const(files)) {
-			const QString s = QFileInfo(f).suffix().toLower();
-			if ((s == QLatin1String("stp") || s == QLatin1String("step"))
-			    && (best.isEmpty() || QFileInfo(f).size() > QFileInfo(best).size()))
+			if (isStep(f) && (best.isEmpty() || QFileInfo(f).size() > QFileInfo(best).size()))
 				best = f;
 		}
 		if (!best.isEmpty() && QFileInfo::exists(best) && QFileInfo(best).size() < PLACEHOLDER_STEP) {
@@ -500,6 +556,13 @@ FetchResult PartFetcher::fetch(const FetchItem &item, const FetchOptions &option
 					r.notes << tr("STEP: %1 cannot be written").arg(QDir::toNativeSeparators(target));
 				}
 			}
+		} else if (keyence) {
+				// keyence.de: login and download in the browser only
+			if (!options.dry_run) QDir().mkpath(raw);
+			r.notes << tr("STEP: log in on keyence.de in the browser, load the CAD data (STEP) of %1 (%2) "
+				      "and save the file (ZIP or STEP) into %3")
+				   .arg(order, ManufacturerPortals::productUrl(QStringLiteral("keyence"), order),
+					QDir::toNativeSeparators(raw));
 		} else if (on3Dfindit(r.maker)) {
 			r.notes << tr("STEP: request it on 3Dfindit in the browser (%1 of %2 requests left today)")
 				   .arg(ManufacturerPortals::requestsLeft(QStringLiteral("3dfindit")))

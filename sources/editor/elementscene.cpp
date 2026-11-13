@@ -557,6 +557,10 @@ const QDomDocument ElementScene::toXml(bool all_parts)
 		root.appendChild(m_element_data.kindInfoToXml(xml_document));
 	}
 
+		//Fluid power data: nothing is written for any other element
+	if (!m_element_data.m_fluid.isNull())
+		root.appendChild(m_element_data.m_fluid.toXml(xml_document));
+
 		//Slave is in this list because the element editor offers the
 		//Informations tab for it, including the PLC-specific rows
 		//populateTree() adds for a PLC slave. Without it the editor would

@@ -18,6 +18,7 @@
 #ifndef ELEMENTDATA_H
 #define ELEMENTDATA_H
 
+#include "../fluid/fluiddata.h"
 #include "propertiesinterface.h"
 #include <diagramcontext.h>
 #include <NameList/nameslist.h>
@@ -341,6 +342,9 @@ class ElementData : public PropertiesInterface
 		DiagramContext m_informations;
 		NamesList m_names_list;
 		QString m_drawing_information;
+			/// What this element is in a fluid power diagram (valve,
+			/// cylinder...). Null for every other element.
+		FluidData m_fluid;
 
 	private:
 		ElementData::TerminalType m_override_terminal_type = ElementData::TTGeneric;

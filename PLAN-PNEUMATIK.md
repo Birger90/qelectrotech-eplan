@@ -16,12 +16,11 @@ Vorbild: FluidSIM 6, Handbuch Kap. 4.6, 4.8, 4.11, 4.12, 6.7, 8.8, 8.9, 11.6.
 |---|---|---|---|
 | A. QET-Sammlung `elements/50_pneumatic` | 406 Dateien (Ventile, Zylinder, Wartung, Sensoren) | ist schon drin | Anschlüsse ohne Namen, keine Schaltstellungen |
 | B. Eigener Baukasten nach ISO 1219-1 | Ventilkörper, Betätigungen, Zylinder aus Bausteinen | **ja** | neu |
-| C. FluidSIM-Bibliothek (Umwandler) | Festo-Symbole | Werkzeug ja, **Symbole nur wenn Festo-Freigabe Veröffentlichung abdeckt** | Erlaubnis laut Birger vorhanden, Umfang offen; Dateiformat unbekannt |
+| C. FluidSIM-Bibliothek (Umwandler) | Festo-Symbole | ja (laut Birger, 13.11.2026: Festo-Freigabe ohne Einschränkung) | Dateiformat unbekannt, Beispieldateien fehlen |
 | D. Herstellermakros SMC/Festo (EDZ, ZW1) | Teile mit Artikeldaten | nein, nur lokal | Nutzungsbedingungen offen |
 | E. SMC-Symbole DXF/SVG | Einzelsymbole | nein, nur lokal | Nutzungsbedingungen offen |
 
 Offene Punkte zu C:
-- schriftliche Freigabe von Festo: interne Nutzung oder Veröffentlichung?
 - Beispieldateien aus der FluidSIM-Bibliothek + ein eigener Plan als Datei **und** als PDF/SVG zum Abgleich.
 - Ordner der Bibliothek: in FluidSIM unter Optionen → Ordnerpfade (Handbuch 21.3).
 
@@ -115,7 +114,7 @@ Alles über `QUndoCommand` (Merge-IDs in `dev_doc/ID_of_QUndoCommand.txt` eintra
 
 ## 8. Reihenfolge (Commits)
 
-1. Datenmodell: Terminal `medium`, Abschluss, Leitungsart, `<fluid>`-Block lesen/schreiben + Tests (`tests/qttest`).
+1. Datenmodell: Terminal `medium`, Abschluss, Leitungsart, `<fluid>`-Block lesen/schreiben + Tests (`tests/qttest`). **Erledigt** (`sources/fluid/`, `tst_fluiddata`). Noch ohne Oberfläche; Medium-Prüfung beim Verbinden folgt mit Schritt 4.
 2. Baukasten-Generator + erste 40 Symbole.
 3. Nachrüsten `50_pneumatic` (Anschlussnamen).
 4. Ventil- und Zylindereditor.
@@ -136,7 +135,6 @@ Jede Änderung am bestehenden Verhalten: Einstellung im Einstellungsdialog, Stan
 
 ## 10. Offen / nicht verifiziert
 
-- Umfang der Festo-Freigabe (intern oder öffentlich).
 - FluidSIM-Dateiformat.
 - ISO 1219-1 Volltext.
 - Nutzungsbedingungen SMC/Festo-Makros außerhalb von EPLAN.

@@ -61,6 +61,8 @@ bool ElementData::fromXml(const QDomElement &xml_element)
 		m_drawing_information = xml_draw_info.text();
 	}
 
+	m_fluid = FluidData::fromElementDefinition(xml_element);
+
 	return true;
 }
 
@@ -629,6 +631,9 @@ bool ElementData::operator==(const ElementData &data) const
 		return false;
 	}
 	if (data.m_other_kind_informations != m_other_kind_informations) {
+		return false;
+	}
+	if (data.m_fluid != m_fluid) {
 		return false;
 	}
 

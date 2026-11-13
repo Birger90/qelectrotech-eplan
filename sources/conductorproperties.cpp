@@ -344,6 +344,8 @@ QList<QPair<QString, QString>> ConductorProperties::attributes() const
 		//exactly as it was
 	if (!m_conductor_type.isEmpty())
 		add("conductor_type", m_conductor_type);
+	if (m_fluid_line != Fluid::LineKind::None)
+		add("fluid_line", Fluid::lineKindToString(m_fluid_line));
 	add("numsize", QString::number(text_size));
 	add("condsize", QString::number(cond_size));
 	add("displaytext", QString::number(m_show_text));
@@ -424,6 +426,7 @@ void ConductorProperties::fromXml(QDomElement &e)
 	m_wire_color         = e.attribute("conductor_color");
 	m_wire_section       = e.attribute("conductor_section");
 	m_conductor_type     = e.attribute("conductor_type");
+	m_fluid_line         = Fluid::lineKindFromString(e.attribute("fluid_line"));
 	text_size            = e.attribute("numsize", QString::number(9)).toInt();
 	cond_size            = e.attribute("condsize", QString::number(1)).toDouble();
 	m_show_text          = e.attribute("displaytext", QString::number(1)).toInt();
@@ -477,6 +480,9 @@ void ConductorProperties::toSettings(QSettings &settings, const QString &prefix)
 	settings.setValue(prefix + "conductor_color", m_wire_color);
 	if (!m_conductor_type.isEmpty())
 		settings.setValue(prefix + "conductor_type", m_conductor_type);
+	if (m_fluid_line != Fluid::LineKind::None)
+		settings.setValue(prefix + "fluid_line",
+						  Fluid::lineKindToString(m_fluid_line));
 	settings.setValue(prefix + "conductor_section", m_wire_section);
 	settings.setValue(prefix + "textsize", QString::number(text_size));
 	settings.setValue(prefix + "size", QString::number(cond_size));
@@ -532,6 +538,8 @@ void ConductorProperties::fromSettings(QSettings &settings, const QString &prefi
 	m_tension_protocol   = settings.value(prefix + "tension_protocol", "").toString();
 	m_wire_color         = settings.value(prefix + "conductor_color", "").toString();
 	m_conductor_type     = settings.value(prefix + "conductor_type", "").toString();
+	m_fluid_line         = Fluid::lineKindFromString(
+		settings.value(prefix + "fluid_line", "").toString());
 	m_wire_section       = settings.value(prefix + "conductor_section", "").toString();
 	text_size            = settings.value(prefix + "textsize", "7").toInt();
 		// Saved with QString::number(cond_size): a decimal such as 1.4,
@@ -597,6 +605,7 @@ void ConductorProperties::applyForEqualAttributes(QList<ConductorProperties> lis
 		m_wire_color         = cp.m_wire_color;
 		m_wire_section       = cp.m_wire_section;
 		m_conductor_type     = cp.m_conductor_type;
+		m_fluid_line         = cp.m_fluid_line;
 		text_size            = cp.text_size;
 		cond_size            = cp.cond_size;
 		m_show_text          = cp.m_show_text;
@@ -812,6 +821,17 @@ void ConductorProperties::applyForEqualAttributes(QList<ConductorProperties> lis
 	}
 	if (equal)
 		m_conductor_type = s_value;
+	equal = true;
+
+		//Fluid line kind
+	const Fluid::LineKind fluid_line = clist.first().m_fluid_line;
+	for(const ConductorProperties &cp : clist)
+	{
+		if (cp.m_fluid_line != fluid_line)
+			equal = false;
+	}
+	if (equal)
+		m_fluid_line = fluid_line;
 	equal = true;
 
 
@@ -1064,6 +1084,7 @@ bool ConductorProperties::operator==(const ConductorProperties &other) const
 		other.m_wire_color == m_wire_color && \
 		other.m_wire_section == m_wire_section && \
 		other.m_conductor_type == m_conductor_type && \
+		other.m_fluid_line == m_fluid_line && \
 		other.m_show_text == m_show_text &&\
 		other.text_size == text_size &&\
 		other.cond_size == cond_size &&\

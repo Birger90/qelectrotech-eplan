@@ -1930,6 +1930,7 @@ add_executable(
   tst_conductorapplychanges.cpp
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
   ${QET_DIR}/sources/qet.cpp
   ${QET_DIR}/sources/qeticons.cpp
   ${QET_DIR}/sources/shortcutmanager.cpp)
@@ -1944,6 +1945,7 @@ add_executable(
   tst_conductordashpattern.cpp
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
   ${QET_DIR}/sources/qet.cpp
   ${QET_DIR}/sources/qeticons.cpp
   ${QET_DIR}/sources/shortcutmanager.cpp)
@@ -1957,6 +1959,7 @@ add_executable(
   tst_conductortypefield
   tst_conductortypefield.cpp
   ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/qetinformation.cpp
   ${QET_DIR}/sources/qet.cpp
@@ -1973,6 +1976,7 @@ add_executable(
   tst_conductorsizesetting.cpp
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
   ${QET_DIR}/sources/qet.cpp
   ${QET_DIR}/sources/qeticons.cpp
   ${QET_DIR}/sources/shortcutmanager.cpp)
@@ -1988,6 +1992,7 @@ add_executable(
   tst_conductormultiedit.cpp
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
   ${QET_DIR}/sources/QPropertyUndoCommand/qpropertyundocommand.cpp
   ${QET_DIR}/sources/qet.cpp
   ${QET_DIR}/sources/qeticons.cpp
@@ -2006,6 +2011,7 @@ add_executable(
   tst_searchreplaceconductor.cpp
   ${QET_DIR}/sources/SearchAndReplace/searchandreplaceworker.cpp
   ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/titleblockproperties.cpp
   ${QET_DIR}/sources/diagramcontext.cpp
@@ -2439,3 +2445,21 @@ if(NOT BUILD_WITH_KF)
     ${QET_DIR}/sources/ui/nokde)
   target_link_libraries(tst_nokdecolorcombo PRIVATE Qt::Test Qt::Widgets)
 endif()
+
+# Fluid power data model: the words in the files, the <fluid> block of an
+# element, and that an electric terminal or conductor is written as before
+add_executable(
+  tst_fluiddata
+  tst_fluiddata.cpp
+  ${QET_DIR}/sources/fluid/fluiddata.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
+  ${QET_DIR}/sources/conductordashpattern.cpp
+  ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/qet.cpp
+  ${QET_DIR}/sources/qeticons.cpp
+  ${QET_DIR}/sources/shortcutmanager.cpp)
+add_test(NAME tst_fluiddata COMMAND tst_fluiddata)
+set_tests_properties(tst_fluiddata PROPERTIES
+  ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+target_include_directories(tst_fluiddata PRIVATE ${QET_DIR}/sources)
+target_link_libraries(tst_fluiddata PRIVATE Qt::Test Qt::Widgets Qt::Xml pugixml::pugixml)

@@ -242,6 +242,10 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/conductornumexport.h
   ${QET_DIR}/sources/bomexport.cpp
   ${QET_DIR}/sources/bomexport.h
+  ${QET_DIR}/sources/fluid/fluiddata.cpp
+  ${QET_DIR}/sources/fluid/fluiddata.h
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.h
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/conductordashpattern.h
   ${QET_DIR}/sources/conductorprofile.cpp

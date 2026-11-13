@@ -19,6 +19,7 @@
 #define CONDUCTOR_PROPERTIES_H
 
 #include "conductordashpattern.h"
+#include "fluid/fluidtypes.h"
 #include "qet.h"
 #include <QColor>
 #include <QSettings>
@@ -107,6 +108,11 @@ class ConductorProperties
 			/// The kind of wire this conductor is made of (H05V-K,
 			/// H07V-K ...), free text, empty when none is set
 		QString m_conductor_type;
+
+			/// What this line is used for in a fluid power diagram
+			/// (working, pilot, exhaust). None for an electric
+			/// conductor, and only another value is saved.
+		Fluid::LineKind m_fluid_line = Fluid::LineKind::None;
 
 			/// The cable of the project this conductor is a core of, null
 			/// when it belongs to no cable. The text shown in m_cable is

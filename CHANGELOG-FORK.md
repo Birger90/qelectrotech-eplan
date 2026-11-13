@@ -3,6 +3,18 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.9.0 – 13.11.2026
+
+- Neues Werkzeug „Klemmleiste zeichnen“ (Werkzeugleiste neben „Kabel zeichnen“): ein Strich quer über Leitungen
+  setzt auf jede Leitung eine Klemme, trennt die Leitung dort auf und behält Drahtnummer und Farbe auf beiden
+  Seiten. Der Vorschlag (Leiste, erste Nummer, Symbol, Artikel, PE-Artikel) lässt sich vor dem Einfügen ändern;
+  die Klemmen kommen als `X1:n` in die Klemmleiste. Skript `qet.addTerminals(...)`, MCP-Operation `add_terminals`.
+- Klemmenkatalog mit Filter (Hersteller, Art, Querschnitt, Anschlussart), maßstäblicher Vorschau, Produktfoto
+  und Suche im EPLAN Data Portal. Eigene Kataloge als CSV in `<Datenordner>/terminal-catalogs/`.
+- Mehrstockklemmen: eine Klemme mit mehreren Etagen (z. B. L/N/PE) nimmt mehrere Leitungen auf; die Etagen werden
+  in der Klemmleiste zu einer Klemme zusammengefasst.
+- Kabelliste: alle Klemmen einer Klemmleiste zählen als ein Kabelende (`X1` statt `X1:1` → `X1:2`).
+
 ## 1.8.0 – 12.11.2026
 
 - Herstellerportale: Keyence. Benutzername und Passwort für keyence.de im Windows-Anmeldeinformationsspeicher

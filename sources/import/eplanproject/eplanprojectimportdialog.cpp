@@ -18,6 +18,7 @@
 #include "eplanprojectimportdialog.h"
 
 #include "../../qetapp.h"
+#include "../../panel/eplanproject.h"
 
 #include <QApplication>
 #include <QCheckBox>
@@ -66,6 +67,16 @@ namespace {
 		const QString common = QETApp::commonElementsDir();
 		if (!common.isEmpty())
 			env.insert(QStringLiteral("QET_COMMON_ELEMENTS_DIR"), QDir::toNativeSeparators(common));
+			//Where the program keeps the title blocks it makes, and the 7-Zip
+			//it unpacks with: found here, so that it does not have to know
+			//where each system puts them
+		env.insert(QStringLiteral("QET_TITLEBLOCKS_DIR"),
+			   QDir::toNativeSeparators(QETApp::customTitleBlockTemplatesDir()));
+		if (!env.contains(QStringLiteral("SIEBENZIP"))) {
+			const QString seven = EplanProject::sevenZip();
+			if (!seven.isEmpty())
+				env.insert(QStringLiteral("SIEBENZIP"), QDir::toNativeSeparators(seven));
+		}
 		env.insert(QStringLiteral("PYTHONIOENCODING"), QStringLiteral("utf-8"));
 		env.insert(QStringLiteral("PYTHONUTF8"), QStringLiteral("1"));
 		env.insert(QStringLiteral("PYTHONUNBUFFERED"), QStringLiteral("1"));
@@ -198,6 +209,7 @@ QString EplanProjectImportDialog::findScript(const QString &application_dir)
 	const QString tail = QStringLiteral("eplan_import/eplan_zw1/") + SCRIPT_NAME;
 	candidates << app.filePath(tail)
 		   << app.filePath(QStringLiteral("../") + tail)
+		   << app.filePath(QStringLiteral("../Resources/") + tail)	// macOS bundle
 		   << app.filePath(QStringLiteral("../share/qelectrotech/") + tail)
 		   << app.filePath(QStringLiteral("../../tools/") + tail)
 		   << app.filePath(QStringLiteral("../tools/") + tail);

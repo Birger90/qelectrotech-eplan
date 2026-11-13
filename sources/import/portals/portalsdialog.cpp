@@ -52,7 +52,8 @@ PortalsDialog::PortalsDialog(QWidget *parent) :
 	setMinimumSize(720, 620);
 
 	auto *intro = new QLabel(
-		tr("One account per portal. Passwords and tokens are kept in the Windows Credential Manager, "
+		tr("One account per portal. Passwords and tokens are kept in the credential store of the system "
+		   "(Credential Manager on Windows, keychain on macOS), "
 		   "never in the settings. QElectroTech uses official interfaces and public files only; "
 		   "it does not fill in login forms and solves no CAPTCHAs."),
 		this);
@@ -257,7 +258,7 @@ void PortalsDialog::updateStatus()
 		else if (!in)
 			text = tr("Not logged in.");
 		else if (p.api_login)
-			text = tr("Logged in (token in the Credential Manager).");
+			text = tr("Logged in (token in the credential store).");
 		else
 			text = user.isEmpty() ? tr("Account stored.") : tr("Account %1 stored.").arg(user);
 		it.value().status->setText(text);

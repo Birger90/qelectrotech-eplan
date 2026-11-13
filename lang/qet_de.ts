@@ -13654,12 +13654,20 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
         <translation>Der Anmeldeinformationsspeicher hat das Konto abgelehnt (Fehler %1).</translation>
     </message>
     <message>
+        <source>The keychain refused the account (%1).</source>
+        <translation>Der Schlüsselbund hat das Konto abgelehnt (%1).</translation>
+    </message>
+    <message>
         <source>No credential store on this system.</source>
         <translation>Kein Anmeldeinformationsspeicher auf diesem System.</translation>
     </message>
     <message>
         <source>The account cannot be removed (error %1).</source>
         <translation>Das Konto kann nicht entfernt werden (Fehler %1).</translation>
+    </message>
+    <message>
+        <source>The account cannot be removed from the keychain (%1).</source>
+        <translation>Das Konto kann nicht aus dem Schlüsselbund entfernt werden (%1).</translation>
     </message>
 </context>
 <context>
@@ -13670,7 +13678,11 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
     </message>
     <message>
         <source>One account per portal. Passwords and tokens are kept in the Windows Credential Manager, never in the settings. QElectroTech uses official interfaces and public files only; it does not fill in login forms and solves no CAPTCHAs.</source>
-        <translation>Ein Konto je Portal. Passwörter und Tokens liegen in der Windows-Anmeldeinformationsverwaltung, nie in den Einstellungen. QElectroTech nutzt nur offizielle Schnittstellen und öffentliche Dateien; es füllt keine Anmeldeformulare aus und löst keine CAPTCHAs.</translation>
+        <translation type="vanished">Ein Konto je Portal. Passwörter und Tokens liegen in der Windows-Anmeldeinformationsverwaltung, nie in den Einstellungen. QElectroTech nutzt nur offizielle Schnittstellen und öffentliche Dateien; es füllt keine Anmeldeformulare aus und löst keine CAPTCHAs.</translation>
+    </message>
+    <message>
+        <source>One account per portal. Passwords and tokens are kept in the credential store of the system (Credential Manager on Windows, keychain on macOS), never in the settings. QElectroTech uses official interfaces and public files only; it does not fill in login forms and solves no CAPTCHAs.</source>
+        <translation>Ein Konto je Portal. Passwörter und Tokens liegen im Anmeldespeicher des Systems (unter Windows in der Anmeldeinformationsverwaltung, unter macOS im Schlüsselbund), nie in den Einstellungen. QElectroTech nutzt nur offizielle Schnittstellen und öffentliche Dateien; es füllt keine Anmeldeformulare aus und löst keine CAPTCHAs.</translation>
     </message>
     <message>
         <source>Choose…</source>
@@ -13789,8 +13801,12 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
         <translation>Nicht angemeldet.</translation>
     </message>
     <message>
+        <source>Logged in (token in the credential store).</source>
+        <translation>Angemeldet (Token im Anmeldespeicher).</translation>
+    </message>
+    <message>
         <source>Logged in (token in the Credential Manager).</source>
-        <translation>Angemeldet (Token in der Anmeldeinformationsverwaltung).</translation>
+        <translation type="vanished">Angemeldet (Token in der Anmeldeinformationsverwaltung).</translation>
     </message>
     <message>
         <source>Account stored.</source>

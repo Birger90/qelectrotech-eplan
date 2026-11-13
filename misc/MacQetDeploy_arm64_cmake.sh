@@ -66,6 +66,16 @@ if [ -z "$SQLITE_PREFIX" ] || [ ! -f "$SQLITE_PREFIX/include/sqlite3.h" ] ; then
     exit 1
 fi
 
+# Open CASCADE (brew install opencascade): the STEP models of the cabinet
+# layout's 3D view and 3D export. Optional -- without it the 3D view shows
+# boxes from the article sizes -- so only a warning when it is missing.
+OCCT_PREFIX=$(brew --prefix opencascade 2>/dev/null || true)
+if [ -n "$OCCT_PREFIX" ] && [ -d "$OCCT_PREFIX/lib/cmake/opencascade" ] ; then
+    export CMAKE_PREFIX_PATH="$OCCT_PREFIX:$CMAKE_PREFIX_PATH"
+else
+    echo "WARNING: Open CASCADE not found (brew install opencascade): no STEP models in the 3D view."
+fi
+
 ### GIT ####################################################
 echo
 echo "______________________________________________________________"
@@ -465,6 +475,18 @@ mkdir -p $BUNDLE/Contents/Resources/mcp
 cp "${current_dir}/misc/qet-mcp/qet_mcp.py" "${current_dir}/misc/qet-mcp/README.md" \
     $BUNDLE/Contents/Resources/mcp/ \
     || { echo "ERROR: cannot copy the MCP server"; exit 1; }
+
+# The assistant's bridge (Claude) beside the MCP server it uses, and the
+# EPLAN project import (File > Import EPLAN project) with its page
+# templates: QElectroTech looks for both in Contents/Resources.
+mkdir -p $BUNDLE/Contents/Resources/mcp/qet-assistent
+cp "${current_dir}/misc/qet-assistent/bruecke.py" $BUNDLE/Contents/Resources/mcp/qet-assistent/     || { echo "ERROR: cannot copy the assistant's bridge"; exit 1; }
+mkdir -p $BUNDLE/Contents/Resources/eplan_import
+for d in eplan_zw1 planvorlagen; do
+    if [ -d "${current_dir}/tools/eplan_import/$d" ]; then
+        rsync -a --exclude __pycache__ "${current_dir}/tools/eplan_import/$d" $BUNDLE/Contents/Resources/eplan_import/             || { echo "ERROR: cannot copy the EPLAN project import"; exit 1; }
+    fi
+done
 
 ### Sign the bundle #################################################
 # Sign in correct order: all dylibs first (including flat libs copied

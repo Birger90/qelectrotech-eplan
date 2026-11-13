@@ -25,6 +25,37 @@
 #include <wincred.h>
 #endif
 
+#ifdef Q_OS_MACOS
+#include <CoreFoundation/CoreFoundation.h>
+#include <Security/Security.h>
+
+namespace
+{
+		///The keychain item of a portal: a generic password whose service
+		///is the target name, the same name the Windows store uses
+	CFMutableDictionaryRef keychainQuery(const QString &target)
+	{
+		CFMutableDictionaryRef query = CFDictionaryCreateMutable(
+					nullptr, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+		CFDictionarySetValue(query, kSecClass, kSecClassGenericPassword);
+		CFStringRef service = target.toCFString();
+		CFDictionarySetValue(query, kSecAttrService, service);
+		CFRelease(service);
+		return query;
+	}
+
+	QString keychainError(OSStatus status)
+	{
+		QString text;
+		if (CFStringRef message = SecCopyErrorMessageString(status, nullptr)) {
+			text = QString::fromCFString(message);
+			CFRelease(message);
+		}
+		return text.isEmpty() ? QString::number(int(status)) : text;
+	}
+}
+#endif
+
 QString PortalCredentials::targetName(const QString &portal)
 {
 	QString prefix = qEnvironmentVariable("QET_CREDENTIAL_PREFIX");
@@ -34,7 +65,7 @@ QString PortalCredentials::targetName(const QString &portal)
 
 bool PortalCredentials::available()
 {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
 	return true;
 #else
 	return false;
@@ -63,6 +94,27 @@ bool PortalCredentials::store(const QString &portal, const PortalAccount &accoun
 		*error = QCoreApplication::translate("PortalCredentials",
 						     "The credential store refused the account (error %1).").arg(code);
 	return ok;
+#elif defined(Q_OS_MACOS)
+		//One item per portal: the old one goes, the new one comes
+	CFMutableDictionaryRef query = keychainQuery(targetName(portal));
+	SecItemDelete(query);
+	CFStringRef user = account.user.toCFString();
+	CFStringRef label = QStringLiteral("QElectroTech: manufacturer portal %1").arg(portal).toCFString();
+	QByteArray blob = account.secret.toUtf8();
+	CFDataRef data = CFDataCreate(nullptr, reinterpret_cast<const UInt8 *>(blob.constData()), blob.size());
+	blob.fill('\0');	// no copy of the secret left in memory
+	CFDictionarySetValue(query, kSecAttrAccount, user);
+	CFDictionarySetValue(query, kSecAttrLabel, label);
+	CFDictionarySetValue(query, kSecValueData, data);
+	const OSStatus status = SecItemAdd(query, nullptr);
+	CFRelease(data);
+	CFRelease(label);
+	CFRelease(user);
+	CFRelease(query);
+	if (status != errSecSuccess && error)
+		*error = QCoreApplication::translate("PortalCredentials",
+						     "The keychain refused the account (%1).").arg(keychainError(status));
+	return status == errSecSuccess;
 #else
 	Q_UNUSED(portal) Q_UNUSED(account)
 	if (error) *error = QCoreApplication::translate("PortalCredentials",
@@ -82,6 +134,26 @@ PortalAccount PortalCredentials::load(const QString &portal)
 		account.secret = QString::fromUtf8(reinterpret_cast<const char *>(cred->CredentialBlob),
 						   int(cred->CredentialBlobSize));
 	CredFree(cred);
+#elif defined(Q_OS_MACOS)
+	CFMutableDictionaryRef query = keychainQuery(targetName(portal));
+	CFDictionarySetValue(query, kSecReturnAttributes, kCFBooleanTrue);
+	CFDictionarySetValue(query, kSecReturnData, kCFBooleanTrue);
+	CFDictionarySetValue(query, kSecMatchLimit, kSecMatchLimitOne);
+	CFTypeRef result = nullptr;
+	if (SecItemCopyMatching(query, &result) == errSecSuccess && result
+		&& CFGetTypeID(result) == CFDictionaryGetTypeID())
+	{
+		auto item = static_cast<CFDictionaryRef>(result);
+		auto user = static_cast<CFStringRef>(CFDictionaryGetValue(item, kSecAttrAccount));
+		if (user && CFGetTypeID(user) == CFStringGetTypeID())
+			account.user = QString::fromCFString(user);
+		auto data = static_cast<CFDataRef>(CFDictionaryGetValue(item, kSecValueData));
+		if (data && CFGetTypeID(data) == CFDataGetTypeID())
+			account.secret = QString::fromUtf8(reinterpret_cast<const char *>(CFDataGetBytePtr(data)),
+							   int(CFDataGetLength(data)));
+	}
+	if (result) CFRelease(result);
+	CFRelease(query);
 #else
 	Q_UNUSED(portal)
 #endif
@@ -95,6 +167,12 @@ bool PortalCredentials::has(const QString &portal)
 	if (!CredReadW(targetName(portal).toStdWString().c_str(), CRED_TYPE_GENERIC, 0, &cred)) return false;
 	CredFree(cred);
 	return true;
+#elif defined(Q_OS_MACOS)
+	CFMutableDictionaryRef query = keychainQuery(targetName(portal));
+	CFDictionarySetValue(query, kSecMatchLimit, kSecMatchLimitOne);
+	const OSStatus status = SecItemCopyMatching(query, nullptr);
+	CFRelease(query);
+	return status == errSecSuccess;
 #else
 	Q_UNUSED(portal)
 	return false;
@@ -109,6 +187,14 @@ bool PortalCredentials::remove(const QString &portal, QString *error)
 	if (code == ERROR_NOT_FOUND) return true;
 	if (error) *error = QCoreApplication::translate("PortalCredentials",
 							"The account cannot be removed (error %1).").arg(code);
+	return false;
+#elif defined(Q_OS_MACOS)
+	CFMutableDictionaryRef query = keychainQuery(targetName(portal));
+	const OSStatus status = SecItemDelete(query);
+	CFRelease(query);
+	if (status == errSecSuccess || status == errSecItemNotFound) return true;
+	if (error) *error = QCoreApplication::translate("PortalCredentials",
+							"The account cannot be removed from the keychain (%1).").arg(keychainError(status));
 	return false;
 #else
 	Q_UNUSED(portal) Q_UNUSED(error)

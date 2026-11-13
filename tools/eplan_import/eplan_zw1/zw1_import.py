@@ -12,7 +12,20 @@ import subprocess
 import sys
 
 HIER = os.path.dirname(os.path.abspath(__file__))
-SIEBENZIP = os.environ.get("SIEBENZIP", r"C:\Program Files\7-Zip\7z.exe")
+def _siebenzip():
+    """7-Zip: aus SIEBENZIP (setzt QElectroTech), sonst aus dem Suchpfad (7z, 7zz von Homebrew auf dem Mac),
+    sonst der Windows-Standardordner."""
+    if os.environ.get("SIEBENZIP"):
+        return os.environ["SIEBENZIP"]
+    import shutil
+    for name in ("7z", "7zz", "7za"):
+        gefunden = shutil.which(name)
+        if gefunden:
+            return gefunden
+    return r"C:\Program Files\7-Zip\7z.exe"
+
+
+SIEBENZIP = _siebenzip()
 SCHRITTE = ["parseall.py", "ins130.py", "export.py", "export2.py", "export3.py"]
 
 

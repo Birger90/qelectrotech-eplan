@@ -120,12 +120,15 @@ project, never a customer's or an employer's drawing.
 
 ## This fork: skills for EPLAN-style work
 
-This fork adds two skills under `.claude/skills/` (Claude Code loads them
+This fork adds these skills under `.claude/skills/` (Claude Code loads them
 automatically; other agents should read the `SKILL.md`, which points to its
 reference files):
 
 - `qet-schaltplan-zeichnen`: drawing, checking and linking EPLAN-style sheets
   by script.
+- `fluidtechnik`: pneumatic and hydraulic diagrams after FluidSIM 6: terminal
+  medium and port numbers, silencers, valve/coil and relay/contact links,
+  letter codes, the fluid check, and importing FluidSIM symbols and circuits.
 - `eplan-wissen`: the EPLAN platform help 2.9, summarised in German with a
   source URL per rule and notes on the QET equivalent. Read it before
   reverse-engineering EPLAN behaviour (PDF jumps, cross-references, device

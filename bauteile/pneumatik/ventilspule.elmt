@@ -1,0 +1,28 @@
+<definition version="0.90" type="element" link_type="slave" width="40" height="40" hotspot_x="20" hotspot_y="20">
+    <uuid uuid="{91f73ca8-f447-41a1-bcb4-66890ef97455}"/>
+    <names>
+        <name lang="en">Valve solenoid coil</name>
+        <name lang="de">Ventilspule</name>
+    </names>
+    <kindInformations>
+        <kindInformation name="type">simple</kindInformation>
+        <kindInformation name="state">Other</kindInformation>
+        <kindInformation name="number">1</kindInformation>
+    </kindInformations>
+    <fluid kind="solenoid"/>
+    <informations>Author: Fork qelectrotech-eplan
+License: see http://qelectrotech.org/wiki/doc/elements_license
+Coil of a solenoid valve on the electric sheet. Link it as a slave to its valve (master): the valve then shows where its coil is drawn, and the coil the valve.</informations>
+    <description>
+        <rect x="-10" y="-5" width="20" height="10" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="-10" y1="5" x2="10" y2="-5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="0" y1="-5" x2="0" y2="-15" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="0" y1="5" x2="0" y2="15" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="13" y="-12" z="10" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{a055e085-fd64-4f60-a0a6-78fbf90e973e}" font="Liberation Sans,9,-1,5,0,0,0,0,0,0,Regular">
+            <text></text>
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{024c35de-b230-4b4c-8576-5a1afab277e3}" name="A1" x="0" y="-15" orientation="n" type="Generic"/>
+        <terminal uuid="{5e358a03-ae72-4dc6-b8fb-1cfa35796cdb}" name="A2" x="0" y="15" orientation="s" type="Generic"/>
+    </description>
+</definition>

@@ -47,7 +47,10 @@ class FluidData
 			FlowControl, ///< throttle, one-way flow control, check valve
 			LogicValve,  ///< shuttle (OR), dual pressure (AND), quick exhaust
 			Sensor,      ///< pressure switch, gauge
-			Other
+			Other,
+				/// coil of a solenoid valve, drawn on the electric
+				/// sheet and linked as a slave to its valve (master)
+			Solenoid
 		};
 
 		enum class CylinderAction { Double, Single };
@@ -98,6 +101,10 @@ class FluidData
 		QDomElement toXml(QDomDocument &document) const;
 		bool fromXml(const QDomElement &fluid_element);
 		static FluidData fromElementDefinition(const QDomElement &definition);
+
+			/// @return how many sides of this valve a solenoid
+			/// actuates (0, 1 or 2), 0 for anything but a valve
+		int solenoidSides() const;
 
 		bool operator==(const FluidData &other) const;
 		bool operator!=(const FluidData &other) const

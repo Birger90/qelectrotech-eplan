@@ -265,6 +265,15 @@ FluidData FluidData::fromElementDefinition(const QDomElement &definition)
 	return d;
 }
 
+int FluidData::solenoidSides() const
+{
+	if (m_kind != Kind::Valve)
+		return 0;
+	const QString solenoid = QStringLiteral("solenoid");
+	return (m_left.types.contains(solenoid) ? 1 : 0)
+		+ (m_right.types.contains(solenoid) ? 1 : 0);
+}
+
 bool FluidData::operator==(const FluidData &o) const
 {
 	return m_kind == o.m_kind
@@ -298,6 +307,7 @@ QString FluidData::kindToString(Kind kind)
 		case Kind::LogicValve:  return QStringLiteral("logic_valve");
 		case Kind::Sensor:      return QStringLiteral("sensor");
 		case Kind::Other:       return QStringLiteral("other");
+		case Kind::Solenoid:    return QStringLiteral("solenoid");
 	}
 	return QString();
 }
@@ -312,5 +322,6 @@ FluidData::Kind FluidData::kindFromString(const QString &string)
 	if (string == QLatin1String("logic_valve"))  return Kind::LogicValve;
 	if (string == QLatin1String("sensor"))       return Kind::Sensor;
 	if (string == QLatin1String("other"))        return Kind::Other;
+	if (string == QLatin1String("solenoid"))     return Kind::Solenoid;
 	return Kind::None;
 }

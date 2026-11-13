@@ -12,3 +12,7 @@ Zum Benutzen den Ordner in die Benutzersammlung kopieren
 
 Mit „Bauteil-Import“ eingelesene Herstellerdaten (EPLAN Data Portal) gehören
 nicht in dieses Repository.
+
+`pneumatik/` enthält Beispiele für Pneumatikpläne (Branch `feature/pneumatik`): ein 5/2-Magnetventil mit
+Federrückstellung als Master (Anschlüsse 1–5 pneumatisch, Schalldämpfer an 3 und 5) und die Ventilspule als
+Slave für das elektrische Blatt. Spule und Ventil verknüpft man wie Spule und Kontakt.

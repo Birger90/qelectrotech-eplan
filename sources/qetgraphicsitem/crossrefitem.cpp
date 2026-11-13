@@ -81,6 +81,24 @@ CrossRefItem::CrossRefItem(Element *elmt, ElementTextItemGroup *group) :
 CrossRefItem::~CrossRefItem()
 {}
 
+namespace
+{
+	/**
+		@return how the cross reference of @a master is drawn: as its
+		properties say, except for a fluid power valve, which always
+		lists its coils as contacts. The cross only has columns for
+		make and break contacts, so a valve coil would not show in it.
+	*/
+	XRefProperties::DisplayHas displayFor(const XRefProperties &properties,
+										  Element *master)
+	{
+		if (master && master->elementData().m_fluid.m_kind
+				== FluidData::Kind::Valve)
+			return XRefProperties::Contacts;
+		return properties.displayHas();
+	}
+}
+
 /**
 	@brief CrossRefItem::init
 	init this Xref
@@ -313,7 +331,7 @@ void CrossRefItem::updateLabel()
 		 || mustDrawAllConfiguredSlaves())
 	{
 		m_update_map = true;
-		XRefProperties::DisplayHas dh = m_properties.displayHas();
+		XRefProperties::DisplayHas dh = displayFor(m_properties, m_element);
 
 		if (dh == XRefProperties::Cross)
 			drawAsCross(qp);
@@ -560,7 +578,7 @@ void CrossRefItem::paint(
 	painter->setFont(QETApp::diagramTextsFont(5));
 
 	m_update_map = false;
-	XRefProperties::DisplayHas dh = m_properties.displayHas();
+	XRefProperties::DisplayHas dh = displayFor(m_properties, m_element);
 	if (dh == XRefProperties::Cross)
 		drawAsCross(*painter);
 	else if (dh == XRefProperties::Contacts)
@@ -1482,14 +1500,29 @@ QRectF CrossRefItem::drawContact(QPainter &painter, int flags, Element *elmt, in
 	{
 		bounding_rect = QRectF(0, offset, 24, 20);
 		bounding_rect.adjust(0, -4, 4, 4);
-	
+
+		if (elmt && elmt->elementData().m_fluid.m_kind
+				== FluidData::Kind::Solenoid)
+		{
+				//The coil of a solenoid valve: the solenoid of
+				//ISO 1219-1, a box crossed by a diagonal
+			const QRectF box(8, offset + 2, 8, 6);
+			painter.save();
+			painter.setBrush(Qt::NoBrush);
+			painter.drawRect(box);
+			painter.drawLine(box.bottomLeft(), box.topRight());
+			painter.restore();
+		}
+		else
+		{
 			//Draw the first arc symbol
 		QRectF r(8, offset+4, 5, 3);
 				painter.drawArc(r, 10*16, 270*16);
-		
+
 			//Draw the second arc symbol
 		QRectF r2(11.2, offset+4, 5, 3);
 				painter.drawArc(r2, 160*16, 300*16);
+		}
 
 			//Draw position text
 		QRectF text_rect = painter.boundingRect(
@@ -1767,7 +1800,7 @@ QList<Element *> CrossRefItem::NOElements() const
 	{
 		//We continue if element is a power contact and xref property
 		//is set to not show power contact
-		if (m_properties.displayHas() == XRefProperties::Cross &&
+		if (displayFor(m_properties, m_element) == XRefProperties::Cross &&
 			!m_properties.showPowerContact() &&
 			elmt -> kindInformations()["type"].toString() == "power")
 			continue;
@@ -1800,7 +1833,7 @@ QList<Element *> CrossRefItem::NCElements() const
 	{
 		//We continue if element is a power contact and xref property
 		//is set to not show power contact
-		if (m_properties.displayHas() == XRefProperties::Cross &&
+		if (displayFor(m_properties, m_element) == XRefProperties::Cross &&
 			!m_properties.showPowerContact() &&
 			elmt -> kindInformations()["type"].toString() == "power")
 			continue;

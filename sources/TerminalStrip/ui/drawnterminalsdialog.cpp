@@ -19,9 +19,13 @@
 
 #include "terminalarticledialog.h"
 #include "terminalpreviewwidget.h"
+#include "../terminalarticlecatalog.h"
 
 #include <ElementsCollection/elementslocation.h>
 #include <elementdialog.h>
+#include <qetgraphicsitem/conductor.h>
+#include <qetgraphicsitem/element.h>
+#include <qetgraphicsitem/terminal.h>
 #include <qetproject.h>
 
 #include <QComboBox>
@@ -31,12 +35,18 @@
 #include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMap>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QSettings>
 #include <QSpinBox>
+#include <QStyledItemDelegate>
 #include <QTableWidget>
 #include <QVBoxLayout>
+
+#include <algorithm>
+#include <climits>
+#include <functional>
 
 namespace
 {
@@ -49,7 +59,67 @@ namespace
 	const char *default_article    = "WAGO 2002-1201";
 	const char *default_pe_article = "WAGO 2002-1207";
 
-	enum Column { ColNumber = 0, ColLevel, ColWire, ColPe, ColCount };
+	enum Column { ColWire = 0, ColPe, ColStrip, ColNumber, ColLevel, ColArticle, ColCount };
+
+		///The strip cell: a list of the strips in use, and free typing
+	class StripDelegate : public QStyledItemDelegate
+	{
+		public:
+			StripDelegate(std::function<QStringList()> strips, QObject *parent) :
+				QStyledItemDelegate(parent), m_strips(std::move(strips)) {}
+
+			QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &,
+								  const QModelIndex &) const override
+			{
+				auto *combo_ = new QComboBox(parent);
+				combo_->setEditable(true);
+				combo_->addItems(m_strips());
+				return combo_;
+			}
+			void setEditorData(QWidget *editor, const QModelIndex &index) const override {
+				static_cast<QComboBox *>(editor)->setCurrentText(index.data().toString());
+			}
+			void setModelData(QWidget *editor, QAbstractItemModel *model,
+							  const QModelIndex &index) const override {
+				model->setData(index, static_cast<QComboBox *>(editor)->currentText().trimmed());
+			}
+
+		private:
+			std::function<QStringList()> m_strips;
+	};
+
+		///"-K1:13 – -M1:U1" for a wire which carries no number of its own
+	QString wireText(const Conductor *conductor)
+	{
+		const QString own_ = DrawnTerminals::conductorText(conductor);
+		if (!own_.isEmpty() || !conductor) {
+			return own_;
+		}
+		auto end_ = [](const Terminal *terminal) {
+			if (!terminal || !terminal->parentElement()) {
+				return QString();
+			}
+			QString label_ = terminal->parentElement()->actualLabel();
+			if (label_.isEmpty()) {
+				label_ = terminal->parentElement()->name();
+			}
+			const QString pin_ = terminal->name();
+			return pin_.isEmpty() ? label_ : label_ + QLatin1Char(':') + pin_;
+		};
+		const QString a_ = end_(conductor->terminal1);
+		const QString b_ = end_(conductor->terminal2);
+		if (a_.isEmpty() && b_.isEmpty()) {
+			return QString();
+		}
+		return a_ + QStringLiteral(" – ") + b_;
+	}
+
+	int numberOf(const QString &text)
+	{
+		bool ok_ = false;
+		const int n_ = text.trimmed().toInt(&ok_);
+		return ok_ ? n_ : INT_MAX;
+	}
 }
 
 DrawnTerminalsDialog::DrawnTerminalsDialog(QETProject *project,
@@ -57,7 +127,10 @@ DrawnTerminalsDialog::DrawnTerminalsDialog(QETProject *project,
 										   QWidget *parent) :
 	QDialog(parent),
 	m_project(project),
-	m_rows(rows)
+	m_rows(rows),
+	m_own_strip(rows.size(), false),
+	m_own_article(rows.size(), false),
+	m_own_number(rows.size(), false)
 {
 	setWindowTitle(tr("Draw terminal strip"));
 
@@ -71,7 +144,8 @@ DrawnTerminalsDialog::DrawnTerminalsDialog(QETProject *project,
 		m_strip->addItem(name_);
 	}
 	m_strip->setCurrentText(next_);
-	m_strip->setToolTip(tr("A new strip is suggested; pick an existing one to add the terminals to it"));
+	m_strip->setToolTip(tr("The strip of every wire you did not move elsewhere; a new strip is "
+						   "suggested, pick an existing one to add the terminals to it"));
 
 	m_first = new QSpinBox(this);
 	m_first->setRange(1, 9999);
@@ -114,45 +188,78 @@ DrawnTerminalsDialog::DrawnTerminalsDialog(QETProject *project,
 	form_->addRow(QString(), m_levels_hint);
 
 	m_table = new QTableWidget(int(m_rows.size()), ColCount, this);
-	m_table->setHorizontalHeaderLabels({tr("Terminal"), tr("Level"), tr("Wire"), tr("PE")});
+	m_table->setHorizontalHeaderLabels({tr("Wire"), tr("PE"), tr("Strip"), tr("Terminal"),
+										tr("Level"), tr("Article")});
 	m_table->verticalHeader()->setVisible(false);
-	m_table->horizontalHeader()->setSectionResizeMode(ColWire, QHeaderView::Stretch);
-	m_table->horizontalHeader()->setSectionResizeMode(ColNumber, QHeaderView::ResizeToContents);
-	m_table->horizontalHeader()->setSectionResizeMode(ColLevel, QHeaderView::ResizeToContents);
-	m_table->horizontalHeader()->setSectionResizeMode(ColPe, QHeaderView::ResizeToContents);
+	m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
+	m_table->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed
+							 | QAbstractItemView::AnyKeyPressed);
+	auto *header_ = m_table->horizontalHeader();
+	header_->setSectionResizeMode(ColWire, QHeaderView::Stretch);
+	header_->setSectionResizeMode(ColArticle, QHeaderView::Stretch);
+	for (int c : {ColPe, ColStrip, ColNumber, ColLevel}) {
+		header_->setSectionResizeMode(c, QHeaderView::ResizeToContents);
+	}
+	m_table->setItemDelegateForColumn(ColStrip, new StripDelegate([this]() { return knownStrips(); }, m_table));
 	for (int i = 0; i < m_rows.size(); ++i)
 	{
-		m_table->setItem(i, ColNumber, new QTableWidgetItem);
-		auto *level_ = new QTableWidgetItem;
-		level_->setFlags(level_->flags() & ~Qt::ItemIsEditable);
-		m_table->setItem(i, ColLevel, level_);
-		auto *wire_ = new QTableWidgetItem(DrawnTerminals::conductorText(m_rows.at(i).conductor));
+		auto *wire_ = new QTableWidgetItem(wireText(m_rows.at(i).conductor));
+		if (wire_->text().isEmpty()) {
+			wire_->setText(tr("Wire %1").arg(i + 1));
+		}
 		wire_->setFlags(wire_->flags() & ~Qt::ItemIsEditable);
 		m_table->setItem(i, ColWire, wire_);
 		auto *pe_ = new QTableWidgetItem;
 		pe_->setFlags((pe_->flags() | Qt::ItemIsUserCheckable) & ~Qt::ItemIsEditable);
 		pe_->setCheckState(m_rows.at(i).pe ? Qt::Checked : Qt::Unchecked);
 		m_table->setItem(i, ColPe, pe_);
+		m_table->setItem(i, ColStrip, new QTableWidgetItem);
+		m_table->setItem(i, ColNumber, new QTableWidgetItem);
+		auto *level_ = new QTableWidgetItem;
+		level_->setFlags(level_->flags() & ~Qt::ItemIsEditable);
+		m_table->setItem(i, ColLevel, level_);
+		auto *article_ = new QTableWidgetItem;
+		article_->setFlags(article_->flags() & ~Qt::ItemIsEditable);
+		m_table->setItem(i, ColArticle, article_);
 	}
+	m_table->setMinimumHeight(170);
 
-	auto *hint_ = new QLabel(tr("%n wire(s) crossed. Every wire gets a terminal at the crossing "
-								"and runs through it; the terminal strip, the terminal plan and "
-								"the bill of materials follow from it.", nullptr, m_rows.size()), this);
+		//What the selected wires can be given in one go
+	auto *own_strip_ = new QPushButton(tr("Own strip"), this);
+	own_strip_->setToolTip(tr("Put the selected wires on a strip of their own (N on X2, PE on X3, …); "
+							  "they are numbered there from 1"));
+	auto *row_article_ = new QPushButton(tr("Article…"), this);
+	row_article_->setToolTip(tr("Choose the article of the selected wires from the catalogue"));
+	auto *reset_ = new QPushButton(tr("Reset"), this);
+	reset_->setToolTip(tr("Every wire back to the strip and the article at the top"));
+	auto *selection_row_ = new QHBoxLayout;
+	selection_row_->addWidget(new QLabel(tr("Selected wires:"), this));
+	selection_row_->addWidget(own_strip_);
+	selection_row_->addWidget(row_article_);
+	selection_row_->addStretch(1);
+	selection_row_->addWidget(reset_);
+
+	auto *hint_ = new QLabel(tr("%n wire(s) crossed. Every wire gets a terminal at the crossing and runs "
+								"through it. Strip, number and article can be changed for each wire "
+								"(double-click); wires with the same strip and number share one terminal "
+								"of several levels.", nullptr, m_rows.size()), this);
 	hint_->setWordWrap(true);
 
 	auto *buttons_ = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
 	buttons_->button(QDialogButtonBox::Ok)->setText(tr("Place terminals"));
 	buttons_->button(QDialogButtonBox::Cancel)->setText(tr("Cancel"));
-	m_table->setMinimumHeight(150);
 
 	m_preview = new TerminalPreviewWidget(this);
 	m_preview->setMinimumHeight(150);
+	m_preview_label = new QLabel(this);
+	m_preview_label->setWordWrap(true);
 
 	auto *layout_ = new QVBoxLayout(this);
 	layout_->addWidget(hint_);
 	layout_->addLayout(form_);
 	layout_->addWidget(m_table, 1);
-	layout_->addWidget(new QLabel(tr("Preview of the strip (from above, at scale):"), this));
+	layout_->addLayout(selection_row_);
+	layout_->addWidget(m_preview_label);
 	layout_->addWidget(m_preview);
 	layout_->addWidget(buttons_);
 
@@ -160,28 +267,47 @@ DrawnTerminalsDialog::DrawnTerminalsDialog(QETProject *project,
 	connect(buttons_, &QDialogButtonBox::rejected, this, &DrawnTerminalsDialog::reject);
 	connect(choose_, &QPushButton::clicked, this, &DrawnTerminalsDialog::chooseElement);
 	connect(m_strip, &QComboBox::currentTextChanged, this, &DrawnTerminalsDialog::stripChanged);
-	connect(m_first, qOverload<int>(&QSpinBox::valueChanged), this, &DrawnTerminalsDialog::renumber);
+	connect(m_first, qOverload<int>(&QSpinBox::valueChanged), this, &DrawnTerminalsDialog::rebuild);
 	connect(catalog_, &QPushButton::clicked, this, [this]() { chooseArticle(false); });
 	connect(pe_catalog_, &QPushButton::clicked, this, [this]() { chooseArticle(true); });
 	connect(m_article, &QLineEdit::textChanged, this, &DrawnTerminalsDialog::articleChanged);
-	connect(m_pe_article, &QLineEdit::textChanged, this, &DrawnTerminalsDialog::updatePreview);
-	connect(m_table, &QTableWidget::itemChanged, this, &DrawnTerminalsDialog::updatePreview);
+	connect(m_pe_article, &QLineEdit::textChanged, this, &DrawnTerminalsDialog::rebuild);
+	connect(m_table, &QTableWidget::cellChanged, this, &DrawnTerminalsDialog::itemChanged);
+	connect(m_table, &QTableWidget::cellDoubleClicked, this, [this](int, int column) {
+		if (column == ColArticle) {
+			chooseRowArticle();
+		}
+	});
+	connect(m_table, &QTableWidget::itemSelectionChanged, this, &DrawnTerminalsDialog::currentRowChanged);
+	connect(own_strip_, &QPushButton::clicked, this, &DrawnTerminalsDialog::ownStripForSelection);
+	connect(row_article_, &QPushButton::clicked, this, &DrawnTerminalsDialog::chooseRowArticle);
+	connect(reset_, &QPushButton::clicked, this, &DrawnTerminalsDialog::resetRows);
 
 	showElement();
-	stripChanged();
+	{
+		const QSignalBlocker blocker_(m_first);
+		m_first->setValue(DrawnTerminals::nextNumber(m_project, m_strip->currentText()));
+	}
 	articleChanged();
-	resize(620, qMin(820, 470 + 26 * int(m_rows.size())));
+	if (m_table->rowCount()) {
+		m_table->selectRow(0);
+	}
+	resize(760, qMin(880, 540 + 26 * int(m_rows.size())));
+}
+
+DrawnTerminalsDialog::~DrawnTerminalsDialog()
+{
+		//The wires shown on the folio go back to unselected
+	for (const auto &row_ : std::as_const(m_rows)) {
+		if (row_.conductor) {
+			row_.conductor->setSelected(false);
+		}
+	}
 }
 
 QList<DrawnTerminals::Row> DrawnTerminalsDialog::rows() const
 {
-	QList<DrawnTerminals::Row> rows_ = m_rows;
-	for (int i = 0; i < rows_.size(); ++i)
-	{
-		rows_[i].number = m_table->item(i, ColNumber)->text().trimmed();
-		rows_[i].pe = m_table->item(i, ColPe)->checkState() == Qt::Checked;
-	}
-	return rows_;
+	return m_rows;
 }
 
 DrawnTerminals::Settings DrawnTerminalsDialog::settings() const
@@ -191,50 +317,306 @@ DrawnTerminals::Settings DrawnTerminalsDialog::settings() const
 	s_.element_path = m_element_path;
 	s_.article = m_article->text().trimmed();
 	s_.pe_article = m_pe_article->text().trimmed();
-	s_.levels = levels();
 	return s_;
-}
-
-int DrawnTerminalsDialog::levels() const
-{
-	return DrawnTerminals::levelsOf(m_article->text());
 }
 
 void DrawnTerminalsDialog::articleChanged()
 {
-	const int levels_ = levels();
-	const bool several_ = levels_ > 1;
-		//The PE of a terminal of several levels is one of its levels: the
-		//PE article is put aside (and comes back with a one-level terminal)
-	if (several_ && m_pe_article->isEnabled())
+	const QString article_ = m_article->text();
+	const int levels_ = DrawnTerminals::levelsOf(article_);
+	const bool pe_inside_ = DrawnTerminals::peLevelOf(article_) >= 0;
+		//Only a terminal with a PE level takes the PE wire itself: the
+		//PE article is put aside then and comes back with any other one
+	if (pe_inside_ && m_pe_article->isEnabled())
 	{
 		m_saved_pe_article = m_pe_article->text();
 		const QSignalBlocker blocker_(m_pe_article);
 		m_pe_article->clear();
 		m_pe_article->setPlaceholderText(tr("PE is a level of the terminal"));
 	}
-	else if (!several_ && !m_pe_article->isEnabled())
+	else if (!pe_inside_ && !m_pe_article->isEnabled())
 	{
 		const QSignalBlocker blocker_(m_pe_article);
 		m_pe_article->setText(m_saved_pe_article);
 		m_pe_article->setPlaceholderText(QString());
 	}
-	m_pe_article->setEnabled(!several_);
+	m_pe_article->setEnabled(!pe_inside_);
 	if (m_pe_catalog) {
-		m_pe_catalog->setEnabled(!several_);
+		m_pe_catalog->setEnabled(!pe_inside_);
 	}
-	m_levels_hint->setVisible(several_);
-	if (several_)
+
+	m_levels_hint->setVisible(levels_ > 1);
+	if (levels_ > 1)
 	{
-		const int wires_ = int(m_rows.size());
-		const int terminals_ = (wires_ + levels_ - 1) / levels_;
-		m_levels_hint->setText(tr("Terminal with %1 levels: every %1 wires share one terminal "
-								  "(%2 terminal(s) for %3 wires), one number and one article; "
-								  "the PE article is not needed.")
-							   .arg(levels_).arg(terminals_).arg(wires_));
+		QStringList names_;
+		for (int l = 0; l < levels_; ++l) {
+			names_ << DrawnTerminals::levelName(article_, l);
+		}
+		QString text_ = tr("Terminal with %1 levels (%2): the wires of one strip fill its levels "
+						   "in turn.").arg(levels_).arg(names_.join(QStringLiteral(" / ")));
+		text_ += QLatin1Char(' ');
+		text_ += pe_inside_ ? tr("PE wires go on its PE level.")
+							: tr("It has no PE level: PE wires get a terminal of their own with the PE article.");
+		text_ += QLatin1Char(' ');
+		text_ += tr("Put N or PE on a strip of their own with \"Own strip\".");
+		m_levels_hint->setText(text_);
 	}
-	renumber();
+	rebuild();
+}
+
+void DrawnTerminalsDialog::stripChanged()
+{
+	const QSignalBlocker blocker_(m_first);
+	m_first->setValue(DrawnTerminals::nextNumber(m_project, m_strip->currentText()));
+	rebuild();
+}
+
+/**
+	@brief DrawnTerminalsDialog::rebuild
+	Work every row out again from the settings at the top, keeping what
+	the user set for a row himself, and show it.
+*/
+void DrawnTerminalsDialog::rebuild()
+{
+	if (!m_table) {
+		return;
+	}
+	const auto settings_ = settings();
+	QStringList kept_numbers_;
+	for (int i = 0; i < m_rows.size(); ++i)
+	{
+		auto &row_ = m_rows[i];
+		if (!m_own_strip.at(i)) {
+			row_.strip = settings_.strip;
+		}
+		if (!m_own_article.at(i)) {
+			row_.article = DrawnTerminals::defaultArticle(row_, settings_);
+		}
+		kept_numbers_ << row_.number;
+	}
+	QHash<QString, int> first_;
+	first_.insert(settings_.strip, m_first->value());
+	DrawnTerminals::numberRows(m_project, m_rows, first_);
+	bool own_numbers_ = false;
+	for (int i = 0; i < m_rows.size(); ++i)
+	{
+		if (m_own_number.at(i)) {
+			m_rows[i].number = kept_numbers_.at(i);
+			own_numbers_ = true;
+		}
+	}
+	if (own_numbers_) {
+		assignLevels();
+	}
+	fillTable();
 	updatePreview();
+}
+
+/**
+	@brief DrawnTerminalsDialog::assignLevels
+	The levels once numbers were typed by hand: the rows of one strip and
+	one number share a terminal, PE on its PE level, the others on the
+	free levels in the order of the rows.
+*/
+void DrawnTerminalsDialog::assignLevels()
+{
+	QHash<QString, QVector<bool>> taken_;
+	for (auto &row_ : m_rows)
+	{
+		const int levels_ = DrawnTerminals::levelsOf(row_.article);
+		if (levels_ < 2) {
+			row_.level = 0;
+			continue;
+		}
+		const QString key_ = row_.strip + QLatin1Char(':') + row_.number.trimmed();
+		auto &used_ = taken_[key_];
+		if (used_.size() < levels_) {
+			used_.resize(levels_);
+		}
+		const int pe_level_ = DrawnTerminals::peLevelOf(row_.article);
+		int level_ = -1;
+		if (row_.pe && pe_level_ >= 0 && !used_.at(pe_level_)) {
+			level_ = pe_level_;
+		}
+		for (int l = 0; level_ < 0 && l < used_.size(); ++l) {
+			if (!used_.at(l) && (l != pe_level_ || row_.pe)) {
+				level_ = l;
+			}
+		}
+		if (level_ < 0) {
+				//More wires than levels: shown, refused on accept
+			level_ = int(used_.size());
+			used_.resize(level_ + 1);
+		}
+		used_[level_] = true;
+		row_.level = level_;
+	}
+}
+
+void DrawnTerminalsDialog::fillTable()
+{
+	m_filling = true;
+	const QSignalBlocker blocker_(m_table);
+	const QString default_strip_ = m_strip->currentText().trimmed();
+	for (int i = 0; i < m_rows.size(); ++i)
+	{
+		const auto &row_ = m_rows.at(i);
+		m_table->item(i, ColStrip)->setText(row_.strip);
+		m_table->item(i, ColNumber)->setText(row_.number);
+		m_table->item(i, ColLevel)->setText(DrawnTerminals::levelName(row_.article, row_.level));
+		const auto catalog_ = TerminalArticleCatalog::find(row_.article);
+		QString article_text_ = row_.article;
+		if (catalog_.isValid() && !catalog_.type_number.isEmpty()) {
+			article_text_ += QStringLiteral(" (") + catalog_.type_number + QLatin1Char(')');
+		}
+		auto *article_item_ = m_table->item(i, ColArticle);
+		article_item_->setText(article_text_);
+		article_item_->setToolTip((catalog_.isValid() ? catalog_.designation + QChar(0x0A) : QString())
+								  + tr("Double-click to choose another article for this wire"));
+			//What differs from the top is bold: a wire moved elsewhere
+		QFont strip_font_ = m_table->item(i, ColStrip)->font();
+		strip_font_.setBold(row_.strip != default_strip_);
+		m_table->item(i, ColStrip)->setFont(strip_font_);
+		QFont article_font_ = article_item_->font();
+		article_font_.setBold(m_own_article.at(i));
+		article_item_->setFont(article_font_);
+	}
+	m_filling = false;
+}
+
+void DrawnTerminalsDialog::itemChanged(int row, int column)
+{
+	if (m_filling || row < 0 || row >= m_rows.size()) {
+		return;
+	}
+	QList<int> targets_ = selectedRows();
+	if (!targets_.contains(row)) {
+		targets_ = {row};
+	}
+
+	if (column == ColStrip)
+	{
+		const QString strip_ = m_table->item(row, ColStrip)->text().trimmed();
+		if (strip_.isEmpty()) {
+			fillTable();
+			return;
+		}
+			//A strip typed into one of several selected rows is for all of them
+		for (int i : std::as_const(targets_))
+		{
+			m_rows[i].strip = strip_;
+			m_own_strip[i] = strip_ != m_strip->currentText().trimmed();
+			m_own_number[i] = false;
+		}
+		rebuild();
+	}
+	else if (column == ColNumber)
+	{
+		m_rows[row].number = m_table->item(row, ColNumber)->text().trimmed();
+		m_own_number[row] = true;
+		rebuild();
+	}
+	else if (column == ColPe)
+	{
+		m_rows[row].pe = m_table->item(row, ColPe)->checkState() == Qt::Checked;
+		m_own_number[row] = false;
+		rebuild();
+	}
+}
+
+QList<int> DrawnTerminalsDialog::selectedRows() const
+{
+	QList<int> rows_;
+	for (const auto &range_ : m_table->selectedRanges()) {
+		for (int r = range_.topRow(); r <= range_.bottomRow(); ++r) {
+			if (!rows_.contains(r)) {
+				rows_ << r;
+			}
+		}
+	}
+	std::sort(rows_.begin(), rows_.end());
+	if (rows_.isEmpty() && m_table->currentRow() >= 0) {
+		rows_ << m_table->currentRow();
+	}
+	return rows_;
+}
+
+QStringList DrawnTerminalsDialog::knownStrips() const
+{
+	QStringList strips_ = DrawnTerminals::stripNames(m_project);
+	for (const auto &row_ : m_rows) {
+		if (!row_.strip.isEmpty() && !strips_.contains(row_.strip)) {
+			strips_ << row_.strip;
+		}
+	}
+	const QString top_ = m_strip->currentText().trimmed();
+	if (!top_.isEmpty() && !strips_.contains(top_)) {
+		strips_.prepend(top_);
+	}
+	return strips_;
+}
+
+/**
+	@brief DrawnTerminalsDialog::ownStripForSelection
+	The selected wires on the next strip nobody uses yet, neither in the
+	project nor in this dialog: select N, click, it is X2; select PE,
+	click, it is X3.
+*/
+void DrawnTerminalsDialog::ownStripForSelection()
+{
+	const auto targets_ = selectedRows();
+	if (targets_.isEmpty()) {
+		return;
+	}
+	const QStringList used_ = knownStrips();
+		//The project's way of writing it: "-X" where it uses the prefix
+	const bool dash_ = std::any_of(used_.begin(), used_.end(), [](const QString &name) {
+		return name.startsWith(QLatin1Char('-'));
+	});
+	const QString prefix_ = dash_ ? QStringLiteral("-X") : QStringLiteral("X");
+	QString name_;
+	for (int n = 1; n < 10000 && name_.isEmpty(); ++n)
+	{
+		const QString candidate_ = prefix_ + QString::number(n);
+		if (!used_.contains(candidate_)) {
+			name_ = candidate_;
+		}
+	}
+	for (int i : targets_)
+	{
+		m_rows[i].strip = name_;
+		m_own_strip[i] = true;
+		m_own_number[i] = false;
+	}
+	rebuild();
+}
+
+void DrawnTerminalsDialog::chooseRowArticle()
+{
+	const auto targets_ = selectedRows();
+	if (targets_.isEmpty()) {
+		return;
+	}
+	const auto &first_ = m_rows.at(targets_.first());
+	const auto article_ = TerminalArticleDialog::choose(this, first_.article, first_.pe);
+	if (!article_.isValid()) {
+		return;
+	}
+	for (int i : targets_)
+	{
+		m_rows[i].article = article_.articleText();
+		m_own_article[i] = true;
+		m_own_number[i] = false;
+	}
+	rebuild();
+}
+
+void DrawnTerminalsDialog::resetRows()
+{
+	m_own_strip.fill(false);
+	m_own_article.fill(false);
+	m_own_number.fill(false);
+	rebuild();
 }
 
 void DrawnTerminalsDialog::accept()
@@ -244,11 +626,24 @@ void DrawnTerminalsDialog::accept()
 		QMessageBox::warning(this, windowTitle(), tr("The terminal strip needs a name."));
 		return;
 	}
-	for (int i = 0; i < m_table->rowCount(); ++i)
+	QHash<QString, int> wires_;
+	for (int i = 0; i < m_rows.size(); ++i)
 	{
-		if (m_table->item(i, ColNumber)->text().trimmed().isEmpty())
+		const auto &row_ = m_rows.at(i);
+		if (row_.strip.trimmed().isEmpty() || row_.number.trimmed().isEmpty())
 		{
-			QMessageBox::warning(this, windowTitle(), tr("Every terminal needs a number."));
+			QMessageBox::warning(this, windowTitle(), tr("Every terminal needs a strip and a number."));
+			m_table->selectRow(i);
+			return;
+		}
+		const QString key_ = row_.strip + QLatin1Char(':') + row_.number.trimmed();
+		const int count_ = ++wires_[key_];
+		if (count_ > DrawnTerminals::levelsOf(row_.article))
+		{
+			QMessageBox::warning(this, windowTitle(),
+								 tr("Terminal %1 gets more wires than it has levels. Give the wires "
+									"different numbers or a terminal with more levels.").arg(key_));
+			m_table->selectRow(i);
 			return;
 		}
 	}
@@ -260,26 +655,6 @@ void DrawnTerminalsDialog::accept()
 	settings_.setValue(QLatin1String(key_pe_article), m_pe_article->isEnabled()
 					   ? m_pe_article->text().trimmed() : m_saved_pe_article.trimmed());
 	QDialog::accept();
-}
-
-void DrawnTerminalsDialog::stripChanged()
-{
-	const QSignalBlocker blocker_(m_first);
-	m_first->setValue(DrawnTerminals::nextNumber(m_project, m_strip->currentText()));
-	renumber();
-	updatePreview();
-}
-
-void DrawnTerminalsDialog::renumber()
-{
-	const int levels_ = levels();
-	const QSignalBlocker blocker_(m_table);
-	for (int i = 0; i < m_table->rowCount(); ++i)
-	{
-		m_table->item(i, ColNumber)->setText(QString::number(m_first->value() + i / levels_));
-		m_table->item(i, ColLevel)->setText(levels_ > 1 ? QString::number(i % levels_ + 1) : QString());
-	}
-	updatePreview();
 }
 
 void DrawnTerminalsDialog::chooseElement()
@@ -309,32 +684,67 @@ void DrawnTerminalsDialog::chooseArticle(bool pe)
 	}
 }
 
+/**
+	@brief DrawnTerminalsDialog::currentRowChanged
+	Show the wires of the selected rows on the folio, and the strip the
+	current one goes into.
+*/
+void DrawnTerminalsDialog::currentRowChanged()
+{
+	const auto selected_ = selectedRows();
+	for (int i = 0; i < m_rows.size(); ++i) {
+		if (auto *conductor_ = m_rows.at(i).conductor) {
+			conductor_->setSelected(selected_.contains(i));
+		}
+	}
+	updatePreview();
+}
+
 void DrawnTerminalsDialog::updatePreview()
 {
 	if (!m_preview || !m_table) {
 		return;
 	}
-	const auto normal_ = TerminalArticleCatalog::find(m_article->text());
-	const int levels_ = levels();
-	auto pe_ = TerminalArticleCatalog::find(m_pe_article->text());
-	if (levels_ > 1 || (!pe_.isValid() && m_pe_article->text().trimmed().isEmpty())) {
-		pe_ = normal_;
+	const int current_ = m_table->currentRow();
+	const QString strip_ = current_ >= 0 && current_ < m_rows.size()
+						   ? m_rows.at(current_).strip : m_strip->currentText().trimmed();
+	QStringList strips_;
+	for (const auto &row_ : std::as_const(m_rows)) {
+		if (!strips_.contains(row_.strip)) {
+			strips_ << row_.strip;
+		}
+	}
+	m_preview_label->setText(strips_.size() > 1
+							 ? tr("Preview of strip %1 (from above, at scale) – this line makes %2 strips: %3")
+								   .arg(strip_).arg(strips_.size()).arg(strips_.join(QStringLiteral(", ")))
+							 : tr("Preview of strip %1 (from above, at scale):").arg(strip_));
+
+		//The terminals of this strip, by number, each with all its levels:
+		//the levels no wire of this line uses stay empty
+	QMap<int, QList<int>> terminals_by_number_;
+	for (int i = 0; i < m_rows.size(); ++i) {
+		if (m_rows.at(i).strip == strip_) {
+			terminals_by_number_[numberOf(m_rows.at(i).number)] << i;
+		}
 	}
 
 	QVector<TerminalPreviewWidget::Terminal> terminals_;
-	for (int i = 0; i < m_table->rowCount(); ++i)
+	int group_ = 0;
+	for (auto it_ = terminals_by_number_.cbegin(); it_ != terminals_by_number_.cend(); ++it_, ++group_)
 	{
-		auto *number_ = m_table->item(i, ColNumber);
-		auto *pe_item_ = m_table->item(i, ColPe);
-		if (!number_ || !pe_item_) {
-			continue;
+		const auto &first_ = m_rows.at(it_.value().first());
+		const auto article_ = TerminalArticleCatalog::find(first_.article);
+		const int levels_ = qMax(DrawnTerminals::levelsOf(first_.article), int(it_.value().size()));
+		const int pe_level_ = DrawnTerminals::peLevelOf(first_.article);
+		for (int l = 0; l < levels_; ++l)
+		{
+			TerminalPreviewWidget::Terminal t_;
+			t_.label = first_.number;
+			t_.article = article_;
+			t_.group = group_;
+			t_.pe = levels_ == 1 ? first_.pe : l == pe_level_;
+			terminals_ << t_;
 		}
-		TerminalPreviewWidget::Terminal t_;
-		t_.label = number_->text();
-		t_.pe = pe_item_->checkState() == Qt::Checked;
-		t_.article = t_.pe ? pe_ : normal_;
-		t_.group = i / levels_;
-		terminals_ << t_;
 	}
-	m_preview->setStrip(m_strip->currentText().trimmed(), terminals_);
+	m_preview->setStrip(strip_, terminals_);
 }

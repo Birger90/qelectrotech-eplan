@@ -31,10 +31,14 @@ class TerminalPreviewWidget;
 class QETProject;
 
 /**
-	@brief The proposal shown once a terminal line has been drawn: which
-	strip, which numbers, which symbol and article -- all filled in
-	already, so a plain Enter is enough, and every value can still be
-	changed before anything is put on the folio.
+	@brief The proposal shown once a terminal line has been drawn: one row
+	per wire, with the strip, the number, the level and the article its
+	terminal gets -- all filled in already, so a plain Enter is enough.
+
+	Every row can go its own way: a wire moved to another strip ("N on
+	X2, PE on X3") is numbered there, a terminal of several levels takes
+	the wires of one strip in turn, PE on its PE level when it has one.
+	Rows of one strip with the same number are one terminal.
 */
 class DrawnTerminalsDialog : public QDialog
 {
@@ -44,6 +48,7 @@ class DrawnTerminalsDialog : public QDialog
 		DrawnTerminalsDialog(QETProject *project,
 							 const QList<DrawnTerminals::Row> &rows,
 							 QWidget *parent = nullptr);
+		~DrawnTerminalsDialog() override;
 
 		QList<DrawnTerminals::Row> rows() const;
 		DrawnTerminals::Settings settings() const;
@@ -53,17 +58,28 @@ class DrawnTerminalsDialog : public QDialog
 
 	private:
 		void stripChanged();
-		void renumber();
+		void rebuild();
+		void assignLevels();
+		void fillTable();
+		void itemChanged(int row, int column);
 		void chooseElement();
 		void showElement();
 		void chooseArticle(bool pe);
+		void chooseRowArticle();
+		void ownStripForSelection();
+		void resetRows();
 		void updatePreview();
 		void articleChanged();
-		int levels() const;
+		void currentRowChanged();
+		QList<int> selectedRows() const;
+		QStringList knownStrips() const;
 
 	private:
 		QETProject *m_project = nullptr;
 		QList<DrawnTerminals::Row> m_rows;
+			///What the user set for a row himself; the rest follows the
+			///settings at the top
+		QVector<bool> m_own_strip, m_own_article, m_own_number;
 		QComboBox *m_strip = nullptr;
 		QSpinBox *m_first = nullptr;
 		QLabel *m_element_label = nullptr;
@@ -72,9 +88,11 @@ class DrawnTerminalsDialog : public QDialog
 		QLineEdit *m_pe_article = nullptr;
 		QTableWidget *m_table = nullptr;
 		TerminalPreviewWidget *m_preview = nullptr;
+		QLabel *m_preview_label = nullptr;
 		QWidget *m_pe_catalog = nullptr;
 		QLabel *m_levels_hint = nullptr;
-		QString m_saved_pe_article;	///< while a terminal of several levels is chosen
+		QString m_saved_pe_article;	///< while a terminal with a PE level is chosen
+		bool m_filling = false;
 };
 
 #endif // DRAWNTERMINALSDIALOG_H

@@ -5259,7 +5259,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>A new strip is suggested; pick an existing one to add the terminals to it</source>
-        <translation>Vorgeschlagen ist eine neue Leiste; wähle eine vorhandene, um die Klemmen dort anzuhängen</translation>
+        <translation type="vanished">Vorgeschlagen ist eine neue Leiste; wähle eine vorhandene, um die Klemmen dort anzuhängen</translation>
     </message>
     <message>
         <source>Choose…</source>
@@ -5302,12 +5302,99 @@ Hold Shift and drag to move this text on its own</source>
         <translation>Klemme</translation>
     </message>
     <message>
+        <source>Strip</source>
+        <translation>Leiste</translation>
+    </message>
+    <message>
         <source>Level</source>
         <translation>Etage</translation>
     </message>
     <message>
+        <source>Article</source>
+        <translation>Artikel</translation>
+    </message>
+    <message>
+        <source>Wire %1</source>
+        <translation>Leitung %1</translation>
+    </message>
+    <message>
+        <source>Own strip</source>
+        <translation>Eigene Leiste</translation>
+    </message>
+    <message>
+        <source>Put the selected wires on a strip of their own (N on X2, PE on X3, …); they are numbered there from 1</source>
+        <translation>Die ausgewählten Leitungen auf eine eigene Leiste legen (N auf X2, PE auf X3, …); dort werden sie ab 1 nummeriert.</translation>
+    </message>
+    <message>
+        <source>Article…</source>
+        <translation>Artikel…</translation>
+    </message>
+    <message>
+        <source>Choose the article of the selected wires from the catalogue</source>
+        <translation>Den Artikel der ausgewählten Leitungen aus dem Katalog wählen</translation>
+    </message>
+    <message>
+        <source>Reset</source>
+        <translation>Zurücksetzen</translation>
+    </message>
+    <message>
+        <source>Every wire back to the strip and the article at the top</source>
+        <translation>Alle Leitungen wieder auf die Leiste und den Artikel von oben setzen</translation>
+    </message>
+    <message>
+        <source>Selected wires:</source>
+        <translation>Ausgewählte Leitungen:</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n wire(s) crossed. Every wire gets a terminal at the crossing and runs through it. Strip, number and article can be changed for each wire (double-click); wires with the same strip and number share one terminal of several levels.</source>
+        <translation>
+            <numerusform>%n Leitung gekreuzt. Sie bekommt am Kreuzungspunkt eine Klemme und läuft durch sie hindurch. Leiste, Nummer und Artikel lassen sich je Leitung ändern (Doppelklick); Leitungen mit gleicher Leiste und Nummer teilen sich eine Mehrstockklemme.</numerusform>
+            <numerusform>%n Leitungen gekreuzt. Jede bekommt am Kreuzungspunkt eine Klemme und läuft durch sie hindurch. Leiste, Nummer und Artikel lassen sich je Leitung ändern (Doppelklick); Leitungen mit gleicher Leiste und Nummer teilen sich eine Mehrstockklemme.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Terminal with %1 levels (%2): the wires of one strip fill its levels in turn.</source>
+        <translation>Klemme mit %1 Etagen (%2): die Leitungen einer Leiste belegen der Reihe nach ihre Etagen.</translation>
+    </message>
+    <message>
+        <source>PE wires go on its PE level.</source>
+        <translation>PE-Leitungen kommen auf die PE-Etage.</translation>
+    </message>
+    <message>
+        <source>It has no PE level: PE wires get a terminal of their own with the PE article.</source>
+        <translation>Sie hat keine PE-Etage: PE-Leitungen bekommen eine eigene Klemme mit dem PE-Artikel.</translation>
+    </message>
+    <message>
+        <source>Put N or PE on a strip of their own with &quot;Own strip&quot;.</source>
+        <translation>N oder PE mit „Eigene Leiste“ auf eine eigene Leiste legen.</translation>
+    </message>
+    <message>
+        <source>Double-click to choose another article for this wire</source>
+        <translation>Doppelklick: anderen Artikel für diese Leitung wählen</translation>
+    </message>
+    <message>
+        <source>Every terminal needs a strip and a number.</source>
+        <translation>Jede Klemme braucht eine Leiste und eine Nummer.</translation>
+    </message>
+    <message>
+        <source>Terminal %1 gets more wires than it has levels. Give the wires different numbers or a terminal with more levels.</source>
+        <translation>Klemme %1 bekommt mehr Leitungen, als sie Etagen hat. Gib den Leitungen verschiedene Nummern oder wähle eine Klemme mit mehr Etagen.</translation>
+    </message>
+    <message>
+        <source>Preview of strip %1 (from above, at scale) – this line makes %2 strips: %3</source>
+        <translation>Vorschau der Leiste %1 (Draufsicht, maßstäblich) – dieser Strich ergibt %2 Leisten: %3</translation>
+    </message>
+    <message>
+        <source>Preview of strip %1 (from above, at scale):</source>
+        <translation>Vorschau der Leiste %1 (Draufsicht, maßstäblich):</translation>
+    </message>
+    <message>
         <source>Wire</source>
         <translation>Leitung</translation>
+    </message>
+    <message>
+        <source>The strip of every wire you did not move elsewhere; a new strip is suggested, pick an existing one to add the terminals to it</source>
+        <translation>Die Leiste aller Leitungen, die du nicht anders zugeordnet hast. Vorgeschlagen wird eine neue Leiste; wähle eine vorhandene, um die Klemmen dort anzuhängen.</translation>
     </message>
     <message>
         <source>PE</source>
@@ -5315,7 +5402,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message numerus="yes">
         <source>%n wire(s) crossed. Every wire gets a terminal at the crossing and runs through it; the terminal strip, the terminal plan and the bill of materials follow from it.</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n Leitung gekreuzt. Jede Leitung bekommt an der Kreuzung eine Klemme und läuft durch sie hindurch; Klemmleiste, Klemmenplan und Stückliste ergeben sich daraus.</numerusform>
             <numerusform>%n Leitungen gekreuzt. Jede Leitung bekommt an der Kreuzung eine Klemme und läuft durch sie hindurch; Klemmleiste, Klemmenplan und Stückliste ergeben sich daraus.</numerusform>
         </translation>
@@ -5330,7 +5417,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>Preview of the strip (from above, at scale):</source>
-        <translation>Vorschau der Leiste (Draufsicht, maßstäblich):</translation>
+        <translation type="vanished">Vorschau der Leiste (Draufsicht, maßstäblich):</translation>
     </message>
     <message>
         <source>PE is a level of the terminal</source>
@@ -5338,7 +5425,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>Terminal with %1 levels: every %1 wires share one terminal (%2 terminal(s) for %3 wires), one number and one article; the PE article is not needed.</source>
-        <translation>Klemme mit %1 Etagen: je %1 Leitungen teilen sich eine Klemme (%2 Klemme(n) für %3 Leitungen), eine Nummer und einen Artikel; der PE-Artikel wird nicht gebraucht.</translation>
+        <translation type="vanished">Klemme mit %1 Etagen: je %1 Leitungen teilen sich eine Klemme (%2 Klemme(n) für %3 Leitungen), eine Nummer und einen Artikel; der PE-Artikel wird nicht gebraucht.</translation>
     </message>
     <message>
         <source>The terminal strip needs a name.</source>
@@ -5346,7 +5433,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>Every terminal needs a number.</source>
-        <translation>Jede Klemme braucht eine Nummer.</translation>
+        <translation type="vanished">Jede Klemme braucht eine Nummer.</translation>
     </message>
 </context>
 <context>

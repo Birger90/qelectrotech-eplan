@@ -238,11 +238,94 @@ int DrawnTerminals::levelsOf(const QString &article)
 	return a_.isValid() ? qMax(1, a_.levels) : 1;
 }
 
-void DrawnTerminals::numberRows(QList<Row> &rows, int first, int levels)
+int DrawnTerminals::peLevelOf(const QString &article)
 {
-	const int per_ = qMax(1, levels);
-	for (int i = 0; i < rows.size(); ++i) {
-		rows[i].number = QString::number(first + i / per_);
+	const auto a_ = TerminalArticleCatalog::find(article);
+	return a_.isValid() ? TerminalArticleCatalog::peLevel(a_) : -1;
+}
+
+QString DrawnTerminals::levelName(const QString &article, int level)
+{
+	const auto a_ = TerminalArticleCatalog::find(article);
+	if (!a_.isValid() || a_.levels < 2) {
+		return QString();
+	}
+	const auto names_ = TerminalArticleCatalog::levelNames(a_);
+	return level >= 0 && level < names_.size() ? names_.at(level)
+											   : QString::number(level + 1);
+}
+
+QString DrawnTerminals::defaultArticle(const Row &row, const Settings &settings)
+{
+	if (row.pe && peLevelOf(settings.article) < 0 && !settings.pe_article.trimmed().isEmpty()) {
+		return settings.pe_article.trimmed();
+	}
+	return settings.article.trimmed();
+}
+
+void DrawnTerminals::numberRows(QETProject *project, QList<Row> &rows,
+								const QHash<QString, int> &first)
+{
+		//What is open on every strip: the next number and the terminal
+		//being filled, with the levels it has left
+	struct Open
+	{
+		int next = 1;
+		int number = 0;			///< 0: no terminal open
+		QString article;
+		QVector<bool> taken;
+	};
+	QHash<QString, Open> open_;
+
+	for (auto &row_ : rows)
+	{
+		const QString strip_ = row_.strip.trimmed();
+		if (!open_.contains(strip_))
+		{
+			Open o_;
+			o_.next = first.value(strip_, nextNumber(project, strip_));
+			open_.insert(strip_, o_);
+		}
+		Open &o_ = open_[strip_];
+		const int levels_ = levelsOf(row_.article);
+		if (levels_ < 2)
+		{
+			row_.number = QString::number(o_.next++);
+			row_.level = 0;
+			o_.number = 0;
+			continue;
+		}
+
+		const int pe_level_ = peLevelOf(row_.article);
+			//The level this wire wants in the open terminal
+		auto slot_ = [&]() {
+			if (o_.number == 0 || o_.article != row_.article) {
+				return -1;
+			}
+			if (row_.pe && pe_level_ >= 0) {
+				return o_.taken.value(pe_level_, true) ? -1 : pe_level_;
+			}
+			for (int l = 0; l < o_.taken.size(); ++l) {
+				if (!o_.taken.at(l) && l != pe_level_) {
+					return l;
+				}
+			}
+			return -1;
+		};
+		int level_ = slot_();
+		if (level_ < 0)
+		{
+			o_.number = o_.next++;
+			o_.article = row_.article;
+			o_.taken = QVector<bool>(levels_, false);
+			level_ = slot_();
+			if (level_ < 0) {
+				level_ = 0;		//a PE wire on a terminal of PE levels only
+			}
+		}
+		o_.taken[level_] = true;
+		row_.number = QString::number(o_.number);
+		row_.level = level_;
 	}
 }
 
@@ -275,29 +358,52 @@ DrawnTerminals::Result DrawnTerminals::place(Diagram *diagram, const QLineF &lin
 		//vertical wires and the terminal has to stand upright.
 	const bool wires_vertical_ = qAbs(line.dy()) < qAbs(line.dx());
 
-	const auto article_ = splitArticle(settings.article);
-	const auto pe_article_ = splitArticle(settings.pe_article.isEmpty()
-										  ? settings.article : settings.pe_article);
+		//What each row really gets: its own strip and article, the
+		//settings where it names none
+	QList<Row> rows_ = rows;
+	QStringList strips_;
+	for (auto &row_ : rows_)
+	{
+		if (row_.strip.trimmed().isEmpty()) {
+			row_.strip = settings.strip;
+		}
+		row_.strip = row_.strip.trimmed();
+		if (row_.article.trimmed().isEmpty()) {
+			row_.article = defaultArticle(row_, settings);
+		}
+		if (!strips_.contains(row_.strip)) {
+			strips_ << row_.strip;
+		}
+	}
+		//The rows of one terminal: same strip, same number. Its lowest
+		//level carries the article -- one terminal is one article to order.
+	auto key_ = [](const Row &row) { return row.strip + QLatin1Char(':') + row.number.trimmed(); };
+	QHash<QString, int> lowest_;
+	for (int i = 0; i < rows_.size(); ++i)
+	{
+		const auto k_ = key_(rows_.at(i));
+		if (!lowest_.contains(k_) || rows_.at(i).level < rows_.at(lowest_.value(k_)).level) {
+			lowest_.insert(k_, i);
+		}
+	}
 
-	auto *undo_ = new QUndoCommand(QCoreApplication::translate("DrawnTerminals", "Draw terminal strip %1").arg(settings.strip));
+	auto *undo_ = new QUndoCommand(QCoreApplication::translate("DrawnTerminals", "Draw terminal strip %1")
+								   .arg(strips_.join(QStringLiteral(", "))));
 	QList<Conductor *> handled_;
 	QSet<Terminal *> used_;
 	QList<Element *> placed_;
+	QList<int> placed_rows_;
 		//The wire keeps what it was on both sides of its terminal: its
 		//number, colour, cross-section and function
 	QList<QPair<Element *, ConductorProperties>> wire_properties_;
 
-	const int levels_ = qMax(1, settings.levels);
-	int row_index_ = -1;
-	for (const auto &row_ : rows)
+	for (int row_index_ = 0; row_index_ < rows_.size(); ++row_index_)
 	{
-		++row_index_;
+		const auto &row_ = rows_.at(row_index_);
 		if (!row_.conductor) {
 			continue;
 		}
-			//The first level of a terminal carries the article: one
-			//terminal of several levels is one article to order
-		const bool first_level_ = (row_index_ % levels_) == 0;
+		const bool first_level_ = lowest_.value(key_(row_)) == row_index_;
 		int state_ = 0;
 		Element *element_ = ElementFactory::Instance()->createElement(import_, nullptr, &state_);
 		if (state_ || !element_) {
@@ -328,13 +434,9 @@ DrawnTerminals::Result DrawnTerminals::place(Diagram *diagram, const QLineF &lin
 		element_->setPos(row_.position - (a_ + b_) / 2.0);
 
 		DiagramContext info_ = element_->elementData().m_informations;
-		const QString number_ = row_.number.trimmed();
-		info_.addValue(QETInformation::ELMT_LABEL, settings.strip + QLatin1Char(':') + number_);
+		info_.addValue(QETInformation::ELMT_LABEL, row_.strip + QLatin1Char(':') + row_.number.trimmed());
 		info_.addValue(QETInformation::ELMT_FORMULA, QString());
-			//A terminal of several levels takes PE on one of them: the
-			//PE article is only for terminals of one level
-		const bool own_pe_ = row_.pe && levels_ == 1;
-		const auto &art_ = own_pe_ ? pe_article_ : article_;
+		const auto art_ = splitArticle(row_.article);
 		if (!art_.second.isEmpty() && first_level_)
 		{
 			info_.addValue(QETInformation::ELMT_MANUFACTURER, art_.first);
@@ -343,9 +445,7 @@ DrawnTerminals::Result DrawnTerminals::place(Diagram *diagram, const QLineF &lin
 			//An article of the catalogue brings what the terminal strip
 			//needs to be drawn at scale and listed: width, colour,
 			//cross-section, designation
-		const auto catalog_ = TerminalArticleCatalog::find(own_pe_ ? settings.pe_article.isEmpty()
-																	 ? settings.article : settings.pe_article
-																   : settings.article);
+		const auto catalog_ = TerminalArticleCatalog::find(row_.article);
 		if (catalog_.isValid())
 		{
 			if (first_level_)
@@ -377,6 +477,7 @@ DrawnTerminals::Result DrawnTerminals::place(Diagram *diagram, const QLineF &lin
 		new AddGraphicsObjectCommand(element_, diagram, element_->pos(), undo_);
 		autoBreakConductors(diagram, element_, undo_, handled_, used_, true);
 		placed_ << element_;
+		placed_rows_ << row_index_;
 		wire_properties_ << qMakePair(element_, row_.conductor->properties());
 	}
 
@@ -412,35 +513,50 @@ DrawnTerminals::Result DrawnTerminals::place(Diagram *diagram, const QLineF &lin
 	}
 	TerminalStripAutoImport::importFreeTerminals(project_);
 
-		//Several levels: the wires of one terminal become the levels of
-		//one physical terminal of the strip, in the order they were drawn
-	if (levels_ > 1)
+		//The wires of one terminal (same strip, same number) become the
+		//levels of one physical terminal of the strip, lowest level first
+	QHash<QString, QList<int>> groups_;	//key -> indexes into placed_
+	QStringList order_;
+	for (int i = 0; i < placed_.size(); ++i)
 	{
+		const auto k_ = key_(rows_.at(placed_rows_.at(i)));
+		if (!groups_.contains(k_)) {
+			order_ << k_;
+		}
+		groups_[k_] << i;
+	}
+	for (const auto &k_ : order_)
+	{
+		auto members_ = groups_.value(k_);
+		if (members_.size() < 2) {
+			continue;
+		}
+		std::sort(members_.begin(), members_.end(), [&](int a, int b) {
+			return rows_.at(placed_rows_.at(a)).level < rows_.at(placed_rows_.at(b)).level;
+		});
+		const QString strip_name_ = rows_.at(placed_rows_.at(members_.first())).strip;
 		TerminalStrip *strip_ = nullptr;
 		for (auto *s_ : project_->terminalStrip()) {
-			if (s_ && s_->name() == settings.strip) {
+			if (s_ && s_->name() == strip_name_) {
 				strip_ = s_;
 				break;
 			}
 		}
-		for (int first_ = 0; strip_ && first_ < placed_.size(); first_ += levels_)
-		{
-			auto *receiver_element_ = qobject_cast<TerminalElement *>(placed_.at(first_));
-			if (!receiver_element_ || !receiver_element_->realTerminal()) {
-				continue;
-			}
-			const auto receiver_ = receiver_element_->realTerminal()->physicalTerminal();
-			QVector<QSharedPointer<RealTerminal>> others_;
-			for (int i = first_ + 1; i < qMin(first_ + levels_, int(placed_.size())); ++i) {
-				if (auto *t_ = qobject_cast<TerminalElement *>(placed_.at(i))) {
-					if (t_->realTerminal()) {
-						others_ << t_->realTerminal();
-					}
+		auto *receiver_element_ = qobject_cast<TerminalElement *>(placed_.at(members_.first()));
+		if (!strip_ || !receiver_element_ || !receiver_element_->realTerminal()) {
+			continue;
+		}
+		const auto receiver_ = receiver_element_->realTerminal()->physicalTerminal();
+		QVector<QSharedPointer<RealTerminal>> others_;
+		for (int m = 1; m < members_.size(); ++m) {
+			if (auto *t_ = qobject_cast<TerminalElement *>(placed_.at(members_.at(m)))) {
+				if (t_->realTerminal()) {
+					others_ << t_->realTerminal();
 				}
 			}
-			if (receiver_ && !others_.isEmpty()) {
-				stack_->push(new GroupTerminalsCommand(strip_, receiver_, others_));
-			}
+		}
+		if (receiver_ && !others_.isEmpty()) {
+			stack_->push(new GroupTerminalsCommand(strip_, receiver_, others_));
 		}
 	}
 	stack_->endMacro();

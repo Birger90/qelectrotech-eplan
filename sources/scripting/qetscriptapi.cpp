@@ -2895,10 +2895,15 @@ int QetScriptApi::addTerminals(int folioIndex, const QString &strip, int firstNu
 	settings.element_path = elementPath.trimmed();
 	settings.article = article.trimmed();
 	settings.pe_article = peArticle.trimmed();
-	settings.levels = DrawnTerminals::levelsOf(settings.article);
-	const int first = firstNumber >= 1 ? firstNumber
-									   : DrawnTerminals::nextNumber(m_project, settings.strip);
-	DrawnTerminals::numberRows(rows, first, settings.levels);
+	for (auto &row : rows) {
+		row.strip = settings.strip;
+		row.article = DrawnTerminals::defaultArticle(row, settings);
+	}
+	QHash<QString, int> first;
+	if (firstNumber >= 1) {
+		first.insert(settings.strip, firstNumber);
+	}
+	DrawnTerminals::numberRows(m_project, rows, first);
 
 	const auto result = DrawnTerminals::place(diagram, line, rows, settings);
 	for (const auto &problem : result.problems) {

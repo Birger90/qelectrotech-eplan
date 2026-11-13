@@ -85,6 +85,12 @@ void TerminalEditor::updateForm()
 	ui->m_name_le->setText(m_part->terminalName());
 	ui->m_type_cb->setCurrentIndex(ui->m_type_cb->findData(m_part->terminalType()));
 	ui->m_potential_le->setText(m_part->potential());
+	ui->m_medium_cb->setCurrentIndex(qMax(0, ui->m_medium_cb->findData(m_part->medium())));
+	ui->m_port_end_cb->setCurrentIndex(qMax(0, ui->m_port_end_cb->findData(m_part->portEnd())));
+		// only a fluid port can carry a silencer or a plug
+	const auto medium = static_cast<Fluid::Medium>(m_part->medium());
+	ui->m_port_end_cb->setEnabled(medium == Fluid::Medium::Pneumatic
+								  || medium == Fluid::Medium::Hydraulic);
 
 	ui->m_show_name_cb->setChecked(m_part->showName());
 	ui->m_label_x_dsb->setValue(m_part->labelPos().x());
@@ -187,6 +193,24 @@ void TerminalEditor::init()
 	ui->m_type_cb->addItem(tr("NC (contact SW)"),   TerminalData::Nc);
 	ui->m_type_cb->addItem(tr("Common (contact SW)"), TerminalData::Common);
 
+	ui->m_medium_cb->addItem(tr("Electric", "terminal medium"),
+							 static_cast<int>(Fluid::Medium::Electric));
+	ui->m_medium_cb->addItem(tr("Pneumatic", "terminal medium"),
+							 static_cast<int>(Fluid::Medium::Pneumatic));
+	ui->m_medium_cb->addItem(tr("Hydraulic", "terminal medium"),
+							 static_cast<int>(Fluid::Medium::Hydraulic));
+	ui->m_medium_cb->addItem(tr("Mechanical", "terminal medium"),
+							 static_cast<int>(Fluid::Medium::Mechanic));
+	ui->m_medium_cb->addItem(tr("Mark only (no line)", "terminal medium"),
+							 static_cast<int>(Fluid::Medium::Logic));
+
+	ui->m_port_end_cb->addItem(tr("Nothing", "open port of a terminal"),
+							   static_cast<int>(Fluid::PortEnd::None));
+	ui->m_port_end_cb->addItem(tr("Silencer", "open port of a terminal"),
+							   static_cast<int>(Fluid::PortEnd::Silencer));
+	ui->m_port_end_cb->addItem(tr("Blanking plug", "open port of a terminal"),
+							   static_cast<int>(Fluid::PortEnd::Plug));
+
 	ui->m_text_props_gb->setEnabled(false);
 
 	// Populate master label dropdown (T1-T20)
@@ -277,6 +301,38 @@ void TerminalEditor::potentialEdited()
 	{
 		auto undo = new QPropertyUndoCommand(m_part, "potential", m_part->property("potential"), potential_);
 		undo->setText(tr("Change the potential of a terminal"));
+		undoStack().push(undo);
+	}
+	m_locked = false;
+}
+
+void TerminalEditor::mediumEdited()
+{
+	if (m_locked) {
+		return;
+	}
+	m_locked = true;
+
+	const int medium = ui->m_medium_cb->currentData().toInt();
+	if (medium != m_part->medium()) {
+		auto undo = new QPropertyUndoCommand(m_part, "medium", m_part->medium(), medium);
+		undo->setText(tr("Change the medium of a terminal"));
+		undoStack().push(undo);
+	}
+	m_locked = false;
+}
+
+void TerminalEditor::portEndEdited()
+{
+	if (m_locked) {
+		return;
+	}
+	m_locked = true;
+
+	const int port_end = ui->m_port_end_cb->currentData().toInt();
+	if (port_end != m_part->portEnd()) {
+		auto undo = new QPropertyUndoCommand(m_part, "port_end", m_part->portEnd(), port_end);
+		undo->setText(tr("Change the open port of a terminal"));
 		undoStack().push(undo);
 	}
 	m_locked = false;
@@ -480,6 +536,10 @@ void TerminalEditor::activeConnections(bool active)
 										this, &TerminalEditor::labelFrameEdited);
 		m_editor_connections << connect(ui->m_potential_le, &QLineEdit::editingFinished,
 								this, &TerminalEditor::potentialEdited);
+		m_editor_connections << connect(ui->m_medium_cb, QOverload<int>::of(&QComboBox::activated),
+										this, &TerminalEditor::mediumEdited);
+		m_editor_connections << connect(ui->m_port_end_cb, QOverload<int>::of(&QComboBox::activated),
+										this, &TerminalEditor::portEndEdited);
 		m_editor_connections << connect(ui->m_use_master_label_cb, &QCheckBox::toggled,
 										this, &TerminalEditor::useMasterLabelEdited);
 		m_editor_connections << connect(ui->m_master_label_cb, QOverload<int>::of(&QComboBox::activated),
@@ -510,6 +570,8 @@ void TerminalEditor::activeChangeConnections(bool active)
 		m_change_connections << connect(m_part, &PartTerminal::labelFrameChanged, this, &TerminalEditor::updateForm);
 		m_change_connections << connect(m_part, &PartTerminal::labelColorChanged, this, &TerminalEditor::updateForm);
 		m_change_connections << connect(m_part, &PartTerminal::potentialChanged, this, &TerminalEditor::updateForm);
+		m_change_connections << connect(m_part, &PartTerminal::mediumChanged, this, &TerminalEditor::updateForm);
+		m_change_connections << connect(m_part, &PartTerminal::portEndChanged, this, &TerminalEditor::updateForm);
 		m_change_connections << connect(m_part, &PartTerminal::useMasterLabelChanged, this, &TerminalEditor::updateForm);
 		m_change_connections << connect(m_part, &PartTerminal::masterLabelIndexChanged, this, &TerminalEditor::updateForm);
 	} else {

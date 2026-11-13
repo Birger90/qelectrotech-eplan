@@ -808,6 +808,7 @@ bool Terminal::isLinkedTo(Terminal *other_terminal) {
 	 - \p other_terminal is this terminal
 	 - this terminal is already connected to \p other_terminal
 	 - either terminal already has as many wires as the project allows
+	 - the terminals do not carry the same medium (air, oil, current)
 	@param other_terminal
 	@return true if this terminal can be linked to other_terminal,
 	otherwise false
@@ -818,6 +819,12 @@ bool Terminal::canBeLinkedTo(Terminal *other_terminal)
 		return false;
 
 	if (!hasRoomForWire() || !other_terminal->hasRoomForWire())
+		return false;
+
+		//A line joins like with like: no air hose on an electric
+		//terminal. Two electric terminals, all there was before fluid
+		//power, always pass.
+	if (!Fluid::canConnect(d->m_medium, other_terminal->d->m_medium))
 		return false;
 
 	return true;

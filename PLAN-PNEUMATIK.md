@@ -117,7 +117,7 @@ Alles über `QUndoCommand` (Merge-IDs in `dev_doc/ID_of_QUndoCommand.txt` eintra
 1. Datenmodell: Terminal `medium`, Abschluss, Leitungsart, `<fluid>`-Block lesen/schreiben + Tests (`tests/qttest`). **Erledigt** (`sources/fluid/`, `tst_fluiddata`). Noch ohne Oberfläche; Medium-Prüfung beim Verbinden folgt mit Schritt 4.
 2. Baukasten-Generator + erste 40 Symbole.
 3. Nachrüsten `50_pneumatic` (Anschlussnamen).
-4. Ventil- und Zylindereditor.
+4. Ventil- und Zylindereditor. **Teil erledigt:** Leitungsart im Leitungs-Fenster, Medium und Abschluss im Anschluss-Editor, Leitungen nur zwischen gleichem Medium. Offen: Ventil-/Zylindereditor, Schalldämpfer/Blindstopfen zeichnen.
 5. Verknüpfung Spule ↔ Ventil, Wegmaßstab.
 6. Prüfungen, Stückliste, Kennzeichnung.
 7. Skript/MCP.

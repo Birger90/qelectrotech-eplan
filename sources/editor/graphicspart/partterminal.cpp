@@ -384,6 +384,35 @@ void PartTerminal::setTerminalType(TerminalData::Type type)
 	emit terminalTypeChanged(); // all terminal-signals call "updateForm"
 }
 
+/**
+ * @brief PartTerminal::setMedium
+ * @param medium : a Fluid::Medium, what this terminal carries
+ */
+void PartTerminal::setMedium(int medium)
+{
+	const auto value = static_cast<Fluid::Medium>(medium);
+	if (d->m_medium == value) {
+		return;
+	}
+	d->m_medium = value;
+	emit mediumChanged();
+}
+
+/**
+ * @brief PartTerminal::setPortEnd
+ * @param port_end : a Fluid::PortEnd, what closes this port while
+ * no line is connected to it
+ */
+void PartTerminal::setPortEnd(int port_end)
+{
+	const auto value = static_cast<Fluid::PortEnd>(port_end);
+	if (d->m_port_end == value) {
+		return;
+	}
+	d->m_port_end = value;
+	emit portEndChanged();
+}
+
 void PartTerminal::setNewUuid()
 {
 	d -> m_uuid = QUuid::createUuid();

@@ -59,6 +59,8 @@ class TerminalEditor : public ElementItemEditor
 		void nameEdited();
 		void typeEdited();
 		void potentialEdited();
+		void mediumEdited();
+		void portEndEdited();
 		void showNameEdited();
 		void labelPosEdited();
 		void labelFontClicked();

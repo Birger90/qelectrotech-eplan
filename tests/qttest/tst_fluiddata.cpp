@@ -227,6 +227,27 @@ class tst_fluiddata : public QObject
 			mixed.applyForEqualAttributes({a, b});
 			QCOMPARE(mixed.m_fluid_line, Fluid::LineKind::None);
 		}
+
+			// the panel hands over only what the user changed
+		void lineKindIsAnEditLikeAnyOther()
+		{
+			ConductorProperties shown, edited;
+			edited.m_fluid_line = Fluid::LineKind::Pilot;
+			edited.style = Qt::DashLine;
+
+			ConductorProperties target;
+			target.m_function = "keep me";
+			target.applyChanges(shown, edited);
+			QCOMPARE(target.m_fluid_line, Fluid::LineKind::Pilot);
+			QCOMPARE(target.style, Qt::DashLine);
+			QCOMPARE(target.m_function, QString("keep me"));
+
+				// an edit of something else leaves the kind alone
+			ConductorProperties other_edit;
+			other_edit.m_function = "x";
+			target.applyChanges(shown, other_edit);
+			QCOMPARE(target.m_fluid_line, Fluid::LineKind::Pilot);
+		}
 };
 
 QTEST_GUILESS_MAIN(tst_fluiddata)

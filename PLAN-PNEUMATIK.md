@@ -127,8 +127,8 @@ Alles über `QUndoCommand` (Merge-IDs in `dev_doc/ID_of_QUndoCommand.txt` eintra
 ## 8. Reihenfolge (Commits)
 
 1. Datenmodell: Terminal `medium`, Abschluss, Leitungsart, `<fluid>`-Block lesen/schreiben + Tests (`tests/qttest`). **Erledigt** (`sources/fluid/`, `tst_fluiddata`). Noch ohne Oberfläche; Medium-Prüfung beim Verbinden folgt mit Schritt 4.
-2. Baukasten-Generator + erste 40 Symbole.
-3. Nachrüsten `50_pneumatic` (Anschlussnamen).
+2. Baukasten-Generator + erste 40 Symbole. **Ersetzt durch Quelle C:** `tools/symbole/fluidsim_symbole.py` wandelt die FluidSIM-Bibliothek um (150 Pneumatiksymbole, Ruhestellung, Portnummern, Abschlüsse, Master/Slave). Ein eigener ISO-Baukasten bleibt offen, solange ISO 1219-1 nicht vorliegt. Offen am Umwandler: Drehrichtung der Bögen nicht gegen FluidSIM geprüft; Hydraulik/Elektrik-Bereiche nicht gesichtet; die erzeugten Bauteile sind (noch) nicht im Repo, nur das Skript.
+3. Nachrüsten `50_pneumatic` (Anschlussnamen). **Erledigt:** `tools/symbole/fluid_nachruesten.py` (Medium an allen Anschlüssen, Portnummern bei 199 von 343 Bauteilen, alle 113 Wegeventile vollständig; `30_hydraulic` nur Medium, dort sind keine Portnummern gezeichnet).
 4. Ventil- und Zylindereditor. **Teil erledigt:** Leitungsart im Leitungs-Fenster, Medium und Abschluss im Anschluss-Editor, Leitungen nur zwischen gleichem Medium, Schalldämpfer/Blindstopfen am freien Anschluss gezeichnet. Offen: Ventil-/Zylindereditor.
 5. Verknüpfung Spule ↔ Ventil, Wegmaßstab. **Teil erledigt:** Ventil = Master, Spule = Slave mit `<fluid kind="solenoid"/>`, Magnetsymbol im Querverweis, Beispielbauteile in `bauteile/pneumatik/`. Hinweis: Als Slave zeigt die Spule die Kennzeichnung des Ventils (`-QM1`), nicht ein eigenes `-MB1` wie FluidSIM. Offen: Wegmaßstab.
 6. Prüfungen, Stückliste, Kennzeichnung. **Teil erledigt:** Projekt → „Fluidtechnik prüfen…“ (offene Anschlüsse, Ventil ohne Spule, Spule ohne Ventil). Offen: Stückliste, Kennzeichnungsvorschlag.

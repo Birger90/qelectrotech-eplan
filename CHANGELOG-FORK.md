@@ -19,6 +19,13 @@ Pneumatikpläne nach Vorbild FluidSIM 6, Stufe 1 (zeichnen, noch keine Simulatio
   Magnetventile ohne verknüpfte Spule, Spulen ohne Ventil. Ein Klick wählt das Bauteil auf seinem Blatt.
 - Beispielbauteile in `bauteile/pneumatik/`: 5/2-Magnetventil mit Federrückstellung (Master, Schalldämpfer an
   3 und 5) und Ventilspule (Slave).
+- `tools/symbole/fluidsim_symbole.py` wandelt die Symbolbibliothek einer FluidSIM-6-Installation in
+  QET-Bauteile um (150 Pneumatiksymbole): Grafik in Ruhestellung, Anschlüsse mit Portnummer, Medium und
+  Richtung, Schalldämpfer/Blindstopfen der Vorlage als Abschluss, deutsche Namen aus FluidSIM, Magnetventile als
+  Master, Ventilspule als Slave.
+- `tools/symbole/fluid_nachruesten.py` rüstet die QET-Sammlung `50_pneumatic` (und `30_hydraulic`) nach:
+  Medium an jedem Anschluss, Portnummern aus den gezeichneten Texten (alle 113 Wegeventile vollständig).
+  Ohne Nachrüsten lassen sich diese Bauteile nicht mit pneumatischen Anschlüssen verbinden.
 
 ## 1.9.0 – 13.11.2026
 

@@ -81,11 +81,21 @@ struct FunctionRecord {
 
 }
 
+QString EplanProject::sevenZip()
+{
+		//"7z" (7-Zip, p7zip), "7zz" (7-Zip of Homebrew on macOS), "7za"
+	for (const QString &name : {QStringLiteral("7z"), QStringLiteral("7zz"), QStringLiteral("7za")}) {
+		const QString found = QStandardPaths::findExecutable(name);
+		if (!found.isEmpty()) return found;
+	}
+	for (const QString &p : {QStringLiteral("C:/Program Files/7-Zip/7z.exe"), QStringLiteral("C:/Program Files (x86)/7-Zip/7z.exe")})
+		if (QFileInfo::exists(p)) return p;
+	return QString();
+}
+
 QString EplanProject::unpack(const QString &zw1, const QString &dir, QString *error)
 {
-	QString seven = QStandardPaths::findExecutable(QStringLiteral("7z"));
-	for (const QString &p : {QStringLiteral("C:/Program Files/7-Zip/7z.exe"), QStringLiteral("C:/Program Files (x86)/7-Zip/7z.exe")})
-		if (seven.isEmpty() && QFileInfo::exists(p)) seven = p;
+	const QString seven = sevenZip();
 	if (seven.isEmpty()) {
 		if (error) *error = QCoreApplication::translate("EplanProject", "A project archive (.zw1) is a 7z archive: install 7-Zip or unpack it and choose the project folder.");
 		return QString();

@@ -54,6 +54,8 @@ class EplanProject
 			QString error;
 		};
 		static Layout readLayout(const QString &path);
+			///7-Zip: on the search path (7z, 7zz, 7za) or in its Windows folder; empty when missing
+		static QString sevenZip();
 
 	private:
 		static QString unpack(const QString &zw1, const QString &dir, QString *error);

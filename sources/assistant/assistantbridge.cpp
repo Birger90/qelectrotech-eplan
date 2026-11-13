@@ -76,11 +76,13 @@ QString AssistantBridge::bridgeScript()
 	const QString configured = QSettings().value(QStringLiteral("assistant/bridge")).toString().trimmed();
 	if (!configured.isEmpty() && QFileInfo(configured).isFile()) return QDir::cleanPath(configured);
 		//The Windows folder (exe beside mcp/), the installers (bin/ beside
-		//mcp/) and make install (share/qelectrotech/mcp/)
+		//mcp/), the macOS bundle (Contents/Resources/mcp/) and make install
+		//(share/qelectrotech/mcp/)
 	const QDir bin(QCoreApplication::applicationDirPath());
 	for (const QString &candidate : {
 		     QStringLiteral("mcp/qet-assistent/bruecke.py"),
 		     QStringLiteral("../mcp/qet-assistent/bruecke.py"),
+		     QStringLiteral("../Resources/mcp/qet-assistent/bruecke.py"),	// macOS bundle
 		     QStringLiteral("../share/qelectrotech/mcp/qet-assistent/bruecke.py")}) {
 		const QString path = bin.filePath(candidate);
 		if (QFileInfo(path).isFile()) return QDir::cleanPath(path);

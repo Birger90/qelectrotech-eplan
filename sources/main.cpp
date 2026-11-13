@@ -38,6 +38,8 @@
 #include <QHashSeed>
 #endif
 
+#include <QDir>
+#include <QFileInfo>
 #include <QSettings>
 #include <QStyleFactory>
 #include <QtConcurrentRun>
@@ -178,6 +180,21 @@ int main(int argc, char **argv)
 	qSetGlobalQHashSeed(0);
 #endif
 	qputenv("QT_HASH_SEED", "0");
+#ifdef Q_OS_MACOS
+	// Started from the Finder or the Dock, a program gets only
+	// /usr/bin:/bin:/usr/sbin:/sbin, not the PATH of the user's shell: the
+	// Python, 7-Zip and Claude Code that Homebrew, MacPorts or the Claude
+	// installer put elsewhere would not be found, neither by QElectroTech
+	// nor by the Python programs it starts. Their usual folders are added.
+	{
+		QStringList path = QString::fromLocal8Bit(qgetenv("PATH")).split(QLatin1Char(':'), Qt::SkipEmptyParts);
+		for (const QString &dir : {QStringLiteral("/opt/homebrew/bin"), QStringLiteral("/usr/local/bin"),
+					   QStringLiteral("/opt/local/bin"), QDir::homePath() + QStringLiteral("/.local/bin")}) {
+			if (!path.contains(dir) && QFileInfo(dir).isDir()) path << dir;
+		}
+		qputenv("PATH", path.join(QLatin1Char(':')).toLocal8Bit());
+	}
+#endif
 	//Some setup, notably to use with QSetting.
 	QCoreApplication::setOrganizationName("QElectroTech");
 	QCoreApplication::setOrganizationDomain("qelectrotech.org");

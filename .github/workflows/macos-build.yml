@@ -1,0 +1,69 @@
+# macOS build of the fork (Apple Silicon, Homebrew Qt 6), with every
+# feature: the cabinet layout's 3D view (Qt OpenGL widgets), its STEP
+# models (Open CASCADE) and the 3D mouse (hidapi).
+#
+# The original QElectroTech is built on macOS by hand with
+# misc/MacQetDeploy_arm64_cmake.sh; nothing builds it in CI. The fork adds
+# code of its own for macOS (manufacturer portal accounts in the keychain,
+# the program search path of a bundle started from the Finder), and only a
+# real build shows that it still compiles there. Run it by hand or on a
+# push to main.
+name: macOS build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  macos:
+    name: Build (Qt 6, Release, arm64, all features)
+    runs-on: macos-14
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build dependencies
+        # opencascade: STEP models of the cabinet layout; hidapi: 3D mouse
+        run: brew install qt sqlite ninja opencascade hidapi
+
+      - name: Configure
+        run: |
+          set -o pipefail
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
+            -DQT_VERSION_MAJOR=6 \
+            -DBUILD_WITH_KF=OFF \
+            -DBUILD_KF=OFF \
+            -DQET_EXPORT_PROJECT_DB=ON \
+            -DPACKAGE_TESTS=OFF \
+            -DQET_ENABLE_SPACEMOUSE=ON \
+            -DQET_SPACEMOUSE_BACKEND=hid \
+            -DCMAKE_PREFIX_PATH="$(brew --prefix qt);$(brew --prefix opencascade);$(brew --prefix)" \
+            -DSQLite3_ROOT="$(brew --prefix sqlite)" 2>&1 | tee configure.log
+          # Every feature of the fork, not a build that quietly leaves the
+          # 3D view or the STEP models out
+          grep -q "Cabinet layout 3D view: Qt OpenGL widgets found" configure.log \
+            || { echo "::error::Qt OpenGL widgets missing: no 3D view"; exit 1; }
+          grep -q "Cabinet layout STEP import: Open CASCADE" configure.log \
+            || { echo "::error::Open CASCADE missing: no STEP models"; exit 1; }
+
+      - name: Build
+        run: cmake --build build --parallel $(sysctl -n hw.ncpu)
+
+      - name: Start headless
+        # The program must at least start and answer on the command line
+        run: |
+          app=$(find build -name qelectrotech -type f -perm -u+x | head -1)
+          echo "Binary: $app"
+          QT_QPA_PLATFORM=offscreen "$app" --version || QT_QPA_PLATFORM=offscreen "$app" --help | head -20
+
+      - name: Python parts
+        # The MCP server, the assistant's bridge and the EPLAN project import
+        # must at least compile with the Python of macOS
+        run: |
+          python3 -m py_compile misc/qet-mcp/qet_mcp.py misc/qet-assistent/bruecke.py
+          python3 -m py_compile tools/eplan_import/eplan_zw1/*.py

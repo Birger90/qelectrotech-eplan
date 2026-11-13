@@ -55,9 +55,17 @@ ARTIKEL_SPALTE = {22002: "Typnummer (22002)", 22003: "Bestellnummer (22003)", 22
                   22005: "Bezeichnung 2 (22005)", 22007: "Hersteller (22007)", 22017: "Technische Kenngrößen (22017)"}
 K = 1560 / 420                    # px je mm (A3-Blatt 420 mm auf 10 Spalten à 156 px)
 X0, H_MM = 20, 297
-QET_EXE = os.environ.get("QET_EXE", os.path.join(os.path.expanduser("~"), "Documents", "Code Projekte",
-                                                  "qelectrotech-eplan", "build", "deploy", "QElectroTech.exe"))
-TITELBLOECKE = os.path.join(os.environ.get("APPDATA", ""), "QElectroTech", "QElectroTech", "titleblocks")
+# QElectroTech und sein Ordner für eigene Schriftfelder: beides gibt QElectroTech beim Start mit (QET_EXE,
+# QET_TITLEBLOCKS_DIR); ohne die Variablen die Ablage des jeweiligen Systems.
+QET_EXE = os.environ.get("QET_EXE") or (
+    os.path.join(os.path.expanduser("~"), "Documents", "Code Projekte", "qelectrotech-eplan", "build", "deploy",
+                 "QElectroTech.exe") if os.name == "nt" else
+    "/Applications/QElectroTech.app/Contents/MacOS/qelectrotech" if sys.platform == "darwin" else "qelectrotech")
+TITELBLOECKE = os.environ.get("QET_TITLEBLOCKS_DIR") or (
+    os.path.join(os.environ.get("APPDATA", ""), "QElectroTech", "QElectroTech", "titleblocks") if os.name == "nt" else
+    os.path.join(os.path.expanduser("~"), "Library", "Application Support", "QElectroTech", "QElectroTech",
+                 "titleblocks") if sys.platform == "darwin" else
+    os.path.join(os.path.expanduser("~"), ".local", "share", "QElectroTech", "QElectroTech", "titleblocks"))
 
 
 def _csv(out, name):
@@ -2322,5 +2330,4 @@ if __name__ == "__main__":
     print("fertig:", erg)
     if "--oeffnen" in sys.argv:
         import subprocess
-        subprocess.Popen([os.path.join(os.path.expanduser("~"), "Documents", "Code Projekte", "qelectrotech-eplan",
-                                       "build", "deploy", "QElectroTech.exe"), erg])
+        subprocess.Popen([QET_EXE, erg])

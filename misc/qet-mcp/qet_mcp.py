@@ -4173,6 +4173,30 @@ def _dataportal_token() -> tuple:
                 return value.strip(), "QElectroTech settings (registry)"
         except OSError:
             pass
+    elif sys.platform == "darwin":
+        # QSettings keeps macOS preferences under the organization domain
+        # (qelectrotech.org -> "org.qelectrotech.QElectroTech"), the group
+        # joined to the key with a dot. "defaults" asks the preferences
+        # daemon, which may hold newer values than the file on disk.
+        domain = "org.qelectrotech.QElectroTech"
+        key = "eplanimport." + _DATAPORTAL_TOKEN_KEY
+        try:
+            out = subprocess.run(["defaults", "read", domain, key],
+                                 capture_output=True, text=True, timeout=10)
+            if out.returncode == 0 and out.stdout.strip():
+                return out.stdout.strip(), "QElectroTech settings (" + domain + ")"
+        except (OSError, subprocess.SubprocessError):
+            pass
+        import plistlib
+        plist = Path.home() / "Library" / "Preferences" / (domain + ".plist")
+        try:
+            with open(plist, "rb") as f:
+                prefs = plistlib.load(f)
+            value = prefs.get(key) or (prefs.get("eplanimport") or {}).get(_DATAPORTAL_TOKEN_KEY)
+            if isinstance(value, str) and value.strip():
+                return value.strip(), str(plist)
+        except (OSError, ValueError, AttributeError, plistlib.InvalidFileException):
+            pass
     else:
         conf = Path.home() / ".config" / "QElectroTech" / "QElectroTech.conf"
         token = _ini_value(conf, "eplanimport", _DATAPORTAL_TOKEN_KEY)

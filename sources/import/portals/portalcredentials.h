@@ -38,6 +38,10 @@ struct PortalAccount
 	QElectroTech. One account per portal, target name
 	"QElectroTech/portal/<portal id>".
 
+	On macOS it is the login keychain (Security framework, a generic
+	password whose service is that same target name, the user name as its
+	account).
+
 	The environment variable QET_CREDENTIAL_PREFIX replaces the prefix
 	"QElectroTech/portal", for tests that must not touch the real accounts.
 

@@ -49,6 +49,15 @@ class Nachruesten(unittest.TestCase):
         self.assertEqual(neu.count('medium="hydraulic"'), 1)
         self.assertEqual(neu.count('medium="pneumatic"'), 4)
 
+    def test_doppelte_namen_werden_eindeutig(self):
+        self.assertEqual(fn.eindeutig(["2", "1", "1", "", ""]), ["2", "1.1", "1.2", "", ""])
+        self.assertEqual(fn.eindeutig(["1", "2", "3"]), ["1", "2", "3"])
+
+    def test_uuid_bei_jedem_lauf_gleich(self):
+        a, _ = fn.nachruesten(VENTIL, "pneumatic")
+        b, _ = fn.nachruesten(VENTIL, "pneumatic")
+        self.assertEqual(a, b)
+
     def test_ohne_text_kein_name(self):
         anschluesse = [(0.0, 0.0, "n")]
         self.assertEqual(fn.zuordnen(anschluesse, [(40.0, 40.0, "1")]), [None])

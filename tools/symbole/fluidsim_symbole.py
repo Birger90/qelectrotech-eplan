@@ -80,10 +80,37 @@ class Uebersetzung:
         return (de or en or roh), (en or de or roh)
 
 
+def eindeutig(namen):
+    """Doppelte Namen eindeutig machen: zweimal „1“ wird „1.1“ und „1.2“; leere Namen bleiben leer.
+
+    Ein Wechselventil hat nach ISO 1219 zwei Eingänge „1“. Gezeichnet bleibt das so, aber QET verlangt
+    unterscheidbare Anschlussnamen (Verdrahtungsliste, IEC 61666; der Bauteil-Editor speichert sonst nicht).
+    """
+    zahl = {}
+    for n in namen:
+        if n:
+            zahl[n] = zahl.get(n, 0) + 1
+    gesehen = {}
+    out = []
+    for n in namen:
+        if n and zahl[n] > 1:
+            gesehen[n] = gesehen.get(n, 0) + 1
+            out.append(f"{n}.{gesehen[n]}")
+        else:
+            out.append(n)
+    return out
+
+
+def kennung(*teile):
+    """UUID, die bei jedem Lauf gleich ist: abgeleitet aus Bibliotheksdatei und Teil."""
+    return uuid.uuid5(uuid.NAMESPACE_URL, "qet-fluidsim/" + "/".join(str(t) for t in teile))
+
+
 class Zeichner:
     """Sammelt die Grafik eines Symbols in FluidSIM-Koordinaten und schreibt sie als QET-XML."""
 
-    def __init__(self):
+    def __init__(self, saat=""):
+        self.saat = saat       # für die UUIDs
         self.teile = []        # (art, daten)
         self.anschluesse = []  # dict
         self.linien = []       # Endpunkte aller Linien, für die Richtung der Anschlüsse
@@ -236,16 +263,16 @@ class Zeichner:
         for a in self.anschluesse:
             p = t(a["p"])
             alle.append(p)
-            if a["name"]:
+            if a.get("anzeige"):
                 # Portnummer sichtbar wie in FluidSIM: neben der Anschlusslinie, zwischen Anschluss und Körper.
                 # Fester Text (Teil der Zeichnung, y = Grundlinie), damit QET ihn nicht vom Symbol wegrückt.
                 r = a["richtung"]
-                breite = 2.6 * len(a["name"])
+                breite = 2.6 * len(a["anzeige"])
                 tx, ty = {"n": (p[0] + 1.5, p[1] + 5), "s": (p[0] + 1.5, p[1] - 2),
                           "w": (p[0] + 1, p[1] - 1.5), "e": (p[0] - 1 - breite, p[1] - 1.5)}[r]
                 zeilen.append(f'<text x="{fmt(tx)}" y="{fmt(ty)}" size="4" color="#000000" '
-                              f'text={quoteattr(a["name"])}/>')
-            attr = [f'uuid="{{{uuid.uuid4()}}}"', f'name={quoteattr(a["name"])}', f'x="{fmt(round(p[0], 1))}"',
+                              f'text={quoteattr(a["anzeige"])}/>')
+            attr = [f'uuid="{{{kennung(self.saat, "anschluss", a["schluessel"])}}}"', f'name={quoteattr(a["name"])}', f'x="{fmt(round(p[0], 1))}"',
                     f'y="{fmt(round(p[1], 1))}"', f'orientation="{a["richtung"]}"', 'type="Generic"']
             if a["medium"] != "electric":
                 attr.append(f'medium="{a["medium"]}"')
@@ -263,7 +290,7 @@ class Zeichner:
             zeilen.insert(0, (
                 f'<dynamic_text x="{fmt(lx)}" y="{fmt(ly)}" z="3" text_width="-1" '
                 f'Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" '
-                f'keep_visual_rotation="false" text_from="ElementInfo" uuid="{{{uuid.uuid4()}}}" '
+                f'keep_visual_rotation="false" text_from="ElementInfo" uuid="{{{kennung(self.saat, "kennzeichen")}}}" '
                 f'font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name>'
                 f'</dynamic_text>'))
             ys.append(ly)
@@ -430,7 +457,7 @@ def umwandeln(datei, namen, quelle_name):
                 py = cm[1] + zahl(eb, "ref-y") + zahl(con, "cy") - hm[1]
                 abschluss_punkte.append((px, py, ABSCHLUSS[c.get("object-ref")]))
 
-    z = Zeichner()
+    z = Zeichner(quelle_name)
     ebenen_namen = []
     for ebene in symbol.findall("symbol-layer"):
         if ebene.get("visible") != "false":
@@ -443,8 +470,9 @@ def umwandeln(datei, namen, quelle_name):
                     a["abschluss"] = art
     if not z.teile:
         return None
-    for a in z.anschluesse:
+    for a, name in zip(z.anschluesse, eindeutig([a["name"] for a in z.anschluesse])):
         a["richtung"] = z.richtung(a["p"])
+        a["anzeige"], a["name"] = a["name"], name
     # Fluidanschlüsse zuerst: sie bestimmen das Raster
     z.anschluesse.sort(key=lambda a: a["medium"] == "electric")
 
@@ -467,7 +495,7 @@ def umwandeln(datei, namen, quelle_name):
     de, en = namen
     return (f'<definition version="0.90" type="element" link_type="{link}" width="{breite}" height="{hoehe}" '
             f'hotspot_x="{hx}" hotspot_y="{hy}">\n'
-            f'    <uuid uuid="{{{uuid.uuid4()}}}"/>\n'
+            f'    <uuid uuid="{{{kennung(quelle_name)}}}"/>\n'
             f'    <names>\n        <name lang="de">{escape(de)}</name>\n'
             f'        <name lang="en">{escape(en)}</name>\n    </names>\n'
             f'{art}{fluid}'
@@ -540,7 +568,7 @@ def main(argv=None):
     ziel = a.ziel or Path("FluidSIM")
     for s in start:
         gehe(s, ziel)
-    print(f"{zahl_ok} Bauteile geschrieben, {zahl_leer} Vorlagen ohne Symbol übersprungen.", file=sys.stderr)
+    print(f"{zahl_ok} Bauteile geschrieben, {zahl_leer} Vorlagen ohne Symbol übersprungen.")
 
 
 if __name__ == "__main__":

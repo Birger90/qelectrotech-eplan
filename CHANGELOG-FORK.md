@@ -26,6 +26,10 @@ Pneumatikpläne nach Vorbild FluidSIM 6, Stufe 1 (zeichnen, noch keine Simulatio
 - `tools/symbole/fluid_nachruesten.py` rüstet die QET-Sammlung `50_pneumatic` (und `30_hydraulic`) nach:
   Medium an jedem Anschluss, Portnummern aus den gezeichneten Texten (alle 113 Wegeventile vollständig).
   Ohne Nachrüsten lassen sich diese Bauteile nicht mit pneumatischen Anschlüssen verbinden.
+- `tools/deploy_lokal.ps1` ersetzt in der Standardsammlung `50_pneumatic` und `30_hydraulic` durch die
+  nachgerüsteten Bauteile und legt die FluidSIM-Symbole unter `50_pneumatic/5090_FluidSIM` ab (wenn FluidSIM 6
+  installiert ist). Doppelte Portnummern (zwei Eingänge „1“ am Wechselventil) heißen als Anschluss „1.1“/„1.2“,
+  gezeichnet bleibt „1“. UUIDs sind bei jedem Lauf gleich.
 
 ## 1.9.0 – 13.11.2026
 

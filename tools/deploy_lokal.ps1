@@ -28,4 +28,36 @@ foreach ($teil in "eplan_zw1", "planvorlagen") {
 }
 Get-ChildItem $ziel -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
 
+# Fluidtechnik: die Pneumatik- und Hydraulikbauteile der Sammlung durch nachgerüstete ersetzen (Medium und
+# Portnummern an jedem Anschluss, gleiche Pfade), dazu die FluidSIM-Symbole, wenn FluidSIM 6 installiert ist.
+# Quelle ist immer die unveränderte Sammlung im Repository, so bleibt das Ergebnis bei jedem Lauf gleich.
+$sammlung = Join-Path $deploy "elements"
+$python = Get-Command python -ErrorAction SilentlyContinue
+if (-not $python) {
+    Write-Warning "Python fehlt: Pneumatik-Bauteile nicht nachgerüstet."
+} elseif (Test-Path $sammlung) {
+    $symbole = Join-Path $repo "tools\symbole"
+    foreach ($teil in @(@("50_pneumatic", "pneumatic"), @("30_hydraulic", "hydraulic"))) {
+        $quelle = Join-Path $repo "elements\$($teil[0])"
+        if (Test-Path $quelle) {
+            & $python.Source -X utf8 (Join-Path $symbole "fluid_nachruesten.py") $quelle `
+                --ziel (Join-Path $sammlung $teil[0]) --medium $teil[1]
+        }
+    }
+    $fluidsim = "C:\Program Files (x86)\Didactic\FluidSIM6"
+    if (Test-Path (Join-Path $fluidsim "sym\sym_fs.lib")) {
+        $fs = Join-Path $sammlung "50_pneumatic\5090_FluidSIM"
+        New-Item -ItemType Directory -Force $fs | Out-Null
+        Set-Content -Encoding utf8 (Join-Path $fs "qet_directory") @"
+<qet-directory>
+    <names>
+        <name lang="de">FluidSIM (Festo Didactic)</name>
+        <name lang="en">FluidSIM (Festo Didactic)</name>
+    </names>
+</qet-directory>
+"@
+        & $python.Source -X utf8 (Join-Path $symbole "fluidsim_symbole.py") --fluidsim $fluidsim --ziel $fs
+    }
+}
+
 Write-Output "build\deploy aktuell: $((& $exe --version | Out-String).Trim())"

@@ -69,6 +69,27 @@ def textmitten(d):
     return out
 
 
+def eindeutig(namen):
+    """Doppelte Namen eindeutig machen: zweimal „1“ wird „1.1“ und „1.2“; leere Namen bleiben leer.
+
+    Ein Wechselventil hat nach ISO 1219 zwei Eingänge „1“. Gezeichnet bleibt das so, aber QET verlangt
+    unterscheidbare Anschlussnamen (Verdrahtungsliste, IEC 61666; der Bauteil-Editor speichert sonst nicht).
+    """
+    zahl = {}
+    for n in namen:
+        if n:
+            zahl[n] = zahl.get(n, 0) + 1
+    gesehen = {}
+    out = []
+    for n in namen:
+        if n and zahl[n] > 1:
+            gesehen[n] = gesehen.get(n, 0) + 1
+            out.append(f"{n}.{gesehen[n]}")
+        else:
+            out.append(n)
+    return out
+
+
 def kosten_fuer(anschluss, text):
     """Abstand von Anschluss (x, y, Richtung) zu Text (x, y, Name), mit Aufschlag für einen Steuernamen oben/unten."""
     ax, ay, richtung = anschluss
@@ -116,7 +137,7 @@ def nachruesten(text: str, medium: str):
     anschluesse = [(float(t.get("x")), float(t.get("y")), t.get("orientation", "n")) for t in d.iter("terminal")]
     texte = textmitten(d)
     wahl = zuordnen(anschluesse, texte)
-    namen = [texte[j][2] if j is not None else "" for j in wahl]
+    namen = eindeutig([texte[j][2] if j is not None else "" for j in wahl])
 
     zaehler = iter(range(len(anschluesse)))
 
@@ -130,7 +151,10 @@ def nachruesten(text: str, medium: str):
         return tag
 
     neu = re.sub(r"<terminal\b[^>]*/>", anschluss, text)
-    neu = re.sub(r'<uuid uuid="\{[^}]*\}"\s*/>', '<uuid uuid="{%s}"/>' % uuid.uuid4(), neu, count=1)
+    # Neue UUID, aus der alten abgeleitet: bei jedem Lauf dieselbe, aber eine andere als die des Originals
+    alt = re.search(r'<uuid uuid="\{([^}]*)\}"', text)
+    neue = uuid.uuid5(uuid.NAMESPACE_URL, "qet-fluid-nachruesten/" + (alt.group(1).lower() if alt else text))
+    neu = re.sub(r'<uuid uuid="\{[^}]*\}"\s*/>', '<uuid uuid="{%s}"/>' % neue, neu, count=1)
     return neu, namen
 
 
@@ -166,7 +190,7 @@ def main(argv=None):
             z.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(q, z)
     print(f"{len(dateien)} Bauteile, {gesamt} Anschlüsse, davon {benannt} benannt; "
-          f"{ohne} Bauteile ohne Portnummern (Medium trotzdem gesetzt).", file=sys.stderr)
+          f"{ohne} Bauteile ohne Portnummern (Medium trotzdem gesetzt).")
 
 
 if __name__ == "__main__":

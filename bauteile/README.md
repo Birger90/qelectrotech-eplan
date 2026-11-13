@@ -17,7 +17,9 @@ nicht in dieses Repository.
 Federrückstellung als Master (Anschlüsse 1–5 pneumatisch, Schalldämpfer an 3 und 5) und die Ventilspule als
 Slave für das elektrische Blatt. Spule und Ventil verknüpft man wie Spule und Kontakt.
 
-Weitere Pneumatikbauteile entstehen per Skript in der Benutzersammlung (nicht im Repository):
+Weitere Pneumatikbauteile entstehen per Skript. `tools/deploy_lokal.ps1` erledigt das bei jedem Deploy in der
+Standardsammlung von `build\deploy`: `50_pneumatic` und `30_hydraulic` werden durch die nachgerüsteten Bauteile
+ersetzt (gleiche Pfade), die FluidSIM-Symbole kommen nach `50_pneumatic/5090_FluidSIM`. Von Hand:
 
     python tools/symbole/fluidsim_symbole.py --fluidsim "C:/Program Files (x86)/Didactic/FluidSIM6" --ziel <Datenordner>/elements/FluidSIM
     python tools/symbole/fluid_nachruesten.py elements/50_pneumatic --ziel <Datenordner>/elements/Pneumatik_nachgeruestet

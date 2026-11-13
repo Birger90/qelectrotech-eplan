@@ -685,7 +685,7 @@
     </message>
     <message>
         <source>Your question… (Enter sends, Shift+Enter: new line)</source>
-        <translation>Deine Frage… (Enter sendet, Umschalt+Enter: neue Zeile)</translation>
+        <translation type="vanished">Deine Frage… (Enter sendet, Umschalt+Enter: neue Zeile)</translation>
     </message>
     <message>
         <source>Stop</source>
@@ -4570,6 +4570,18 @@ Fortfahren?</translation>
 <context>
     <name>DiagramEventAddCable</name>
     <message>
+        <source>Left click: start the line across the wires of the terminal strip; drag or second click: finish; right click: cancel; Esc: quit</source>
+        <translation>Linksklick: Strich über die Leitungen der Klemmleiste beginnen; Ziehen oder zweiter Klick: beenden; Rechtsklick: abbrechen; Esc: Werkzeug verlassen</translation>
+    </message>
+    <message numerus="yes">
+        <source>Left click or release: finish the line (%n terminal(s); numbered in the direction you draw); right click: cancel the line</source>
+        <comment>how many conductors the terminal line already crosses</comment>
+        <translation>
+            <numerusform>Linksklick oder Loslassen: Strich beenden (%n Klemme; nummeriert in Zeichenrichtung); Rechtsklick: Strich verwerfen</numerusform>
+            <numerusform>Linksklick oder Loslassen: Strich beenden (%n Klemmen; nummeriert in Zeichenrichtung); Rechtsklick: Strich verwerfen</numerusform>
+        </translation>
+    </message>
+    <message>
         <source>Left click: place the cable start; drag or second click: finish; right click: cancel; Esc: quit</source>
         <translation>Linksklick: Kabelansatz setzen; Ziehen oder zweiter Klick: Beenden; Rechtsklick: Abbrechen; Esc: Beenden</translation>
     </message>
@@ -4580,6 +4592,14 @@ Fortfahren?</translation>
             <numerusform>Linksklick oder Loslassen: Linie fertigstellen (%n Ader erkannt; immer horizontal oder vertikal); Rechtsklick: Linie abbrechen</numerusform>
             <numerusform>Linksklick oder Loslassen: Linie fertigstellen (%n Adern erkannt; immer horizontal oder vertikal); Rechtsklick: Linie abbrechen</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Draw terminal strip</source>
+        <translation>Klemmleiste zeichnen</translation>
+    </message>
+    <message>
+        <source>The line crosses no wire. Draw it across the wires which go through the terminal strip.</source>
+        <translation>Der Strich kreuzt keine Leitung. Zieh ihn quer über die Leitungen, die über die Klemmleiste laufen.</translation>
     </message>
 </context>
 <context>
@@ -5404,6 +5424,134 @@ Hold Shift and drag to move this text on its own</source>
     <message>
         <source>Fold the left side panels away</source>
         <translation>Linke Seitenleisten einklappen</translation>
+    </message>
+</context>
+<context>
+    <name>DrawnTerminals</name>
+    <message>
+        <source>The terminal symbol %1 does not exist.</source>
+        <translation>Das Klemmensymbol %1 gibt es nicht.</translation>
+    </message>
+    <message>
+        <source>The terminal symbol could not be taken into the project.</source>
+        <translation>Das Klemmensymbol ließ sich nicht ins Projekt übernehmen.</translation>
+    </message>
+    <message>
+        <source>Draw terminal strip %1</source>
+        <translation>Klemmleiste %1 zeichnen</translation>
+    </message>
+    <message>
+        <source>The terminal symbol could not be built.</source>
+        <translation>Das Klemmensymbol ließ sich nicht erzeugen.</translation>
+    </message>
+    <message>
+        <source>The terminal symbol needs two connection points.</source>
+        <translation>Das Klemmensymbol braucht zwei Anschlüsse.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n terminal(s) did not land on their wire (the wire is too short there or bends at the crossing); they stand on the folio unconnected.</source>
+        <translation>
+            <numerusform>%n Klemme sitzt nicht auf ihrer Leitung (die Leitung ist dort zu kurz oder knickt an der Kreuzung) und steht unverbunden auf dem Blatt.</numerusform>
+            <numerusform>%n Klemmen sitzen nicht auf ihrer Leitung (die Leitung ist dort zu kurz oder knickt an der Kreuzung) und stehen unverbunden auf dem Blatt.</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>DrawnTerminalsDialog</name>
+    <message>
+        <source>Draw terminal strip</source>
+        <translation>Klemmleiste zeichnen</translation>
+    </message>
+    <message>
+        <source>A new strip is suggested; pick an existing one to add the terminals to it</source>
+        <translation>Vorgeschlagen ist eine neue Leiste; wähle eine vorhandene, um die Klemmen dort anzuhängen</translation>
+    </message>
+    <message>
+        <source>Choose…</source>
+        <translation>Wählen…</translation>
+    </message>
+    <message>
+        <source>Manufacturer and order number, e.g. WAGO 2002-1201</source>
+        <translation>Hersteller und Bestellnummer, z. B. WAGO 2002-1201</translation>
+    </message>
+    <message>
+        <source>Catalogue…</source>
+        <translation>Katalog…</translation>
+    </message>
+    <message>
+        <source>Choose the terminal from the catalogue, with filters and a preview</source>
+        <translation>Klemme aus dem Katalog wählen, mit Filtern und Vorschau</translation>
+    </message>
+    <message>
+        <source>Terminal strip:</source>
+        <translation>Klemmleiste:</translation>
+    </message>
+    <message>
+        <source>First number:</source>
+        <translation>Erste Nummer:</translation>
+    </message>
+    <message>
+        <source>Symbol:</source>
+        <translation>Symbol:</translation>
+    </message>
+    <message>
+        <source>Article:</source>
+        <translation>Artikel:</translation>
+    </message>
+    <message>
+        <source>PE article:</source>
+        <translation>Artikel PE:</translation>
+    </message>
+    <message>
+        <source>Terminal</source>
+        <translation>Klemme</translation>
+    </message>
+    <message>
+        <source>Wire</source>
+        <translation>Leitung</translation>
+    </message>
+    <message>
+        <source>PE</source>
+        <translation>PE</translation>
+    </message>
+    <message>
+        <source>Level</source>
+        <translation>Etage</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n wire(s) crossed. Every wire gets a terminal at the crossing and runs through it; the terminal strip, the terminal plan and the bill of materials follow from it.</source>
+        <translation>
+            <numerusform>%n Leitung gekreuzt. Jede Leitung bekommt an der Kreuzung eine Klemme und läuft durch sie hindurch; Klemmleiste, Klemmenplan und Stückliste ergeben sich daraus.</numerusform>
+            <numerusform>%n Leitungen gekreuzt. Jede Leitung bekommt an der Kreuzung eine Klemme und läuft durch sie hindurch; Klemmleiste, Klemmenplan und Stückliste ergeben sich daraus.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Place terminals</source>
+        <translation>Klemmen setzen</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>Preview of the strip (from above, at scale):</source>
+        <translation>Vorschau der Leiste (Draufsicht, maßstäblich):</translation>
+    </message>
+    <message>
+        <source>PE is a level of the terminal</source>
+        <translation>PE ist eine Etage der Klemme</translation>
+    </message>
+    <message>
+        <source>Terminal with %1 levels: every %1 wires share one terminal (%2 terminal(s) for %3 wires), one number and one article; the PE article is not needed.</source>
+        <translation>Klemme mit %1 Etagen: je %1 Leitungen teilen sich eine Klemme (%2 Klemme(n) für %3 Leitungen), eine Nummer und einen Artikel; der PE-Artikel wird nicht gebraucht.</translation>
+    </message>
+    <message>
+        <source>The terminal strip needs a name.</source>
+        <translation>Die Klemmleiste braucht einen Namen.</translation>
+    </message>
+    <message>
+        <source>Every terminal needs a number.</source>
+        <translation>Jede Klemme braucht eine Nummer.</translation>
     </message>
 </context>
 <context>
@@ -16476,6 +16624,10 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
         <translation>Ein Kabel zeichnen</translation>
     </message>
     <message>
+        <source>Draw terminal strip</source>
+        <translation>Klemmleiste zeichnen</translation>
+    </message>
+    <message>
         <source>Draw a bridge</source>
         <translation>Brücke zeichnen</translation>
     </message>
@@ -16530,6 +16682,10 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     <message>
         <source>Draws the main line of a cable: every conductor crossed becomes one of its cores</source>
         <translation>Zeichnet die Hauptleitung eines Kabels: Jeder gekreuzte Leiter wird zu einem seiner Adern</translation>
+    </message>
+    <message>
+        <source>Draws a line across conductors: every conductor crossed gets a terminal of one terminal strip</source>
+        <translation>Zeichnet einen Strich über Leitungen: Jede gekreuzte Leitung bekommt eine Klemme derselben Klemmleiste</translation>
     </message>
     <message>
         <source>Draws a bridge over terminals: every terminal crossed becomes one of its connections</source>
@@ -24950,6 +25106,203 @@ Andere Felder werden nicht verwendet.</translation>
     </message>
 </context>
 <context>
+    <name>TerminalArticleCatalog</name>
+    <message>
+        <source>Feed-through</source>
+        <translation>Durchgangsklemme</translation>
+    </message>
+    <message>
+        <source>Protective earth</source>
+        <translation>Schutzleiterklemme</translation>
+    </message>
+    <message>
+        <source>Double-deck</source>
+        <translation>Doppelstockklemme</translation>
+    </message>
+    <message>
+        <source>Fuse</source>
+        <translation>Sicherungsklemme</translation>
+    </message>
+    <message>
+        <source>Disconnect</source>
+        <translation>Trennklemme</translation>
+    </message>
+    <message>
+        <source>Push-in</source>
+        <translation>Push-in</translation>
+    </message>
+    <message>
+        <source>Spring cage</source>
+        <translation>Zugfeder</translation>
+    </message>
+    <message>
+        <source>Screw</source>
+        <translation>Schraube</translation>
+    </message>
+</context>
+<context>
+    <name>TerminalArticleDialog</name>
+    <message>
+        <source>Terminal catalogue</source>
+        <translation>Klemmenkatalog</translation>
+    </message>
+    <message>
+        <source>Search: order number, series, designation…</source>
+        <translation>Suchen: Bestellnummer, Serie, Bezeichnung…</translation>
+    </message>
+    <message>
+        <source>Search the Data Portal</source>
+        <translation>Im Data Portal suchen</translation>
+    </message>
+    <message>
+        <source>Look for terminals in the EPLAN Data Portal (online); a terminal used from there is kept in the catalogue</source>
+        <translation>Klemmen im EPLAN Data Portal suchen (online); eine von dort übernommene Klemme bleibt im Katalog</translation>
+    </message>
+    <message>
+        <source>Manufacturer:</source>
+        <translation>Hersteller:</translation>
+    </message>
+    <message>
+        <source>Kind:</source>
+        <translation>Art:</translation>
+    </message>
+    <message>
+        <source>mm²:</source>
+        <translation>mm²:</translation>
+    </message>
+    <message>
+        <source>Clamp:</source>
+        <translation>Anschluss:</translation>
+    </message>
+    <message>
+        <source>Manufacturer</source>
+        <translation>Hersteller</translation>
+    </message>
+    <message>
+        <source>Order number</source>
+        <translation>Bestellnummer</translation>
+    </message>
+    <message>
+        <source>Designation</source>
+        <translation>Bezeichnung</translation>
+    </message>
+    <message>
+        <source>Kind</source>
+        <translation>Art</translation>
+    </message>
+    <message>
+        <source>mm²</source>
+        <translation>mm²</translation>
+    </message>
+    <message>
+        <source>Width mm</source>
+        <translation>Breite mm</translation>
+    </message>
+    <message>
+        <source>Clamp</source>
+        <translation>Anschluss</translation>
+    </message>
+    <message>
+        <source>Conductors</source>
+        <translation>Leiter</translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation>Quelle</translation>
+    </message>
+    <message>
+        <source>Preview (from above, at scale):</source>
+        <translation>Vorschau (Draufsicht, maßstäblich):</translation>
+    </message>
+    <message>
+        <source>Catalogue folder…</source>
+        <translation>Katalogordner…</translation>
+    </message>
+    <message>
+        <source>Own terminals: CSV files in this folder of the data directory are read as well</source>
+        <translation>Eigene Klemmen: CSV-Dateien in diesem Ordner des Datenverzeichnisses werden mitgelesen</translation>
+    </message>
+    <message>
+        <source>Reload</source>
+        <translation>Neu laden</translation>
+    </message>
+    <message>
+        <source>Use</source>
+        <translation>Übernehmen</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>Data Portal: %1</source>
+        <translation>Data Portal: %1</translation>
+    </message>
+    <message>
+        <source>No picture</source>
+        <translation>Kein Bild</translation>
+    </message>
+    <message>
+        <source>No picture (offline?)</source>
+        <translation>Kein Bild (offline?)</translation>
+    </message>
+    <message>
+        <source>Type an order number or type to search the Data Portal</source>
+        <translation>Bestellnummer oder Typ eingeben, um im Data Portal zu suchen</translation>
+    </message>
+    <message>
+        <source>Searching the Data Portal…</source>
+        <translation>Suche im Data Portal…</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n new from the Data Portal</source>
+        <translation>
+            <numerusform>%n neu aus dem Data Portal</numerusform>
+            <numerusform>%n neu aus dem Data Portal</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>Alle</translation>
+    </message>
+    <message>
+        <source>built-in</source>
+        <translation>eingebaut</translation>
+    </message>
+    <message>
+        <source>Data Portal (online)</source>
+        <translation>Data Portal (online)</translation>
+    </message>
+    <message>
+        <source>%1 of %2 terminals</source>
+        <translation>%1 von %2 Klemmen</translation>
+    </message>
+    <message>
+        <source>Loading picture…</source>
+        <translation>Bild wird geladen…</translation>
+    </message>
+    <message>
+        <source>Cross-section</source>
+        <translation>Querschnitt</translation>
+    </message>
+    <message>
+        <source>not given</source>
+        <translation>nicht angegeben</translation>
+    </message>
+    <message>
+        <source>Width</source>
+        <translation>Breite</translation>
+    </message>
+    <message>
+        <source>not given (preview with 5.2)</source>
+        <translation>nicht angegeben (Vorschau mit 5,2)</translation>
+    </message>
+    <message>
+        <source>Connection points</source>
+        <translation>Anschlusspunkte</translation>
+    </message>
+</context>
+<context>
     <name>TerminalEditor</name>
     <message>
         <source>North</source>
@@ -25194,6 +25547,13 @@ Andere Felder werden nicht verwendet.</translation>
     <message>
         <source>Uncheck the terminal blocks whose numbering is to be excluded</source>
         <translation>Entfernen Sie die Markierung bei den Klemmen, deren Nummerierung ausgeschlossen werden soll</translation>
+    </message>
+</context>
+<context>
+    <name>TerminalPreviewWidget</name>
+    <message>
+        <source>No terminal</source>
+        <translation>Keine Klemme</translation>
     </message>
 </context>
 <context>

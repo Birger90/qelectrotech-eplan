@@ -39,6 +39,7 @@
 #include "../diagramcontent.h"
 #include "../diagramview.h"
 #include "../factory/elementfactory.h"
+#include "../TerminalStrip/drawnterminals.h"
 #include "../imagedrop.h"
 #include "../factory/qetgraphicstablefactory.h"
 #include "../factory/ui/addtabledialog.h"
@@ -2851,6 +2852,59 @@ QString QetScriptApi::addCable(int folioIndex, const QString &designation,
 	diagram->addItem(item);
 	m_project->undoStack()->push(new AddCableCommand(cable, item, diagram, true));
 	return cable->uuid().toString();
+}
+
+/**
+	@brief QetScriptApi::addTerminals
+	Draw a terminal strip across conductors, as the "draw terminal strip"
+	tool does: every conductor the line from (x1, y1) to (x2, y2) crosses
+	gets a terminal at the crossing, the wire runs through it, and the
+	terminal is labelled "<strip>:<n>", counted from @p firstNumber in the
+	direction the line runs. Wires which look like PE (potential, number
+	or colour) get @p peArticle instead of @p article. An empty @p strip
+	takes the next free name, a @p firstNumber below 1 the number after
+	the strip's highest, an empty @p elementPath the plain terminal
+	symbol. The terminals are filed into the strip straight away. One
+	undo step.
+	@return how many terminals were placed, -1 when nothing was
+*/
+int QetScriptApi::addTerminals(int folioIndex, const QString &strip, int firstNumber,
+							   const QString &elementPath, const QString &article,
+							   const QString &peArticle,
+							   double x1, double y1, double x2, double y2)
+{
+	if (!m_project) return -1;
+	if (m_project->isReadOnly()) {
+		log(QStringLiteral("qet.addTerminals: project is read-only"));
+		return -1;
+	}
+	const QList<Diagram *> diagrams = m_project->folios();
+	if (folioIndex < 0 || folioIndex >= diagrams.count()) return -1;
+	Diagram *diagram = built(diagrams.at(folioIndex));
+
+	const QLineF line(QPointF(x1, y1), QPointF(x2, y2));
+	QList<DrawnTerminals::Row> rows = DrawnTerminals::rowsFor(diagram, line);
+	if (rows.isEmpty()) {
+		log(QStringLiteral("qet.addTerminals: the line crosses no conductor"));
+		return -1;
+	}
+
+	DrawnTerminals::Settings settings;
+	settings.strip = strip.trimmed().isEmpty() ? DrawnTerminals::nextFreeStrip(m_project)
+											   : strip.trimmed();
+	settings.element_path = elementPath.trimmed();
+	settings.article = article.trimmed();
+	settings.pe_article = peArticle.trimmed();
+	settings.levels = DrawnTerminals::levelsOf(settings.article);
+	const int first = firstNumber >= 1 ? firstNumber
+									   : DrawnTerminals::nextNumber(m_project, settings.strip);
+	DrawnTerminals::numberRows(rows, first, settings.levels);
+
+	const auto result = DrawnTerminals::place(diagram, line, rows, settings);
+	for (const auto &problem : result.problems) {
+		log(QStringLiteral("qet.addTerminals: ") + problem);
+	}
+	return result.placed > 0 ? result.placed : -1;
 }
 
 /**

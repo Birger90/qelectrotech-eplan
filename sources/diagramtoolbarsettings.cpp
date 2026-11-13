@@ -210,6 +210,7 @@ QStringList DiagramToolbarSettings::defaultIds(const QString &name)
 				//the shapes of the "Ajouter" toolbar.
 			sep,
 			QStringLiteral("diagrameditor.add_cable"),
+			QStringLiteral("diagrameditor.add_terminals"),
 			QStringLiteral("diagrameditor.add_bridge"),
 			QStringLiteral("widget:conductor_color"),
 			sep,
@@ -279,18 +280,42 @@ void DiagramToolbarSettings::placeNewWidgets()
 {
 	QSettings settings;
 	const QString done = QStringLiteral("diagrameditor/toolbars_placed/claude");
-	if (settings.value(done).toBool()) return;
-	settings.setValue(done, true);
-	const QString main_name = QStringLiteral("toolbar");
-	if (!settings.contains(CONTENTS + main_name)) return;	//the defaults have it
+	[&]() {
+		if (settings.value(done).toBool()) return;
+		settings.setValue(done, true);
+		const QString main_name = QStringLiteral("toolbar");
+		if (!settings.contains(CONTENTS + main_name)) return;	//the defaults have it
+		QStringList all_names = builtInNames();
+		for (const Toolbar &toolbar : customToolbars()) all_names << toolbar.name;
+		for (const QString &name : all_names)
+			if (ids(name).contains(QStringLiteral("widget:claude"))) return;
+		QStringList main_ids = ids(main_name);
+		main_ids.prepend(separatorId());
+		main_ids.prepend(QStringLiteral("widget:claude"));
+		setIds(main_name, main_ids);
+	}();
+
+		//"Draw terminal strip" goes once next to "Draw a cable", in
+		//whichever saved toolbar holds that one
+	const QString terminals_done = QStringLiteral("diagrameditor/toolbars_placed/terminals");
+	if (settings.value(terminals_done).toBool()) return;
+	settings.setValue(terminals_done, true);
+	const QString cable = QStringLiteral("diagrameditor.add_cable");
+	const QString terminals = QStringLiteral("diagrameditor.add_terminals");
 	QStringList all_names = builtInNames();
 	for (const Toolbar &toolbar : customToolbars()) all_names << toolbar.name;
 	for (const QString &name : all_names)
-		if (ids(name).contains(QStringLiteral("widget:claude"))) return;
-	QStringList main_ids = ids(main_name);
-	main_ids.prepend(separatorId());
-	main_ids.prepend(QStringLiteral("widget:claude"));
-	setIds(main_name, main_ids);
+		if (settings.contains(CONTENTS + name) && ids(name).contains(terminals)) return;
+	for (const QString &name : all_names)
+	{
+		if (!settings.contains(CONTENTS + name)) continue;	//the defaults have it
+		QStringList list = ids(name);
+		const int at = list.indexOf(cable);
+		if (at < 0) continue;
+		list.insert(at + 1, terminals);
+		setIds(name, list);
+		return;
+	}
 }
 
 QString DiagramToolbarSettings::separatorId()

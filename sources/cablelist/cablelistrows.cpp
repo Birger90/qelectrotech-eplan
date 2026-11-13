@@ -24,6 +24,8 @@
 #include <qetgraphicsitem/conductor.h>
 #include <qetgraphicsitem/element.h>
 #include <qetgraphicsitem/terminal.h>
+#include <qetgraphicsitem/terminalelement.h>
+#include <TerminalStrip/terminalstrip.h>
 #include <qetinformation.h>
 #include <qetproject.h>
 
@@ -49,6 +51,9 @@ struct CableEnd
 	Diagram *diagram = nullptr;
 	QPointF scene;
 	Element *element = nullptr;
+		///The terminal strip the piece belongs to: all terminals of one
+		///strip are one end, the way EPLAN lists -X1 and not -X1:3
+	TerminalStrip *strip = nullptr;
 	QUuid element_uuid;
 	QString tie;
 
@@ -104,6 +109,9 @@ QString folioOf(const CableEnd &end, const QETProject *project)
 */
 QString plantOf(const CableEnd &end)
 {
+	if (end.strip) {
+		return end.strip->installation();
+	}
 	if (!end.element) {
 		return QString();
 	}
@@ -119,6 +127,9 @@ QString plantOf(const CableEnd &end)
 */
 QString locmachOf(const CableEnd &end)
 {
+	if (end.strip) {
+		return end.strip->location();
+	}
 	if (!end.element) {
 		return QString();
 	}
@@ -133,6 +144,9 @@ QString locmachOf(const CableEnd &end)
 */
 QString labelOfEnd(const CableEnd &end)
 {
+	if (end.strip) {
+		return end.strip->name();
+	}
 	if (!end.element) {
 		return QString();
 	}
@@ -251,6 +265,12 @@ QVector<QMap<QString, QString>> CableList::rows(QETProject *project)
 				end.scene = terminal->scenePos();
 				end.element = element;
 				end.element_uuid = element->uuid();
+				if (auto *terminal_element = dynamic_cast<TerminalElement *>(element)) {
+					if (TerminalStrip *strip = terminal_element->parentTerminalStrip()) {
+						end.strip = strip;
+						end.element_uuid = strip->uuid();
+					}
+				}
 				end.tie = conductor->uuid().toString();
 				arrivals[properties.m_cable_uuid].append(end);
 			}

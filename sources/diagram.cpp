@@ -27,6 +27,7 @@
 
 #include "ElementsCollection/elementcollectionhandler.h"
 #include "TerminalStrip/GraphicsItem/terminalstripitem.h"
+#include "utils/qetsettings.h"
 #include "cable/cablecopy.h"
 #include "cable/cablepart.h"
 #include "cable/cable.h"
@@ -51,6 +52,7 @@
 #include "qetgraphicsitem/independenttextitem.h"
 #include "qetgraphicsitem/qetshapeitem.h"
 #include "qetgraphicsitem/dimensionitem.h"
+#include "qetgraphicsitem/structureboxitem.h"
 #include "qetgraphicsitem/terminal.h"
 #include "qetxml.h"
 #include "undocommand/addelementtextcommand.h"
@@ -221,6 +223,11 @@ Diagram::Diagram(QETProject *project) :
 		for (auto conductor : content().conductors()) {
 			conductor->refreshText();
 		}
+			//A symbol's reference designation leaves out the plant and
+			//location its folio already says (%{structure_id}), and its
+			//%{plant} and %{location} may be the folio's: they follow the
+			//title block, which a symbol does not watch
+		StructureBoxItem::refreshSymbolTexts(this);
 		emit diagramInformationChanged();
 	});
 
@@ -229,6 +236,8 @@ Diagram::Diagram(QETProject *project) :
 			conductor->refreshText();
 		}
 	});
+
+	border_and_titleblock.setLanguages(&m_project->languages());
 
 	connect(&border_and_titleblock,
 		&BorderTitleBlock::needTitleBlockTemplate,
@@ -347,6 +356,7 @@ QStringList Diagram::itemsOutsideSheet() const
 			}
 			case IndependentTextItem::Type: names << tr("a text"); break;
 			case QetShapeItem::Type:        names << tr("a shape"); break;
+			case StructureBoxItem::Type:    names << tr("a structure box"); break;
 			case DiagramImageItem::Type:    names << tr("a picture"); break;
 			case QetGraphicsTableItem::Type: names << tr("a table"); break;
 			case TerminalStripItem::Type:   names << tr("a terminal strip"); break;
@@ -728,7 +738,11 @@ void Diagram::keyPressEvent(QKeyEvent *event)
 	qreal top_position = 0;
 	qreal left_position = 0;
 	DiagramContent dc(this);
-	if (dc.items(DiagramContent::All).isEmpty())
+		//A marked cable line counts too: it is not part of DiagramContent
+	bool cable_marked = false;
+	for (QGraphicsItem *item : selectedItems())
+		if (qgraphicsitem_cast<CablePart *>(item)) { cable_marked = true; break; }
+	if (dc.items(DiagramContent::All).isEmpty() && !cable_marked)
 	{
 		event->ignore();
 		QGraphicsScene::keyPressEvent(event);
@@ -1670,6 +1684,12 @@ QDomDocument Diagram::toXml(bool whole_content, bool is_copy_command) {
 				auto shape = static_cast<QetShapeItem *>(qgi);
 				if (whole_content || shape->isSelected())
 					list_shapes << shape;
+				break;
+			}
+			case StructureBoxItem::Type: {
+				auto box = static_cast<StructureBoxItem *>(qgi);
+				if (whole_content || box->isSelected())
+					list_shapes << box;	//saved as a shape, see StructureBoxItem
 				break;
 			}
 			case QetGraphicsTableItem::Type: {
@@ -2662,7 +2682,9 @@ bool Diagram::fromXml(QDomElement &document,
 	for (auto shape_xml : QET::findInDomElement(root,
 												QStringLiteral("shapes"),
 												QStringLiteral("shape"))) {
-		QetShapeItem *dii = new QetShapeItem (QPointF(0,0));
+		QetShapeItem *dii = StructureBoxItem::isStructureBoxXml(shape_xml)
+				? new StructureBoxItem(QPointF(0,0))
+				: new QetShapeItem (QPointF(0,0));
 		dii -> fromXml(shape_xml);
 		settle_uuid(dii, shape_xml, QStringLiteral("shape"), added_shapes.size());
 		ItemGroups::setGroup(dii, ItemGroups::read(shape_xml));
@@ -3011,9 +3033,32 @@ void Diagram::refreshContents()
 	Do some specific operation if item need it (for example an element)
 	@param item
 */
+void Diagram::refreshTerminalStrips()
+{
+		//With the setting off nothing is drawn above a strip, so there
+		//is nothing to report again -- and this runs for every wire
+		//which comes or goes on the folio
+	if (!QetSettings::stripWiresShown()) {
+		return;
+	}
+	for (QGraphicsItem *item : items())
+	{
+		if (item && item->type() == TerminalStripItem::Type) {
+			static_cast<TerminalStripItem *>(item)->refreshGeometry();
+		}
+	}
+}
+
 void Diagram::addItem(QGraphicsItem *item)
 {
-	if (!item || isReadOnly() || item->scene() == this) return;
+	if (!item || item->scene() == this) return;
+		//A read-only project still builds its folios when they are first
+		//needed (lazy folios: shown, exported, saved elsewhere): what they
+		//hold is read in, not an edit. Refused, a folio not built when the
+		//project was opened came out empty, and so did every copy of it.
+	const projectDataBase *db = m_project ? m_project->dataBase() : nullptr;
+	const bool reading = m_loading_deferred || (db && db->isBuildingFolio());
+	if (isReadOnly() && !reading) return;
 	QGraphicsScene::addItem(item);
 
 	switch (item->type())
@@ -3032,11 +3077,15 @@ void Diagram::addItem(QGraphicsItem *item)
 			Conductor *conductor = static_cast<Conductor *>(item);
 			conductor->terminal1->addConductor(conductor);
 			conductor->terminal2->addConductor(conductor);
+				//The wires which end at a terminal strip are drawn by
+				//the strip itself, and only now is this one among them
+			refreshTerminalStrips();
 			conductor->calculateTextItemPosition();
 			m_project->dataBase()->addConductor(conductor);
 			break;
 		}
 		case QetShapeItem::Type:
+		case StructureBoxItem::Type:
 		case DimensionItem::Type:
 		case IndependentTextItem::Type:
 		case DiagramImageItem::Type:
@@ -3076,10 +3125,13 @@ void Diagram::removeItem(QGraphicsItem *item)
 			Conductor *conductor = static_cast<Conductor *>(item);
 			conductor->terminal1->removeConductor(conductor);
 			conductor->terminal2->removeConductor(conductor);
+				//One wire the strips above them drew may be gone
+			refreshTerminalStrips();
 			m_project->dataBase()->removeConductor(conductor);
 			break;
 		}
 		case QetShapeItem::Type:
+		case StructureBoxItem::Type:
 		case DimensionItem::Type:
 		case IndependentTextItem::Type:
 		case DiagramImageItem::Type:

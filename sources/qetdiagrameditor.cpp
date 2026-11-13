@@ -67,6 +67,7 @@
 #include "diagramevent/diagrameventaddcable.h"
 #include "diagramevent/diagrameventaddbridge.h"
 #include "diagramevent/diagrameventfillet.h"
+#include "diagramevent/diagrameventaddstructurebox.h"
 #include "diagramevent/diagrameventaddtext.h"
 #include "cable/cablepart.h"
 #include "cable/cableoverviewdialog.h"
@@ -118,6 +119,7 @@
 #include "undocommand/groupitemscommand.h"
 #include "undocommand/alignselectioncommand.h"
 #include "undocommand/mirrorselectioncommand.h"
+#include "undocommand/resetsymboltextscommand.h"
 #include "undocommand/rotateselectioncommand.h"
 #include "undocommand/rotatetextscommand.h"
 #include "diagram.h"
@@ -1433,6 +1435,11 @@ void QETDiagramEditor::setUpActions()
 		tr("Replaces each element of the project that changed in its collection "
 		   "since it was placed, and redraws it (action cannot be undone)"));
 	connect(m_update_elements_from_collections, &QAction::triggered, this, &QETDiagramEditor::slot_updateElementsFromCollections);
+	m_reset_symbol_texts = new QAction(QET::Icons::ViewRefresh, tr("Lay out the symbol texts as in the symbol"), this);
+	ShortcutManager::instance().registerAction(m_reset_symbol_texts, "diagrameditor.reset_symbol_texts", tr("Diagram editors"), QKeySequence());
+	m_reset_symbol_texts->setStatusTip(
+		tr("Puts the texts of the selected symbols, or of every symbol of the project, where their symbol places them: a placed symbol keeps its own copy of the texts otherwise"));
+	connect(m_reset_symbol_texts, &QAction::triggered, this, &QETDiagramEditor::slot_resetSymbolTexts);
 
 #ifdef QET_HAS_SCRIPTING
 	// Run a JavaScript macro against the current project (bugtracker #162).
@@ -1977,6 +1984,10 @@ void QETDiagramEditor::setUpActions()
 	m_add_dimension_linear->setStatusTip(tr("Adds a linear dimension to the current sheet"));
 	m_add_dimension_chain ->setStatusTip(tr("Adds a chain dimension to the current sheet"));
 	m_add_bridge    ->setStatusTip(tr("Draws a bridge over terminals: every terminal crossed becomes one of its connections"));
+		//A frame with its own =plant +location: the symbols drawn inside it
+		//take them (see StructureBoxItem)
+	QAction *add_structure_box = m_add_item_actions_group.addAction(QET::Icons::PartRectangle, tr("Add a structure box"));
+	add_structure_box->setStatusTip(tr("Adds a structure box (plant, location, prefix) to the current sheet: the symbols inside it take its plant and location"));
 
 	add_text     ->setData(QStringLiteral("text"));
 	add_image    ->setData(QStringLiteral("image"));
@@ -1997,6 +2008,7 @@ void QETDiagramEditor::setUpActions()
 	m_add_dimension_linear->setData(QStringLiteral("dimension_linear"));
 	m_add_dimension_chain ->setData(QStringLiteral("dimension_chain"));
 	m_add_bridge    ->setData(QStringLiteral("bridge"));
+	add_structure_box->setData(QStringLiteral("structure_box"));
 
 	add_text->setCheckable(true);
 	add_line->setCheckable(true);
@@ -2011,6 +2023,7 @@ void QETDiagramEditor::setUpActions()
 	add_fillet->setCheckable(true);
 	m_add_dimension_linear->setCheckable(true);
 	m_add_dimension_chain->setCheckable(true);
+	add_structure_box->setCheckable(true);
 
 	connect(&m_add_item_actions_group, &QActionGroup::triggered, this, &QETDiagramEditor::addItemGroupTriggered);
 		//No default key, but an id: they can then be found by the command
@@ -2313,13 +2326,12 @@ void QETDiagramEditor::setUpMenu()
 	menu_edition -> addAction(m_cut);
 	menu_edition -> addAction(m_copy);
 	menu_edition -> addAction(m_paste);
-	menu_edition -> addAction(m_copy_text_format);
-	menu_edition -> addAction(m_apply_text_format);
-	menu_edition -> addAction(m_place_texts);
-	menu_edition -> addAction(m_text_destination);
-	menu_edition -> addAction(m_text_clearance);
-	menu_edition -> addAction(m_paste_origin);
-	menu_edition -> addAction(m_paste_element_info);
+		//Kept short (see #1336): the less used kinds of the same command
+		//sit one level down, next to the command they belong to. Every
+		//action and its shortcut is unchanged.
+	QMenu *paste_menu = menu_edition -> addMenu(QET::Icons::EditPaste, tr("Paste special"));
+	paste_menu -> addAction(m_paste_origin);
+	paste_menu -> addAction(m_paste_element_info);
 	menu_edition -> addAction(m_duplicate);
 	menu_edition -> addAction(m_configure_duplicate);
 	menu_edition -> addSeparator();
@@ -2346,16 +2358,26 @@ void QETDiagramEditor::setUpMenu()
 	select_menu -> addSeparator();
 	select_menu -> addMenu(m_selection_filter_menu);
 	menu_edition -> addSeparator();
-	menu_edition -> addAction(m_delete_selection);
-	menu_edition -> addAction(m_rotate_selection);
-	menu_edition -> addAction(m_rotate_group_selection);
-	menu_edition -> addAction(m_rotate_texts);
-	menu_edition -> addAction(m_mirror_horizontal);
-	menu_edition -> addAction(m_mirror_vertical);
-	menu_edition -> addAction(m_show_as_dot);
-	menu_edition -> addAction(m_find_element);
-	menu_edition -> addAction(m_contact_display);
 	menu_edition -> addAction(m_edit_selection);
+	menu_edition -> addAction(m_delete_selection);
+	QMenu *turn_menu = menu_edition -> addMenu(QET::Icons::TransformRotate, tr("Rotate and mirror"));
+	turn_menu -> addAction(m_rotate_selection);
+	turn_menu -> addAction(m_rotate_group_selection);
+	turn_menu -> addSeparator();
+	turn_menu -> addAction(m_mirror_horizontal);
+	turn_menu -> addAction(m_mirror_vertical);
+	QMenu *texts_menu = menu_edition -> addMenu(QET::Icons::PartText, tr("Texts"));
+	texts_menu -> addAction(m_rotate_texts);
+	texts_menu -> addAction(m_place_texts);
+	texts_menu -> addAction(m_text_destination);
+	texts_menu -> addAction(m_text_clearance);
+	texts_menu -> addSeparator();
+	texts_menu -> addAction(m_copy_text_format);
+	texts_menu -> addAction(m_apply_text_format);
+	QMenu *symbols_menu = menu_edition -> addMenu(QET::Icons::Element, tr("Symbols"));
+	symbols_menu -> addAction(m_show_as_dot);
+	symbols_menu -> addAction(m_find_element);
+	symbols_menu -> addAction(m_contact_display);
 	QMenu *group_menu = menu_edition -> addMenu(QET::Icons::textGroup, tr("Group", "fr: Grouper"));
 	group_menu -> addAction(m_group_selection);
 	group_menu -> addAction(m_ungroup_selection);
@@ -2415,6 +2437,7 @@ void QETDiagramEditor::setUpMenu()
 	menu_project -> addAction(m_project_wiring_list_view);
 	menu_project -> addAction(m_reload_element_drawings);
 	menu_project -> addAction(m_update_elements_from_collections);
+	menu_project -> addAction(m_reset_symbol_texts);
 #ifdef QET_HAS_SCRIPTING
 	m_scripts_menu = menu_project -> addMenu(tr("Scripts"));
 	rebuildScriptActions();
@@ -3627,6 +3650,8 @@ void QETDiagramEditor::addItemGroupTriggered(QAction *action)
 		diagram_event = new DiagramEventAddShape (d, QetShapeItem::Ellipse);
 	else if (value == "arc")
 		diagram_event = new DiagramEventAddShape (d, QetShapeItem::Ellipse, true);
+	else if (value == "structure_box")
+		diagram_event = new DiagramEventAddStructureBox (d);
 	else if (value == "polyline")
 		diagram_event = new DiagramEventAddShape (d, QetShapeItem::Polygon);
 	else if (value == "path")
@@ -4057,6 +4082,7 @@ void QETDiagramEditor::slot_updateActions()
 	if (auto *panel_menu = findChild<PanelMenu *>()) panel_menu->updateActions();
 	m_reload_element_drawings     -> setEnabled(opened_project);
 	m_update_elements_from_collections -> setEnabled(editable_project);
+	m_reset_symbol_texts -> setEnabled(editable_project);
 #ifdef QET_HAS_SCRIPTING
 	m_run_script                  -> setEnabled(opened_project);
 #endif
@@ -5682,15 +5708,53 @@ void QETDiagramEditor::slot_cableNumbering() {
 
 	Purely visual and not undoable, the way pressing a "refresh" button
 	would be: nothing is pushed on the undo stack and the project is not
-	marked as modified. Elements whose size, hotspot or terminals changed
-	are skipped and listed: they must be removed and re-inserted, which
-	deletes the conductors already connected to them.
+	marked as modified. A new size or hotspot is taken over -- the element
+	editor recomputes both on every save -- but elements whose terminals
+	changed are skipped and listed: they must be removed and re-inserted,
+	which deletes the conductors already connected to them.
 */
 void QETDiagramEditor::slot_reloadElementDrawings() {
 	QETProject *project = currentProject();
 	if (!project) return;
 
-	reloadElementDrawings(project, false, tr("Reload element drawings"), QString());
+	reloadElementDrawings(project, true, tr("Reload element drawings"), QString());
+}
+
+/**
+	@brief QETDiagramEditor::slot_resetSymbolTexts
+	Lay the texts of the selected symbols, or with none selected of every
+	symbol of the project, out as their symbol does (ResetSymbolTextsCommand).
+	One undo step.
+*/
+void QETDiagramEditor::slot_resetSymbolTexts() {
+	QETProject *project = currentProject();
+	if (!project) return;
+
+	QList<Element *> elements;
+	if (DiagramView *dv = currentDiagramView())
+		for (QGraphicsItem *item : dv->diagram()->selectedItems())
+			if (item->type() == Element::Type)
+				elements << static_cast<Element *>(item);
+	const bool whole_project = elements.isEmpty();
+	if (whole_project)
+		for (Diagram *diagram : project->diagrams())
+			elements << diagram->elements();
+
+	auto *command = new ResetSymbolTextsCommand(elements);
+	const QString title = tr("Lay out the symbol texts as in the symbol");
+	if (!command->count()) {
+		delete command;
+		QET::QetMessageBox::information(this, title,
+			tr("Every symbol text already lies where its symbol places it."));
+		return;
+	}
+	if (whole_project && QET::QetMessageBox::question(this, title,
+			tr("%n texts of the project's symbols lie elsewhere than their symbol places them. Lay them out as in the symbol?", "", command->count()),
+			QMessageBox::Yes | QMessageBox::Cancel) != QMessageBox::Yes) {
+		delete command;
+		return;
+	}
+	project->undoStack()->push(command);
 }
 
 /**

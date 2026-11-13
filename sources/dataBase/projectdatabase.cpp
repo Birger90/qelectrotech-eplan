@@ -33,6 +33,7 @@
 #include <qetgraphicsitem/element.h>
 #include <qetgraphicsitem/independenttextitem.h>
 #include <qetgraphicsitem/qetshapeitem.h>
+#include <qetgraphicsitem/structureboxitem.h>
 #include <qetgraphicsitem/ViewItem/qetgraphicstableitem.h>
 #include <qetgraphicsitem/terminal.h>
 #include <qetinformation.h>
@@ -1749,6 +1750,49 @@ QList<projectDataBase::FolioSymbol> projectDataBase::symbolsOnFolios(const QList
 }
 
 /**
+	@brief projectDataBase::linkRows
+	@return what a list of symbols to link shows of each symbol of
+	@p elements, read from qet_devices and qet_wires, so that a symbol on
+	a folio not built yet (lazy folios) is listed without building it. A
+	symbol with no wire has empty wire fields; one the database does not
+	know has no entry.
+*/
+QHash<QUuid, projectDataBase::LinkRow> projectDataBase::linkRows(const QList<QUuid> &elements) const
+{
+	QHash<QUuid, LinkRow> rows;
+	QSqlQuery device(m_data_base);
+	device.prepare(QStringLiteral("SELECT label, comment, sub_kind, position FROM qet_devices "
+								  "WHERE device_uuid = :uuid"));
+		//The first wire on it, as Element::conductors().first() finds
+		//the first one on a built folio report
+	QSqlQuery wire(m_data_base);
+	wire.prepare(QStringLiteral("SELECT wire_number, function, voltage, colour, section "
+								"FROM qet_wires WHERE from_device_uuid = :uuid "
+								"OR to_device_uuid = :uuid LIMIT 1"));
+	for (const QUuid &element : elements) {
+		device.bindValue(QStringLiteral(":uuid"), element.toString());
+		if (!device.exec() || !device.next()) {
+			continue;
+		}
+		LinkRow row;
+		row.label = device.value(0).toString();
+		row.comment = device.value(1).toString();
+		row.sub_kind = device.value(2).toString();
+		row.position = device.value(3).toString();
+		wire.bindValue(QStringLiteral(":uuid"), element.toString());
+		if (wire.exec() && wire.next()) {
+			row.wire_number = wire.value(0).toString();
+			row.wire_function = wire.value(1).toString();
+			row.wire_voltage = wire.value(2).toString();
+			row.wire_colour = wire.value(3).toString();
+			row.wire_section = wire.value(4).toString();
+		}
+		rows.insert(element, row);
+	}
+	return rows;
+}
+
+/**
 	@brief projectDataBase::wiresOnFolios
 	@return the wires on the folios @p folios, folio by folio in that order,
 	read from the conductor table as it is (see elementTypesOnFolios())
@@ -1958,8 +2002,11 @@ projectDataBase::PotentialGroups projectDataBase::potentialGroups() const
 	is_unknown) from potentialGroups(), and make the TEMP view
 	wire_potential_view over it: one row per wire with its potential, its
 	effective potential type and where that type comes from ('wire' for the
-	wire's own stored potential_type; a source-derived type will be 'source').
-	Both are TEMP on purpose: a .qetdb that holds a view outside the fixed
+	wire's own stored potential_type; a source-derived type will be 'source'),
+	and the TEMP view potential_view: one row per potential, with its wires,
+	terminals, folios, wire numbers, whether it carries several, and its
+	names (the labels of its folio reports).
+	All are TEMP on purpose: a .qetdb that holds a view outside the fixed
 	list is refused as damaged by every QET that does not know it
 	(QetDbFile), so nothing here is ever saved, and the file carries no
 	data that could disagree with the drawing. Run on request only, never on
@@ -2002,6 +2049,53 @@ bool projectDataBase::refreshPotentialMembersOf(QSqlDatabase db, QHash<int, QStr
 		"FROM main.conductor c "
 		"LEFT JOIN temp.potential_member m ON m.wire_uuid = c.uuid "
 		"LEFT JOIN main.conductor_properties p ON p.conductor_uuid = c.uuid AND p.name = 'potential_type'"));
+		//One row per potential, over the same members: its wires, the
+		//terminals they end on, its folios, and its wire numbers. A
+		//potential is one number in QElectroTech's own numbering;
+		//several_numbers marks one that carries more (RSWire draws a
+		//busbar's stubs with a number each). names are the labels of the
+		//folio reports on it. potential_key, the potential's
+		//smallest wire uuid, names it from one refresh to the next while that
+		//wire is there; potential_id is only this refresh's number.
+	run(QStringLiteral("DROP VIEW IF EXISTS temp.potential_view"));
+	run(QStringLiteral(
+		"CREATE TEMP VIEW potential_view AS SELECT "
+		"MIN(c.uuid) AS potential_key, m.potential_id AS potential_id, "
+		"COUNT(*) AS wires, "
+		"(SELECT COUNT(*) FROM ("
+			"SELECT c2.terminal1_element_uuid, c2.terminal1_uuid FROM main.conductor c2 "
+			"JOIN temp.potential_member m2 ON m2.wire_uuid = c2.uuid WHERE m2.potential_id = m.potential_id "
+			"UNION SELECT c2.terminal2_element_uuid, c2.terminal2_uuid FROM main.conductor c2 "
+			"JOIN temp.potential_member m2 ON m2.wire_uuid = c2.uuid WHERE m2.potential_id = m.potential_id"
+		")) AS terminals, "
+		"COUNT(DISTINCT c.diagram_uuid) AS folios, MIN(d.pos) AS first_folio_number, "
+		"(SELECT group_concat(n, ', ') FROM ("
+			"SELECT DISTINCT NULLIF(c3.text, '') AS n FROM main.conductor c3 "
+			"JOIN temp.potential_member m3 ON m3.wire_uuid = c3.uuid "
+			"WHERE m3.potential_id = m.potential_id AND NULLIF(c3.text, '') IS NOT NULL ORDER BY n"
+		")) AS wire_numbers, "
+		"CASE WHEN COUNT(DISTINCT NULLIF(c.text, '')) > 1 THEN 1 ELSE 0 END AS several_numbers, "
+			//The names of the potential: the labels of the folio reports on
+			//it, which name the signal across the folios (and which chained
+			//reports link by)
+		"(SELECT group_concat(n, ', ') FROM ("
+			"SELECT DISTINCT NULLIF(ei.label, '') AS n FROM main.conductor c4 "
+			"JOIN temp.potential_member m4 ON m4.wire_uuid = c4.uuid "
+			"JOIN main.element e ON e.uuid IN (c4.terminal1_element_uuid, c4.terminal2_element_uuid) "
+			"JOIN main.element_info ei ON ei.element_uuid = e.uuid "
+			"WHERE m4.potential_id = m.potential_id "
+			"AND e.type IN ('next_report', 'previous_report') "
+			"AND NULLIF(ei.label, '') IS NOT NULL ORDER BY n"
+		")) AS names, "
+			//Its type when its wires agree on one; none when they do not
+			//(potential_mismatch lists those)
+		"CASE WHEN COUNT(DISTINCT v.potential_type) = 1 THEN MIN(v.potential_type) END AS potential_type, "
+		"MAX(m.is_unknown) AS is_unknown "
+		"FROM main.conductor c "
+		"JOIN temp.potential_member m ON m.wire_uuid = c.uuid "
+		"LEFT JOIN main.diagram d ON d.uuid = c.diagram_uuid "
+		"LEFT JOIN temp.wire_potential_view v ON v.wire_uuid = c.uuid "
+		"GROUP BY m.potential_id"));
 	const bool own_transaction = db.transaction();
 	run(QStringLiteral("DELETE FROM temp.potential_member"));
 	query.prepare(QStringLiteral("INSERT INTO temp.potential_member (wire_uuid, potential_id, is_unknown, derived_type) "
@@ -2766,7 +2860,7 @@ QSqlQuery projectDataBase::newQuery(const QString &query, QString *error) {
 		//(POTENTIAL-TYPES-PLAN.md): a query that names one brings them up
 		//to date first, as for the tables above
 	static const QRegularExpression potential_objects(
-			QStringLiteral("\\b(wire_potential_view|potential_member|potential_mismatch)\\b"),
+			QStringLiteral("\\b(wire_potential_view|potential_view|potential_member|potential_mismatch)\\b"),
 			QRegularExpression::CaseInsensitiveOption);
 	if (potential_objects.match(query).hasMatch()) {
 		potentialTypeMismatchesOf(m_data_base);
@@ -3818,6 +3912,9 @@ void projectDataBase::addDrawingItem(QGraphicsItem *item)
 		connect(shape, &QetShapeItem::transformChanged, this, &projectDataBase::drawingItemChanged, unique);
 		connect(shape, &QetShapeItem::penChanged,       this, &projectDataBase::drawingItemChanged, unique);
 		connect(shape, &QetShapeItem::brushChanged,     this, &projectDataBase::drawingItemChanged, unique);
+			//A structure box is a shape whose row also holds its =plant +location
+		if (auto box = qobject_cast<StructureBoxItem *>(object))
+			connect(box, &StructureBoxItem::identityChanged, this, &projectDataBase::drawingItemChanged, unique);
 	}
 	else if (auto text = qobject_cast<IndependentTextItem *>(object)) {
 		connect(text, &IndependentTextItem::uuidChanged, this, &projectDataBase::drawingItemChanged, unique);
@@ -4740,6 +4837,66 @@ bool projectDataBase::createDataBase()
 }
 
 /**
+	@brief folioGroupSql
+	The SQL of a folio's group or sub-group: its own, from the title block
+	properties the folio stores (folio_titleblock, written only when set),
+	else its plant or location. The same rule as %{folio_group} /
+	%{folio_subgroup} in its title block
+	(TitleBlockProperties::resolvedFolioGroup()), so the summary and the
+	public views say what the folio shows, built or not.
+	@param name : folio_group or folio_subgroup
+	@param folio_uuid : the folio's uuid column, e.g. d.uuid
+	@param fallback : the folio's plant or location column, e.g. di.plant
+*/
+static QString folioGroupSql(const QString &name, const QString &folio_uuid,
+							 const QString &fallback)
+{
+	return QStringLiteral(
+		"COALESCE(NULLIF((SELECT ft.value FROM folio_titleblock ft "
+		"WHERE ft.diagram_uuid = %2 AND ft.name = '%1'), ''), %3)")
+			.arg(name, folio_uuid, fallback);
+}
+
+/**
+	@brief effectiveStructureSql
+	The SQL of an element's plant (=) or location (+): its own value, else
+	its folio's title block. This is the rule of the full designation
+	(AssignVariables::replaceVariable()); %{plant} / %{location} in the
+	element's texts show the element's own value only. Written once here
+	for every view, so the parts list and the public views never
+	disagree. In SQL, not on the live elements, so that a folio not
+	built (lazy folios) answers the same.
+	@param own : the element's own column, e.g. ei.plant
+	@param folio : the folio's column, e.g. di.plant
+*/
+static QString effectiveStructureSql(const QString &own, const QString &folio)
+{
+	return QStringLiteral("COALESCE(NULLIF(%1, ''), %2)").arg(own, folio);
+}
+
+/**
+	@brief structureIdSql
+	The SQL of the full designation: =plant+location-label, every part left out
+	when it is empty, as AssignVariables::replaceVariable() composes it.
+*/
+static QString structureIdSql(const QString &plant, const QString &location,
+							  const QString &label)
+{
+	const auto part = [](const QString &sign, const QString &value) {
+			//A value typed with its sign ("-K1") keeps one sign, as
+			//AssignVariables::replaceVariable() does
+		return QStringLiteral("CASE WHEN COALESCE(%2, '') = '' THEN '' "
+							  "WHEN substr(%2, 1, 1) = '%1' THEN %2 "
+							  "ELSE '%1' || %2 END")
+				.arg(sign, value);
+	};
+	return QStringLiteral("(%1 || %2 || %3)")
+			.arg(part(QStringLiteral("="), plant),
+				 part(QStringLiteral("+"), location),
+				 part(QStringLiteral("-"), label));
+}
+
+/**
 	@brief projectDataBase::createElementNomenclatureView
 */
 void projectDataBase::createElementNomenclatureView()
@@ -4749,10 +4906,12 @@ void projectDataBase::createElementNomenclatureView()
 		//%M / %LM of the folio), as EPLAN builds the device tag from the
 		//page structure: an element drawn on a +UV1 folio is in +UV1
 		//without the information being typed into every element.
-	QString create_view ("CREATE VIEW element_nomenclature_view AS SELECT "
-						 "ei.label AS label,"
-						 "COALESCE(NULLIF(ei.plant, ''), di.plant) AS plant,"
-						 "COALESCE(NULLIF(ei.location, ''), di.locmach) AS location,"
+	QString create_view (QStringLiteral("CREATE VIEW element_nomenclature_view AS SELECT "
+						 "ei.label AS label,")
+						 + effectiveStructureSql(QStringLiteral("ei.plant"), QStringLiteral("di.plant"))
+						 + QStringLiteral(" AS plant,")
+						 + effectiveStructureSql(QStringLiteral("ei.location"), QStringLiteral("di.locmach"))
+						 + QStringLiteral(" AS location,"
 						 "ei.comment AS comment,"
 						 "ei.function AS function,"
 						 "ei.description AS description,"
@@ -4836,7 +4995,7 @@ void projectDataBase::createElementNomenclatureView()
 							 //own auxiliary contact, say -- is kept out by
 							 //exclude_from_bom above, not by its base type.
 							 //See discussion #847.
-						 " AND e.type IN ('simple', 'terminal', 'master', 'slave', 'thumbnail')");
+						 " AND e.type IN ('simple', 'terminal', 'master', 'slave', 'thumbnail')"));
 
 		//The spare terminals of the terminal strips (on no folio) are lines of
 		//the nomenclature too : the same columns, read in the spare_terminal
@@ -4882,12 +5041,17 @@ void projectDataBase::createElementNomenclatureView()
 */
 void projectDataBase::createSummaryView()
 {
-	QString create_view ("CREATE VIEW project_summary_view AS SELECT "
+	QString create_view = QStringLiteral(
+						 "CREATE VIEW project_summary_view AS SELECT "
 						 "di.title AS title,"
 						 "di.author AS author,"
 						 "di.folio AS folio,"
 						 "di.plant AS plant,"
-						 "di.locmach AS locmach,"
+						 "di.locmach AS locmach,")
+			+ folioGroupSql(QStringLiteral("folio_group"), QStringLiteral("d.uuid"), QStringLiteral("di.plant"))
+			+ QStringLiteral(" AS folio_group,")
+			+ folioGroupSql(QStringLiteral("folio_subgroup"), QStringLiteral("d.uuid"), QStringLiteral("di.locmach"))
+			+ QStringLiteral(" AS folio_subgroup,"
 						 "di.indexrev AS indexrev,"
 						 "di.date AS date,"
 						 "d.pos AS pos"
@@ -4995,7 +5159,12 @@ void projectDataBase::createDrawingItemView()
 QStringList projectDataBase::publicViews()
 {
 	return {QStringLiteral("qet_folios"), QStringLiteral("qet_devices"),
-			QStringLiteral("qet_wires"), QStringLiteral("qet_links")};
+			QStringLiteral("qet_wires"), QStringLiteral("qet_links"),
+			QStringLiteral("qet_device_list"),
+			QStringLiteral("qet_terminals"),
+			QStringLiteral("qet_cables"),
+			QStringLiteral("qet_plc_io"),
+			QStringLiteral("qet_cable_cores")};
 }
 
 /**
@@ -5009,12 +5178,38 @@ QStringList projectDataBase::publicViews()
 	a folio not built gives the same rows. folio_number is the folio's
 	place in the project from 1, folio its label as its title block shows
 	it. A device's plant and location are its own, or else its folio's,
-	as in the parts list. The links are kept once each: coil to contact,
-	going arrow to coming arrow.
+	as in the parts list, and structure_id composes them with its label
+	(=plant+location-label, the full designation); each
+	end of a wire has its own (from_structure_id, to_structure_id). The
+	links are kept once each: coil to contact, going arrow to coming
+	arrow.
 
-	No view of terminals: the terminal table lists only the terminals a
-	wire ends on, so one would leave out every free terminal without
-	saying so. qet_wires names the terminal at each end.
+	qet_device_list is the project's devices, one row each: a device is
+	what one reference designation (=plant+location-label, IEC 81346)
+	names, so every symbol with the same structure_id is part of it, and
+	a contact is part of its coil's whatever it shows. Derived, never kept
+	by hand: symbols, folios showing it, part numbers (articles) of its
+	symbols, and where it is drawn -- its coil, else its first symbol by
+	folio and position (head_uuid). Folio reports are left out, and so
+	are symbols without a label. model is the head symbol's (qet_devices
+	has each symbol's); it was added last to both.
+	qet_cables is the project's cables, one row each, read from the cables
+	themselves (cable_value, what Cable::toXml() writes): designation, type,
+	the number of cores its type has, the cores drawn and the ones of them
+	wired to a conductor, its length, the folios it is drawn on and the
+	first of them. Its plant and location are its own, else the ones of
+	that first folio, and structure_id composes them with the designation
+	(=plant+location-designation) like a device's.
+
+	qet_terminals is the terminals of each terminal strip, one row per
+	terminal, read from the strips themselves (terminal_strip_value, what
+	TerminalStrip::toXml() writes): the strip (=plant+location-name, its own
+	plant and location), the position of the terminal in it and its level,
+	both counted from 0 as the terminal strip editor shows them, and the
+	symbol drawing it -- its label, its own structure_id and folio -- or
+	spare = 1 for a terminal drawn nowhere. A terminal symbol in no strip
+	is not in it: qet_devices lists every symbol, those of kind 'terminal'
+	included.
 */
 void projectDataBase::createPublicViews()
 {
@@ -5049,19 +5244,29 @@ QStringList projectDataBase::publicViewStatements()
 			"d.pos AS folio_number, di.folio AS folio, di.title AS title, "
 			"di.author AS author, di.plant AS plant, di.locmach AS location, "
 			"di.indexrev AS revision, di.date AS date, di.filename AS filename, "
-			"d.uuid AS folio_uuid "
+			"d.uuid AS folio_uuid, ")
+			+ folioGroupSql(QStringLiteral("folio_group"), QStringLiteral("d.uuid"), QStringLiteral("di.plant"))
+			+ QStringLiteral(" AS folio_group, ")
+			+ folioGroupSql(QStringLiteral("folio_subgroup"), QStringLiteral("d.uuid"), QStringLiteral("di.locmach"))
+			+ QStringLiteral(" AS folio_subgroup "
 			"FROM diagram d LEFT JOIN diagram_info di ON di.diagram_uuid = d.uuid"),
 		QStringLiteral(
 			"CREATE VIEW qet_devices AS SELECT "
 			"d.pos AS folio_number, di.folio AS folio, e.pos AS position, "
-			"ei.label AS label, "
-			"COALESCE(NULLIF(ei.plant, ''), di.plant) AS plant, "
-			"COALESCE(NULLIF(ei.location, ''), di.locmach) AS location, "
+			"ei.label AS label, ")
+			+ effectiveStructureSql(QStringLiteral("ei.plant"), QStringLiteral("di.plant"))
+			+ QStringLiteral(" AS plant, ")
+			+ effectiveStructureSql(QStringLiteral("ei.location"), QStringLiteral("di.locmach"))
+			+ QStringLiteral(" AS location, "
 			"e.type AS kind, e.sub_type AS sub_kind, ei.function AS function, "
 			"ei.description AS description, ei.designation AS designation, "
 			"ei.manufacturer AS manufacturer, ei.manufacturer_reference AS article, "
 			"ei.supplier AS supplier, ei.quantity AS quantity, ei.comment AS comment, "
-			"e.definition AS symbol, e.uuid AS device_uuid, e.diagram_uuid AS folio_uuid "
+			"e.definition AS symbol, e.uuid AS device_uuid, e.diagram_uuid AS folio_uuid, ")
+			+ structureIdSql(effectiveStructureSql(QStringLiteral("ei.plant"), QStringLiteral("di.plant")),
+							 effectiveStructureSql(QStringLiteral("ei.location"), QStringLiteral("di.locmach")),
+							 QStringLiteral("ei.label"))
+			+ QStringLiteral(" AS structure_id, ei.model AS model "
 			"FROM element e LEFT JOIN element_info ei ON ei.element_uuid = e.uuid")
 			+ folio_of.arg(QStringLiteral("e.diagram_uuid")),
 		QStringLiteral(
@@ -5076,7 +5281,15 @@ QStringList projectDataBase::publicViewStatements()
 			+ property(QStringLiteral("function"), QStringLiteral("function")) + QStringLiteral(", ")
 			+ property(QStringLiteral("tension_protocol"), QStringLiteral("voltage")) + QStringLiteral(
 			", c.uuid AS wire_uuid, t1.element_uuid AS from_device_uuid, "
-			"t2.element_uuid AS to_device_uuid "
+			"t2.element_uuid AS to_device_uuid, ")
+			+ structureIdSql(effectiveStructureSql(QStringLiteral("ei1.plant"), QStringLiteral("di.plant")),
+							 effectiveStructureSql(QStringLiteral("ei1.location"), QStringLiteral("di.locmach")),
+							 QStringLiteral("ei1.label"))
+			+ QStringLiteral(" AS from_structure_id, ")
+			+ structureIdSql(effectiveStructureSql(QStringLiteral("ei2.plant"), QStringLiteral("di.plant")),
+							 effectiveStructureSql(QStringLiteral("ei2.location"), QStringLiteral("di.locmach")),
+							 QStringLiteral("ei2.label"))
+			+ QStringLiteral(" AS to_structure_id "
 			"FROM conductor c "
 			"LEFT JOIN terminal t1 ON t1.uuid = c.terminal1_uuid AND t1.element_uuid = c.terminal1_element_uuid "
 			"LEFT JOIN terminal t2 ON t2.uuid = c.terminal2_uuid AND t2.element_uuid = c.terminal2_element_uuid "
@@ -5097,7 +5310,158 @@ QStringList projectDataBase::publicViewStatements()
 			"LEFT JOIN diagram_info di1 ON di1.diagram_uuid = e1.diagram_uuid "
 			"LEFT JOIN diagram d2 ON d2.uuid = e2.diagram_uuid "
 			"LEFT JOIN diagram_info di2 ON di2.diagram_uuid = e2.diagram_uuid "
-			"WHERE e1.type IN ('master', 'next_report')")
+			"WHERE e1.type IN ('master', 'next_report')"),
+			//After qet_devices, which it reads
+		QStringLiteral(
+			"CREATE VIEW qet_device_list AS "
+			"WITH symbol AS (SELECT d.*, "
+				"(SELECT l.linked_uuid FROM link l JOIN element m ON m.uuid = l.linked_uuid "
+				"WHERE l.element_uuid = d.device_uuid AND m.type = 'master' LIMIT 1) AS master_uuid "
+				"FROM qet_devices d "
+				"WHERE COALESCE(d.kind, '') NOT IN ('next_report', 'previous_report')), "
+			"member AS (SELECT s.*, COALESCE(m.structure_id, s.structure_id) AS device, "
+				"CASE WHEN s.kind = 'master' THEN 0 WHEN s.master_uuid IS NULL THEN 1 ELSE 2 END AS rank "
+				"FROM symbol s LEFT JOIN qet_devices m ON m.device_uuid = s.master_uuid "
+				"WHERE COALESCE(NULLIF(m.label, ''), s.label, '') <> ''), "
+			"totals AS (SELECT device, COUNT(*) AS symbols, COUNT(DISTINCT folio_uuid) AS folios, "
+				"GROUP_CONCAT(DISTINCT NULLIF(article, '')) AS articles FROM member GROUP BY device), "
+			"head AS (SELECT device, plant, location, label, folio_number, folio, position, "
+				"designation, description, model, device_uuid, ROW_NUMBER() OVER (PARTITION BY device "
+				"ORDER BY rank, folio_number, position, device_uuid) AS n FROM member) "
+			"SELECT h.device AS structure_id, h.plant, h.location, h.label, t.symbols, t.folios, "
+			"h.folio_number, h.folio, h.position, t.articles, h.designation, h.description, "
+			"h.device_uuid AS head_uuid, h.model AS model "
+			"FROM head h JOIN totals t ON t.device = h.device WHERE h.n = 1 ORDER BY h.device"),
+			//After qet_devices, which it reads
+		QStringLiteral(
+			"CREATE VIEW qet_terminals AS "
+			"WITH info AS (SELECT n.strip_uuid, n.value AS name, t.value AS value "
+				"FROM terminal_strip_value n JOIN terminal_strip_value t "
+				"ON t.strip_uuid = n.strip_uuid AND t.section = n.section AND t.ord = n.ord "
+				"AND t.name = '#text' "
+				"WHERE n.section = 'terminal_strip/terminal_strip_data/informations/information' "
+				"AND n.name = 'name'), "
+			"strip AS (SELECT s.strip_uuid, "
+				"MAX(CASE WHEN i.name = 'installation' THEN i.value END) AS plant, "
+				"MAX(CASE WHEN i.name = 'location' THEN i.value END) AS location, "
+				"MAX(CASE WHEN i.name = 'name' THEN i.value END) AS name "
+				"FROM (SELECT DISTINCT strip_uuid FROM terminal_strip_value) s "
+				"LEFT JOIN info i ON i.strip_uuid = s.strip_uuid GROUP BY s.strip_uuid), "
+				//A strip of one physical terminal writes it without [0]
+			"terminal AS (SELECT strip_uuid, "
+				"CASE WHEN section = 'terminal_strip/layout/physical_terminal/real_terminal' THEN 0 "
+				"ELSE CAST(SUBSTR(section, INSTR(section, '[') + 1, "
+				"INSTR(section, ']') - INSTR(section, '[') - 1) AS INTEGER) END AS position, "
+				"ord AS level, "
+				"MAX(CASE WHEN name = 'element_uuid' THEN value END) AS element_uuid, "
+				"MAX(CASE WHEN name = 'spare_uuid' THEN 1 ELSE 0 END) AS spare "
+				"FROM terminal_strip_value "
+				"WHERE section LIKE 'terminal_strip/layout/physical_terminal%/real_terminal' "
+				"GROUP BY strip_uuid, section, ord), "
+				//What is on each terminal: its wires' numbers and what they reach
+			"ends AS (SELECT from_device_uuid AS element, wire_number AS number, "
+				"to_structure_id || CASE WHEN COALESCE(to_terminal, '') <> '' "
+				"THEN ':' || to_terminal ELSE '' END AS other FROM qet_wires "
+				"UNION ALL SELECT to_device_uuid, wire_number, "
+				"from_structure_id || CASE WHEN COALESCE(from_terminal, '') <> '' "
+				"THEN ':' || from_terminal ELSE '' END FROM qet_wires), "
+			"numbers AS (SELECT element, group_concat(number, ', ') AS wires FROM "
+				"(SELECT DISTINCT element, number FROM ends WHERE COALESCE(number, '') <> '') "
+				"GROUP BY element), "
+			"reached AS (SELECT element, group_concat(other, ', ') AS connected_to FROM "
+				"(SELECT DISTINCT element, other FROM ends WHERE other IS NOT NULL) "
+				"GROUP BY element) "
+			"SELECT ")
+			+ structureIdSql(QStringLiteral("s.plant"), QStringLiteral("s.location"), QStringLiteral("s.name"))
+			+ QStringLiteral(" AS strip_id, COALESCE(s.plant, '') AS plant, "
+			"COALESCE(s.location, '') AS location, s.name AS strip, t.position, t.level, "
+			"d.label, d.structure_id AS terminal_id, t.spare, d.folio_number, d.folio, "
+			"t.element_uuid, t.strip_uuid, n.wires, r.connected_to "
+			"FROM terminal t JOIN strip s ON s.strip_uuid = t.strip_uuid "
+			"LEFT JOIN qet_devices d ON d.device_uuid = t.element_uuid "
+			"LEFT JOIN numbers n ON n.element = t.element_uuid "
+			"LEFT JOIN reached r ON r.element = t.element_uuid "
+			"ORDER BY strip_id, t.strip_uuid, t.position, t.level"),
+			//After qet_folios, which it reads
+		QStringLiteral(
+			"CREATE VIEW qet_cables AS "
+			"WITH cable AS (SELECT cable_uuid, "
+				"MAX(CASE WHEN name = 'designation' THEN value END) AS designation, "
+				"MAX(CASE WHEN name = 'installation' THEN value END) AS plant, "
+				"MAX(CASE WHEN name = 'location' THEN value END) AS location, "
+				"MAX(CASE WHEN name = 'type' THEN value END) AS type, "
+				"MAX(CASE WHEN name = 'cores' THEN CAST(value AS INTEGER) END) AS cores, "
+				"MAX(CASE WHEN name = 'length' THEN value END) AS length "
+				"FROM cable_value WHERE section = 'cable' GROUP BY cable_uuid), "
+			"core AS (SELECT cable_uuid, COUNT(DISTINCT ord) AS drawn_cores, "
+				"COUNT(DISTINCT CASE WHEN name = 'conductor' AND value <> '' THEN ord END) AS wired_cores "
+				"FROM cable_value WHERE section = 'cable/core' GROUP BY cable_uuid), "
+			"drawn AS (SELECT v.cable_uuid, f.folio_uuid, f.folio_number, f.folio, f.plant, f.location, "
+				"ROW_NUMBER() OVER (PARTITION BY v.cable_uuid ORDER BY f.folio_number) AS n "
+				"FROM cable_value v JOIN qet_folios f ON f.folio_uuid = v.value "
+				"WHERE v.section = 'cable/part' AND v.name = 'diagram'), "
+			"spread AS (SELECT cable_uuid, COUNT(DISTINCT folio_uuid) AS folios "
+				"FROM drawn GROUP BY cable_uuid), "
+			"placed AS (SELECT c.*, ")
+			+ effectiveStructureSql(QStringLiteral("c.plant"), QStringLiteral("d.plant"))
+			+ QStringLiteral(" AS eff_plant, ")
+			+ effectiveStructureSql(QStringLiteral("c.location"), QStringLiteral("d.location"))
+			+ QStringLiteral(" AS eff_location, COALESCE(s.folios, 0) AS folios, "
+				"d.folio_number, d.folio FROM cable c LEFT JOIN drawn d "
+				"ON d.cable_uuid = c.cable_uuid AND d.n = 1 "
+				"LEFT JOIN spread s ON s.cable_uuid = c.cable_uuid) "
+			"SELECT ")
+			+ structureIdSql(QStringLiteral("eff_plant"), QStringLiteral("eff_location"), QStringLiteral("designation"))
+			+ QStringLiteral(" AS structure_id, eff_plant AS plant, eff_location AS location, "
+			"designation, type, COALESCE(cores, 0) AS cores, COALESCE(k.drawn_cores, 0) AS drawn_cores, "
+			"COALESCE(k.wired_cores, 0) AS wired_cores, length, folios, folio_number, folio, "
+			"p.cable_uuid FROM placed p LEFT JOIN core k ON k.cable_uuid = p.cable_uuid "
+			"ORDER BY structure_id, p.cable_uuid"),
+			//After qet_devices, which it reads: one row per entry of a PLC's
+			//I/O table, with the slave linked to it where one is drawn
+		QStringLiteral(
+			"CREATE VIEW qet_plc_io AS "
+			"WITH io AS (SELECT element_uuid, ord, "
+				"MAX(CASE WHEN name = 'address' THEN value END) AS address, "
+				"MAX(CASE WHEN name = 'type' THEN value END) AS io_type, "
+				"MAX(CASE WHEN name = 'functionText' THEN value END) AS function_text, "
+				"MAX(CASE WHEN name = 'comment' THEN value END) AS comment "
+				"FROM element_value WHERE section = 'plcMasterData/plcIOs/plcIO' "
+				"GROUP BY element_uuid, ord) "
+			"SELECT m.structure_id AS structure_id, m.plant AS plant, m.location AS location, "
+			"m.label AS plc, m.article AS article, io.ord + 1 AS entry, io.address AS address, "
+			"CASE io.io_type WHEN 'entree_digitale' THEN 'DI' WHEN 'sortie_digitale' THEN 'DO' "
+				"WHEN 'entree_analogique' THEN 'AI' WHEN 'sortie_analogique' THEN 'AO' "
+				"WHEN 'entree_universelle' THEN 'UI' WHEN 'sortie_universelle' THEN 'UO' "
+				"ELSE io.io_type END AS type, "
+			"io.function_text AS function, io.comment AS comment, "
+			"m.folio_number AS plc_folio_number, s.folio_number AS folio_number, "
+			"s.folio AS folio, s.position AS position, "
+			"m.device_uuid AS plc_uuid, s.device_uuid AS slave_uuid "
+			"FROM io JOIN qet_devices m ON m.device_uuid = io.element_uuid "
+			"LEFT JOIN link l ON l.element_uuid = io.element_uuid AND l.group_index = io.ord "
+			"LEFT JOIN qet_devices s ON s.device_uuid = l.linked_uuid "
+			"ORDER BY m.structure_id, io.ord"),
+			//After qet_cables and qet_wires, which it reads: one row per
+			//core of each cable, whether or not it is on a wire
+		QStringLiteral(
+			"CREATE VIEW qet_cable_cores AS "
+			"WITH RECURSIVE counter(i) AS (SELECT 0 UNION ALL SELECT i + 1 FROM counter WHERE i < 999), "
+			"colour AS (SELECT cable_uuid, ord AS position, value AS name FROM cable_value "
+				"WHERE section = 'cable/colors/color' AND name = '#text'), "
+			"on_wire AS (SELECT i.cable_uuid, CAST(i.value AS INTEGER) AS position, w.value AS wire_uuid "
+				"FROM cable_value i JOIN cable_value w ON w.cable_uuid = i.cable_uuid "
+				"AND w.section = i.section AND w.ord = i.ord AND w.name = 'conductor' "
+				"WHERE i.section = 'cable/core' AND i.name = 'index') "
+			"SELECT k.structure_id, k.plant, k.location, k.designation, c.i AS position, "
+			"COALESCE(o.name, CAST(c.i + 1 AS TEXT)) AS core, w.wire_number, w.section, w.colour, "
+			"w.from_structure_id, w.from_terminal, w.to_structure_id, w.to_terminal, "
+			"w.folio_number, w.folio, k.cable_uuid, w.wire_uuid "
+			"FROM qet_cables k JOIN counter c ON c.i < k.cores "
+			"LEFT JOIN colour o ON o.cable_uuid = k.cable_uuid AND o.position = c.i "
+			"LEFT JOIN on_wire d ON d.cable_uuid = k.cable_uuid AND d.position = c.i "
+			"LEFT JOIN qet_wires w ON w.wire_uuid = d.wire_uuid "
+			"ORDER BY k.structure_id, k.cable_uuid, c.i")
 	};
 	return views;
 }
@@ -5824,6 +6188,12 @@ void projectDataBase::storeFolioTitleBlock(const QUuid &folio, const TitleBlockP
 	row(QStringLiteral("filename"), properties.filename, true);
 	row(QStringLiteral("plant"), properties.plant, true);
 	row(QStringLiteral("locmach"), properties.locmach, true);
+		//Only when set, so a project without folio groups stores the same
+		//rows as before
+	if (!properties.folio_group.isEmpty())
+		row(QStringLiteral("folio_group"), properties.folio_group, true);
+	if (!properties.folio_subgroup.isEmpty())
+		row(QStringLiteral("folio_subgroup"), properties.folio_subgroup, true);
 	row(QStringLiteral("indexrev"), properties.indexrev, true);
 	row(QStringLiteral("version"), properties.version, true);
 	row(QStringLiteral("folio"), properties.folio, true);
@@ -7313,6 +7683,8 @@ void projectDataBase::endPrefill(bool keep_unplaced)
 		if (built.filename != p.filename) differing << QStringLiteral("filename");
 		if (built.plant != p.plant) differing << QStringLiteral("plant");
 		if (built.locmach != p.locmach) differing << QStringLiteral("locmach");
+		if (built.folio_group != p.folio_group) differing << QStringLiteral("folio_group");
+		if (built.folio_subgroup != p.folio_subgroup) differing << QStringLiteral("folio_subgroup");
 		if (built.indexrev != p.indexrev) differing << QStringLiteral("indexrev");
 		if (built.version != p.version) differing << QStringLiteral("version");
 		if (built.folio != p.folio) differing << QStringLiteral("folio");
@@ -8688,7 +9060,8 @@ QStringList projectDataBase::foreignChildren(const QDomElement &parent, bool fol
 	static const QSet<QString> project_known{
 		QStringLiteral("properties"), QStringLiteral("newdiagrams"), QStringLiteral("diagram"),
 		QStringLiteral("collection"), QStringLiteral("titleblocktemplates"), QStringLiteral("usage"),
-		QStringLiteral("wire_crossings"), QStringLiteral("symbol_texts"), QStringLiteral("languages"),
+		QStringLiteral("wire_crossings"), QStringLiteral("symbol_texts"),
+		QStringLiteral("plant_location"), QStringLiteral("languages"),
 		QStringLiteral("terminal_labelling"), QStringLiteral("wiring_rules"),
 		QStringLiteral("chained_reports"), QStringLiteral("style"),
 		QStringLiteral("terminal_strip_layout"), QStringLiteral("terminal_strips"),

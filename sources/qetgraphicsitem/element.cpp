@@ -37,6 +37,7 @@
 #include <qetinformation.h>
 #include <qetgraphicsitem/conductor.h>
 #include <qetgraphicsitem/terminal.h>
+#include <ui/elementarticleswidget.h>
 #include <ui/elementpropertieswidget.h>
 #include <undocommand/changeelementinformationcommand.h>
 #include <undocommand/setautonumcontextcommand.h>
@@ -46,6 +47,7 @@
 #include "dynamicelementtextitem.h"
 #include "elementtextitemgroup.h"
 #include "independenttextitem.h"
+#include "structureboxitem.h"
 #include "iostream"
 
 #include <QAbstractTextDocumentLayout>
@@ -193,6 +195,12 @@ Element::Element(
 	connect(this, &Element::rotationChanged, this, &Element::applyMirrorTransform);
 		//Texts kept horizontal in a turned symbol depend on the turn
 	connect(this, &Element::rotationChanged, this, [this]() {updateSymbolPictures();});
+		//A text showing the symbol's place (%{structure_id}...) follows it
+		//into and out of structure boxes: inside is where its centre is
+	const auto refresh_place_texts = [this]() {StructureBoxItem::refreshTextsOf(this);};
+	connect(this, &Element::xChanged, this, refresh_place_texts);
+	connect(this, &Element::yChanged, this, refresh_place_texts);
+	connect(this, &Element::rotationChanged, this, refresh_place_texts);
 		//And its texts and their groups
 	for (DynamicElementTextItem *deti : std::as_const(m_dynamic_text_list))
 		connectTextStore(deti);
@@ -282,6 +290,16 @@ void Element::editProperty()
 				width = qMin(width, screen->availableGeometry().width());
 			dialog.resize(width, natural.height());
 		}
+		if (epw->findChild<ElementArticlesWidget *>()) {
+			const QRect avail = QApplication::primaryScreen()
+				? QApplication::primaryScreen()->availableGeometry()
+				: QRect(0, 0, 1024, 768);
+			const int target_w = qMin(qMax(dialog.width(), 920), avail.width());
+			const int target_h = qMin(qMax(dialog.height(), 640), avail.height());
+			if (target_w != dialog.width() || target_h != dialog.height()) {
+				dialog.resize(target_w, target_h);
+			}
+		}
 
 		dialog.exec();
 	}
@@ -333,8 +351,9 @@ void Element::showAsJumpTarget()
 /**
 	@brief Element::jumpTo
 	Go to @a target, the other end of a folio report or the master of a
-	cross reference: its folio is shown whole, as a page, without zooming
-	in on it, and the target and its texts are shaded blue for a moment,
+	cross reference: its folio is shown whole, as a page, or at the jump
+	zoom of the settings with the target in the middle
+	(DiagramView::showJumpTarget()), and the target and its texts are shaded blue for a moment,
 	so that the eye finds it on the page.
 	The mouse pointer is put on it too, except on Wayland, which does not
 	let a program move the pointer.
@@ -350,7 +369,7 @@ void Element::jumpTo(Element *target)
 	for (QGraphicsView *view : diagram->views())
 	{
 		if (auto *diagram_view = qobject_cast<DiagramView *>(view))
-			diagram_view->zoomFit();
+			diagram_view->showJumpTarget(target->sceneBoundingRect());
 		else
 			view->fitInView(diagram->sceneRect(), Qt::KeepAspectRatio);
 	}
@@ -2620,12 +2639,11 @@ void Element::setElementInformations(DiagramContext dc)
  */
 ElementData Element::elementData() const
 {
-	if (projectDataBase *store = placedStore()) {
-		ElementData data = m_data;
+	ElementData data = m_data;
+	if (projectDataBase *store = placedStore())
 		data.m_informations = store->elementInformation(m_uuid);
-		return data;
-	}
-	return m_data;
+	data.m_informations = data.withCustomInfo(data.m_informations);
+	return data;
 }
 
 /**
@@ -2637,8 +2655,8 @@ ElementData Element::elementData() const
 DiagramContext Element::elementInformations() const
 {
 	if (projectDataBase *store = placedStore())
-		return store->elementInformation(m_uuid);
-	return m_data.m_informations;
+		return m_data.withCustomInfo(store->elementInformation(m_uuid));
+	return m_data.withCustomInfo(m_data.m_informations);
 }
 
 /**

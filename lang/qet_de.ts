@@ -616,50 +616,6 @@
 <context>
     <name>AssistantDock</name>
     <message>
-        <source>Your question… (Enter sends, Shift+Enter: new line; paste or drag in pictures and PDFs)</source>
-        <translation>Deine Frage … (Enter sendet, Umschalt+Enter: neue Zeile; Bilder und PDFs einfügen oder hineinziehen)</translation>
-    </message>
-    <message>
-        <source>Attach pictures or PDFs (also: Ctrl+V or drag them into the field)</source>
-        <translation>Bilder oder PDFs anhängen (auch: Strg+V oder ins Feld ziehen)</translation>
-    </message>
-    <message>
-        <source>%1 is larger than 20 MB.</source>
-        <translation>%1 ist größer als 20 MB.</translation>
-    </message>
-    <message>
-        <source>%1 cannot be read.</source>
-        <translation>%1 lässt sich nicht lesen.</translation>
-    </message>
-    <message>
-        <source>%1 is neither a picture nor a PDF.</source>
-        <translation>%1 ist weder ein Bild noch ein PDF.</translation>
-    </message>
-    <message>
-        <source>Picture %1.png</source>
-        <translation>Bild %1.png</translation>
-    </message>
-    <message>
-        <source>At most %1 attachments per question.</source>
-        <translation>Höchstens %1 Anhänge je Frage.</translation>
-    </message>
-    <message>
-        <source>Attach pictures or PDFs</source>
-        <translation>Bilder oder PDFs anhängen</translation>
-    </message>
-    <message>
-        <source>Pictures and PDFs (*.png *.jpg *.jpeg *.gif *.webp *.bmp *.pdf);;All files (*)</source>
-        <translation>Bilder und PDFs (*.png *.jpg *.jpeg *.gif *.webp *.bmp *.pdf);;Alle Dateien (*)</translation>
-    </message>
-    <message>
-        <source>%1 – click to remove</source>
-        <translation>%1 – Klicken entfernt den Anhang</translation>
-    </message>
-    <message>
-        <source>Assistant</source>
-        <translation type="vanished">Assistent</translation>
-    </message>
-    <message>
         <source>Claude assistant</source>
         <translation>Claude-Assistent</translation>
     </message>
@@ -672,24 +628,28 @@
         <translation>Neues Gespräch beginnen</translation>
     </message>
     <message>
-        <source>Settings…</source>
-        <translation type="vanished">Einstellungen…</translation>
+        <source>Settings</source>
+        <translation>Einstellungen</translation>
     </message>
     <message>
-        <source>API key and Python of the assistant</source>
-        <translation type="vanished">API-Schlüssel und Python des Assistenten</translation>
+        <source>Back to the setup: API key, Python, package</source>
+        <translation>Zurück zur Einrichtung: API-Schlüssel, Python, Paket</translation>
     </message>
     <message>
         <source>Ask about the open drawing, or tell Claude what to draw. Every change Claude makes is one undo step.</source>
-        <translation>Frag etwas zum offenen Plan oder sag Claude, was es zeichnen soll. Jede Änderung von Claude ist ein eigener Rückgängig-Schritt.</translation>
+        <translation>Frag nach der offenen Zeichnung oder sag Claude, was es zeichnen soll. Jede Änderung von Claude ist ein Rückgängig-Schritt.</translation>
     </message>
     <message>
-        <source>Your question… (Enter sends, Shift+Enter: new line)</source>
-        <translation type="vanished">Deine Frage… (Enter sendet, Umschalt+Enter: neue Zeile)</translation>
+        <source>Your question… (Enter sends, Shift+Enter: new line; paste or drag in pictures and PDFs)</source>
+        <translation>Deine Frage … (Enter sendet, Umschalt+Enter: neue Zeile; Bilder und PDFs einfügen oder hineinziehen)</translation>
+    </message>
+    <message>
+        <source>Attach pictures or PDFs (also: Ctrl+V or drag them into the field)</source>
+        <translation>Bilder oder PDFs anhängen (auch: Strg+V oder ins Feld ziehen)</translation>
     </message>
     <message>
         <source>Stop</source>
-        <translation>Abbrechen</translation>
+        <translation>Anhalten</translation>
     </message>
     <message>
         <source>Stop the answer</source>
@@ -700,12 +660,8 @@
         <translation>Senden</translation>
     </message>
     <message>
-        <source>No API key: the assistant cannot answer without one.</source>
-        <translation type="vanished">Kein API-Schlüssel: ohne ihn kann der Assistent nicht antworten.</translation>
-    </message>
-    <message>
         <source>The channel to the drawing could not be opened.</source>
-        <translation>Der Kanal zum Plan ließ sich nicht öffnen.</translation>
+        <translation>Die Verbindung zur Zeichnung konnte nicht geöffnet werden.</translation>
     </message>
     <message>
         <source>thinking…</source>
@@ -714,18 +670,6 @@
     <message>
         <source>stopping…</source>
         <translation>bricht ab…</translation>
-    </message>
-    <message>
-        <source>Settings saved; the next question starts a new conversation.</source>
-        <translation type="vanished">Einstellungen gespeichert; die nächste Frage beginnt ein neues Gespräch.</translation>
-    </message>
-    <message>
-        <source>Settings</source>
-        <translation>Einstellungen</translation>
-    </message>
-    <message>
-        <source>Back to the setup: API key, Python, package</source>
-        <translation>Zurück zur Einrichtung: API-Schlüssel, Python, Paket</translation>
     </message>
     <message>
         <source>Settings changed; the next question starts a new conversation.</source>
@@ -788,207 +732,40 @@ Jede Änderung ist ein eigener Rückgängig-Schritt (Strg+Z). Darf Claude den Pl
         <translation>Fehler</translation>
     </message>
     <message>
-        <source>found when the import starts</source>
-        <translation type="vanished">wird beim Start gesucht</translation>
+        <source>%1 is larger than 20 MB.</source>
+        <translation>%1 ist größer als 20 MB.</translation>
     </message>
     <message>
-        <source>The output of the import appears here.</source>
-        <translation type="vanished">Hier erscheint die Ausgabe des Imports.</translation>
+        <source>%1 cannot be read.</source>
+        <translation>%1 lässt sich nicht lesen.</translation>
     </message>
     <message>
-        <source>Import</source>
-        <translation type="vanished">Importieren</translation>
+        <source>%1 is neither a picture nor a PDF.</source>
+        <translation>%1 ist weder ein Bild noch ein PDF.</translation>
     </message>
     <message>
-        <source>EPLAN project archives (*.zw1);;All files (*)</source>
-        <translation type="vanished">EPLAN-Projektarchive (*.zw1);;Alle Dateien (*)</translation>
+        <source>Picture %1.png</source>
+        <translation>Bild %1.png</translation>
     </message>
     <message>
-        <source>Save the imported project as</source>
-        <translation type="vanished">Importiertes Projekt speichern als</translation>
+        <source>At most %1 attachments per question.</source>
+        <translation>Höchstens %1 Anhänge je Frage.</translation>
     </message>
     <message>
-        <source>QElectroTech projects (*.qet)</source>
-        <translation type="vanished">QElectroTech-Projekte (*.qet)</translation>
+        <source>Attach pictures or PDFs</source>
+        <translation>Bilder oder PDFs anhängen</translation>
     </message>
     <message>
-        <source>Where is the import program?</source>
-        <translation type="vanished">Wo liegt das Importprogramm?</translation>
+        <source>Pictures and PDFs (*.png *.jpg *.jpeg *.gif *.webp *.bmp *.pdf);;All files (*)</source>
+        <translation>Bilder und PDFs (*.png *.jpg *.jpeg *.gif *.webp *.bmp *.pdf);;Alle Dateien (*)</translation>
     </message>
     <message>
-        <source>Import program (%1)</source>
-        <translation type="vanished">Importprogramm (%1)</translation>
-    </message>
-    <message>
-        <source>Programs (*.exe)</source>
-        <translation type="vanished">Programme (*.exe)</translation>
-    </message>
-    <message>
-        <source>Which Python should run the import?</source>
-        <translation type="vanished">Mit welchem Python soll der Import laufen?</translation>
-    </message>
-    <message>
-        <source>Choose the EPLAN project (.zw1).</source>
-        <translation type="vanished">Wähle das EPLAN-Projekt (.zw1).</translation>
-    </message>
-    <message>
-        <source>The EPLAN project %1 does not exist.</source>
-        <translation type="vanished">Das EPLAN-Projekt %1 gibt es nicht.</translation>
-    </message>
-    <message>
-        <source>Choose where the QElectroTech project is to be saved.</source>
-        <translation type="vanished">Wähle, wo das QElectroTech-Projekt gespeichert werden soll.</translation>
-    </message>
-    <message>
-        <source>The import program (%1) was not found. Choose it with &quot;Change…&quot;.</source>
-        <translation type="vanished">Das Importprogramm (%1) wurde nicht gefunden. Wähle es mit „Ändern…“.</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">Abbrechen</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="vanished">Schließen</translation>
-    </message>
-    <message>
-        <source>%1 does not start.</source>
-        <translation type="vanished">%1 startet nicht.</translation>
-    </message>
-    <message>
-        <source>%1 did not answer.</source>
-        <translation type="vanished">%1 hat nicht geantwortet.</translation>
-    </message>
-    <message>
-        <source>Checking %1 …</source>
-        <translation type="vanished">Prüfe %1 …</translation>
-    </message>
-    <message>
-        <source>No Python runs the import program:</source>
-        <translation type="vanished">Kein Python kann das Importprogramm ausführen:</translation>
-    </message>
-    <message>
-        <source>Install what is missing, e.g. &quot;py -m pip install fonttools pymupdf&quot;, or choose another Python.</source>
-        <translation type="vanished">Installiere, was fehlt, z. B. „py -m pip install fonttools pymupdf“, oder wähle ein anderes Python.</translation>
-    </message>
-    <message>
-        <source>%1 is open in QElectroTech. Close it first or choose another file.</source>
-        <translation type="vanished">%1 ist in QElectroTech geöffnet. Schließe es zuerst oder wähle eine andere Datei.</translation>
-    </message>
-    <message>
-        <source>%1 already exists. Replace it?</source>
-        <translation type="vanished">%1 gibt es schon. Ersetzen?</translation>
-    </message>
-    <message>
-        <source>The folder %1 cannot be created.</source>
-        <translation type="vanished">Der Ordner %1 kann nicht angelegt werden.</translation>
-    </message>
-    <message>
-        <source>No usable Python found.</source>
-        <translation type="vanished">Kein passendes Python gefunden.</translation>
-    </message>
-    <message>
-        <source>The import does not start: %1</source>
-        <translation type="vanished">Der Import startet nicht: %1</translation>
-    </message>
-    <message>
-        <source>The import did not start.</source>
-        <translation type="vanished">Der Import ist nicht gestartet.</translation>
-    </message>
-    <message>
-        <source>Importing %1 … this can take several minutes.</source>
-        <translation type="vanished">Importiere %1 … das kann einige Minuten dauern.</translation>
-    </message>
-    <message>
-        <source>Done: %1</source>
-        <translation type="vanished">Fertig: %1</translation>
-    </message>
-    <message>
-        <source>The import was stopped.</source>
-        <translation type="vanished">Der Import wurde abgebrochen.</translation>
-    </message>
-    <message>
-        <source>The import failed (exit code %1). The reason is in the output below.</source>
-        <translation type="vanished">Der Import ist fehlgeschlagen (Rückgabewert %1). Der Grund steht in der Ausgabe darunter.</translation>
-    </message>
-    <message>
-        <source>Stop the running import?</source>
-        <translation type="vanished">Den laufenden Import abbrechen?</translation>
-    </message>
-</context>
-<context>
-    <name>AssistantSettingsDialog</name>
-    <message>
-        <source>Assistant settings</source>
-        <translation type="vanished">Einstellungen des Assistenten</translation>
-    </message>
-    <message>
-        <source>The assistant uses Claude (Anthropic). It needs an API key from console.anthropic.com. The key is kept in the Windows Credential Manager, never in a file of QElectroTech.</source>
-        <translation type="vanished">Der Assistent nutzt Claude (Anthropic). Er braucht einen API-Schlüssel von console.anthropic.com. Der Schlüssel liegt in der Windows-Anmeldeinformationsverwaltung, nie in einer Datei von QElectroTech.</translation>
-    </message>
-    <message>
-        <source>API key:</source>
-        <translation type="vanished">API-Schlüssel:</translation>
-    </message>
-    <message>
-        <source>not found</source>
-        <translation type="vanished">nicht gefunden</translation>
-    </message>
-    <message>
-        <source>Choose…</source>
-        <translation type="vanished">Wählen…</translation>
-    </message>
-    <message>
-        <source>Python:</source>
-        <translation type="vanished">Python:</translation>
-    </message>
-    <message>
-        <source>Python program</source>
-        <translation type="vanished">Python-Programm</translation>
-    </message>
-    <message>
-        <source>The bridge needs the Python package “anthropic” (py -m pip install anthropic).</source>
-        <translation type="vanished">Die Brücke braucht das Python-Paket „anthropic“ (py -m pip install anthropic).</translation>
-    </message>
-    <message>
-        <source>Remove key</source>
-        <translation type="vanished">Schlüssel entfernen</translation>
-    </message>
-    <message>
-        <source>No credential store on this system: set ANTHROPIC_API_KEY in the environment instead.</source>
-        <translation type="vanished">Auf diesem System gibt es keinen Anmeldeinformationsspeicher: stattdessen ANTHROPIC_API_KEY in der Umgebung setzen.</translation>
-    </message>
-    <message>
-        <source>A key is stored. Leave the field empty to keep it.</source>
-        <translation type="vanished">Ein Schlüssel ist hinterlegt. Feld leer lassen, um ihn zu behalten.</translation>
-    </message>
-    <message>
-        <source>No key stored yet.</source>
-        <translation type="vanished">Noch kein Schlüssel hinterlegt.</translation>
-    </message>
-    <message>
-        <source>The key could not be stored: %1</source>
-        <translation type="vanished">Der Schlüssel ließ sich nicht speichern: %1</translation>
-    </message>
-    <message>
-        <source>Remove the stored API key?</source>
-        <translation type="vanished">Den hinterlegten API-Schlüssel entfernen?</translation>
-    </message>
-    <message>
-        <source>The key could not be removed: %1</source>
-        <translation type="vanished">Der Schlüssel ließ sich nicht entfernen: %1</translation>
+        <source>%1 – click to remove</source>
+        <translation>%1 – Klicken entfernt den Anhang</translation>
     </message>
 </context>
 <context>
     <name>AssistantSetupPage</name>
-    <message>
-        <source>Set up Claude</source>
-        <translation>Claude einrichten</translation>
-    </message>
-    <message>
-        <source>Claude answers questions about the open drawing and draws for you. Three things are needed once; each step turns green when it is done.</source>
-        <translation>Claude beantwortet Fragen zum offenen Plan und zeichnet für Sie. Dafür sind einmalig drei Dinge nötig; jeder Schritt wird grün, sobald er erledigt ist.</translation>
-    </message>
     <message>
         <source>Check</source>
         <translation>Prüfen</translation>
@@ -1098,12 +875,12 @@ Jede Änderung ist ein eigener Rückgängig-Schritt (Strg+Z). Darf Claude den Pl
         <translation>Der Schlüssel ließ sich nicht entfernen: %1</translation>
     </message>
     <message>
-        <source>2. Python</source>
-        <translation>2. Python</translation>
-    </message>
-    <message>
         <source>1. Python</source>
         <translation>1. Python</translation>
+    </message>
+    <message>
+        <source>2. Python</source>
+        <translation>2. Python</translation>
     </message>
     <message>
         <source>The chosen program “%1” does not exist. Choose another one.</source>
@@ -1188,6 +965,14 @@ Jede Änderung ist ein eigener Rückgängig-Schritt (Strg+Z). Darf Claude den Pl
     <message>
         <source>Use an API key instead</source>
         <translation>Stattdessen einen API-Schlüssel verwenden</translation>
+    </message>
+    <message>
+        <source>Set up Claude</source>
+        <translation>Claude einrichten</translation>
+    </message>
+    <message>
+        <source>Claude answers questions about the open drawing and draws for you. Three things are needed once; each step turns green when it is done.</source>
+        <translation>Claude beantwortet Fragen zum offenen Plan und zeichnet für Sie. Dafür sind einmalig drei Dinge nötig; jeder Schritt wird grün, sobald er erledigt ist.</translation>
     </message>
     <message>
         <source>Use my Claude account instead (no API costs)</source>
@@ -1475,6 +1260,14 @@ Jede Änderung ist ein eigener Rückgängig-Schritt (Strg+Z). Darf Claude den Pl
         <translation>Element(e) neu nummerieren…</translation>
     </message>
     <message>
+        <source>Renumber conductors…</source>
+        <translation>Leiter neu nummerieren…</translation>
+    </message>
+    <message>
+        <source>Give the conductors of the chosen sheets new numbers with a conductor numbering, one number per potential, in sheet and position order. Frozen conductors keep theirs.</source>
+        <translation>Gibt den Leitern der gewählten Seiten neue Nummern nach einer Leiternummerierung, eine Nummer je Potenzial, in Seiten- und Positionsreihenfolge. Eingefrorene Leiter behalten ihre.</translation>
+    </message>
+    <message>
         <source>Sheet</source>
         <translation>Seite</translation>
     </message>
@@ -1535,6 +1328,60 @@ Jede Änderung ist ein eigener Rückgängig-Schritt (Strg+Z). Darf Claude den Pl
         </translation>
     </message>
     <message>
+        <source>Renumber conductors</source>
+        <translation>Leiter neu nummerieren</translation>
+    </message>
+    <message>
+        <source>The project has no conductor numbering.</source>
+        <translation>Das Projekt hat keine Leiternummerierung.</translation>
+    </message>
+    <message>
+        <source>Numbering:</source>
+        <translation>Nummerierung:</translation>
+    </message>
+    <message>
+        <source>%1 - %2</source>
+        <translation>%1 - %2</translation>
+    </message>
+    <message>
+        <source>Sheets:</source>
+        <translation>Seiten:</translation>
+    </message>
+    <message>
+        <source>No conductor of the chosen sheets can be renumbered.</source>
+        <translation>Kein Leiter der gewählten Seiten kann neu nummeriert werden.</translation>
+    </message>
+    <message>
+        <source>Sheet %1: %2 → %3</source>
+        <translation>Seite %1: %2 → %3</translation>
+    </message>
+    <message>
+        <source>(none)</source>
+        <translation>(keine)</translation>
+    </message>
+    <message>
+        <source>Sheet %1: %2 kept (%3)</source>
+        <translation>Seite %1: %2 beibehalten (%3)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n potentials will be numbered again with &quot;%1&quot;, in sheet and position order.</source>
+        <translation>
+            <numerusform>%n Potenzial wird mit „%1“ in Seiten- und Positionsreihenfolge neu nummeriert.</numerusform>
+            <numerusform>%n Potenziale werden mit „%1“ in Seiten- und Positionsreihenfolge neu nummeriert.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n potentials are kept as they are.</source>
+        <translation>
+            <numerusform>%n Potenzial bleibt, wie es ist.</numerusform>
+            <numerusform>%n Potenziale bleiben, wie sie sind.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Renumber conductors (%1)</source>
+        <translation>Leiter neu nummerieren (%1)</translation>
+    </message>
+    <message>
         <source>Auto Numbering Management</source>
         <comment>title window</comment>
         <translation>Verwaltung der automatischen Nummerierungen</translation>
@@ -1563,7 +1410,7 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
     </message>
     <message>
         <source>Export the bill of materials as CSV</source>
-        <translation>Stückliste als CSV exportieren</translation>
+        <translation>Materialliste als CSV exportieren</translation>
     </message>
     <message>
         <source>Page layout</source>
@@ -1579,11 +1426,11 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
     </message>
     <message>
         <source>One line per part: identical manufacturer, part number and unit are added up, with the labels of the elements using it. Replaces the choices of the fields below.</source>
-        <translation>Eine Zeile je Artikel: Gleicher Hersteller, gleiche Artikelnummer und Einheit werden zusammengezählt, mit den BMK der Bauteile, die ihn verwenden. Ersetzt die Auswahl der Felder unten.</translation>
+        <translation>Eine Zeile je Teil: gleicher Hersteller, gleiche Artikelnummer und Einheit werden addiert, mit den BMK der Bauteile, die es verwenden. Ersetzt die Auswahl der Felder unten.</translation>
     </message>
     <message>
         <source>Group identical parts and add up the quantities</source>
-        <translation>Gleiche Artikel zusammenfassen und Mengen addieren</translation>
+        <translation>Gleiche Teile gruppieren und Mengen addieren</translation>
     </message>
     <message>
         <source>Terminals with no label, designation, manufacturer or manufacturer reference</source>
@@ -1650,7 +1497,7 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
     </message>
     <message>
         <source>References</source>
-        <translation>BMK</translation>
+        <translation>Referenzen</translation>
     </message>
     <message>
         <source>Manufacturer</source>
@@ -1714,7 +1561,7 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
     <message>
         <source>%1 (after the last edit)</source>
         <comment>recovery generation label</comment>
-        <translation>%1 (nach der letzten Änderung)</translation>
+        <translation>%1 (nach der letzten Bearbeitung)</translation>
     </message>
     <message>
         <source>%1 (newest)</source>
@@ -1795,7 +1642,7 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
     </message>
     <message>
         <source>. Smallest paper that holds it: %1 %2, %3 mm free across and %4 mm free down</source>
-        <translation>. Kleinstes passendes Papier: %1 %2, %3 mm frei in der Breite und %4 mm frei in der Höhe</translation>
+        <translation>. Kleinstes Papier, das sie aufnimmt: %1 %2, %3 mm frei in der Breite und %4 mm frei in der Höhe</translation>
     </message>
     <message>
         <source>landscape</source>
@@ -1814,11 +1661,11 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
     <name>BridgeCopy</name>
     <message>
         <source>Paste a bridge</source>
-        <translation>Brücke einfügen</translation>
+        <translation>Eine Brücke einfügen</translation>
     </message>
     <message>
         <source>Duplicate a bridge</source>
-        <translation>Brücke duplizieren</translation>
+        <translation>Eine Brücke duplizieren</translation>
     </message>
 </context>
 <context>
@@ -1843,8 +1690,8 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
         <source>, %n sheet reference(s) on the way to the next sheet</source>
         <comment>the way to the next sheet</comment>
         <translation>
-            <numerusform>, %n Seitenverweis auf dem Weg zur nächsten Seite</numerusform>
-            <numerusform>, %n Seitenverweise auf dem Weg zur nächsten Seite</numerusform>
+            <numerusform>, %n Folienverweis auf dem Weg zur nächsten Seite</numerusform>
+            <numerusform>, %n Folienverweise auf dem Weg zur nächsten Seite</numerusform>
         </translation>
     </message>
     <message>
@@ -1857,7 +1704,7 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
     </message>
     <message>
         <source>Line width:</source>
-        <translation>Linienstärke:</translation>
+        <translation>Linienbreite:</translation>
     </message>
     <message>
         <source>Name:</source>
@@ -1865,11 +1712,11 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
     </message>
     <message>
         <source>A name to tell this bridge from the next one, like 24V or B1. Empty when nobody names it.</source>
-        <translation>Ein Name, um diese Brücke von der nächsten zu unterscheiden, z. B. 24V oder B1. Leer, wenn keiner vergeben wird.</translation>
+        <translation>Ein Name, um diese Brücke von der nächsten zu unterscheiden, etwa 24V oder B1. Leer, wenn niemand sie benennt.</translation>
     </message>
     <message>
         <source>Bridge colour:</source>
-        <translation>Farbe der Brücke:</translation>
+        <translation>Brückenfarbe:</translation>
     </message>
     <message>
         <source>New bridge</source>
@@ -1910,23 +1757,23 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
     </message>
     <message>
         <source>Different potentials</source>
-        <translation>Unterschiedliche Potentiale</translation>
+        <translation>Unterschiedliche Potenziale</translation>
     </message>
     <message>
         <source>The terminals carry different information: choose which the bridge takes.</source>
-        <translation>Die Klemmen tragen unterschiedliche Angaben: Wählen, welche die Brücke übernimmt.</translation>
+        <translation>Die Klemmen tragen unterschiedliche Angaben: wählen Sie, welche die Brücke übernimmt.</translation>
     </message>
     <message>
         <source>This bridge holds %1 terminal(s): it may not be given a limit below that.</source>
-        <translation>Diese Brücke verbindet %1 Klemme(n): Ihr Grenzwert darf nicht darunter liegen.</translation>
+        <translation>Diese Brücke hält %1 Klemme(n): ihr darf keine niedrigere Grenze gegeben werden.</translation>
     </message>
     <message>
         <source>A bridge holding %1 terminal(s) at most cannot take the %2 just recognized. Give it a higher limit, no limit at all, or draw another bridge.</source>
-        <translation>Eine Brücke mit höchstens %1 Klemme(n) kann die %2 gerade erkannten nicht aufnehmen. Einen höheren Grenzwert, keinen Grenzwert oder eine weitere Brücke zeichnen.</translation>
+        <translation>Eine Brücke mit höchstens %1 Klemme(n) kann die %2 gerade erkannten nicht aufnehmen. Geben Sie ihr eine höhere Grenze, gar keine Grenze, oder zeichnen Sie eine weitere Brücke.</translation>
     </message>
     <message>
         <source>Choose a bridge which can take the %1 terminal(s) just recognized, or draw a new one.</source>
-        <translation>Eine Brücke wählen, die die %1 gerade erkannte(n) Klemme(n) aufnehmen kann, oder eine neue zeichnen.</translation>
+        <translation>Wählen Sie eine Brücke, die die %1 gerade erkannte(n) Klemme(n) aufnehmen kann, oder zeichnen Sie eine neue.</translation>
     </message>
     <message>
         <source>That bridge cannot be built</source>
@@ -1956,17 +1803,17 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
     <message numerus="yes">
         <source>Not enough free places for the %1 terminal(s) just recognized</source>
         <translation>
-            <numerusform>Nicht genug freie Plätze für die %1 gerade erkannte Klemme</numerusform>
-            <numerusform>Nicht genug freie Plätze für die %1 gerade erkannten Klemmen</numerusform>
+            <numerusform>Nicht genug freie Plätze für die %1 gerade erkannte(n) Klemme(n)</numerusform>
+            <numerusform>Nicht genug freie Plätze für die %1 gerade erkannte(n) Klemme(n)</numerusform>
         </translation>
     </message>
     <message>
         <source>The bridge is drawn where you pulled the line and keeps the form you give it.</source>
-        <translation>Die Brücke wird dort gezeichnet, wo die Linie gezogen wurde, und behält die gegebene Form.</translation>
+        <translation>Die Brücke wird dort gezeichnet, wo Sie die Linie gezogen haben, und behält die Form, die Sie ihr geben.</translation>
     </message>
     <message>
         <source>Choose a bridge to land on, or draw a new one.</source>
-        <translation>Eine Brücke zum Anschließen wählen oder eine neue zeichnen.</translation>
+        <translation>Wählen Sie eine Brücke zum Anschließen, oder zeichnen Sie eine neue.</translation>
     </message>
     <message>
         <source>This bridge is full.</source>
@@ -1978,7 +1825,7 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
     </message>
     <message>
         <source>The %1 terminal(s) join this bridge, drawn as another line of it.</source>
-        <translation>Die %1 Klemme(n) kommen zu dieser Brücke hinzu, als weitere Linie der Brücke gezeichnet.</translation>
+        <translation>Die %1 Klemme(n) schließen sich dieser Brücke an, als weitere Linie von ihr gezeichnet.</translation>
     </message>
 </context>
 <context>
@@ -1993,16 +1840,16 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
     </message>
     <message>
         <source>The line would land on %1 terminal(s) more than the bridge may hold: it keeps the length it had.</source>
-        <translation>Die Linie träfe %1 Klemme(n) mehr, als die Brücke aufnehmen darf: Sie behält ihre bisherige Länge.</translation>
+        <translation>Die Linie würde auf %1 Klemme(n) mehr landen, als die Brücke aufnehmen darf: sie behält ihre bisherige Länge.</translation>
     </message>
     <message>
         <source>A bridge lies across one terminal strip: the line would take terminals of %1, and keeps the length it had.</source>
-        <translation>Eine Brücke liegt auf einer einzigen Klemmenleiste: Die Linie würde Klemmen von %1 erfassen und behält ihre bisherige Länge.</translation>
+        <translation>Eine Brücke liegt auf einer einzigen Klemmleiste: die Linie würde Klemmen von %1 nehmen und behält ihre bisherige Länge.</translation>
     </message>
     <message>
         <source>Joining a bridge over a sheet reference</source>
         <comment>undo command text</comment>
-        <translation>Brücke über einen Seitenverweis verbinden</translation>
+        <translation>Brücke über einen Folienverweis verbinden</translation>
     </message>
 </context>
 <context>
@@ -2018,54 +1865,6 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
 </context>
 <context>
     <name>CableCreateDialog</name>
-    <message>
-        <source>Properties</source>
-        <translation>Eigenschaften</translation>
-    </message>
-    <message>
-        <source>Show only cable types which have every ticked property</source>
-        <translation>Nur Kabeltypen zeigen, die alle angehakten Eigenschaften haben</translation>
-    </message>
-    <message>
-        <source>Properties: %1</source>
-        <translation>Eigenschaften: %1</translation>
-    </message>
-    <message>
-        <source>Cores:</source>
-        <translation>Adern:</translation>
-    </message>
-    <message>
-        <source>any</source>
-        <translation>beliebig</translation>
-    </message>
-    <message>
-        <source>Core cross section (mm²):</source>
-        <translation>Aderquerschnitt (mm²):</translation>
-    </message>
-    <message>
-        <source>Only fit for energy chains</source>
-        <translation>Nur energiekettentauglich</translation>
-    </message>
-    <message>
-        <source>Cable types marked as fit for energy chains (drag chains) in the catalog</source>
-        <translation>Kabeltypen, die der Katalog als energiekettentauglich (schleppkettentauglich) führt</translation>
-    </message>
-    <message>
-        <source>Catalog:</source>
-        <translation>Katalog:</translation>
-    </message>
-    <message>
-        <source>Cable types of one manufacturer catalog (CSV files in the folder &quot;cable-catalogs&quot; beside the cable type file) or of your own list</source>
-        <translation>Kabeltypen eines Herstellerkatalogs (CSV-Dateien im Ordner „cable-catalogs“ neben der Kabeltypdatei) oder der eigenen Liste</translation>
-    </message>
-    <message>
-        <source>All</source>
-        <translation>Alle</translation>
-    </message>
-    <message>
-        <source>Own list</source>
-        <translation>Eigene Liste</translation>
-    </message>
     <message>
         <source>Cable</source>
         <translation>Kabel</translation>
@@ -2097,6 +1896,42 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
     <message>
         <source>Filter cable types</source>
         <translation>Kabeltypen filtern</translation>
+    </message>
+    <message>
+        <source>Catalog:</source>
+        <translation>Katalog:</translation>
+    </message>
+    <message>
+        <source>Cable types of one manufacturer catalog (CSV files in the folder &quot;cable-catalogs&quot; beside the cable type file) or of your own list</source>
+        <translation>Kabeltypen eines Herstellerkatalogs (CSV-Dateien im Ordner „cable-catalogs“ neben der Kabeltypdatei) oder der eigenen Liste</translation>
+    </message>
+    <message>
+        <source>Cores:</source>
+        <translation>Adern:</translation>
+    </message>
+    <message>
+        <source>any</source>
+        <translation>beliebig</translation>
+    </message>
+    <message>
+        <source>Core cross section (mm²):</source>
+        <translation>Aderquerschnitt (mm²):</translation>
+    </message>
+    <message>
+        <source>Only fit for energy chains</source>
+        <translation>Nur energiekettentauglich</translation>
+    </message>
+    <message>
+        <source>Cable types marked as fit for energy chains (drag chains) in the catalog</source>
+        <translation>Kabeltypen, die der Katalog als energiekettentauglich (schleppkettentauglich) führt</translation>
+    </message>
+    <message>
+        <source>Properties</source>
+        <translation>Eigenschaften</translation>
+    </message>
+    <message>
+        <source>Show only cable types which have every ticked property</source>
+        <translation>Nur Kabeltypen zeigen, die alle angehakten Eigenschaften haben</translation>
     </message>
     <message>
         <source>Hide types which have fewer cores than this cable</source>
@@ -2161,6 +1996,18 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
     <message>
         <source>Location (+)</source>
         <translation>Ort (+)</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>Alle</translation>
+    </message>
+    <message>
+        <source>Own list</source>
+        <translation>Eigene Liste</translation>
+    </message>
+    <message>
+        <source>Properties: %1</source>
+        <translation>Eigenschaften: %1</translation>
     </message>
     <message>
         <source>Type</source>
@@ -2897,8 +2744,28 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
 <context>
     <name>CableTypeList</name>
     <message>
-        <source>Properties</source>
-        <translation>Eigenschaften</translation>
+        <source>Designation</source>
+        <translation>Bezeichnung</translation>
+    </message>
+    <message>
+        <source>Number of cores</source>
+        <translation>Anzahl Adern</translation>
+    </message>
+    <message>
+        <source>Core colors</source>
+        <translation>Aderfarben</translation>
+    </message>
+    <message>
+        <source>Cable section</source>
+        <translation>Kabelquerschnitt</translation>
+    </message>
+    <message>
+        <source>Sheath color</source>
+        <translation>Farbe des Mantels</translation>
+    </message>
+    <message>
+        <source>Catalog</source>
+        <translation>Katalog</translation>
     </message>
     <message>
         <source>Outer diameter</source>
@@ -2921,8 +2788,8 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
         <translation>Biegeradius</translation>
     </message>
     <message>
-        <source>Catalog</source>
-        <translation>Katalog</translation>
+        <source>Properties</source>
+        <translation>Eigenschaften</translation>
     </message>
     <message>
         <source>Manufacturer</source>
@@ -2931,26 +2798,6 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
     <message>
         <source>Article number</source>
         <translation>Artikelnummer</translation>
-    </message>
-    <message>
-        <source>Designation</source>
-        <translation>Bezeichnung</translation>
-    </message>
-    <message>
-        <source>Number of cores</source>
-        <translation>Anzahl Adern</translation>
-    </message>
-    <message>
-        <source>Core colors</source>
-        <translation>Aderfarben</translation>
-    </message>
-    <message>
-        <source>Cable section</source>
-        <translation>Kabelquerschnitt</translation>
-    </message>
-    <message>
-        <source>Sheath color</source>
-        <translation>Farbe des Mantels</translation>
     </message>
     <message>
         <source>No receiver for the cable types file.</source>
@@ -3033,6 +2880,18 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
     <message>
         <source>Enter your composite text here, using the available variables</source>
         <translation>Tragen Sie hier einen zusammengesetzten Text mit Hilfe der verfügbaren Variablen ein</translation>
+    </message>
+    <message>
+        <source>Prefix (-)</source>
+        <translation>Präfix (-)</translation>
+    </message>
+    <message>
+        <source>Reference designation, IEC 81346 (=+-), short on its own page</source>
+        <translation>Referenzkennzeichen, IEC 81346 (=+-), kurz auf der eigenen Seite</translation>
+    </message>
+    <message>
+        <source>Full reference designation, IEC 81346 (=+-)</source>
+        <translation>Vollständiges Referenzkennzeichen, IEC 81346 (=+-)</translation>
     </message>
 </context>
 <context>
@@ -3273,7 +3132,7 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
     </message>
     <message>
         <source>Potential type :</source>
-        <translation>Potentialtyp:</translation>
+        <translation>Potenzialtyp:</translation>
     </message>
     <message>
         <source>Conductor type :</source>
@@ -3285,7 +3144,7 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
     </message>
     <message>
         <source>Where the stroke stands, as a share of the conductor&apos;s length from its start. &quot;Middle&quot;: the middle of its longest stretch.</source>
-        <translation>Position des Strichs als Anteil der Leiterlänge ab seinem Anfang. „Mitte“: die Mitte seines längsten Abschnitts.</translation>
+        <translation>Wo der Strich steht, als Anteil der Leiterlänge ab seinem Anfang. „Mitte“: die Mitte seines längsten Abschnitts.</translation>
     </message>
     <message>
         <source> %</source>
@@ -3293,11 +3152,11 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
     </message>
     <message>
         <source>With the stroke shown, the conductor&apos;s own text is hidden: the stroke already gives the colour and the section.</source>
-        <translation>Wird der Strich angezeigt, ist der eigene Text des Leiters ausgeblendet: Der Strich zeigt bereits Farbe und Querschnitt.</translation>
+        <translation>Bei angezeigtem Strich wird der eigene Text des Leiters ausgeblendet: der Strich gibt Farbe und Querschnitt bereits an.</translation>
     </message>
     <message>
         <source>The stroke replaces the conductor&apos;s text</source>
-        <translation>Der Strich ersetzt den Leitertext</translation>
+        <translation>Der Strich ersetzt den Text des Leiters</translation>
     </message>
     <message>
         <source>cable</source>
@@ -3373,7 +3232,7 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
     </message>
     <message>
         <source>Custom dash pattern</source>
-        <translation>Eigenes Strichmuster</translation>
+        <translation>Benutzerdefiniertes Strichmuster</translation>
     </message>
     <message>
         <source>Dash length :</source>
@@ -3381,7 +3240,7 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
     </message>
     <message>
         <source> du</source>
-        <translation> ZE</translation>
+        <translation> du</translation>
     </message>
     <message>
         <source>Gap after dash :</source>
@@ -3397,7 +3256,7 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
     </message>
     <message>
         <source>Drawing units, independent of the line size. Scaling the page scales the pattern.</source>
-        <translation>Zeicheneinheiten (ZE), unabhängig von der Linienstärke. Wird die Seite skaliert, skaliert das Muster mit.</translation>
+        <translation>Zeicheneinheiten, unabhängig von der Linienbreite. Das Skalieren der Seite skaliert das Muster.</translation>
     </message>
     <message>
         <source>Secondary color :</source>
@@ -3433,15 +3292,15 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
     </message>
     <message>
         <source>This wire is a core of a cable: section, colour and type come from the cable.</source>
-        <translation>Dieser Leiter ist eine Ader eines Kabels: Querschnitt, Farbe und Typ kommen vom Kabel.</translation>
+        <translation>Dieser Draht ist eine Ader eines Kabels: Querschnitt, Farbe und Typ kommen vom Kabel.</translation>
     </message>
     <message>
         <source>This wire is core of cable %1: section, colour and type come from the cable.</source>
-        <translation>Dieser Leiter ist eine Ader des Kabels %1: Querschnitt, Farbe und Typ kommen vom Kabel.</translation>
+        <translation>Dieser Draht ist eine Ader von Kabel %1: Querschnitt, Farbe und Typ kommen vom Kabel.</translation>
     </message>
     <message>
         <source>None</source>
-        <translation>Keine</translation>
+        <translation>Keiner</translation>
     </message>
     <message>
         <source>Several values</source>
@@ -3489,7 +3348,7 @@ Gesperrt durch die Option „Nur eine Potenzialbeschriftung je Seite anzeigen“
     <name>ConnectionSymbols</name>
     <message>
         <source>Corner</source>
-        <translation>Ecke</translation>
+        <translation>Eckig</translation>
     </message>
     <message>
         <source>T-junction</source>
@@ -3501,11 +3360,11 @@ Gesperrt durch die Option „Nur eine Potenzialbeschriftung je Seite anzeigen“
     </message>
     <message>
         <source>T-junction, double wire at the branch, from the left</source>
-        <translation>T-Abzweig, Doppelabzweig, von links</translation>
+        <translation>T-Abzweig, Doppeldraht am Abzweig, von links</translation>
     </message>
     <message>
         <source>T-junction, double wire at the branch, from the right</source>
-        <translation>T-Abzweig, Doppelabzweig, von rechts</translation>
+        <translation>T-Abzweig, Doppeldraht am Abzweig, von rechts</translation>
     </message>
     <message>
         <source>Interruption point</source>
@@ -3513,11 +3372,11 @@ Gesperrt durch die Option „Nur eine Potenzialbeschriftung je Seite anzeigen“
     </message>
     <message>
         <source>Outgoing cross-reference</source>
-        <translation>Abgehender Querverweis</translation>
+        <translation>Ausgehender Querverweis</translation>
     </message>
     <message>
         <source>Incoming cross-reference</source>
-        <translation>Ankommender Querverweis</translation>
+        <translation>Eingehender Querverweis</translation>
     </message>
 </context>
 <context>
@@ -3657,8 +3516,16 @@ Fortfahren?</translation>
         <translation>Name der Eigenschaft</translation>
     </message>
     <message>
+        <source>Lower-case letters, numbers, hyphens and underscores only. Capitals and spaces are converted as you type.</source>
+        <translation>Nur Kleinbuchstaben, Ziffern, Bindestriche und Unterstriche. Großbuchstaben und Leerzeichen werden beim Tippen umgewandelt.</translation>
+    </message>
+    <message>
+        <source>Defined by the symbol</source>
+        <translation>Vom Symbol festgelegt</translation>
+    </message>
+    <message>
         <source>Lower-case letters, numbers, hyphens and underscores only</source>
-        <translation>Nur Kleinbuchstaben, Ziffern, Bindestriche und Unterstriche</translation>
+        <translation type="vanished">Nur Kleinbuchstaben, Ziffern, Bindestriche und Unterstriche</translation>
     </message>
     <message>
         <source>Delete this property</source>
@@ -3910,19 +3777,31 @@ Fortfahren?</translation>
     <name>DeviceNavigatorDockWidget</name>
     <message>
         <source>Device Navigator</source>
-        <translation>Betriebsmittel-Navigator</translation>
+        <translation>Geräte-Navigator</translation>
+    </message>
+    <message>
+        <source>Filter:</source>
+        <translation>Filter:</translation>
     </message>
     <message>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <source>Devices</source>
-        <translation>Betriebsmittel</translation>
+        <source>Configure filters...</source>
+        <translation>Filter konfigurieren...</translation>
     </message>
     <message>
-        <source>Cables</source>
-        <translation>Kabel</translation>
+        <source>Value:</source>
+        <translation>Wert:</translation>
+    </message>
+    <message>
+        <source>Devices / Plant Structure</source>
+        <translation>Geräte / Anlagenstruktur</translation>
+    </message>
+    <message>
+        <source>Refresh device list</source>
+        <translation>Geräteliste aktualisieren</translation>
     </message>
     <message>
         <source>Tree</source>
@@ -3933,56 +3812,20 @@ Fortfahren?</translation>
         <translation>Liste</translation>
     </message>
     <message>
-        <source>Filter:</source>
-        <translation>Filter:</translation>
-    </message>
-    <message>
-        <source>- Not active -</source>
-        <translation type="vanished">- Nicht aktiviert -</translation>
-    </message>
-    <message>
-        <source>Contactors / Relays (-K)</source>
-        <translation type="vanished">Schütze / Relais (-K)</translation>
-    </message>
-    <message>
-        <source>Protection / Fuses (-F)</source>
-        <translation type="vanished">Sicherungen / Schutz (-F)</translation>
-    </message>
-    <message>
-        <source>Switches (-Q)</source>
-        <translation type="vanished">Schalter (-Q)</translation>
-    </message>
-    <message>
-        <source>Terminals (-X)</source>
-        <translation type="vanished">Klemmen (-X)</translation>
-    </message>
-    <message>
-        <source>Cables (-W)</source>
-        <translation type="vanished">Kabel (-W)</translation>
-    </message>
-    <message>
-        <source>Motors (-M)</source>
-        <translation type="vanished">Motoren (-M)</translation>
-    </message>
-    <message>
-        <source>Sensors (-B)</source>
-        <translation type="vanished">Sensoren (-B)</translation>
-    </message>
-    <message>
-        <source>No structure identifier</source>
-        <translation>Ohne Strukturkennzeichen</translation>
-    </message>
-    <message>
-        <source>Value:</source>
-        <translation>Wert:</translation>
-    </message>
-    <message>
         <source>Search device, function, folio...</source>
-        <translation>Betriebsmittel, Funktion, Folie suchen...</translation>
+        <translation>Gerät, Funktion, Seite suchen...</translation>
     </message>
     <message>
-        <source>Devices / Plant Structure</source>
-        <translation>Betriebsmittel / Anlagenstruktur</translation>
+        <source>Device tag</source>
+        <translation type="vanished">BMK</translation>
+    </message>
+    <message>
+        <source>Devices</source>
+        <translation>Betriebsmittel</translation>
+    </message>
+    <message>
+        <source>Cables</source>
+        <translation>Kabel</translation>
     </message>
     <message>
         <source>Device (BMK)</source>
@@ -4002,7 +3845,7 @@ Fortfahren?</translation>
     </message>
     <message>
         <source>Folio</source>
-        <translation>Folie</translation>
+        <translation>Seite</translation>
     </message>
     <message>
         <source>Position</source>
@@ -4011,10 +3854,6 @@ Fortfahren?</translation>
     <message>
         <source>Type</source>
         <translation>Typ</translation>
-    </message>
-    <message>
-        <source>Refresh device list</source>
-        <translation>Betriebsmittelliste aktualisieren</translation>
     </message>
     <message>
         <source>Coil</source>
@@ -4054,11 +3893,11 @@ Fortfahren?</translation>
     </message>
     <message>
         <source>Delay ON</source>
-        <translation>Ansprechverzögert</translation>
+        <translation>Anzugsverzögert</translation>
     </message>
     <message>
         <source>Delay OFF</source>
-        <translation>Rückfallverzögert</translation>
+        <translation>Abfallverzögert</translation>
     </message>
     <message>
         <source>Contact</source>
@@ -4066,19 +3905,31 @@ Fortfahren?</translation>
     </message>
     <message>
         <source>Terminal</source>
-        <translation>Klemme</translation>
+        <translation>Anschluss</translation>
     </message>
     <message>
         <source>Part placement, general device</source>
-        <translation>Artikelplatzierung, allgemeines Betriebsmittel</translation>
+        <translation>Bauteilplatzierung, allgemeines Gerät</translation>
     </message>
     <message>
         <source>Device</source>
-        <translation>Betriebsmittel</translation>
+        <translation>Gerät</translation>
+    </message>
+    <message>
+        <source>No structure identifier</source>
+        <translation>Keine Strukturkennung</translation>
     </message>
     <message>
         <source>&lt;unnamed&gt;</source>
         <translation>&lt;unbenannt&gt;</translation>
+    </message>
+    <message>
+        <source>Cable</source>
+        <translation>Kabel</translation>
+    </message>
+    <message>
+        <source>%1 cores</source>
+        <translation type="vanished">%1 Adern</translation>
     </message>
     <message>
         <source>Unnamed Project</source>
@@ -4087,10 +3938,6 @@ Fortfahren?</translation>
     <message>
         <source>Slave</source>
         <translation>Slave</translation>
-    </message>
-    <message>
-        <source>Cable</source>
-        <translation>Kabel</translation>
     </message>
     <message>
         <source>Cabinet Layout</source>
@@ -4112,17 +3959,9 @@ Fortfahren?</translation>
         <source>Refresh</source>
         <translation>Aktualisieren</translation>
     </message>
-    <message>
-        <source>Configure filters...</source>
-        <translation>Filter konfigurieren...</translation>
-    </message>
 </context>
 <context>
     <name>DeviceNavigatorFilterDialog</name>
-    <message>
-        <source>Filter Configuration</source>
-        <translation type="vanished">Filterkonfiguration</translation>
-    </message>
     <message>
         <source>Configure Filters</source>
         <translation>Filter konfigurieren</translation>
@@ -4138,6 +3977,14 @@ Fortfahren?</translation>
     <message>
         <source>Delete</source>
         <translation>Löschen</translation>
+    </message>
+    <message>
+        <source>Device tag</source>
+        <translation type="vanished">BMK</translation>
+    </message>
+    <message>
+        <source>Device tag prefixes (comma-separated, e.g. K, Q, F, X, W):</source>
+        <translation type="vanished">BMK-Präfixe (durch Komma getrennt, z. B. K, Q, F, X, W):</translation>
     </message>
     <message>
         <source>Device Tag (BMK)</source>
@@ -4188,6 +4035,10 @@ Fortfahren?</translation>
         <translation>Eigenes Muster / Platzhalter (z. B. *Pumpe* oder -K[1-9]):</translation>
     </message>
     <message>
+        <source>Element Types</source>
+        <translation>Bauteiltypen</translation>
+    </message>
+    <message>
         <source>Master symbols / Coils / Main functions</source>
         <translation>Master-Symbole / Spulen / Hauptfunktionen</translation>
     </message>
@@ -4196,8 +4047,16 @@ Fortfahren?</translation>
         <translation>Slave-Symbole / Kontakte / Hilfsfunktionen</translation>
     </message>
     <message>
+        <source>Terminals</source>
+        <translation>Anschlüsse</translation>
+    </message>
+    <message>
+        <source>Cables</source>
+        <translation>Kabel</translation>
+    </message>
+    <message>
         <source>Folio reports / Cross-references (Folienverweise)</source>
-        <translation>Seitenverweise / Querverweise</translation>
+        <translation>Folienverweise / Querverweise</translation>
     </message>
     <message>
         <source>Conductor definitions / Connections (Leitungsdefinitionen)</source>
@@ -4205,11 +4064,11 @@ Fortfahren?</translation>
     </message>
     <message>
         <source>Cabinet layout / Thumbnail placements</source>
-        <translation>Schaltschrankaufbau / Miniaturansichten</translation>
+        <translation>Schaltschrankaufbau / Vorschau-Platzierungen</translation>
     </message>
     <message>
         <source>Other devices / Symbols</source>
-        <translation>Sonstige Betriebsmittel / Symbole</translation>
+        <translation>Andere Geräte / Symbole</translation>
     </message>
     <message>
         <source>Structure</source>
@@ -4224,88 +4083,16 @@ Fortfahren?</translation>
         <translation>Struktur enthält Text (z. B. 010 oder A1):</translation>
     </message>
     <message>
-        <source>Reset Defaults</source>
-        <translation type="vanished">Zurücksetzen</translation>
-    </message>
-    <message>
-        <source>Device tag prefixes (comma-separated, e.g. K, Q, F):</source>
-        <translation type="vanished">Betriebsmittel-Kennbuchstaben (kommagetrennt, z.B. K, Q, F):</translation>
-    </message>
-    <message>
-        <source>Custom BMK wildcard pattern (e.g. *Pump*, -K[1-9]):</source>
-        <translation type="vanished">BMK-Suchmuster / Wildcard (z.B. *Pumpe*, -K[1-9]):</translation>
-    </message>
-    <message>
-        <source>Element Types</source>
-        <translation>Betriebsmitteltypen</translation>
-    </message>
-    <message>
-        <source>Masters / Coils</source>
-        <translation type="vanished">Hauptfunktionen / Spulen</translation>
-    </message>
-    <message>
-        <source>Slaves / Contacts</source>
-        <translation type="vanished">Nebenfunktionen / Kontakte</translation>
-    </message>
-    <message>
-        <source>Terminals</source>
-        <translation>Klemmen</translation>
-    </message>
-    <message>
-        <source>Cables</source>
-        <translation>Kabel</translation>
-    </message>
-    <message>
-        <source>Cabinet Layout / Placement</source>
-        <translation type="vanished">Artikelplatzierung / Schaltschrankaufbau</translation>
-    </message>
-    <message>
-        <source>Folio Reports (Cross references)</source>
-        <translation type="vanished">Folienverweise (Abbruchstellen)</translation>
-    </message>
-    <message>
-        <source>Conductor Definitions</source>
-        <translation type="vanished">Verbindungs- / Leiterdefinitionen</translation>
-    </message>
-    <message>
-        <source>Other Symbols</source>
-        <translation type="vanished">Sonstige Symbole</translation>
-    </message>
-    <message>
-        <source>Structure Filter Mode</source>
-        <translation type="vanished">Strukturkennzeichen-Filter</translation>
-    </message>
-    <message>
         <source>All structures</source>
         <translation>Alle Strukturen</translation>
     </message>
     <message>
-        <source>Only elements WITH structure (=Plant +Location)</source>
-        <translation type="vanished">Nur Betriebsmittel MIT Struktur (=Anlage +Ort)</translation>
-    </message>
-    <message>
-        <source>Only elements WITHOUT structure (Ohne Strukturkennzeichen)</source>
-        <translation type="vanished">Nur Betriebsmittel OHNE Strukturkennzeichen</translation>
-    </message>
-    <message>
-        <source>Structure text contains (e.g. =010 or +A1):</source>
-        <translation type="vanished">Strukturtext enthält (z.B. =010 oder +A1):</translation>
-    </message>
-    <message>
-        <source>New Filter Scheme</source>
-        <translation type="vanished">Neues Filterschema</translation>
-    </message>
-    <message>
-        <source>Scheme name:</source>
-        <translation type="vanished">Schemaname:</translation>
-    </message>
-    <message>
         <source>With structure identifier only</source>
-        <translation>Nur mit Strukturkennzeichen</translation>
+        <translation>Nur mit Strukturkennung</translation>
     </message>
     <message>
         <source>Without structure identifier only</source>
-        <translation>Nur ohne Strukturkennzeichen</translation>
+        <translation>Nur ohne Strukturkennung</translation>
     </message>
     <message>
         <source>New Scheme</source>
@@ -4324,12 +4111,16 @@ Fortfahren?</translation>
         <translation>Das Standardschema kann nicht gelöscht werden.</translation>
     </message>
     <message>
+        <source>At least one filter scheme must remain.</source>
+        <translation type="vanished">Mindestens ein Filterschema muss bestehen bleiben.</translation>
+    </message>
+    <message>
         <source>Delete Scheme</source>
         <translation>Schema löschen</translation>
     </message>
     <message>
         <source>Are you sure you want to delete scheme &apos;%1&apos;?</source>
-        <translation>Möchten Sie das Schema &apos;%1&apos; wirklich löschen?</translation>
+        <translation>Soll das Schema „%1“ wirklich gelöscht werden?</translation>
     </message>
     <message>
         <source>Reset Schemes</source>
@@ -4337,7 +4128,7 @@ Fortfahren?</translation>
     </message>
     <message>
         <source>Reset all filter schemes to defaults?</source>
-        <translation>Alle Filterschemata auf Standard zurücksetzen?</translation>
+        <translation>Alle Filterschemata auf die Standardwerte zurücksetzen?</translation>
     </message>
     <message>
         <source>Custom</source>
@@ -4371,11 +4162,15 @@ Fortfahren?</translation>
     <name>Diagram</name>
     <message>
         <source>a text</source>
-        <translation>ein Text</translation>
+        <translation>einen Text</translation>
     </message>
     <message>
         <source>a shape</source>
         <translation>eine Form</translation>
+    </message>
+    <message>
+        <source>a structure box</source>
+        <translation>einen Strukturkasten</translation>
     </message>
     <message>
         <source>a picture</source>
@@ -4387,7 +4182,7 @@ Fortfahren?</translation>
     </message>
     <message>
         <source>a terminal strip</source>
-        <translation>eine Klemmenleiste</translation>
+        <translation>eine Klemmleiste</translation>
     </message>
     <message>
         <source>a cable</source>
@@ -4520,14 +4315,14 @@ Fortfahren?</translation>
     <name>DiagramEventAddBridge</name>
     <message>
         <source>Left click: place the bridge start; drag or second click: finish; right click: cancel; Esc: quit</source>
-        <translation>Linksklick: Brückenanfang setzen; Ziehen oder zweiter Klick: abschließen; Rechtsklick: abbrechen; Esc: beenden</translation>
+        <translation>Linksklick: Brückenanfang setzen; Ziehen oder zweiter Klick: beenden; Rechtsklick: abbrechen; Esc: verlassen</translation>
     </message>
     <message numerus="yes">
         <source>Left click or release: finish the line (%n Klemme(n) recognized)</source>
         <comment>how many terminals the line being drawn already crosses</comment>
         <translation>
-            <numerusform>Linksklick oder Loslassen: Linie abschließen (%n Klemme erkannt)</numerusform>
-            <numerusform>Linksklick oder Loslassen: Linie abschließen (%n Klemmen erkannt)</numerusform>
+            <numerusform>Linksklick oder Loslassen: Linie beenden (%n Klemme erkannt)</numerusform>
+            <numerusform>Linksklick oder Loslassen: Linie beenden (%n Klemmen erkannt)</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -4542,13 +4337,13 @@ Fortfahren?</translation>
         <source>, %n sheet reference(s)</source>
         <comment>the way to the next sheet</comment>
         <translation>
-            <numerusform>, %n Seitenverweis</numerusform>
-            <numerusform>, %n Seitenverweise</numerusform>
+            <numerusform>, %n Folienverweis</numerusform>
+            <numerusform>, %n Folienverweise</numerusform>
         </translation>
     </message>
     <message>
         <source>No terminal crossed: the bridge lands on nothing.</source>
-        <translation>Keine Klemme gekreuzt: Die Brücke verbindet nichts.</translation>
+        <translation>Keine Klemme gekreuzt: die Brücke landet auf nichts.</translation>
     </message>
     <message>
         <source>No free track</source>
@@ -4556,7 +4351,7 @@ Fortfahren?</translation>
     </message>
     <message>
         <source>Four bridges already run side by side at one of these terminals: no track is left for another one.</source>
-        <translation>An einer dieser Klemmen liegen bereits vier Brücken nebeneinander: Für eine weitere ist keine Spur mehr frei.</translation>
+        <translation>An einer dieser Klemmen laufen bereits vier Brücken nebeneinander: für eine weitere ist keine Spur mehr frei.</translation>
     </message>
     <message>
         <source>That bridge cannot be built</source>
@@ -4564,7 +4359,7 @@ Fortfahren?</translation>
     </message>
     <message>
         <source>A bridge lies across one terminal strip: the line would take terminals of %1.</source>
-        <translation>Eine Brücke liegt auf einer einzigen Klemmenleiste: Die Linie würde Klemmen von %1 erfassen.</translation>
+        <translation>Eine Brücke liegt auf einer einzigen Klemmleiste: die Linie würde Klemmen von %1 nehmen.</translation>
     </message>
 </context>
 <context>
@@ -4634,8 +4429,8 @@ Fortfahren?</translation>
     <message numerus="yes">
         <source>%n symbol(s) along the drag</source>
         <translation>
-            <numerusform>%n Symbol entlang der Ziehstrecke</numerusform>
-            <numerusform>%n Symbole entlang der Ziehstrecke</numerusform>
+            <numerusform>%n Symbol entlang des Ziehens</numerusform>
+            <numerusform>%n Symbole entlang des Ziehens</numerusform>
         </translation>
     </message>
     <message>
@@ -4972,7 +4767,7 @@ Fortfahren?</translation>
         <source>
 Hold Shift and drag to move the symbol</source>
         <translation>
-Mit gedrückter Umschalttaste ziehen, um das Symbol zu verschieben</translation>
+Umschalt gedrückt halten und ziehen, um das Symbol zu verschieben</translation>
     </message>
     <message>
         <source>
@@ -5035,21 +4830,13 @@ Hold Shift and drag to move this text on its own</source>
         <translation>Schaltschrank-Miniaturansicht erzeugen</translation>
     </message>
     <message>
+        <source>Sheet reference</source>
+        <translation>Seitenverweis</translation>
+    </message>
+    <message>
         <source>Change type</source>
         <comment>context menu action</comment>
         <translation>Typ ändern</translation>
-    </message>
-    <message numerus="yes">
-        <source>Change the type of %n element(s)</source>
-        <comment>undo text</comment>
-        <translation>
-            <numerusform>Typ von %n Element ändern</numerusform>
-            <numerusform>Typ von %n Elementen ändern</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Sheet reference</source>
-        <translation>Seitenverweis</translation>
     </message>
     <message>
         <source>%1: %2</source>
@@ -5090,6 +4877,14 @@ Hold Shift and drag to move this text on its own</source>
     <message>
         <source>Remove this core from the line</source>
         <translation>Entfernen Sie diese Ader aus dem Kabel</translation>
+    </message>
+    <message numerus="yes">
+        <source>Change the type of %n element(s)</source>
+        <comment>undo text</comment>
+        <translation>
+            <numerusform>Typ von %n Element ändern</numerusform>
+            <numerusform>Typ von %n Elementen ändern</numerusform>
+        </translation>
     </message>
     <message>
         <source>Registered template</source>
@@ -5165,7 +4960,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>Auto (parallel to line)</source>
-        <translation>Automatisch (parallel zur Linie)</translation>
+        <translation>Automatisch (Linienparallel)</translation>
     </message>
     <message>
         <source>Horizontal</source>
@@ -5181,7 +4976,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>Select all</source>
-        <translation>Alle auswählen</translation>
+        <translation>Alles auswählen</translation>
     </message>
     <message>
         <source>Dimension</source>
@@ -5237,11 +5032,11 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>Distance from dimension line:</source>
-        <translation>Abstand von der Maßlinie:</translation>
+        <translation>Abstand zur Maßlinie:</translation>
     </message>
     <message>
         <source> mm</source>
-        <translation> mm</translation>
+        <translation>mm</translation>
     </message>
     <message>
         <source>Center value</source>
@@ -5265,7 +5060,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>Line width:</source>
-        <translation>Linienstärke:</translation>
+        <translation>Linienbreite:</translation>
     </message>
     <message>
         <source> px</source>
@@ -5273,15 +5068,15 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>Extension line overshoot:</source>
-        <translation>Überstand der Maßhilfslinie:</translation>
+        <translation>Überstand der Maßhilfslinien:</translation>
     </message>
     <message>
         <source>Gap from measured point:</source>
-        <translation>Abstand vom Messpunkt:</translation>
+        <translation>Abstand zum Messpunkt:</translation>
     </message>
     <message>
         <source>Baseline offset:</source>
-        <translation>Abstand der Bezugslinie:</translation>
+        <translation>Versatz der Basislinie:</translation>
     </message>
     <message>
         <source>Line ends</source>
@@ -5289,7 +5084,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>Arrow style:</source>
-        <translation>Pfeilart:</translation>
+        <translation>Pfeilstil:</translation>
     </message>
     <message>
         <source>Arrow size:</source>
@@ -5313,7 +5108,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>Mask background</source>
-        <translation>Hintergrund abdecken</translation>
+        <translation>Hintergrund maskieren</translation>
     </message>
     <message>
         <source>Font size:</source>
@@ -5507,16 +5302,16 @@ Hold Shift and drag to move this text on its own</source>
         <translation>Klemme</translation>
     </message>
     <message>
+        <source>Level</source>
+        <translation>Etage</translation>
+    </message>
+    <message>
         <source>Wire</source>
         <translation>Leitung</translation>
     </message>
     <message>
         <source>PE</source>
         <translation>PE</translation>
-    </message>
-    <message>
-        <source>Level</source>
-        <translation>Etage</translation>
     </message>
     <message numerus="yes">
         <source>%n wire(s) crossed. Every wire gets a terminal at the crossing and runs through it; the terminal strip, the terminal plan and the bill of materials follow from it.</source>
@@ -5558,11 +5353,11 @@ Hold Shift and drag to move this text on its own</source>
     <name>DuplicateLabelsDialog</name>
     <message>
         <source>Duplicate signals and components</source>
-        <translation>Doppelte Signale und Betriebsmittel</translation>
+        <translation>Doppelte Signale und Bauteile</translation>
     </message>
     <message>
         <source>Click an occurrence to select and show it on its sheet. Refresh after editing the project.</source>
-        <translation>Auf ein Vorkommen klicken, um es auszuwählen und auf seiner Seite anzuzeigen. Nach Änderungen am Projekt aktualisieren.</translation>
+        <translation>Klicken Sie auf ein Vorkommen, um es auszuwählen und auf seiner Seite anzuzeigen. Nach dem Bearbeiten des Projekts aktualisieren.</translation>
     </message>
     <message>
         <source>Case-sensitive comparison</source>
@@ -5570,7 +5365,23 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>When unchecked, labels differing only in letter case, such as K1 and k1, are duplicates.</source>
-        <translation>Wenn deaktiviert, gelten BMK, die sich nur in Groß-/Kleinschreibung unterscheiden, wie K1 und k1, als doppelt.</translation>
+        <translation>Wenn deaktiviert, sind BMK, die sich nur in Groß-/Kleinschreibung unterscheiden, wie K1 und k1, Duplikate.</translation>
+    </message>
+    <message>
+        <source>One designation is one device; report different part numbers</source>
+        <translation>Ein Kennzeichen ist ein Gerät; abweichende Artikelnummern melden</translation>
+    </message>
+    <message>
+        <source>When checked, symbols with the same label in the same place, such as a socket drawn on two sheets, are one device and are reported only when their part numbers differ. When unchecked, only linked symbols (a coil and its contacts) are one device.</source>
+        <translation>Wenn aktiviert, sind Symbole mit gleichem BMK am gleichen Ort, etwa eine auf zwei Seiten gezeichnete Steckdose, ein Gerät und werden nur gemeldet, wenn ihre Artikelnummern abweichen. Wenn deaktiviert, sind nur verknüpfte Symbole (eine Spule und ihre Kontakte) ein Gerät.</translation>
+    </message>
+    <message>
+        <source>A wire number is unique within its plant (=)</source>
+        <translation>Eine Drahtnummer ist innerhalb ihrer Anlage (=) eindeutig</translation>
+    </message>
+    <message>
+        <source>When checked, the same wire number in two plants, such as 101 on a =FACTORY sheet and 101 on a =SILO sheet, is not a duplicate: a wire takes the plant of its sheet. When unchecked, a wire number names one potential in the whole project.</source>
+        <translation>Wenn aktiviert, ist dieselbe Drahtnummer in zwei Anlagen, etwa 101 auf einer Seite =WERK und 101 auf einer Seite =SILO, kein Duplikat: ein Draht übernimmt die Anlage seiner Seite. Wenn deaktiviert, bezeichnet eine Drahtnummer ein Potenzial im ganzen Projekt.</translation>
     </message>
     <message>
         <source>Error / occurrence</source>
@@ -5601,13 +5412,23 @@ Hold Shift and drag to move this text on its own</source>
         <translation>Doppeltes Signal: %1</translation>
     </message>
     <message>
+        <source>Duplicate signal: %1 in %2</source>
+        <extracomment>%2 is the plant, such as &quot;=SILO&quot;.</extracomment>
+        <translation>Doppeltes Signal: %1 in %2</translation>
+    </message>
+    <message>
         <source>Duplicate component: %1</source>
-        <translation>Doppeltes Betriebsmittel: %1</translation>
+        <translation>Doppeltes Bauteil: %1</translation>
     </message>
     <message>
         <source>Duplicate component: %1 in %2</source>
         <extracomment>%2 is the plant and location, such as &quot;=P1+UV1&quot;.</extracomment>
-        <translation>Doppeltes Betriebsmittel: %1 in %2</translation>
+        <translation>Doppeltes Bauteil: %1 in %2</translation>
+    </message>
+    <message>
+        <source>%1 — different part numbers: %2</source>
+        <extracomment>%1 is the error above, %2 the part numbers, &quot;A9, B1&quot;.</extracomment>
+        <translation>%1 — abweichende Artikelnummern: %2</translation>
     </message>
     <message>
         <source>Group %1</source>
@@ -5616,7 +5437,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>Occurrences in the same group belong to one signal or linked device.</source>
-        <translation>Vorkommen in derselben Gruppe gehören zu einem Signal oder einem verknüpften Betriebsmittel.</translation>
+        <translation>Vorkommen in derselben Gruppe gehören zu einem Signal oder verknüpften Gerät.</translation>
     </message>
     <message>
         <source>%1 — %2</source>
@@ -5635,7 +5456,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>No duplicate signals or components found.</source>
-        <translation>Keine doppelten Signale oder Betriebsmittel gefunden.</translation>
+        <translation>Keine doppelten Signale oder Bauteile gefunden.</translation>
     </message>
     <message numerus="yes">
         <source>%n duplicate labels found.</source>
@@ -5647,7 +5468,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>This occurrence no longer exists. Refresh the results.</source>
-        <translation>Dieses Vorkommen gibt es nicht mehr. Ergebnisse aktualisieren.</translation>
+        <translation>Dieses Vorkommen existiert nicht mehr. Aktualisieren Sie die Ergebnisse.</translation>
     </message>
 </context>
 <context>
@@ -5690,7 +5511,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>The first copy lands 4 grid steps right and down; move it, and the next Duplicate repeats that move. The spacing above is then not used.</source>
-        <translation>Die erste Kopie landet 4 Rasterschritte rechts und unten; wird sie verschoben, wiederholt das nächste Duplizieren diese Verschiebung. Der Abstand oben wird dann nicht verwendet.</translation>
+        <translation>Die erste Kopie landet 4 Rasterschritte nach rechts und unten; verschieben Sie sie, und das nächste Duplizieren wiederholt diese Verschiebung. Der Abstand oben wird dann nicht verwendet.</translation>
     </message>
 </context>
 <context>
@@ -6154,6 +5975,92 @@ Hold Shift and drag to move this text on its own</source>
     </message>
 </context>
 <context>
+    <name>ElementArticlesWidget</name>
+    <message>
+        <source>Parts</source>
+        <translation>Bestandteile</translation>
+    </message>
+    <message>
+        <source>Article</source>
+        <translation>Artikel</translation>
+    </message>
+    <message>
+        <source>Quantity</source>
+        <translation>Menge</translation>
+    </message>
+    <message>
+        <source>List…</source>
+        <translation>Liste…</translation>
+    </message>
+    <message>
+        <source>Article %1</source>
+        <translation>Artikel %1</translation>
+    </message>
+    <message>
+        <source>Add article</source>
+        <translation>Artikel hinzufügen</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Entfernen</translation>
+    </message>
+    <message>
+        <source>Choose from materials list…</source>
+        <translation>Aus Artikelliste wählen…</translation>
+    </message>
+    <message>
+        <source>Main article (empty)</source>
+        <translation>Hauptartikel (leer)</translation>
+    </message>
+    <message>
+        <source>Empty article</source>
+        <translation>Leerer Artikel</translation>
+    </message>
+    <message>
+        <source>Add another article slot (up to %1)</source>
+        <translation>Weiteren Artikel-Platz hinzufügen (bis zu %1)</translation>
+    </message>
+    <message>
+        <source>All %1 native article slots are already shown</source>
+        <translation>Alle %1 nativen Artikel-Plätze werden bereits angezeigt</translation>
+    </message>
+    <message>
+        <source>Clear and remove the selected auxiliary article</source>
+        <translation>Ausgewählten Zusatzartikel leeren und entfernen</translation>
+    </message>
+    <message>
+        <source>Clear the fields of Article 1</source>
+        <translation>Felder von Artikel 1 leeren</translation>
+    </message>
+    <message>
+        <source>No materials list</source>
+        <translation>Materialliste fehlt</translation>
+    </message>
+    <message>
+        <source>There is no materials list file at this location:
+%1
+
+Create it?</source>
+        <comment>message asking to create the material file</comment>
+        <translation>An diesem Ort existiert keine Materiallisten-Datei:
+%1
+
+Soll sie erstellt werden?</translation>
+    </message>
+    <message>
+        <source>Cannot create</source>
+        <translation>Erstellen nicht möglich</translation>
+    </message>
+    <message>
+        <source>Cannot create the file:
+%1
+%2</source>
+        <translation>Die Datei konnte nicht erstellt werden:
+%1
+%2</translation>
+    </message>
+</context>
+<context>
     <name>ElementAutoNumSchemeCommand</name>
     <message>
         <source>The numbering name cannot be empty.</source>
@@ -6397,7 +6304,7 @@ Der angezeigte Name des Elements lässt sich separat in den Eigenschaften des El
     </message>
     <message>
         <source>No materials list</source>
-        <translation>Materialliste fehlt</translation>
+        <translation type="vanished">Materialliste fehlt</translation>
     </message>
     <message>
         <source>There is no materials list file at this location:
@@ -6405,20 +6312,20 @@ Der angezeigte Name des Elements lässt sich separat in den Eigenschaften des El
 
 Create it?</source>
         <comment>message asking to create the material file</comment>
-        <translation>An diesem Ort existiert keine Materiallisten-Datei:
+        <translation type="vanished">An diesem Ort existiert keine Materiallisten-Datei:
 %1
 
 Soll sie erstellt werden?</translation>
     </message>
     <message>
         <source>Cannot create</source>
-        <translation>Erstellen nicht möglich</translation>
+        <translation type="vanished">Erstellen nicht möglich</translation>
     </message>
     <message>
         <source>Cannot create the file:
 %1
 %2</source>
-        <translation>Die Datei konnte nicht erstellt werden:
+        <translation type="vanished">Die Datei konnte nicht erstellt werden:
 %1
 %2</translation>
     </message>
@@ -6448,7 +6355,7 @@ Soll sie erstellt werden?</translation>
     </message>
     <message>
         <source>Untick to not draw the name of this element on the sheet: its data is kept, and a terminal keeps its number.</source>
-        <translation>Deaktivieren, um den Namen dieses Bauteils nicht auf der Seite zu zeichnen: Seine Daten bleiben erhalten, und eine Klemme behält ihre Nummer.</translation>
+        <translation>Deaktivieren, um den Namen dieses Bauteils nicht auf der Seite zu zeichnen: seine Daten bleiben erhalten, und eine Klemme behält ihre Nummer.</translation>
     </message>
     <message>
         <source>Number</source>
@@ -6801,6 +6708,30 @@ Fortfahren?</translation>
     <message>
         <source>Neutral</source>
         <translation>Neutralleiter</translation>
+    </message>
+    <message>
+        <source>Add a custom property</source>
+        <translation>Benutzerdefinierte Eigenschaft hinzufügen</translation>
+    </message>
+    <message>
+        <source>Remove the custom property</source>
+        <translation>Benutzerdefinierte Eigenschaft entfernen</translation>
+    </message>
+    <message>
+        <source>Custom property: every placed copy of this symbol has it</source>
+        <translation>Benutzerdefinierte Eigenschaft: jede platzierte Kopie dieses Symbols hat sie</translation>
+    </message>
+    <message>
+        <source>Name of the property:</source>
+        <translation>Name der Eigenschaft:</translation>
+    </message>
+    <message>
+        <source>Use letters, numbers, &quot;-&quot; or &quot;_&quot; in the name.</source>
+        <translation>Verwenden Sie im Namen Buchstaben, Ziffern, „-“ oder „_“.</translation>
+    </message>
+    <message>
+        <source>This symbol already has a property &quot;%1&quot;.</source>
+        <translation>Dieses Symbol hat bereits eine Eigenschaft „%1“.</translation>
     </message>
     <message>
         <source>None (default)</source>
@@ -7203,7 +7134,7 @@ Fortfahren?</translation>
     </message>
     <message>
         <source>Add a column worked out from the others, without writing SQL. The query becomes a custom SQL query.</source>
-        <translation>Eine aus den anderen berechnete Spalte hinzufügen, ohne SQL zu schreiben. Die Abfrage wird zu einer eigenen SQL-Abfrage.</translation>
+        <translation>Fügt eine aus den anderen berechnete Spalte hinzu, ohne SQL zu schreiben. Die Abfrage wird zu einer benutzerdefinierten SQL-Abfrage.</translation>
     </message>
     <message>
         <source>Position</source>
@@ -7780,24 +7711,24 @@ Mit dem Import dieser Datei bestätigen Sie, dass:
 <context>
     <name>EplanImportDialog</name>
     <message>
-        <source>source</source>
-        <translation>Quelle</translation>
+        <source>Category:</source>
+        <translation>Kategorie:</translation>
     </message>
     <message>
-        <source>manufacturer</source>
-        <translation>Hersteller</translation>
+        <source>Import into:</source>
+        <translation>Importieren nach:</translation>
     </message>
     <message>
-        <source>type</source>
-        <translation>Typ</translation>
+        <source>Manufacturer data from the EPLAN Data Portal or a manufacturer&apos;s website is subject to the terms of use of that source. By importing you confirm that you are authorised to use it here; the import is at your own responsibility.</source>
+        <translation>Herstellerdaten aus dem EPLAN Data Portal oder von einer Herstellerseite unterliegen den Nutzungsbedingungen dieser Quelle. Mit dem Import bestätigen Sie, dass Sie die Daten hier verwenden dürfen; der Import erfolgt in eigener Verantwortung.</translation>
     </message>
     <message>
-        <source>accept the terms</source>
-        <translation>Bedingungen akzeptieren</translation>
+        <source>I accept these terms.</source>
+        <translation>Ich akzeptiere diese Bedingungen.</translation>
     </message>
     <message>
-        <source>Still missing: %1</source>
-        <translation>Es fehlt noch: %1</translation>
+        <source>Import</source>
+        <translation>Importieren</translation>
     </message>
     <message>
         <source>Part import</source>
@@ -7852,72 +7783,32 @@ Mit dem Import dieser Datei bestätigen Sie, dass:
         <translation>Hersteller:</translation>
     </message>
     <message>
-        <source>Category:</source>
-        <translation>Kategorie:</translation>
-    </message>
-    <message>
         <source>Type:</source>
         <translation>Typ:</translation>
-    </message>
-    <message>
-        <source>Part data (.edz):</source>
-        <translation type="vanished">Artikeldaten (.edz):</translation>
-    </message>
-    <message>
-        <source>Import into:</source>
-        <translation>Importieren in:</translation>
-    </message>
-    <message>
-        <source>The elements are stored in manufacturer / category / type folders. Each empty EPLAN field (PLC address, symbolic address, function text) becomes a text of its own that is filled in per placement.</source>
-        <translation>Die Bauteile werden in Ordnern Hersteller / Kategorie / Typ abgelegt. Jedes leere EPLAN-Feld (SPS-Adresse, symbolische Adresse, Funktionstext) wird ein eigener Text, der je Platzierung im Plan ausgefüllt wird.</translation>
-    </message>
-    <message>
-        <source>Manufacturer data from the EPLAN Data Portal or a manufacturer&apos;s website is subject to the terms of use of that source. By importing you confirm that you are authorised to use it here; the import is at your own responsibility.</source>
-        <translation>Herstellerdaten aus dem EPLAN Data Portal oder von einer Herstellerseite unterliegen den Nutzungsbedingungen dieser Quelle. Mit dem Import bestätigen Sie, dass Sie die Daten hier verwenden dürfen; der Import erfolgt in eigener Verantwortung.</translation>
-    </message>
-    <message>
-        <source>I accept these terms.</source>
-        <translation>Ich akzeptiere diese Bedingungen.</translation>
-    </message>
-    <message>
-        <source>Import</source>
-        <translation>Importieren</translation>
-    </message>
-    <message>
-        <source>EPLAN DXF package</source>
-        <translation type="vanished">EPLAN-DXF-Paket</translation>
-    </message>
-    <message>
-        <source>EPLAN Data Portal DXF package (*.zip)</source>
-        <translation>EPLAN-Data-Portal-DXF-Paket (*.zip)</translation>
-    </message>
-    <message>
-        <source>Unpacked EPLAN DXF package</source>
-        <translation>Entpacktes EPLAN-DXF-Paket</translation>
-    </message>
-    <message>
-        <source>EPLAN DXF</source>
-        <translation type="vanished">EPLAN-DXF</translation>
-    </message>
-    <message>
-        <source>DXF drawings (*.dxf)</source>
-        <translation>DXF-Zeichnungen (*.dxf)</translation>
-    </message>
-    <message>
-        <source>EPLAN part</source>
-        <translation>EPLAN-Bauteil</translation>
-    </message>
-    <message>
-        <source>EPLAN parts (*.edz)</source>
-        <translation>EPLAN-Bauteile (*.edz)</translation>
     </message>
     <message>
         <source>Part data (.edz, .wspak):</source>
         <translation>Artikeldaten (.edz, .wspak):</translation>
     </message>
     <message>
+        <source>The elements are stored in manufacturer / category / type folders. Each empty EPLAN field (PLC address, symbolic address, function text) becomes a text of its own that is filled in per placement.</source>
+        <translation>Die Bauteile werden in Ordnern Hersteller / Kategorie / Typ abgelegt. Jedes leere EPLAN-Feld (SPS-Adresse, symbolische Adresse, Funktionstext) wird ein eigener Text, der je Platzierung im Plan ausgefüllt wird.</translation>
+    </message>
+    <message>
         <source>Parts (*.zip *.edz *.dxf *.dwg)</source>
         <translation>Artikel (*.zip *.edz *.dxf *.dwg)</translation>
+    </message>
+    <message>
+        <source>EPLAN Data Portal DXF package (*.zip)</source>
+        <translation>EPLAN-Data-Portal-DXF-Paket (*.zip)</translation>
+    </message>
+    <message>
+        <source>EPLAN parts (*.edz)</source>
+        <translation>EPLAN-Bauteile (*.edz)</translation>
+    </message>
+    <message>
+        <source>DXF drawings (*.dxf)</source>
+        <translation>DXF-Zeichnungen (*.dxf)</translation>
     </message>
     <message>
         <source>DWG drawings, e.g. WSCAD Universe (*.dwg)</source>
@@ -7926,6 +7817,10 @@ Mit dem Import dieser Datei bestätigen Sie, dass:
     <message>
         <source>Import part</source>
         <translation>Artikel importieren</translation>
+    </message>
+    <message>
+        <source>Unpacked EPLAN DXF package</source>
+        <translation>Entpacktes EPLAN-DXF-Paket</translation>
     </message>
     <message>
         <source>%1 is no part file: choose a ZIP package, an .edz part, a DXF, a DWG or the folder of an unpacked package.</source>
@@ -7938,8 +7833,32 @@ Mit dem Import dieser Datei bestätigen Sie, dass:
 %1</translation>
     </message>
     <message>
+        <source>EPLAN part</source>
+        <translation>EPLAN-Bauteil</translation>
+    </message>
+    <message>
         <source>WSCAD Universe packages (*.wspak)</source>
         <translation>WSCAD-Universe-Pakete (*.wspak)</translation>
+    </message>
+    <message>
+        <source>source</source>
+        <translation>Quelle</translation>
+    </message>
+    <message>
+        <source>manufacturer</source>
+        <translation>Hersteller</translation>
+    </message>
+    <message>
+        <source>type</source>
+        <translation>Typ</translation>
+    </message>
+    <message>
+        <source>accept the terms</source>
+        <translation>Bedingungen akzeptieren</translation>
+    </message>
+    <message>
+        <source>Still missing: %1</source>
+        <translation>Es fehlt noch: %1</translation>
     </message>
     <message>
         <source>Choose the folder to import into.</source>
@@ -7988,6 +7907,10 @@ Mit dem Import dieser Datei bestätigen Sie, dass:
 <context>
     <name>EplanProjectImportDialog</name>
     <message>
+        <source>Change…</source>
+        <translation>Ändern…</translation>
+    </message>
+    <message>
         <source>Import an EPLAN project</source>
         <translation>EPLAN-Projekt importieren</translation>
     </message>
@@ -8002,10 +7925,6 @@ Mit dem Import dieser Datei bestätigen Sie, dass:
     <message>
         <source>Save as:</source>
         <translation>Speichern als:</translation>
-    </message>
-    <message>
-        <source>Change…</source>
-        <translation>Ändern…</translation>
     </message>
     <message>
         <source>Also write a PDF (takes a while on big projects)</source>
@@ -8214,42 +8133,6 @@ Mit dem Import dieser Datei bestätigen Sie, dass:
     <message>
         <source>Stop the running import?</source>
         <translation>Den laufenden Import abbrechen?</translation>
-    </message>
-    <message>
-        <source>Python program</source>
-        <translation type="vanished">Python-Programm</translation>
-    </message>
-    <message>
-        <source>The bridge needs the Python package “anthropic” (py -m pip install anthropic).</source>
-        <translation type="vanished">Die Brücke braucht das Python-Paket „anthropic“ (py -m pip install anthropic).</translation>
-    </message>
-    <message>
-        <source>Remove key</source>
-        <translation type="vanished">Schlüssel entfernen</translation>
-    </message>
-    <message>
-        <source>No credential store on this system: set ANTHROPIC_API_KEY in the environment instead.</source>
-        <translation type="vanished">Auf diesem System gibt es keinen Anmeldeinformationsspeicher: stattdessen ANTHROPIC_API_KEY in der Umgebung setzen.</translation>
-    </message>
-    <message>
-        <source>A key is stored. Leave the field empty to keep it.</source>
-        <translation type="vanished">Ein Schlüssel ist hinterlegt. Feld leer lassen, um ihn zu behalten.</translation>
-    </message>
-    <message>
-        <source>No key stored yet.</source>
-        <translation type="vanished">Noch kein Schlüssel hinterlegt.</translation>
-    </message>
-    <message>
-        <source>The key could not be stored: %1</source>
-        <translation type="vanished">Der Schlüssel ließ sich nicht speichern: %1</translation>
-    </message>
-    <message>
-        <source>Remove the stored API key?</source>
-        <translation type="vanished">Den hinterlegten API-Schlüssel entfernen?</translation>
-    </message>
-    <message>
-        <source>The key could not be removed: %1</source>
-        <translation type="vanished">Der Schlüssel ließ sich nicht entfernen: %1</translation>
     </message>
 </context>
 <context>
@@ -8584,7 +8467,7 @@ Texte und Zahlen sind ebenso erlaubt.</translation>
     </message>
     <message>
         <source>Build the value of a new column. Pick a field, a value or an operation; an operation&apos;s inputs can be operations too. Quotes and brackets are written for you.</source>
-        <translation>Den Wert einer neuen Spalte zusammensetzen. Ein Feld, einen Wert oder eine Operation wählen; die Eingaben einer Operation können selbst Operationen sein. Anführungszeichen und Klammern werden automatisch gesetzt.</translation>
+        <translation>Bauen Sie den Wert einer neuen Spalte auf. Wählen Sie ein Feld, einen Wert oder eine Operation; die Eingaben einer Operation können ebenfalls Operationen sein. Anführungszeichen und Klammern werden für Sie geschrieben.</translation>
     </message>
     <message>
         <source>Title of the column</source>
@@ -8596,7 +8479,7 @@ Texte und Zahlen sind ebenso erlaubt.</translation>
     </message>
     <message>
         <source>The SQL this makes (read only)</source>
-        <translation>Das daraus erzeugte SQL (nur lesen)</translation>
+        <translation>Das daraus entstehende SQL (schreibgeschützt)</translation>
     </message>
     <message>
         <source>Add the column</source>
@@ -8611,7 +8494,7 @@ Texte und Zahlen sind ebenso erlaubt.</translation>
     </message>
     <message>
         <source>Between the values, for example a space or a dash</source>
-        <translation>Zwischen den Werten, z. B. ein Leerzeichen oder ein Bindestrich</translation>
+        <translation>Zwischen den Werten, zum Beispiel ein Leerzeichen oder ein Bindestrich</translation>
     </message>
     <message>
         <source>Add an input</source>
@@ -8759,14 +8642,6 @@ Texte und Zahlen sind ebenso erlaubt.</translation>
 <context>
     <name>GeneralConfigurationPage</name>
     <message>
-        <source>Enable device navigator (EPLAN-style)</source>
-        <translation>Betriebsmittel-Navigator aktivieren (EPLAN-Stil)</translation>
-    </message>
-    <message>
-        <source>Show the hierarchical device navigator panel for components, terminals, and functions by plant structure</source>
-        <translation>Hierarchischen Betriebsmittel-Navigator nach Anlagen- und Ortsstruktur (wie in EPLAN) anzeigen</translation>
-    </message>
-    <message>
         <source>A four-way arrow over what a drag moves; with the crosshair, the pointer jumps with it from grid point to grid point, and a handle within 12 pixels catches it and the click. Unticked: the system pointer, and handles are grabbed under the mouse only.</source>
         <translation>Ein Vierfachpfeil über allem, was sich ziehen lässt; mit dem Fadenkreuz springt der Zeiger mit ihm von Rasterpunkt zu Rasterpunkt, und ein Anfasser im Umkreis von 12 Pixeln fängt ihn und den Klick. Aus: der Zeiger des Systems, Anfasser nur direkt unter der Maus.</translation>
     </message>
@@ -8891,7 +8766,7 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     </message>
     <message>
         <source>Designation, type, plant, location, length:</source>
-        <translation>Bezeichnung, Typ, Anlage, Ort, Länge:</translation>
+        <translation>Kennzeichen, Typ, Anlage, Ort, Länge:</translation>
     </message>
     <message>
         <source>Core colors (all of them):</source>
@@ -8904,6 +8779,10 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     <message>
         <source>Grid + Keyboard</source>
         <translation>Raster &amp; Tastatur</translation>
+    </message>
+    <message>
+        <source>Grid and guides</source>
+        <translation>Raster und Hilfslinien</translation>
     </message>
     <message>
         <source>Grid: 1 - 30</source>
@@ -8927,7 +8806,7 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     </message>
     <message>
         <source>Everything it overlaps (as before)</source>
-        <translation>Alles, was es berührt (wie bisher)</translation>
+        <translation>Alles, was es überschneidet (wie bisher)</translation>
     </message>
     <message>
         <source>What lies wholly within it</source>
@@ -8935,11 +8814,19 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     </message>
     <message>
         <source>By direction: wholly within to the right, overlapped to the left</source>
-        <translation>Nach Richtung: nach rechts vollständig darin, nach links berührt</translation>
+        <translation>Nach Richtung: nach rechts vollständig innen, nach links überschnitten</translation>
     </message>
     <message>
         <source>Symbol editor: draw like the folio, frame on the grid around the insertion point</source>
-        <translation>Symboleditor: wie auf der Seite zeichnen, Rahmen im Raster um den Einfügepunkt</translation>
+        <translation>Symbol-Editor: wie auf der Seite zeichnen, Rahmen am Raster um den Einfügepunkt</translation>
+    </message>
+    <message>
+        <source>Find and edit a placed element in the collection it was taken from</source>
+        <translation>Ein platziertes Bauteil in der Sammlung suchen und bearbeiten, aus der es stammt</translation>
+    </message>
+    <message>
+        <source>Saving it there updates the open projects that use it. Otherwise the project&apos;s own copy is edited.</source>
+        <translation>Dort zu speichern aktualisiert die offenen Projekte, die es verwenden. Andernfalls wird die projekteigene Kopie bearbeitet.</translation>
     </message>
     <message>
         <source>Corner radius of the selection frame (0: square)</source>
@@ -8947,11 +8834,11 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     </message>
     <message>
         <source>Zoom step:</source>
-        <translation>Zoomstufe:</translation>
+        <translation>Zoomschritt:</translation>
     </message>
     <message>
         <source>How far the mouse wheel, Ctrl++ / Ctrl+- and the zoom buttons zoom at a time, in percent of the zoom shown, rounded to whole fives: with 10 %, 100 % goes to 110 %, 120 %, 130 % and 400 % to 440 %. Alt with the mouse wheel zooms four steps at a time.</source>
-        <translation>Wie weit Mausrad, Strg++ / Strg+- und die Zoom-Schaltflächen auf einmal zoomen, in Prozent der angezeigten Vergrößerung, auf volle Fünfer gerundet: Mit 10 % geht 100 % auf 110 %, 120 %, 130 % und 400 % auf 440 %. Alt mit dem Mausrad zoomt vier Stufen auf einmal.</translation>
+        <translation>Wie weit Mausrad, Strg++ / Strg+- und die Zoom-Schaltflächen pro Schritt zoomen, in Prozent des angezeigten Zooms, auf ganze Fünfer gerundet: bei 10 % geht 100 % auf 110 %, 120 %, 130 % und 400 % auf 440 %. Alt mit dem Mausrad zoomt vier Schritte auf einmal.</translation>
     </message>
     <message>
         <source>Factor 1.15 (as before)</source>
@@ -8967,11 +8854,43 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     </message>
     <message>
         <source>Draw a connected terminal in the color of its conductor</source>
-        <translation>Angeschlossenen Anschluss in der Farbe seines Leiters zeichnen</translation>
+        <translation>Eine angeschlossene Klemme in der Farbe ihres Leiters zeichnen</translation>
     </message>
     <message>
         <source>Unchecked, every terminal is drawn in red. Terminals are never printed or exported.</source>
-        <translation>Wenn deaktiviert, wird jeder Anschluss rot gezeichnet. Anschlüsse werden nie gedruckt oder exportiert.</translation>
+        <translation>Wenn deaktiviert, wird jede Klemme rot gezeichnet. Klemmen werden nie gedruckt oder exportiert.</translation>
+    </message>
+    <message>
+        <source>One stub per terminal which has a wire of its own, going up from the strip: what the wire is made of at its foot, where it lands at its top (12K1:A1). Cores of a cable are left out -- the cable is drawn below the strip.</source>
+        <translation>Ein Stich je Klemme mit eigenem Draht, von der Leiste nach oben: unten, woraus der Draht besteht, oben, wo er landet (12K1:A1). Adern eines Kabels werden ausgelassen -- das Kabel wird unter der Leiste gezeichnet.</translation>
+    </message>
+    <message>
+        <source>Draw the wires of a terminal strip above it, like its cables below it</source>
+        <translation>Die Drähte einer Klemmleiste darüber zeichnen, wie ihre Kabel darunter</translation>
+    </message>
+    <message>
+        <source>Used when the automatic assignment makes a terminal strip and by &quot;Automatic position&quot; in the terminal manager. Unchecked: the way the plan is drawn, folio by folio then left to right, which keeps N and PE where they are drawn. Checked: by label, X1:2 before X1:10. A strip already made keeps its order until it is sorted again.</source>
+        <translation>Wird verwendet, wenn die automatische Zuordnung eine Klemmleiste anlegt, und von „automatisch anordnen“ im Klemmleisten-Manager. Deaktiviert: in der Reihenfolge des Plans, Seite für Seite, dann von links nach rechts, sodass N und PE dort bleiben, wo sie gezeichnet sind. Aktiviert: nach BMK, X1:2 vor X1:10. Eine bereits angelegte Leiste behält ihre Reihenfolge, bis sie erneut sortiert wird.</translation>
+    </message>
+    <message>
+        <source>Sort the terminal strips by label instead of the plan order</source>
+        <translation>Klemmleisten nach BMK statt in der Reihenfolge des Plans sortieren</translation>
+    </message>
+    <message>
+        <source>A new folio takes the group and sub-group of the folio before it</source>
+        <translation>Eine neue Seite übernimmt Gruppe und Untergruppe der vorherigen Seite</translation>
+    </message>
+    <message>
+        <source>Only a group or sub-group typed on that folio is taken. Unchecked, a new folio has none and is in its plant and location.</source>
+        <translation>Nur eine auf dieser Seite eingegebene Gruppe oder Untergruppe wird übernommen. Wenn deaktiviert, hat eine neue Seite keine und gehört zu ihrer Anlage und ihrem Ort.</translation>
+    </message>
+    <message>
+        <source>Ask for the device labels when placing a macro</source>
+        <translation>Beim Platzieren eines Makros nach den BMK fragen</translation>
+    </message>
+    <message>
+        <source>Proposes the next free labels, which Accept All takes. Unchecked, a macro keeps its saved labels.</source>
+        <translation>Schlägt die nächsten freien BMK vor, die „Alle übernehmen“ übernimmt. Wenn deaktiviert, behält ein Makro seine gespeicherten BMK.</translation>
     </message>
     <message>
         <source>When unticked, no conductors-per-terminal rule applies, whatever the projects&apos; settings.</source>
@@ -9043,15 +8962,15 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     </message>
     <message>
         <source>A symbol&apos;s text that reads from top to bottom once its symbol is turned is drawn the other way round, in the same place, so that upright texts all read from bottom to top, like the wires&apos; texts. Unticked by default: texts turn with their symbol.</source>
-        <translation>Ein Symboltext, der nach dem Drehen des Symbols von oben nach unten läuft, wird an derselben Stelle umgekehrt gezeichnet, sodass alle senkrechten Texte von unten nach oben lesen, wie die Leitertexte. Standardmäßig deaktiviert: Texte drehen sich mit ihrem Symbol.</translation>
+        <translation>Ein Symboltext, der nach dem Drehen seines Symbols von oben nach unten liest, wird an derselben Stelle umgekehrt gezeichnet, sodass alle senkrechten Texte von unten nach oben lesen, wie die Texte der Drähte. Standardmäßig deaktiviert: Texte drehen sich mit ihrem Symbol.</translation>
     </message>
     <message>
         <source>Upright symbol texts read from bottom to top</source>
-        <translation>Senkrechte Symboltexte von unten nach oben lesen</translation>
+        <translation>Senkrechte Symboltexte lesen von unten nach oben</translation>
     </message>
     <message>
         <source>Dragging a symbol&apos;s text moves the text alone, and Shift+drag moves the symbol, as before version 0.100. Unticked by default: dragging a text moves its symbol, Shift+drag moves the text.</source>
-        <translation>Ziehen eines Symboltextes verschiebt nur den Text, Umschalt+Ziehen verschiebt das Symbol, wie vor Version 0.100. Standardmäßig deaktiviert: Ziehen eines Textes verschiebt sein Symbol, Umschalt+Ziehen den Text.</translation>
+        <translation>Das Ziehen eines Symboltexts verschiebt nur den Text, und Umschalt+Ziehen verschiebt das Symbol, wie vor Version 0.100. Standardmäßig deaktiviert: Ziehen eines Texts verschiebt sein Symbol, Umschalt+Ziehen verschiebt den Text.</translation>
     </message>
     <message>
         <source>Drag symbol texts without holding Shift</source>
@@ -9059,7 +8978,7 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     </message>
     <message>
         <source>While a symbol is placed or dragged, a shaded line runs from each of its terminals to the terminal in line with it. Ticked by default.</source>
-        <translation>Während ein Symbol platziert oder gezogen wird, führt eine schattierte Linie von jedem seiner Anschlüsse zum Anschluss, der damit in einer Flucht liegt. Standardmäßig aktiviert.</translation>
+        <translation>Während ein Symbol platziert oder gezogen wird, läuft eine schattierte Linie von jedem seiner Anschlüsse zum damit fluchtenden Anschluss. Standardmäßig aktiviert.</translation>
     </message>
     <message>
         <source>Help lines from the terminals of a dragged symbol</source>
@@ -9067,23 +8986,23 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     </message>
     <message>
         <source>A bar at each side of the drawing folds the panels of that side away, as in LibreOffice&apos;s sidebar, and a second click shows them again as they were. Unticked by default; the Display menu does the same with or without the bars.</source>
-        <translation>Eine Leiste an jeder Seite der Zeichnung klappt die Fenster dieser Seite ein, wie in der Seitenleiste von LibreOffice; ein zweiter Klick zeigt sie wieder wie zuvor. Standardmäßig deaktiviert; das Menü Anzeige macht dasselbe mit oder ohne die Leisten.</translation>
+        <translation>Eine Leiste an jeder Seite der Zeichnung klappt die Fenster dieser Seite ein, wie die Seitenleiste von LibreOffice, und ein zweiter Klick zeigt sie wieder wie zuvor. Standardmäßig deaktiviert; das Menü Ansicht tut dasselbe mit oder ohne die Leisten.</translation>
     </message>
     <message>
         <source>Bars beside the drawing to fold the side panels away</source>
-        <translation>Leisten neben der Zeichnung zum Einklappen der Seitenfenster</translation>
+        <translation>Leisten neben der Zeichnung zum Einklappen der Seitenleisten</translation>
     </message>
     <message>
         <source>The docked panels can be made as narrow as one wants: their texts wrap and what cannot wrap scrolls sideways. Unticked: the panels keep the width their texts and fields need.</source>
-        <translation>Die angedockten Fenster lassen sich beliebig schmal machen: Ihre Texte brechen um, und was nicht umbrechen kann, scrollt seitlich. Deaktiviert: Die Fenster behalten die Breite, die ihre Texte und Felder brauchen.</translation>
+        <translation>Die angedockten Fenster können beliebig schmal gemacht werden: ihre Texte brechen um, und was nicht umbrechen kann, wird seitlich gescrollt. Deaktiviert: die Fenster behalten die Breite, die ihre Texte und Felder brauchen.</translation>
     </message>
     <message>
         <source>Narrow docks: wrap texts and scroll (applied the next time the programme is launched)</source>
-        <translation>Schmale Fenster: Texte umbrechen und scrollen (wirksam beim nächsten Programmstart)</translation>
+        <translation>Schmale Fenster: Texte umbrechen und scrollen (wird beim nächsten Programmstart angewendet)</translation>
     </message>
     <message>
         <source>A corner or T-junction placed where one already stands takes its place, and its wires go to the new one. Unticked by default: both stay.</source>
-        <translation>Eine Ecke oder ein T-Abzweig, der dort platziert wird, wo schon einer steht, ersetzt diesen, und seine Leiter gehen an den neuen. Standardmäßig deaktiviert: Beide bleiben.</translation>
+        <translation>Eine Ecke oder ein T-Abzweig, an einer Stelle platziert, an der schon einer steht, tritt an dessen Stelle, und seine Drähte gehen auf den neuen über. Standardmäßig deaktiviert: beide bleiben.</translation>
     </message>
     <message>
         <source>A new corner or T-junction replaces the one under it</source>
@@ -9091,11 +9010,11 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     </message>
     <message>
         <source>Printing and exporting ask first when symbols, texts, shapes, pictures or tables lie outside the sheet, as they are cut off or left out; saving says so in the status bar.</source>
-        <translation>Drucken und Exportieren fragen zuerst nach, wenn Symbole, Texte, Formen, Bilder oder Tabellen außerhalb der Seite liegen, da sie abgeschnitten oder weggelassen werden; beim Speichern erscheint ein Hinweis in der Statusleiste.</translation>
+        <translation>Drucken und Exportieren fragen zuerst nach, wenn Symbole, Texte, Formen, Bilder oder Tabellen außerhalb der Seite liegen, da sie abgeschnitten oder weggelassen werden; beim Speichern wird es in der Statusleiste gemeldet.</translation>
     </message>
     <message>
         <source>Warn about items outside the sheet</source>
-        <translation>Vor Objekten außerhalb der Seite warnen</translation>
+        <translation>Vor Elementen außerhalb der Seite warnen</translation>
     </message>
     <message>
         <source>Show default guides (applies from the next time the programme is launched)</source>
@@ -9106,12 +9025,60 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
         <translation>Projekte in Fenstern anz&amp;eigen (wirksam nach einem Neustart von QElectroTech)</translation>
     </message>
     <message>
+        <source>Theme</source>
+        <translation>Design</translation>
+    </message>
+    <message>
+        <source>Main window</source>
+        <translation>Hauptfenster</translation>
+    </message>
+    <message>
         <source>Use &amp;tabs (applied at the next launch of QElectroTech)</source>
         <translation>Projekte in Reitern anzeigen (wirksa&amp;m nach einem Neustart von QElectroTech)</translation>
     </message>
     <message>
         <source>High pixel density (hdpi) displays scaling method (applied to the next launch of QElectroTech) :</source>
         <translation>Methode zur Skalierung bei hochauflösenden Bildschirmen (hdpi) (wirksam nach einem Neustart von QElectroTech):</translation>
+    </message>
+    <message>
+        <source>Drawing on the sheet</source>
+        <translation>Darstellung auf dem Blatt</translation>
+    </message>
+    <message>
+        <source>Mouse and input</source>
+        <translation>Maus und Eingabe</translation>
+    </message>
+    <message>
+        <source>Zoom and navigation</source>
+        <translation>Zoom und Navigation</translation>
+    </message>
+    <message>
+        <source>Zoom when following a cross reference:</source>
+        <translation>Zoom beim Folgen eines Querverweises:</translation>
+    </message>
+    <message>
+        <source>A jump along a cross reference or a folio report shows its target in the middle of the view, at this zoom at least; closer views stay as they are.</source>
+        <translation>Ein Sprung über einen Querverweis oder eine Unterbrechungsstelle zeigt das Ziel in der Mitte der Ansicht, mindestens mit diesem Zoom; nähere Ansichten bleiben, wie sie sind.</translation>
+    </message>
+    <message>
+        <source>Whole folio</source>
+        <translation>Ganze Seite</translation>
+    </message>
+    <message>
+        <source>Selection</source>
+        <translation>Auswahl</translation>
+    </message>
+    <message>
+        <source>Enable device navigator (EPLAN-style)</source>
+        <translation>Betriebsmittel-Navigator aktivieren (EPLAN-Stil)</translation>
+    </message>
+    <message>
+        <source>Show the hierarchical device navigator panel for components, terminals, and functions by plant structure</source>
+        <translation>Hierarchischen Betriebsmittel-Navigator nach Anlagen- und Ortsstruktur (wie in EPLAN) anzeigen</translation>
+    </message>
+    <message>
+        <source>Drawing and moving</source>
+        <translation>Zeichnen und Verschieben</translation>
     </message>
     <message>
         <source>Automatically number pasted or duplicated elements that follow a numbering</source>
@@ -9163,31 +9130,39 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     </message>
     <message>
         <source>The projects open when QElectroTech was last left are opened again, unless it is started with a file to open.</source>
-        <translation>Die Projekte, die beim letzten Beenden von QElectroTech geöffnet waren, werden wieder geöffnet, außer es wird mit einer zu öffnenden Datei gestartet.</translation>
+        <translation>Die Projekte, die beim letzten Beenden von QElectroTech offen waren, werden wieder geöffnet, außer es wird mit einer zu öffnenden Datei gestartet.</translation>
     </message>
     <message>
         <source>Offer to restore automatic backups at start</source>
-        <translation>Automatische Sicherungen beim Start zur Wiederherstellung anbieten</translation>
+        <translation>Beim Start anbieten, automatische Sicherungen wiederherzustellen</translation>
     </message>
     <message>
         <source>After a crash, the automatic backups (made every few minutes, see &quot;Automatic backup of projects&quot; above) are offered at the next start. Unticked, they are kept but not offered, the status bar says how many there are, and they are offered again once this is ticked. Not the same as the option below, which keeps a copy after every edit.</source>
-        <translation>Nach einem Absturz werden die automatischen Sicherungen (alle paar Minuten erstellt, siehe „Automatisches Abspeichern der Projekte“ oben) beim nächsten Start angeboten. Deaktiviert bleiben sie erhalten, werden aber nicht angeboten; die Statusleiste zeigt, wie viele es gibt, und sie werden wieder angeboten, sobald dies aktiviert ist. Nicht dasselbe wie die Option unten, die nach jeder Änderung eine Kopie behält.</translation>
+        <translation>Nach einem Absturz werden die automatischen Sicherungen (alle paar Minuten erstellt, siehe „Automatische Sicherung der Projekte“ oben) beim nächsten Start angeboten. Wenn deaktiviert, werden sie aufbewahrt, aber nicht angeboten, die Statusleiste nennt ihre Anzahl, und sie werden wieder angeboten, sobald dies aktiviert wird. Nicht dasselbe wie die Option unten, die nach jeder Bearbeitung eine Kopie aufbewahrt.</translation>
     </message>
     <message>
         <source>After a crash, offer projects as they were after their last edit (experimental)</source>
-        <translation>Nach einem Absturz Projekte im Stand nach ihrer letzten Änderung anbieten (experimentell)</translation>
+        <translation>Nach einem Absturz Projekte so anbieten, wie sie nach ihrer letzten Bearbeitung waren (experimentell)</translation>
     </message>
     <message>
         <source>While a project is open, QElectroTech keeps a copy of it in its data folder, saved after every edit. If QElectroTech does not close normally, the next start offers that copy with the recovery files.</source>
-        <translation>Solange ein Projekt geöffnet ist, behält QElectroTech eine Kopie davon in seinem Datenordner, gespeichert nach jeder Änderung. Wird QElectroTech nicht normal beendet, bietet der nächste Start diese Kopie mit den Wiederherstellungsdateien an.</translation>
+        <translation>Solange ein Projekt offen ist, hält QElectroTech eine Kopie davon in seinem Datenordner, nach jeder Bearbeitung gespeichert. Wenn QElectroTech nicht normal beendet wird, bietet der nächste Start diese Kopie mit den Wiederherstellungsdateien an.</translation>
     </message>
     <message>
         <source>Offer saving a project as one database file, .qetdb (experimental)</source>
-        <translation>Speichern eines Projekts als eine Datenbankdatei, .qetdb, anbieten (experimentell)</translation>
+        <translation>Speichern eines Projekts als eine Datenbankdatei anbieten, .qetdb (experimentell)</translation>
     </message>
     <message>
         <source>Save As then offers .qetdb: the whole project in one SQLite file. The format may still change; keep a .qet or .qetz copy of projects that matter.</source>
-        <translation>„Speichern unter“ bietet dann .qetdb an: das ganze Projekt in einer SQLite-Datei. Das Format kann sich noch ändern; von wichtigen Projekten eine .qet- oder .qetz-Kopie behalten.</translation>
+        <translation>„Speichern unter“ bietet dann .qetdb an: das ganze Projekt in einer SQLite-Datei. Das Format kann sich noch ändern; behalten Sie von wichtigen Projekten eine .qet- oder .qetz-Kopie.</translation>
+    </message>
+    <message>
+        <source>Folios and macros</source>
+        <translation>Blätter und Makros</translation>
+    </message>
+    <message>
+        <source>Terminal strips and conductors</source>
+        <translation>Klemmleisten und Leiter</translation>
     </message>
     <message>
         <source>Company collection directory</source>
@@ -9386,7 +9361,7 @@ hint shown when no cable type file is configured yet</extracomment>
     </message>
     <message>
         <source>Move by the grid step instead (Display &gt; Grid step)</source>
-        <translation>Stattdessen um die Rasterstufe verschieben (Anzeige &gt; Rasterstufe)</translation>
+        <translation>Stattdessen um den Rasterschritt verschieben (Ansicht &gt; Rasterschritt)</translation>
     </message>
     <message>
         <source>Keyboard movement with the Ctrl key: 1 - 9</source>
@@ -9760,6 +9735,26 @@ Alle Einstellungen außer „Keine Rundung“ können je nach folgenden Faktoren
 <context>
     <name>GenericDevice</name>
     <message>
+        <source>Digital inputs</source>
+        <translation>Digitale Eingänge</translation>
+    </message>
+    <message>
+        <source>Digital outputs</source>
+        <translation>Digitale Ausgänge</translation>
+    </message>
+    <message>
+        <source>Analog inputs</source>
+        <translation>Analoge Eingänge</translation>
+    </message>
+    <message>
+        <source>Analog outputs</source>
+        <translation>Analoge Ausgänge</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Keine</translation>
+    </message>
+    <message>
         <source>Left</source>
         <translation>Links</translation>
     </message>
@@ -9930,6 +9925,14 @@ Alle Einstellungen außer „Keine Rundung“ können je nach folgenden Faktoren
     <message>
         <source>e.g. L1,L2,L3,,PE</source>
         <translation>z. B. L1, L2, L3, …, PE</translation>
+    </message>
+    <message>
+        <source>PLC inputs and outputs:</source>
+        <translation>SPS-Ein- und -Ausgänge:</translation>
+    </message>
+    <message>
+        <source>Marking a side makes the device a PLC: its terminals become the PLC&apos;s inputs or outputs, in the order they are listed.</source>
+        <translation>Eine markierte Seite macht das Gerät zur SPS: seine Anschlüsse werden in der aufgeführten Reihenfolge zu Ein- oder Ausgängen der SPS.</translation>
     </message>
     <message>
         <source>Name</source>
@@ -10689,7 +10692,7 @@ Please use the advanced editor for this.</source>
     </message>
     <message>
         <source>Folio report</source>
-        <translation>Seitenverweis</translation>
+        <translation>Folienverweis</translation>
     </message>
     <message>
         <source>Terminal</source>
@@ -10697,7 +10700,7 @@ Please use the advanced editor for this.</source>
     </message>
     <message>
         <source>Thumbnail</source>
-        <translation>Miniaturansicht</translation>
+        <translation>Vorschaubild</translation>
     </message>
     <message>
         <source>Conductor definition</source>
@@ -10756,12 +10759,20 @@ Please use the advanced editor for this.</source>
         <translation>Leiter %1</translation>
     </message>
     <message>
+        <source>Structure box</source>
+        <translation>Strukturkasten</translation>
+    </message>
+    <message>
+        <source>Structure box %1</source>
+        <translation>Strukturkasten %1</translation>
+    </message>
+    <message>
         <source>Picture</source>
         <translation>Bild</translation>
     </message>
     <message>
         <source>Table</source>
-        <translation>Tabelle</translation>
+        <translation>Tabelleninhalt</translation>
     </message>
     <message>
         <source>Text group %1 of %2</source>
@@ -10774,8 +10785,8 @@ Please use the advanced editor for this.</source>
     <message numerus="yes">
         <source>%n items selected</source>
         <translation>
-            <numerusform>%n Objekt ausgewählt</numerusform>
-            <numerusform>%n Objekte ausgewählt</numerusform>
+            <numerusform>%n Element ausgewählt</numerusform>
+            <numerusform>%n Elemente ausgewählt</numerusform>
         </translation>
     </message>
 </context>
@@ -10911,23 +10922,23 @@ Please use the advanced editor for this.</source>
     </message>
     <message>
         <source>That link cannot be made</source>
-        <translation>Diese Verknüpfung ist nicht möglich</translation>
+        <translation>Diese Verknüpfung kann nicht erstellt werden</translation>
     </message>
     <message>
         <source>A bridge and a wire cannot be joined through these items: what one side carries and what the other carries are two different things.
 
 Connect a bridge to a bridge, or a wire to a wire.</source>
-        <translation>Eine Brücke und ein Leiter lassen sich über diese Objekte nicht verbinden: Was die eine Seite führt und was die andere führt, sind zwei verschiedene Dinge.
+        <translation>Eine Brücke und ein Draht können über diese Elemente nicht verbunden werden: was die eine Seite führt und was die andere führt, sind zwei verschiedene Dinge.
 
-Brücke mit Brücke oder Leiter mit Leiter verbinden.</translation>
+Verbinden Sie eine Brücke mit einer Brücke oder einen Draht mit einem Draht.</translation>
     </message>
     <message>
         <source>A bridge lies across one terminal strip: the bridges these items carry are of two of them, and a link would join them.
 
 Bring them into one terminal strip first.</source>
-        <translation>Eine Brücke liegt auf einer einzigen Klemmenleiste: Die Brücken dieser Objekte gehören zu zwei verschiedenen Leisten, und eine Verknüpfung würde sie verbinden.
+        <translation>Eine Brücke liegt auf einer einzigen Klemmleiste: die Brücken dieser Elemente gehören zu zwei verschiedenen Leisten, und eine Verknüpfung würde sie verbinden.
 
-Sie zuerst in eine Klemmenleiste bringen.</translation>
+Bringen Sie sie zuerst auf eine Klemmleiste.</translation>
     </message>
     <message>
         <source>N° wire</source>
@@ -11082,6 +11093,41 @@ Diese Einstellung finden Sie unter QElectroTech Einstellungen &gt; Allgemein &gt
     <message>
         <source>&amp;Always</source>
         <translation>&amp;Immer</translation>
+    </message>
+</context>
+<context>
+    <name>MacroLabelsDialog</name>
+    <message>
+        <source>Place the macro</source>
+        <translation>Makro platzieren</translation>
+    </message>
+    <message>
+        <source>Enter the labels and texts of this macro. Accept All takes the labels proposed.</source>
+        <translation>Geben Sie die BMK und Texte dieses Makros ein. „Alle übernehmen“ übernimmt die vorgeschlagenen BMK.</translation>
+    </message>
+    <message>
+        <source>Kind</source>
+        <translation>Art</translation>
+    </message>
+    <message>
+        <source>In the macro</source>
+        <translation>Im Makro</translation>
+    </message>
+    <message>
+        <source>To place</source>
+        <translation>Zu platzieren</translation>
+    </message>
+    <message>
+        <source>Label</source>
+        <translation>BMK</translation>
+    </message>
+    <message>
+        <source>Text</source>
+        <translation>Text</translation>
+    </message>
+    <message>
+        <source>Accept All</source>
+        <translation>Alle übernehmen</translation>
     </message>
 </context>
 <context>
@@ -11582,7 +11628,7 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     <message>
         <source>Display of the terminal labelling</source>
         <comment>group box title</comment>
-        <translation>Darstellung der Klemmenbeschriftung</translation>
+        <translation>Darstellung der Klemmenbezeichnung</translation>
     </message>
     <message>
         <source>Show the label and the terminal number in one field</source>
@@ -11592,7 +11638,7 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     <message>
         <source>A terminal&apos;s label (X1:1) is drawn as a whole, the way it has always been.</source>
         <comment>tooltip</comment>
-        <translation>Die Beschriftung einer Klemme (X1:1) wird als Ganzes gezeichnet, wie bisher.</translation>
+        <translation>Das BMK einer Klemme (X1:1) wird als Ganzes gezeichnet, wie schon immer.</translation>
     </message>
     <message>
         <source>Split the label and the terminal number</source>
@@ -11602,12 +11648,12 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     <message>
         <source>The label (X1) is drawn in one field and the terminal number (1) in another, which a terminal symbol may place where it wants -- and hide when it must. A symbol without such a field shows the two, one under the other.</source>
         <comment>tooltip</comment>
-        <translation>Das BMK (X1) wird in einem Feld gezeichnet und die Klemmennummer (1) in einem anderen, das ein Klemmensymbol beliebig platzieren – und bei Bedarf ausblenden – kann. Ein Symbol ohne ein solches Feld zeigt beide untereinander.</translation>
+        <translation>Das BMK (X1) wird in einem Feld gezeichnet und die Klemmennummer (1) in einem anderen, das ein Klemmensymbol platzieren kann, wo es will -- und ausblenden, wenn es muss. Ein Symbol ohne ein solches Feld zeigt beide untereinander.</translation>
     </message>
     <message>
         <source>Only the drawing changes: what is written in the element, the numbering, the sorting and the exports keep the whole label.</source>
         <comment>informative label</comment>
-        <translation>Nur die Darstellung ändert sich: Was im Bauteil steht, die Nummerierung, die Sortierung und die Exporte behalten die ganze Beschriftung.</translation>
+        <translation>Nur die Zeichnung ändert sich: was im Bauteil steht, die Nummerierung, die Sortierung und die Exporte behalten das ganze BMK.</translation>
     </message>
     <message>
         <source>Sheet</source>
@@ -11631,7 +11677,7 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     </message>
     <message>
         <source>Potential types</source>
-        <translation>Potentialtypen</translation>
+        <translation>Potenzialtypen</translation>
     </message>
     <message>
         <source>Set the default automatic numbering rules for new projects:</source>
@@ -11793,6 +11839,10 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>Text</translation>
     </message>
     <message>
+        <source>number format 1 - Plant</source>
+        <translation>Nummernformat 1 - Anlage</translation>
+    </message>
+    <message>
         <source>Sheet no.</source>
         <translation>Seitennummer</translation>
     </message>
@@ -11880,6 +11930,10 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>glTF binär (*.glb)</translation>
     </message>
     <message>
+        <source>Enclosure</source>
+        <translation>Gehäuse</translation>
+    </message>
+    <message>
         <source>This folio has no mounting surface. Draw a rectangle and give it the role &quot;Mounting surface&quot; (Cabinet layout &gt; Manufacturing data).</source>
         <translation>Dieses Blatt hat keine Montagefläche. Rechteck zeichnen und ihm die Rolle „Montagefläche“ geben (Schaltschrankaufbau &gt; Fertigungsdaten).</translation>
     </message>
@@ -11893,10 +11947,6 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     <message>
         <source>(built without STEP support)</source>
         <translation>(ohne STEP-Unterstützung gebaut)</translation>
-    </message>
-    <message>
-        <source>Enclosure</source>
-        <translation>Gehäuse</translation>
     </message>
 </context>
 <context>
@@ -12004,10 +12054,6 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <source>Not yet.</source>
         <translation>Noch nicht.</translation>
     </message>
-    <message>
-        <source>No findings.</source>
-        <translation>Keine Befunde.</translation>
-    </message>
     <message numerus="yes">
         <source>%n rail(s) and duct(s) on the plate.</source>
         <translation>
@@ -12036,6 +12082,10 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
             <numerusform>%n Befunde ansehen.</numerusform>
         </translation>
     </message>
+    <message>
+        <source>No findings.</source>
+        <translation>Keine Befunde.</translation>
+    </message>
 </context>
 <context>
     <name>PanelCheckDock</name>
@@ -12059,16 +12109,16 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <source>This folio has no cabinet layout yet. Use &quot;Build cabinet...&quot; to start.</source>
         <translation>Dieses Blatt hat noch keinen Schaltschrankaufbau. Mit „Schaltschrank aufbauen…“ beginnen.</translation>
     </message>
-    <message>
-        <source>No findings: the layout is fine.</source>
-        <translation>Keine Befunde: der Aufbau ist in Ordnung.</translation>
-    </message>
     <message numerus="yes">
         <source>%n finding(s) - click one to show the part.</source>
         <translation>
             <numerusform>%n Befund – anklicken zeigt das Teil.</numerusform>
             <numerusform>%n Befunde – anklicken zeigt das Teil.</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>No findings: the layout is fine.</source>
+        <translation>Keine Befunde: der Aufbau ist in Ordnung.</translation>
     </message>
 </context>
 <context>
@@ -12114,6 +12164,50 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>Schalt&amp;schrankaufbau</translation>
     </message>
     <message>
+        <source>Build cabinet...</source>
+        <translation>Schaltschrank aufbauen…</translation>
+    </message>
+    <message>
+        <source>The cabinet layout in a few guided steps: enclosure, rails and ducts, devices, terminal strips, check, 3D, export</source>
+        <translation>Der Schaltschrankaufbau in wenigen geführten Schritten: Schrank, Schienen und Kanäle, Geräte, Klemmenleisten, Prüfung, 3D, Export</translation>
+    </message>
+    <message>
+        <source>Layout check</source>
+        <translation>Aufbauprüfung</translation>
+    </message>
+    <message>
+        <source>A side panel with every finding of the layout; a click shows the part</source>
+        <translation>Seitenleiste mit allen Befunden des Aufbaus; ein Klick zeigt das Teil</translation>
+    </message>
+    <message>
+        <source>3D view...</source>
+        <translation>3D-Ansicht…</translation>
+    </message>
+    <message>
+        <source>The cabinet layout of this folio in 3D, with the STEP models of the parts</source>
+        <translation>Der Schaltschrankaufbau dieses Blatts in 3D, mit den STEP-Modellen der Teile</translation>
+    </message>
+    <message>
+        <source>Export manufacturing data (DXF)...</source>
+        <translation>Fertigungsdaten exportieren (DXF)…</translation>
+    </message>
+    <message>
+        <source>One DXF per mounting surface with every hole, a hole list and a cut list</source>
+        <translation>Eine DXF je Montagefläche mit allen Bohrungen, dazu Bohrliste und Schnittliste</translation>
+    </message>
+    <message>
+        <source>Single steps</source>
+        <translation>Einzelschritte</translation>
+    </message>
+    <message>
+        <source>Insert enclosure...</source>
+        <translation>Schaltschrank einfügen…</translation>
+    </message>
+    <message>
+        <source>An enclosure of a manufacturer (e.g. Rittal from the EPLAN Data Portal) with its mounting plate</source>
+        <translation>Schaltschrank eines Herstellers (z. B. Rittal aus dem EPLAN Data Portal) mit seiner Montageplatte</translation>
+    </message>
+    <message>
         <source>Insert mounting surface...</source>
         <translation>Montagefläche einfügen…</translation>
     </message>
@@ -12152,6 +12246,38 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     <message>
         <source>Put the devices of the project on the mounting surface at their real size, snapped onto the DIN rails</source>
         <translation>Die Geräte des Projekts in echter Größe auf die Montagefläche setzen, auf die Hutschienen gerastet</translation>
+    </message>
+    <message>
+        <source>Take the layout from an EPLAN project...</source>
+        <translation>Aufbau aus EPLAN-Projekt übernehmen...</translation>
+    </message>
+    <message>
+        <source>Move the devices and terminal strips to where an EPLAN project (.zw1 archive or project folder) has them on its panel layout page</source>
+        <translation>Geräte und Klemmenleisten dorthin setzen, wo sie auf der Aufbauseite eines EPLAN-Projekts (.zw1-Archiv oder Projektordner) sitzen</translation>
+    </message>
+    <message>
+        <source>Assign part...</source>
+        <translation>Bauteil zuordnen...</translation>
+    </message>
+    <message>
+        <source>Give the selected devices or terminals their part (manufacturer and order number) from the EPLAN Data Portal</source>
+        <translation>Den markierten Betriebsmitteln oder Klemmen ihren Artikel (Hersteller und Bestellnummer) aus dem EPLAN Data Portal zuweisen</translation>
+    </message>
+    <message>
+        <source>Devices without part...</source>
+        <translation>Betriebsmittel ohne Artikel...</translation>
+    </message>
+    <message>
+        <source>The devices and terminals of the project that have no order number yet: the cabinet layout knows nothing of their size</source>
+        <translation>Betriebsmittel und Klemmen des Projekts ohne Bestellnummer: der Schaltschrankaufbau kennt ihre Größe nicht</translation>
+    </message>
+    <message>
+        <source>Place terminal strips...</source>
+        <translation>Klemmenleisten platzieren...</translation>
+    </message>
+    <message>
+        <source>The terminal strips of the project as rows of terminals on the DIN rails, with the manufacturer&apos;s drawing of the terminal</source>
+        <translation>Die Klemmenleisten des Projekts als Klemmenreihen auf den Hutschienen, mit der Herstellerzeichnung der Klemme</translation>
     </message>
     <message>
         <source>Insert cut-out...</source>
@@ -12194,24 +12320,100 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>Bohrungen, Schnittliste und Warnungen aller Montageflächen</translation>
     </message>
     <message>
-        <source>3D view...</source>
-        <translation>3D-Ansicht…</translation>
+        <source>Insert enclosure</source>
+        <translation>Schaltschrank einfügen</translation>
     </message>
     <message>
-        <source>The cabinet layout of this folio in 3D, with the STEP models of the parts</source>
-        <translation>Der Schaltschrankaufbau dieses Blatts in 3D, mit den STEP-Modellen der Teile</translation>
+        <source>Data Portal…</source>
+        <translation>Data Portal…</translation>
     </message>
     <message>
-        <source>Export manufacturing data (DXF)...</source>
-        <translation>Fertigungsdaten exportieren (DXF)…</translation>
+        <source>Choose an enclosure (e.g. Rittal TS 8, VX 25, AX) in the EPLAN Data Portal</source>
+        <translation>Schaltschrank im EPLAN Data Portal wählen (z. B. Rittal TS 8, VX 25, AX)</translation>
     </message>
     <message>
-        <source>One DXF per mounting surface with every hole, a hole list and a cut list</source>
-        <translation>Eine DXF je Montagefläche mit allen Bohrungen, dazu Bohrliste und Schnittliste</translation>
+        <source>With its mounting plate</source>
+        <translation>Mit seiner Montageplatte</translation>
+    </message>
+    <message>
+        <source>Make the holes of the mounting plate too (plate made in house)</source>
+        <translation>Löcher der Montageplatte mitfertigen (Platte wird selbst gefertigt)</translation>
+    </message>
+    <message>
+        <source>Enclosure</source>
+        <translation>Schaltschrank</translation>
+    </message>
+    <message>
+        <source>Designation</source>
+        <translation>Kennzeichen</translation>
+    </message>
+    <message>
+        <source>Mounting plate</source>
+        <translation>Montageplatte</translation>
+    </message>
+    <message>
+        <source>Plate size</source>
+        <translation>Plattenmaß</translation>
+    </message>
+    <message>
+        <source>No enclosure yet: choose one in the Data Portal.</source>
+        <translation>Noch kein Schaltschrank: einen im Data Portal wählen.</translation>
+    </message>
+    <message>
+        <source>W x H x D: %1 x %2 x %3 mm</source>
+        <translation>B x H x T: %1 x %2 x %3 mm</translation>
+    </message>
+    <message>
+        <source>Mounting plate %1 x %2 mm</source>
+        <translation>Montageplatte %1 x %2 mm</translation>
+    </message>
+    <message>
+        <source>The data hold no mounting plate: its size is estimated (width - 101, height - 104 mm). Please check.</source>
+        <translation>Die Daten enthalten keine Montageplatte: ihr Maß ist geschätzt (Breite − 101, Höhe − 104 mm). Bitte prüfen.</translation>
+    </message>
+    <message>
+        <source>insert enclosure %1</source>
+        <translation>Gehäuse %1 einfügen</translation>
+    </message>
+    <message>
+        <source>insert mounting surface %1</source>
+        <translation>Montagefläche %1 einfügen</translation>
     </message>
     <message>
         <source>Insert mounting surface</source>
         <translation>Montagefläche einfügen</translation>
+    </message>
+    <message>
+        <source>Sizes only (plain plate)</source>
+        <translation>Nur Maße (glatte Platte)</translation>
+    </message>
+    <message>
+        <source>Sizes, holes and edges like the template</source>
+        <translation>Maße, Löcher und Kanten wie die Vorlage</translation>
+    </message>
+    <message>
+        <source>Template plate as it is</source>
+        <translation>Vorlagenplatte unverändert</translation>
+    </message>
+    <message>
+        <source>Load a manufacturer&apos;s mounting plate (e.g. Rittal) as template</source>
+        <translation>Montageplatte eines Herstellers (z. B. Rittal) als Vorlage laden</translation>
+    </message>
+    <message>
+        <source>DXF file…</source>
+        <translation>DXF-Datei…</translation>
+    </message>
+    <message>
+        <source>Use the DXF of a plate as template</source>
+        <translation>Die DXF einer Platte als Vorlage nehmen</translation>
+    </message>
+    <message>
+        <source>The plate is made in house: make the holes and edges of the template too</source>
+        <translation>Platte wird selbst gefertigt: Löcher und Kanten der Vorlage mitfertigen</translation>
+    </message>
+    <message>
+        <source>Off: the plate is bought with its holes; they become keep-out areas</source>
+        <translation>Aus: die Platte wird mit ihren Löchern gekauft; sie werden Sperrflächen</translation>
     </message>
     <message>
         <source>Fit to the folio</source>
@@ -12238,8 +12440,12 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>unten rechts</translation>
     </message>
     <message>
-        <source>Designation</source>
-        <translation>Kennzeichen</translation>
+        <source>Made from</source>
+        <translation>Grundlage</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>Vorlage</translation>
     </message>
     <message>
         <source>Width</source>
@@ -12269,9 +12475,24 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <source>Article number</source>
         <translation>Artikelnummer</translation>
     </message>
+    <message numerus="yes">
+        <source>%1 x %2 mm, %n holes</source>
+        <translation>
+            <numerusform>%1 x %2 mm, %n Loch</numerusform>
+            <numerusform>%1 x %2 mm, %n Löcher</numerusform>
+        </translation>
+    </message>
     <message>
-        <source>insert mounting surface %1</source>
-        <translation>Montagefläche %1 einfügen</translation>
+        <source>No template yet: load one from the Data Portal or a DXF file.</source>
+        <translation>Noch keine Vorlage: aus dem Data Portal oder einer DXF-Datei laden.</translation>
+    </message>
+    <message>
+        <source>DXF of a mounting plate</source>
+        <translation>DXF einer Montageplatte</translation>
+    </message>
+    <message>
+        <source>DXF files (*.dxf *.DXF)</source>
+        <translation>DXF-Dateien (*.dxf *.DXF)</translation>
     </message>
     <message>
         <source>Insert a mounting surface on this folio first.</source>
@@ -12414,6 +12635,129 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>Sperrfläche einfügen</translation>
     </message>
     <message>
+        <source>%1: no mounting surface on the folio</source>
+        <translation>%1: keine Montagefläche auf dem Blatt</translation>
+    </message>
+    <message>
+        <source>%1: no DIN rail with %2 mm free</source>
+        <translation>%1: keine Hutschiene mit %2 mm Platz</translation>
+    </message>
+    <message>
+        <source>Terminal strip %1 (%2 terminals)</source>
+        <translation>Klemmenleiste %1 (%2 Klemmen)</translation>
+    </message>
+    <message>
+        <source>place terminal strip %1</source>
+        <translation>Klemmenleiste %1 platzieren</translation>
+    </message>
+    <message>
+        <source>%1: %2 terminals, %3 mm long, %4 kinds of terminal</source>
+        <translation>%1: %2 Klemmen, %3 mm lang, %4 Klemmentypen</translation>
+    </message>
+    <message>
+        <source>change the size of %1</source>
+        <translation>Größe von %1 ändern</translation>
+    </message>
+    <message>
+        <source>The panel layout page of the EPLAN project holds no devices.</source>
+        <translation>Die Aufbauseite des EPLAN-Projekts enthält keine Geräte.</translation>
+    </message>
+    <message>
+        <source>take the layout from %1</source>
+        <translation>Aufbau aus %1 übernehmen</translation>
+    </message>
+    <message>
+        <source>%1 devices and terminal strips moved to their place in the EPLAN project.</source>
+        <translation>%1 Geräte und Klemmenleisten an ihren Platz im EPLAN-Projekt gesetzt.</translation>
+    </message>
+    <message>
+        <source>Not on the plate in the EPLAN project, put beside it: %1</source>
+        <translation>Im EPLAN-Projekt nicht auf der Platte, daneben gestellt: %1</translation>
+    </message>
+    <message>
+        <source>EPLAN project</source>
+        <translation>EPLAN-Projekt</translation>
+    </message>
+    <message>
+        <source>EPLAN project (*.zw1 Function.eod);;All files (*)</source>
+        <translation>EPLAN-Projekt (*.zw1 Function.eod);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <source>Cabinet layout</source>
+        <translation>Schaltschrankaufbau</translation>
+    </message>
+    <message>
+        <source>Select the devices or terminals in the schematic first.</source>
+        <translation>Zuerst die Betriebsmittel oder Klemmen im Schaltplan markieren.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n devices</source>
+        <translation>
+            <numerusform>%n Betriebsmittel</numerusform>
+            <numerusform>%n Betriebsmittel</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>assign the part %1</source>
+        <translation>Artikel %1 zuweisen</translation>
+    </message>
+    <message>
+        <source>Devices without part</source>
+        <translation>Betriebsmittel ohne Artikel</translation>
+    </message>
+    <message>
+        <source>Device</source>
+        <translation>Betriebsmittel</translation>
+    </message>
+    <message>
+        <source>Folio</source>
+        <translation>Blatt</translation>
+    </message>
+    <message>
+        <source>Terminal</source>
+        <translation>Klemme</translation>
+    </message>
+    <message>
+        <source>%1 without part, %2 with part.</source>
+        <translation>%1 ohne Artikel, %2 mit Artikel.</translation>
+    </message>
+    <message>
+        <source>Assign part to the selected...</source>
+        <translation>Den markierten Artikel zuweisen...</translation>
+    </message>
+    <message>
+        <source>Place terminal strips</source>
+        <translation>Klemmleisten platzieren</translation>
+    </message>
+    <message>
+        <source>Terminal strip</source>
+        <translation>Klemmenleiste</translation>
+    </message>
+    <message>
+        <source>Terminals</source>
+        <translation>Klemmen</translation>
+    </message>
+    <message>
+        <source>Parts of the terminals</source>
+        <translation>Artikel der Klemmen</translation>
+    </message>
+    <message>
+        <source>without part</source>
+        <translation>ohne Artikel</translation>
+    </message>
+    <message>
+        <source>Add a strip</source>
+        <translation>Leiste hinzufügen</translation>
+    </message>
+    <message>
+        <source>The terminals of the project are drawn with the part each one has (Assign part); a terminal without part is drawn 5.2 x 60 mm. For a strip added by hand, type the order number of its terminals.</source>
+        <translation>Die Klemmen des Projekts werden mit ihrem jeweiligen Artikel gezeichnet (Artikel zuweisen); eine Klemme ohne Artikel wird 5,2 x 60 mm gezeichnet. Bei einer von Hand ergänzten Leiste die Bestellnummer ihrer Klemmen eintragen.</translation>
+    </message>
+    <message>
+        <source>Place</source>
+        <translation>Platzieren</translation>
+    </message>
+    <message>
         <source>The project has no devices with a designation.</source>
         <translation>Das Projekt hat keine Geräte mit Kennzeichen.</translation>
     </message>
@@ -12450,20 +12794,60 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>keine</translation>
     </message>
     <message>
+        <source>%1 devices at %2; %3 devices of other locations left out; %4 further mentions of the same devices (other spelling or folio) merged; %5 without order number.</source>
+        <translation>%1 Geräte am Ort %2; %3 Geräte anderer Orte ausgeblendet; %4 weitere Nennungen derselben Geräte (andere Schreibweise oder Blatt) zusammengefasst; %5 ohne Bestellnummer.</translation>
+    </message>
+    <message>
+        <source>all locations</source>
+        <translation>alle Orte</translation>
+    </message>
+    <message>
         <source>Devices without a size are proposed at 45 x 90 x 70 mm; correct the sizes here or in the part. They are snapped onto the DIN rails from left to right.</source>
         <translation>Geräte ohne Maße werden mit 45 x 90 x 70 mm vorgeschlagen; Maße hier oder im Artikel korrigieren. Sie werden von links nach rechts auf die Hutschienen gerastet.</translation>
     </message>
     <message>
-        <source>Place</source>
-        <translation>Platzieren</translation>
+        <source>Manufacturer&apos;s panel layout drawing from the EPLAN Data Portal (by order number; also gives the size)</source>
+        <translation>Herstellergrafik (Schaltschrankaufbau) aus dem EPLAN Data Portal (über die Bestellnummer; liefert auch die Maße)</translation>
+    </message>
+    <message>
+        <source>Needs your Data Portal token: Part import &gt; From the EPLAN Data Portal</source>
+        <translation>Braucht dein Data-Portal-Token: Bauteil-Import &gt; Aus dem EPLAN Data Portal</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>Alle</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Keine</translation>
     </message>
     <message>
         <source>place devices on %1</source>
         <translation>Geräte auf %1 platzieren</translation>
     </message>
     <message>
+        <source>Placing devices…</source>
+        <translation>Platziere Geräte…</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>Drawing of %1 (%2)…</source>
+        <translation>Grafik von %1 (%2)…</translation>
+    </message>
+    <message>
         <source>Not placed (no size or not readable): %1</source>
         <translation>Nicht platziert (ohne Maße oder nicht lesbar): %1</translation>
+    </message>
+    <message>
+        <source>Larger than the mounting plate, not placed: %1</source>
+        <translation>Größer als die Montageplatte, nicht platziert: %1</translation>
+    </message>
+    <message>
+        <source>No vector drawing in the Data Portal (shown as a rectangle of its size): %1</source>
+        <translation>Keine Vektorgrafik im Data Portal (als Rechteck in seiner Größe dargestellt): %1</translation>
     </message>
     <message>
         <source>Select a shape (surface, rail, duct, cut-out) or a device first.</source>
@@ -12593,356 +12977,6 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>Fehler:</translation>
     </message>
     <message>
-        <source>Sizes only (plain plate)</source>
-        <translation>Nur Maße (glatte Platte)</translation>
-    </message>
-    <message>
-        <source>Sizes, holes and edges like the template</source>
-        <translation>Maße, Löcher und Kanten wie die Vorlage</translation>
-    </message>
-    <message>
-        <source>Template plate as it is</source>
-        <translation>Vorlagenplatte unverändert</translation>
-    </message>
-    <message>
-        <source>Data Portal…</source>
-        <translation>Data Portal…</translation>
-    </message>
-    <message>
-        <source>Load a manufacturer&apos;s mounting plate (e.g. Rittal) as template</source>
-        <translation>Montageplatte eines Herstellers (z. B. Rittal) als Vorlage laden</translation>
-    </message>
-    <message>
-        <source>DXF file…</source>
-        <translation>DXF-Datei…</translation>
-    </message>
-    <message>
-        <source>Use the DXF of a plate as template</source>
-        <translation>Die DXF einer Platte als Vorlage nehmen</translation>
-    </message>
-    <message>
-        <source>The plate is made in house: make the holes and edges of the template too</source>
-        <translation>Platte wird selbst gefertigt: Löcher und Kanten der Vorlage mitfertigen</translation>
-    </message>
-    <message>
-        <source>Off: the plate is bought with its holes; they become keep-out areas</source>
-        <translation>Aus: die Platte wird mit ihren Löchern gekauft; sie werden Sperrflächen</translation>
-    </message>
-    <message>
-        <source>Made from</source>
-        <translation>Grundlage</translation>
-    </message>
-    <message>
-        <source>Template</source>
-        <translation>Vorlage</translation>
-    </message>
-    <message numerus="yes">
-        <source>%1 x %2 mm, %n holes</source>
-        <translation>
-            <numerusform>%1 x %2 mm, %n Loch</numerusform>
-            <numerusform>%1 x %2 mm, %n Löcher</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>No template yet: load one from the Data Portal or a DXF file.</source>
-        <translation>Noch keine Vorlage: aus dem Data Portal oder einer DXF-Datei laden.</translation>
-    </message>
-    <message>
-        <source>DXF of a mounting plate</source>
-        <translation>DXF einer Montageplatte</translation>
-    </message>
-    <message>
-        <source>DXF files (*.dxf *.DXF)</source>
-        <translation>DXF-Dateien (*.dxf *.DXF)</translation>
-    </message>
-    <message>
-        <source>Insert enclosure...</source>
-        <translation>Schaltschrank einfügen…</translation>
-    </message>
-    <message>
-        <source>An enclosure of a manufacturer (e.g. Rittal from the EPLAN Data Portal) with its mounting plate</source>
-        <translation>Schaltschrank eines Herstellers (z. B. Rittal aus dem EPLAN Data Portal) mit seiner Montageplatte</translation>
-    </message>
-    <message>
-        <source>Insert enclosure</source>
-        <translation>Schaltschrank einfügen</translation>
-    </message>
-    <message>
-        <source>Choose an enclosure (e.g. Rittal TS 8, VX 25, AX) in the EPLAN Data Portal</source>
-        <translation>Schaltschrank im EPLAN Data Portal wählen (z. B. Rittal TS 8, VX 25, AX)</translation>
-    </message>
-    <message>
-        <source>With its mounting plate</source>
-        <translation>Mit seiner Montageplatte</translation>
-    </message>
-    <message>
-        <source>Make the holes of the mounting plate too (plate made in house)</source>
-        <translation>Löcher der Montageplatte mitfertigen (Platte wird selbst gefertigt)</translation>
-    </message>
-    <message>
-        <source>Enclosure</source>
-        <translation>Schaltschrank</translation>
-    </message>
-    <message>
-        <source>Mounting plate</source>
-        <translation>Montageplatte</translation>
-    </message>
-    <message>
-        <source>No enclosure yet: choose one in the Data Portal.</source>
-        <translation>Noch kein Schaltschrank: einen im Data Portal wählen.</translation>
-    </message>
-    <message>
-        <source>W x H x D: %1 x %2 x %3 mm</source>
-        <translation>B x H x T: %1 x %2 x %3 mm</translation>
-    </message>
-    <message>
-        <source>Mounting plate %1 x %2 mm</source>
-        <translation>Montageplatte %1 x %2 mm</translation>
-    </message>
-    <message>
-        <source>The data hold no mounting plate.</source>
-        <translation type="vanished">Die Daten enthalten keine Montageplatte.</translation>
-    </message>
-    <message>
-        <source>insert enclosure %1</source>
-        <translation>Schaltschrank %1 einfügen</translation>
-    </message>
-    <message>
-        <source>Plate size</source>
-        <translation>Plattenmaß</translation>
-    </message>
-    <message>
-        <source>The data hold no mounting plate: its size is estimated (width - 101, height - 104 mm). Please check.</source>
-        <translation>Die Daten enthalten keine Montageplatte: ihr Maß ist geschätzt (Breite − 101, Höhe − 104 mm). Bitte prüfen.</translation>
-    </message>
-    <message>
-        <source>Manufacturer&apos;s panel layout drawing from the EPLAN Data Portal (by order number; also gives the size)</source>
-        <translation>Herstellergrafik (Schaltschrankaufbau) aus dem EPLAN Data Portal (über die Bestellnummer; liefert auch die Maße)</translation>
-    </message>
-    <message>
-        <source>Needs your Data Portal token: Part import &gt; From the EPLAN Data Portal</source>
-        <translation>Braucht dein Data-Portal-Token: Bauteil-Import &gt; Aus dem EPLAN Data Portal</translation>
-    </message>
-    <message>
-        <source>Placing devices…</source>
-        <translation>Platziere Geräte…</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>Abbrechen</translation>
-    </message>
-    <message>
-        <source>Drawing of %1 (%2)…</source>
-        <translation>Grafik von %1 (%2)…</translation>
-    </message>
-    <message>
-        <source>No vector drawing in the Data Portal (shown as a rectangle of its size): %1</source>
-        <translation>Keine Vektorgrafik im Data Portal (als Rechteck in seiner Größe dargestellt): %1</translation>
-    </message>
-    <message>
-        <source>All</source>
-        <translation>Alle</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Keine</translation>
-    </message>
-    <message>
-        <source>Larger than the mounting plate, not placed: %1</source>
-        <translation>Größer als die Montageplatte, nicht platziert: %1</translation>
-    </message>
-    <message>
-        <source>%1 devices at %2; %3 devices of other locations left out; %4 further mentions of the same devices (other spelling or folio) merged; %5 without order number.</source>
-        <translation>%1 Geräte am Ort %2; %3 Geräte anderer Orte ausgeblendet; %4 weitere Nennungen derselben Geräte (andere Schreibweise oder Blatt) zusammengefasst; %5 ohne Bestellnummer.</translation>
-    </message>
-    <message>
-        <source>all locations</source>
-        <translation>alle Orte</translation>
-    </message>
-    <message>
-        <source>Place terminal strips...</source>
-        <translation>Klemmenleisten platzieren...</translation>
-    </message>
-    <message>
-        <source>The terminal strips of the project as rows of terminals on the DIN rails, with the manufacturer&apos;s drawing of the terminal</source>
-        <translation>Die Klemmenleisten des Projekts als Klemmenreihen auf den Hutschienen, mit der Herstellerzeichnung der Klemme</translation>
-    </message>
-    <message>
-        <source>%1: no mounting surface on the folio</source>
-        <translation>%1: keine Montagefläche auf dem Blatt</translation>
-    </message>
-    <message>
-        <source>%1: no DIN rail with %2 mm free</source>
-        <translation>%1: keine Hutschiene mit %2 mm Platz</translation>
-    </message>
-    <message>
-        <source>Terminal strip %1 (%2 terminals)</source>
-        <translation>Klemmenleiste %1 (%2 Klemmen)</translation>
-    </message>
-    <message>
-        <source>place terminal strip %1</source>
-        <translation>Klemmenleiste %1 platzieren</translation>
-    </message>
-    <message>
-        <source>%1: %2 terminals of %3 x %4 mm</source>
-        <translation type="vanished">%1: %2 Klemmen zu %3 x %4 mm</translation>
-    </message>
-    <message>
-        <source>Place terminal strips</source>
-        <translation>Klemmenleisten platzieren</translation>
-    </message>
-    <message>
-        <source>Terminal strip</source>
-        <translation>Klemmenleiste</translation>
-    </message>
-    <message>
-        <source>Terminals</source>
-        <translation>Klemmen</translation>
-    </message>
-    <message>
-        <source>Order number of the terminal</source>
-        <translation type="vanished">Bestellnummer der Klemme</translation>
-    </message>
-    <message>
-        <source>Add a strip</source>
-        <translation>Leiste hinzufügen</translation>
-    </message>
-    <message>
-        <source>Without an order number the terminals are drawn 5.2 x 60 mm.</source>
-        <translation type="vanished">Ohne Bestellnummer werden die Klemmen 5,2 x 60 mm gezeichnet.</translation>
-    </message>
-    <message>
-        <source>Assign part...</source>
-        <translation>Artikel zuweisen...</translation>
-    </message>
-    <message>
-        <source>Give the selected devices or terminals their part (manufacturer and order number) from the EPLAN Data Portal</source>
-        <translation>Den markierten Betriebsmitteln oder Klemmen ihren Artikel (Hersteller und Bestellnummer) aus dem EPLAN Data Portal zuweisen</translation>
-    </message>
-    <message>
-        <source>Devices without part...</source>
-        <translation>Betriebsmittel ohne Artikel...</translation>
-    </message>
-    <message>
-        <source>The devices and terminals of the project that have no order number yet: the cabinet layout knows nothing of their size</source>
-        <translation>Betriebsmittel und Klemmen des Projekts ohne Bestellnummer: der Schaltschrankaufbau kennt ihre Größe nicht</translation>
-    </message>
-    <message>
-        <source>%1: %2 terminals, %3 mm long, %4 kinds of terminal</source>
-        <translation>%1: %2 Klemmen, %3 mm lang, %4 Klemmentypen</translation>
-    </message>
-    <message>
-        <source>change the size of %1</source>
-        <translation>Größe von %1 ändern</translation>
-    </message>
-    <message>
-        <source>Select the devices or terminals in the schematic first.</source>
-        <translation>Zuerst die Betriebsmittel oder Klemmen im Schaltplan markieren.</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n devices</source>
-        <translation>
-            <numerusform>%n Betriebsmittel</numerusform>
-            <numerusform>%n Betriebsmittel</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>assign the part %1</source>
-        <translation>Artikel %1 zuweisen</translation>
-    </message>
-    <message>
-        <source>Devices without part</source>
-        <translation>Betriebsmittel ohne Artikel</translation>
-    </message>
-    <message>
-        <source>Device</source>
-        <translation>Betriebsmittel</translation>
-    </message>
-    <message>
-        <source>Terminal</source>
-        <translation>Klemme</translation>
-    </message>
-    <message>
-        <source>%1 without part, %2 with part.</source>
-        <translation>%1 ohne Artikel, %2 mit Artikel.</translation>
-    </message>
-    <message>
-        <source>Assign part to the selected...</source>
-        <translation>Den markierten Artikel zuweisen...</translation>
-    </message>
-    <message>
-        <source>Parts of the terminals</source>
-        <translation>Artikel der Klemmen</translation>
-    </message>
-    <message>
-        <source>without part</source>
-        <translation>ohne Artikel</translation>
-    </message>
-    <message>
-        <source>The terminals of the project are drawn with the part each one has (Assign part); a terminal without part is drawn 5.2 x 60 mm. For a strip added by hand, type the order number of its terminals.</source>
-        <translation>Die Klemmen des Projekts werden mit ihrem jeweiligen Artikel gezeichnet (Artikel zuweisen); eine Klemme ohne Artikel wird 5,2 x 60 mm gezeichnet. Bei einer von Hand ergänzten Leiste die Bestellnummer ihrer Klemmen eintragen.</translation>
-    </message>
-    <message>
-        <source>Folio</source>
-        <translation>Blatt</translation>
-    </message>
-    <message>
-        <source>Take the layout from an EPLAN project...</source>
-        <translation>Aufbau aus EPLAN-Projekt übernehmen...</translation>
-    </message>
-    <message>
-        <source>Move the devices and terminal strips to where an EPLAN project (.zw1 archive or project folder) has them on its panel layout page</source>
-        <translation>Geräte und Klemmenleisten dorthin setzen, wo sie auf der Aufbauseite eines EPLAN-Projekts (.zw1-Archiv oder Projektordner) sitzen</translation>
-    </message>
-    <message>
-        <source>The panel layout page of the EPLAN project holds no devices.</source>
-        <translation>Die Aufbauseite des EPLAN-Projekts enthält keine Geräte.</translation>
-    </message>
-    <message>
-        <source>take the layout from %1</source>
-        <translation>Aufbau aus %1 übernehmen</translation>
-    </message>
-    <message>
-        <source>%1 devices and terminal strips moved to their place in the EPLAN project.</source>
-        <translation>%1 Geräte und Klemmenleisten an ihren Platz im EPLAN-Projekt gesetzt.</translation>
-    </message>
-    <message>
-        <source>Not on the plate in the EPLAN project, put beside it: %1</source>
-        <translation>Im EPLAN-Projekt nicht auf der Platte, daneben gestellt: %1</translation>
-    </message>
-    <message>
-        <source>EPLAN project</source>
-        <translation>EPLAN-Projekt</translation>
-    </message>
-    <message>
-        <source>EPLAN project (*.zw1 Function.eod);;All files (*)</source>
-        <translation>EPLAN-Projekt (*.zw1 Function.eod);;Alle Dateien (*)</translation>
-    </message>
-    <message>
-        <source>Cabinet layout</source>
-        <translation>Schaltschrankaufbau</translation>
-    </message>
-    <message>
-        <source>Build cabinet...</source>
-        <translation>Schaltschrank aufbauen…</translation>
-    </message>
-    <message>
-        <source>The cabinet layout in a few guided steps: enclosure, rails and ducts, devices, terminal strips, check, 3D, export</source>
-        <translation>Der Schaltschrankaufbau in wenigen geführten Schritten: Schrank, Schienen und Kanäle, Geräte, Klemmenleisten, Prüfung, 3D, Export</translation>
-    </message>
-    <message>
-        <source>Layout check</source>
-        <translation>Aufbauprüfung</translation>
-    </message>
-    <message>
-        <source>A side panel with every finding of the layout; a click shows the part</source>
-        <translation>Seitenleiste mit allen Befunden des Aufbaus; ein Klick zeigt das Teil</translation>
-    </message>
-    <message>
-        <source>Single steps</source>
-        <translation>Einzelschritte</translation>
-    </message>
-    <message>
         <source>Loading the 3D models...</source>
         <translation>Lade die 3D-Modelle…</translation>
     </message>
@@ -13049,6 +13083,10 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
 <context>
     <name>PanelTemplateDialog</name>
     <message>
+        <source>Enclosure from the EPLAN Data Portal</source>
+        <translation>Schaltschrank aus dem EPLAN Data Portal</translation>
+    </message>
+    <message>
         <source>Mounting plate from the EPLAN Data Portal</source>
         <translation>Montageplatte aus dem EPLAN Data Portal</translation>
     </message>
@@ -13096,10 +13134,6 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <source>Downloading %1…</source>
         <translation>Lade %1…</translation>
     </message>
-    <message>
-        <source>Enclosure from the EPLAN Data Portal</source>
-        <translation>Schaltschrank aus dem EPLAN Data Portal</translation>
-    </message>
 </context>
 <context>
     <name>PartArc</name>
@@ -13129,6 +13163,22 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
 </context>
 <context>
     <name>PartFetcher</name>
+    <message>
+        <source>%1: %2</source>
+        <translation>%1: %2</translation>
+    </message>
+    <message>
+        <source>would unpack %1 from %2</source>
+        <translation>würde %1 aus %2 entpacken</translation>
+    </message>
+    <message>
+        <source>unpacked %1 from %2</source>
+        <translation>%1 aus %2 entpackt</translation>
+    </message>
+    <message>
+        <source>%1 cannot be written</source>
+        <translation>%1 kann nicht geschrieben werden</translation>
+    </message>
     <message>
         <source>The list cannot be read: %1</source>
         <translation>Die Liste kann nicht gelesen werden: %1</translation>
@@ -13200,22 +13250,6 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     <message>
         <source>symbol: EPLAN macro %1 imported into %2</source>
         <translation>Symbol: EPLAN-Makro %1 nach %2 importiert</translation>
-    </message>
-    <message>
-        <source>%1: %2</source>
-        <translation>%1: %2</translation>
-    </message>
-    <message>
-        <source>would unpack %1 from %2</source>
-        <translation>würde %1 aus %2 entpacken</translation>
-    </message>
-    <message>
-        <source>unpacked %1 from %2</source>
-        <translation>%1 aus %2 entpackt</translation>
-    </message>
-    <message>
-        <source>%1 cannot be written</source>
-        <translation>%1 kann nicht geschrieben werden</translation>
     </message>
     <message>
         <source>symbol: DXF %1 imported into %2</source>
@@ -13345,6 +13379,69 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
     </message>
 </context>
 <context>
+    <name>PdfPageSetupDialog</name>
+    <message>
+        <source>PDF page layout</source>
+        <translation>PDF-Seitenlayout</translation>
+    </message>
+    <message>
+        <source>Paper</source>
+        <translation>Papier</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <translation>Benutzerdefiniert</translation>
+    </message>
+    <message>
+        <source>Size:</source>
+        <translation>Größe:</translation>
+    </message>
+    <message>
+        <source>Width:</source>
+        <translation>Breite:</translation>
+    </message>
+    <message>
+        <source>Height:</source>
+        <translation>Höhe:</translation>
+    </message>
+    <message>
+        <source>Orientation</source>
+        <translation>Ausrichtung</translation>
+    </message>
+    <message>
+        <source>Portrait</source>
+        <translation>Hochformat</translation>
+    </message>
+    <message>
+        <source>Landscape</source>
+        <translation>Querformat</translation>
+    </message>
+    <message>
+        <source>Margins</source>
+        <translation>Ränder</translation>
+    </message>
+    <message>
+        <source>Left:</source>
+        <translation>Links:</translation>
+    </message>
+    <message>
+        <source>Right:</source>
+        <translation>Rechts:</translation>
+    </message>
+    <message>
+        <source>Top:</source>
+        <translation>Oben:</translation>
+    </message>
+    <message>
+        <source>Bottom:</source>
+        <translation>Unten:</translation>
+    </message>
+    <message>
+        <source>Margins are not used while &quot;Use the whole page&quot; is ticked.</source>
+        <translation>Die Ränder gelten nicht, solange „Ganze Seite verwenden“ angehakt ist.</translation>
+    </message>
+</context>
+<context>
     <name>PdfPagesDialog</name>
     <message>
         <source>Select a page</source>
@@ -13385,8 +13482,12 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
 <context>
     <name>PlcLinkWidget</name>
     <message>
+        <source>This element is already linked</source>
+        <translation type="vanished">Das Bauteil ist bereits gebunden</translation>
+    </message>
+    <message>
         <source>Unlink</source>
-        <translation>Lösen</translation>
+        <translation>Trennen</translation>
     </message>
     <message>
         <source>Show the module</source>
@@ -13441,14 +13542,6 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
         <translation>  (belegt von %1, Blatt %2)</translation>
     </message>
     <message>
-        <source>Programmable Logic Controller (PLC)</source>
-        <translation>Speicherprogrammierbare Steuerung (SPS)</translation>
-    </message>
-    <message>
-        <source>This element is already linked</source>
-        <translation type="vanished">Das Bauteil ist bereits gebunden</translation>
-    </message>
-    <message>
         <source>View this item</source>
         <translation type="vanished">Bauteil zeigen</translation>
     </message>
@@ -13487,6 +13580,10 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
     <message>
         <source>Note: Master elements that have reached their maximum number of slaves are hidden.</source>
         <translation type="vanished">Hinweis: Master-Elemente, die ihre maximale Anzahl an Slaves erreicht haben, werden ausgeblendet.</translation>
+    </message>
+    <message>
+        <source>Programmable Logic Controller (PLC)</source>
+        <translation>Speicherprogrammierbare Steuerung (SPS)</translation>
     </message>
     <message>
         <source>Related to: %1</source>
@@ -13752,19 +13849,19 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
     <name>PotentialCheckDialog</name>
     <message>
         <source>Check potential types</source>
-        <translation>Potentialtypen prüfen</translation>
+        <translation>Potenzialtypen prüfen</translation>
     </message>
     <message>
         <source>Each row is a potential whose wires have different types. Click a row to select its wires. Types joined on purpose can be declared in the project properties and are not listed.</source>
-        <translation>Jede Zeile ist ein Potential, dessen Leiter unterschiedliche Typen haben. Eine Zeile anklicken, um ihre Leiter auszuwählen. Absichtlich verbundene Typen lassen sich in den Projekteigenschaften angeben und werden nicht aufgeführt.</translation>
+        <translation>Jede Zeile ist ein Potenzial, dessen Drähte unterschiedliche Typen haben. Klicken Sie auf eine Zeile, um ihre Drähte auszuwählen. Absichtlich verbundene Typen können in den Projekteigenschaften angegeben werden und werden nicht aufgeführt.</translation>
     </message>
     <message>
         <source>Types on the potential</source>
-        <translation>Typen auf dem Potential</translation>
+        <translation>Typen auf dem Potenzial</translation>
     </message>
     <message>
         <source>Typed wires</source>
-        <translation>Leiter mit Typ</translation>
+        <translation>Drähte mit Typ</translation>
     </message>
     <message>
         <source>Refresh</source>
@@ -13772,22 +13869,22 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
     </message>
     <message>
         <source>No potential carries wires of different types.</source>
-        <translation>Kein Potential führt Leiter unterschiedlicher Typen.</translation>
+        <translation>Kein Potenzial führt Drähte unterschiedlicher Typen.</translation>
     </message>
     <message>
         <source>Potential types are off for this project, so there is nothing to check.</source>
-        <translation>Potentialtypen sind für dieses Projekt ausgeschaltet, es gibt also nichts zu prüfen.</translation>
+        <translation>Potenzialtypen sind für dieses Projekt ausgeschaltet, daher gibt es nichts zu prüfen.</translation>
     </message>
     <message numerus="yes">
         <source>%n potential(s) carry wires of different types.</source>
         <translation>
-            <numerusform>%n Potential führt Leiter unterschiedlicher Typen.</numerusform>
-            <numerusform>%n Potentiale führen Leiter unterschiedlicher Typen.</numerusform>
+            <numerusform>%n Potenzial führt Drähte unterschiedlicher Typen.</numerusform>
+            <numerusform>%n Potenziale führen Drähte unterschiedlicher Typen.</numerusform>
         </translation>
     </message>
     <message>
         <source>These wires no longer exist. Refresh the results.</source>
-        <translation>Diese Leiter gibt es nicht mehr. Ergebnisse aktualisieren.</translation>
+        <translation>Diese Drähte existieren nicht mehr. Aktualisieren Sie die Ergebnisse.</translation>
     </message>
 </context>
 <context>
@@ -13872,7 +13969,7 @@ Folgende Variablen sind inkompatibel:
     <name>PotentialSourcesWidget</name>
     <message>
         <source>A type set on a terminal reaches every conductor at its potential that has no type of its own, through terminal blocks and folio reports.</source>
-        <translation>Ein an einem Anschluss gesetzter Typ erreicht jeden Leiter auf seinem Potential, der keinen eigenen Typ hat, über Klemmen und Seitenverweise hinweg.</translation>
+        <translation>Ein auf einem Anschluss gesetzter Typ erreicht jeden Leiter seines Potenzials ohne eigenen Typ, über Klemmleisten und Folienverweise.</translation>
     </message>
     <message>
         <source>Terminal</source>
@@ -13880,11 +13977,11 @@ Folgende Variablen sind inkompatibel:
     </message>
     <message>
         <source>Potential type</source>
-        <translation>Potentialtyp</translation>
+        <translation>Potenzialtyp</translation>
     </message>
     <message>
         <source>Potential sources</source>
-        <translation>Potentialquellen</translation>
+        <translation>Potenzialquellen</translation>
     </message>
     <message>
         <source>Terminal %1</source>
@@ -13892,34 +13989,34 @@ Folgende Variablen sind inkompatibel:
     </message>
     <message>
         <source>None</source>
-        <translation>Keine</translation>
+        <translation>Keiner</translation>
     </message>
     <message>
         <source>Set the potential sources</source>
-        <translation>Potentialquellen festlegen</translation>
+        <translation>Potenzialquellen festlegen</translation>
     </message>
 </context>
 <context>
     <name>PotentialTypesWidget</name>
     <message>
         <source>Draw conductors from their own style</source>
-        <translation>Leiter mit ihrem eigenen Stil zeichnen</translation>
+        <translation>Leiter in ihrem eigenen Stil zeichnen</translation>
     </message>
     <message>
         <source>Draw conductors from their potential type, chosen on each conductor</source>
-        <translation>Leiter nach ihrem Potentialtyp zeichnen, am jeweiligen Leiter gewählt</translation>
+        <translation>Leiter nach ihrem Potenzialtyp zeichnen, auf jedem Leiter gewählt</translation>
     </message>
     <message>
         <source>Draw conductors from their potential type, set on the source terminal</source>
-        <translation>Leiter nach ihrem Potentialtyp zeichnen, am Quellanschluss festgelegt</translation>
+        <translation>Leiter nach ihrem Potenzialtyp zeichnen, am Quellanschluss festgelegt</translation>
     </message>
     <message>
         <source>When a type is used, a conductor whose potential has a type is drawn in that type&apos;s colour, line style and width. The style stored on the conductor is kept, and used again when this is off or the conductor has no type.</source>
-        <translation>Wird ein Typ verwendet, wird ein Leiter, dessen Potential einen Typ hat, in Farbe, Linienart und Breite dieses Typs gezeichnet. Der am Leiter gespeicherte Stil bleibt erhalten und wird wieder verwendet, wenn dies ausgeschaltet ist oder der Leiter keinen Typ hat.</translation>
+        <translation>Wird ein Typ verwendet, wird ein Leiter, dessen Potenzial einen Typ hat, in Farbe, Linienstil und Breite dieses Typs gezeichnet. Der im Leiter gespeicherte Stil bleibt erhalten und wird wieder verwendet, wenn dies ausgeschaltet ist oder der Leiter keinen Typ hat.</translation>
     </message>
     <message>
         <source>Choose a conductor&apos;s type in its properties. The type applies to every conductor on the same potential. With the source terminal, set the type on a terminal of a symbol (the output of a power supply, for example) in the symbol&apos;s properties: it reaches the conductors through terminal blocks and folio reports, not through other devices. A type chosen on a conductor still wins.</source>
-        <translation>Den Typ eines Leiters in seinen Eigenschaften wählen. Der Typ gilt für jeden Leiter auf demselben Potential. Beim Quellanschluss den Typ an einem Anschluss eines Symbols (z. B. am Ausgang eines Netzteils) in den Eigenschaften des Symbols festlegen: Er erreicht die Leiter über Klemmen und Seitenverweise, nicht über andere Betriebsmittel. Ein am Leiter gewählter Typ hat weiterhin Vorrang.</translation>
+        <translation>Wählen Sie den Typ eines Leiters in seinen Eigenschaften. Der Typ gilt für jeden Leiter auf demselben Potenzial. Mit dem Quellanschluss legen Sie den Typ in den Symboleigenschaften auf einem Anschluss eines Symbols fest (zum Beispiel dem Ausgang eines Netzteils): er erreicht die Leiter über Klemmleisten und Folienverweise, nicht über andere Geräte. Ein auf einem Leiter gewählter Typ hat weiterhin Vorrang.</translation>
     </message>
     <message>
         <source>Name</source>
@@ -13931,7 +14028,7 @@ Folgende Variablen sind inkompatibel:
     </message>
     <message>
         <source>Line style</source>
-        <translation>Linienart</translation>
+        <translation>Linienstil</translation>
     </message>
     <message>
         <source>Width</source>
@@ -13939,7 +14036,7 @@ Folgende Variablen sind inkompatibel:
     </message>
     <message>
         <source>Add</source>
-        <translation>Hinzufügen</translation>
+        <translation>Einfügen</translation>
     </message>
     <message>
         <source>Remove</source>
@@ -13951,7 +14048,7 @@ Folgende Variablen sind inkompatibel:
     </message>
     <message>
         <source>Types joined on purpose, for example 0V and PE at a power supply. A potential with only these types is not reported as mixed.</source>
-        <translation>Absichtlich verbundene Typen, z. B. 0V und PE an einem Netzteil. Ein Potential mit nur diesen Typen wird nicht als gemischt gemeldet.</translation>
+        <translation>Absichtlich verbundene Typen, zum Beispiel 0V und PE an einem Netzteil. Ein Potenzial mit nur diesen Typen wird nicht als gemischt gemeldet.</translation>
     </message>
     <message>
         <source>Join</source>
@@ -13972,7 +14069,7 @@ Folgende Variablen sind inkompatibel:
     <message>
         <source>Solid line</source>
         <comment>conductor style: solid line</comment>
-        <translation>Volllinie</translation>
+        <translation>Durchgezogene Linie</translation>
     </message>
     <message>
         <source>Dashed line</source>
@@ -13982,12 +14079,12 @@ Folgende Variablen sind inkompatibel:
     <message>
         <source>Dots and dashes</source>
         <comment>conductor style: dashed and dotted line</comment>
-        <translation>Strich-Punkt-Linie</translation>
+        <translation>Strichpunktlinie</translation>
     </message>
     <message>
         <source>Dotted line</source>
         <comment>conductor style: dotted line</comment>
-        <translation>Punktlinie</translation>
+        <translation>Gepunktete Linie</translation>
     </message>
     <message>
         <source>Choose a colour</source>
@@ -14396,7 +14493,7 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     </message>
     <message>
         <source>Add a language, collect the texts of the project, and type the words to show in each language. The folios keep their own text; only what is shown and printed changes.</source>
-        <translation>Eine Sprache hinzufügen, die Texte des Projekts sammeln und die Wörter eintragen, die in jeder Sprache angezeigt werden sollen. Die Seiten behalten ihren eigenen Text; nur das Angezeigte und Gedruckte ändert sich.</translation>
+        <translation>Fügen Sie eine Sprache hinzu, sammeln Sie die Texte des Projekts und geben Sie die Wörter ein, die in jeder Sprache angezeigt werden. Die Seiten behalten ihren eigenen Text; nur was angezeigt und gedruckt wird, ändert sich.</translation>
     </message>
     <message>
         <source>Show the folios in</source>
@@ -14428,7 +14525,7 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     </message>
     <message>
         <source>Add a text that is not collected, such as a column title of a table.</source>
-        <translation>Einen Text hinzufügen, der nicht gesammelt wird, z. B. einen Spaltentitel einer Tabelle.</translation>
+        <translation>Einen Text hinzufügen, der nicht gesammelt wird, etwa einen Spaltentitel einer Tabelle.</translation>
     </message>
     <message>
         <source>%1 (as drawn)</source>
@@ -14444,15 +14541,15 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     </message>
     <message>
         <source>Language code, such as de, fr or pt-BR:</source>
-        <translation>Sprachcode, z. B. de, fr oder pt-BR:</translation>
+        <translation>Sprachcode, etwa de, fr oder pt-BR:</translation>
     </message>
     <message>
         <source>&quot;%1&quot; is not a usable language code, or is already there.</source>
-        <translation>„%1“ ist kein verwendbarer Sprachcode oder ist schon vorhanden.</translation>
+        <translation>„%1“ ist kein verwendbarer Sprachcode oder bereits vorhanden.</translation>
     </message>
     <message>
         <source>Select a cell in the column of the language to remove.</source>
-        <translation>Eine Zelle in der Spalte der zu entfernenden Sprache auswählen.</translation>
+        <translation>Wählen Sie eine Zelle in der Spalte der zu entfernenden Sprache.</translation>
     </message>
     <message>
         <source>Remove %1 and all its words?</source>
@@ -14471,11 +14568,11 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     </message>
     <message>
         <source>Add text</source>
-        <translation>Text hinzufügen</translation>
+        <translation>Text einfügen</translation>
     </message>
     <message>
         <source>Text as drawn, for example a column title of a table:</source>
-        <translation>Text wie gezeichnet, z. B. ein Spaltentitel einer Tabelle:</translation>
+        <translation>Text wie gezeichnet, zum Beispiel ein Spaltentitel einer Tabelle:</translation>
     </message>
     <message>
         <source>Export CSV</source>
@@ -14588,9 +14685,19 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
         <translation>In einem Bauteil gezeichnete Texte und die Namen seiner Anschlüsse bleiben lesbar, wenn das Bauteil gedreht wird: Ihr Rahmen dreht sich mit dem Bauteil, nicht der Text. Deaktivieren, damit sie sich wie bisher mit dem Bauteil drehen.</translation>
     </message>
     <message>
+        <source>Elements without their own plant or location show those of their structure box or folio</source>
+        <comment>checkbox label</comment>
+        <translation>Bauteile ohne eigene Anlage oder eigenen Ort zeigen die ihres Strukturkastens oder Blatts</translation>
+    </message>
+    <message>
+        <source>The variables %{plant} and %{location} of an element that has none of its own give the plant and location of the structure box around it, else of its folio, as %{structure_id_full} does. Uncheck to show only the element&apos;s own, as before.</source>
+        <comment>tooltip</comment>
+        <translation>Die Variablen %{plant} und %{location} eines Bauteils ohne eigene Werte liefern Anlage und Ort des umgebenden Strukturkastens, sonst des Blatts, so wie %{structure_id_full}. Abwählen, um wie bisher nur die eigenen Werte des Bauteils zu zeigen.</translation>
+    </message>
+    <message>
         <source>Display of the terminal labelling</source>
         <comment>group box title</comment>
-        <translation>Darstellung der Klemmenbeschriftung</translation>
+        <translation>Darstellung der Klemmenbezeichnung</translation>
     </message>
     <message>
         <source>Show the label and the terminal number in one field</source>
@@ -14600,7 +14707,7 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     <message>
         <source>A terminal&apos;s label (X1:1) is drawn as a whole, the way it has always been.</source>
         <comment>tooltip</comment>
-        <translation>Die Beschriftung einer Klemme (X1:1) wird als Ganzes gezeichnet, wie bisher.</translation>
+        <translation>Das BMK einer Klemme (X1:1) wird als Ganzes gezeichnet, wie schon immer.</translation>
     </message>
     <message>
         <source>Split the label and the terminal number</source>
@@ -14610,12 +14717,12 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     <message>
         <source>The label (X1) is drawn in one field and the terminal number (1) in another, which a terminal symbol may place where it wants -- and hide when it must. A symbol without such a field shows the two, one under the other.</source>
         <comment>tooltip</comment>
-        <translation>Das BMK (X1) wird in einem Feld gezeichnet und die Klemmennummer (1) in einem anderen, das ein Klemmensymbol beliebig platzieren – und bei Bedarf ausblenden – kann. Ein Symbol ohne ein solches Feld zeigt beide untereinander.</translation>
+        <translation>Das BMK (X1) wird in einem Feld gezeichnet und die Klemmennummer (1) in einem anderen, das ein Klemmensymbol platzieren kann, wo es will -- und ausblenden, wenn es muss. Ein Symbol ohne ein solches Feld zeigt beide untereinander.</translation>
     </message>
     <message>
         <source>Only the drawing changes: what is written in the element, the numbering, the sorting and the exports keep the whole label.</source>
         <comment>informative label</comment>
-        <translation>Nur die Darstellung ändert sich: Was im Bauteil steht, die Nummerierung, die Sortierung und die Exporte behalten die ganze Beschriftung.</translation>
+        <translation>Nur die Zeichnung ändert sich: was im Bauteil steht, die Nummerierung, die Sortierung und die Exporte behalten das ganze BMK.</translation>
     </message>
     <message>
         <source>Conductors per terminal</source>
@@ -14669,7 +14776,7 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     <message>
         <source>From which corner to start numbering the cells: Top - Left corner(default), Top - Right, Bottom - Left, Bottom - Right.</source>
         <comment>tooltip</comment>
-        <translation>Von welcher Ecke aus die Zellen nummeriert werden: oben links (Standard), oben rechts, unten links, unten rechts.</translation>
+        <translation>In welcher Ecke die Nummerierung der Zellen beginnt: oben - links (Standard), oben - rechts, unten - links, unten - rechts.</translation>
     </message>
     <message>
         <source>Top-Left</source>
@@ -14865,7 +14972,7 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     </message>
     <message>
         <source>Layout (not available on Windows for PDF export)</source>
-        <translation>Layout (unter Windows für den PDF-Export nicht verfügbar)</translation>
+        <translation type="vanished">Layout (unter Windows für den PDF-Export nicht verfügbar)</translation>
     </message>
     <message>
         <source>Untitled sheet</source>
@@ -14925,8 +15032,8 @@ Do you want to save changes?</source>
         <source>%n bridge(s) are drawn in this project. The .qetdb format does not store bridges yet -- they are kept in the normal .qet format only. Save it as .qetdb anyway?</source>
         <comment>also asked when the file name says .qetdb</comment>
         <translation>
-            <numerusform>In diesem Projekt ist %n Brücke gezeichnet. Das Format .qetdb speichert noch keine Brücken -- sie bleiben nur im normalen .qet-Format erhalten. Trotzdem als .qetdb speichern?</numerusform>
-            <numerusform>In diesem Projekt sind %n Brücken gezeichnet. Das Format .qetdb speichert noch keine Brücken -- sie bleiben nur im normalen .qet-Format erhalten. Trotzdem als .qetdb speichern?</numerusform>
+            <numerusform>In diesem Projekt ist %n Brücke gezeichnet. Das .qetdb-Format speichert noch keine Brücken -- sie bleiben nur im normalen .qet-Format erhalten. Trotzdem als .qetdb speichern?</numerusform>
+            <numerusform>In diesem Projekt sind %n Brücken gezeichnet. Das .qetdb-Format speichert noch keine Brücken -- sie bleiben nur im normalen .qet-Format erhalten. Trotzdem als .qetdb speichern?</numerusform>
         </translation>
     </message>
     <message>
@@ -15297,8 +15404,8 @@ Alle anderen Einstellungen bleiben erhalten.</translation>
     <message numerus="yes">
         <source>%n automatic backup(s) kept and not offered: Settings &gt; General, &quot;Offer to restore automatic backups at start&quot;</source>
         <translation>
-            <numerusform>%n automatische Sicherung behalten und nicht angeboten: Einstellungen &gt; Allgemein, „Automatische Sicherungen beim Start zur Wiederherstellung anbieten“</numerusform>
-            <numerusform>%n automatische Sicherungen behalten und nicht angeboten: Einstellungen &gt; Allgemein, „Automatische Sicherungen beim Start zur Wiederherstellung anbieten“</numerusform>
+            <numerusform>%n automatische Sicherung aufbewahrt und nicht angeboten: Einstellungen &gt; Allgemein, „Beim Start anbieten, automatische Sicherungen wiederherzustellen“</numerusform>
+            <numerusform>%n automatische Sicherungen aufbewahrt und nicht angeboten: Einstellungen &gt; Allgemein, „Beim Start anbieten, automatische Sicherungen wiederherzustellen“</numerusform>
         </translation>
     </message>
     <message>
@@ -15380,54 +15487,6 @@ Verfügbare Optionen:
 </context>
 <context>
     <name>QETDiagramEditor</name>
-    <message>
-        <source>Show or hide the assistant (Claude)</source>
-        <translation>Assistent (Claude) ein- oder ausblenden</translation>
-    </message>
-    <message>
-        <source>Import EPLAN project (.zw1)…</source>
-        <translation>EPLAN-Projekt importieren (.zw1)…</translation>
-    </message>
-    <message>
-        <source>Reads a packed EPLAN project and opens it as a QElectroTech project</source>
-        <translation>Liest ein gepacktes EPLAN-Projekt ein und öffnet es als QElectroTech-Projekt</translation>
-    </message>
-    <message>
-        <source>Manufacturer portals…</source>
-        <translation>Herstellerportale…</translation>
-    </message>
-    <message>
-        <source>Cable list (choose types)...</source>
-        <translation>Kabelliste (Typen wählen)…</translation>
-    </message>
-    <message>
-        <source>Lists every cable of the project; the type of a cable is chosen from your cable type list or a manufacturer catalog</source>
-        <translation>Listet alle Kabel des Projekts; der Typ eines Kabels wird aus der eigenen Kabeltypliste oder einem Herstellerkatalog gewählt</translation>
-    </message>
-    <message>
-        <source>Part import</source>
-        <translation>Bauteil-Import</translation>
-    </message>
-    <message>
-        <source>EPLAN DXF package (ZIP)…</source>
-        <translation type="vanished">EPLAN-DXF-Paket (ZIP)…</translation>
-    </message>
-    <message>
-        <source>Unpacked EPLAN DXF package (folder)…</source>
-        <translation type="vanished">Entpacktes EPLAN-DXF-Paket (Ordner)…</translation>
-    </message>
-    <message>
-        <source>Single EPLAN DXF…</source>
-        <translation type="vanished">Einzelne EPLAN-DXF…</translation>
-    </message>
-    <message>
-        <source>EPLAN part (.edz)…</source>
-        <translation type="vanished">EPLAN-Bauteil (.edz)…</translation>
-    </message>
-    <message>
-        <source>Open the user collection folder</source>
-        <translation>Ordner der Benutzersammlung öffnen</translation>
-    </message>
     <message>
         <source>Tape measure</source>
         <translation>Maßband</translation>
@@ -15992,6 +16051,10 @@ Verfügbare Optionen:
         <translation>Diagramm-Editor</translation>
     </message>
     <message>
+        <source>Show or hide the assistant (Claude)</source>
+        <translation>Assistent (Claude) ein- oder ausblenden</translation>
+    </message>
+    <message>
         <source>Export in pdf</source>
         <translation>Als PDF speichern</translation>
     </message>
@@ -16025,7 +16088,7 @@ Verfügbare Optionen:
     <message>
         <source>Make the selected free texts links to a folio: Ctrl-click opens it, and a PDF export keeps the link</source>
         <comment>status bar tip</comment>
-        <translation>Die ausgewählten freien Texte zu Verweisen auf eine Seite machen: Strg+Klick öffnet sie, und ein PDF-Export behält den Verweis</translation>
+        <translation>Macht die gewählten freien Texte zu Verknüpfungen auf eine Seite: Strg+Klick öffnet sie, und ein PDF-Export behält die Verknüpfung</translation>
     </message>
     <message>
         <source>Remove reference destination</source>
@@ -16042,20 +16105,20 @@ Verfügbare Optionen:
     <message>
         <source>Draws the selected T-junctions as their lines and a dot where they meet</source>
         <comment>status bar tip</comment>
-        <translation>Zeichnet die ausgewählten T-Abzweige als ihre Linien mit einem Punkt, wo sie sich treffen</translation>
+        <translation>Zeichnet die gewählten T-Abzweige als ihre Linien und einen Punkt, wo sie sich treffen</translation>
     </message>
     <message>
         <source>Keep texts clear of wires...</source>
-        <translation>Texte von Leitern freihalten...</translation>
+        <translation>Texte von Drähten freihalten...</translation>
     </message>
     <message>
         <source>Move the texts that sit on a wire off it, in one undo step</source>
         <comment>status bar tip</comment>
-        <translation>Texte, die auf einem Leiter liegen, davon wegschieben, in einem Rückgängig-Schritt</translation>
+        <translation>Verschiebt Texte, die auf einem Draht liegen, von ihm weg, in einem Rückgängig-Schritt</translation>
     </message>
     <message>
         <source>&amp;Duplicate</source>
-        <translation>&amp;Duplizieren</translation>
+        <translation>Duplizieren</translation>
     </message>
     <message>
         <source>Copies the selection, offset by the configured spacing</source>
@@ -16087,7 +16150,7 @@ Verfügbare Optionen:
     </message>
     <message>
         <source>Terminals in line connect to the next free terminal they face, and are disconnected again when moved out of line</source>
-        <translation>Fluchtende Anschlüsse verbinden sich mit dem nächsten freien gegenüberliegenden Anschluss und werden wieder getrennt, wenn sie aus der Flucht geschoben werden</translation>
+        <translation>Fluchtende Anschlüsse verbinden sich mit dem nächsten freien Anschluss gegenüber und werden wieder getrennt, wenn sie aus der Flucht bewegt werden</translation>
     </message>
     <message>
         <source>Connect aligned terminals on this folio</source>
@@ -16095,7 +16158,7 @@ Verfügbare Optionen:
     </message>
     <message>
         <source>Connect every free terminal of the folio to the next free terminal it faces</source>
-        <translation>Jeden freien Anschluss der Seite mit dem nächsten freien gegenüberliegenden Anschluss verbinden</translation>
+        <translation>Verbindet jeden freien Anschluss der Seite mit dem nächsten freien Anschluss gegenüber</translation>
     </message>
     <message>
         <source>Connect aligned terminals</source>
@@ -16225,7 +16288,7 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>Zoom of the folio on screen; a click offers fixed ones</source>
-        <translation>Zoom der Seite auf dem Bildschirm; ein Klick bietet feste Stufen an</translation>
+        <translation>Zoom der Seite auf dem Bildschirm; ein Klick bietet feste Werte an</translation>
     </message>
     <message>
         <source>%1 %</source>
@@ -16237,7 +16300,7 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>Check potential types...</source>
-        <translation>Potentialtypen prüfen...</translation>
+        <translation>Potenzialtypen prüfen...</translation>
     </message>
     <message>
         <source>Project languages...</source>
@@ -16253,11 +16316,11 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>Export for delivery...</source>
-        <translation>Für die Auslieferung exportieren...</translation>
+        <translation>Für Auslieferung exportieren...</translation>
     </message>
     <message>
         <source>Write a copy of the project without the history of its saves</source>
-        <translation>Eine Kopie des Projekts ohne seinen Speicherverlauf schreiben</translation>
+        <translation>Eine Kopie des Projekts ohne den Verlauf seiner Speicherungen schreiben</translation>
     </message>
     <message>
         <source>Export to CSV</source>
@@ -16270,6 +16333,14 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     <message>
         <source>Add a cable list</source>
         <translation>Kabelliste hinzufügen</translation>
+    </message>
+    <message>
+        <source>Cable list (choose types)...</source>
+        <translation>Kabelliste (Typen wählen)…</translation>
+    </message>
+    <message>
+        <source>Lists every cable of the project; the type of a cable is chosen from your cable type list or a manufacturer catalog</source>
+        <translation>Listet alle Kabel des Projekts; der Typ eines Kabels wird aus der eigenen Kabeltypliste oder einem Herstellerkatalog gewählt</translation>
     </message>
     <message>
         <source>Export the cable list to CSV format</source>
@@ -16314,6 +16385,14 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     <message>
         <source>Replaces each element of the project that changed in its collection since it was placed, and redraws it (action cannot be undone)</source>
         <translation>Ersetzt jedes Bauteil des Projekts, das sich in seiner Sammlung seit dem Platzieren geändert hat, und zeichnet es neu (kann nicht rückgängig gemacht werden)</translation>
+    </message>
+    <message>
+        <source>Lay out the symbol texts as in the symbol</source>
+        <translation>Symboltexte wie im Symbol anordnen</translation>
+    </message>
+    <message>
+        <source>Puts the texts of the selected symbols, or of every symbol of the project, where their symbol places them: a placed symbol keeps its own copy of the texts otherwise</source>
+        <translation>Setzt die Texte der gewählten Symbole oder aller Symbole des Projekts dorthin, wo ihr Symbol sie platziert: sonst behält ein platziertes Symbol seine eigene Kopie der Texte</translation>
     </message>
     <message>
         <source>Run a script...</source>
@@ -16377,7 +16456,7 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     <message>
         <source>Creates a new project in which terminals in line connect by themselves; a project is of one kind or the other for good</source>
         <comment>status bar tip</comment>
-        <translation>Legt ein neues Projekt an, in dem sich fluchtende Anschlüsse selbst verbinden; ein Projekt ist dauerhaft von der einen oder der anderen Art</translation>
+        <translation>Erstellt ein neues Projekt, in dem fluchtende Anschlüsse sich selbst verbinden; ein Projekt ist dauerhaft von der einen oder der anderen Art</translation>
     </message>
     <message>
         <source>Writes a copy of the current project as a .qet file, which versions of QElectroTech that cannot open a .qetz open</source>
@@ -16398,7 +16477,7 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>Relay contact display...</source>
-        <translation>Darstellung der Relaiskontakte...</translation>
+        <translation>Relaiskontakt-Darstellung...</translation>
     </message>
     <message>
         <source>Group</source>
@@ -16424,7 +16503,7 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>Highlight a symbol in the collection first.</source>
-        <translation>Zuerst ein Symbol in der Sammlung markieren.</translation>
+        <translation>Markieren Sie zuerst ein Symbol in der Sammlung.</translation>
     </message>
     <message>
         <source>Default symbol</source>
@@ -16484,7 +16563,7 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     <message>
         <source>Choose how the contacts of the selected relay are shown</source>
         <comment>status bar tip</comment>
-        <translation>Wählen, wie die Kontakte des ausgewählten Relais dargestellt werden</translation>
+        <translation>Wählen, wie die Kontakte des gewählten Relais dargestellt werden</translation>
     </message>
     <message>
         <source>Groups the selected elements, texts, shapes and images: they are selected, moved and copied together</source>
@@ -16584,7 +16663,7 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     <message>
         <source>Selects every symbol on the sheet of the same kind as a selected one, deselects the rest</source>
         <comment>status bar tip</comment>
-        <translation>Wählt jedes Symbol auf der Seite derselben Art wie ein ausgewähltes aus und hebt die Auswahl der übrigen auf</translation>
+        <translation>Wählt jedes Symbol der Seite derselben Art wie ein gewähltes aus und hebt die Auswahl des Rests auf</translation>
     </message>
     <message>
         <source>Centre on the cursor</source>
@@ -16689,7 +16768,15 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>Draws a bridge over terminals: every terminal crossed becomes one of its connections</source>
-        <translation>Zeichnet eine Brücke über Klemmen: Jede gekreuzte Klemme wird zu einem ihrer Anschlüsse</translation>
+        <translation>Zeichnet eine Brücke über Klemmen: jede gekreuzte Klemme wird eine ihrer Verbindungen</translation>
+    </message>
+    <message>
+        <source>Add a structure box</source>
+        <translation>Strukturkasten hinzufügen</translation>
+    </message>
+    <message>
+        <source>Adds a structure box (plant, location, prefix) to the current sheet: the symbols inside it take its plant and location</source>
+        <translation>Fügt dem aktuellen Blatt einen Strukturkasten (Anlage, Ort, Präfix) hinzu: die Symbole darin übernehmen seine Anlage und seinen Ort</translation>
     </message>
     <message>
         <source>Search / Replace</source>
@@ -16718,6 +16805,10 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
         <translation>Listen</translation>
     </message>
     <message>
+        <source>Part import</source>
+        <translation>Bauteil-Import</translation>
+    </message>
+    <message>
         <source>Import part…</source>
         <translation>Artikel importieren…</translation>
     </message>
@@ -16726,8 +16817,36 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
         <translation>Aus dem EPLAN Data Portal…</translation>
     </message>
     <message>
+        <source>Manufacturer portals…</source>
+        <translation>Herstellerportale…</translation>
+    </message>
+    <message>
+        <source>Open the user collection folder</source>
+        <translation>Ordner der Benutzersammlung öffnen</translation>
+    </message>
+    <message>
+        <source>Import EPLAN project (.zw1)…</source>
+        <translation>EPLAN-Projekt importieren (.zw1)…</translation>
+    </message>
+    <message>
+        <source>Reads a packed EPLAN project and opens it as a QElectroTech project</source>
+        <translation>Liest ein gepacktes EPLAN-Projekt ein und öffnet es als QElectroTech-Projekt</translation>
+    </message>
+    <message>
+        <source>Paste special</source>
+        <translation>Inhalte einfügen</translation>
+    </message>
+    <message>
+        <source>Rotate and mirror</source>
+        <translation>Drehen und Spiegeln</translation>
+    </message>
+    <message>
+        <source>Texts</source>
+        <translation>Texte</translation>
+    </message>
+    <message>
         <source>Show or hide the device navigator</source>
-        <translation>Betriebsmittel-Navigator ein- oder ausblenden</translation>
+        <translation>Geräte-Navigator ein- oder ausblenden</translation>
     </message>
     <message>
         <source>XML Files (*.xml);;All files (*)</source>
@@ -16819,11 +16938,11 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>The content of %1 is not what QElectroTech saved: another program changed it, or it is damaged.</source>
-        <translation>Der Inhalt von %1 entspricht nicht dem, was QElectroTech gespeichert hat: Ein anderes Programm hat ihn geändert, oder er ist beschädigt.</translation>
+        <translation>Der Inhalt von %1 ist nicht das, was QElectroTech gespeichert hat: ein anderes Programm hat es geändert, oder es ist beschädigt.</translation>
     </message>
     <message>
         <source>Go back to the saved state</source>
-        <translation>Zum gespeicherten Stand zurückkehren</translation>
+        <translation>Zum gespeicherten Zustand zurückkehren</translation>
     </message>
     <message>
         <source>Open it with its changes</source>
@@ -16843,22 +16962,22 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>The changes another program made to %1 were undone: it is open as QElectroTech saved it.</source>
-        <translation>Die Änderungen eines anderen Programms an %1 wurden rückgängig gemacht: Es ist so geöffnet, wie QElectroTech es gespeichert hat.</translation>
+        <translation>Die Änderungen, die ein anderes Programm an %1 vorgenommen hat, wurden rückgängig gemacht: es ist so geöffnet, wie QElectroTech es gespeichert hat.</translation>
     </message>
     <message numerus="yes">
         <source>%1 was damaged: QElectroTech repaired %n page(s) of it from the repair data the file keeps.</source>
         <translation>
-            <numerusform>%1 war beschädigt: QElectroTech hat %n Seite davon aus den Reparaturdaten der Datei wiederhergestellt.</numerusform>
-            <numerusform>%1 war beschädigt: QElectroTech hat %n Seiten davon aus den Reparaturdaten der Datei wiederhergestellt.</numerusform>
+            <numerusform>%1 war beschädigt: QElectroTech hat %n Seite davon aus den Reparaturdaten der Datei repariert.</numerusform>
+            <numerusform>%1 war beschädigt: QElectroTech hat %n Seiten davon aus den Reparaturdaten der Datei repariert.</numerusform>
         </translation>
     </message>
     <message>
         <source>%1 was damaged: QElectroTech repaired its header.</source>
-        <translation>%1 war beschädigt: QElectroTech hat seinen Dateikopf repariert.</translation>
+        <translation>%1 war beschädigt: QElectroTech hat den Dateikopf repariert.</translation>
     </message>
     <message>
         <source>The repair data %1 keeps was damaged; the project itself was not.</source>
-        <translation>Die Reparaturdaten in %1 waren beschädigt; das Projekt selbst nicht.</translation>
+        <translation>Die Reparaturdaten, die %1 enthält, waren beschädigt; das Projekt selbst nicht.</translation>
     </message>
     <message>
         <source>Project repaired</source>
@@ -16866,7 +16985,7 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>Save the project to keep it so.</source>
-        <translation>Das Projekt speichern, um es so zu behalten.</translation>
+        <translation>Speichern Sie das Projekt, um es so zu behalten.</translation>
     </message>
     <message>
         <source>%1 (recovered)</source>
@@ -16878,11 +16997,11 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>Cannot go back to the saved state</source>
-        <translation>Rückkehr zum gespeicherten Stand nicht möglich</translation>
+        <translation>Rückkehr zum gespeicherten Zustand nicht möglich</translation>
     </message>
     <message>
         <source>The other program rewrote too much of %1 for its repair data to rebuild the state QElectroTech saved.</source>
-        <translation>Das andere Programm hat zu viel von %1 umgeschrieben, als dass die Reparaturdaten den von QElectroTech gespeicherten Stand wiederherstellen könnten.</translation>
+        <translation>Das andere Programm hat zu viel von %1 neu geschrieben, als dass die Reparaturdaten den von QElectroTech gespeicherten Zustand wieder aufbauen könnten.</translation>
     </message>
     <message>
         <source>%1 on %2 has taken over %3. Save your changes with Save As to keep them.</source>
@@ -16961,7 +17080,7 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
     </message>
     <message>
         <source>Change relay contact display</source>
-        <translation>Darstellung der Relaiskontakte ändern</translation>
+        <translation>Relaiskontakt-Darstellung ändern</translation>
     </message>
     <message>
         <source>Edit the information of the elements</source>
@@ -16975,7 +17094,7 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
     </message>
     <message>
         <source>No symbol is chosen for this button. Highlight one in the collection, then choose &quot;Use the symbol highlighted in the collection&quot; from the arrow beside the button.</source>
-        <translation>Für diese Schaltfläche ist kein Symbol gewählt. Eines in der Sammlung markieren und dann über den Pfeil neben der Schaltfläche „Das in der Sammlung markierte Symbol verwenden“ wählen.</translation>
+        <translation>Für diese Schaltfläche ist kein Symbol gewählt. Markieren Sie eines in der Sammlung und wählen Sie dann über den Pfeil neben der Schaltfläche „Das in der Sammlung markierte Symbol verwenden“.</translation>
     </message>
     <message>
         <source>%1: place &quot;%2&quot;. The arrow beside it chooses the symbol.</source>
@@ -16986,14 +17105,25 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
         <translation>%1: noch kein Symbol gewählt. Der Pfeil daneben wählt eines.</translation>
     </message>
     <message>
+        <source>Every symbol text already lies where its symbol places it.</source>
+        <translation>Jeder Symboltext liegt bereits dort, wo sein Symbol ihn platziert.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n texts of the project&apos;s symbols lie elsewhere than their symbol places them. Lay them out as in the symbol?</source>
+        <translation>
+            <numerusform>%n Text der Symbole des Projekts liegt woanders, als sein Symbol ihn platziert. Wie im Symbol anordnen?</numerusform>
+            <numerusform>%n Texte der Symbole des Projekts liegen woanders, als ihr Symbol sie platziert. Wie im Symbol anordnen?</numerusform>
+        </translation>
+    </message>
+    <message>
         <source>Every element of the project matches the collection it was taken from.</source>
         <translation>Jedes Bauteil des Projekts entspricht der Sammlung, aus der es stammt.</translation>
     </message>
     <message numerus="yes">
         <source>%n elements of the project differ from the collection they were taken from. Replace them with the version of the collection?</source>
         <translation>
-            <numerusform>%n Bauteil des Projekts weicht von der Sammlung ab, aus der es stammt. Durch die Fassung der Sammlung ersetzen?</numerusform>
-            <numerusform>%n Bauteile des Projekts weichen von der Sammlung ab, aus der sie stammen. Durch die Fassung der Sammlung ersetzen?</numerusform>
+            <numerusform>%n Bauteil des Projekts weicht von der Sammlung ab, aus der es stammt. Durch die Version der Sammlung ersetzen?</numerusform>
+            <numerusform>%n Bauteile des Projekts weichen von der Sammlung ab, aus der sie stammen. Durch die Version der Sammlung ersetzen?</numerusform>
         </translation>
     </message>
     <message>
@@ -17010,8 +17140,8 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
     <message numerus="yes">
         <source>%n elements not redrawn: their terminals have changed (a terminal was added, removed or moved).</source>
         <translation>
-            <numerusform>%n Bauteil nicht neu gezeichnet: Seine Anschlüsse haben sich geändert (ein Anschluss wurde hinzugefügt, entfernt oder verschoben).</numerusform>
-            <numerusform>%n Bauteile nicht neu gezeichnet: Ihre Anschlüsse haben sich geändert (ein Anschluss wurde hinzugefügt, entfernt oder verschoben).</numerusform>
+            <numerusform>%n Bauteil nicht neu gezeichnet: seine Anschlüsse haben sich geändert (ein Anschluss wurde hinzugefügt, entfernt oder verschoben).</numerusform>
+            <numerusform>%n Bauteile nicht neu gezeichnet: ihre Anschlüsse haben sich geändert (ein Anschluss wurde hinzugefügt, entfernt oder verschoben).</numerusform>
         </translation>
     </message>
     <message>
@@ -17024,7 +17154,7 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
     </message>
     <message>
         <source>Select: %1</source>
-        <translation>Auswahl: %1</translation>
+        <translation>Auswählen: %1</translation>
     </message>
     <message>
         <source>Show the T-junction symbol</source>
@@ -17036,7 +17166,7 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
     </message>
     <message>
         <source>Keep a history of saves in this file</source>
-        <translation>Speicherverlauf in dieser Datei führen</translation>
+        <translation>Einen Speicherverlauf in dieser Datei führen</translation>
     </message>
     <message>
         <source>all</source>
@@ -17044,11 +17174,11 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
     </message>
     <message>
         <source>The oldest saves are dropped from the history at each save beyond this number</source>
-        <translation>Die ältesten Speicherungen werden bei jedem Speichern über diese Anzahl hinaus aus dem Verlauf entfernt</translation>
+        <translation>Die ältesten Speicherungen werden bei jeder Speicherung über diese Anzahl hinaus aus dem Verlauf entfernt</translation>
     </message>
     <message>
         <source>Saves to keep:</source>
-        <translation>Zu behaltende Speicherungen:</translation>
+        <translation>Aufzubewahrende Speicherungen:</translation>
     </message>
     <message>
         <source>No.</source>
@@ -17068,11 +17198,11 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
     </message>
     <message>
         <source>Open as it was</source>
-        <translation>Im damaligen Stand öffnen</translation>
+        <translation>So öffnen, wie es war</translation>
     </message>
     <message>
         <source>Open the project as it was after the selected save, read-only</source>
-        <translation>Das Projekt im Stand nach der ausgewählten Speicherung schreibgeschützt öffnen</translation>
+        <translation>Das Projekt so öffnen, wie es nach der gewählten Speicherung war, schreibgeschützt</translation>
     </message>
     <message>
         <source>Compare</source>
@@ -17080,7 +17210,7 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
     </message>
     <message>
         <source>What the selected save changed, or what changed between two selected saves</source>
-        <translation>Was die ausgewählte Speicherung geändert hat oder was sich zwischen zwei ausgewählten Speicherungen geändert hat</translation>
+        <translation>Was die gewählte Speicherung geändert hat, oder was sich zwischen zwei gewählten Speicherungen geändert hat</translation>
     </message>
     <message>
         <source>A history is kept only in a project saved as .qetdb (File &gt; Save as).</source>
@@ -17088,19 +17218,19 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
     </message>
     <message>
         <source>This file keeps no history. Switched on, each save records who saved, when and what changed.</source>
-        <translation>Diese Datei führt keinen Verlauf. Eingeschaltet hält jede Speicherung fest, wer wann was geändert hat.</translation>
+        <translation>Diese Datei führt keinen Verlauf. Eingeschaltet hält jede Speicherung fest, wer wann gespeichert hat und was sich geändert hat.</translation>
     </message>
     <message>
         <source>Each save records who saved, when and what changed. Copies of the file carry this history: use File &gt; Export for delivery to send a project without it.</source>
-        <translation>Jede Speicherung hält fest, wer wann was geändert hat. Kopien der Datei tragen diesen Verlauf mit: Mit Datei &gt; Für die Auslieferung exportieren ein Projekt ohne ihn weitergeben.</translation>
+        <translation>Jede Speicherung hält fest, wer wann gespeichert hat und was sich geändert hat. Kopien der Datei tragen diesen Verlauf mit: verwenden Sie Datei &gt; Für Auslieferung exportieren, um ein Projekt ohne ihn zu versenden.</translation>
     </message>
     <message>
         <source>History started</source>
-        <translation>Verlauf begonnen</translation>
+        <translation>Verlauf gestartet</translation>
     </message>
     <message>
         <source>Delete the history this file keeps? It cannot be undone.</source>
-        <translation>Den Verlauf dieser Datei löschen? Das kann nicht rückgängig gemacht werden.</translation>
+        <translation>Den Verlauf dieser Datei löschen? Dies kann nicht rückgängig gemacht werden.</translation>
     </message>
     <message>
         <source>The history could not be changed: %1</source>
@@ -17108,15 +17238,15 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
     </message>
     <message>
         <source>Export for delivery</source>
-        <translation>Für die Auslieferung exportieren</translation>
+        <translation>Für Auslieferung exportieren</translation>
     </message>
     <message>
         <source>Only a project saved as .qetdb keeps a history to leave out (File &gt; Save as).</source>
-        <translation>Nur ein als .qetdb gespeichertes Projekt hat einen Verlauf, der weggelassen werden kann (Datei &gt; Speichern unter).</translation>
+        <translation>Nur ein als .qetdb gespeichertes Projekt führt einen Verlauf, der weggelassen werden kann (Datei &gt; Speichern unter).</translation>
     </message>
     <message>
         <source>The copy is made from the saved file. Save the project first?</source>
-        <translation>Die Kopie wird aus der gespeicherten Datei erstellt. Das Projekt zuerst speichern?</translation>
+        <translation>Die Kopie wird aus der gespeicherten Datei erstellt. Projekt zuerst speichern?</translation>
     </message>
     <message>
         <source>%1 - delivery.qetdb</source>
@@ -17128,7 +17258,7 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
     </message>
     <message>
         <source>Choose another file than the project&apos;s own.</source>
-        <translation>Eine andere Datei als die des Projekts wählen.</translation>
+        <translation>Wählen Sie eine andere Datei als die des Projekts selbst.</translation>
     </message>
     <message>
         <source>The copy could not be written: %1</source>
@@ -17152,7 +17282,7 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
     </message>
     <message>
         <source>Changes from save %1 to save %2</source>
-        <translation>Änderungen von Speicherung %1 bis Speicherung %2</translation>
+        <translation>Änderungen von Speicherung %1 zu Speicherung %2</translation>
     </message>
     <message>
         <source>Kind</source>
@@ -17176,11 +17306,11 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
     </message>
     <message>
         <source>Wire</source>
-        <translation>Leiter</translation>
+        <translation>Faden</translation>
     </message>
     <message>
         <source>Drawn item</source>
-        <translation>Gezeichnetes Objekt</translation>
+        <translation>Gezeichnetes Element</translation>
     </message>
     <message>
         <source>added</source>
@@ -17196,7 +17326,7 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
     </message>
     <message>
         <source>Not in the project now</source>
-        <translation>Jetzt nicht im Projekt</translation>
+        <translation>Nicht mehr im Projekt</translation>
     </message>
     <message numerus="yes">
         <source>%n more</source>
@@ -17231,7 +17361,7 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
 %1
 
 Go on anyway?</source>
-        <translation>Diese Objekte liegen außerhalb der Seite und werden abgeschnitten oder weggelassen:
+        <translation>Diese Elemente liegen außerhalb der Seite und werden abgeschnitten oder weggelassen:
 
 %1
 
@@ -17240,8 +17370,8 @@ Trotzdem fortfahren?</translation>
     <message numerus="yes">
         <source>Project saved; %n folio(s) with items outside the sheet, named when printing or exporting</source>
         <translation>
-            <numerusform>Projekt gespeichert; %n Seite mit Objekten außerhalb des Blatts, beim Drucken oder Exportieren genannt</numerusform>
-            <numerusform>Projekt gespeichert; %n Seiten mit Objekten außerhalb des Blatts, beim Drucken oder Exportieren genannt</numerusform>
+            <numerusform>Projekt gespeichert; %n Seite mit Elementen außerhalb der Seite, beim Drucken oder Exportieren benannt</numerusform>
+            <numerusform>Projekt gespeichert; %n Seiten mit Elementen außerhalb der Seite, beim Drucken oder Exportieren benannt</numerusform>
         </translation>
     </message>
     <message>
@@ -17280,7 +17410,7 @@ Trotzdem fortfahren?</translation>
     </message>
     <message>
         <source>&amp;Add</source>
-        <translation>&amp;Hinzufügen</translation>
+        <translation>Hinzufügen</translation>
     </message>
     <message>
         <source>Selection</source>
@@ -17755,7 +17885,7 @@ Um daraus ein Skript zu machen, bitten Sie Ihren KI-Assistenten: Die Schaltfläc
     </message>
     <message>
         <source>Find duplicate signals and components...</source>
-        <translation>Doppelte Signale und Betriebsmittel suchen...</translation>
+        <translation>Doppelte Signale und Bauteile suchen...</translation>
     </message>
 </context>
 <context>
@@ -18251,7 +18381,7 @@ please wait while importing...</source>
     </message>
     <message>
         <source>Click a terminal or a corner: it becomes the point the symbol is placed by</source>
-        <translation>Einen Anschluss oder eine Ecke anklicken: Er wird zu dem Punkt, an dem das Symbol platziert wird</translation>
+        <translation>Klicken Sie auf einen Anschluss oder eine Ecke: er wird der Punkt, an dem das Symbol platziert wird</translation>
     </message>
     <message>
         <source>Measurements cleared</source>
@@ -18287,7 +18417,7 @@ please wait while importing...</source>
     </message>
     <message>
         <source>The frame a click on the placed symbol hits: worked out from the drawing, or set by hand</source>
-        <translation>Der Rahmen, den ein Klick auf das platzierte Symbol trifft: aus der Zeichnung berechnet oder von Hand festgelegt</translation>
+        <translation>Der Rahmen, den ein Klick auf das platzierte Symbol trifft: aus der Zeichnung ermittelt oder von Hand festgelegt</translation>
     </message>
     <message>
         <source>Selection frame</source>
@@ -18295,7 +18425,7 @@ please wait while importing...</source>
     </message>
     <message>
         <source>Set by hand</source>
-        <translation>Von Hand festlegen</translation>
+        <translation>Von Hand festgelegt</translation>
     </message>
     <message>
         <source>Left</source>
@@ -18331,11 +18461,11 @@ please wait while importing...</source>
     </message>
     <message>
         <source>Select: %1</source>
-        <translation>Auswahl: %1</translation>
+        <translation>Auswählen: %1</translation>
     </message>
     <message>
         <source>The step parts snap to; crosses mark the grid of 10, the folio&apos;s</source>
-        <translation>Die Schrittweite, auf die Teile einrasten; Kreuze markieren das 10er-Raster der Seite</translation>
+        <translation>Der Schritt, auf den Teile einrasten; Kreuze markieren das 10er-Raster, das der Seite</translation>
     </message>
     <message>
         <source>Grid %1</source>
@@ -18347,7 +18477,7 @@ please wait while importing...</source>
     </message>
     <message>
         <source>Zoom of the symbol on screen; a click offers fixed ones</source>
-        <translation>Zoom des Symbols auf dem Bildschirm; ein Klick bietet feste Stufen an</translation>
+        <translation>Zoom des Symbols auf dem Bildschirm; ein Klick bietet feste Werte an</translation>
     </message>
     <message>
         <source>%1 %</source>
@@ -18371,11 +18501,11 @@ please wait while importing...</source>
     </message>
     <message>
         <source>The collections panel</source>
-        <translation>Das Fenster der Sammlungen</translation>
+        <translation>Das Sammlungsfenster</translation>
     </message>
     <message>
         <source>Shows the collections: double-click an element, or drag it onto the drawing, to paste its parts</source>
-        <translation>Zeigt die Sammlungen: Ein Bauteil doppelklicken oder auf die Zeichnung ziehen, um seine Teile einzufügen</translation>
+        <translation>Zeigt die Sammlungen: Doppelklicken Sie auf ein Bauteil oder ziehen Sie es auf die Zeichnung, um seine Teile einzufügen</translation>
     </message>
     <message>
         <source>Export as SVG</source>
@@ -18698,7 +18828,7 @@ Möchten Sie Ketten-Folienverweise für dieses Projekt aktivieren?
     </message>
     <message>
         <source>the file was changed on disk since it was opened or saved</source>
-        <translation>die Datei wurde seit dem Öffnen oder Speichern auf dem Datenträger geändert</translation>
+        <translation>die Datei wurde auf dem Datenträger geändert, seit sie geöffnet oder gespeichert wurde</translation>
     </message>
     <message>
         <source>%1 was opened read-only because someone else has it open. Use Save As to keep your changes in another file.</source>
@@ -18921,7 +19051,7 @@ Was möchten Sie tun?</translation>
     <message>
         <source>&amp;Format text of cells...</source>
         <comment>menu entry</comment>
-        <translation>&amp;Text der Zellen formatieren...</translation>
+        <translation>Text der Zellen &amp;formatieren...</translation>
     </message>
     <message>
         <source>Title block template editors</source>
@@ -19480,7 +19610,7 @@ Was möchten Sie tun?</translation>
     <message>
         <source>Edit Preview</source>
         <comment>undo preview</comment>
-        <translation>Vorschau bearbeiten</translation>
+        <translation>Vorschau der Bearbeitung</translation>
     </message>
     <message>
         <source>type</source>
@@ -19530,7 +19660,7 @@ Was möchten Sie tun?</translation>
     <message>
         <source>label font</source>
         <comment>title block cell property human name</comment>
-        <translation>Schriftart der Bezeichnung</translation>
+        <translation>Schriftart der Beschriftung</translation>
     </message>
     <message>
         <source>value font</source>
@@ -19540,7 +19670,7 @@ Was möchten Sie tun?</translation>
     <message>
         <source>label colour</source>
         <comment>title block cell property human name</comment>
-        <translation>Farbe der Bezeichnung</translation>
+        <translation>Farbe der Beschriftung</translation>
     </message>
     <message>
         <source>value colour</source>
@@ -19712,7 +19842,7 @@ Der QET-Name dieses Ordners konnte nicht gelesen werden; stattdessen wird der Or
     </message>
     <message>
         <source>A terminal may not be dropped on a bridge which cannot take one more.</source>
-        <translation>Eine Klemme darf nicht auf eine Brücke gelegt werden, die keine weitere aufnehmen kann.</translation>
+        <translation>Eine Klemme darf nicht auf einer Brücke abgelegt werden, die keine weitere aufnehmen kann.</translation>
     </message>
     <message>
         <source>Update automatic connections</source>
@@ -19937,6 +20067,14 @@ Möchten Sie sie ersetzen?</translation>
         <translation>Funktion</translation>
     </message>
     <message>
+        <source>Folio group</source>
+        <translation>Seitengruppe</translation>
+    </message>
+    <message>
+        <source>Folio sub-group</source>
+        <translation>Seiten-Untergruppe</translation>
+    </message>
+    <message>
         <source>Terminal number</source>
         <translation>Klemmennummer</translation>
     </message>
@@ -20122,7 +20260,7 @@ Möchten Sie sie ersetzen?</translation>
     </message>
     <message>
         <source>Exclude from the bill of materials</source>
-        <translation>Aus der Stückliste ausschließen</translation>
+        <translation>Von der Materialliste ausschließen</translation>
     </message>
     <message>
         <source>Wire number</source>
@@ -20286,7 +20424,7 @@ Möchten Sie sie ersetzen?</translation>
     </message>
     <message>
         <source>Sort terminal block %1</source>
-        <translation>Klemmenleiste %1 sortieren</translation>
+        <translation>Klemme entfernen</translation>
     </message>
     <message>
         <source>Generic</source>
@@ -20523,7 +20661,7 @@ Bitte laden Sie diese über den Link herunter und entpacken Sie sie in den Insta
     </message>
     <message>
         <source>Text grid %1. Hold Ctrl to place freely.</source>
-        <translation>Textraster %1. Strg halten, um frei zu platzieren.</translation>
+        <translation>Textraster %1. Strg gedrückt halten, um frei zu platzieren.</translation>
     </message>
     <message>
         <source>Text grid %1. Release Shift and hold Ctrl to place freely.</source>
@@ -20832,7 +20970,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>it was saved by a newer QElectroTech (%1)</source>
-        <translation>sie wurde von einem neueren QElectroTech (%1) gespeichert</translation>
+        <translation>sie wurde von einem neueren QElectroTech gespeichert (%1)</translation>
     </message>
     <message>
         <source>the file holds SQL that QElectroTech does not expect (%1)</source>
@@ -20840,7 +20978,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>the file is damaged: an item refers to one that is not there</source>
-        <translation>die Datei ist beschädigt: Ein Objekt verweist auf eines, das nicht vorhanden ist</translation>
+        <translation>die Datei ist beschädigt: ein Element verweist auf eines, das nicht vorhanden ist</translation>
     </message>
     <message>
         <source>the file could not be replaced (error %1)</source>
@@ -20864,11 +21002,11 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>this build of QElectroTech has no SQLite session support</source>
-        <translation>diese QElectroTech-Version hat keine Unterstützung für SQLite-Sessions</translation>
+        <translation>dieser Build von QElectroTech unterstützt keine SQLite-Sitzungen</translation>
     </message>
     <message>
         <source>the changes of revision %1 were not recorded</source>
-        <translation>die Änderungen der Revision %1 wurden nicht aufgezeichnet</translation>
+        <translation>die Änderungen von Revision %1 wurden nicht aufgezeichnet</translation>
     </message>
     <message>
         <source>revision %1 cannot be undone</source>
@@ -20889,17 +21027,17 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     <message numerus="yes">
         <source>it has %n damaged page(s), more than the repair data it keeps can rebuild</source>
         <translation>
-            <numerusform>sie hat %n beschädigte Seite, mehr als ihre Reparaturdaten wiederherstellen können</numerusform>
-            <numerusform>sie hat %n beschädigte Seiten, mehr als ihre Reparaturdaten wiederherstellen können</numerusform>
+            <numerusform>sie hat %n beschädigte Seite, mehr als ihre Reparaturdaten wieder aufbauen können</numerusform>
+            <numerusform>sie hat %n beschädigte Seiten, mehr als ihre Reparaturdaten wieder aufbauen können</numerusform>
         </translation>
     </message>
     <message>
         <source>its content is not what QElectroTech saved: it is damaged, or another program changed it</source>
-        <translation>ihr Inhalt entspricht nicht dem, was QElectroTech gespeichert hat: Sie ist beschädigt, oder ein anderes Programm hat sie geändert</translation>
+        <translation>ihr Inhalt ist nicht das, was QElectroTech gespeichert hat: sie ist beschädigt, oder ein anderes Programm hat sie geändert</translation>
     </message>
     <message>
         <source>keep at least 2 saves, or 0 for all</source>
-        <translation>mindestens 2 Speicherungen behalten, oder 0 für alle</translation>
+        <translation>mindestens 2 Speicherungen aufbewahren, oder 0 für alle</translation>
     </message>
     <message>
         <source>it keeps no history</source>
@@ -20907,15 +21045,15 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>revision %1 does not come before revision %2</source>
-        <translation>Revision %1 liegt nicht vor Revision %2</translation>
+        <translation>Revision %1 kommt nicht vor Revision %2</translation>
     </message>
     <message>
         <source>the changes of revision %1 do not follow on</source>
-        <translation>die Änderungen der Revision %1 schließen nicht an</translation>
+        <translation>die Änderungen von Revision %1 schließen nicht an</translation>
     </message>
     <message>
         <source>Values</source>
-        <translation>Werte</translation>
+        <translation>Wert</translation>
     </message>
     <message>
         <source>Comparisons</source>
@@ -20943,7 +21081,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Choose a column of this table&apos;s source.</source>
-        <translation>Eine Spalte aus der Quelle dieser Tabelle wählen.</translation>
+        <translation>Wählen Sie eine Spalte der Quelle dieser Tabelle.</translation>
     </message>
     <message>
         <source>Fixed text</source>
@@ -20951,7 +21089,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Enter ordinary text. Quotes and other punctuation are handled for you.</source>
-        <translation>Normalen Text eingeben. Anführungszeichen und andere Satzzeichen werden automatisch behandelt.</translation>
+        <translation>Normalen Text eingeben. Anführungszeichen und andere Satzzeichen werden für Sie behandelt.</translation>
     </message>
     <message>
         <source>A number</source>
@@ -20967,7 +21105,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>No value at all. To check for missing or blank text, use Is empty.</source>
-        <translation>Überhaupt kein Wert. Um auf fehlenden oder leeren Text zu prüfen, „Ist leer“ verwenden.</translation>
+        <translation>Überhaupt kein Wert. Um auf fehlenden oder leeren Text zu prüfen, verwenden Sie „Ist leer“.</translation>
     </message>
     <message>
         <source>Equals</source>
@@ -20975,7 +21113,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Compare two values. If one of them is a number, they are compared as numbers.</source>
-        <translation>Zwei Werte vergleichen. Ist einer davon eine Zahl, werden sie als Zahlen verglichen.</translation>
+        <translation>Vergleicht zwei Werte. Ist einer davon eine Zahl, werden sie als Zahlen verglichen.</translation>
     </message>
     <message>
         <source>Value</source>
@@ -20995,11 +21133,11 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Compare numbers.</source>
-        <translation>Zahlen vergleichen.</translation>
+        <translation>Vergleicht Zahlen.</translation>
     </message>
     <message>
         <source>Number</source>
-        <translation>Zahl</translation>
+        <translation>Nummer</translation>
     </message>
     <message>
         <source>At least</source>
@@ -21007,7 +21145,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Compare numbers. Equal counts.</source>
-        <translation>Zahlen vergleichen. Gleichheit zählt mit.</translation>
+        <translation>Vergleicht Zahlen. Gleichheit zählt.</translation>
     </message>
     <message>
         <source>Smaller than</source>
@@ -21027,11 +21165,11 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Lower limit</source>
-        <translation>Untere Grenze</translation>
+        <translation>Untergrenze</translation>
     </message>
     <message>
         <source>Upper limit</source>
-        <translation>Obere Grenze</translation>
+        <translation>Obergrenze</translation>
     </message>
     <message>
         <source>Is empty</source>
@@ -21039,7 +21177,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>True for nothing, empty text or text of only spaces.</source>
-        <translation>Wahr bei nichts, leerem Text oder Text nur aus Leerzeichen.</translation>
+        <translation>Wahr für nichts, leeren Text oder Text aus nur Leerzeichen.</translation>
     </message>
     <message>
         <source>Is not empty</source>
@@ -21079,7 +21217,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Use the second value when the condition is true, the third otherwise.</source>
-        <translation>Den zweiten Wert verwenden, wenn die Bedingung wahr ist, sonst den dritten.</translation>
+        <translation>Verwendet den zweiten Wert, wenn die Bedingung wahr ist, sonst den dritten.</translation>
     </message>
     <message>
         <source>If</source>
@@ -21135,7 +21273,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Use the first value unless it is empty, then use the second.</source>
-        <translation>Den ersten Wert verwenden, außer er ist leer, dann den zweiten.</translation>
+        <translation>Verwendet den ersten Wert, außer er ist leer, dann den zweiten.</translation>
     </message>
     <message>
         <source>Preferred value</source>
@@ -21143,11 +21281,11 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Join values</source>
-        <translation>Werte verketten</translation>
+        <translation>Werte verbinden</translation>
     </message>
     <message>
         <source>Put the values one after the other with the separator between them.</source>
-        <translation>Die Werte hintereinander setzen, mit dem Trennzeichen dazwischen.</translation>
+        <translation>Setzt die Werte hintereinander, mit dem Trennzeichen dazwischen.</translation>
     </message>
     <message>
         <source>Value 1</source>
@@ -21163,7 +21301,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Replace every occurrence of the text to find.</source>
-        <translation>Jedes Vorkommen des gesuchten Textes ersetzen.</translation>
+        <translation>Ersetzt jedes Vorkommen des zu suchenden Texts.</translation>
     </message>
     <message>
         <source>Find</source>
@@ -21179,7 +21317,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Turn the text into capitals.</source>
-        <translation>Den Text in Großbuchstaben umwandeln.</translation>
+        <translation>Wandelt den Text in Großbuchstaben um.</translation>
     </message>
     <message>
         <source>lower case</source>
@@ -21187,7 +21325,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Turn the text into small letters.</source>
-        <translation>Den Text in Kleinbuchstaben umwandeln.</translation>
+        <translation>Wandelt den Text in Kleinbuchstaben um.</translation>
     </message>
     <message>
         <source>Remove surrounding spaces</source>
@@ -21195,19 +21333,19 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Remove the spaces before and after the text.</source>
-        <translation>Die Leerzeichen vor und nach dem Text entfernen.</translation>
+        <translation>Entfernt die Leerzeichen vor und nach dem Text.</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation>Addieren</translation>
+        <translation>Einfügen</translation>
     </message>
     <message>
         <source>Add two numbers.</source>
-        <translation>Zwei Zahlen addieren.</translation>
+        <translation>Addiert zwei Zahlen.</translation>
     </message>
     <message>
         <source>Added to</source>
-        <translation>Plus</translation>
+        <translation>Addiert zu</translation>
     </message>
     <message>
         <source>Subtract</source>
@@ -21215,7 +21353,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Take the second number from the first.</source>
-        <translation>Die zweite Zahl von der ersten abziehen.</translation>
+        <translation>Zieht die zweite Zahl von der ersten ab.</translation>
     </message>
     <message>
         <source>Minus</source>
@@ -21227,7 +21365,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Multiply two numbers.</source>
-        <translation>Zwei Zahlen multiplizieren.</translation>
+        <translation>Multipliziert zwei Zahlen.</translation>
     </message>
     <message>
         <source>Times</source>
@@ -21239,7 +21377,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Divide by the second number. Dividing by zero gives nothing, not an error.</source>
-        <translation>Durch die zweite Zahl teilen. Division durch null ergibt nichts, keinen Fehler.</translation>
+        <translation>Teilt durch die zweite Zahl. Division durch null ergibt nichts, keinen Fehler.</translation>
     </message>
     <message>
         <source>Divided by</source>
@@ -21251,7 +21389,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Round to a number of decimal places.</source>
-        <translation>Auf eine Anzahl Nachkommastellen runden.</translation>
+        <translation>Rundet auf eine Anzahl von Nachkommastellen.</translation>
     </message>
     <message>
         <source>Decimal places</source>
@@ -21263,7 +21401,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Choose an operation.</source>
-        <translation>Eine Operation wählen.</translation>
+        <translation>Wählen Sie eine Operation.</translation>
     </message>
     <message>
         <source>%1 needs %2 to %3 inputs.</source>
@@ -21271,7 +21409,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>This field is not available in this table. Choose one from the list.</source>
-        <translation>Dieses Feld ist in dieser Tabelle nicht verfügbar. Eines aus der Liste wählen.</translation>
+        <translation>Dieses Feld ist in dieser Tabelle nicht verfügbar. Wählen Sie eines aus der Liste.</translation>
     </message>
     <message>
         <source>This operation is not supported.</source>
@@ -21299,7 +21437,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>The first column of the CSV file must be &quot;Source&quot;.</source>
-        <translation>Die erste Spalte der CSV-Datei muss „Source“ heißen.</translation>
+        <translation>Die erste Spalte der CSV-Datei muss „Source“ sein.</translation>
     </message>
     <message>
         <source>Ignored column &quot;%1&quot;: not a language code.</source>
@@ -21319,7 +21457,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Row %1 (%2): the %{...} fields differ from the source; skipped.</source>
-        <translation>Zeile %1 (%2): Die %{...}-Felder weichen von der Quelle ab; übersprungen.</translation>
+        <translation>Zeile %1 (%2): die %{...}-Felder weichen von der Quelle ab; übersprungen.</translation>
     </message>
     <message>
         <source>Apply dimension format</source>
@@ -21339,11 +21477,11 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Only the checked properties are changed. Alignment applies to the whole cell.</source>
-        <translation>Nur die markierten Eigenschaften werden geändert. Die Ausrichtung gilt für die ganze Zelle.</translation>
+        <translation>Nur die angehakten Eigenschaften werden geändert. Die Ausrichtung gilt für die ganze Zelle.</translation>
     </message>
     <message>
         <source>Selected cells</source>
-        <translation>Ausgewählte Zellen</translation>
+        <translation>Gewählte Zellen</translation>
     </message>
     <message>
         <source>All text cells</source>
@@ -21355,11 +21493,11 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Captions and values</source>
-        <translation>Bezeichnungen und Werte</translation>
+        <translation>Beschriftungen und Werte</translation>
     </message>
     <message>
         <source>Captions only</source>
-        <translation>Nur Bezeichnungen</translation>
+        <translation>Nur Beschriftungen</translation>
     </message>
     <message>
         <source>Values only</source>
@@ -21391,11 +21529,11 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     </message>
     <message>
         <source>Bold</source>
-        <translation>Fett</translation>
+        <translation>fett</translation>
     </message>
     <message>
         <source>Italic</source>
-        <translation>Kursiv</translation>
+        <translation>kursiv</translation>
     </message>
     <message>
         <source>Choose colour...</source>
@@ -21447,7 +21585,7 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     <message>
         <source>Joining a bridge over a sheet reference</source>
         <comment>undo command text</comment>
-        <translation>Brücke über einen Seitenverweis verbinden</translation>
+        <translation>Brücke über einen Folienverweis verbinden</translation>
     </message>
     <message>
         <source>Changing the terminals of a bridge</source>
@@ -21458,6 +21596,55 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
         <source>Deleting a line of a bridge</source>
         <comment>undo command text</comment>
         <translation>Linie einer Brücke löschen</translation>
+    </message>
+    <message>
+        <source>set the insertion point</source>
+        <comment>undo caption</comment>
+        <translation>Einfügepunkt festlegen</translation>
+    </message>
+    <message>
+        <source>- Not active -</source>
+        <translation>- Nicht aktiv -</translation>
+    </message>
+    <message>
+        <source>Contactors / Relays (-K)</source>
+        <translation>Schütze / Relais (-K)</translation>
+    </message>
+    <message>
+        <source>Protection / Fuses (-F)</source>
+        <translation>Schutz / Sicherungen (-F)</translation>
+    </message>
+    <message>
+        <source>Power Switches (-Q)</source>
+        <translation>Leistungsschalter (-Q)</translation>
+    </message>
+    <message>
+        <source>Terminals (-X)</source>
+        <translation>Klemmen (-X)</translation>
+    </message>
+    <message>
+        <source>Cables (-W)</source>
+        <translation>Kabel (-W)</translation>
+    </message>
+    <message>
+        <source>Motors / Drives (-M)</source>
+        <translation>Motoren / Antriebe (-M)</translation>
+    </message>
+    <message>
+        <source>Sensors / Transducers (-B)</source>
+        <translation>Sensoren / Messumformer (-B)</translation>
+    </message>
+    <message>
+        <source>No structure identifier</source>
+        <translation>Keine Strukturkennung</translation>
+    </message>
+    <message>
+        <source>lay out the symbol texts as in the symbol</source>
+        <translation>Symboltexte wie im Symbol anordnen</translation>
+    </message>
+    <message>
+        <source>rails and ducts as a grid</source>
+        <translation>Schienen und Kanäle als Raster</translation>
     </message>
     <message>
         <source>Edit cabinet layout data</source>
@@ -21486,51 +21673,6 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     <message>
         <source>This QElectroTech was built without STEP support (Open CASCADE).</source>
         <translation>Dieses QElectroTech wurde ohne STEP-Unterstützung (Open CASCADE) gebaut.</translation>
-    </message>
-    <message>
-        <source>rails and ducts as a grid</source>
-        <translation>Schienen und Kanäle als Raster</translation>
-    </message>
-    <message>
-        <source>set the insertion point</source>
-        <comment>undo caption</comment>
-        <translation>Einfügepunkt festlegen</translation>
-    </message>
-    <message>
-        <source>No structure identifier</source>
-        <translation>Ohne Strukturkennzeichen</translation>
-    </message>
-    <message>
-        <source>- Not active -</source>
-        <translation>- Nicht aktiviert -</translation>
-    </message>
-    <message>
-        <source>Contactors / Relays (-K)</source>
-        <translation>Schütze / Relais (-K)</translation>
-    </message>
-    <message>
-        <source>Protection / Fuses (-F)</source>
-        <translation>Sicherungen / Schutz (-F)</translation>
-    </message>
-    <message>
-        <source>Power Switches (-Q)</source>
-        <translation>Leistungsschalter (-Q)</translation>
-    </message>
-    <message>
-        <source>Terminals (-X)</source>
-        <translation>Klemmen (-X)</translation>
-    </message>
-    <message>
-        <source>Cables (-W)</source>
-        <translation>Kabel (-W)</translation>
-    </message>
-    <message>
-        <source>Motors / Drives (-M)</source>
-        <translation>Motoren / Antriebe (-M)</translation>
-    </message>
-    <message>
-        <source>Sensors / Transducers (-B)</source>
-        <translation>Sensoren / Messumformer (-B)</translation>
     </message>
     <message>
         <source>Change the type of an element</source>
@@ -21986,6 +22128,17 @@ Es wurde nichts geändert.</translation>
             <numerusform>%n Kabel neu nummerieren</numerusform>
             <numerusform>%n Kabel neu nummerieren</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>RenumberConductorsCommand</name>
+    <message>
+        <source>frozen</source>
+        <translation>eingefroren</translation>
+    </message>
+    <message>
+        <source>reaches a folio not chosen</source>
+        <translation>erreicht eine nicht gewählte Seite</translation>
     </message>
 </context>
 <context>
@@ -23402,6 +23555,36 @@ Andere Felder werden nicht verwendet.</translation>
         <source>3D mouse</source>
         <comment>configuration page title</comment>
         <translation>3D-Maus</translation>
+    </message>
+</context>
+<context>
+    <name>StructureBoxItem</name>
+    <message>
+        <source>a structure box</source>
+        <translation>einen Strukturkasten</translation>
+    </message>
+</context>
+<context>
+    <name>StructureBoxPropertiesWidget</name>
+    <message>
+        <source>Plant (=)</source>
+        <translation>Anlage (=)</translation>
+    </message>
+    <message>
+        <source>Location (+)</source>
+        <translation>Ort (+)</translation>
+    </message>
+    <message>
+        <source>Prefix (-)</source>
+        <translation>Präfix (-)</translation>
+    </message>
+    <message>
+        <source>Modify a structure box</source>
+        <translation>Strukturkasten ändern</translation>
+    </message>
+    <message>
+        <source>Edit the properties of a structure box</source>
+        <translation>Die Eigenschaften eines Strukturkastens bearbeiten</translation>
     </message>
 </context>
 <context>
@@ -25770,7 +25953,11 @@ Andere Felder werden nicht verwendet.</translation>
     </message>
     <message>
         <source>Sort the terminals the way the drawing is laid out, and bring the bridges drawn there in with them. What the drawing brought is read-only here: it is changed in the drawing or not at all.</source>
-        <translation>Die Klemmen so sortieren, wie die Zeichnung angeordnet ist, und die dort gezeichneten Brücken mit übernehmen. Was aus der Zeichnung kommt, ist hier schreibgeschützt: Es wird in der Zeichnung geändert oder gar nicht.</translation>
+        <translation type="vanished">Sortiert die Klemmen so, wie die Zeichnung angeordnet ist, und übernimmt die dort gezeichneten Brücken mit. Was die Zeichnung mitbringt, ist hier schreibgeschützt: es wird in der Zeichnung geändert oder gar nicht.</translation>
+    </message>
+    <message>
+        <source>Sort the terminals the way the drawing is laid out, or by label when the general settings ask for it, and bring the bridges drawn there in with them. What the drawing brought is read-only here: it is changed in the drawing or not at all.</source>
+        <translation>Sortiert die Klemmen so, wie die Zeichnung angeordnet ist, oder nach BMK, wenn die allgemeinen Einstellungen es verlangen, und übernimmt die dort gezeichneten Brücken mit. Was die Zeichnung mitbringt, ist hier schreibgeschützt: es wird in der Zeichnung geändert oder gar nicht.</translation>
     </message>
     <message>
         <source>Independent terminals</source>
@@ -25781,16 +25968,67 @@ Andere Felder werden nicht verwendet.</translation>
         <translation>Eigenschaften der Klemmleiste ändern</translation>
     </message>
     <message>
+        <source>Column searched by the filter</source>
+        <translation>Spalte, in der der Filter sucht</translation>
+    </message>
+    <message>
+        <source>Filter, for example 24V or K1*</source>
+        <translation>Filter, zum Beispiel 24V oder K1*</translation>
+    </message>
+    <message>
+        <source>Text searched in the column, whatever the case and the spaces: &quot;24 v&quot; finds 24V. * stands for any text and ? for one character. Return selects the terminals found.</source>
+        <translation>In der Spalte gesuchter Text, unabhängig von Groß-/Kleinschreibung und Leerzeichen: „24 v“ findet 24V. * steht für beliebigen Text und ? für ein Zeichen. Eingabe wählt die gefundenen Klemmen aus.</translation>
+    </message>
+    <message>
+        <source>Hide the others</source>
+        <translation>Andere ausblenden</translation>
+    </message>
+    <message>
+        <source>Show only the terminals found. A terminal of several levels stays whole when one of its levels is found.</source>
+        <translation>Nur die gefundenen Klemmen anzeigen. Eine Etagenklemme bleibt ganz, wenn eine ihrer Etagen gefunden wird.</translation>
+    </message>
+    <message>
+        <source>Whole rows</source>
+        <translation>Ganze Zeilen</translation>
+    </message>
+    <message>
+        <source>Bridge, level %1</source>
+        <translation>Brücke, Etage %1</translation>
+    </message>
+    <message>
+        <source>What is selected: whole rows for the type, the function, the LED, the cable or the move, or the cells of one level to bridge them.</source>
+        <translation>Was ausgewählt wird: ganze Zeilen für Typ, Funktion, LED, Kabel oder Verschieben, oder die Zellen einer Etage, um sie zu brücken.</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>Auswählen</translation>
+    </message>
+    <message>
+        <source>Select the terminals found</source>
+        <translation>Gefundene Klemmen auswählen</translation>
+    </message>
+    <message>
+        <source>All columns</source>
+        <translation>Alle Spalten</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n found</source>
+        <translation>
+            <numerusform>%n gefunden</numerusform>
+            <numerusform>%n gefunden</numerusform>
+        </translation>
+    </message>
+    <message>
         <source>A bridge of your own</source>
-        <translation>Eigene Brücke</translation>
+        <translation>Eine eigene Brücke</translation>
     </message>
     <message>
         <source>This bridge is set here only: it is not added to the drawing, where bridges belong.
 
 Set it here anyway?</source>
-        <translation>Diese Brücke wird nur hier gesetzt: Sie wird nicht in die Zeichnung übernommen, wo Brücken hingehören.
+        <translation>Diese Brücke wird nur hier festgelegt: sie wird nicht der Zeichnung hinzugefügt, wohin Brücken gehören.
 
-Trotzdem hier setzen?</translation>
+Trotzdem hier festlegen?</translation>
     </message>
     <message>
         <source>Add spare terminals</source>
@@ -26194,7 +26432,7 @@ Doppelklick, um zum Bauteil zu gehen</translation>
     </message>
     <message>
         <source>Installation, Location and Label (BMK) of the piece the cable lands on, past this strip, one line per field</source>
-        <translation>Anlage, Ort und BMK des Betriebsmittels, auf dem das Kabel jenseits dieser Leiste landet, ein Feld je Zeile</translation>
+        <translation>Anlage, Ort und BMK des Teils, auf dem das Kabel jenseits dieser Leiste landet, eine Zeile je Feld</translation>
     </message>
     <message>
         <source>Number wire</source>
@@ -26218,8 +26456,8 @@ Doppelklick, um zum Bauteil zu gehen</translation>
     <message>
         <source>One line per field: Installation, Location, Label (BMK).
 Ctrl+Return gives the cell back, Escape throws the text away.</source>
-        <translation>Ein Feld je Zeile: Anlage, Ort, BMK.
-Strg+Eingabe übernimmt die Zelle, Esc verwirft den Text.</translation>
+        <translation>Eine Zeile je Feld: Anlage, Ort, BMK.
+Strg+Eingabe gibt die Zelle zurück, Escape verwirft den Text.</translation>
     </message>
 </context>
 <context>
@@ -26236,6 +26474,22 @@ Strg+Eingabe übernimmt die Zelle, Esc verwirft den Text.</translation>
         <translation>Klemmleisten-Planer</translation>
     </message>
     <message>
+        <source>Expand all</source>
+        <translation>Alle ausklappen</translation>
+    </message>
+    <message>
+        <source>Unfold every plant, location and terminal strip of the tree</source>
+        <translation>Alle Anlagen, Orte und Klemmleisten des Baums aufklappen</translation>
+    </message>
+    <message>
+        <source>Collapse all</source>
+        <translation>Alle einklappen</translation>
+    </message>
+    <message>
+        <source>Fold every plant, location and terminal strip of the tree</source>
+        <translation>Alle Anlagen, Orte und Klemmleisten des Baums zuklappen</translation>
+    </message>
+    <message>
         <source>Untitled project</source>
         <translation>Projekt ohne Titel</translation>
     </message>
@@ -26243,27 +26497,31 @@ Strg+Eingabe übernimmt die Zelle, Esc verwirft den Text.</translation>
         <source>Independent terminals</source>
         <translation>nicht zugeordnete Klemmen</translation>
     </message>
+    <message>
+        <source>(no label) %1, folio %2</source>
+        <translation>(ohne Beschriftung) %1, Blatt %2</translation>
+    </message>
 </context>
 <context>
     <name>TextClearance</name>
     <message>
         <source>Keep texts clear of wires</source>
-        <translation>Texte von Leitern freihalten</translation>
+        <translation>Texte von Drähten freihalten</translation>
     </message>
 </context>
 <context>
     <name>TextClearanceDialog</name>
     <message>
         <source>Keep texts clear of wires</source>
-        <translation>Texte von Leitern freihalten</translation>
+        <translation>Texte von Drähten freihalten</translation>
     </message>
     <message>
         <source>Texts that sit on a wire are moved the shortest way that leaves a gap. Texts of wires and texts in a group stay where they are.</source>
-        <translation>Texte, die auf einem Leiter liegen, werden auf dem kürzesten Weg so verschoben, dass ein Abstand bleibt. Leitertexte und Texte in einer Gruppe bleiben, wo sie sind.</translation>
+        <translation>Texte, die auf einem Draht liegen, werden auf dem kürzesten Weg verschoben, der einen Abstand lässt. Texte von Drähten und Texte in einer Gruppe bleiben, wo sie sind.</translation>
     </message>
     <message>
         <source>Selected texts and symbols</source>
-        <translation>Ausgewählte Texte und Symbole</translation>
+        <translation>Gewählte Texte und Symbole</translation>
     </message>
     <message>
         <source>This folio</source>
@@ -26279,7 +26537,7 @@ Strg+Eingabe übernimmt die Zelle, Esc verwirft den Text.</translation>
     </message>
     <message>
         <source>Move a text at most</source>
-        <translation>Text höchstens verschieben um</translation>
+        <translation>Einen Text höchstens verschieben um</translation>
     </message>
     <message>
         <source>Shortest way</source>
@@ -26311,8 +26569,8 @@ Strg+Eingabe übernimmt die Zelle, Esc verwirft den Text.</translation>
     <message numerus="yes">
         <source>%n more sit on a wire with no free place in reach.</source>
         <translation>
-            <numerusform>%n weiterer liegt auf einem Leiter ohne erreichbaren freien Platz.</numerusform>
-            <numerusform>%n weitere liegen auf einem Leiter ohne erreichbaren freien Platz.</numerusform>
+            <numerusform>%n weiterer liegt auf einem Draht ohne freien Platz in Reichweite.</numerusform>
+            <numerusform>%n weitere liegen auf einem Draht ohne freien Platz in Reichweite.</numerusform>
         </translation>
     </message>
     <message>
@@ -26328,7 +26586,7 @@ Strg+Eingabe übernimmt die Zelle, Esc verwirft den Text.</translation>
     </message>
     <message>
         <source>Navigation only: this does not make an electrical link. Ctrl-click the text to go to the folio; in a PDF export the text becomes a link to it.</source>
-        <translation>Nur Navigation: Dies stellt keine elektrische Verbindung her. Strg+Klick auf den Text springt zur Seite; in einem PDF-Export wird der Text zu einem Link darauf.</translation>
+        <translation>Nur Navigation: dies erstellt keine elektrische Verbindung. Strg+Klick auf den Text springt zur Seite; in einem PDF-Export wird der Text zu einer Verknüpfung darauf.</translation>
     </message>
     <message>
         <source>Folio</source>
@@ -26336,7 +26594,7 @@ Strg+Eingabe übernimmt die Zelle, Esc verwirft den Text.</translation>
     </message>
     <message>
         <source>Remove the link</source>
-        <translation>Verweis entfernen</translation>
+        <translation>Verknüpfung entfernen</translation>
     </message>
 </context>
 <context>
@@ -26505,7 +26763,7 @@ Strg+Eingabe übernimmt die Zelle, Esc verwirft den Text.</translation>
     <message>
         <source>Indicate which side of the title border template should be aligned with the edge of the workspace</source>
         <comment>default dialog label</comment>
-        <translation>Angeben, welche Seite der Schriftfeldvorlage an der Kante des Arbeitsbereichs ausgerichtet werden soll</translation>
+        <translation>Geben Sie an, welche Seite der Schriftfeldvorlage an der Kante der Arbeitsfläche ausgerichtet werden soll</translation>
     </message>
     <message>
         <source>%</source>
@@ -26561,6 +26819,22 @@ Strg+Eingabe übernimmt die Zelle, Esc verwirft den Text.</translation>
     <message>
         <source>Rev index:</source>
         <translation>Revisionsindex:</translation>
+    </message>
+    <message>
+        <source>Folio group:</source>
+        <translation>Seitengruppe:</translation>
+    </message>
+    <message>
+        <source>The group this folio belongs to. Left empty, it is the plant. Available as variable %{folio_group} for title blocks</source>
+        <translation>Die Gruppe, zu der diese Seite gehört. Leer gelassen ist es die Anlage. Als Variable %{folio_group} für Schriftfelder verfügbar</translation>
+    </message>
+    <message>
+        <source>Folio sub-group:</source>
+        <translation>Seiten-Untergruppe:</translation>
+    </message>
+    <message>
+        <source>The sub-group of this folio within its group. Left empty, it is the location. Available as variable %{folio_subgroup} for title blocks</source>
+        <translation>Die Untergruppe dieser Seite innerhalb ihrer Gruppe. Leer gelassen ist es der Ort. Als Variable %{folio_subgroup} für Schriftfelder verfügbar</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Available as% plant for title block templates&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
@@ -27371,15 +27645,15 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <name>XRefDisplayDialog</name>
     <message>
         <source>Relay contact display</source>
-        <translation>Darstellung der Relaiskontakte</translation>
+        <translation>Relaiskontakt-Darstellung</translation>
     </message>
     <message>
         <source>The contact display keeps its electrical links. For a manual position, Shift-drag the display on the folio, or enter the offset of its top left corner from the symbol.</source>
-        <translation>Die Kontaktdarstellung behält ihre elektrischen Verknüpfungen. Für eine manuelle Position die Darstellung auf der Seite mit Umschalt+Ziehen verschieben oder den Versatz ihrer linken oberen Ecke zum Symbol eingeben.</translation>
+        <translation>Die Kontaktdarstellung behält ihre elektrischen Verknüpfungen. Für eine manuelle Position ziehen Sie die Darstellung mit Umschalt auf der Seite, oder geben Sie den Versatz ihrer oberen linken Ecke vom Symbol ein.</translation>
     </message>
     <message>
         <source>Cross</source>
-        <translation>Kreuz</translation>
+        <translation>Gekreuzt</translation>
     </message>
     <message>
         <source>Contact symbols</source>
@@ -27690,7 +27964,7 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     </message>
     <message>
         <source>Text Background Color</source>
-        <translation>Texthintergrundfarbe</translation>
+        <translation>Hintergrundfarbe des Texts</translation>
     </message>
     <message>
         <source>No background color</source>
@@ -27743,7 +28017,7 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     </message>
     <message>
         <source>Default project font</source>
-        <translation>Standard-Projektschriftart</translation>
+        <translation>Standardschrift des Projekts</translation>
     </message>
     <message>
         <source>Bold</source>

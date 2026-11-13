@@ -185,6 +185,10 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/import/edz/edzimporter.h
   ${QET_DIR}/sources/import/edz/edzsevenzip.cpp
   ${QET_DIR}/sources/import/edz/edzsevenzip.h
+  ${QET_DIR}/sources/diagramevent/macrolabels.cpp
+  ${QET_DIR}/sources/diagramevent/macrolabels.h
+  ${QET_DIR}/sources/ui/macrolabelsdialog.cpp
+  ${QET_DIR}/sources/ui/macrolabelsdialog.h
   ${QET_DIR}/sources/import/edz/lzma/7zAlloc.c
   ${QET_DIR}/sources/import/edz/lzma/7zArcIn.c
   ${QET_DIR}/sources/import/edz/lzma/7zBuf.c
@@ -398,6 +402,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/autoNum/numerotationcontextcommands.h
   ${QET_DIR}/sources/autoNum/numerotationcontext.cpp
   ${QET_DIR}/sources/autoNum/numerotationcontext.h
+  ${QET_DIR}/sources/autoNum/renumberconductorscommand.cpp
+  ${QET_DIR}/sources/autoNum/renumberconductorscommand.h
   ${QET_DIR}/sources/autoNum/renumberelementscommand.cpp
   ${QET_DIR}/sources/autoNum/renumberelementscommand.h
   ${QET_DIR}/sources/autoNum/autonumschemecommand.cpp
@@ -492,6 +498,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/TerminalStrip/ui/terminalpreviewwidget.h
   ${QET_DIR}/sources/diagramevent/diagrameventaddbridge.cpp
   ${QET_DIR}/sources/diagramevent/diagrameventaddbridge.h
+  ${QET_DIR}/sources/diagramevent/diagrameventaddstructurebox.cpp
+  ${QET_DIR}/sources/diagramevent/diagrameventaddstructurebox.h
   ${QET_DIR}/sources/diagramevent/diagrameventaddtext.cpp
   ${QET_DIR}/sources/diagramevent/diagrameventaddtext.h
   ${QET_DIR}/sources/diagramevent/diagrameventinterface.cpp
@@ -655,6 +663,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/NameList/ui/namelistwidget.cpp
   ${QET_DIR}/sources/NameList/ui/namelistwidget.h
 
+  ${QET_DIR}/sources/print/pdfpagesetupdialog.cpp
+  ${QET_DIR}/sources/print/pdfpagesetupdialog.h
   ${QET_DIR}/sources/print/projectprintwindow.cpp
   ${QET_DIR}/sources/print/projectprintwindow.h
   ${QET_DIR}/sources/print/printdrawing.h
@@ -720,6 +730,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/qetgraphicsitem/dimensionitem.h
   ${QET_DIR}/sources/qetgraphicsitem/shapetransform.cpp
   ${QET_DIR}/sources/qetgraphicsitem/shapetransform.h
+  ${QET_DIR}/sources/qetgraphicsitem/structureboxitem.cpp
+  ${QET_DIR}/sources/qetgraphicsitem/structureboxitem.h
   ${QET_DIR}/sources/qetgraphicsitem/qgraphicsitemutility.cpp
   ${QET_DIR}/sources/qetgraphicsitem/qgraphicsitemutility.h
   ${QET_DIR}/sources/qetgraphicsitem/reportelement.cpp
@@ -949,6 +961,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/ui/customelementinfopartwidget.h
   ${QET_DIR}/sources/ui/elementinfopartwidget.cpp
   ${QET_DIR}/sources/ui/elementinfopartwidget.h
+  ${QET_DIR}/sources/ui/elementarticleswidget.cpp
+  ${QET_DIR}/sources/ui/elementarticleswidget.h
   ${QET_DIR}/sources/ui/elementinfowidget.cpp
   ${QET_DIR}/sources/ui/elementinfowidget.h
   ${QET_DIR}/sources/ui/multielementinfowidget.cpp
@@ -1009,6 +1023,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/ui/dimensionpropertiesdialog.h
   ${QET_DIR}/sources/ui/dimensionpropertieswidget.cpp
   ${QET_DIR}/sources/ui/dimensionpropertieswidget.h
+  ${QET_DIR}/sources/ui/structureboxpropertieswidget.cpp
+  ${QET_DIR}/sources/ui/structureboxpropertieswidget.h
   ${QET_DIR}/sources/ui/thirdpartybinaryinstalldialog.cpp
   ${QET_DIR}/sources/ui/thirdpartybinaryinstalldialog.h
   ${QET_DIR}/sources/ui/titleblockpropertieswidget.cpp
@@ -1071,6 +1087,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/undocommand/alignselectioncommand.h
   ${QET_DIR}/sources/undocommand/mirrorselectioncommand.cpp
   ${QET_DIR}/sources/undocommand/mirrorselectioncommand.h
+  ${QET_DIR}/sources/undocommand/resetsymboltextscommand.cpp
+  ${QET_DIR}/sources/undocommand/resetsymboltextscommand.h
   ${QET_DIR}/sources/undocommand/rotateselectioncommand.cpp
   ${QET_DIR}/sources/undocommand/rotateselectioncommand.h
   ${QET_DIR}/sources/undocommand/promoteshapecommand.cpp

@@ -290,6 +290,7 @@ class QETDiagramEditor : public QETMainWindow
 		
 		QAction* m_find_duplicate_labels = nullptr;
 		QAction* m_check_potentials = nullptr;
+		QAction* m_check_fluid = nullptr;
 		QAction* m_project_languages = nullptr;
 
 		QAction

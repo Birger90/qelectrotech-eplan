@@ -131,7 +131,15 @@ class Terminal : public QGraphicsObject
 		static bool takesConductorColor();
 		static void setTakesConductorColor(bool takes);
 
+			/// The fluid port end (silencer, plug) drawn on this
+			/// terminal while no line is on it, PortEnd::None if none
+		Fluid::PortEnd shownPortEnd() const;
+		Fluid::Medium medium() const { return d->m_medium; }
+		Fluid::PortEnd portEnd() const { return d->m_port_end; }
+
 	private:
+		QList<QLineF> portEndLines() const;
+
 		bool               m_draw_help_line{false};
 		QGraphicsLineItem *m_help_line{nullptr};
 		QGraphicsLineItem *m_help_line_a{nullptr};

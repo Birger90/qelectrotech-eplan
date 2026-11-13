@@ -3143,6 +3143,14 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
         <translation>❗</translation>
     </message>
     <message>
+        <source>Fluid line :</source>
+        <translation>Fluidleitung :</translation>
+    </message>
+    <message>
+        <source>What this line is used for in a pneumatic or hydraulic diagram. A pilot or exhaust line is drawn dashed, a working line solid.</source>
+        <translation>Wofür diese Leitung in einem Pneumatik- oder Hydraulikplan dient. Steuer- und Abluftleitungen werden gestrichelt gezeichnet, Arbeitsleitungen durchgezogen.</translation>
+    </message>
+    <message>
         <source>Where the stroke stands, as a share of the conductor&apos;s length from its start. &quot;Middle&quot;: the middle of its longest stretch.</source>
         <translation>Wo der Strich steht, als Anteil der Leiterlänge ab seinem Anfang. „Mitte“: die Mitte seines längsten Abschnitts.</translation>
     </message>
@@ -3331,6 +3339,26 @@ Gesperrt durch die Option „Nur eine Potenzialbeschriftung je Seite anzeigen“
         <source>Dots and dashes</source>
         <comment>conductor style: dashed and dotted line</comment>
         <translation>Strichpunkt-Linie</translation>
+    </message>
+    <message>
+        <source>No</source>
+        <comment>fluid line: this is an electric conductor</comment>
+        <translation>Keine</translation>
+    </message>
+    <message>
+        <source>Working line</source>
+        <comment>fluid line kind</comment>
+        <translation>Arbeitsleitung</translation>
+    </message>
+    <message>
+        <source>Pilot line</source>
+        <comment>fluid line kind</comment>
+        <translation>Steuerleitung</translation>
+    </message>
+    <message>
+        <source>Exhaust line</source>
+        <comment>fluid line kind</comment>
+        <translation>Abluft-/Leckleitung</translation>
     </message>
 </context>
 <context>
@@ -8417,6 +8445,71 @@ Mit dem Import dieser Datei bestätigen Sie, dass:
     <message>
         <source>Pictures are stored at four times the size they have on the folio instead of their full resolution: a much smaller file, still sharp when printed</source>
         <translation>Bilder werden in vierfacher Größe ihrer Darstellung auf der Seite statt in voller Auflösung gespeichert: eine viel kleinere Datei, die beim Drucken trotzdem scharf bleibt</translation>
+    </message>
+</context>
+<context>
+    <name>FluidCheckDialog</name>
+    <message>
+        <source>Check fluid power</source>
+        <translation>Fluidtechnik prüfen</translation>
+    </message>
+    <message>
+        <source>Each row is a pneumatic or hydraulic port left open, a solenoid valve without its coil or a valve coil without its valve. Close a port with a line, or give it a silencer or a plug in the element editor. Click a row to select the element.</source>
+        <translation>Jede Zeile ist ein offener pneumatischer oder hydraulischer Anschluss, ein Magnetventil ohne Spule oder eine Ventilspule ohne Ventil. Einen Anschluss schließt eine Leitung, oder im Bauteil-Editor ein Schalldämpfer bzw. Blindstopfen. Ein Klick auf eine Zeile wählt das Bauteil.</translation>
+    </message>
+    <message>
+        <source>Problem</source>
+        <translation>Problem</translation>
+    </message>
+    <message>
+        <source>Element</source>
+        <translation>Bauteil</translation>
+    </message>
+    <message>
+        <source>Folio</source>
+        <translation>Folie</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Aktualisieren</translation>
+    </message>
+    <message>
+        <source>%1 — %2</source>
+        <translation>%1 — %2</translation>
+    </message>
+    <message>
+        <source>Open port</source>
+        <translation>Offener Anschluss</translation>
+    </message>
+    <message>
+        <source>Open port %1</source>
+        <translation>Offener Anschluss %1</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n solenoid(s) without a coil</source>
+        <translation>
+            <numerusform>%n Magnet ohne Spule</numerusform>
+            <numerusform>%n Magnete ohne Spule</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Coil linked to no valve</source>
+        <translation>Spule mit keinem Ventil verknüpft</translation>
+    </message>
+    <message>
+        <source>No open fluid port, every solenoid has its coil.</source>
+        <translation>Kein offener Fluidanschluss, jeder Magnet hat seine Spule.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n problem(s) found.</source>
+        <translation>
+            <numerusform>%n Problem gefunden.</numerusform>
+            <numerusform>%n Probleme gefunden.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>This element no longer exists. Refresh the results.</source>
+        <translation>Dieses Bauteil gibt es nicht mehr. Bitte die Ergebnisse aktualisieren.</translation>
     </message>
 </context>
 <context>
@@ -16404,6 +16497,14 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     <message>
         <source>Check potential types...</source>
         <translation>Potenzialtypen prüfen...</translation>
+    </message>
+    <message>
+        <source>Check fluid power...</source>
+        <translation>Fluidtechnik prüfen...</translation>
+    </message>
+    <message>
+        <source>List open pneumatic and hydraulic ports and solenoid valves without their coil</source>
+        <translation>Offene pneumatische und hydraulische Anschlüsse sowie Magnetventile ohne Spule auflisten</translation>
     </message>
     <message>
         <source>Project languages...</source>
@@ -25643,12 +25744,60 @@ Andere Felder werden nicht verwendet.</translation>
         <translation>Gemeinsam(Wechslerkontakt)</translation>
     </message>
     <message>
+        <source>Electric</source>
+        <comment>terminal medium</comment>
+        <translation>Elektrisch</translation>
+    </message>
+    <message>
+        <source>Pneumatic</source>
+        <comment>terminal medium</comment>
+        <translation>Pneumatisch</translation>
+    </message>
+    <message>
+        <source>Hydraulic</source>
+        <comment>terminal medium</comment>
+        <translation>Hydraulisch</translation>
+    </message>
+    <message>
+        <source>Mechanical</source>
+        <comment>terminal medium</comment>
+        <translation>Mechanisch</translation>
+    </message>
+    <message>
+        <source>Mark only (no line)</source>
+        <comment>terminal medium</comment>
+        <translation>Nur Marke (keine Leitung)</translation>
+    </message>
+    <message>
+        <source>Nothing</source>
+        <comment>open port of a terminal</comment>
+        <translation>Nichts</translation>
+    </message>
+    <message>
+        <source>Silencer</source>
+        <comment>open port of a terminal</comment>
+        <translation>Schalldämpfer</translation>
+    </message>
+    <message>
+        <source>Blanking plug</source>
+        <comment>open port of a terminal</comment>
+        <translation>Blindstopfen</translation>
+    </message>
+    <message>
         <source>Change the terminal name</source>
         <translation>Name des Anschlusses ändern</translation>
     </message>
     <message>
         <source>Change the potential of a terminal</source>
         <translation>Das Potenzial eines Anschlusses ändern</translation>
+    </message>
+    <message>
+        <source>Change the medium of a terminal</source>
+        <translation>Medium eines Anschlusses ändern</translation>
+    </message>
+    <message>
+        <source>Change the open port of a terminal</source>
+        <translation>Abschluss eines Anschlusses ändern</translation>
     </message>
     <message>
         <source>Change the type of a terminal</source>
@@ -25734,6 +25883,22 @@ Andere Felder werden nicht verwendet.</translation>
     <message>
         <source>No effect unless &quot;Function separation&quot; is checked (all terminals of the block then stay connected). When it is checked, terminals sharing the same value stay connected to each other and the others are isolated.</source>
         <translation>Keine Wirkung, außer wenn „Funktionstrennung“ aktiviert ist (alle Klemmen des Blocks bleiben dann verbunden). Ist sie aktiviert, bleiben Klemmen mit demselben Wert untereinander verbunden und die anderen werden getrennt.</translation>
+    </message>
+    <message>
+        <source>Medium:</source>
+        <translation>Medium:</translation>
+    </message>
+    <message>
+        <source>What this terminal carries. A line only joins terminals of the same medium.</source>
+        <translation>Was dieser Anschluss führt. Eine Leitung verbindet nur Anschlüsse mit gleichem Medium.</translation>
+    </message>
+    <message>
+        <source>Open port:</source>
+        <translation>Offener Anschluss:</translation>
+    </message>
+    <message>
+        <source>What closes this port while no line is connected to it</source>
+        <translation>Was diesen Anschluss verschließt, solange keine Leitung angeschlossen ist</translation>
     </message>
     <message>
         <source>Terminal name</source>

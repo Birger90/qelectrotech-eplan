@@ -2010,6 +2010,7 @@ add_executable(
   tst_conductorapplychanges.cpp
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
   ${QET_DIR}/sources/qet.cpp
   ${QET_DIR}/sources/qeticons.cpp
   ${QET_DIR}/sources/shortcutmanager.cpp)
@@ -2024,6 +2025,7 @@ add_executable(
   tst_conductordashpattern.cpp
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
   ${QET_DIR}/sources/qet.cpp
   ${QET_DIR}/sources/qeticons.cpp
   ${QET_DIR}/sources/shortcutmanager.cpp)
@@ -2049,6 +2051,7 @@ add_executable(
   tst_conductortypefield
   tst_conductortypefield.cpp
   ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/qetinformation.cpp
   ${QET_DIR}/sources/qet.cpp
@@ -2065,6 +2068,7 @@ add_executable(
   tst_conductorsizesetting.cpp
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
   ${QET_DIR}/sources/qet.cpp
   ${QET_DIR}/sources/qeticons.cpp
   ${QET_DIR}/sources/shortcutmanager.cpp)
@@ -2080,6 +2084,7 @@ add_executable(
   tst_conductormultiedit.cpp
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
   ${QET_DIR}/sources/QPropertyUndoCommand/qpropertyundocommand.cpp
   ${QET_DIR}/sources/qet.cpp
   ${QET_DIR}/sources/qeticons.cpp
@@ -2098,6 +2103,7 @@ add_executable(
   tst_searchreplaceconductor.cpp
   ${QET_DIR}/sources/SearchAndReplace/searchandreplaceworker.cpp
   ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/titleblockproperties.cpp
   ${QET_DIR}/sources/diagramcontext.cpp
@@ -2538,3 +2544,21 @@ endif()
 # The title block recorded for the screen shows what is drawn, and a change
 # of the folio's data reaches the screen
 qet_add_app_test(tst_titleblockcache tst_titleblockcache.cpp)
+
+# Fluid power data model: the words in the files, the <fluid> block of an
+# element, and that an electric terminal or conductor is written as before
+add_executable(
+  tst_fluiddata
+  tst_fluiddata.cpp
+  ${QET_DIR}/sources/fluid/fluiddata.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
+  ${QET_DIR}/sources/conductordashpattern.cpp
+  ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/qet.cpp
+  ${QET_DIR}/sources/qeticons.cpp
+  ${QET_DIR}/sources/shortcutmanager.cpp)
+add_test(NAME tst_fluiddata COMMAND tst_fluiddata)
+set_tests_properties(tst_fluiddata PROPERTIES
+  ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+target_include_directories(tst_fluiddata PRIVATE ${QET_DIR}/sources)
+target_link_libraries(tst_fluiddata PRIVATE Qt::Test Qt::Widgets Qt::Xml pugixml::pugixml)

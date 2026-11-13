@@ -20,6 +20,7 @@
 
 #include <qet.h>
 #include "propertiesinterface.h"
+#include "../fluid/fluidtypes.h"
 
 #include <QColor>
 #include <QFont>
@@ -151,6 +152,12 @@ class TerminalData : public PropertiesInterface
 		bool m_use_master_label = false;
 		/// Index into the master's contact group labels (T1=0, T2=1, ..., T20=19)
 		int m_master_label_index = 0;
+
+		/// What this terminal carries. Electric for every terminal
+		/// made before fluid power existed; only another value is saved
+		Fluid::Medium m_medium = Fluid::Medium::Electric;
+		/// What closes this port while no line is connected to it
+		Fluid::PortEnd m_port_end = Fluid::PortEnd::None;
 
 	private:
 		QGraphicsObject* q{nullptr};

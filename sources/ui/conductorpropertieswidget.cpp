@@ -101,6 +101,8 @@ void ConductorPropertiesWidget::setProperties(
 	ui->m_wire_color_le         -> setText    (m_properties.m_wire_color);
 	ui->m_wire_section_le       -> setText    (m_properties.m_wire_section);
 	ui->m_conductor_type_le     -> setText    (m_properties.m_conductor_type);
+	ui->m_fluid_line_cb         -> setCurrentIndex(qMax(0, ui->m_fluid_line_cb->findData(
+						   static_cast<int>(m_properties.m_fluid_line))));
 	ui->m_text_size_sb          -> setValue   (m_properties.text_size);
 	ui->m_cond_size_sb          -> setValue   (m_properties.cond_size);
 	ui->m_show_text_cb          -> setChecked (m_properties.m_show_text);
@@ -190,6 +192,8 @@ ConductorProperties ConductorPropertiesWidget::properties() const
 	properties_.m_wire_color            = ui -> m_wire_color_le->text();
 	properties_.m_wire_section          = ui -> m_wire_section_le->text();
 	properties_.m_conductor_type        = ui -> m_conductor_type_le->text();
+	properties_.m_fluid_line            = static_cast<Fluid::LineKind>(
+			ui->m_fluid_line_cb->currentData().toInt());
 	properties_.text_size               = ui -> m_text_size_sb -> value();
 	properties_.cond_size               = ui -> m_cond_size_sb -> value();
 	properties_.m_show_text             = ui -> m_show_text_cb -> isChecked();
@@ -388,6 +392,29 @@ void ConductorPropertiesWidget::initWidget()
 	ui -> m_line_style_cb -> addItem(tr("Solid line", "conductor style: solid line"), QPen(Qt::SolidLine));
 	ui -> m_line_style_cb -> addItem(tr("Dashed line", "conductor style: dashed line"), QPen(Qt::DashLine));
 	ui -> m_line_style_cb -> addItem(tr("Dots and dashes", "conductor style: dashed and dotted line"), QPen(Qt::DashDotLine));
+
+	ui -> m_fluid_line_cb -> addItem(tr("No", "fluid line: this is an electric conductor"),
+					 static_cast<int>(Fluid::LineKind::None));
+	ui -> m_fluid_line_cb -> addItem(tr("Working line", "fluid line kind"),
+					 static_cast<int>(Fluid::LineKind::Working));
+	ui -> m_fluid_line_cb -> addItem(tr("Pilot line", "fluid line kind"),
+					 static_cast<int>(Fluid::LineKind::Pilot));
+	ui -> m_fluid_line_cb -> addItem(tr("Exhaust line", "fluid line kind"),
+					 static_cast<int>(Fluid::LineKind::Exhaust));
+		//Chosen by the user, never when the form is filled: the line
+		//takes the style ISO 1219-1 gives its kind, and that style
+		//can still be changed afterwards
+	connect(ui->m_fluid_line_cb, QOverload<int>::of(&QComboBox::activated), this, [this]() {
+		const auto kind = static_cast<Fluid::LineKind>(
+				ui->m_fluid_line_cb->currentData().toInt());
+		if (kind == Fluid::LineKind::None)
+			return;
+		const Qt::PenStyle style = kind == Fluid::LineKind::Working
+				? Qt::SolidLine : Qt::DashLine;
+		const int index = ui->m_line_style_cb->findData(QPen(style));
+		if (index != -1)
+			ui->m_line_style_cb->setCurrentIndex(index);
+	});
 
 	ui -> m_update_preview_pb -> setHidden(true);
 

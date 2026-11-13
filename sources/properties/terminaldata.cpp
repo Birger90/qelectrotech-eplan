@@ -138,6 +138,13 @@ QDomElement TerminalData::toXml(QDomDocument &xml_document) const
 		xml_element.setAttribute("master_label_index", m_master_label_index);
 	}
 
+	// Only written when set: an electric terminal stays as it was
+	if (m_medium != Fluid::Medium::Electric)
+		xml_element.setAttribute("medium", Fluid::mediumToString(m_medium));
+	if (m_port_end != Fluid::PortEnd::None)
+		xml_element.setAttribute("port_end",
+					 Fluid::portEndToString(m_port_end));
+
 	return(xml_element);
 }
 
@@ -215,6 +222,9 @@ bool TerminalData::fromXml (const QDomElement &xml_element)
 	// Read master label override settings
 	m_use_master_label = (xml_element.attribute("use_master_label") == QLatin1String("true"));
 	m_master_label_index = xml_element.attribute("master_label_index", "0").toInt();
+
+	m_medium = Fluid::mediumFromString(xml_element.attribute("medium"));
+	m_port_end = Fluid::portEndFromString(xml_element.attribute("port_end"));
 
 	return true;
 }

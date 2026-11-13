@@ -246,6 +246,10 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/conductornumexport.h
   ${QET_DIR}/sources/bomexport.cpp
   ${QET_DIR}/sources/bomexport.h
+  ${QET_DIR}/sources/fluid/fluiddata.cpp
+  ${QET_DIR}/sources/fluid/fluiddata.h
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.h
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/conductordashpattern.h
   ${QET_DIR}/sources/conductorprofile.cpp
@@ -1009,6 +1013,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/ui/projectlanguagesdialog.h
   ${QET_DIR}/sources/ui/potentialcheckdialog.cpp
   ${QET_DIR}/sources/ui/potentialcheckdialog.h
+  ${QET_DIR}/sources/ui/fluidcheckdialog.cpp
+  ${QET_DIR}/sources/ui/fluidcheckdialog.h
   ${QET_DIR}/sources/ui/potentialsourceswidget.cpp
   ${QET_DIR}/sources/ui/potentialsourceswidget.h
   ${QET_DIR}/sources/ui/potentialtypeswidget.cpp

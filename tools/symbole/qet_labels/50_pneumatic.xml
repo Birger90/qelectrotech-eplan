@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Kennbuchstaben (IEC 81346-2) für die Pneumatik-Sammlung, als Vorschlag beim Einfügen.
+    Sie folgen der Kennzeichnung, die FluidSIM 6 in seinen Beispielschaltungen vergibt
+    (tools/symbole/fluidsim_symbole.py, kennbuchstaben()): Zylinder MM, 4/2- bis 5/3-Wegeventile QM,
+    2/2- bis 3/3-Wegeventile SJ (in FluidSIM je nach Rolle auch QM oder BG), Wechsel-/Zweidruckventile KH,
+    Druckventile QN, Wartungseinheit AZ, Speicher CM, Druckluftquelle GP, Manometer PG, Drucksensoren BP,
+    Endschalter BG, Vakuum UQ. Ordner mit gemischtem Inhalt (Stromventile, Leitungsteile) haben keinen.
+    tools/deploy_lokal.ps1 legt die Datei nur an, wenn es noch keine gibt: Änderungen über
+    "Präfixe konfigurieren" bleiben erhalten.-->
+<labels>
+  <category name="5010_compressed_air">
+    <category name="501010_air_generation">
+      <prefix>GP</prefix>
+    </category>
+    <category name="501011_tank">
+      <prefix>CM</prefix>
+    </category>
+    <category name="501012_treatment">
+      <prefix>AZ</prefix>
+    </category>
+    <category name="501013_control">
+      <prefix>QN</prefix>
+    </category>
+    <category name="501014_filter_regulator_lubricator">
+      <prefix>AZ</prefix>
+    </category>
+    <category name="501015_pipes_connections"></category>
+    <category name="501016_funktion_components">
+      <category name="50101610_flow"></category>
+      <category name="50101620_logic">
+        <prefix>KH</prefix>
+      </category>
+    </category>
+    <category name="501017_indicator">
+      <prefix>PG</prefix>
+    </category>
+    <category name="501018_air_vacuum">
+      <prefix>UQ</prefix>
+    </category>
+  </category>
+  <category name="5020_velves">
+    <category name="502010_control">
+      <category name="50201010_2_2_way">
+        <prefix>SJ</prefix>
+      </category>
+      <category name="50201020_3_2_way">
+        <prefix>SJ</prefix>
+      </category>
+      <category name="50201030_3_3_way">
+        <prefix>SJ</prefix>
+      </category>
+      <category name="50201040_4_2_way">
+        <prefix>QM</prefix>
+      </category>
+      <category name="50201050_4_3_way">
+        <prefix>QM</prefix>
+      </category>
+      <category name="50201060_5_2_way">
+        <prefix>QM</prefix>
+      </category>
+      <category name="50201070_5_3_way">
+        <prefix>QM</prefix>
+      </category>
+    </category>
+    <category name="502020_logic">
+      <prefix>KH</prefix>
+    </category>
+    <category name="502030_prop">
+      <prefix>QM</prefix>
+    </category>
+    <category name="502070_relief">
+      <prefix>QN</prefix>
+    </category>
+  </category>
+  <category name="5030_actuators">
+    <prefix>MM</prefix>
+  </category>
+  <category name="5040_sensors">
+    <category name="504010_pressure_switch">
+      <prefix>BP</prefix>
+    </category>
+    <category name="504020_pressure_sensors">
+      <prefix>BP</prefix>
+    </category>
+    <category name="504030_limit_switches">
+      <prefix>BG</prefix>
+    </category>
+  </category>
+</labels>

@@ -45,6 +45,8 @@ class PartTerminal : public CustomElementGraphicPart
 	Q_PROPERTY(bool use_master_label READ useMasterLabel WRITE setUseMasterLabel)
 	Q_PROPERTY(int master_label_index READ masterLabelIndex WRITE setMasterLabelIndex)
 	Q_PROPERTY(QString potential READ potential WRITE setPotential)
+	Q_PROPERTY(int medium READ medium WRITE setMedium)
+	Q_PROPERTY(int port_end READ portEnd WRITE setPortEnd)
 
 	public:
 		// constructors, destructor
@@ -58,6 +60,8 @@ class PartTerminal : public CustomElementGraphicPart
 		void nameChanged();
 		void terminalTypeChanged();
 		void potentialChanged();
+		void mediumChanged();
+		void portEndChanged();
 		void showNameChanged();
 		void labelPosChanged();
 		void labelFontChanged();
@@ -111,6 +115,13 @@ class PartTerminal : public CustomElementGraphicPart
 
 		TerminalData::Type terminalType() const {return d->m_type;}
 		void setTerminalType(TerminalData::Type type);
+
+			/// Fluid::Medium and Fluid::PortEnd as int, for the
+			/// property system
+		int medium() const {return static_cast<int>(d->m_medium);}
+		void setMedium(int medium);
+		int portEnd() const {return static_cast<int>(d->m_port_end);}
+		void setPortEnd(int port_end);
 
 		bool showName() const { return d->m_show_name; }
 		void setShowName(bool show);

@@ -3,6 +3,73 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.10.0 – 13.11.2026
+
+### Klemmleiste zeichnen: Zuordnung je Leitung
+
+- Jede gekreuzte Leitung bekommt im Dialog ihre eigene Zeile mit Leiste, Klemmennummer, Etage und Artikel.
+  Leitungen mit gleicher Leiste und Nummer teilen sich eine Mehrstockklemme. „Eigene Leiste“ legt die
+  ausgewählten Leitungen auf die nächste freie Leiste (z. B. N auf X2, PE auf X3).
+- PE kommt nur bei Klemmen mit PE-Etage auf die Klemme (Typ „PE/L/N“ oder Schutzleiterklemme); eine
+  Etagenklemme ohne PE (z. B. PTI 2,5-L/N) gibt PE-Leitungen eine eigene Klemme mit dem PE-Artikel.
+- Etagen heißen PE, L, N, wenn der Typ sie nennt; Leitungen ohne Nummer zeigen ihre Enden; die gewählte
+  Leitung wird im Plan markiert; die Vorschau zeigt die Leiste der gewählten Zeile.
+
+### macOS
+
+- Herstellerportal-Konten im macOS-Schlüsselbund (unter Windows weiter in der Anmeldeinformationsverwaltung).
+- Aus dem Finder gestartet findet QElectroTech Python, 7-Zip und Claude Code aus Homebrew, MacPorts und
+  `~/.local/bin`.
+- Claude-Assistent und EPLAN-Projektimport werden im App-Bundle (`Contents/Resources`) gefunden und von
+  `misc/MacQetDeploy_arm64_cmake.sh` mitgeliefert; Open CASCADE (STEP-Modelle) wird eingebunden, wenn installiert.
+- EPLAN-Projektimport: 7-Zip als `7z`, `7zz` oder `7za`; QElectroTech gibt den Schriftfeld-Ordner mit.
+- qet-mcp liest das Data-Portal-Token auch aus den macOS-Einstellungen.
+- Neuer GitHub-Workflow `macos-build.yml`: Mac-Build mit 3D-Ansicht, Open CASCADE und 3D-Maus.
+
+### Pneumatik und Hydraulik nach Vorbild FluidSIM 6 (Stufe 1: zeichnen, noch keine Simulation)
+
+Plan: `PLAN-PNEUMATIK.md`.
+
+- Anschlüsse tragen ein Medium (elektrisch, pneumatisch, hydraulisch, mechanisch, Marke) und einen Abschluss
+  (keiner, Schalldämpfer, Blindstopfen); beides im Anschluss-Editor. Eine Leitung verbindet nur Anschlüsse
+  mit gleichem Medium. Elektrische Anschlüsse und alte Dateien bleiben unverändert.
+- Leitungsart im Leitungs-Fenster: Arbeitsleitung, Steuerleitung, Abluft/Leckleitung (`fluid_line`).
+- Schalldämpfer und Blindstopfen werden am freien Anschluss gezeichnet (Form wie in FluidSIM) und verschwinden,
+  sobald eine Leitung angeschlossen ist.
+- Spule ↔ Ventil über Master/Slave: Ventil = Master (`<fluid kind="valve">`), Ventilspule = Slave
+  (`<fluid kind="solenoid"/>`). Der Querverweis am Ventil zeigt die Spule mit dem Magnetsymbol nach ISO 1219.
+- Projekt → „Fluidtechnik prüfen…“: offene pneumatische/hydraulische Anschlüsse ohne Leitung und Abschluss,
+  Magnetventile ohne verknüpfte Spule, Spulen ohne Ventil. Ein Klick wählt das Bauteil auf seinem Blatt.
+- Beispielbauteile in `bauteile/pneumatik/`: 5/2-Magnetventil mit Federrückstellung (Master, Schalldämpfer an
+  3 und 5) und Ventilspule (Slave).
+- `tools/symbole/fluidsim_symbole.py` wandelt die Symbolbibliothek einer FluidSIM-6-Installation in
+  QET-Bauteile um (150 Pneumatiksymbole): Grafik in Ruhestellung, Anschlüsse mit Portnummer, Medium und
+  Richtung, Schalldämpfer/Blindstopfen der Vorlage als Abschluss, deutsche Namen aus FluidSIM, Magnetventile als
+  Master, Ventilspule als Slave.
+- `tools/symbole/fluid_nachruesten.py` rüstet die QET-Sammlung `50_pneumatic` (und `30_hydraulic`) nach:
+  Medium an jedem Anschluss, Portnummern aus den gezeichneten Texten (alle 113 Wegeventile vollständig).
+  Ohne Nachrüsten lassen sich diese Bauteile nicht mit pneumatischen Anschlüssen verbinden.
+- FluidSIM-Schaltungen übernehmen: `tools/fluidsim_import/fluidsim_plan.py SCHALTUNG.circ AUSGABE.qet` macht aus
+  einer FluidSIM-6-Schaltung ein QET-Projekt: Bauteile mit Lage (Drehung, Spiegelung), Kennzeichnung, Leitungen
+  (Verzweigungen werden zu Leitungen am selben Anschluss), Schalldämpfer/Blindstopfen, Spule ↔ Ventil verknüpft.
+  Mehrere .circ (oder ein Ordner) werden mehrere Blätter. Bauteile tragen den deutschen Namen aus FluidSIM,
+  Beschreibung und technische Werte als Bauteilinformation, die sichtbaren Werte (p = 6 bar …) als Text,
+  Zylinder Durchmesser, Hub und Bauart. Relaisspulen und ihre Kontakte (Schließer, Öffner, Wechsler) werden
+  verknüpft, Ventile mit mehreren Magneten mit allen Spulen, auch über Blattgrenzen. Rahmen, Tabellen,
+  Zustandsdiagramme und GRAFCET bleiben weg; Artikeldaten speichert FluidSIM nicht. Alle 1072 Beispiele
+  von FluidSIM (Pneumatik, Elektrik, Hydraulik) lassen sich umwandeln.
+- Die FluidSIM-Hydraulikbibliothek (172 Bauteile) kommt beim Deploy nach `30_hydraulic/3090_FluidSIM`.
+- Kennbuchstaben beim Einfügen (81346-2) für Pneumatik und Hydraulik: ein Fluid-Bauteil kann seinen Vorschlag
+  mitbringen (`<fluid prefix="QM">`), er gilt, wenn `qet_labels.xml` für den Ordner keinen hat. Die Buchstaben
+  folgen der Kennzeichnung in FluidSIMs Beispielen (Zylinder MM, 5/2-Ventil QM, Spule MB, Drossel RZ …);
+  die QET-Ordner `50_pneumatic`/`30_hydraulic` bekommen beim Deploy eine `qet_labels.xml`, wenn sie keine haben.
+- Skill `fluidtechnik` (`.claude/skills/fluidtechnik/`): Datenmodell, Bauteile, Kennbuchstaben, Zeichnen per
+  MCP, FluidSIM-Import und -Format, Fallen.
+- `tools/deploy_lokal.ps1` ersetzt in der Standardsammlung `50_pneumatic` und `30_hydraulic` durch die
+  nachgerüsteten Bauteile und legt die FluidSIM-Symbole unter `50_pneumatic/5090_FluidSIM` ab (wenn FluidSIM 6
+  installiert ist). Doppelte Portnummern (zwei Eingänge „1“ am Wechselventil) heißen als Anschluss „1.1“/„1.2“,
+  gezeichnet bleibt „1“. UUIDs sind bei jedem Lauf gleich.
+
 ## 1.9.1 – 13.11.2026
 
 - qet-mcp: Syntaxfehler in der Beschreibung von `add_terminals` behoben (der MCP-Server startete seit 1.9.0 nicht).

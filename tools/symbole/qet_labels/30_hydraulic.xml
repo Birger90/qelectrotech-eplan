@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Kennbuchstaben (IEC 81346-2) für die Hydraulik-Sammlung, als Vorschlag beim Einfügen.
+    Sie folgen der Kennzeichnung, die FluidSIM 6 in seinen Hydraulik-Beispielen vergibt: Tank CM,
+    Wegeventile SJ (in FluidSIM je nach Rolle auch QM), Zylinder MM, Pumpen GP, Wärmetauscher EC (Kühler),
+    Filter HQ. Ordner mit gemischtem Inhalt (Ventil-Einzelteile, sonstige Ventile) haben keinen.
+    tools/deploy_lokal.ps1 legt die Datei nur an, wenn es noch keine gibt.-->
+<labels>
+  <category name="21_tanks">
+    <prefix>CM</prefix>
+  </category>
+  <category name="31_control_valves">
+    <category name="01_single_parts">
+      <prefix></prefix>
+    </category>
+    <prefix>SJ</prefix>
+  </category>
+  <category name="45_valves"></category>
+  <category name="51_cylinders">
+    <prefix>MM</prefix>
+  </category>
+  <category name="61_pumps">
+    <prefix>GP</prefix>
+  </category>
+  <category name="71_exchangers">
+    <prefix>EC</prefix>
+  </category>
+  <category name="81_filters">
+    <prefix>HQ</prefix>
+  </category>
+</labels>

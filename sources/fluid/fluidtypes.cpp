@@ -92,4 +92,44 @@ bool canConnect(Medium a, Medium b)
 	return a == b;
 }
 
+bool isOpenPort(Medium medium, PortEnd end, int line_count)
+{
+	if (medium != Medium::Pneumatic && medium != Medium::Hydraulic)
+		return false;
+	return end == PortEnd::None && line_count == 0;
+}
+
+/**
+	The shapes follow the connector terminators of FluidSIM 6 (folder
+	"Silencers and blind plugs"), at the small size, so that they fit
+	on the 10 px grid of a sheet:
+	- silencer: a stem, a box with three hatch strokes, a small arrow
+	  for the air that leaves;
+	- plug: a stem closed by a bar across it.
+*/
+QList<QLineF> portEndLines(PortEnd end)
+{
+	QList<QLineF> lines;
+	switch (end) {
+		case PortEnd::None:
+			break;
+		case PortEnd::Silencer:
+				// stem
+			lines << QLineF(0, 0, 5, 0);
+				// box, 10 long and 6 wide
+			lines << QLineF(5, -3, 15, -3) << QLineF(15, -3, 15, 3)
+				  << QLineF(15, 3, 5, 3) << QLineF(5, 3, 5, -3);
+				// hatch, alternately from each side to the middle
+			lines << QLineF(8.5, 0, 8.5, 3) << QLineF(11, -3, 11, 0)
+				  << QLineF(13.5, 0, 13.5, 3);
+				// air leaving
+			lines << QLineF(15, -1.5, 18.5, 0) << QLineF(18.5, 0, 15, 1.5);
+			break;
+		case PortEnd::Plug:
+			lines << QLineF(0, 0, 5, 0) << QLineF(5, -4, 5, 4);
+			break;
+	}
+	return lines;
+}
+
 }

@@ -107,6 +107,11 @@ void Terminal::init()
 	qreal h = qAbs(dcy - dey) + 7;
 	m_br = QRectF(origin, QSizeF(w, h));
 
+		//A silencer or a plug is drawn past the docking point
+	const QList<QLineF> port_end = portEndLines();
+	for (const QLineF &line : port_end)
+		m_br |= QRectF(line.p1(), line.p2()).normalized().adjusted(-1, -1, 1, 1);
+
 	setAcceptHoverEvents(true);
 	setAcceptedMouseButtons(Qt::LeftButton);
 	setToolTip(QObject::tr("Terminal", "tooltip"));
@@ -198,7 +203,8 @@ bool Terminal::addConductor(Conductor *conductor)
 			return false; //They already a conductor linked to this and other_terminal
 
 	m_conductors_list.append(conductor);
-	if (takesConductorColor()) update();
+	if (takesConductorColor() || portEnd() != Fluid::PortEnd::None)
+		update();
 	emit conductorWasAdded(conductor);
 	return(true);
 }
@@ -213,7 +219,8 @@ void Terminal::removeConductor(Conductor *conductor)
 	int index = m_conductors_list.indexOf(conductor);
 	if (index == -1) return;
 	m_conductors_list.removeAt(index);
-	if (takesConductorColor()) update();
+	if (takesConductorColor() || portEnd() != Fluid::PortEnd::None)
+		update();
 	emit conductorWasRemoved(conductor);
 }
 
@@ -271,6 +278,24 @@ void Terminal::paint(
 			painter -> setRenderHint(QPainter::Antialiasing, true);
 			painter -> drawEllipse(QRectF(c.x() - 2.5, c.y() - 2.5, 5.0, 5.0));
 		} else painter -> drawPoint(c);
+	}
+
+		//The silencer or plug that closes a free fluid port is part of
+		//the drawing: shown, printed and exported like the symbol, and
+		//gone as soon as a line is connected
+	if (shownPortEnd() != Fluid::PortEnd::None)
+	{
+		QPen pen(Qt::black);
+		pen.setWidthF(1.0);
+		pen.setCapStyle(Qt::RoundCap);
+		painter -> setRenderHint(QPainter::Antialiasing, true);
+		painter -> setPen(pen);
+		painter -> setBrush(Qt::NoBrush);
+		const QList<QLineF> lines = portEndLines();
+		for (const QLineF &line : lines)
+			painter -> drawLine(mapFromParent(line.p1()),
+								mapFromParent(line.p2()));
+		painter -> setRenderHint(QPainter::Antialiasing, false);
 	}
 
 	//Draw help line if needed,
@@ -414,6 +439,50 @@ void Terminal::paint(
 	}
 
 	painter -> restore();
+}
+
+/**
+	@brief Terminal::shownPortEnd
+	@return the silencer or plug drawn on this port: the one it is
+	given, while it carries air or oil and no line is connected to it
+*/
+Fluid::PortEnd Terminal::shownPortEnd() const
+{
+	if (!m_conductors_list.isEmpty())
+		return Fluid::PortEnd::None;
+	if (d->m_medium != Fluid::Medium::Pneumatic
+		&& d->m_medium != Fluid::Medium::Hydraulic)
+		return Fluid::PortEnd::None;
+	return d->m_port_end;
+}
+
+/**
+	@brief Terminal::portEndLines
+	@return the strokes of the port end of this terminal, in the
+	coordinates of its element, pointing away from the element the
+	way a line would leave the port. Empty when it has none.
+*/
+QList<QLineF> Terminal::portEndLines() const
+{
+	QList<QLineF> mapped;
+	if (d->m_medium != Fluid::Medium::Pneumatic
+		&& d->m_medium != Fluid::Medium::Hydraulic)
+		return mapped;
+	const QList<QLineF> lines = Fluid::portEndLines(d->m_port_end);
+	if (lines.isEmpty())
+		return mapped;
+
+		//Along: from the element's docking point to the conductor's
+	const QPointF c = d->m_pos;
+	const QLineF axis(dock_elmt_, c);
+	if (qFuzzyIsNull(axis.length()))
+		return mapped;
+	const QPointF u = (c - dock_elmt_) / axis.length();
+	const QPointF w(-u.y(), u.x());
+	auto map = [&](const QPointF &p) { return c + u * p.x() + w * p.y(); };
+	for (const QLineF &line : lines)
+		mapped << QLineF(map(line.p1()), map(line.p2()));
+	return mapped;
 }
 
 /**

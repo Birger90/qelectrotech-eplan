@@ -18,6 +18,8 @@
 #ifndef FLUIDTYPES_H
 #define FLUIDTYPES_H
 
+#include <QLineF>
+#include <QList>
 #include <QString>
 
 /**
@@ -66,6 +68,17 @@ namespace Fluid
 
 		/// @return true when a line may join two terminals of these media
 	bool canConnect(Medium a, Medium b);
+
+		/// @return true when a port of this medium, closed by @a end and
+		/// with @a line_count lines on it, is left open: air or oil
+		/// would escape there
+	bool isOpenPort(Medium medium, PortEnd end, int line_count);
+
+		/// @return the strokes of the symbol that closes a port, in a
+		/// frame of its own: the port at (0, 0), x pointing away from
+		/// the element (where a line would go), y across. Empty for
+		/// PortEnd::None.
+	QList<QLineF> portEndLines(PortEnd end);
 }
 
 #endif // FLUIDTYPES_H

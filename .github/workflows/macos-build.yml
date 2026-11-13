@@ -18,7 +18,8 @@ on:
 jobs:
   macos:
     name: Build (Qt 6, Release, arm64, all features)
-    runs-on: macos-14
+    # The current Apple Silicon image; GitHub retires the numbered ones
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v4

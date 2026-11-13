@@ -3,6 +3,13 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.9.1 – 13.11.2026
+
+- qet-mcp: Syntaxfehler in der Beschreibung von `add_terminals` behoben (der MCP-Server startete seit 1.9.0 nicht).
+- Abgleich mit dem Original-QElectroTech (Stand 13.11.2026): Strukturkästen, Ansichten für Betriebsmittel, Kabel,
+  Klemmen, Potentiale und SPS-E/A, Artikel-Register am Bauteil, PDF-Ränder unter Windows u. a.
+- Kabelliste: die Korrektur „Kabelende an der Klemmleiste“ kommt jetzt aus dem Original.
+
 ## 1.9.0 – 13.11.2026
 
 - Neues Werkzeug „Klemmleiste zeichnen“ (Werkzeugleiste neben „Kabel zeichnen“): ein Strich quer über Leitungen

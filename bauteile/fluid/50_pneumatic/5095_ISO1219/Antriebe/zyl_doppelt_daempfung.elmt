@@ -1,0 +1,28 @@
+<definition version="0.90" type="element" link_type="simple" width="110" height="60" hotspot_x="20" hotspot_y="40">
+    <uuid uuid="{4ead2714-726e-5d68-80c9-df1f4876f598}"/>
+    <names>
+        <name lang="de">Zylinder, doppeltwirkend, einstellbare Endlagendämpfung</name>
+        <name lang="en">Double acting cylinder, adjustable cushioning</name>
+    </names>
+    <fluid kind="cylinder" prefix="MM">
+        <cylinder action="double" cushioning="adjustable"/>
+    </fluid>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <rect x="0" y="-20" width="60" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="20" y1="-20" x2="20" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="20" y1="-10" x2="80" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <rect x="14" y="-13" width="4" height="6" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <rect x="22" y="-13" width="4" height="6" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="10" y1="-3" x2="17" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <polygon x1="17" y1="-10" x2="16.01" y2="-7.45" x3="14.45" y3="-9.01" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true"/>
+        <line x1="10" y1="0" x2="10" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="50" y1="0" x2="50" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-18" y="-39" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{4a02ea82-13ca-5988-b001-2b1c667dc964}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <dynamic_text x="11.5" y="1.5" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{79c6be6e-7eb0-5a3e-a42b-c0aa5b8f5da4}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>1</text></dynamic_text>
+        <dynamic_text x="51.5" y="1.5" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{cad6c08f-69cd-5879-a251-c40180001b58}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>2</text></dynamic_text>
+        <terminal uuid="{88d08288-39ca-569a-b4f0-c0547d1418d3}" name="1" x="10" y="10" orientation="s" type="Generic" medium="pneumatic"/>
+        <terminal uuid="{97ccd4c8-0f95-5505-9cab-cd12e7d11df1}" name="2" x="50" y="10" orientation="s" type="Generic" medium="pneumatic"/>
+    </description>
+</definition>

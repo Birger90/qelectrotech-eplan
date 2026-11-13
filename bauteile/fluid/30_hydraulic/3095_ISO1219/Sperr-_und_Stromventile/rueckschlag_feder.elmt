@@ -1,0 +1,22 @@
+<definition version="0.90" type="element" link_type="simple" width="40" height="90" hotspot_x="20" hotspot_y="50">
+    <uuid uuid="{ec20ecb8-b618-5c24-b4c9-441aaaa01998}"/>
+    <names>
+        <name lang="de">Rückschlagventil, federbelastet</name>
+        <name lang="en">Check valve, spring loaded</name>
+    </names>
+    <fluid kind="flow_control" prefix="RM"/>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <line x1="0" y1="20" x2="0" y2="4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <ellipse x="-4" y="-4" width="8" height="8" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <polygon x1="-7" y1="-6" x2="0" y2="4" x3="7" y3="-6" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="0" y1="-4" x2="0" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <polygon x1="5" y1="-4" x2="8" y2="-6" x3="2" y3="-8" x4="8" y4="-10" x5="2" y5="-12" x6="5" y6="-14" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="0" y1="20" x2="0" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="0" y1="-20" x2="0" y2="-30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-18" y="-49" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{92da1ef1-852d-5721-a5d3-d90832da9341}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <terminal uuid="{4eae6c6d-7415-5782-9cbe-65cfb891b817}" name="A" x="0" y="30" orientation="s" type="Generic" medium="hydraulic"/>
+        <terminal uuid="{19f5969a-fbf1-5e58-94ce-32c9fd269e77}" name="B" x="0" y="-30" orientation="n" type="Generic" medium="hydraulic"/>
+    </description>
+</definition>

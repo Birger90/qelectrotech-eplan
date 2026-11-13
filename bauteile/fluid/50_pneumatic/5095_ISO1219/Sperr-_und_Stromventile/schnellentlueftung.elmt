@@ -1,0 +1,24 @@
+<definition version="0.90" type="element" link_type="simple" width="80" height="70" hotspot_x="50" hotspot_y="40">
+    <uuid uuid="{2ad0b4bd-65f0-52ba-b921-1d528a19da89}"/>
+    <names>
+        <name lang="de">Schnellentlüftungsventil</name>
+        <name lang="en">Quick exhaust valve</name>
+    </names>
+    <fluid kind="logic_valve" prefix="KH"/>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <rect x="-20" y="-8" width="40" height="16" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <ellipse x="-8" y="-4" width="8" height="8" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <polygon x1="-12" y1="-8" x2="-6" y2="0" x3="-12" y3="8" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="4" y1="0" x2="12" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <polygon x1="19" y1="0" x2="15" y2="1.5" x3="15" y3="-1.5" closed="true" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="-20" y1="0" x2="-30" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="0" y1="-8" x2="0" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="14" y1="8" x2="14" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-48" y="-39" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{9291b821-1480-5434-a4d5-b8dccb749248}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <terminal uuid="{bd28befd-d9d5-5566-8e31-594e294ad7a1}" name="1" x="-30" y="0" orientation="w" type="Generic" medium="pneumatic"/>
+        <terminal uuid="{3166c7ab-1f3d-5d20-a242-7aa83f7068e3}" name="2" x="0" y="-20" orientation="n" type="Generic" medium="pneumatic"/>
+        <terminal uuid="{677b407e-d577-56a7-88c0-eda07a58a5ce}" name="3" x="14" y="20" orientation="s" type="Generic" medium="pneumatic" port_end="silencer"/>
+    </description>
+</definition>

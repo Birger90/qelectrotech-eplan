@@ -67,4 +67,16 @@ if (-not $python) {
     }
 }
 
+# Eigene Pneumatik- und Hydrauliksymbole nach ISO 1219 (bauteile/fluid, erzeugt mit
+# tools/symbole/iso1219_symbole.py): fest im Repository, in jede Standardsammlung
+$fluid_eigen = Join-Path $repo "bauteile\fluid"
+if ((Test-Path $fluid_eigen) -and (Test-Path $sammlung)) {
+    foreach ($teil in @("50_pneumatic", "30_hydraulic")) {
+        $q = Join-Path $fluid_eigen $teil
+        if (Test-Path $q) {
+            Copy-Item -Recurse -Force (Join-Path $q "*") (Join-Path $sammlung $teil)
+        }
+    }
+}
+
 Write-Output "build\deploy aktuell: $((& $exe --version | Out-String).Trim())"

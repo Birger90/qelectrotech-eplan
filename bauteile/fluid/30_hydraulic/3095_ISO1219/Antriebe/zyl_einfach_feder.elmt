@@ -1,0 +1,23 @@
+<definition version="0.90" type="element" link_type="simple" width="110" height="60" hotspot_x="20" hotspot_y="40">
+    <uuid uuid="{719fd686-9392-5746-bdcc-a301e57e098b}"/>
+    <names>
+        <name lang="de">Zylinder, einfachwirkend, Federrückstellung</name>
+        <name lang="en">Single acting cylinder, spring return</name>
+    </names>
+    <fluid kind="cylinder" prefix="MM">
+        <cylinder action="single" spring="rod"/>
+    </fluid>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <rect x="0" y="-20" width="60" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="20" y1="-20" x2="20" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="20" y1="-10" x2="80" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <polygon x1="22" y1="-10" x2="26.5" y2="-16" x3="31" y3="-4" x4="35.5" y4="-16" x5="40" y5="-4" x6="44.5" y6="-16" x7="49" y7="-4" x8="53.5" y8="-16" x9="58" y9="-10" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="50" y1="0" x2="50" y2="3" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="10" y1="0" x2="10" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-18" y="-39" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{39d4f7b4-6008-5411-8060-360b7861f3d5}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <dynamic_text x="11.5" y="1.5" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{3529adf9-a12a-5534-a1fa-363c245a97aa}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>1</text></dynamic_text>
+        <terminal uuid="{545d9111-3269-5e0f-89ec-858ab4cf3a65}" name="1" x="10" y="10" orientation="s" type="Generic" medium="hydraulic"/>
+    </description>
+</definition>

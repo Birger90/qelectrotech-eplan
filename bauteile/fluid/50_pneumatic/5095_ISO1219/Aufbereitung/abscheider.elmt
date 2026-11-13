@@ -1,0 +1,22 @@
+<definition version="0.90" type="element" link_type="simple" width="70" height="70" hotspot_x="40" hotspot_y="40">
+    <uuid uuid="{d2c2d70e-3043-5c01-87fd-f9a7309d512b}"/>
+    <names>
+        <name lang="de">Filter mit Wasserabscheider</name>
+        <name lang="en">Filter with water separator</name>
+    </names>
+    <fluid kind="treatment" prefix="HQ"/>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <polygon x1="0" y1="-14" x2="14" y2="0" x3="0" y3="14" x4="-14" y4="0" x5="0" y5="-14" closed="true" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="-14" y1="0" x2="14" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:dashed;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="-6" y1="8" x2="6" y2="8" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="0" y1="14" x2="0" y2="18" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <polygon x1="0" y1="22" x2="-2" y2="18" x3="2" y3="18" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true"/>
+        <line x1="-14" y1="0" x2="-24" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="14" y1="0" x2="24" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-38" y="-39" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{7b9c147d-5c33-56f3-9c86-0dc1c1397e1e}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <terminal uuid="{fa2d17d9-6403-5de4-9648-d077df86907e}" name="1" x="-24" y="0" orientation="w" type="Generic" medium="pneumatic"/>
+        <terminal uuid="{201e1ff5-9f3a-5a9a-bf96-b84db509111a}" name="2" x="24" y="0" orientation="e" type="Generic" medium="pneumatic"/>
+    </description>
+</definition>

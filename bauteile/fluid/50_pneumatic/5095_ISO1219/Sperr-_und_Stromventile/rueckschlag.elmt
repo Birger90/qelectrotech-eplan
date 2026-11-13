@@ -1,0 +1,21 @@
+<definition version="0.90" type="element" link_type="simple" width="40" height="90" hotspot_x="20" hotspot_y="50">
+    <uuid uuid="{ba25b306-419d-596e-b81d-bc743593b74e}"/>
+    <names>
+        <name lang="de">Rückschlagventil</name>
+        <name lang="en">Check valve</name>
+    </names>
+    <fluid kind="flow_control" prefix="RM"/>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <line x1="0" y1="20" x2="0" y2="4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <ellipse x="-4" y="-4" width="8" height="8" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <polygon x1="-7" y1="-6" x2="0" y2="4" x3="7" y3="-6" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="0" y1="-4" x2="0" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="0" y1="20" x2="0" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="0" y1="-20" x2="0" y2="-30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-18" y="-49" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{0e888a33-df0a-579a-a179-c95eb1425100}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <terminal uuid="{6bedcce6-a5e6-5b5f-9bc5-b0c71cba9a15}" name="1" x="0" y="30" orientation="s" type="Generic" medium="pneumatic"/>
+        <terminal uuid="{a424ec18-ada4-54ab-a1c6-07982d41d671}" name="2" x="0" y="-30" orientation="n" type="Generic" medium="pneumatic"/>
+    </description>
+</definition>

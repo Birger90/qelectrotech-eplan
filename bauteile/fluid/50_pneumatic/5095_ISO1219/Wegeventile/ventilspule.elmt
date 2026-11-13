@@ -1,0 +1,24 @@
+<definition version="0.90" type="element" link_type="slave" width="50" height="70" hotspot_x="30" hotspot_y="40">
+    <uuid uuid="{0818e3ac-61e2-5bc6-8e4a-33ddb14f9c3d}"/>
+    <names>
+        <name lang="de">Ventilspule</name>
+        <name lang="en">Valve solenoid coil</name>
+    </names>
+    <kindInformations>
+        <kindInformation name="type">simple</kindInformation>
+        <kindInformation name="state">Other</kindInformation>
+        <kindInformation name="number">1</kindInformation>
+    </kindInformations>
+    <fluid kind="solenoid"/>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <rect x="-10" y="-5" width="20" height="10" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="-10" y1="5" x2="10" y2="-5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="0" y1="-5" x2="0" y2="-15" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="0" y1="5" x2="0" y2="15" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-28" y="-39" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{67bec7af-1f5a-57a1-bfcf-eab03e290722}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <terminal uuid="{c035138e-d07f-532c-b79e-2ba269141cb8}" name="A1" x="0" y="-15" orientation="n" type="Generic" medium="electric"/>
+        <terminal uuid="{8513ffaf-3065-5f8e-bcad-c8d28b15592a}" name="A2" x="0" y="15" orientation="s" type="Generic" medium="electric"/>
+    </description>
+</definition>

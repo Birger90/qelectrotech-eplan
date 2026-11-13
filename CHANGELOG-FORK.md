@@ -3,6 +3,21 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.11.0 – 13.11.2026
+
+- Eigene Pneumatik- und Hydrauliksymbole nach ISO 1219-1 (143 Bauteile), fest in der Standardsammlung unter
+  `50_pneumatic/5095_ISO1219` und `30_hydraulic/3095_ISO1219`: Wegeventile 2/2, 3/2, 4/2, 5/2 und 5/3 (Mitte
+  gesperrt, entlüftet, belüftet) mit Magnet, Steuerdruck, Taster, Hebel/Raste, Pedal, Rolle, Leerrücklaufrolle,
+  Stößel und Hand; hydraulische 4/2- und 4/3-Wegeventile (Mitte gesperrt, Umlauf, Schwimmstellung, offen);
+  Zylinder (einfach-/doppeltwirkend, Dämpfung, durchgehende Stange, Magnetkolben), Motoren, Pumpen, Verdichter,
+  Rückschlag-, Drossel-, Drosselrückschlag-, Wechsel-, Zweidruck- und Schnellentlüftungsventil,
+  Druckbegrenzungs-, Druckregel- und Zuschaltventil, Quelle, Speicher, Tank, Filter, Abscheider, Öler,
+  Trockner, Wartungseinheit, Kühler, Manometer, Druckschalter, Schalldämpfer, Elektromotor und Ventilspule.
+- Gezeichnet mit `tools/symbole/iso1219_symbole.py` aus den Grundelementen der Norm, ohne fremde Geometrie.
+  Jedes Bauteil trägt Medium, Portnummer und Abschluss je Anschluss, Kennbuchstaben (IEC 81346-2) und die
+  Schaltstellungen; Magnetventile sind Master ihrer Ventilspule. Die FluidSIM-Umwandlung bleibt ein
+  Werkzeug für Besitzer einer FluidSIM-Lizenz, ihre Symbole kommen nicht ins Repository.
+
 ## 1.10.0 – 13.11.2026
 
 ### Klemmleiste zeichnen: Zuordnung je Leitung

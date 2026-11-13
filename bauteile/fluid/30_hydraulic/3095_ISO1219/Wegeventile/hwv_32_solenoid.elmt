@@ -1,0 +1,46 @@
+<definition version="0.90" type="element" link_type="master" width="130" height="70" hotspot_x="70" hotspot_y="50">
+    <uuid uuid="{b7166159-94b0-59a6-be80-9c328e65a8bd}"/>
+    <names>
+        <name lang="de">3/2-Wegeventil, Magnet/Feder</name>
+        <name lang="en">3/2 way valve, solenoid/spring</name>
+    </names>
+    <kindInformations>
+        <kindInformation name="type">coil</kindInformation>
+        <kindInformation name="max_slaves">1</kindInformation>
+    </kindInformations>
+    <fluid kind="valve" prefix="QM">
+        <positions initial="2">
+            <position><path from="P" to="A"/><path from="T"/></position>
+            <position><path from="A" to="T"/><path from="P"/></position>
+        </positions>
+        <actuation side="left" types="solenoid"/>
+        <actuation side="right" types="" spring="true"/>
+    </fluid>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <rect x="-40" y="-20" width="40" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="-30" y1="0" x2="-30" y2="-16.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <polygon x1="-30" y1="-20" x2="-28.4" y2="-16" x3="-31.6" y3="-16" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true"/>
+        <line x1="-10" y1="0" x2="-10" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="-13" y1="-6" x2="-7" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <rect x="0" y="-20" width="40" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="10" y1="-20" x2="27.53" y2="-2.47" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <polygon x1="30" y1="0" x2="26.04" y2="-1.7" x3="28.3" y3="-3.96" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true"/>
+        <line x1="10" y1="0" x2="10" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="7" y1="-6" x2="13" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <rect x="-50" y="-16" width="10" height="12" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="-50" y1="-4" x2="-40" y2="-16" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <polygon x1="40" y1="-10" x2="42.4" y2="-14" x3="44.8" y3="-6" x4="47.2" y4="-14" x5="49.6" y5="-6" x6="52" y6="-14" x7="54" y7="-10" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="10" y1="0" x2="10" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="30" y1="0" x2="30" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="10" y1="-20" x2="10" y2="-30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-68" y="-49" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{cc43eec0-1532-54ed-91ca-66f3c4b9a255}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <dynamic_text x="11.5" y="1.5" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{cd9ad3a1-15bd-5255-bb40-af02d789125b}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>P</text></dynamic_text>
+        <dynamic_text x="31.5" y="1.5" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{28e666be-2e38-5595-a93d-861fd2a10f3e}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>T</text></dynamic_text>
+        <dynamic_text x="11.5" y="-28" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{ef71efdd-a252-541b-8511-2d9758942c7b}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>A</text></dynamic_text>
+        <terminal uuid="{e6bc2bf9-dbaf-5957-9a6e-ce602913181a}" name="P" x="10" y="10" orientation="s" type="Generic" medium="hydraulic"/>
+        <terminal uuid="{9c1af5fe-27e9-5d51-a5b0-0c6c3b45f8e5}" name="T" x="30" y="10" orientation="s" type="Generic" medium="hydraulic"/>
+        <terminal uuid="{30f586e3-f1cf-51b2-93c9-23a96ce949a2}" name="A" x="10" y="-30" orientation="n" type="Generic" medium="hydraulic"/>
+    </description>
+</definition>

@@ -942,6 +942,8 @@ Plan: `PLAN-PNEUMATIK.md`.
   mitbringen (`<fluid prefix="QM">`), er gilt, wenn `qet_labels.xml` für den Ordner keinen hat. Die Buchstaben
   folgen der Kennzeichnung in FluidSIMs Beispielen (Zylinder MM, 5/2-Ventil QM, Spule MB, Drossel RZ …);
   die QET-Ordner `50_pneumatic`/`30_hydraulic` bekommen beim Deploy eine `qet_labels.xml`, wenn sie keine haben.
+- Skript und MCP: Leitungseigenschaft `fluid_line` (`working`, `pilot`, `exhaust`, `none`) für
+  `setConductorProperty`/`set_conductor`; setzt wie das Leitungs-Fenster auch das Strichmuster.
 - Skill `fluidtechnik` (`.claude/skills/fluidtechnik/`): Datenmodell, Bauteile, Kennbuchstaben, Zeichnen per
   MCP, FluidSIM-Import und -Format, Fallen.
 - `tools/deploy_lokal.ps1` ersetzt in der Standardsammlung `50_pneumatic` und `30_hydraulic` durch die

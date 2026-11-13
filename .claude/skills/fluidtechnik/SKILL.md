@@ -83,7 +83,8 @@ nur an, wenn noch keine `qet_labels.xml` da ist). ISO/IEC 81346-2 selbst liegt n
 - **Verknüpfen immer vom Slave aus**: `link_elements` mit `element` = Spule/Kontakt, `to` = Ventil/Relais.
   Andersherum ersetzt jede weitere Spule die vorige (QETs linkElements setzt die Verknüpfungen des
   ersten Elements auf genau das zweite).
-- Leitungsart (`fluid_line`) kann `set_conductor` noch nicht setzen; im Leitungs-Fenster von Hand.
+- Leitungsart: `set_conductor` mit `property: "fluid_line"`, Wert `working`, `pilot`, `exhaust` oder `none`; setzt
+  wie das Leitungs-Fenster auch das Strichmuster (Steuer-/Abluftleitung gestrichelt). Gilt für das ganze Potential.
 - Prüfen: Menü Projekt → „Fluidtechnik prüfen…“ (offene Fluidanschlüsse ohne Leitung/Abschluss,
   Magnetventil mit weniger Spulen als Magneten, Spule ohne Ventil).
 
@@ -247,4 +248,4 @@ TP102_02 (zwei Zylinder, Rollenventile, Zähler), TP601_14 (Elektrohydraulik mit
 ## Offen
 
 Ventil- und Zylinder-Editor (Symbol zur Laufzeit), Wegmaßstab, Stückliste mit Schläuchen,
-`fluid_line` in Skript/MCP, ISO 1219-1 und 81346-2 im Wortlaut. Simulation: siehe `qet-simulation`.
+ISO 1219-1 und 81346-2 im Wortlaut. Simulation: siehe `qet-simulation`.

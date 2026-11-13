@@ -1441,6 +1441,7 @@ QString conductorPropertyValue(const ConductorProperties &p, const QString &name
 	if (name == QLatin1String("condsize"))          return QString::number(p.cond_size);
 	if (name == QLatin1String("numsize"))           return QString::number(p.text_size);
 	if (name == QLatin1String("displaytext"))       return p.m_show_text ? QStringLiteral("true") : QStringLiteral("false");
+	if (name == QLatin1String("fluid_line"))        return Fluid::lineKindToString(p.m_fluid_line);
 	if (name == QLatin1String("style")) {
 		if (p.style == Qt::DashLine)    return QStringLiteral("dashed");
 		if (p.style == Qt::DashDotLine) return QStringLiteral("dashdotted");
@@ -1504,6 +1505,21 @@ bool setConductorPropertyValue(ConductorProperties &p, const QString &name, cons
 		else return false;
 		return true;
 	}
+	if (name == QLatin1String("fluid_line"))
+	{
+		// What a fluid line is used for: none, working, pilot, exhaust.
+		// As in the conductor panel, the kind also sets the pen: a
+		// working line solid, a pilot or exhaust line dashed.
+		const Fluid::LineKind kind = Fluid::lineKindFromString(value);
+		if (kind == Fluid::LineKind::None && value != QLatin1String("none"))
+			return false;
+		p.m_fluid_line = kind;
+		if (kind == Fluid::LineKind::Working)
+			p.style = Qt::SolidLine;
+		else if (kind != Fluid::LineKind::None)
+			p.style = Qt::DashLine;
+		return true;
+	}
 	return false;
 }
 
@@ -1515,7 +1531,8 @@ const QStringList &conductorPropertyNames()
 		QStringLiteral("conductor_color"), QStringLiteral("conductor_section"),
 		QStringLiteral("color"), QStringLiteral("text_color"), QStringLiteral("color2"),
 		QStringLiteral("bicolor"), QStringLiteral("style"), QStringLiteral("dash-size"),
-		QStringLiteral("condsize"), QStringLiteral("numsize"), QStringLiteral("displaytext")};
+		QStringLiteral("condsize"), QStringLiteral("numsize"), QStringLiteral("displaytext"),
+		QStringLiteral("fluid_line")};
 	return names;
 }
 

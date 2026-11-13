@@ -27,7 +27,7 @@
 /// a manufacturer portal QElectroTech knows
 struct ManufacturerPortal
 {
-	QString id;            ///< dataportal, siemens, rittal, 3dfindit
+	QString id;            ///< dataportal, siemens, rittal, 3dfindit, keyence
 	QString name;          ///< shown name
 	QString login_url;     ///< the portal's own login page, for the browser
 	QString secret_label;  ///< "Password" or "Personal Access Token"
@@ -53,6 +53,9 @@ struct ManufacturerPortal
 	  the catalog partners). QElectroTech opens the part in the browser
 	  and keeps the 50 CAD requests per 24 h and account: counted, shown,
 	  and refused above the limit. One account only, no rotation.
+	- Keyence: CAD data only after the login on keyence.de, which works
+	  through the web page only (JavaScript, bot protection). The file
+	  loaded in the browser (ZIP or STEP) is taken from the raw folder.
 
 	The passwords of portals without an official login interface are kept
 	in the credential store for the user, but never sent by QElectroTech:

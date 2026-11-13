@@ -78,6 +78,9 @@ struct FetchResult
 	  login, the DXF package with the Personal Access Token.
 	3Dfindit has no API: parts without a STEP model are reported with the
 	requests left of the day.
+	Keyence has no API and a login through its web page only: the CAD
+	download saved from the browser into <raw>/Keyence/<order>/ (ZIP or
+	STEP) is unpacked and taken; other ZIP archives with STEP files too.
 
 	Network calls are synchronous (a local event loop), as in the script
 	API; progress() reports every part.

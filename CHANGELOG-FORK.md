@@ -3,6 +3,15 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.8.0 – 12.11.2026
+
+- Herstellerportale: Keyence. Benutzername und Passwort für keyence.de im Windows-Anmeldeinformationsspeicher
+  (Dialog Herstellerportale, `--portal-status`, `--portal-login keyence`, `--portal-logout keyence`).
+  keyence.de meldet nur über die eigene Webseite an, QElectroTech sendet das Passwort nicht.
+- `--fetch-parts` übernimmt den CAD-Download aus dem Browser: ZIP oder STEP in `herstellerdaten/Keyence/<Nr>/`
+  wird entpackt und als `3D/Keyence/<Nr>.stp` abgelegt (STEP aus ZIP-Archiven auch für andere Hersteller).
+  Fehlt die Datei, nennt es den Suchlink auf keyence.de und den Zielordner. Herstellerkürzel `KEY`.
+
 ## 1.7.1 – 11.11.2026
 
 - EPLAN-Import: symbolische Adressen wie EPLAN (Zielverfolgung bis Sensor/Aktor bzw. Steckerklemme ohne

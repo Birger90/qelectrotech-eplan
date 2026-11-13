@@ -11148,6 +11148,14 @@ Mit dem MCP-Server qet: Lies es mit qet_recording_read, schreibe ein Skript, das
         <translation>Keine Schnittstelle für Nutzer: Das Bauteil öffnet sich im Browser, QElectroTech zählt die CAD-Anforderungen (50 je 24 h und Konto) und übernimmt die geladenen STEP-Dateien in den 3D-Ordner.</translation>
     </message>
     <message>
+        <source>Keyence</source>
+        <translation>Keyence</translation>
+    </message>
+    <message>
+        <source>CAD data (STEP) only for logged-in users of keyence.de, not in the Data Portal or on 3Dfindit. Keyence has no API and logs in through its web page only: log in and load the CAD data in the browser, save the file (ZIP or STEP) into herstellerdaten/Keyence/&lt;order number&gt;; &quot;Fetch missing parts&quot; stores it as 3D/Keyence/&lt;order number&gt;.stp. The password stays in the store, QElectroTech does not send it.</source>
+        <translation>CAD-Daten (STEP) gibt es nur für angemeldete Nutzer von keyence.de, nicht im Data Portal und nicht bei 3Dfindit. Keyence hat keine Schnittstelle und meldet nur über die eigene Webseite an: im Browser anmelden, die CAD-Daten laden und die Datei (ZIP oder STEP) in herstellerdaten/Keyence/&lt;Bestellnummer&gt; speichern; „Fehlende Bauteile holen“ legt sie als 3D/Keyence/&lt;Bestellnummer&gt;.stp ab. Das Passwort bleibt im Speicher, QElectroTech sendet es nicht.</translation>
+    </message>
+    <message>
         <source>No token.</source>
         <translation>Kein Token.</translation>
     </message>
@@ -13198,6 +13206,18 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>%1: %2</translation>
     </message>
     <message>
+        <source>would unpack %1 from %2</source>
+        <translation>würde %1 aus %2 entpacken</translation>
+    </message>
+    <message>
+        <source>unpacked %1 from %2</source>
+        <translation>%1 aus %2 entpackt</translation>
+    </message>
+    <message>
+        <source>%1 cannot be written</source>
+        <translation>%1 kann nicht geschrieben werden</translation>
+    </message>
+    <message>
         <source>symbol: DXF %1 imported into %2</source>
         <translation>Symbol: DXF %1 nach %2 importiert</translation>
     </message>
@@ -13232,6 +13252,10 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     <message>
         <source>STEP: %1 cannot be written</source>
         <translation>STEP: %1 kann nicht geschrieben werden</translation>
+    </message>
+    <message>
+        <source>STEP: log in on keyence.de in the browser, load the CAD data (STEP) of %1 (%2) and save the file (ZIP or STEP) into %3</source>
+        <translation>STEP: im Browser bei keyence.de anmelden, die CAD-Daten (STEP) von %1 laden (%2) und die Datei (ZIP oder STEP) in %3 speichern</translation>
     </message>
     <message>
         <source>STEP: request it on 3Dfindit in the browser (%1 of %2 requests left today)</source>

@@ -43,7 +43,11 @@ class DiagramEventAddCable : public DiagramEventInterface
 		Q_OBJECT
 
 	public:
-		explicit DiagramEventAddCable(Diagram *diagram);
+			///What the line becomes: the cores of a cable, or a terminal
+			///on every wire it crosses ("draw terminal strip")
+		enum class Mode { Cable, Terminals };
+
+		explicit DiagramEventAddCable(Diagram *diagram, Mode mode = Mode::Cable);
 		~DiagramEventAddCable() override;
 
 		void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -57,6 +61,7 @@ class DiagramEventAddCable : public DiagramEventInterface
 		void updatePreview(const QPointF &scene_pos);
 		QPointF finishPoint(const QPointF &scene_pos) const;
 		void finishLine(const QPointF &end);
+		void finishTerminals(const QLineF &line);
 		void showGuides(const QPointF &scene_pos);
 		void clearHint() const;
 		void updateHint() const;
@@ -73,6 +78,7 @@ class DiagramEventAddCable : public DiagramEventInterface
 			///-1 undecided, 0 horizontal, 1 vertical
 		int m_axis = -1;
 		QList<CableCrossing> m_crossings;
+		Mode m_mode = Mode::Cable;
 };
 
 #endif // DIAGRAMEVENTADDCABLE_H

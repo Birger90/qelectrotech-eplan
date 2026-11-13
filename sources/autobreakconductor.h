@@ -44,6 +44,9 @@ class QUndoCommand;
 	                          broken in one pass)
 	@param used_terminals     shared set of terminals already used as
 	                          connect_to or other_terminal in the same batch
+	@param always             break even when the project's "auto break
+	                          conductor" option is off (the terminal strip
+	                          tool, whose whole point is the break)
 	@return set of terminals that were connected to a broken conductor's
 	        far-end (useful for preventing duplicate auto-connect)
 */
@@ -52,6 +55,7 @@ QSet<Terminal *> autoBreakConductors(
 	Element *element,
 	QUndoCommand *parent,
 	QList<Conductor *> &conductors_handled,
-	QSet<Terminal *> &used_terminals);
+	QSet<Terminal *> &used_terminals,
+	bool always = false);
 
 #endif // AUTOBREAKCONDUCTOR_H

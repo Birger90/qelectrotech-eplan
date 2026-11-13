@@ -480,6 +480,16 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/diagramevent/diagrameventaddpath.h
   ${QET_DIR}/sources/diagramevent/diagrameventaddcable.cpp
   ${QET_DIR}/sources/diagramevent/diagrameventaddcable.h
+  ${QET_DIR}/sources/TerminalStrip/drawnterminals.cpp
+  ${QET_DIR}/sources/TerminalStrip/drawnterminals.h
+  ${QET_DIR}/sources/TerminalStrip/ui/drawnterminalsdialog.cpp
+  ${QET_DIR}/sources/TerminalStrip/ui/drawnterminalsdialog.h
+  ${QET_DIR}/sources/TerminalStrip/terminalarticlecatalog.cpp
+  ${QET_DIR}/sources/TerminalStrip/terminalarticlecatalog.h
+  ${QET_DIR}/sources/TerminalStrip/ui/terminalarticledialog.cpp
+  ${QET_DIR}/sources/TerminalStrip/ui/terminalarticledialog.h
+  ${QET_DIR}/sources/TerminalStrip/ui/terminalpreviewwidget.cpp
+  ${QET_DIR}/sources/TerminalStrip/ui/terminalpreviewwidget.h
   ${QET_DIR}/sources/diagramevent/diagrameventaddbridge.cpp
   ${QET_DIR}/sources/diagramevent/diagrameventaddbridge.h
   ${QET_DIR}/sources/diagramevent/diagrameventaddtext.cpp

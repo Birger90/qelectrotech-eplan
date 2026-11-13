@@ -73,11 +73,12 @@ QSet<Terminal *> autoBreakConductors(
 	Element *element,
 	QUndoCommand *parent,
 	QList<Conductor *> &conductors_handled,
-	QSet<Terminal *> &used_terminals)
+	QSet<Terminal *> &used_terminals,
+	bool always)
 {
 	QSet<Terminal *> broken_endpoints;
 
-	if (!diagram->project()->autoBreakConductor())
+	if (!always && !diagram->project()->autoBreakConductor())
 		return broken_endpoints;
 
 	foreach (Terminal *t, element->terminals())

@@ -20,6 +20,8 @@
 #include <cable/addcablecommand.h>
 #include <cable/cablecreatedialog.h>
 #include <cable/cablepart.h>
+#include <TerminalStrip/drawnterminals.h>
+#include <TerminalStrip/ui/drawnterminalsdialog.h>
 #include <diagram.h>
 #include <qetapp.h>
 #include <qetdiagrameditor.h>
@@ -30,6 +32,7 @@
 #include <QGraphicsView>
 #include <QKeyEvent>
 #include <QLineF>
+#include <QMessageBox>
 #include <QSettings>
 #include <QStatusBar>
 #include <QTimer>
@@ -59,8 +62,9 @@ qreal gridStep()
 	@brief DiagramEventAddCable::DiagramEventAddCable
 	@param diagram the folio the cable is drawn on
 */
-DiagramEventAddCable::DiagramEventAddCable(Diagram *diagram) :
-	DiagramEventInterface(diagram)
+DiagramEventAddCable::DiagramEventAddCable(Diagram *diagram, Mode mode) :
+	DiagramEventInterface(diagram),
+	m_mode(mode)
 {
 	m_running = true;
 		//Done here as well as in init(): Diagram::setEventInterface()
@@ -154,6 +158,23 @@ void DiagramEventAddCable::updateHint() const
 	if (!m_diagram || m_diagram->views().isEmpty()) return;
 	auto *editor = QETApp::diagramEditorAncestorOf(m_diagram->views().constFirst());
 	if (!editor) return;
+
+	if (m_mode == Mode::Terminals)
+	{
+		if (!m_has_anchor) {
+			editor->statusBar()->showMessage(tr(
+				"Left click: start the line across the wires of the terminal strip; "
+				"drag or second click: finish; right click: cancel; Esc: quit"));
+		} else {
+			editor->statusBar()->showMessage(tr(
+				"Left click or release: finish the line "
+				"(%n terminal(s); numbered in the direction you draw); "
+				"right click: cancel the line",
+				"how many conductors the terminal line already crosses",
+				m_crossings.size()));
+		}
+		return;
+	}
 
 	if (!m_has_anchor)
 	{
@@ -342,7 +363,8 @@ void DiagramEventAddCable::updatePreview(const QPointF &scene_pos)
 	if (!m_preview)
 	{
 		m_preview = new QGraphicsLineItem;
-		QPen pen(QColor(0, 120, 215));
+			//Green for a terminal strip, blue for a cable
+		QPen pen(m_mode == Mode::Terminals ? QColor(0, 160, 60) : QColor(0, 120, 215));
 		pen.setWidthF(2.0);
 		pen.setStyle(Qt::DashLine);
 		m_preview->setPen(pen);
@@ -426,6 +448,13 @@ void DiagramEventAddCable::finishLine(const QPointF &end)
 		return;
 	}
 
+	if (m_mode == Mode::Terminals)
+	{
+		finishTerminals(line);
+		reset();
+		return;
+	}
+
 	m_crossings = CableManager::crossedConductors(m_diagram, line);
 
 	CablePartData part;
@@ -460,4 +489,33 @@ void DiagramEventAddCable::finishLine(const QPointF &end)
 	}
 
 	reset();
+}
+
+/**
+	@brief DiagramEventAddCable::finishTerminals
+	The line of a terminal strip: show what it crosses, and once the user
+	agrees put a terminal on every one of those wires.
+	@param line the line as drawn
+*/
+void DiagramEventAddCable::finishTerminals(const QLineF &line)
+{
+	QWidget *parent = m_diagram->views().isEmpty() ? nullptr : m_diagram->views().constFirst();
+	const auto rows = DrawnTerminals::rowsFor(m_diagram, line);
+	if (rows.isEmpty())
+	{
+		QMessageBox::information(parent, tr("Draw terminal strip"),
+								 tr("The line crosses no wire. Draw it across the wires "
+									"which go through the terminal strip."));
+		return;
+	}
+
+	DrawnTerminalsDialog dialog(m_diagram->project(), rows, parent);
+	if (dialog.exec() != QDialog::Accepted) {
+		return;
+	}
+
+	const auto result = DrawnTerminals::place(m_diagram, line, dialog.rows(), dialog.settings());
+	if (!result.problems.isEmpty()) {
+		QMessageBox::warning(parent, tr("Draw terminal strip"), result.problems.join(QChar(0x0A)));
+	}
 }

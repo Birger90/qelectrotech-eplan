@@ -543,6 +543,10 @@ class QetScriptApi : public QObject
 									 const QString &length,
 									 double x1, double y1, double x2, double y2);
 		Q_INVOKABLE QStringList cables() const;
+		Q_INVOKABLE int addTerminals(int folioIndex, const QString &strip, int firstNumber,
+									 const QString &elementPath, const QString &article,
+									 const QString &peArticle,
+									 double x1, double y1, double x2, double y2);
 
 		Q_INVOKABLE QStringList shapes(int folioIndex) const;
 		Q_INVOKABLE int shapeIndex(int folioIndex, const QString &uuid) const;

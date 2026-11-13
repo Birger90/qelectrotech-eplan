@@ -314,6 +314,7 @@ class QETDiagramEditor : public QETMainWindow
 		*m_live_auto_connect,		///< Keep automatic wires up to date (AutoConnect)
 		*m_connect_aligned,		///< Connect the aligned free terminals of the folio
 		*m_add_cable = nullptr,		///< Draw the trunk line of a cable
+		*m_add_terminals = nullptr,	///< Draw a line across wires: a terminal on each
 		*m_add_dimension_linear = nullptr,  ///< Add linear dimension
 		*m_add_dimension_chain = nullptr,   ///< Add chain dimension
 		*m_add_bridge = nullptr,	///< Draw a bridge over terminals

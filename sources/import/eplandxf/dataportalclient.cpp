@@ -121,6 +121,8 @@ void DataPortalClient::search(const DataPortalQuery &q)
 	if (!q.manufacturer.trimmed().isEmpty())
 		query.addQueryItem(QStringLiteral("filter[manufacturer]"), q.manufacturer.trimmed());
 	if (q.only_dxf) query.addQueryItem(QStringLiteral("filter[data_types]"), QStringLiteral("dxf_data"));
+	if (!q.catalog_eplan.trimmed().isEmpty())
+		query.addQueryItem(QStringLiteral("filter[catalog_eplan]"), q.catalog_eplan.trimmed());
 	if (q.exact && !text.isEmpty()) query.addQueryItem(QStringLiteral("fuzziness"), QStringLiteral("0"));
 	query.addQueryItem(QStringLiteral("include"),
 			   QStringLiteral("manufacturer,product_group,picture_file.preview"));

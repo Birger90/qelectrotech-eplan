@@ -1950,6 +1950,8 @@ void QETDiagramEditor::setUpActions()
 		//Not an element of the drawing but a line drawn across the
 		//conductors: what it crosses becomes the cores of a cable.
 	m_add_cable		   = m_add_item_actions_group.addAction(QET::Icons::Cable,      tr("Draw a cable"));
+		//The same kind of line: every conductor crossed gets a terminal
+	m_add_terminals	   = m_add_item_actions_group.addAction(QET::Icons::TerminalStrip, tr("Draw terminal strip"));
 	m_add_dimension_linear = m_add_item_actions_group.addAction(QET::Icons::DimensionLinear, tr("Add linear dimension"));
 	m_add_dimension_chain  = m_add_item_actions_group.addAction(QET::Icons::DimensionChain,  tr("Add chain dimension"));
 		//A bridge across terminals: what it crosses becomes the terminals
@@ -1971,6 +1973,7 @@ void QETDiagramEditor::setUpActions()
 	add_terminal_strip->setStatusTip(tr("Adds a terminal plan to the current sheet"));
 	add_generic_device->setStatusTip(tr("Makes a box symbol with terminals on any side and places it on the current sheet"));
 	m_add_cable     ->setStatusTip(tr("Draws the main line of a cable: every conductor crossed becomes one of its cores"));
+	m_add_terminals ->setStatusTip(tr("Draws a line across conductors: every conductor crossed gets a terminal of one terminal strip"));
 	m_add_dimension_linear->setStatusTip(tr("Adds a linear dimension to the current sheet"));
 	m_add_dimension_chain ->setStatusTip(tr("Adds a chain dimension to the current sheet"));
 	m_add_bridge    ->setStatusTip(tr("Draws a bridge over terminals: every terminal crossed becomes one of its connections"));
@@ -1990,6 +1993,7 @@ void QETDiagramEditor::setUpActions()
 	add_terminal_strip->setData(QStringLiteral("terminal_strip"));
 	add_generic_device->setData(QStringLiteral("generic_device"));
 	m_add_cable     ->setData(QStringLiteral("cable"));
+	m_add_terminals ->setData(QStringLiteral("terminals"));
 	m_add_dimension_linear->setData(QStringLiteral("dimension_linear"));
 	m_add_dimension_chain ->setData(QStringLiteral("dimension_chain"));
 	m_add_bridge    ->setData(QStringLiteral("bridge"));
@@ -2002,6 +2006,7 @@ void QETDiagramEditor::setUpActions()
 	add_polyline->setCheckable(true);
 	add_path->setCheckable(true);
 	m_add_cable->setCheckable(true);
+	m_add_terminals->setCheckable(true);
 	m_add_bridge->setCheckable(true);
 	add_fillet->setCheckable(true);
 	m_add_dimension_linear->setCheckable(true);
@@ -3651,6 +3656,10 @@ void QETDiagramEditor::addItemGroupTriggered(QAction *action)
 			return;
 		}
 		diagram_event = new DiagramEventAddCable(d);
+	}
+	else if (value == QLatin1String("terminals"))
+	{
+		diagram_event = new DiagramEventAddCable(d, DiagramEventAddCable::Mode::Terminals);
 	}
 	else if (value == QLatin1String("bridge"))
 	{

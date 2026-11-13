@@ -96,6 +96,14 @@ namespace TerminalArticleCatalog
 	QString colorSpec(const Article &article);
 		///The entry of the drawing catalogue (TerminalCatalog) closest to the article
 	QString drawingCatalogEntry(const Article &article);
+		///The names of the levels as the type of a terminal of several
+		///levels gives them, lowest level first: "PTI 2,5-PE/L/NT" ->
+		///{"PE", "L", "N"}; empty when the type names none
+	QStringList levelNames(const Article &article);
+		///The level (0 = lowest) of a terminal of several levels which is
+		///protective earth, -1 when it has none: an installation terminal
+		///"L/N" carries no PE, a "PE/L/N" one does
+	int peLevel(const Article &article);
 }
 
 #endif // TERMINALARTICLECATALOG_H

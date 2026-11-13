@@ -1,4 +1,4 @@
-/*
+﻿/*
 	Copyright 2006-2026 The QElectroTech Team
 	This file is part of QElectroTech.
 
@@ -526,4 +526,50 @@ QString TerminalArticleCatalog::dataPortalShortName(const QString &manufacturer)
 	if (m_.startsWith(QStringLiteral("weidm"))) return QStringLiteral("WEI");
 	if (m_.startsWith(QStringLiteral("wago"))) return QStringLiteral("WAGO");
 	return QString();
+}
+
+QStringList TerminalArticleCatalog::levelNames(const Article &article)
+{
+	QStringList names_;
+	if (article.levels < 2) {
+		return names_;
+	}
+		//The type first, the designation where the type is missing:
+		//"PTI 2,5-PE/L/NT", "PTI 2,5-L/N – Installationsetagenklemme"
+	static const QRegularExpression re_(QStringLiteral("-((?:[A-Z]{1,3}/)+[A-Z]{1,3})(?![A-Za-z])"));
+	for (const auto &text_ : {article.type_number, article.designation})
+	{
+		const auto match_ = re_.match(text_);
+		if (!match_.hasMatch()) {
+			continue;
+		}
+		for (const auto &token_ : match_.captured(1).split(QLatin1Char('/')))
+		{
+				//"NT" (N with a disconnect), "LO" (L with a lamp): the
+				//conductor is what the level is for
+			if (token_.startsWith(QLatin1String("PE")))     names_ << QStringLiteral("PE");
+			else if (token_.startsWith(QLatin1Char('L')))   names_ << QStringLiteral("L");
+			else if (token_.startsWith(QLatin1Char('N')))   names_ << QStringLiteral("N");
+			else                                            names_ << token_;
+		}
+		break;
+	}
+	if (names_.size() > article.levels) {
+		names_.clear();
+	}
+	return names_;
+}
+
+int TerminalArticleCatalog::peLevel(const Article &article)
+{
+	if (article.levels < 2) {
+		return -1;
+	}
+	const int named_ = int(levelNames(article).indexOf(QStringLiteral("PE")));
+	if (named_ >= 0) {
+		return named_;
+	}
+		//A protective earth terminal of several levels whose type names
+		//no level: the level on the mounting rail
+	return article.kind == Kind::ProtectiveEarth ? 0 : -1;
 }

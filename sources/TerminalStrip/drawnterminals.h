@@ -18,6 +18,7 @@
 #ifndef DRAWNTERMINALS_H
 #define DRAWNTERMINALS_H
 
+#include <QHash>
 #include <QLineF>
 #include <QList>
 #include <QPointF>
@@ -46,22 +47,25 @@ namespace DrawnTerminals
 		Conductor *conductor = nullptr;
 			///Scene coordinates where the line crosses the conductor
 		QPointF position;
-			///The number the terminal gets, "3" for "X1:3"
+			///The strip the terminal goes into, "X1"; empty: Settings::strip
+		QString strip;
+			///The number the terminal gets, "3" for "X1:3". Rows of one
+			///strip with the same number are the levels of one terminal.
 		QString number;
-			///A protective earth terminal: gets the PE article
+			///The level of its terminal, 0 = lowest (0 for a terminal of one level)
+		int level = 0;
+			///"Phoenix Contact 3213946"; empty: Settings::article
+		QString article;
+			///A protective earth wire
 		bool pe = false;
 	};
 
 	struct Settings
 	{
-		QString strip;			///< "X1"
+		QString strip;			///< "X1", for rows which name none
 		QString element_path;	///< collection path of the terminal symbol
 		QString article;		///< "WAGO 2002-1201": manufacturer, a space, the reference
 		QString pe_article;		///< article of a PE terminal
-			///Levels of one terminal: with 3 (an installation terminal
-			///PE/L/N) every 3 wires share one terminal, one article, one
-			///number, and pe_article is not used
-		int levels = 1;
 	};
 
 	struct Result
@@ -87,9 +91,22 @@ namespace DrawnTerminals
 	QString defaultElementPath();
 		///How many levels the article of the catalogue has (1 when unknown)
 	int levelsOf(const QString &article);
-		///Number the rows from @p first: one number per terminal, that is
-		///per @p levels rows
-	void numberRows(QList<Row> &rows, int first, int levels);
+		///The level of a terminal of several levels which is PE, -1 when none
+	int peLevelOf(const QString &article);
+		///What the level of a terminal is called: "PE", "L", "N" where
+		///the type says so, "1", "2", ... otherwise, empty for one level
+	QString levelName(const QString &article, int level);
+		///The article a row gets when nobody chose one: the terminal's
+		///own article, the PE article for PE wires unless the terminal
+		///has a PE level
+	QString defaultArticle(const Row &row, const Settings &settings);
+		///Number the rows strip by strip: every strip from @p first (its
+		///next free number when it has no entry there). Rows of one strip
+		///with an article of several levels fill the levels of one terminal
+		///in turn, a PE wire the PE level; a wire whose level is taken
+		///opens the next terminal.
+	void numberRows(QETProject *project, QList<Row> &rows,
+					const QHash<QString, int> &first = {});
 
 		///Put the terminals down, one undo step, and file them into the strip
 	Result place(Diagram *diagram, const QLineF &line,

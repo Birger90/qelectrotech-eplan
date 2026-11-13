@@ -66,13 +66,21 @@ def stil(e, gefuellt=None):
 class Uebersetzung:
     def __init__(self, pfad: Path):
         self.texte = {}
+        self.en_de = {}
         if not pfad.exists():
             return
         wurzel = ET.fromstring(gzip.decompress(pfad.read_bytes()))
         for t in wurzel.iter("text"):
             ident = t.get("ident")
             if ident:
-                self.texte[ident] = (t.get("DE") or "", t.get("ENUS") or t.get("ENGB") or "")
+                de, en = t.get("DE") or "", t.get("ENUS") or t.get("ENGB") or ""
+                self.texte[ident] = (de, en)
+                if de and en:
+                    self.en_de.setdefault(en.strip().lower(), de)
+
+    def deutsch(self, text):
+        """Deutscher Text zu einem englischen Text aus FluidSIM (Bauteilbeschreibung), sonst der Text selbst."""
+        return self.en_de.get((text or "").strip().lower(), text)
 
     def namen(self, ident):
         de, en = self.texte.get(ident, ("", ""))
@@ -418,9 +426,30 @@ def werte(komponente):
     return out
 
 
+def wert_mm(komponente, ident):
+    """Wert eines Parameters in mm (Einheit mm, cm oder m), 0 wenn er fehlt."""
+    for c in komponente:
+        if c.tag in ("const", "parameter") and c.get("ident") == ident:
+            try:
+                v = float(c.get("value", ""))
+            except ValueError:
+                return 0.0
+            return v * {"mm": 1.0, "cm": 10.0, "m": 1000.0}.get(c.get("unit", "mm"), 0.0)
+    return 0.0
+
+
+def klasse(komponente):
+    """FluidSIMs Bauartklasse (classification-data/type), z. B. solenoid-coil, make-contact."""
+    t = komponente.find("classification-data/type")
+    return t.get("value", "") if t is not None else ""
+
+
+KONTAKT = {"make-contact": "NO", "break-contact": "NC", "changeover-contact": "SW"}
+
+
 def fluid_block(objekt, w, ebenen_namen):
     """<fluid>-Block nach der Bauart der Vorlage, oder ""."""
-    if objekt.startswith("Pneu.DirectionalValve") or objekt.startswith("Pneu.Valve.Directional"):
+    if objekt.startswith(("Pneu.DirectionalValve", "Hyd.DirectionalValve", "Pneu.Valve.Directional")):
         try:
             anzahl = int(float(w.get("posNoMax", "0")))
             ruhe = int(float(w.get("posNoInit", "1")))
@@ -448,9 +477,20 @@ def fluid_block(objekt, w, ebenen_namen):
         stellungen = "\n".join("            <position/>" for _ in range(anzahl))
         return (f'    <fluid kind="valve">\n        <positions initial="{ruhe}">\n{stellungen}\n'
                 f'        </positions>\n' + "\n".join(seiten) + "\n    </fluid>\n"), magnete
-    if objekt.startswith("Pneu.Actuator") and "CYL" in objekt.upper():
-        return '    <fluid kind="cylinder">\n        <cylinder action="double"/>\n    </fluid>\n', 0
-    if objekt == "ET.Relay.ValveSolenoid":
+    if objekt.startswith(("Pneu.Actuator", "Hyd.Actuator")) and "CYL" in objekt.upper():
+        masse = ""
+        an_l, an_r = w.get("connector_left") == "True", w.get("connector_right") == "True"
+        aktion = "single" if an_l != an_r else "double"
+        feder_l, feder_r = w.get("spring_left") == "True", w.get("spring_right") == "True"
+        if feder_l or feder_r:
+            stange = (feder_r and w.get("rod_right") == "True") or (feder_l and w.get("rod_left") == "True")
+            masse += f' spring="{"rod" if stange else "piston"}"'
+        for name, ident in (("bore_mm", "d_piston"), ("rod_mm", "d_rod"), ("stroke_mm", "xMax")):
+            v = w.get("_mm_" + ident, 0.0)
+            if v > 0:
+                masse += f' {name}="{fmt(v)}"'
+        return f'    <fluid kind="cylinder">\n        <cylinder action="{aktion}"{masse}/>\n    </fluid>\n', 0
+    if objekt.startswith("ET.Relay.ValveSolenoid"):
         return '    <fluid kind="solenoid"/>\n', 0
     for vorsilbe, art in (("Pneu.Supply", "source"), ("Pneu.Maintenance", "treatment"),
                           ("Pneu.FlowControl", "flow_control"), ("Pneu.Sensor", "sensor"),
@@ -544,8 +584,19 @@ def bauteil_umwandeln(symbole, haupt, umgebung, verbindungen, namen, quelle_name
     z.anschluesse.sort(key=lambda a: a["medium"] == "electric")
 
     objekt = haupt.get("object-ref", "")
-    fluid, magnete = fluid_block(objekt, werte(haupt), ebenen_namen)
+    typ = klasse(haupt)
+    w = werte(haupt)
+    for ident in ("d_piston", "d_rod", "xMax"):
+        w["_mm_" + ident] = wert_mm(haupt, ident)
+    fluid, magnete = fluid_block(objekt, w, ebenen_namen)
+    if not fluid and typ == "solenoid-valve-coil":
+        fluid = '    <fluid kind="solenoid"/>\n'
     zeilen, (breite, hoehe, hx, hy) = z.xml()
+
+    def slave(zustand):
+        return ('    <kindInformations>\n        <kindInformation name="type">simple</kindInformation>\n'
+                f'        <kindInformation name="state">{zustand}</kindInformation>\n'
+                '        <kindInformation name="number">1</kindInformation>\n    </kindInformations>\n')
 
     link = "simple"
     art = ""
@@ -553,11 +604,14 @@ def bauteil_umwandeln(symbole, haupt, umgebung, verbindungen, namen, quelle_name
         link = "master"
         art = ('    <kindInformations>\n        <kindInformation name="type">coil</kindInformation>\n'
                f'        <kindInformation name="max_slaves">{magnete}</kindInformation>\n    </kindInformations>\n')
-    elif objekt == "ET.Relay.ValveSolenoid":
-        link = "slave"
-        art = ('    <kindInformations>\n        <kindInformation name="type">simple</kindInformation>\n'
-               '        <kindInformation name="state">Other</kindInformation>\n'
-               '        <kindInformation name="number">1</kindInformation>\n    </kindInformations>\n')
+    elif objekt.startswith("ET.Relay.ValveSolenoid") or typ == "solenoid-valve-coil":
+        link, art = "slave", slave("Other")
+    elif typ == "solenoid-coil":
+        # Spule (Relais, Vergleicherkarte …): Master der gleich gekennzeichneten Kontakte
+        link = "master"
+        art = '    <kindInformations>\n        <kindInformation name="type">coil</kindInformation>\n    </kindInformations>\n'
+    elif typ in KONTAKT:
+        link, art = "slave", slave(KONTAKT[typ])
 
     de, en = namen
     text = (f'<definition version="0.90" type="element" link_type="{link}" width="{breite}" height="{hoehe}" '
@@ -571,7 +625,7 @@ def bauteil_umwandeln(symbole, haupt, umgebung, verbindungen, namen, quelle_name
             f'    <description>\n' + "\n".join("        " + zl for zl in zeilen) + "\n    </description>\n"
             f'</definition>\n')
     uuids = {a["schluessel"]: str(kennung(saat, "anschluss", a["schluessel"])) for a in z.anschluesse}
-    return {"text": text, "anker": z.anker, "uuids": uuids, "link": link}
+    return {"text": text, "anker": z.anker, "uuids": uuids, "link": link, "klasse": typ}
 
 
 def hauptbauteil(datei):

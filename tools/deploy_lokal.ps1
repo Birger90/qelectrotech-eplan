@@ -46,9 +46,11 @@ if (-not $python) {
     }
     $fluidsim = "C:\Program Files (x86)\Didactic\FluidSIM6"
     if (Test-Path (Join-Path $fluidsim "sym\sym_fs.lib")) {
-        $fs = Join-Path $sammlung "50_pneumatic\5090_FluidSIM"
-        New-Item -ItemType Directory -Force $fs | Out-Null
-        Set-Content -Encoding utf8 (Join-Path $fs "qet_directory") @"
+        foreach ($teil in @(@("50_pneumatic\5090_FluidSIM", "~FolderPneumatic"),
+                            @("30_hydraulic\3090_FluidSIM", "~FolderHydraulic"))) {
+            $fs = Join-Path $sammlung $teil[0]
+            New-Item -ItemType Directory -Force $fs | Out-Null
+            Set-Content -Encoding utf8 (Join-Path $fs "qet_directory") @"
 <qet-directory>
     <names>
         <name lang="de">FluidSIM (Festo Didactic)</name>
@@ -56,7 +58,9 @@ if (-not $python) {
     </names>
 </qet-directory>
 "@
-        & $python.Source -X utf8 (Join-Path $symbole "fluidsim_symbole.py") --fluidsim $fluidsim --ziel $fs
+            & $python.Source -X utf8 (Join-Path $symbole "fluidsim_symbole.py") --fluidsim $fluidsim `
+                --bereich $teil[1] --ziel $fs
+        }
     }
 }
 

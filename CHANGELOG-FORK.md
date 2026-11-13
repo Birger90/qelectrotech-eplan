@@ -29,8 +29,13 @@ Pneumatikpläne nach Vorbild FluidSIM 6, Stufe 1 (zeichnen, noch keine Simulatio
 - FluidSIM-Schaltungen übernehmen: `tools/fluidsim_import/fluidsim_plan.py SCHALTUNG.circ AUSGABE.qet` macht aus
   einer FluidSIM-6-Schaltung ein QET-Projekt: Bauteile mit Lage (Drehung, Spiegelung), Kennzeichnung, Leitungen
   (Verzweigungen werden zu Leitungen am selben Anschluss), Schalldämpfer/Blindstopfen, Spule ↔ Ventil verknüpft.
-  Rahmen, Tabellen, Zustandsdiagramme und GRAFCET bleiben weg. Alle 360 Pneumatik-Beispiele von FluidSIM lassen
-  sich umwandeln.
+  Mehrere .circ (oder ein Ordner) werden mehrere Blätter. Bauteile tragen den deutschen Namen aus FluidSIM,
+  Beschreibung und technische Werte als Bauteilinformation, die sichtbaren Werte (p = 6 bar …) als Text,
+  Zylinder Durchmesser, Hub und Bauart. Relaisspulen und ihre Kontakte (Schließer, Öffner, Wechsler) werden
+  verknüpft, Ventile mit mehreren Magneten mit allen Spulen, auch über Blattgrenzen. Rahmen, Tabellen,
+  Zustandsdiagramme und GRAFCET bleiben weg; Artikeldaten speichert FluidSIM nicht. Alle 1072 Beispiele
+  von FluidSIM (Pneumatik, Elektrik, Hydraulik) lassen sich umwandeln.
+- Die FluidSIM-Hydraulikbibliothek (172 Bauteile) kommt beim Deploy nach `30_hydraulic/3090_FluidSIM`.
 - `tools/deploy_lokal.ps1` ersetzt in der Standardsammlung `50_pneumatic` und `30_hydraulic` durch die
   nachgerüsteten Bauteile und legt die FluidSIM-Symbole unter `50_pneumatic/5090_FluidSIM` ab (wenn FluidSIM 6
   installiert ist). Doppelte Portnummern (zwei Eingänge „1“ am Wechselventil) heißen als Anschluss „1.1“/„1.2“,

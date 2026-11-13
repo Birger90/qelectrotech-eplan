@@ -113,7 +113,7 @@ Alles über `QUndoCommand` (Merge-IDs in `dev_doc/ID_of_QUndoCommand.txt` eintra
 ## 6. Import
 
 - **EPLAN ZW1**: prüfen, ob Fluid-Seiten (Festo-Projekte, Seitentyp Fluid, Kennung `&MFS`/`&MFA` in Festo-Beispielen) schon ankommen. Testdatei nötig.
-- **FluidSIM** (Quelle C): **erledigt** `tools/fluidsim_import/fluidsim_plan.py` (.circ → .qet über QETs Skript-Schnittstelle). Drehsinn von FluidSIM an den Leitungen bestimmt: gegen den Uhrzeigersinn (993 von 993 Leitungen an gedrehten Bauteilen passen; über alle 9602 Leitungen der Pneumatik-Beispiele passen 9567). Offen: Kontakt ↔ Relais im elektrischen Teil, freie Texte, mehrere Blätter, Spulen-Kennzeichnung (-MB1 statt der des Ventils).
+- **FluidSIM** (Quelle C): **erledigt** `tools/fluidsim_import/fluidsim_plan.py` (.circ → .qet über QETs Skript-Schnittstelle). Drehsinn von FluidSIM an den Leitungen bestimmt: gegen den Uhrzeigersinn (993 von 993 Leitungen an gedrehten Bauteilen passen; über alle 9602 Leitungen der Pneumatik-Beispiele passen 9567). Ergänzt: mehrere Blätter, deutsche Namen, technische Werte, Relais ↔ Kontakte, alle Magnete eines Ventils, Hydraulik. Offen: Artikeldaten (FluidSIM speichert keine), Leitungswege wie in FluidSIM (QET legt sie neu), Tabellen/Zustandsdiagramme, etwa 0,4 % der Leitungen liegen nicht genau auf dem Anschluss (nicht untersucht).
 
 ---
 

@@ -210,6 +210,7 @@ class QETDiagramEditor : public QETMainWindow
 		void slot_cableNumbering();
 		void slot_reloadElementDrawings();
 		void slot_updateElementsFromCollections();
+		void slot_resetSymbolTexts();
 #ifdef QET_HAS_SCRIPTING
 		void slot_runScript();
 		void rebuildScriptActions();
@@ -343,6 +344,7 @@ class QETDiagramEditor : public QETMainWindow
 		*m_cable_overview,             ///< Window listing every cable, where its type is chosen
 		*m_reload_element_drawings,    ///< Action to redraw every placed element from its current definition
 		*m_update_elements_from_collections, ///< Action to replace embedded elements changed in their collection
+		*m_reset_symbol_texts, ///< Action to lay the symbol texts out as their symbol does
 #ifdef QET_HAS_SCRIPTING
 		*m_run_script,                 ///< Action to run a JavaScript macro against the current project
 		*m_open_scripts_folder,        ///< Action to open the folder stored scripts are read from

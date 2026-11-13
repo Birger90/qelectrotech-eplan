@@ -296,7 +296,19 @@ private slots:
 											dirs.at(i) + QLatin1Char('/') + copies.first(), written},
 										   QString(), false, &exit_code);
 				if (last < 0) {
-					QVERIFY2(exit_code != 0 && log.contains(QStringLiteral("not ready")), qPrintable(log));
+						//Killed while opening, as far as the pipe told: the
+						//copy is not ready. Under load a run can reach DONE 0
+						//and be killed before that line is read; its copy is
+						//then the project as opened, and nothing is lost.
+					if (exit_code != 0) {
+						QVERIFY2(log.contains(QStringLiteral("not ready")), qPrintable(log));
+						continue;
+					}
+					QVERIFY2(savedHash(written) == m_reference.at(0),
+							 qPrintable(QStringLiteral("killed before DONE 0 was read: the "
+													   "ready copy is not the project as "
+													   "opened (%1)").arg(dirs.at(i))));
+					++at_edit[0];
 					continue;
 				}
 				QVERIFY2(exit_code == 0, qPrintable(log));
@@ -322,6 +334,13 @@ private slots:
 		QDir().mkpath(QFileInfo(read_only).path());
 		QVERIFY(QFile::copy(m_source, read_only));
 		QVERIFY(QFile::setPermissions(read_only, QFile::ReadOwner | QFile::ReadGroup | QFile::ReadOther));
+			//Root (or a file system ignoring permissions) writes it anyway: the
+			//project is then not read-only, and its copy rightly ready
+		{
+			QFile probe(read_only);
+			if (probe.open(QIODevice::ReadWrite))
+				QSKIP("this user can write a read-only file (root?): nothing read-only to test");
+		}
 		const QString copies = m_dir.filePath(QStringLiteral("readonly-copies"));
 		QDir().mkpath(copies);
 		QProcess proc;

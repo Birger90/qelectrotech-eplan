@@ -36,6 +36,12 @@ Pneumatikpläne nach Vorbild FluidSIM 6, Stufe 1 (zeichnen, noch keine Simulatio
   Zustandsdiagramme und GRAFCET bleiben weg; Artikeldaten speichert FluidSIM nicht. Alle 1072 Beispiele
   von FluidSIM (Pneumatik, Elektrik, Hydraulik) lassen sich umwandeln.
 - Die FluidSIM-Hydraulikbibliothek (172 Bauteile) kommt beim Deploy nach `30_hydraulic/3090_FluidSIM`.
+- Kennbuchstaben beim Einfügen (81346-2) für Pneumatik und Hydraulik: ein Fluid-Bauteil kann seinen Vorschlag
+  mitbringen (`<fluid prefix="QM">`), er gilt, wenn `qet_labels.xml` für den Ordner keinen hat. Die Buchstaben
+  folgen der Kennzeichnung in FluidSIMs Beispielen (Zylinder MM, 5/2-Ventil QM, Spule MB, Drossel RZ …);
+  die QET-Ordner `50_pneumatic`/`30_hydraulic` bekommen beim Deploy eine `qet_labels.xml`, wenn sie keine haben.
+- Skill `fluidtechnik` (`.claude/skills/fluidtechnik/`): Datenmodell, Bauteile, Kennbuchstaben, Zeichnen per
+  MCP, FluidSIM-Import und -Format, Fallen.
 - `tools/deploy_lokal.ps1` ersetzt in der Standardsammlung `50_pneumatic` und `30_hydraulic` durch die
   nachgerüsteten Bauteile und legt die FluidSIM-Symbole unter `50_pneumatic/5090_FluidSIM` ab (wenn FluidSIM 6
   installiert ist). Doppelte Portnummern (zwei Eingänge „1“ am Wechselventil) heißen als Anschluss „1.1“/„1.2“,

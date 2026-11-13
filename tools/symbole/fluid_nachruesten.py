@@ -158,7 +158,43 @@ def nachruesten(text: str, medium: str):
     return neu, namen
 
 
+def labels_vervollstaendigen(vorgabe: Path, ordner: Path) -> str:
+    """qet_labels.xml aus einer Vorgabe, ergänzt um jeden Unterordner, den es in ordner gibt.
+
+    QET sucht den Präfix Ordner für Ordner (QetLabelsFile::prefixInDocument) und findet nichts, sobald ein
+    Unterordner in der Datei fehlt, auch wenn ein Elternordner einen Präfix hat. Ergänzte Ordner bekommen
+    keinen eigenen Präfix, sie erben den des Elternordners."""
+    baum = ET.parse(vorgabe)
+    wurzel = baum.getroot()
+
+    def ergaenzen(knoten, verzeichnis):
+        for unter in sorted(p for p in verzeichnis.iterdir() if p.is_dir()):
+            kind = next((k for k in knoten.findall("category") if k.get("name") == unter.name), None)
+            if kind is None:
+                kind = ET.Element("category", name=unter.name)
+                # vor einem <prefix> des Elternordners einfügen: der steht laut Dateikopf nach den Kindern
+                praefix = knoten.find("prefix")
+                knoten.insert(list(knoten).index(praefix) if praefix is not None else len(knoten), kind)
+            ergaenzen(kind, unter)
+
+    ergaenzen(wurzel, ordner)
+    ET.indent(baum, space="  ")
+    kopf = vorgabe.read_text(encoding="utf-8").split("<labels>")[0]
+    return kopf + ET.tostring(wurzel, encoding="unicode") + "\n"
+
+
 def main(argv=None):
+    if argv is None and len(sys.argv) > 1 and sys.argv[1] == "--labels":
+        # python fluid_nachruesten.py --labels VORGABE.xml SAMMLUNGSORDNER: legt SAMMLUNGSORDNER/qet_labels.xml an,
+        # wenn es noch keine gibt
+        vorgabe, ordner = Path(sys.argv[2]), Path(sys.argv[3])
+        ziel = ordner / "qet_labels.xml"
+        if ziel.exists():
+            print(f"{ziel} gibt es schon, unverändert")
+            return
+        ziel.write_text(labels_vervollstaendigen(vorgabe, ordner), encoding="utf-8", newline="\n")
+        print(f"{ziel} angelegt")
+        return
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("quelle", type=Path, help="Ordner der Sammlung oder eine .elmt-Datei")
     ap.add_argument("--ziel", type=Path, help="Ordner für die nachgerüsteten Kopien")

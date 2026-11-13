@@ -42,6 +42,9 @@ if (-not $python) {
         if (Test-Path $quelle) {
             & $python.Source -X utf8 (Join-Path $symbole "fluid_nachruesten.py") $quelle `
                 --ziel (Join-Path $sammlung $teil[0]) --medium $teil[1]
+            # Kennbuchstaben je Ordner, nur wenn es noch keine Datei gibt ("Präfixe konfigurieren" bleibt)
+            & $python.Source -X utf8 (Join-Path $symbole "fluid_nachruesten.py") --labels `
+                (Join-Path $symbole "qet_labels\$($teil[0]).xml") (Join-Path $sammlung $teil[0])
         }
     }
     $fluidsim = "C:\Program Files (x86)\Didactic\FluidSIM6"

@@ -104,6 +104,8 @@ QDomElement FluidData::toXml(QDomDocument &document) const
 
 	auto root = document.createElement(xmlTagName());
 	root.setAttribute(QStringLiteral("kind"), kindToString(m_kind));
+	if (!m_prefix.isEmpty())
+		root.setAttribute(QStringLiteral("prefix"), m_prefix);
 
 	if (m_kind == Kind::Valve) {
 		auto positions = document.createElement(QStringLiteral("positions"));
@@ -183,6 +185,7 @@ bool FluidData::fromXml(const QDomElement &fluid_element)
 	d.m_kind = kindFromString(fluid_element.attribute(QStringLiteral("kind")));
 	if (d.m_kind == Kind::None)
 		return false;
+	d.m_prefix = fluid_element.attribute(QStringLiteral("prefix")).trimmed();
 
 	if (d.m_kind == Kind::Valve) {
 		const auto positions =
@@ -277,6 +280,7 @@ int FluidData::solenoidSides() const
 bool FluidData::operator==(const FluidData &o) const
 {
 	return m_kind == o.m_kind
+		&& m_prefix == o.m_prefix
 		&& m_positions == o.m_positions
 		&& m_initial_position == o.m_initial_position
 		&& m_left == o.m_left

@@ -156,6 +156,18 @@ class tst_fluiddata : public QObject
 			}
 		}
 
+		void prefixRoundTripsAndIsOptional()
+		{
+			FluidData d = valve52();
+			d.m_prefix = "QM";
+			QDomDocument doc;
+			QCOMPARE(d.toXml(doc).attribute("prefix"), QString("QM"));
+			QVERIFY(roundTrip(d) == d);
+			QCOMPARE(roundTrip(d).m_prefix, QString("QM"));
+				// without a prefix nothing is written
+			QVERIFY(!valve52().toXml(doc).hasAttribute("prefix"));
+		}
+
 		void solenoidSidesCountsEachSideOnce()
 		{
 			FluidData d = valve52();

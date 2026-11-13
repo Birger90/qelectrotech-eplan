@@ -148,6 +148,11 @@ Element::Element(
 	}
 
 	setPrefix(autonum::elementPrefixForLocation(location));
+		//A fluid power symbol may bring its own letter code (IEC 81346-2):
+		//used only when the folder gives none in qet_labels.xml, so what
+		//the user configured there still wins
+	if (getPrefix().isEmpty() && !m_data.m_fluid.m_prefix.isEmpty())
+		setPrefix(m_data.m_fluid.m_prefix);
 	m_uuid = QUuid::createUuid();
 	setZValue(10);
 	setFlags(QGraphicsItem::ItemIsMovable

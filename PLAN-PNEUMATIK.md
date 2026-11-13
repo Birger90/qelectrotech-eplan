@@ -131,7 +131,7 @@ Alles über `QUndoCommand` (Merge-IDs in `dev_doc/ID_of_QUndoCommand.txt` eintra
 3. Nachrüsten `50_pneumatic` (Anschlussnamen). **Erledigt:** `tools/symbole/fluid_nachruesten.py` (Medium an allen Anschlüssen, Portnummern bei 199 von 343 Bauteilen, alle 113 Wegeventile vollständig; `30_hydraulic` nur Medium, dort sind keine Portnummern gezeichnet).
 4. Ventil- und Zylindereditor. **Teil erledigt:** Leitungsart im Leitungs-Fenster, Medium und Abschluss im Anschluss-Editor, Leitungen nur zwischen gleichem Medium, Schalldämpfer/Blindstopfen am freien Anschluss gezeichnet. Offen: Ventil-/Zylindereditor.
 5. Verknüpfung Spule ↔ Ventil, Wegmaßstab. **Teil erledigt:** Ventil = Master, Spule = Slave mit `<fluid kind="solenoid"/>`, Magnetsymbol im Querverweis, Beispielbauteile in `bauteile/pneumatik/`. Hinweis: Als Slave zeigt die Spule die Kennzeichnung des Ventils (`-QM1`), nicht ein eigenes `-MB1` wie FluidSIM. Offen: Wegmaßstab.
-6. Prüfungen, Stückliste, Kennzeichnung. **Teil erledigt:** Projekt → „Fluidtechnik prüfen…“ (offene Anschlüsse, Ventil ohne Spule, Spule ohne Ventil). Offen: Stückliste, Kennzeichnungsvorschlag.
+6. Prüfungen, Stückliste, Kennzeichnung. **Teil erledigt:** Projekt → „Fluidtechnik prüfen…“ (offene Anschlüsse, Ventil ohne Spule, Spule ohne Ventil). **Kennzeichnungsvorschlag erledigt** (`<fluid prefix>`, `qet_labels.xml` aus FluidSIMs Kennzeichnung). Offen: Stückliste.
 7. Skript/MCP.
 8. ZW1-Fluid-Test, danach FluidSIM-Umwandler. **FluidSIM-Umwandler erledigt** (Symbole und Schaltungen); ZW1-Test offen.
 

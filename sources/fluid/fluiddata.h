@@ -117,6 +117,10 @@ class FluidData
 
 	public:
 		Kind m_kind = Kind::None;
+			/// Letter code (IEC 81346-2) suggested for a new label of this
+			/// element: QM, MM, MB... Used when the folder of the element
+			/// gives none in qet_labels.xml. Empty: no suggestion.
+		QString m_prefix;
 
 			// valve
 		QList<Position> m_positions;

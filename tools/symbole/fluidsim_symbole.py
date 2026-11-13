@@ -492,12 +492,50 @@ def fluid_block(objekt, w, ebenen_namen):
         return f'    <fluid kind="cylinder">\n        <cylinder action="{aktion}"{masse}/>\n    </fluid>\n', 0
     if objekt.startswith("ET.Relay.ValveSolenoid"):
         return '    <fluid kind="solenoid"/>\n', 0
-    for vorsilbe, art in (("Pneu.Supply", "source"), ("Pneu.Maintenance", "treatment"),
-                          ("Pneu.FlowControl", "flow_control"), ("Pneu.Sensor", "sensor"),
-                          ("Pneu.Measuring", "sensor")):
+    for vorsilbe, art in (("Pneu.Supply", "source"), ("Hyd.Supply", "source"),
+                          ("Pneu.Maintenance", "treatment"), ("Pneu.FlowControl", "flow_control"),
+                          ("Pneu.ShutoffValve.ShuttleValve", "logic_valve"),
+                          ("Pneu.ShutoffValve.TwoPressureValve", "logic_valve"),
+                          ("Pneu.ShutoffValve.QuickExhaust", "logic_valve"),
+                          ("Pneu.FlowValve", "flow_control"), ("Hyd.FlowValve", "flow_control"),
+                          ("Pneu.ShutoffValve", "flow_control"), ("Hyd.ShutoffValve", "flow_control"),
+                          ("Pneu.Sensor", "sensor"), ("Hyd.Sensor", "sensor"), ("Pneu.Measuring", "sensor"),
+                          ("Pneu.Proportional.PressureSensor", "sensor"),
+                          ("Hyd.Proportional.PressureSensor", "sensor"),
+                          ("Pneu.", "other"), ("Hyd.", "other")):
         if objekt.startswith(vorsilbe):
             return f'    <fluid kind="{art}"/>\n', 0
     return "", 0
+
+
+def kennbuchstaben(fluidsim: Path):
+    """Kennbuchstaben, die FluidSIM in seinen Beispielschaltungen je Bauart vergibt: {object-ref: "QM"}.
+
+    Gezählt wird die Kennzeichnung (-QM1 -> QM) aller Bauteile in circ/; übernommen wird die häufigste,
+    wenn sie bei mindestens 3 Bauteilen und mindestens der Hälfte vorkommt. Bei 3/2- und 4/2-Ventilen hängt
+    sie in FluidSIM an der Rolle (Signal- oder Stellglied): dort ist es nur ein Vorschlag."""
+    zaehler = {}
+    for f in sorted((fluidsim / "circ").rglob("*.circ")):
+        try:
+            roh = f.read_bytes()
+            wurzel = ET.fromstring(gzip.decompress(roh) if roh[:2] == b"\x1f\x8b" else roh)
+        except Exception:
+            continue
+        for c in wurzel.iter("component"):
+            ref = c.get("object-ref")
+            d = c.find("dki-data/designation")
+            if not ref or d is None:
+                continue
+            m = re.match(r"^-([A-Z]{1,3})\d", d.get("value", ""))
+            if m:
+                zaehler.setdefault(ref, {}).setdefault(m.group(1), 0)
+                zaehler[ref][m.group(1)] += 1
+    out = {}
+    for ref, z in zaehler.items():
+        buchst, n = max(z.items(), key=lambda kv: (kv[1], kv[0]))
+        if n >= 3 and n * 2 >= sum(z.values()):
+            out[ref] = buchst
+    return out
 
 
 def mitte(c):
@@ -518,7 +556,8 @@ def anschluss_schluessel(objekt, anschluss):
     return (ebene, ident)
 
 
-def bauteil_umwandeln(symbole, haupt, umgebung, verbindungen, namen, quelle_name, saat, lage=False):
+def bauteil_umwandeln(symbole, haupt, umgebung, verbindungen, namen, quelle_name, saat, lage=False,
+                      praefixe=None):
     """Ein Bauteil einer FluidSIM-Schaltung als .elmt.
 
     symbole: {ident: <symbol>} der Schaltung, haupt: das Bauteil, umgebung: alle Schaltungsobjekte (für
@@ -591,6 +630,9 @@ def bauteil_umwandeln(symbole, haupt, umgebung, verbindungen, namen, quelle_name
     fluid, magnete = fluid_block(objekt, w, ebenen_namen)
     if not fluid and typ == "solenoid-valve-coil":
         fluid = '    <fluid kind="solenoid"/>\n'
+    praefix = (praefixe or {}).get(objekt, "")
+    if fluid and praefix:
+        fluid = re.sub(r'(<fluid kind="[a-z_]+")', r'\1 prefix="%s"' % praefix, fluid, count=1)
     zeilen, (breite, hoehe, hx, hy) = z.xml()
 
     def slave(zustand):
@@ -634,7 +676,7 @@ def hauptbauteil(datei):
     return kandidaten[0] if kandidaten else None
 
 
-def umwandeln(datei, namen, quelle_name):
+def umwandeln(datei, namen, quelle_name, praefixe=None):
     """Text der .elmt für eine <file> der Bibliothek, oder None."""
     grafik = datei.find("section[@type='symbol-graphics']")
     haupt = hauptbauteil(datei)
@@ -642,7 +684,7 @@ def umwandeln(datei, namen, quelle_name):
         return None
     symbole = {s.get("ident"): s for s in grafik.findall("symbol")}
     ergebnis = bauteil_umwandeln(symbole, haupt, list(datei.iter("component")), list(datei.iter("connect")),
-                                 namen, quelle_name, quelle_name)
+                                 namen, quelle_name, quelle_name, praefixe=praefixe)
     return ergebnis["text"] if ergebnis else None
 
 
@@ -671,6 +713,7 @@ def main(argv=None):
     lib = a.fluidsim / "sym" / "sym_fs.lib"
     wurzel = ET.fromstring(gzip.decompress(lib.read_bytes()))
     sprache = Uebersetzung(a.fluidsim / "db" / "lang.db")
+    praefixe = kennbuchstaben(a.fluidsim)
     oben = wurzel.find("section")
     if a.bereich == "alle":
         start = [oben]
@@ -692,7 +735,7 @@ def main(argv=None):
             eig = datei.find("section[@type='properties']")
             ident = eig.get("name", "") if eig is not None else ""
             bnamen = sprache.namen(ident) if ident else (datei.get("name"), datei.get("name"))
-            text = umwandeln(datei, bnamen, datei.get("name", ""))
+            text = umwandeln(datei, bnamen, datei.get("name", ""), praefixe)
             if text is None:
                 zahl_leer += 1
                 continue

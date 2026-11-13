@@ -26,6 +26,11 @@ Pneumatikpläne nach Vorbild FluidSIM 6, Stufe 1 (zeichnen, noch keine Simulatio
 - `tools/symbole/fluid_nachruesten.py` rüstet die QET-Sammlung `50_pneumatic` (und `30_hydraulic`) nach:
   Medium an jedem Anschluss, Portnummern aus den gezeichneten Texten (alle 113 Wegeventile vollständig).
   Ohne Nachrüsten lassen sich diese Bauteile nicht mit pneumatischen Anschlüssen verbinden.
+- FluidSIM-Schaltungen übernehmen: `tools/fluidsim_import/fluidsim_plan.py SCHALTUNG.circ AUSGABE.qet` macht aus
+  einer FluidSIM-6-Schaltung ein QET-Projekt: Bauteile mit Lage (Drehung, Spiegelung), Kennzeichnung, Leitungen
+  (Verzweigungen werden zu Leitungen am selben Anschluss), Schalldämpfer/Blindstopfen, Spule ↔ Ventil verknüpft.
+  Rahmen, Tabellen, Zustandsdiagramme und GRAFCET bleiben weg. Alle 360 Pneumatik-Beispiele von FluidSIM lassen
+  sich umwandeln.
 - `tools/deploy_lokal.ps1` ersetzt in der Standardsammlung `50_pneumatic` und `30_hydraulic` durch die
   nachgerüsteten Bauteile und legt die FluidSIM-Symbole unter `50_pneumatic/5090_FluidSIM` ab (wenn FluidSIM 6
   installiert ist). Doppelte Portnummern (zwei Eingänge „1“ am Wechselventil) heißen als Anschluss „1.1“/„1.2“,

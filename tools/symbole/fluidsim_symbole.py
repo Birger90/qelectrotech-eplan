@@ -109,8 +109,9 @@ def kennung(*teile):
 class Zeichner:
     """Sammelt die Grafik eines Symbols in FluidSIM-Koordinaten und schreibt sie als QET-XML."""
 
-    def __init__(self, saat=""):
+    def __init__(self, saat="", trafo=None):
         self.saat = saat       # für die UUIDs
+        self.trafo = trafo or Trafo()
         self.teile = []        # (art, daten)
         self.anschluesse = []  # dict
         self.linien = []       # Endpunkte aller Linien, für die Richtung der Anschlüsse
@@ -208,6 +209,7 @@ class Zeichner:
             pkte = [q for _, d in self.teile for q in punkte(d)] or [(0.0, 0.0)]
             anker = (min(q[0] for q in pkte), min(q[1] for q in pkte))
         ox, oy = anker
+        self.anker = anker
 
         def t(p):
             return ((p[0] - ox) * K, (p[1] - oy) * K)
@@ -311,17 +313,56 @@ def punkte(d):
     return out
 
 
-def ebene_lesen(z: Zeichner, ebene, anschluss_info):
-    """Zeichnet eine <symbol-layer> in z. anschluss_info: {(ebene, ident): Abschluss}."""
-    if ebene.get("visible") == "false":
+class Trafo:
+    """Lage eines Objekts in einer FluidSIM-Schaltung: erst Maßstab und Spiegelung (scale-x/-y, -1 spiegelt),
+    dann Drehung (rotation, Vielfache von 90°) um die Mitte des Objekts.
+
+    SINN: -1, FluidSIM dreht gegen den Uhrzeigersinn (auf dem Bildschirm, y nach unten). Bestimmt an den
+    Beispielschaltungen über die Leitungen (fluidsim_plan.py --pruefe-drehung: 993 von 993 passen)."""
+    SINN = -1
+
+    def __init__(self, sx=1.0, sy=1.0, rot=0.0):
+        self.sx, self.sy = sx or 1.0, sy or 1.0
+        self.rot = (round(rot / 90.0) * 90) % 360
+
+    @classmethod
+    def von(cls, objekt):
+        return cls(zahl(objekt, "scale-x", 1.0), zahl(objekt, "scale-y", 1.0), zahl(objekt, "rotation", 0.0))
+
+    def punkt(self, x, y):
+        x, y = x * self.sx, y * self.sy
+        w = math.radians(self.rot * self.SINN)
+        c, s = round(math.cos(w)), round(math.sin(w))
+        return (x * c - y * s, x * s + y * c)
+
+    def winkel(self, a):
+        """Bogenwinkel (Grad, gegen den Uhrzeigersinn auf dem Bildschirm) nach der Lage."""
+        if self.sx < 0:
+            a = 180 - a
+        if self.sy < 0:
+            a = -a
+        return (a - self.rot * self.SINN) % 360
+
+    def spiegelt(self):
+        return (self.sx < 0) != (self.sy < 0)
+
+    def quer(self):
+        return self.rot in (90, 270)
+
+
+def ebene_lesen(z: Zeichner, ebene, anschluss_info, nur_grafik=False):
+    """Zeichnet eine <symbol-layer> in z. anschluss_info: {(ebene, ident): Abschluss}.
+    nur_grafik: auch eine ausgeblendete Ebene zeichnen, aber ohne ihre Anschlüsse."""
+    if ebene.get("visible") == "false" and not nur_grafik:
         return
     ox, oy = zahl(ebene, "ref-x"), zahl(ebene, "ref-y")
     sx = zahl(ebene, "scale-x", 1.0)
     sy = zahl(ebene, "scale-y", 1.0)
     name = ebene.get("ident", "")
+    t = z.trafo
 
     def p(x, y):
-        return (ox + sx * x, oy + sy * y)
+        return t.punkt(ox + sx * x, oy + sy * y)
 
     for e in ebene:
         if e.tag == "line":
@@ -336,17 +377,27 @@ def ebene_lesen(z: Zeichner, ebene, anschluss_info):
                 pkte.append(p(float(a), float(b)))
             z.polylinie(pkte, e)
         elif e.tag == "rect":
-            x, y = p(zahl(e, "x1"), zahl(e, "y1"))
-            z.rechteck(x, y, zahl(e, "width") * sx, zahl(e, "height") * sy, e)
+            a = p(zahl(e, "x1"), zahl(e, "y1"))
+            b = p(zahl(e, "x1") + zahl(e, "width"), zahl(e, "y1") + zahl(e, "height"))
+            z.rechteck(min(a[0], b[0]), min(a[1], b[1]), abs(b[0] - a[0]), abs(b[1] - a[1]), e)
         elif e.tag == "circle":
-            z.kreis(p(zahl(e, "cx"), zahl(e, "cy")), zahl(e, "r") * sy, e, sx / sy if sy else 1.0)
+            rx = zahl(e, "r") * abs(sx * t.sx)
+            ry = zahl(e, "r") * abs(sy * t.sy)
+            if t.quer():
+                rx, ry = ry, rx
+            z.kreis(p(zahl(e, "cx"), zahl(e, "cy")), ry, e, rx / ry if ry else 1.0)
         elif e.tag == "arc":
-            z.bogen(p(zahl(e, "cx"), zahl(e, "cy")), zahl(e, "r") * sy, zahl(e, "start"), zahl(e, "end"), e)
+            start, ende = t.winkel(zahl(e, "start")), t.winkel(zahl(e, "end"))
+            if t.spiegelt():
+                start, ende = ende, start
+            z.bogen(p(zahl(e, "cx"), zahl(e, "cy")), zahl(e, "r") * abs(sy * t.sy), start, ende, e)
         elif e.tag == "text":
             inhalt = (e.text or "").strip()
             if inhalt and not inhalt.startswith("?") and "~" not in inhalt:
                 z.text(p(zahl(e, "x1"), zahl(e, "y1")), inhalt, zahl(e, "height", 8))
         elif e.tag == "connector":
+            if nur_grafik:
+                continue
             art = e.get("type")
             if e.get("visible") == "false" or art not in ("pneumatic", "electric", "hydraulic"):
                 continue
@@ -357,12 +408,6 @@ def ebene_lesen(z: Zeichner, ebene, anschluss_info):
                 "abschluss": anschluss_info.get((name, e.get("ident"))),
                 "schluessel": (name, e.get("ident")),
             })
-
-
-def hauptbauteil(datei):
-    """Das Bauteil der Vorlage, das kein Abschluss und kein Text ist."""
-    kandidaten = [c for c in datei.iter("component") if c.get("object-ref") not in ABSCHLUSS]
-    return kandidaten[0] if kandidaten else None
 
 
 def werte(komponente):
@@ -415,54 +460,76 @@ def fluid_block(objekt, w, ebenen_namen):
     return "", 0
 
 
-def umwandeln(datei, namen, quelle_name):
-    """Text der .elmt für eine <file> der Bibliothek, oder None."""
-    grafik = datei.find("section[@type='symbol-graphics']")
-    haupt = hauptbauteil(datei)
-    if grafik is None or haupt is None:
-        return None
-    symbol = next((s for s in grafik.findall("symbol") if s.get("ident") == haupt.get("symbol-ref")), None)
+def mitte(c):
+    """Mitte eines Schaltungsobjekts; Symbolkoordinaten sind relativ zu ihr."""
+    return (zahl(c, "x1") + zahl(c, "width") / 2, zahl(c, "y1") + zahl(c, "height") / 2)
+
+
+def anschluss_schluessel(objekt, anschluss):
+    """(Ebene, Ident) des Symbolanschlusses, auf den ein Anschluss eines Schaltungsobjekts zeigt.
+
+    Ein Bauteil nennt seine Anschlüsse („C4“) und verweist mit con-ref auf den Symbolanschluss („CON5.4“);
+    Objekte ohne <connector>-Liste (Klemmen) werden direkt mit „Ebene.Ident“ angesprochen."""
+    for c in objekt.findall("connector"):
+        if c.get("ident") == anschluss:
+            anschluss = c.get("con-ref", anschluss)
+            break
+    ebene, _, ident = anschluss.rpartition(".")
+    return (ebene, ident)
+
+
+def bauteil_umwandeln(symbole, haupt, umgebung, verbindungen, namen, quelle_name, saat, lage=False):
+    """Ein Bauteil einer FluidSIM-Schaltung als .elmt.
+
+    symbole: {ident: <symbol>} der Schaltung, haupt: das Bauteil, umgebung: alle Schaltungsobjekte (für
+    Schalldämpfer und Blindstopfen an seinen Anschlüssen), verbindungen: die <connect> der Schaltung.
+    saat macht die UUIDs: gleiches Symbol, gleiche Saat, gleiche Datei. lage: Drehung, Spiegelung und
+    Maßstab des Bauteils in der Schaltung mit in die Geometrie übernehmen (Import einer Schaltung).
+
+    @return dict mit text, anker (Ursprung der .elmt in Symbolkoordinaten) und uuids
+            ({(Ebene, Ident): Anschluss-UUID}), oder None
+    """
+    symbol = symbole.get(haupt.get("symbol-ref"))
     if symbol is None:
         return None
 
-    # Abschlüsse: welcher Anschluss des Hauptbauteils hängt an einem Schalldämpfer oder Blindstopfen
+    # Abschlüsse über eine Leitung
     abschluss_von = {c.get("ident"): ABSCHLUSS[c.get("object-ref")]
-                     for c in datei.iter("component") if c.get("object-ref") in ABSCHLUSS}
-    verweis = {c.get("ident"): c.get("con-ref", "") for c in haupt.findall("connector")}
+                     for c in umgebung if c.get("object-ref") in ABSCHLUSS}
     anschluss_info = {}
-    for v in datei.iter("connect"):
+    for v in verbindungen:
         enden = [v.get("con1", ""), v.get("con2", "")]
         for a, b in (enden, enden[::-1]):
             komp_a, _, ans_a = a.partition(".")
             komp_b = b.partition(".")[0]
-            if komp_a == haupt.get("ident") and komp_b in abschluss_von and ans_a in verweis:
-                ebene, _, ident = verweis[ans_a].rpartition(".")
-                anschluss_info[(ebene, ident)] = abschluss_von[komp_b]
+            if komp_a == haupt.get("ident") and komp_b in abschluss_von:
+                anschluss_info[anschluss_schluessel(haupt, ans_a)] = abschluss_von[komp_b]
 
-    # Meist hängt der Abschluss ohne Leitung am Anschluss: sein Anschlusspunkt liegt auf dem des Ventils.
-    # Symbolkoordinaten sind relativ zur Mitte des Bauteils.
-    def mitte(c):
-        return (zahl(c, "x1") + zahl(c, "width") / 2, zahl(c, "y1") + zahl(c, "height") / 2)
-
-    symbole = {s.get("ident"): s for s in grafik.findall("symbol")}
+    # Meist hängt der Abschluss ohne Leitung am Anschluss: sein Anschlusspunkt liegt auf dem des Bauteils
     hm = mitte(haupt)
     abschluss_punkte = []
-    for c in datei.iter("component"):
+    for c in umgebung:
         if c.get("object-ref") not in ABSCHLUSS or c.get("symbol-ref") not in symbole:
             continue
         cm = mitte(c)
+        tc = Trafo.von(c) if lage else Trafo()
         for eb in symbole[c.get("symbol-ref")].findall("symbol-layer"):
             for con in eb.findall("connector"):
-                px = cm[0] + zahl(eb, "ref-x") + zahl(con, "cx") - hm[0]
-                py = cm[1] + zahl(eb, "ref-y") + zahl(con, "cy") - hm[1]
-                abschluss_punkte.append((px, py, ABSCHLUSS[c.get("object-ref")]))
+                q = tc.punkt(zahl(eb, "ref-x") + zahl(con, "cx"), zahl(eb, "ref-y") + zahl(con, "cy"))
+                abschluss_punkte.append((cm[0] + q[0] - hm[0], cm[1] + q[1] - hm[1],
+                                         ABSCHLUSS[c.get("object-ref")]))
 
-    z = Zeichner(quelle_name)
+    z = Zeichner(saat, Trafo.von(haupt) if lage else None)
     ebenen_namen = []
     for ebene in symbol.findall("symbol-layer"):
         if ebene.get("visible") != "false":
             ebenen_namen.append(ebene.get("ident", ""))
         ebene_lesen(z, ebene, anschluss_info)
+    if not z.teile and z.anschluesse:
+        # Manche Symbole (Spule im Leiterdiagramm) zeichnen nur in einer ausgeblendeten Ebene
+        for ebene in symbol.findall("symbol-layer"):
+            if ebene.get("visible") == "false":
+                ebene_lesen(z, ebene, anschluss_info, nur_grafik=True)
     for a in z.anschluesse:
         if not a.get("abschluss"):
             for px, py, art in abschluss_punkte:
@@ -493,9 +560,9 @@ def umwandeln(datei, namen, quelle_name):
                '        <kindInformation name="number">1</kindInformation>\n    </kindInformations>\n')
 
     de, en = namen
-    return (f'<definition version="0.90" type="element" link_type="{link}" width="{breite}" height="{hoehe}" '
+    text = (f'<definition version="0.90" type="element" link_type="{link}" width="{breite}" height="{hoehe}" '
             f'hotspot_x="{hx}" hotspot_y="{hy}">\n'
-            f'    <uuid uuid="{{{kennung(quelle_name)}}}"/>\n'
+            f'    <uuid uuid="{{{kennung(saat)}}}"/>\n'
             f'    <names>\n        <name lang="de">{escape(de)}</name>\n'
             f'        <name lang="en">{escape(en)}</name>\n    </names>\n'
             f'{art}{fluid}'
@@ -503,6 +570,26 @@ def umwandeln(datei, namen, quelle_name):
             f'{escape(objekt)}). Umgewandelt mit tools/symbole/fluidsim_symbole.py.</informations>\n'
             f'    <description>\n' + "\n".join("        " + zl for zl in zeilen) + "\n    </description>\n"
             f'</definition>\n')
+    uuids = {a["schluessel"]: str(kennung(saat, "anschluss", a["schluessel"])) for a in z.anschluesse}
+    return {"text": text, "anker": z.anker, "uuids": uuids, "link": link}
+
+
+def hauptbauteil(datei):
+    """Das Bauteil der Vorlage, das kein Abschluss und kein Text ist."""
+    kandidaten = [c for c in datei.iter("component") if c.get("object-ref") not in ABSCHLUSS]
+    return kandidaten[0] if kandidaten else None
+
+
+def umwandeln(datei, namen, quelle_name):
+    """Text der .elmt für eine <file> der Bibliothek, oder None."""
+    grafik = datei.find("section[@type='symbol-graphics']")
+    haupt = hauptbauteil(datei)
+    if grafik is None or haupt is None:
+        return None
+    symbole = {s.get("ident"): s for s in grafik.findall("symbol")}
+    ergebnis = bauteil_umwandeln(symbole, haupt, list(datei.iter("component")), list(datei.iter("connect")),
+                                 namen, quelle_name, quelle_name)
+    return ergebnis["text"] if ergebnis else None
 
 
 def ordnername(name):

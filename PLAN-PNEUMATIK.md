@@ -113,7 +113,7 @@ Alles über `QUndoCommand` (Merge-IDs in `dev_doc/ID_of_QUndoCommand.txt` eintra
 ## 6. Import
 
 - **EPLAN ZW1**: prüfen, ob Fluid-Seiten (Festo-Projekte, Seitentyp Fluid, Kennung `&MFS`/`&MFA` in Festo-Beispielen) schon ankommen. Testdatei nötig.
-- **FluidSIM** (Quelle C): erst nach Sichtung der Beispieldateien. Ergebnis: Umwandler `tools/fluidsim_import/`, Format-Beschreibung wie `FORMATBESCHREIBUNG_EOD.md`.
+- **FluidSIM** (Quelle C): **erledigt** `tools/fluidsim_import/fluidsim_plan.py` (.circ → .qet über QETs Skript-Schnittstelle). Drehsinn von FluidSIM an den Leitungen bestimmt: gegen den Uhrzeigersinn (993 von 993 Leitungen an gedrehten Bauteilen passen; über alle 9602 Leitungen der Pneumatik-Beispiele passen 9567). Offen: Kontakt ↔ Relais im elektrischen Teil, freie Texte, mehrere Blätter, Spulen-Kennzeichnung (-MB1 statt der des Ventils).
 
 ---
 
@@ -133,7 +133,7 @@ Alles über `QUndoCommand` (Merge-IDs in `dev_doc/ID_of_QUndoCommand.txt` eintra
 5. Verknüpfung Spule ↔ Ventil, Wegmaßstab. **Teil erledigt:** Ventil = Master, Spule = Slave mit `<fluid kind="solenoid"/>`, Magnetsymbol im Querverweis, Beispielbauteile in `bauteile/pneumatik/`. Hinweis: Als Slave zeigt die Spule die Kennzeichnung des Ventils (`-QM1`), nicht ein eigenes `-MB1` wie FluidSIM. Offen: Wegmaßstab.
 6. Prüfungen, Stückliste, Kennzeichnung. **Teil erledigt:** Projekt → „Fluidtechnik prüfen…“ (offene Anschlüsse, Ventil ohne Spule, Spule ohne Ventil). Offen: Stückliste, Kennzeichnungsvorschlag.
 7. Skript/MCP.
-8. ZW1-Fluid-Test, danach FluidSIM-Umwandler.
+8. ZW1-Fluid-Test, danach FluidSIM-Umwandler. **FluidSIM-Umwandler erledigt** (Symbole und Schaltungen); ZW1-Test offen.
 
 Jede Änderung am bestehenden Verhalten: Einstellung im Einstellungsdialog, Standard aus (AGENTS.md).
 

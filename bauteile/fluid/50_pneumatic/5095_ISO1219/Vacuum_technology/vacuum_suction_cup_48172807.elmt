@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="60" height="50" hotspot_x="10" hotspot_y="10">
+    <uuid uuid="{09cc7acd-5b68-579e-b1bb-0edc34e91343}" />
+    <names>
+        <name lang="de">Vakuumsaugnapf</name>
+        <name lang="en">Vacuum suction cup</name>
+    </names>
+    <fluid kind="other" prefix="UQ" />
+    <description>
+        <line x1="20" y1="9.5" x2="20" y2="20.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="11" y1="22.5" x2="14" y2="30.5" x3="26" y3="30.5" x4="29" y4="22.5" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="9.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-7" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{cff4fe8a-0307-52f3-8e1e-8f2fd0cb3c69}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{5c6f14c6-a9ef-52f8-8b73-582ae2a865c3}" name="" x="0" y="0" orientation="n" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

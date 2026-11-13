@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="90" height="50" hotspot_x="40" hotspot_y="10">
+    <uuid uuid="{d1859807-0a22-5b4f-8a86-f6225af5488d}" />
+    <names>
+        <name lang="de">3/2-Wegeventil mit Schlagtaster</name>
+        <name lang="en">3/2-way valve with mushroom actuator</name>
+    </names>
+    <fluid kind="valve" prefix="SJ">
+        <positions initial="2">
+            <position />
+            <position />
+        </positions>
+        <actuation side="left" types="manual" />
+    </fluid>
+    <description>
+        <rect x="-20" y="9" width="50" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="5" y1="9" x2="5" y2="31" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-13.75" y1="29" x2="-13.75" y2="11" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="-13.75" y1="11" x2="-12.07" y2="15" x3="-15.43" y3="15" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="-1.25" y1="29" x2="-1.25" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-3.85" y1="25" x2="1.35" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="23.75" y1="11" x2="23.75" y2="29" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="23.75" y1="29" x2="22.07" y2="25" x3="25.43" y3="25" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="11.25" y1="29" x2="11.25" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="8.65" y1="25" x2="13.85" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-20" y1="20" x2="-29" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-29" y1="15" x2="-29" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="31" y1="20" x2="32.62" y2="16.6" x3="34.25" y3="23.4" x4="35.88" y4="16.6" x5="37.5" y5="23.4" x6="39.12" y6="16.6" x7="40.75" y7="23.4" x8="42.38" y8="16.6" x9="44" y9="20" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="9" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="40" x2="0" y2="31" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="10" y1="40" x2="10" y2="31" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-37" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{238489af-f150-52f2-9c5e-79e291b160cb}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{49d42534-9dfe-52a4-a254-cf3444acd3a0}" name="2" x="0" y="0" orientation="n" type="Generic" medium="pneumatic" />
+        <terminal uuid="{a09209e0-9ba6-514d-ae63-a727ad1d0f0a}" name="1" x="0" y="40" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{648e44a9-36b0-58d5-8780-19f480d1d349}" name="3" x="10" y="40" orientation="s" type="Generic" medium="pneumatic" port_end="silencer" />
+    </description>
+</definition>

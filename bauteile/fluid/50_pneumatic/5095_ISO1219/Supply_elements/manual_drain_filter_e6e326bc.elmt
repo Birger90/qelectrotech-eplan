@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="80" height="40" hotspot_x="40" hotspot_y="20">
+    <uuid uuid="{8ed136e8-3459-5ac3-93a1-01b3c39d0c6c}" />
+    <names>
+        <name lang="de">Druckluftfilter, manueller Kondensatablass</name>
+        <name lang="en">Manual drain filter</name>
+    </names>
+    <fluid kind="source" />
+    <description>
+        <polygon x1="0" y1="-9.2" x2="9.2" y2="0" x3="0" y3="9.2" x4="-9.2" y4="0" closed="true" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="-4.6" y1="-4.6" x2="4.6" y2="4.6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="9.2" x2="0" y2="16.2" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="-3" y1="16.2" x2="3" y2="16.2" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="-40" y1="0" x2="-9.2" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-37" y="-18" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{28c2206e-acec-5ff9-9e44-f1961b7972d3}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{1c5a3c92-0647-5cce-a1f4-67d693704f3f}" name="B" x="0" y="0" orientation="e" type="Generic" medium="pneumatic" />
+        <terminal uuid="{b92baf48-168b-5b39-b341-2adc5b2972ce}" name="A" x="-40" y="0" orientation="w" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

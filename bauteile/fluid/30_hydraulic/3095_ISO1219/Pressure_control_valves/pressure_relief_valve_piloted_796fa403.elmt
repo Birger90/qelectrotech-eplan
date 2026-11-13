@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="100" height="50" hotspot_x="20" hotspot_y="10">
+    <uuid uuid="{6c084e84-46ad-5309-922f-f93e736def81}" />
+    <names>
+        <name lang="de">Druckbegrenzungsventil, vorgesteuert</name>
+        <name lang="en">Pressure relief valve, piloted</name>
+    </names>
+    <fluid kind="other" />
+    <description>
+        <rect x="17.5" y="5" width="25" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="30" y1="21.6" x2="30" y2="8.4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="30" y1="8.4" x2="31.68" y2="12.4" x3="28.32" y3="12.4" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <polygon x1="42.5" y1="15" x2="44.38" y2="12.2" x3="46.25" y3="17.8" x4="48.12" y4="12.2" x5="50" y5="17.8" x6="51.88" y6="12.2" x7="53.75" y7="17.8" x8="55.62" y8="12.2" x9="57.5" y9="15" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="13.5" y1="25" x2="13.5" y2="1" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:dashed;line-weight:thin;filling:none;color:black" antialias="false" />
+        <line x1="13.5" y1="1" x2="30" y2="1" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:dashed;line-weight:thin;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="17.5" y2="5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="25" y1="40" x2="25" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="40" x2="17.5" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-17" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{5d2e0640-39bd-5a22-885a-69377807838c}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{cc82a692-c890-524e-9eae-8d0aa9fc0761}" name="P" x="0" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{3b674d63-ab90-58cb-8073-aed4e53fc5ee}" name="Y" x="25" y="40" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{df0287e1-1f35-5c21-a4a3-21b07979b529}" name="T" x="0" y="40" orientation="s" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

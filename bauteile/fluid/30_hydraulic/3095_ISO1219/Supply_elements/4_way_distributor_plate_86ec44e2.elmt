@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="100" height="40" hotspot_x="20" hotspot_y="10">
+    <uuid uuid="{8729bc16-446c-517f-86aa-2dc4ae137643}" />
+    <names>
+        <name lang="de">Verteilerplatte, 4-fach</name>
+        <name lang="en">4-way distributor plate</name>
+    </names>
+    <fluid kind="source" />
+    <description>
+        <rect x="-14" y="-4" width="88" height="28" rx="0" ry="0" style="line-style:dashed;line-weight:thin;filling:none;color:black" antialias="false" />
+        <rect x="-0.58" y="3.28" width="17.16" height="13.44" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="8" y1="14.84" x2="8" y2="5.16" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="8" y1="5.16" x2="8.84" y2="7.16" x3="7.16" y3="7.16" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="16.58" y1="10" x2="21.42" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <rect x="21.42" y="3.28" width="17.16" height="13.44" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="25.2" y1="5.97" x2="34.8" y2="14.03" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="34.8" y1="14.03" x2="32.73" y2="13.39" x3="33.81" y3="12.1" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="38.58" y1="10" x2="43.42" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <rect x="43.42" y="3.28" width="17.16" height="13.44" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="52" y1="14.84" x2="52" y2="5.16" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="52" y1="5.16" x2="52.84" y2="7.16" x3="51.16" y3="7.16" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="-4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="10" y1="0" x2="10" y2="-4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="20" y1="0" x2="20" y2="-4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="30" y1="0" x2="30" y2="-4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-20" y1="20" x2="-14" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-17" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{a2104db1-5b4a-55a4-820b-7331cfb366db}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <dynamic_text x="-12" y="-4" z="28" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{38aea39a-f654-51c1-98bc-12be6edc7275}" font="Liberation Sans,5,-1,5,0,0,0,0,0,0,Regular">
+            <text>HYD</text>
+        </dynamic_text>
+        <terminal uuid="{02568875-b62f-5ec9-bfa1-7b44e6a51d24}" name="" x="0" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{062ad77b-2a07-5dbb-b56f-825a9986e5c2}" name="" x="10" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{1831c046-5cd8-5828-8d0f-1237588da271}" name="" x="20" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{3e1d015c-755a-5568-949f-a0abd2d6668a}" name="" x="30" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{e19f4ee5-f11b-5a88-b130-a660b7ca5cfe}" name="" x="-20" y="20" orientation="w" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

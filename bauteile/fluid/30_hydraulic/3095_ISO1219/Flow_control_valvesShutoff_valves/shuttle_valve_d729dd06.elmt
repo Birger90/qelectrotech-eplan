@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="100" height="40" hotspot_x="0" hotspot_y="30">
+    <uuid uuid="{15eb761c-bbb3-5060-8595-fc907dd9663c}" />
+    <names>
+        <name lang="de">Wechselventil</name>
+        <name lang="en">Shuttle valve</name>
+    </names>
+    <fluid kind="flow_control" prefix="KH" />
+    <description>
+        <rect x="34" y="-17" width="32" height="14" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <ellipse x="39" y="-13" width="6" height="6" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="34" y1="-10" x2="40" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="60" y1="-10" x2="66" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="50" y1="-17" x2="50" y2="-25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="27" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-28" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{e3b455ea-d6a5-509a-9500-a805acf3f165}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{87227bd8-fd5f-583d-a936-f36cf2c9ec82}" name="A1" x="0" y="0" orientation="w" type="Generic" medium="hydraulic" />
+        <terminal uuid="{59af37b0-ebee-5f63-a58d-39331dce95d8}" name="B" x="30" y="-20" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{2ef0d3f2-e72d-522f-90dd-8d4b714ae210}" name="A2" x="60" y="0" orientation="e" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

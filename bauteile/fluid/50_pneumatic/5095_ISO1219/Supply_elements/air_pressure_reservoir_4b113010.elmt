@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="90" height="30" hotspot_x="0" hotspot_y="20">
+    <uuid uuid="{3da3f373-3af1-529b-a6bf-b5c42ca413eb}" />
+    <names>
+        <name lang="de">Druckspeicher</name>
+        <name lang="en">Air pressure reservoir</name>
+    </names>
+    <fluid kind="source" prefix="CM" />
+    <description>
+        <polygon x1="37" y1="-13" x2="37" y2="3" x3="53" y3="3" x4="53" y4="-13" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="37" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-18" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{e1a3f470-e727-5067-bbe8-b1ba1742a504}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{a8cc0b9a-0d6c-50af-a91c-dc3370da8a70}" name="" x="0" y="0" orientation="w" type="Generic" medium="pneumatic" />
+        <terminal uuid="{2b4671e2-1134-5608-91c9-46f840fbbcde}" name="" x="50" y="0" orientation="e" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

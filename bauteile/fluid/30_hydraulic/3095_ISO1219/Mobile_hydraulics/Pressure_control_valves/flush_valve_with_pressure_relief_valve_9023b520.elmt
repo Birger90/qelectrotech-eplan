@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="160" height="100" hotspot_x="0" hotspot_y="10">
+    <uuid uuid="{d012b58b-58f7-5404-8def-dec97eb1e10b}" />
+    <names>
+        <name lang="de">Spülventil mit Druckbegrenzungsventil</name>
+        <name lang="en">Flush valve with pressure relief valve</name>
+    </names>
+    <fluid kind="flow_control" />
+    <description>
+        <rect x="65.5" y="26.5" width="29" height="27" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="80" y1="48.91" x2="80" y2="31.09" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="80" y1="31.09" x2="81.68" y2="35.09" x3="78.32" y3="35.09" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <polygon x1="94.5" y1="40" x2="96.38" y2="37.2" x3="98.25" y3="42.8" x4="100.12" y4="37.2" x5="102" y5="42.8" x6="103.88" y6="37.2" x7="105.75" y7="42.8" x8="107.62" y8="37.2" x9="109.5" y9="40" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="65.5" y2="26.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="120" y1="0" x2="94.5" y2="26.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="60" y1="85" x2="65.5" y2="53.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{d54fc0e4-33c6-563c-ad48-1d6cfef6e498}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{099ecd52-df92-504b-b100-ec3b8803ac10}" name="A" x="0" y="0" orientation="w" type="Generic" medium="hydraulic" />
+        <terminal uuid="{6d996ffb-d6c6-5810-ae13-2600290654ca}" name="B" x="120" y="0" orientation="e" type="Generic" medium="hydraulic" />
+        <terminal uuid="{db09a4c2-33d2-5d1d-b3eb-3c5bf3765047}" name="T" x="60" y="85" orientation="s" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

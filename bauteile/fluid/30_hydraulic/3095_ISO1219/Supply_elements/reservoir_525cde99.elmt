@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="60" height="60" hotspot_x="10" hotspot_y="60">
+    <uuid uuid="{9c813a56-934e-5c9b-9f14-9d3f1c292987}" />
+    <names>
+        <name lang="de">Speicher</name>
+        <name lang="en">Reservoir</name>
+    </names>
+    <fluid kind="source" />
+    <description>
+        <polygon x1="7" y1="-43" x2="7" y2="-17" x3="33" y3="-17" x4="33" y4="-43" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="-17" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-7" y="-58" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{e8cf9441-7fa4-5ea2-bdc7-2ddb8bd60c7d}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{84431e21-5129-5f9d-9daa-40d82bfc5366}" name="" x="0" y="0" orientation="s" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

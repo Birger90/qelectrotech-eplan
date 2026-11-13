@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="80" height="40" hotspot_x="0" hotspot_y="20">
+    <uuid uuid="{233f1693-aab2-5449-8fe1-9629d0f97a50}" />
+    <names>
+        <name lang="de">Adsorptionstrockner</name>
+        <name lang="en">Air Dryer</name>
+    </names>
+    <fluid kind="source" />
+    <description>
+        <polygon x1="40" y1="-9.2" x2="49.2" y2="0" x3="40" y3="9.2" x4="30.8" y4="0" closed="true" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="35.4" y1="-4.6" x2="44.6" y2="4.6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="30.8" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-18" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{79d1779a-9915-5f02-8fcc-fb0f5901aff0}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{5a33a97c-78d0-5b21-8740-b1e8841f4c47}" name="A" x="0" y="0" orientation="w" type="Generic" medium="pneumatic" />
+        <terminal uuid="{b3306774-9455-5fea-9c3a-2420a713d575}" name="B" x="40" y="0" orientation="e" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

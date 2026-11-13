@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="60" height="50" hotspot_x="10" hotspot_y="10">
+    <uuid uuid="{080d58dc-4d21-500b-a644-78ab6c69f05f}" />
+    <names>
+        <name lang="de">Differenzdruckmessgerät</name>
+        <name lang="en">Differential pressure gauge</name>
+    </names>
+    <fluid kind="sensor" />
+    <description>
+        <ellipse x="8.5" y="3.5" width="23" height="23" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="15.98" y1="11.55" x2="25.75" y2="19.6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="25.75" y1="19.6" x2="22.63" y2="18.67" x3="24.24" y3="16.72" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="13.68" y1="21.9" x2="26.32" y2="8.1" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="0" y2="3.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="40" x2="0" y2="26.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-7" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{24684b81-8084-510b-921b-02f39f478d62}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{7ab37df4-266a-5522-9f42-6b81ad30dbfd}" name="" x="0" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{464f59aa-3f76-5bb6-bec6-d6783183ff61}" name="" x="0" y="40" orientation="s" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

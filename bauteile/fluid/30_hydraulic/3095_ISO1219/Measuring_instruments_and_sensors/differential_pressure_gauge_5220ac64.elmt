@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="80" height="30" hotspot_x="0" hotspot_y="20">
+    <uuid uuid="{0a1e421c-7579-5339-b146-98d19fe738be}" />
+    <names>
+        <name lang="de">Differenzdruckmessgerät</name>
+        <name lang="en">Differential pressure gauge</name>
+    </names>
+    <fluid kind="sensor" />
+    <description>
+        <ellipse x="32" y="-13" width="16" height="16" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="37.2" y1="-7.4" x2="44" y2="-1.8" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="44" y1="-1.8" x2="40.88" y2="-2.73" x3="42.49" y3="-4.68" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="35.6" y1="-0.2" x2="44.4" y2="-9.8" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="32" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-18" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{9c65cff2-8cc6-54c3-857c-7cca38d294db}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{9ecbb0da-df7d-52b0-8903-23fe27a9d611}" name="" x="0" y="0" orientation="w" type="Generic" medium="hydraulic" />
+        <terminal uuid="{26265e1b-0c94-5f73-9884-56de77399ed4}" name="" x="40" y="0" orientation="e" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

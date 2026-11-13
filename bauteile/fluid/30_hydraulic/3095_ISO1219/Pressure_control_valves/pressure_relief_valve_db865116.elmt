@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="110" height="80" hotspot_x="40" hotspot_y="10">
+    <uuid uuid="{38aa6750-3ccc-5f19-a076-8f50aac6774e}" />
+    <names>
+        <name lang="de">Druckbegrenzungsventil</name>
+        <name lang="en">Pressure relief valve</name>
+    </names>
+    <fluid kind="other" prefix="QN" />
+    <description>
+        <rect x="1.25" y="16.5" width="27.5" height="27" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="15" y1="38.91" x2="15" y2="21.09" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="15" y1="21.09" x2="16.68" y2="25.09" x3="13.32" y3="25.09" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <polygon x1="28.75" y1="30" x2="30.62" y2="27.2" x3="32.5" y3="32.8" x4="34.38" y4="27.2" x5="36.25" y5="32.8" x6="38.12" y6="27.2" x7="40" y7="32.8" x8="41.88" y8="27.2" x9="43.75" y9="30" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="1.25" y2="16.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="70" x2="1.25" y2="43.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-37" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{752b213d-2fc6-583f-b02e-716b6e843e9b}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{a0b537ac-6fb5-586b-867b-b3bfce218dc6}" name="P" x="0" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{5be61240-ee19-5e33-9354-dbbde35f3199}" name="T" x="0" y="70" orientation="s" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="110" height="50" hotspot_x="70" hotspot_y="30">
+    <uuid uuid="{e4265736-d7a3-5db7-8bbb-583ece264339}" />
+    <names>
+        <name lang="de">Druckwaage für Open Center Load Sensing</name>
+        <name lang="en">Load-Sensing Pressure compensator for open centre load sensing</name>
+    </names>
+    <fluid kind="other" />
+    <description>
+        <rect x="-28.75" y="-15" width="27.5" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-15" y1="1.6" x2="-15" y2="-11.6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="-15" y1="-11.6" x2="-13.32" y2="-7.6" x3="-16.68" y3="-7.6" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <polygon x1="-1.25" y1="-5" x2="0.62" y2="-7.8" x3="2.5" y3="-2.2" x4="4.38" y4="-7.8" x5="6.25" y5="-2.2" x6="8.12" y6="-7.8" x7="10" y7="-2.2" x8="11.88" y8="-7.8" x9="13.75" y9="-5" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="-1.25" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-20" y1="15" x2="-20" y2="5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-20" y1="-25" x2="-20" y2="-15" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-67" y="-28" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{317c0f7a-706e-56d7-8b7b-d8b195950222}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{68b9adec-671d-5b2b-b2a4-816410dac4eb}" name="X" x="0" y="0" orientation="e" type="Generic" medium="hydraulic" />
+        <terminal uuid="{8c18b375-0803-5c74-8308-ace13da21ec8}" name="T" x="-20" y="15" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{f50023b1-2c86-54b8-9a42-cb4f01141627}" name="P" x="-20" y="-25" orientation="n" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="130" height="50" hotspot_x="50" hotspot_y="50">
+    <uuid uuid="{f7e75e8e-7dcc-5d52-b733-b30e4cee4cec}" />
+    <names>
+        <name lang="de">Zylinder, einfachwirkend, Rückstellfeder im Kolbenraum</name>
+        <name lang="en">Single acting cylinder, return spring in piston chamber</name>
+    </names>
+    <fluid kind="cylinder" prefix="MM">
+        <cylinder action="single" spring="piston" bore_mm="20" rod_mm="8" stroke_mm="50" />
+    </fluid>
+    <description>
+        <rect x="-38.3" y="-36" width="52" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-8.66" y1="-35" x2="-8.66" y2="-17" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-8.66" y1="-26" x2="4.34" y2="-26" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="4.34" y1="-26" x2="30.34" y2="-26" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="-35.3" y1="-26" x2="-32.34" y2="-29" x3="-29.39" y3="-23" x4="-26.43" y4="-29" x5="-23.48" y5="-23" x6="-20.52" y6="-29" x7="-17.57" y7="-23" x8="-14.61" y8="-29" x9="-11.66" y9="-26" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="-33.3" y1="-16" x2="-33.3" y2="-12" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-33.3" y1="-12" x2="0" y2="-12" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="-12" x2="0" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-47" y="-48" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{6083ca26-564a-5e7f-bcd2-67839c8c2a09}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{9f52c3c3-3529-55ed-94a6-11fb88fc0365}" name="" x="0" y="0" orientation="s" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

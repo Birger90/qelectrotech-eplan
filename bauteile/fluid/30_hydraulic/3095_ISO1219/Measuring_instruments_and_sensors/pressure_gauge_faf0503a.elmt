@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="60" height="40" hotspot_x="10" hotspot_y="40">
+    <uuid uuid="{c6e78222-9138-513e-bb6c-7f9dd5263e4a}" />
+    <names>
+        <name lang="de">Druckmessgerät</name>
+        <name lang="en">Pressure gauge</name>
+    </names>
+    <fluid kind="sensor" prefix="PG" />
+    <description>
+        <ellipse x="10.8" y="-29.2" width="18.4" height="18.4" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="16.78" y1="-22.76" x2="24.6" y2="-16.32" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="24.6" y1="-16.32" x2="21.48" y2="-17.25" x3="23.09" y3="-19.2" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="-10.8" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-7" y="-38" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{59394ad3-fa77-5c37-a68b-c91c279abf96}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{0d395e9b-a800-54ad-95da-d35a2fdc1d94}" name="" x="0" y="0" orientation="s" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

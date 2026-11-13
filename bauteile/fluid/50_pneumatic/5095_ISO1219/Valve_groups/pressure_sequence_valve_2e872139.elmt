@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="160" height="70" hotspot_x="20" hotspot_y="60">
+    <uuid uuid="{b0bd5bc3-742b-5fcc-b3cb-86f4d25e539f}" />
+    <names>
+        <name lang="de">Druckschaltventil</name>
+        <name lang="en">Pressure sequence valve</name>
+    </names>
+    <fluid kind="other" prefix="QN" />
+    <description>
+        <rect x="-14" y="-54" width="148" height="58" rx="0" ry="0" style="line-style:dashed;line-weight:thin;filling:none;color:black" antialias="false" />
+        <rect x="12.5" y="-36" width="21" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="23" y1="-17.08" x2="23" y2="-32.92" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="23" y1="-32.92" x2="23.84" y2="-30.92" x3="22.16" y3="-30.92" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="33.5" y1="-25" x2="49.5" y2="-25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <rect x="49.5" y="-36" width="21" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="54.12" y1="-31.6" x2="65.88" y2="-18.4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="65.88" y1="-18.4" x2="63.92" y2="-19.33" x3="65.18" y3="-20.45" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="70.5" y1="-25" x2="86.5" y2="-25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <rect x="86.5" y="-36" width="21" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="97" y1="-17.08" x2="97" y2="-32.92" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="97" y1="-32.92" x2="97.84" y2="-30.92" x3="96.16" y3="-30.92" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="67.5" y1="0" x2="67.5" y2="4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-17" y="-58" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{5c51df41-fa65-58ff-8018-7b45682c9e7f}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <dynamic_text x="-12" y="-54" z="28" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{dc6ced2b-af3e-56b8-b7cb-50ce06b266b4}" font="Liberation Sans,5,-1,5,0,0,0,0,0,0,Regular">
+            <text>BLOCK</text>
+        </dynamic_text>
+        <terminal uuid="{bd16315b-3e56-5307-a13f-930017e618cf}" name="12" x="0" y="0" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{4eb448a0-5eb8-5e6f-9968-4fff5a5a1cf8}" name="1" x="67.5" y="0" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{ad79c32d-51ea-58ac-9dc6-6cbb8210ec3d}" name="2" x="67.5" y="-55" orientation="n" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

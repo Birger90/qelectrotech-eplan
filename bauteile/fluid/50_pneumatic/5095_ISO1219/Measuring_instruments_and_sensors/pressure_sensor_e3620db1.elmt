@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="70" height="40" hotspot_x="30" hotspot_y="30">
+    <uuid uuid="{47b14b10-f3a7-5c81-9bfe-7d1c1711a9e5}" />
+    <names>
+        <name lang="de">Druckschalter</name>
+        <name lang="en">Pressure sensor</name>
+    </names>
+    <fluid kind="sensor" prefix="BG" />
+    <description>
+        <ellipse x="-26" y="-19.2" width="18.4" height="18.4" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="-20.02" y1="-12.76" x2="-12.2" y2="-6.32" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="-12.2" y1="-6.32" x2="-15.32" y2="-7.25" x3="-13.71" y3="-9.2" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="-7.6" y1="-16.44" x2="0.4" y2="-16.44" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0.4" y1="-16.44" x2="6.4" y2="-20.12" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <ellipse x="5.1" y="-21.42" width="2.6" height="2.6" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="-7.6" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-27" y="-28" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{c1ef135c-c447-593c-95de-dc05c6809b12}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{eb05abc6-85e7-55c6-922c-6337e183e2a4}" name="A" x="0" y="0" orientation="e" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

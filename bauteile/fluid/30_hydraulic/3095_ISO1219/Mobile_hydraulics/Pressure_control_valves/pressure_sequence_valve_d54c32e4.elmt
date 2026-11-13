@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="100" height="60" hotspot_x="40" hotspot_y="10">
+    <uuid uuid="{2770eb9f-fd5f-56e0-a999-fac3ffda7e69}" />
+    <names>
+        <name lang="de">Druckzuschaltventil</name>
+        <name lang="en">Pressure sequence valve</name>
+    </names>
+    <fluid kind="other" />
+    <description>
+        <rect x="-2.5" y="8" width="25" height="24" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="10" y1="27.92" x2="10" y2="12.08" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="10" y1="12.08" x2="11.68" y2="16.08" x3="8.32" y3="16.08" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <polygon x1="22.5" y1="20" x2="24.38" y2="17.2" x3="26.25" y3="22.8" x4="28.12" y4="17.2" x5="30" y5="22.8" x6="31.88" y6="17.2" x7="33.75" y7="22.8" x8="35.62" y8="17.2" x9="37.5" y9="20" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="8" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="50" x2="0" y2="32" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-40" y1="25" x2="-2.5" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-37" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{fa7da970-1437-5abb-9982-9af6490c00c0}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{184f69bb-cf48-580e-8dee-df8c02aa1401}" name="P" x="0" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{04d06a97-b2a0-5b0b-aadd-3ae3facbde10}" name="A" x="0" y="50" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{8f9e4aeb-f6ff-58c2-a781-2270d8f83e55}" name="X" x="-40" y="25" orientation="w" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

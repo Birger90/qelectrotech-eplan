@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="90" height="50" hotspot_x="10" hotspot_y="50">
+    <uuid uuid="{073fbed8-62b7-5f9b-99c8-4eefbb2ce301}" />
+    <names>
+        <name lang="de">Linearantrieb, pneumatisch, mit formschlüssiger Verbindung, mit beidseitiger einstellbaren Endlagendämpfung</name>
+        <name lang="en">Linear Drive, Pneumatic, with Shape-fitting adaptor, with Double-sided End Cushioning</name>
+    </names>
+    <fluid kind="cylinder" prefix="MM">
+        <cylinder action="double" bore_mm="16" stroke_mm="200" />
+    </fluid>
+    <description>
+        <rect x="-1.9" y="-36" width="42.3" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="22.21" y1="-35" x2="22.21" y2="-17" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="22.21" y1="-26" x2="32.79" y2="-26" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="32.79" y1="-26" x2="50.79" y2="-26" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="1.1" y1="-34" x2="6.1" y2="-18" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="32.4" y1="-34" x2="37.4" y2="-18" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="1.1" y1="-18" x2="11.1" y2="-34" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="11.1" y1="-34" x2="10.58" y2="-30.79" x3="8.44" y3="-32.12" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="3.1" y1="-16" x2="3.1" y2="-12" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="3.1" y1="-12" x2="0" y2="-12" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="-12" x2="0" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="34.4" y1="-16" x2="34.4" y2="-12" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="34.4" y1="-12" x2="40" y2="-12" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="40" y1="-12" x2="40" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-7" y="-48" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{b479aeb6-131a-51ce-917d-1d14b70278e4}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{b3a419b1-6e68-58d7-8d42-317b067f82d9}" name="" x="0" y="0" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{e986c2a8-9318-55f2-ad28-f8b433518cf6}" name="" x="40" y="0" orientation="s" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

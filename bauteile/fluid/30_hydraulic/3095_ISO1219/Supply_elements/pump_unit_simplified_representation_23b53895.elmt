@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="50" height="30" hotspot_x="10" hotspot_y="10">
+    <uuid uuid="{7eb8fb26-a367-5e6a-afb5-6c038825d3ee}" />
+    <names>
+        <name lang="de">Antriebsaggregat, vereinfachte Darstellung</name>
+        <name lang="en">Pump unit (simplified representation)</name>
+    </names>
+    <fluid kind="source" prefix="GP" />
+    <description>
+        <rect x="3" y="-2" width="24" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="7" y1="8" x2="23" y2="8" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="23" y1="8" x2="19" y2="9.68" x3="19" y3="6.32" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="3" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-7" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{239d0c59-e179-51ea-a0f6-521fbfbeff45}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <dynamic_text x="-2" y="-4" z="28" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{411039e8-1f11-5070-b67c-8435ceeec6f7}" font="Liberation Sans,5,-1,5,0,0,0,0,0,0,Regular">
+            <text>HYD</text>
+        </dynamic_text>
+        <terminal uuid="{8d0983df-9039-58b1-b4fc-e122ffa0c8b9}" name="" x="0" y="0" orientation="n" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

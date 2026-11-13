@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="150" height="50" hotspot_x="0" hotspot_y="30">
+    <uuid uuid="{f50bc378-c05f-5b16-b6d5-fbe1fc214417}" />
+    <names>
+        <name lang="de">5/2-Wege-Pneumatik-Impulsventil</name>
+        <name lang="en">5/2-way impulse valve, pneumatically operated</name>
+    </names>
+    <fluid kind="valve" prefix="QM">
+        <positions initial="2">
+            <position />
+            <position />
+        </positions>
+    </fluid>
+    <description>
+        <rect x="46" y="-16" width="58" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="75" y1="-16" x2="75" y2="6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="53.25" y1="4" x2="53.25" y2="-14" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="53.25" y1="-14" x2="54.93" y2="-10" x3="51.57" y3="-10" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="67.75" y1="-14" x2="67.75" y2="4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="67.75" y1="4" x2="66.07" y2="0" x3="69.43" y3="0" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <ellipse x="59.3" y="1.8" width="2.4" height="2.4" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="82.25" y1="-14" x2="96.75" y2="4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="96.75" y1="4" x2="92.93" y2="1.94" x3="95.55" y3="-0.17" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="82.25" y1="4" x2="96.75" y2="-14" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="96.75" y1="-14" x2="95.55" y2="-9.83" x3="92.93" y3="-11.94" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <ellipse x="88.3" y="1.8" width="2.4" height="2.4" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <polygon x1="46" y1="-5" x2="40" y2="-2.3" x3="40" y3="-7.7" closed="true" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="38" y1="-5" x2="33" y2="-5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:dashed;line-weight:thin;filling:none;color:black" antialias="false" />
+        <polygon x1="104" y1="-5" x2="110" y2="-7.7" x3="110" y3="-2.3" closed="true" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="112" y1="-5" x2="117" y2="-5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:dashed;line-weight:thin;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="46" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="60" y1="-25" x2="60" y2="-16" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="80" y1="-25" x2="80" y2="-16" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="60" y1="15" x2="60" y2="6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="70" y1="15" x2="70" y2="6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="80" y1="15" x2="80" y2="6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="110" y1="0" x2="104" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-28" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{7b04e2d3-cef6-58bf-9b11-f1f17427289b}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{d3a55e13-b2b1-5a6d-a7ff-05d3966b8146}" name="14" x="0" y="0" orientation="w" type="Generic" medium="pneumatic" />
+        <terminal uuid="{a2cdb6aa-20a1-5a34-b2fc-f1056fb33014}" name="4" x="60" y="-25" orientation="n" type="Generic" medium="pneumatic" />
+        <terminal uuid="{2a3bdcfb-64d3-5a31-bab4-3ab3b315544f}" name="2" x="80" y="-25" orientation="n" type="Generic" medium="pneumatic" />
+        <terminal uuid="{20d8d91e-e02d-50f6-b892-100ea5941d3e}" name="5" x="60" y="15" orientation="s" type="Generic" medium="pneumatic" port_end="silencer" />
+        <terminal uuid="{52732dcc-1dd6-570c-9fe9-55be0886c4a5}" name="1" x="70" y="15" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{0e37a80b-5ea5-50cb-b3f0-1bacd7689bc6}" name="3" x="80" y="15" orientation="s" type="Generic" medium="pneumatic" port_end="silencer" />
+        <terminal uuid="{c91daf69-e8b6-538d-82d9-a32976c0091b}" name="12" x="110" y="0" orientation="e" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

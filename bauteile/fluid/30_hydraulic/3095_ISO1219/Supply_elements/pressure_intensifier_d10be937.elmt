@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="190" height="200" hotspot_x="30" hotspot_y="10">
+    <uuid uuid="{69cbd920-9f8e-515e-8a39-c07a73cfc488}" />
+    <names>
+        <name lang="de">Druckübersetzer</name>
+        <name lang="en">Pressure intensifier</name>
+    </names>
+    <fluid kind="other" />
+    <description>
+        <rect x="53" y="79" width="24" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="58" y1="90" x2="72" y2="90" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="72" y1="90" x2="68" y2="91.68" x3="68" y3="88.32" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="77" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-22.5" y1="190" x2="-22.5" y2="103" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="77.5" y1="190" x2="77.5" y2="103" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-27" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{667e1936-b00a-5726-af4c-e375499313e4}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{04ca7ab8-acd1-5b81-bbd7-b1a8222ee6ad}" name="H" x="0" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{c855ad06-d5dd-5890-9b39-8b5c9f2a47c4}" name="R" x="-22.5" y="190" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{3bfd306b-4d5f-5fca-935d-c90a006cf767}" name="IN" x="77.5" y="190" orientation="s" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

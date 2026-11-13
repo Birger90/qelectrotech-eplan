@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="130" height="60" hotspot_x="60" hotspot_y="10">
+    <uuid uuid="{b1037050-b969-5419-bc48-d83d93039531}" />
+    <names>
+        <name lang="de">Prioritätsventil LS, dynamisch</name>
+        <name lang="en">Priority valve Load Sensing, dynamic</name>
+    </names>
+    <fluid kind="other" />
+    <description>
+        <rect x="-9.5" y="8" width="29" height="24" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="5" y1="27.92" x2="5" y2="12.08" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="5" y1="12.08" x2="6.68" y2="16.08" x3="3.32" y3="16.08" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <polygon x1="19.5" y1="20" x2="21.38" y2="17.2" x3="23.25" y3="22.8" x4="25.12" y4="17.2" x5="27" y5="22.8" x6="28.88" y6="17.2" x7="30.75" y7="22.8" x8="32.62" y8="17.2" x9="34.5" y9="20" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="8" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-10" y1="0" x2="-9.5" y2="8" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-10" y1="45" x2="-9.5" y2="32" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="30" y1="30" x2="19.5" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-57" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{255716d8-5fee-5317-acdf-407cfd2be20f}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{08ac7937-8d4a-57c5-9fc6-166e8016fccd}" name="EF" x="0" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{e9c63bde-ceec-5d65-a36c-8697419b2fc0}" name="CF" x="-10" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{f078b40f-079e-56b0-a5cd-2c3c688db73d}" name="P" x="-10" y="45" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{567c9b44-ca07-54b5-b91b-422c1db03d6e}" name="LS" x="30" y="30" orientation="e" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

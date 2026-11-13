@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="60" height="40" hotspot_x="10" hotspot_y="30">
+    <uuid uuid="{6a668b8d-35c5-5b91-8c99-721c46e2ac58}" />
+    <names>
+        <name lang="de">Blende, einstellbar</name>
+        <name lang="en">Variable orifice</name>
+    </names>
+    <fluid kind="flow_control" />
+    <description>
+        <line x1="0.28" y1="-10" x2="15.37" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="15.37" y1="-18" x2="20" y2="-10" x3="15.37" y3="-2" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <polygon x1="24.63" y1="-18" x2="20" y2="-10" x3="24.63" y3="-2" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="24.63" y1="-10" x2="39.72" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="7.28" y1="4.72" x2="33.72" y2="-24.72" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="33.72" y1="-24.72" x2="32.65" y2="-21.65" x3="30.78" y3="-23.33" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="1.28" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="-20" x2="1.28" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-7" y="-28" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{cb59dc01-bb68-5322-b00c-4a16981f30a2}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{57170bc5-768e-5d33-b01c-89d2ceceac21}" name="" x="0" y="0" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{65ab4c54-d129-56f7-8c56-a60ade7faf40}" name="" x="0" y="-20" orientation="n" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

@@ -3,6 +3,13 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.12.0 – 13.11.2026
+
+- Pneumatik und Hydraulik: die eigenen, neu gezeichneten Symbole nach ISO 1219 (322 Bauteile) ersetzen die
+  generierten Symbole aus 1.11.0; der Generator `tools/symbole/iso1219_symbole.py` entfällt.
+- `tools/deploy_lokal.ps1` erzeugt keine FluidSIM-Symbole mehr und räumt frühere Stände aus der
+  Standardsammlung, sodass dort nur die eigenen Symbole stehen.
+
 ## 1.11.1 – 13.11.2026
 
 - macOS: die Klemmen-Vorschau kompiliert mit Clang (mehrdeutiger Name `TerminalStripDrawer`); der Mac-Build

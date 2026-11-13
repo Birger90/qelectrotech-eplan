@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="80" height="40" hotspot_x="20" hotspot_y="10">
+    <uuid uuid="{e945fc51-8214-5b70-bcf7-0d05bdb551a1}" />
+    <names>
+        <name lang="de">Proportional-Ventilmagnet, lagegeregelt</name>
+        <name lang="en">Proportional valve solenoid, position controlled</name>
+    </names>
+    <description>
+        <rect x="10" y="1.5" width="20" height="17" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="20" y1="15.61" x2="20" y2="4.39" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="20" y1="4.39" x2="21.68" y2="8.39" x3="18.32" y3="8.39" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <polygon x1="30" y1="10" x2="31.88" y2="7.2" x3="33.75" y3="12.8" x4="35.62" y4="7.2" x5="37.5" y5="12.8" x6="39.38" y6="7.2" x7="41.25" y7="12.8" x8="43.12" y8="7.2" x9="45" y9="10" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="30" y1="18" x2="45" y2="2" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="45" y1="2" x2="43.87" y2="5.05" x3="42.03" y3="3.33" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="10" y2="1.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="30" x2="10" y2="18.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-20" y1="15" x2="10" y2="15" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-17" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{ef08a501-c601-5342-bd35-87582048db99}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{756263cb-5bf9-596b-bb96-055037b352a6}" name="" x="0" y="0" orientation="n" type="Generic" />
+        <terminal uuid="{5158bab2-4d80-55e5-81dd-3b6d1f8de288}" name="" x="0" y="30" orientation="s" type="Generic" />
+        <terminal uuid="{8bae6bf5-6dbd-5153-913c-0c7e00276c76}" name="" x="-20" y="15" orientation="w" type="Generic" />
+    </description>
+</definition>

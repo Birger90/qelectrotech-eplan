@@ -29,7 +29,7 @@ foreach ($teil in "eplan_zw1", "planvorlagen") {
 Get-ChildItem $ziel -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
 
 # Fluidtechnik: die Pneumatik- und Hydraulikbauteile der Sammlung durch nachgerüstete ersetzen (Medium und
-# Portnummern an jedem Anschluss, gleiche Pfade), dazu die FluidSIM-Symbole, wenn FluidSIM 6 installiert ist.
+# Portnummern an jedem Anschluss, gleiche Pfade).
 # Quelle ist immer die unveränderte Sammlung im Repository, so bleibt das Ergebnis bei jedem Lauf gleich.
 $sammlung = Join-Path $deploy "elements"
 $python = Get-Command python -ErrorAction SilentlyContinue
@@ -47,30 +47,18 @@ if (-not $python) {
                 (Join-Path $symbole "qet_labels\$($teil[0]).xml") (Join-Path $sammlung $teil[0])
         }
     }
-    $fluidsim = "C:\Program Files (x86)\Didactic\FluidSIM6"
-    if (Test-Path (Join-Path $fluidsim "sym\sym_fs.lib")) {
-        foreach ($teil in @(@("50_pneumatic\5090_FluidSIM", "~FolderPneumatic"),
-                            @("30_hydraulic\3090_FluidSIM", "~FolderHydraulic"))) {
-            $fs = Join-Path $sammlung $teil[0]
-            New-Item -ItemType Directory -Force $fs | Out-Null
-            Set-Content -Encoding utf8 (Join-Path $fs "qet_directory") @"
-<qet-directory>
-    <names>
-        <name lang="de">FluidSIM (Festo Didactic)</name>
-        <name lang="en">FluidSIM (Festo Didactic)</name>
-    </names>
-</qet-directory>
-"@
-            & $python.Source -X utf8 (Join-Path $symbole "fluidsim_symbole.py") --fluidsim $fluidsim `
-                --bereich $teil[1] --ziel $fs
-        }
-    }
 }
 
-# Eigene Pneumatik- und Hydrauliksymbole nach ISO 1219 (bauteile/fluid, erzeugt mit
-# tools/symbole/iso1219_symbole.py): fest im Repository, in jede Standardsammlung
+# Pneumatik- und Hydrauliksymbole nach ISO 1219 (bauteile/fluid, eigene Zeichnung): fest im Repository,
+# in jede Standardsammlung. Frühere Stände (umgewandelte FluidSIM-Symbole, alte Fork-Symbole) werden
+# vorher entfernt, damit nur diese Symbole in der Sammlung stehen.
 $fluid_eigen = Join-Path $repo "bauteile\fluid"
 if ((Test-Path $fluid_eigen) -and (Test-Path $sammlung)) {
+    foreach ($alt in @("50_pneumatic\5090_FluidSIM", "30_hydraulic\3090_FluidSIM",
+                       "50_pneumatic\5095_ISO1219", "30_hydraulic\3095_ISO1219")) {
+        $p = Join-Path $sammlung $alt
+        if (Test-Path $p) { Remove-Item -Recurse -Force $p }
+    }
     foreach ($teil in @("50_pneumatic", "30_hydraulic")) {
         $q = Join-Path $fluid_eigen $teil
         if (Test-Path $q) {

@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="90" height="50" hotspot_x="20" hotspot_y="10">
+    <uuid uuid="{9c009e5c-b4f5-5ecd-9de6-72dc61b36bca}" />
+    <names>
+        <name lang="de">Analog-Durchflussmesser</name>
+        <name lang="en">Analog flow meter</name>
+    </names>
+    <fluid kind="other" />
+    <description>
+        <ellipse x="13.5" y="3.5" width="23" height="23" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="17.52" y1="15" x2="32.48" y2="15" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="32.48" y1="15" x2="29.48" y2="16.26" x3="29.48" y3="13.74" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="3.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="40" x2="0" y2="26.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-17" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{8056051a-28d5-5518-b3dc-60e2c16b8fce}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{c52456c4-6ba6-5314-86b3-125aebad66d3}" name="A" x="0" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{bb47caa3-09a4-5e6a-884f-50b32e679875}" name="B" x="0" y="40" orientation="s" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

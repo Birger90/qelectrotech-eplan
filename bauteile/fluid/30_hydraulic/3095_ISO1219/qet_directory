@@ -1,6 +1,1 @@
-<qet-directory>
-    <names>
-        <name lang="de">Hydraulik nach ISO 1219</name>
-        <name lang="en">Hydraulics after ISO 1219</name>
-    </names>
-</qet-directory>
+<qet-directory><names><name lang="de">Hydraulik</name><name lang="en">30_hydraulic</name></names></qet-directory>

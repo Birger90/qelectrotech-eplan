@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="280" height="130" hotspot_x="0" hotspot_y="120">
+    <uuid uuid="{3330d58c-3046-5538-9ddb-6b5517492c4b}" />
+    <names>
+        <name lang="de">Vorsteuergerät, 2x2-kanalig</name>
+        <name lang="en">Pilot valves (Joystick), 2x2-channel</name>
+    </names>
+    <fluid kind="other" />
+    <description>
+        <rect x="125.5" y="-68.5" width="29" height="27" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="140" y1="-46.09" x2="140" y2="-63.91" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="140" y1="-63.91" x2="141.68" y2="-59.91" x3="138.32" y3="-59.91" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <polygon x1="154.5" y1="-55" x2="156.38" y2="-57.8" x3="158.25" y3="-52.2" x4="160.12" y4="-57.8" x5="162" y5="-52.2" x6="163.88" y6="-57.8" x7="165.75" y7="-52.2" x8="167.62" y8="-57.8" x9="169.5" y9="-55" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="121.5" y1="-41.5" x2="121.5" y2="-72.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:dashed;line-weight:thin;filling:none;color:black" antialias="false" />
+        <line x1="121.5" y1="-72.5" x2="140" y2="-72.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:dashed;line-weight:thin;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="125.5" y2="-41.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="-10" x2="125.5" y2="-41.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="40" y1="-110" x2="125.5" y2="-68.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="117.5" y1="-110" x2="125.5" y2="-68.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="132.5" y1="-110" x2="132.5" y2="-68.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="210" y1="-110" x2="154.5" y2="-68.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-118" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{df320deb-9d82-514f-a031-3ab073762fd2}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{e4edc70d-544f-5e15-9b75-4a79a20f2398}" name="T" x="0" y="0" orientation="w" type="Generic" medium="hydraulic" />
+        <terminal uuid="{d3da1e5a-0ba3-5cd0-9a94-e44c75a60141}" name="P" x="0" y="-10" orientation="w" type="Generic" medium="hydraulic" />
+        <terminal uuid="{655d0b19-3835-55a0-bd93-e2300f82eb67}" name="X1.1" x="40" y="-110" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{4e7c754b-ecf1-5733-b908-3429d337afa6}" name="X1.2" x="117.5" y="-110" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{2a8bbdaf-f347-5cff-bee7-6b41f6f5b430}" name="X2.1" x="132.5" y="-110" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{dda845a0-9174-5d6c-9fa5-f2d919e1b1e0}" name="X2.2" x="210" y="-110" orientation="n" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="150" height="60" hotspot_x="50" hotspot_y="60">
+    <uuid uuid="{7268de7d-188f-535a-910c-1bbef69407c3}" />
+    <names>
+        <name lang="de">Zylinder, doppeltwirkend, mit zwei durchgehenden Kolbenstangen und doppeltem Joch</name>
+        <name lang="en">Cylinder, double-acting, with two in and out piston rods and double trestle</name>
+    </names>
+    <fluid kind="cylinder" prefix="MM">
+        <cylinder action="double" bore_mm="20" rod_mm="8" stroke_mm="200" />
+    </fluid>
+    <description>
+        <rect x="-36.5" y="-41" width="52" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-6.86" y1="-40" x2="-6.86" y2="-22" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-6.86" y1="-31" x2="6.14" y2="-31" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="6.14" y1="-31" x2="36.14" y2="-31" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-48" y1="-31" x2="-6.86" y2="-31" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-48" y1="-34" x2="-48" y2="-28" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-31.5" y1="-21" x2="-31.5" y2="-17" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-31.5" y1="-17" x2="0" y2="-17" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="-17" x2="0" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="9.5" y1="-21" x2="9.5" y2="-17" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="9.5" y1="-17" x2="40" y2="-17" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="40" y1="-17" x2="40" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-47" y="-58" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{476aac5c-ab25-5e03-89c3-b2680d06fa7b}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{cf57ae0f-f26c-5eb5-a7dc-8d526b454cde}" name="" x="0" y="0" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{3aca3acf-d571-5901-be21-6b0b0ba84734}" name="" x="40" y="0" orientation="s" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

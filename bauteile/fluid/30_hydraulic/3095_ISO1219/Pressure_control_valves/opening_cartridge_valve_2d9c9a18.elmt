@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="70" height="70" hotspot_x="10" hotspot_y="70">
+    <uuid uuid="{9782d963-1858-5318-b26e-cbd542aef5f6}" />
+    <names>
+        <name lang="de">Einbauventil (Öffner)</name>
+        <name lang="en">Opening cartridge valve</name>
+    </names>
+    <fluid kind="other" />
+    <description>
+        <rect x="16.25" y="-48.5" width="17.5" height="27" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="25" y1="-26.09" x2="25" y2="-43.91" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="25" y1="-43.91" x2="26.68" y2="-39.91" x3="23.32" y3="-39.91" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <polygon x1="33.75" y1="-35" x2="35.62" y2="-37.8" x3="37.5" y3="-32.2" x4="39.38" y4="-37.8" x5="41.25" y5="-32.2" x6="43.12" y6="-37.8" x7="45" y7="-32.2" x8="46.88" y8="-37.8" x9="48.75" y9="-35" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="16.25" y2="-21.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="20" y1="-20" x2="33.75" y2="-21.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="-60" x2="16.25" y2="-48.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-7" y="-68" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{6d7abdeb-694a-51d6-9edd-0c09b01dc660}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{95c63458-79ef-57c9-be71-aaf8a21ef0f4}" name="A" x="0" y="0" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{5e68cba4-af7d-55ea-9086-3b61edca2d8e}" name="B" x="20" y="-20" orientation="e" type="Generic" medium="hydraulic" />
+        <terminal uuid="{7e06d4ef-204c-59ea-b8a8-c1a99c526849}" name="X" x="0" y="-60" orientation="n" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

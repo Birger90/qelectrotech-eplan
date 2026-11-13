@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="100" height="80" hotspot_x="30" hotspot_y="10">
+    <uuid uuid="{38e00fe4-d8b2-54a5-864a-f6e0512d20a7}" />
+    <names>
+        <name lang="de">Drosselrückschlagventil</name>
+        <name lang="en">Throttle check valve</name>
+    </names>
+    <fluid kind="flow_control" prefix="RZ" />
+    <description>
+        <line x1="4" y1="30" x2="15" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="15" y1="25" x2="21" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="15" y1="35" x2="21" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <ellipse x="22" y="27" width="6" height="6" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="28" y1="30" x2="39" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="0" y2="7" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="65" x2="0" y2="53" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-27" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{4e52e72c-2a83-5c52-b736-7af8f223a1dd}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{24ae84b3-9260-54c9-b11f-fa165737ddb0}" name="1" x="0" y="0" orientation="n" type="Generic" medium="pneumatic" />
+        <terminal uuid="{d293c6e7-ce65-5fab-ae36-3a8d46b7a4fb}" name="2" x="0" y="65" orientation="s" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

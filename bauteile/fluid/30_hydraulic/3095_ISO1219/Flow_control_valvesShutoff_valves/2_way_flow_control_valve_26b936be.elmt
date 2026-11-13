@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="100" height="80" hotspot_x="30" hotspot_y="10">
+    <uuid uuid="{51a77e29-2b17-5451-bd83-1c8422d902ce}" />
+    <names>
+        <name lang="de">2-Wege-Stromregelventil</name>
+        <name lang="en">2-way flow control valve</name>
+    </names>
+    <fluid kind="flow_control" prefix="RZ" />
+    <description>
+        <rect x="-9" y="22.5" width="58" height="25" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="20" y1="22.5" x2="20" y2="47.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="5.5" y1="45.5" x2="5.5" y2="24.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="5.5" y1="24.5" x2="7.18" y2="28.5" x3="3.82" y3="28.5" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="34.5" y1="24.5" x2="34.5" y2="28.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="31.9" y1="28.5" x2="37.1" y2="28.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="34.5" y1="45.5" x2="34.5" y2="41.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="31.9" y1="41.5" x2="37.1" y2="41.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="0" y2="22.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="70" x2="0" y2="47.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-27" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{54d7cc73-2ffa-58f1-ae50-5cf0d5c44710}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{0af29299-109d-53e1-a6ec-6a52e2210db7}" name="B" x="0" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{f7702104-1c58-588c-9ac6-1a7fbf71ffd3}" name="A" x="0" y="70" orientation="s" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

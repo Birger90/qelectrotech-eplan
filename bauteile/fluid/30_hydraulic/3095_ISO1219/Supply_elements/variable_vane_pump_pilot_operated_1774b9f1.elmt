@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="250" height="170" hotspot_x="140" hotspot_y="170">
+    <uuid uuid="{bc91a5da-a0d9-5f3e-ae8f-68ad74b7308c}" />
+    <names>
+        <name lang="de">Verstellbare Flügelzellenpumpe, vorgesteuert</name>
+        <name lang="en">Variable vane pump, pilot operated</name>
+    </names>
+    <fluid kind="source" />
+    <description>
+        <ellipse x="-29" y="-99" width="28" height="28" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <polygon x1="-15" y1="-97" x2="-12.3" y2="-91" x3="-17.7" y3="-91" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="-35" y1="-68" x2="4" y2="-103" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="4" y1="-103" x2="2.61" y2="-100.06" x3="0.93" y3="-101.93" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="-37" y1="-85" x2="-29" y2="-85" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-1" y1="-85" x2="7" y2="-85" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="0" y2="-71" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="20" y1="0" x2="20" y2="-71" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="20" y1="-160" x2="20" y2="-99" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-137" y="-168" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{f6db0733-5df3-58ed-bad1-e47cfb43e14c}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{c1fb5475-8bbc-510e-a126-ce7d068ac431}" name="L" x="0" y="0" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{8b30131b-4dc2-592a-ba2c-4ed3dd622376}" name="S" x="20" y="0" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{60703a9f-79cc-510d-a89e-3166417b6a81}" name="P" x="20" y="-160" orientation="n" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

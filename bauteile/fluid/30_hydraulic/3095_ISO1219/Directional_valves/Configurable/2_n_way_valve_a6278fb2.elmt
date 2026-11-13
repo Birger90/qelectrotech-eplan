@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="80" height="50" hotspot_x="30" hotspot_y="10">
+    <uuid uuid="{f31c5f3f-9e87-5930-ae82-72698aef6a19}" />
+    <names>
+        <name lang="de">2/n-Wegeventil</name>
+        <name lang="en">2/n Way Valve</name>
+    </names>
+    <description>
+        <rect x="-18" y="9" width="56" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="10" y1="9" x2="10" y2="31" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-4" y1="29" x2="-4" y2="11" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="-4" y1="11" x2="-2.32" y2="15" x3="-5.68" y3="15" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="24" y1="11" x2="24" y2="15" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="21.4" y1="15" x2="26.6" y2="15" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="24" y1="29" x2="24" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="21.4" y1="25" x2="26.6" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="0" y2="9" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="40" x2="0" y2="31" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-27" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{6cf218ce-92e5-59c6-9145-0f549c4865b4}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{eb3043f6-b925-54e4-ac00-f17c602cc929}" name="A" x="0" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{5faa31f1-a096-5b16-8d7a-d4d565aef8fd}" name="P" x="0" y="40" orientation="s" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

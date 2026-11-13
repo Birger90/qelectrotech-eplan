@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="110" height="50" hotspot_x="10" hotspot_y="50">
+    <uuid uuid="{c2112bed-0811-5ac1-8f85-b3457e019dbf}" />
+    <names>
+        <name lang="de">Zylinder, doppeltwirkend mit Endlagendämpfung</name>
+        <name lang="en">Double acting cylinder with shock adsorber at stroke end</name>
+    </names>
+    <fluid kind="cylinder" prefix="MM">
+        <cylinder action="double" bore_mm="16" rod_mm="10" stroke_mm="200" />
+    </fluid>
+    <description>
+        <rect x="-0.1" y="-36" width="51.7" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="29.37" y1="-35" x2="29.37" y2="-17" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="29.37" y1="-26" x2="42.29" y2="-26" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="42.29" y1="-26" x2="64.29" y2="-26" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="2.9" y1="-34" x2="7.9" y2="-18" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="43.6" y1="-34" x2="48.6" y2="-18" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="4.9" y1="-16" x2="4.9" y2="-12" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="4.9" y1="-12" x2="0" y2="-12" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="-12" x2="0" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="45.6" y1="-16" x2="45.6" y2="-12" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="45.6" y1="-12" x2="40" y2="-12" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="40" y1="-12" x2="40" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-7" y="-48" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{293e4588-a392-58f8-9065-2a5416be8619}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{dbaf8c22-62d0-5cf5-ad61-c9bd38796a16}" name="" x="0" y="0" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{c1493193-fecb-5634-bb4f-cfab6209d565}" name="" x="40" y="0" orientation="s" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

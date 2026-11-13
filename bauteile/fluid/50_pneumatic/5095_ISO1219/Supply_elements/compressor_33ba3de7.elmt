@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="70" height="60" hotspot_x="20" hotspot_y="10">
+    <uuid uuid="{0c0e588f-e2de-56de-be4c-c73def5cfd77}" />
+    <names>
+        <name lang="de">Verdichter</name>
+        <name lang="en">Compressor</name>
+    </names>
+    <fluid kind="source" />
+    <description>
+        <ellipse x="2.4" y="7.4" width="25.2" height="25.2" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <polygon x1="15" y1="9.4" x2="17.7" y2="15.4" x3="12.3" y3="15.4" closed="true" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="-5.6" y1="20" x2="2.4" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="27.6" y1="20" x2="35.6" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="0" y2="7.4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="45" x2="0" y2="32.6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-17" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{5fdcfbf4-fd51-5251-9c52-96f49a0fe9a3}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{37cc8cd3-ec90-5512-ac8f-986dab997f02}" name="A" x="0" y="0" orientation="n" type="Generic" medium="pneumatic" />
+        <terminal uuid="{d8d1f52d-2046-52dd-83b4-7518f08ea72a}" name="B" x="0" y="45" orientation="s" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

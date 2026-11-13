@@ -13,14 +13,11 @@ Zum Benutzen den Ordner in die Benutzersammlung kopieren
 Mit „Bauteil-Import“ eingelesene Herstellerdaten (EPLAN Data Portal) gehören
 nicht in dieses Repository.
 
-`fluid/` enthält eigene Pneumatik- und Hydrauliksymbole nach ISO 1219-1 (143 Bauteile: Wegeventile 2/2 bis
-5/3 bzw. 4/3 mit allen gängigen Betätigungen, Zylinder, Motoren, Pumpen, Sperr-, Strom- und Druckventile,
-Versorgung, Aufbereitung, Messgeräte, Ventilspule). Sie sind mit `tools/symbole/iso1219_symbole.py` gezeichnet
-(keine fremde Geometrie) und tragen Medium, Portnummern, Kennbuchstaben und Schaltstellungen.
+`fluid/` enthält die eigenen Pneumatik- und Hydrauliksymbole nach ISO 1219 (322 Bauteile, eigene Zeichnung):
+Antriebe, Wegeventile, Sperr-, Strom-, Druck- und Proportionalventile, Versorgung, Messtechnik, Vakuum,
+Mobilhydraulik. Sie tragen Medium und Portnummern an den Anschlüssen und Kennbuchstaben.
 `tools/deploy_lokal.ps1`, die CMake-Installation und das Mac-Bundle legen sie in die Standardsammlung unter
-`50_pneumatic/5095_ISO1219` und `30_hydraulic/3095_ISO1219`. Neu erzeugen:
-
-    python tools/symbole/iso1219_symbole.py --ziel bauteile/fluid
+`50_pneumatic/5095_ISO1219` und `30_hydraulic/3095_ISO1219`.
 
 `pneumatik/` enthält Beispiele für Pneumatikpläne (Branch `feature/pneumatik`): ein 5/2-Magnetventil mit
 Federrückstellung als Master (Anschlüsse 1–5 pneumatisch, Schalldämpfer an 3 und 5) und die Ventilspule als

@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="130" height="80" hotspot_x="0" hotspot_y="70">
+    <uuid uuid="{b9d695b4-fd83-500f-b317-fcb4078ebe9e}" />
+    <names>
+        <name lang="de">Pneumatischer Muskel mit einem doppeltwirkenden Zylinder</name>
+        <name lang="en">Fluidic muscle with one double acting cylinder</name>
+    </names>
+    <fluid kind="other" />
+    <description>
+        <rect x="11.7" y="-56" width="52" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="41.34" y1="-55" x2="41.34" y2="-37" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="41.34" y1="-46" x2="54.34" y2="-46" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="54.34" y1="-46" x2="80.34" y2="-46" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <ellipse x="44.2" y="-52" width="41.6" height="12" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="44.2" y1="-46" x2="85.8" y2="-46" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="11.7" y2="-46" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="57.7" y1="-36" x2="57.7" y2="-32" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="57.7" y1="-32" x2="10" y2="-32" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="10" y1="-32" x2="10" y2="-25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="16.7" y1="-36" x2="16.7" y2="-32" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="16.7" y1="-32" x2="50" y2="-32" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="50" y1="-32" x2="50" y2="-25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-68" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{95d882cb-7cb0-5ad6-87e5-b76b482a95ba}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{b0feff06-0930-5cd6-8d9b-1f8defc24128}" name="" x="0" y="0" orientation="w" type="Generic" medium="pneumatic" />
+        <terminal uuid="{ad42a5ed-3106-520f-b80d-2f8b37e48bb8}" name="" x="10" y="-25" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{a7ada378-0a4d-50ef-b653-07fefd9c43b9}" name="" x="50" y="-25" orientation="s" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

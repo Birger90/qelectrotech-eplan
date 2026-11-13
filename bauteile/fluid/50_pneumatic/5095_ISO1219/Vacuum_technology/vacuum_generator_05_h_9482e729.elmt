@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="90" height="60" hotspot_x="0" hotspot_y="30">
+    <uuid uuid="{8a5295c0-4c85-5c5a-8e50-ca50987ef6aa}" />
+    <names>
+        <name lang="de">Vakuumsaugdüse 05 H</name>
+        <name lang="en">Vacuum generator 05 H</name>
+    </names>
+    <fluid kind="other" prefix="UQ" />
+    <description>
+        <polygon x1="32" y1="-7" x2="42" y2="0" x3="32" y3="7" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <polygon x1="58" y1="-7" x2="48" y2="0" x3="58" y3="7" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="45" y1="-4" x2="45" y2="-14" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="42" y1="0" x2="48" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="48" y1="0" x2="45.6" y2="1.01" x3="45.6" y3="-1.01" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="32" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="25" y1="15" x2="25" y2="13" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-28" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{1c8d9ade-4bcb-5c33-8907-dbbbc76a7de0}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{cf814f80-cbf0-5deb-bac1-58d938c1168f}" name="1" x="0" y="0" orientation="w" type="Generic" medium="pneumatic" />
+        <terminal uuid="{29599535-5ec5-5ee4-89bc-e0b6f25fd154}" name="2" x="25" y="15" orientation="s" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

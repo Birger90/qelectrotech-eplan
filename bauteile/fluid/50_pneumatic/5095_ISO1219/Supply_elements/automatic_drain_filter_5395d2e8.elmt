@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="90" height="40" hotspot_x="0" hotspot_y="20">
+    <uuid uuid="{37408383-9d3d-5b03-961d-6d8f6debcc94}" />
+    <names>
+        <name lang="de">Filter mit Wasserabscheider, automatisch</name>
+        <name lang="en">Automatic drain filter</name>
+    </names>
+    <fluid kind="source" />
+    <description>
+        <polygon x1="45" y1="-9.2" x2="54.2" y2="0" x3="45" y3="9.2" x4="35.8" y4="0" closed="true" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="40.4" y1="-4.6" x2="49.6" y2="4.6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="45" y1="9.2" x2="45" y2="16.2" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="42" y1="16.2" x2="48" y2="16.2" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="35.8" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-18" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{e9d0152c-fb21-5c00-a96c-cd49bda4df76}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{3319a599-d459-58b2-a620-9d6439528ee6}" name="A" x="0" y="0" orientation="w" type="Generic" medium="pneumatic" />
+        <terminal uuid="{7c170643-05bc-50cd-9f49-3d1f2b6ea3b1}" name="B" x="47.5" y="0" orientation="e" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

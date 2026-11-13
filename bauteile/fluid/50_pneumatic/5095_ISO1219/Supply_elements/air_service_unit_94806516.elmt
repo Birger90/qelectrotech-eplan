@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="160" height="80" hotspot_x="0" hotspot_y="50">
+    <uuid uuid="{1b1fbfd7-5e3f-5e1a-819b-425b590b10b6}" />
+    <names>
+        <name lang="de">Wartungseinheit</name>
+        <name lang="en">Air service unit</name>
+    </names>
+    <fluid kind="source" />
+    <description>
+        <rect x="6" y="-44" width="148" height="68" rx="0" ry="0" style="line-style:dashed;line-weight:thin;filling:none;color:black" antialias="false" />
+        <rect x="32.5" y="-21" width="21" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="43" y1="-2.08" x2="43" y2="-17.92" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="43" y1="-17.92" x2="43.84" y2="-15.92" x3="42.16" y3="-15.92" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="53.5" y1="-10" x2="69.5" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <rect x="69.5" y="-21" width="21" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="74.12" y1="-16.6" x2="85.88" y2="-3.4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="85.88" y1="-3.4" x2="83.92" y2="-4.33" x3="85.18" y3="-5.45" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="90.5" y1="-10" x2="106.5" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <rect x="106.5" y="-21" width="21" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="117" y1="-2.08" x2="117" y2="-17.92" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="117" y1="-17.92" x2="117.84" y2="-15.92" x3="116.16" y3="-15.92" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="6" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="120" y1="0" x2="154" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-48" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{bd5ff1e6-56d0-5ed3-8724-5c2ce05dacda}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <dynamic_text x="8" y="-44" z="28" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{67b7fa07-6e9d-5ed5-8f0e-f5397a6c72c6}" font="Liberation Sans,5,-1,5,0,0,0,0,0,0,Regular">
+            <text>PNE</text>
+        </dynamic_text>
+        <terminal uuid="{02eccce7-9c81-58cd-8e6b-6bfe41f60105}" name="C1" x="0" y="0" orientation="w" type="Generic" medium="pneumatic" />
+        <terminal uuid="{278fe92b-c351-5a50-aea6-da828c94be21}" name="C2" x="120" y="0" orientation="e" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

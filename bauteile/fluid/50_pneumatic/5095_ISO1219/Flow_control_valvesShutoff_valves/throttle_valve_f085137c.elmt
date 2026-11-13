@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="90" height="40" hotspot_x="30" hotspot_y="10">
+    <uuid uuid="{f97a4d1a-68fa-5cb5-b76b-08f63fec57c3}" />
+    <names>
+        <name lang="de">Drosselventil</name>
+        <name lang="en">Throttle valve</name>
+    </names>
+    <fluid kind="flow_control" />
+    <description>
+        <line x1="-8.58" y1="10" x2="8.05" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="8.05" y1="2" x2="15" y2="10" x3="8.05" y3="18" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <polygon x1="21.95" y1="2" x2="15" y2="10" x3="21.95" y3="18" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="21.95" y1="10" x2="38.58" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-27" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{f832708e-1bf2-5ccf-ba14-be6d196dae81}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{092a89c5-3cb9-551f-8dc9-40d07bbf443c}" name="B" x="0" y="0" orientation="n" type="Generic" medium="pneumatic" />
+        <terminal uuid="{f7fdc33c-3cfa-5bef-82ce-f0965214dd7c}" name="A" x="0" y="20" orientation="s" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

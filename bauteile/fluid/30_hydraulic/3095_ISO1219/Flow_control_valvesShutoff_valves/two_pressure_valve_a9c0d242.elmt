@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="100" height="40" hotspot_x="0" hotspot_y="30">
+    <uuid uuid="{b548013d-3a33-5980-ad27-4c6550269e6b}" />
+    <names>
+        <name lang="de">Zweidruckventil</name>
+        <name lang="en">Two pressure valve</name>
+    </names>
+    <fluid kind="flow_control" />
+    <description>
+        <rect x="32" y="-18" width="36" height="16" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <ellipse x="38" y="-13" width="6" height="6" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <ellipse x="56" y="-13" width="6" height="6" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="50" y1="-18" x2="50" y2="-25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="27" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-28" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{7ee0e4bd-549a-56e8-ba39-3b98c4f7ab08}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{f122ab90-ed52-59f8-88d3-169d9b38fb11}" name="" x="0" y="0" orientation="w" type="Generic" medium="hydraulic" />
+        <terminal uuid="{1ef488a0-992d-5434-adec-bba7467f2c3b}" name="" x="60" y="0" orientation="e" type="Generic" medium="hydraulic" />
+        <terminal uuid="{23a88ef1-b5dd-5492-a4fd-780ca9acf032}" name="" x="30" y="-20" orientation="n" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

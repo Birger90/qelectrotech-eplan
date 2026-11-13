@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="150" height="60" hotspot_x="20" hotspot_y="60">
+    <uuid uuid="{617efa75-daf5-536d-b59e-510738d5860d}" />
+    <names>
+        <name lang="de">Magnetventil fuer Ventilinsel</name>
+        <name lang="en">Solenoid valve for valve manifold</name>
+    </names>
+    <description>
+        <rect x="26" y="-32.5" width="58" height="25" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="55" y1="-32.5" x2="55" y2="-7.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="33.25" y1="-9.5" x2="33.25" y2="-30.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="33.25" y1="-30.5" x2="34.93" y2="-26.5" x3="31.57" y3="-26.5" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="47.75" y1="-30.5" x2="47.75" y2="-9.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="47.75" y1="-9.5" x2="46.07" y2="-13.5" x3="49.43" y3="-13.5" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <ellipse x="39.3" y="-11.7" width="2.4" height="2.4" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="62.25" y1="-30.5" x2="76.75" y2="-9.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="76.75" y1="-9.5" x2="73.09" y2="-11.84" x3="75.86" y3="-13.75" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="62.25" y1="-9.5" x2="76.75" y2="-30.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="76.75" y1="-30.5" x2="75.86" y2="-26.25" x3="73.09" y3="-28.16" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <ellipse x="68.3" y="-11.7" width="2.4" height="2.4" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <rect x="16" y="-25" width="10" height="10" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="16" y1="-15" x2="26" y2="-25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="86" y1="-20" x2="87.62" y2="-23.4" x3="89.25" y3="-16.6" x4="90.88" y4="-23.4" x5="92.5" y5="-16.6" x6="94.12" y6="-23.4" x7="95.75" y7="-16.6" x8="97.38" y8="-23.4" x9="99" y9="-20" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="26" y2="-7.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="50" y1="0" x2="50" y2="-7.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="60" y1="0" x2="60" y2="-7.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="70" y1="0" x2="70" y2="-7.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="50" y1="-40" x2="50" y2="-32.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="70" y1="-40" x2="70" y2="-32.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-17" y="-58" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{e85015bf-adae-5e02-8155-92b34a9909fb}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{16964d4c-fa8a-5bd9-93fc-e89b3e247b1a}" name="14" x="0" y="0" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{0783b92e-b531-5024-a62a-1ab7a66fe8ff}" name="5" x="50" y="0" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{f5c0b1d4-3fe6-5bd3-a052-aa03ebf2c900}" name="1" x="60" y="0" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{70cbb9f6-55a3-528a-a36a-97394684dc14}" name="3" x="70" y="0" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{8d62cf9a-0edf-50a9-9e56-7a896a6e33c6}" name="4" x="50" y="-40" orientation="n" type="Generic" medium="pneumatic" />
+        <terminal uuid="{c4005e35-8287-5fb6-8ca2-cb32f9ebda6f}" name="2" x="70" y="-40" orientation="n" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

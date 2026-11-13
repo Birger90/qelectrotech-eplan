@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="180" height="100" hotspot_x="0" hotspot_y="50">
+    <uuid uuid="{b2b841c0-7d78-5e76-be70-b81e930fe137}" />
+    <names>
+        <name lang="de">Verteilerblock</name>
+        <name lang="en">Manifold</name>
+    </names>
+    <fluid kind="source" prefix="XM" />
+    <description>
+        <rect x="79" y="-8" width="22" height="16" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="90" y1="-8" x2="90" y2="8" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="77" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="50" y1="-45" x2="50" y2="-13" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="75" y1="-45" x2="75" y2="-13" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="100" y1="-45" x2="100" y2="-13" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="125" y1="-45" x2="125" y2="-13" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="50" y1="45" x2="50" y2="13" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="75" y1="45" x2="75" y2="13" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="100" y1="45" x2="100" y2="13" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="125" y1="45" x2="125" y2="13" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-48" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{e9469877-8ed9-547d-9fea-924bb2867c96}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{dc088736-a307-573e-96d4-6e3fce35806d}" name="" x="0" y="0" orientation="w" type="Generic" medium="pneumatic" />
+        <terminal uuid="{e63861b6-1bce-5ade-92e1-e5da07647db3}" name="" x="50" y="-45" orientation="n" type="Generic" medium="pneumatic" />
+        <terminal uuid="{4a806d52-579e-5aa7-85f1-7ea7747d961a}" name="" x="75" y="-45" orientation="n" type="Generic" medium="pneumatic" />
+        <terminal uuid="{a636d98c-fb9a-5ce6-9393-863f756a7622}" name="" x="100" y="-45" orientation="n" type="Generic" medium="pneumatic" />
+        <terminal uuid="{bb093acc-8e16-5d98-ac0e-e00ea8d035d2}" name="" x="125" y="-45" orientation="n" type="Generic" medium="pneumatic" />
+        <terminal uuid="{79e21c6b-4285-5169-954f-1f7fc32b4996}" name="" x="50" y="45" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{6c54337e-e46b-58a6-860a-8fbbc11e4747}" name="" x="75" y="45" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{06912baf-70de-50fc-bdc1-8a4b1cd62a87}" name="" x="100" y="45" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{2ecf8246-b9e1-5ec0-934a-6c9987121e24}" name="" x="125" y="45" orientation="s" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

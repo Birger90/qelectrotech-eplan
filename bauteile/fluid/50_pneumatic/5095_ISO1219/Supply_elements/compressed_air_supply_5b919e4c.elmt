@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="50" height="30" hotspot_x="10" hotspot_y="10">
+    <uuid uuid="{4b21d08c-b143-56e4-9ac3-a1c79566528c}" />
+    <names>
+        <name lang="de">Druckluftquelle</name>
+        <name lang="en">Compressed air supply</name>
+    </names>
+    <fluid kind="source" prefix="GP" />
+    <description>
+        <polygon x1="23" y1="10" x2="32" y2="5.95" x3="32" y3="14.05" closed="true" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="2" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-7" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{e402302c-c821-5fbe-9eb1-7840ebb17c92}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{8e5272ef-e787-56a0-bc20-63d65d545f35}" name="" x="0" y="0" orientation="n" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

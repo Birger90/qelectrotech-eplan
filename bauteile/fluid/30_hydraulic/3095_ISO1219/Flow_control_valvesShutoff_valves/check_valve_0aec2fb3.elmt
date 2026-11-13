@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="70" height="20" hotspot_x="0" hotspot_y="10">
+    <uuid uuid="{85703b33-4514-515c-bd07-90d550de88c9}" />
+    <names>
+        <name lang="de">Rückschlagventil</name>
+        <name lang="en">Check valve</name>
+    </names>
+    <fluid kind="flow_control" prefix="RM" />
+    <description>
+        <line x1="21.99" y1="0" x2="30" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="30" y1="-5" x2="36" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="30" y1="5" x2="36" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <ellipse x="37" y="-3" width="6" height="6" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="43" y1="0" x2="51.01" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="14.99" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{6bb6b03f-e9a4-5ff8-a0d9-1503af176f49}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{06a3353f-2ba2-5e09-be1e-ac684d62ec6a}" name="B" x="0" y="0" orientation="w" type="Generic" medium="hydraulic" />
+        <terminal uuid="{888d4528-9bdd-5b6b-9091-9fd7f5f433a7}" name="A" x="30" y="0" orientation="e" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="220" height="150" hotspot_x="100" hotspot_y="10">
+    <uuid uuid="{bcb99dfd-eac6-55ac-9b20-f2c642d0e935}" />
+    <names>
+        <name lang="de">Lenkventil (Orbitrol)</name>
+        <name lang="en">Steering unit (Orbitrol)</name>
+    </names>
+    <fluid kind="source" prefix="QZ" />
+    <description>
+        <rect x="-19" y="57.5" width="58" height="25" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="10" y1="57.5" x2="10" y2="82.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-11.75" y1="80.5" x2="-11.75" y2="59.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="-11.75" y1="59.5" x2="-10.07" y2="63.5" x3="-13.43" y3="63.5" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="2.75" y1="59.5" x2="2.75" y2="80.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="2.75" y1="80.5" x2="1.07" y2="76.5" x3="4.43" y3="76.5" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <ellipse x="-5.7" y="78.3" width="2.4" height="2.4" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="17.25" y1="59.5" x2="31.75" y2="80.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="31.75" y1="80.5" x2="28.09" y2="78.16" x3="30.86" y3="76.25" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="17.25" y1="80.5" x2="31.75" y2="59.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="31.75" y1="59.5" x2="30.86" y2="63.75" x3="28.09" y3="61.84" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <ellipse x="23.3" y="78.3" width="2.4" height="2.4" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="57.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-30" y1="0" x2="-19" y2="57.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-55" y1="140" x2="-19" y2="82.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="15" y1="140" x2="15" y2="82.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="40" y1="140" x2="39" y2="82.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-97" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{261b539b-8077-5069-9a7c-6329fbc6115c}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{a8c277ca-e111-5c85-8316-b7ba29caae15}" name="R" x="0" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{a7d890f3-1449-546d-b458-26b1a6e4ea7f}" name="L" x="-30" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{c1d12be7-8f94-59b1-bff3-6f1e372bd41a}" name="P" x="-55" y="140" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{6f606c7b-2b45-592c-9cd6-7c362fc75f77}" name="T" x="15" y="140" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{721f0f4e-020a-5073-9a4f-13647acdccd8}" name="E" x="40" y="140" orientation="s" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

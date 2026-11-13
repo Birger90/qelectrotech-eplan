@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="80" height="50" hotspot_x="20" hotspot_y="10">
+    <uuid uuid="{764c3ca3-a7a3-5b06-a73c-6dd42a0ad6a1}" />
+    <names>
+        <name lang="de">Druckwaage (Schließer), einstellbar</name>
+        <name lang="en">Variable closing pressure compensator</name>
+    </names>
+    <fluid kind="other" />
+    <description>
+        <rect x="10" y="5" width="20" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="20" y1="21.6" x2="20" y2="8.4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="20" y1="8.4" x2="21.68" y2="12.4" x3="18.32" y3="12.4" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <polygon x1="30" y1="15" x2="31.88" y2="12.2" x3="33.75" y3="17.8" x4="35.62" y4="12.2" x5="37.5" y5="17.8" x6="39.38" y6="12.2" x7="41.25" y7="17.8" x8="43.12" y8="12.2" x9="45" y9="15" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="30" y1="23" x2="45" y2="7" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="45" y1="7" x2="43.87" y2="10.05" x3="42.03" y3="8.33" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="10" y2="5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="40" x2="10" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="20" y1="25" x2="30" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-20" y1="20" x2="10" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-17" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{dba816c7-a65b-5076-bacb-353f899b7a5b}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{b0fb4aca-f5af-59ef-a136-33f1aef53f32}" name="2" x="0" y="0" orientation="n" type="Generic" medium="pneumatic" />
+        <terminal uuid="{72bd8d51-f89f-523c-8c56-a6dfa2ede02a}" name="1" x="0" y="40" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{a319d6b1-0a05-5420-b44e-77935c4e0b42}" name="4" x="20" y="25" orientation="e" type="Generic" medium="pneumatic" />
+        <terminal uuid="{ad012441-0aa0-5f19-983d-307701261a6d}" name="3" x="-20" y="20" orientation="w" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

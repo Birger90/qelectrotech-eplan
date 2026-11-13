@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="80" height="120" hotspot_x="30" hotspot_y="120">
+    <uuid uuid="{ffa74fbf-b934-5e35-947a-ead5d5805e51}" />
+    <names>
+        <name lang="de">Endplatte, rechts</name>
+        <name lang="en">End plate, right</name>
+    </names>
+    <fluid kind="other" />
+    <description>
+        <rect x="-24" y="-114" width="68" height="108" rx="0" ry="0" style="line-style:dashed;line-weight:thin;filling:none;color:black" antialias="false" />
+        <rect x="-13.33" y="-71" width="12.67" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-7" y1="-52.08" x2="-7" y2="-67.92" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="-7" y1="-67.92" x2="-6.16" y2="-65.92" x3="-7.84" y3="-65.92" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="-0.67" y1="-60" x2="3.67" y2="-60" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <rect x="3.67" y="-71" width="12.67" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="6.45" y1="-66.6" x2="13.55" y2="-53.4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="13.55" y1="-53.4" x2="11.86" y2="-54.76" x3="13.34" y3="-55.56" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="16.33" y1="-60" x2="20.67" y2="-60" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <rect x="20.67" y="-71" width="12.67" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="27" y1="-52.08" x2="27" y2="-67.92" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="27" y1="-67.92" x2="27.84" y2="-65.92" x3="26.16" y3="-65.92" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="15" y1="-40" x2="44" y2="-40" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-20" y1="-40" x2="-24" y2="-40" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-20" y1="-32.5" x2="-24" y2="-32.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-20" y1="-25" x2="-24" y2="-25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-20" y1="-17.5" x2="-24" y2="-17.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-27" y="-118" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{79daff62-fd76-5be6-912d-f0a3a74074d6}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <dynamic_text x="-22" y="-114" z="28" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{d20c9b33-8d4d-52b2-93c1-2116e6ec9207}" font="Liberation Sans,5,-1,5,0,0,0,0,0,0,Regular">
+            <text>BLOCK</text>
+        </dynamic_text>
+        <terminal uuid="{7b6538db-f971-51a5-971f-8e8f9dbc94ea}" name="1" x="0" y="0" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{9bdb83e9-3566-597d-ad86-314d9050877a}" name="" x="15" y="-40" orientation="e" type="Generic" medium="pneumatic" />
+        <terminal uuid="{672360b8-4303-500a-ba62-83f042a26dde}" name="" x="-20" y="-40" orientation="w" type="Generic" medium="pneumatic" />
+        <terminal uuid="{6aefb9fb-5edc-5730-9a76-3923ee6de141}" name="" x="-20" y="-32.5" orientation="w" type="Generic" medium="pneumatic" />
+        <terminal uuid="{af778a7b-6055-5cff-a30b-620d69231aa7}" name="" x="-20" y="-25" orientation="w" type="Generic" medium="pneumatic" />
+        <terminal uuid="{c89c5061-eef1-5cd3-b2c2-15d767aa5cae}" name="" x="-20" y="-17.5" orientation="w" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

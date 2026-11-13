@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="slave" width="90" height="60" hotspot_x="30" hotspot_y="10">
+    <uuid uuid="{8006d89c-397c-5d75-933a-c1af83727b23}" />
+    <names>
+        <name lang="de">Ventilmagnet</name>
+        <name lang="en">Valve solenoid</name>
+    </names>
+    <kindInformations>
+        <kindInformation name="type">simple</kindInformation>
+        <kindInformation name="state">Other</kindInformation>
+        <kindInformation name="number">1</kindInformation>
+    </kindInformations>
+    <fluid kind="solenoid" prefix="MB" />
+    <description>
+        <rect x="-10" y="12.5" width="50" height="25" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="15" y1="12.5" x2="15" y2="37.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="2.5" y1="35.5" x2="2.5" y2="14.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="2.5" y1="14.5" x2="4.18" y2="18.5" x3="0.82" y3="18.5" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="27.5" y1="14.5" x2="27.5" y2="18.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="24.9" y1="18.5" x2="30.1" y2="18.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="27.5" y1="35.5" x2="27.5" y2="31.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="24.9" y1="31.5" x2="30.1" y2="31.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <rect x="-20" y="20" width="10" height="10" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-20" y1="30" x2="-10" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="42" y1="25" x2="43.62" y2="21.6" x3="45.25" y3="28.4" x4="46.88" y4="21.6" x5="48.5" y5="28.4" x6="50.12" y6="21.6" x7="51.75" y7="28.4" x8="53.38" y8="21.6" x9="55" y9="25" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="12.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="50" x2="0" y2="37.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-27" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{0fd6b7a7-3e6e-54e2-9dde-eadf0644eb7b}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{6d31337a-1c54-57b5-8cfc-5fc096883b02}" name="" x="0" y="0" orientation="n" type="Generic" />
+        <terminal uuid="{2edec3d2-1a03-5989-83ee-98e001c6c923}" name="" x="0" y="50" orientation="s" type="Generic" />
+    </description>
+</definition>

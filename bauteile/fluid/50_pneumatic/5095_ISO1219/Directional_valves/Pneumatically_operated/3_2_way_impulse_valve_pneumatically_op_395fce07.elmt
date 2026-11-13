@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="130" height="50" hotspot_x="0" hotspot_y="30">
+    <uuid uuid="{be282b87-2912-5643-90df-b3e2c2023bdf}" />
+    <names>
+        <name lang="de">3/2-Wege-Pneumatik-Impulsventil</name>
+        <name lang="en">3/2-way impulse valve, pneumatically operated</name>
+    </names>
+    <fluid kind="valve" prefix="SJ">
+        <positions initial="2">
+            <position />
+            <position />
+        </positions>
+    </fluid>
+    <description>
+        <rect x="36" y="-16" width="58" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="65" y1="-16" x2="65" y2="6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="43.25" y1="4" x2="43.25" y2="-14" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="43.25" y1="-14" x2="44.93" y2="-10" x3="41.57" y3="-10" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="57.75" y1="4" x2="57.75" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="55.15" y1="0" x2="60.35" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="86.75" y1="-14" x2="86.75" y2="4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="86.75" y1="4" x2="85.07" y2="0" x3="88.43" y3="0" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="72.25" y1="4" x2="72.25" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="69.65" y1="0" x2="74.85" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="36" y1="-5" x2="30" y2="-2.3" x3="30" y3="-7.7" closed="true" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="28" y1="-5" x2="23" y2="-5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:dashed;line-weight:thin;filling:none;color:black" antialias="false" />
+        <polygon x1="94" y1="-5" x2="100" y2="-7.7" x3="100" y3="-2.3" closed="true" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="102" y1="-5" x2="107" y2="-5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:dashed;line-weight:thin;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="0" x2="36" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="50" y1="-25" x2="50" y2="-16" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="50" y1="15" x2="50" y2="6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="60" y1="15" x2="60" y2="6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="90" y1="0" x2="94" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-28" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{af9d8ca6-8ccc-586e-ac93-ac061a6ef123}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{3d04489c-225e-5437-a08a-84dfb799d9e6}" name="10" x="0" y="0" orientation="w" type="Generic" medium="pneumatic" />
+        <terminal uuid="{cf7b6a20-181d-5a59-bd69-86c9542b80c0}" name="2" x="50" y="-25" orientation="n" type="Generic" medium="pneumatic" />
+        <terminal uuid="{354b972f-278a-5401-bb3c-c06d7934a1b6}" name="1" x="50" y="15" orientation="s" type="Generic" medium="pneumatic" />
+        <terminal uuid="{7c3ec816-b63d-535f-8293-5d56fdafc613}" name="3" x="60" y="15" orientation="s" type="Generic" medium="pneumatic" port_end="silencer" />
+        <terminal uuid="{c587674b-9d2d-5859-8263-bbb2f9102537}" name="12" x="90" y="0" orientation="e" type="Generic" medium="pneumatic" />
+    </description>
+</definition>

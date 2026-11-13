@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="120" height="50" hotspot_x="50" hotspot_y="10">
+    <uuid uuid="{94b1affd-d8bd-5345-bae5-685f15fb72fe}" />
+    <names>
+        <name lang="de">3/2-Wege-Handhebelventil</name>
+        <name lang="en">3/2-way hand-lever valve</name>
+    </names>
+    <fluid kind="valve" prefix="SJ">
+        <positions initial="2">
+            <position />
+            <position />
+        </positions>
+        <actuation side="left" types="manual" />
+        <actuation side="right" types="" spring="true" />
+    </fluid>
+    <description>
+        <rect x="-19" y="9" width="58" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="10" y1="9" x2="10" y2="31" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-11.75" y1="29" x2="-11.75" y2="11" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="-11.75" y1="11" x2="-10.07" y2="15" x3="-13.43" y3="15" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="2.75" y1="29" x2="2.75" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0.15" y1="25" x2="5.35" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="31.75" y1="11" x2="31.75" y2="29" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="31.75" y1="29" x2="30.07" y2="25" x3="33.43" y3="25" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="17.25" y1="29" x2="17.25" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="14.65" y1="25" x2="19.85" y2="25" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-19" y1="20" x2="-25" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="-25" y1="20" x2="-32" y2="11" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <ellipse x="-34" y="9" width="4" height="4" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <polygon x1="40" y1="20" x2="41.62" y2="16.6" x3="43.25" y3="23.4" x4="44.88" y4="16.6" x5="46.5" y5="23.4" x6="48.12" y6="16.6" x7="49.75" y7="23.4" x8="51.38" y8="16.6" x9="53" y9="20" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="9" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="0" y1="40" x2="0" y2="31" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="10" y1="40" x2="10" y2="31" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-47" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{9e16b581-3d95-5de2-be2d-a8d28ddb7276}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{07cd113e-6231-51b5-8ac1-e82d1c7233ba}" name="A" x="0" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{b047d7be-d32e-5156-a8ec-6a66c34b8eca}" name="P" x="0" y="40" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{96c18cd8-4118-54f0-9526-f8f405d1b149}" name="T" x="10" y="40" orientation="s" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

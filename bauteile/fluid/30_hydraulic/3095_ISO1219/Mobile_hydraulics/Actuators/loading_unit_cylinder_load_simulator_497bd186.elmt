@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="200" height="110" hotspot_x="10" hotspot_y="110">
+    <uuid uuid="{1f944452-027d-5832-85f5-32fe135b6f05}" />
+    <names>
+        <name lang="de">Belastungseinheit/Zylinderlastsimulator</name>
+        <name lang="en">Loading unit/cylinder load simulator</name>
+    </names>
+    <fluid kind="other" />
+    <description>
+        <rect x="-4" y="-104" width="188" height="98" rx="0" ry="0" style="line-style:dashed;line-weight:thin;filling:none;color:black" antialias="false" />
+        <rect x="32.5" y="-66" width="21" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="43" y1="-47.08" x2="43" y2="-62.92" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="43" y1="-62.92" x2="43.84" y2="-60.92" x3="42.16" y3="-60.92" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="53.5" y1="-55" x2="79.5" y2="-55" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <rect x="79.5" y="-66" width="21" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="84.12" y1="-61.6" x2="95.88" y2="-48.4" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="95.88" y1="-48.4" x2="93.92" y2="-49.33" x3="95.18" y3="-50.45" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="100.5" y1="-55" x2="126.5" y2="-55" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <rect x="126.5" y="-66" width="21" height="22" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="137" y1="-47.08" x2="137" y2="-62.92" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="137" y1="-62.92" x2="137.84" y2="-60.92" x3="136.16" y3="-60.92" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="10" y1="0" x2="10" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="135" y1="0" x2="135" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="145" y1="0" x2="145" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-7" y="-108" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{2292af74-e979-54f2-9b72-60186d0bed37}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <dynamic_text x="-2" y="-104" z="28" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{c6e031b6-bac5-5282-9c59-06606585ec25}" font="Liberation Sans,5,-1,5,0,0,0,0,0,0,Regular">
+            <text>LAST</text>
+        </dynamic_text>
+        <terminal uuid="{ecaddf34-5802-5a46-8a28-b0a950e73419}" name="A1.1" x="0" y="0" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{30bb2e85-3141-5db7-8ca6-9bb257ef6ad9}" name="A1.2" x="10" y="0" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{3f488ba6-dc9a-5879-a6a9-ec2d4428f1c2}" name="A2.1" x="135" y="0" orientation="s" type="Generic" medium="hydraulic" />
+        <terminal uuid="{2c8ac620-6e42-57fc-a8be-82e6a74a1a1a}" name="A2.2" x="145" y="0" orientation="s" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

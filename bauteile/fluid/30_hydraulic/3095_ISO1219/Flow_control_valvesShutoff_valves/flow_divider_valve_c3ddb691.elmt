@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="120" height="70" hotspot_x="30" hotspot_y="10">
+    <uuid uuid="{1da11d9c-2d9a-58dc-b0ce-a13a34122f9a}" />
+    <names>
+        <name lang="de">Stromteilerventil</name>
+        <name lang="en">Flow divider valve</name>
+    </names>
+    <fluid kind="flow_control" />
+    <description>
+        <rect x="17" y="11" width="26" height="28" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="30" y1="36" x2="30" y2="23" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="30" y1="23" x2="20" y2="16" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="20" y1="16" x2="22.12" y2="16.46" x3="21.16" y3="17.84" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="30" y1="23" x2="40" y2="16" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="40" y1="16" x2="38.84" y2="17.84" x3="37.88" y3="16.46" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="0" y2="2" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="30" y1="0" x2="30" y2="2" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <line x1="15" y1="60" x2="15" y2="48" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="-27" y="-8" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{eee3f123-544a-5963-b7b6-c1d64a851171}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{ef34ffc3-649e-5c38-8e59-80b51125272a}" name="A" x="0" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{408ee058-5567-50df-8af0-216a101d1b91}" name="B" x="30" y="0" orientation="n" type="Generic" medium="hydraulic" />
+        <terminal uuid="{63c0cbdd-8071-5ec7-b73d-2e45ba52689e}" name="P" x="15" y="60" orientation="s" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

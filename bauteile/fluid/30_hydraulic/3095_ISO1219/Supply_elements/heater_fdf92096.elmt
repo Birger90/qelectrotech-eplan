@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definition version="0.90" type="element" link_type="simple" width="80" height="40" hotspot_x="0" hotspot_y="20">
+    <uuid uuid="{b85656e4-58fe-595d-98b8-aaa8a8f9a345}" />
+    <names>
+        <name lang="de">Heizung</name>
+        <name lang="en">Heater</name>
+    </names>
+    <fluid kind="source" />
+    <description>
+        <polygon x1="40" y1="-9.2" x2="49.2" y2="0" x3="40" y3="9.2" x4="30.8" y4="0" closed="true" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true" />
+        <line x1="40" y1="5.52" x2="40" y2="-5.52" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <polygon x1="40" y1="-5.52" x2="41.05" y2="-3.02" x3="38.95" y3="-3.02" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true" />
+        <line x1="0" y1="0" x2="30.8" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false" />
+        <dynamic_text x="3" y="-18" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{d3b1b3f8-60d5-530c-9a5e-4de629821b7d}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular">
+            <text />
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{6aa740e2-8673-5ebf-9264-78f2d26a5caa}" name="" x="0" y="0" orientation="w" type="Generic" medium="hydraulic" />
+        <terminal uuid="{4fe711a5-d5fe-58dd-8893-7d654507fc96}" name="" x="40" y="0" orientation="e" type="Generic" medium="hydraulic" />
+    </description>
+</definition>

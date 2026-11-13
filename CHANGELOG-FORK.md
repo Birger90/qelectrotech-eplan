@@ -3,6 +3,11 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.11.1 – 13.11.2026
+
+- macOS: die Klemmen-Vorschau kompiliert mit Clang (mehrdeutiger Name `TerminalStripDrawer`); der Mac-Build
+  in GitHub Actions meldet alle Fehler auf einmal.
+
 ## 1.11.0 – 13.11.2026
 
 - Eigene Pneumatik- und Hydrauliksymbole nach ISO 1219-1 (143 Bauteile), fest in der Standardsammlung unter

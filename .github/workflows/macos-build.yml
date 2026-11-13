@@ -53,7 +53,7 @@ jobs:
             || { echo "::error::Open CASCADE missing: no STEP models"; exit 1; }
 
       - name: Build
-        run: cmake --build build --parallel $(sysctl -n hw.ncpu)
+        run: cmake --build build --parallel $(sysctl -n hw.ncpu) -- -k 0
 
       - name: Start headless
         # The program must at least start and answer on the command line

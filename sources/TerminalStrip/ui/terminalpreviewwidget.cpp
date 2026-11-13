@@ -160,7 +160,7 @@ void TerminalPreviewWidget::paintEvent(QPaintEvent *)
 	});
 
 	auto pattern_ = QSharedPointer<TerminalStripLayoutPattern>::create();
-	TerminalStripDrawer::TerminalStripDrawer drawer_(
+	::TerminalStripDrawer::TerminalStripDrawer drawer_(
 		QSharedPointer<AbstractTerminalStripInterface>(new PreviewStrip(m_name, m_terminals)),
 		pattern_);
 	drawer_.setDrawStyle(all_screw_ ? TerminalStripLayoutPattern::DrawStyle::RealisticScrew

@@ -18,6 +18,7 @@
 #include "cli_export.h"
 #include "projectlock.h"
 #include "bomexport.h"
+#include "fluid/fluidbom.h"
 
 #include "bordertitleblock.h"
 #include "conductornumexport.h"
@@ -90,6 +91,7 @@ const QHash<QString, QString> &exportFlags()
 		{"--export-cables", "cables"},
 		{"--export-wires", "wires"},
 		{"--export-bom", "bom"},
+		{"--export-fluid-bom", "fluidbom"},
 		{"--export-wiring", "wiring"},
 		{"--export-nets", "nets"},
 		{"--export-links", "links"},
@@ -464,6 +466,49 @@ int exportBom(QETProject &project, const QString &output,
 		return 1;
 	}
 	out << "Exported " << rows << " component(s) -> " << output << "\n";
+	return 0;
+}
+
+/**
+	Parts list of the fluid power side: every element with fluid data
+	(valves, cylinders, valve solenoids...), identical ones on one line,
+	and the fluid lines counted by kind and size (FluidBom::csv()).
+*/
+int exportFluidBom(QETProject &project, const QString &output)
+{
+	QList<FluidBom::Part> parts;
+	QList<FluidBom::Line> lines;
+	for (Diagram *diagram : project.diagrams()) {
+		for (Element *element : diagram->elements()) {
+			const FluidData fluid = element->elementData().m_fluid;
+			if (fluid.isNull())
+				continue;
+			const DiagramContext info = element->elementInformations();
+			FluidBom::Part p;
+			p.name = element->name();
+			p.kind = FluidBom::kindText(fluid.m_kind);
+			p.details = FluidBom::details(fluid);
+			p.manufacturer = info.value(QStringLiteral("manufacturer")).toString();
+			p.reference = info.value(QStringLiteral("manufacturer_reference")).toString();
+			p.label = element->actualLabel();
+			parts << p;
+		}
+		for (Conductor *conductor : diagram->conductors()) {
+			const ConductorProperties cp = conductor->properties();
+			if (cp.m_fluid_line == Fluid::LineKind::None)
+				continue;
+			lines << FluidBom::Line{cp.m_fluid_line, cp.m_wire_section};
+		}
+	}
+	int rows = 0;
+	const QByteArray csv = FluidBom::csv(parts, lines, &rows);
+	QString error;
+	if (!BomExport::writeCsv(output, csv, &error)) {
+		err << "Cannot write '" << output << "': " << error << "\n";
+		return 1;
+	}
+	out << "Exported " << rows << " fluid line item(s) from " << parts.size()
+		<< " part(s) and " << lines.size() << " line(s) -> " << output << "\n";
 	return 0;
 }
 
@@ -1704,6 +1749,8 @@ int run(const QStringList &args)
 		return exportCsv(project, format, output);
 	if (format == "bom")
 		return exportBom(project, output, includeSlaves, includeJunctions);
+	if (format == "fluidbom")
+		return exportFluidBom(project, output);
 	if (format == "wiring")
 		return exportWiring(project, output);
 	if (format == "nets")

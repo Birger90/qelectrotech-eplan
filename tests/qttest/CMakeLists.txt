@@ -2562,3 +2562,16 @@ set_tests_properties(tst_fluiddata PROPERTIES
   ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 target_include_directories(tst_fluiddata PRIVATE ${QET_DIR}/sources)
 target_link_libraries(tst_fluiddata PRIVATE Qt::Test Qt::Widgets Qt::Xml pugixml::pugixml)
+
+# Fluid parts list: identical parts grouped, valve and cylinder figures,
+# lines counted by kind and size
+add_executable(
+  tst_fluidbom
+  tst_fluidbom.cpp
+  ${QET_DIR}/sources/fluid/fluidbom.cpp
+  ${QET_DIR}/sources/fluid/fluiddata.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
+  ${QET_DIR}/sources/bomexport.cpp)
+add_test(NAME tst_fluidbom COMMAND tst_fluidbom)
+target_include_directories(tst_fluidbom PRIVATE ${QET_DIR}/sources)
+target_link_libraries(tst_fluidbom PRIVATE Qt::Test Qt::Xml Qt::Sql)

@@ -148,10 +148,61 @@ class tst_fluiddata : public QObject
 			for (auto k : {FluidData::Kind::Source, FluidData::Kind::Treatment,
 						   FluidData::Kind::FlowControl,
 						   FluidData::Kind::LogicValve,
-						   FluidData::Kind::Sensor, FluidData::Kind::Other}) {
+						   FluidData::Kind::Sensor, FluidData::Kind::Other,
+						   FluidData::Kind::Solenoid}) {
 				FluidData d;
 				d.m_kind = k;
 				QVERIFY(roundTrip(d) == d);
+			}
+		}
+
+		void solenoidSidesCountsEachSideOnce()
+		{
+			FluidData d = valve52();
+			QCOMPARE(d.solenoidSides(), 1);
+			d.m_right.types << "solenoid";
+			QCOMPARE(d.solenoidSides(), 2);
+			d.m_left.types.clear();
+			d.m_right.types = QStringList{"lever"};
+			QCOMPARE(d.solenoidSides(), 0);
+				// a coil is not a valve: no sides of its own
+			FluidData coil;
+			coil.m_kind = FluidData::Kind::Solenoid;
+			QCOMPARE(coil.solenoidSides(), 0);
+			QCOMPARE(FluidData::kindToString(coil.m_kind), QString("solenoid"));
+		}
+
+		void openPortIsAFreeFluidPort()
+		{
+			using Fluid::Medium;
+			using Fluid::PortEnd;
+			QVERIFY(Fluid::isOpenPort(Medium::Pneumatic, PortEnd::None, 0));
+			QVERIFY(Fluid::isOpenPort(Medium::Hydraulic, PortEnd::None, 0));
+				// a line, a silencer or a plug closes it
+			QVERIFY(!Fluid::isOpenPort(Medium::Pneumatic, PortEnd::None, 1));
+			QVERIFY(!Fluid::isOpenPort(Medium::Pneumatic, PortEnd::Silencer, 0));
+			QVERIFY(!Fluid::isOpenPort(Medium::Pneumatic, PortEnd::Plug, 0));
+				// an electric terminal is never a fluid port
+			QVERIFY(!Fluid::isOpenPort(Medium::Electric, PortEnd::None, 0));
+			QVERIFY(!Fluid::isOpenPort(Medium::Logic, PortEnd::None, 0));
+		}
+
+		void portEndsAreDrawnAwayFromTheElement()
+		{
+			QVERIFY(Fluid::portEndLines(Fluid::PortEnd::None).isEmpty());
+			for (auto end : {Fluid::PortEnd::Silencer, Fluid::PortEnd::Plug}) {
+				const auto lines = Fluid::portEndLines(end);
+				QVERIFY(!lines.isEmpty());
+					// starts at the port, never reaches back into the element
+				QCOMPARE(lines.first().p1(), QPointF(0, 0));
+				QRectF box;
+				for (const QLineF &l : lines) {
+					box |= QRectF(l.p1(), l.p2()).normalized();
+					QVERIFY(l.x1() >= 0 && l.x2() >= 0);
+				}
+					// symmetric across the line, small enough for the grid
+				QCOMPARE(box.top(), -box.bottom());
+				QVERIFY(box.right() <= 20);
 			}
 		}
 

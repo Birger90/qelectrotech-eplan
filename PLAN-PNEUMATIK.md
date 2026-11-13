@@ -16,13 +16,25 @@ Vorbild: FluidSIM 6, Handbuch Kap. 4.6, 4.8, 4.11, 4.12, 6.7, 8.8, 8.9, 11.6.
 |---|---|---|---|
 | A. QET-Sammlung `elements/50_pneumatic` | 406 Dateien (Ventile, Zylinder, Wartung, Sensoren) | ist schon drin | Anschlüsse ohne Namen, keine Schaltstellungen |
 | B. Eigener Baukasten nach ISO 1219-1 | Ventilkörper, Betätigungen, Zylinder aus Bausteinen | **ja** | neu |
-| C. FluidSIM-Bibliothek (Umwandler) | Festo-Symbole | ja (laut Birger, 13.11.2026: Festo-Freigabe ohne Einschränkung) | Dateiformat unbekannt, Beispieldateien fehlen |
+| C. FluidSIM-Bibliothek (Umwandler) | Festo-Symbole | ja (laut Birger, 13.11.2026: Festo-Freigabe ohne Einschränkung) | Format gesichtet (13.11.2026), siehe unten |
 | D. Herstellermakros SMC/Festo (EDZ, ZW1) | Teile mit Artikeldaten | nein, nur lokal | Nutzungsbedingungen offen |
 | E. SMC-Symbole DXF/SVG | Einzelsymbole | nein, nur lokal | Nutzungsbedingungen offen |
 
-Offene Punkte zu C:
-- Beispieldateien aus der FluidSIM-Bibliothek + ein eigener Plan als Datei **und** als PDF/SVG zum Abgleich.
-- Ordner der Bibliothek: in FluidSIM unter Optionen → Ordnerpfade (Handbuch 21.3).
+Stand zu C (FluidSIM 6.3 installiert unter `C:\Program Files (x86)\Didactic\FluidSIM6`, gesichtet 13.11.2026):
+- `.circ`, `.sym`, `.lib` sind **gzip-gepacktes XML** (UTF-8 mit BOM), Wurzel `<fluidtools2>` bzw. `<fluidtools4>`.
+- Beispiele: 2290 Schaltungen in `circ/` und `circ_tp/` (pneu, hyd, et, GRAFCET, Digital, Lehrgänge TP101 …).
+- Bibliothek `sym/sym_fs.lib`: 873 Vorlagen, davon 156 Pneumatik.
+- Symbol: `<symbol>` → `<symbol-layer ref-x ref-y>` mit `line`, `polyline`, `rect`, `circle`, `arc`, `text` und
+  `<connector type="pneumatic" ident designation="4" cx cy>`; Raster 6, Einheit vermutlich mm.
+- Bauteil: `<component object-ref="Pneu.DirectionalValve.FivePins">` mit `<dki-data><designation value="-QM1"/>`,
+  `<classification-data><type value="directional-valve"/>` und Simulationswerten in `<const>`/`<parameter>`.
+- Leitung: `<line object-ref="Pneu.Supply.LongLine"/>` + `<connect con1="O46478.C4" con2="O46503.A" points="…"/>`.
+- Schalldämpfer, Entlüftung, Blindstopfen, Verschraubung sind in FluidSIM **eigene Bauteile** mit einem Anschluss
+  (Ordner „Silencers and blind plugs“, `Pneu.Supply.Silencer`, `Pneu.Supply.BlindPlug`). In QET bleiben sie
+  Abschluss am Anschluss; der Umwandler setzt beim Import den Abschluss am angeschlossenen Port.
+- Spule ↔ Ventil: am Ventil-Anschluss `Y1` steht `<link-props><type value="solenoid-valve-coil-target"/>
+  <target value="-MB1" comp-ref="…"/>`; die Spule ist `ET.Relay.ValveSolenoid`. Das Ventil hält den Verweis.
+- Offen: ein eigener Plan als Datei **und** als PDF/SVG zum Maßstabsabgleich (Raster 6 ↔ QET-Raster 10).
 
 ---
 
@@ -117,9 +129,9 @@ Alles über `QUndoCommand` (Merge-IDs in `dev_doc/ID_of_QUndoCommand.txt` eintra
 1. Datenmodell: Terminal `medium`, Abschluss, Leitungsart, `<fluid>`-Block lesen/schreiben + Tests (`tests/qttest`). **Erledigt** (`sources/fluid/`, `tst_fluiddata`). Noch ohne Oberfläche; Medium-Prüfung beim Verbinden folgt mit Schritt 4.
 2. Baukasten-Generator + erste 40 Symbole.
 3. Nachrüsten `50_pneumatic` (Anschlussnamen).
-4. Ventil- und Zylindereditor. **Teil erledigt:** Leitungsart im Leitungs-Fenster, Medium und Abschluss im Anschluss-Editor, Leitungen nur zwischen gleichem Medium. Offen: Ventil-/Zylindereditor, Schalldämpfer/Blindstopfen zeichnen.
-5. Verknüpfung Spule ↔ Ventil, Wegmaßstab.
-6. Prüfungen, Stückliste, Kennzeichnung.
+4. Ventil- und Zylindereditor. **Teil erledigt:** Leitungsart im Leitungs-Fenster, Medium und Abschluss im Anschluss-Editor, Leitungen nur zwischen gleichem Medium, Schalldämpfer/Blindstopfen am freien Anschluss gezeichnet. Offen: Ventil-/Zylindereditor.
+5. Verknüpfung Spule ↔ Ventil, Wegmaßstab. **Teil erledigt:** Ventil = Master, Spule = Slave mit `<fluid kind="solenoid"/>`, Magnetsymbol im Querverweis, Beispielbauteile in `bauteile/pneumatik/`. Hinweis: Als Slave zeigt die Spule die Kennzeichnung des Ventils (`-QM1`), nicht ein eigenes `-MB1` wie FluidSIM. Offen: Wegmaßstab.
+6. Prüfungen, Stückliste, Kennzeichnung. **Teil erledigt:** Projekt → „Fluidtechnik prüfen…“ (offene Anschlüsse, Ventil ohne Spule, Spule ohne Ventil). Offen: Stückliste, Kennzeichnungsvorschlag.
 7. Skript/MCP.
 8. ZW1-Fluid-Test, danach FluidSIM-Umwandler.
 
@@ -135,7 +147,7 @@ Jede Änderung am bestehenden Verhalten: Einstellung im Einstellungsdialog, Stan
 
 ## 10. Offen / nicht verifiziert
 
-- FluidSIM-Dateiformat.
+- FluidSIM-Dateiformat: Aufbau bekannt (Abschnitt 1), Maßstab und Simulationswerte noch nicht geprüft.
 - ISO 1219-1 Volltext.
 - Nutzungsbedingungen SMC/Festo-Makros außerhalb von EPLAN.
 - Ob der ZW1-Import Fluid-Seiten schon verarbeitet.

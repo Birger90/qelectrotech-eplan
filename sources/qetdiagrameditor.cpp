@@ -105,6 +105,7 @@
 #include "ui/diagrambgcolorbutton.h"
 #include "ui/duplicatelabelsdialog.h"
 #include "ui/potentialcheckdialog.h"
+#include "ui/fluidcheckdialog.h"
 #include "ui/duplicateoffsetdialog.h"
 #include "ui/jumptoelementdialog.h"
 #include "ui/diagrampropertieseditordockwidget.h"
@@ -1246,6 +1247,18 @@ void QETDiagramEditor::setUpActions()
 	connect(m_check_potentials, &QAction::triggered, this, [this]() {
 		if (ProjectView *view = currentProjectView()) {
 			auto *dialog = new PotentialCheckDialog(view->project(), this);
+			dialog->setAttribute(Qt::WA_DeleteOnClose);
+			dialog->show();
+		}
+	});
+		// Open fluid ports, solenoids and coils not linked
+	m_check_fluid = new QAction(tr("Check fluid power..."), this);
+	m_check_fluid->setObjectName(QStringLiteral("checkFluidPower"));
+	m_check_fluid->setStatusTip(tr("List open pneumatic and hydraulic ports and solenoid valves without their coil"));
+	ShortcutManager::instance().registerAction(m_check_fluid, "diagrameditor.check_fluid_power", tr("Diagram editors"), QKeySequence());
+	connect(m_check_fluid, &QAction::triggered, this, [this]() {
+		if (ProjectView *view = currentProjectView()) {
+			auto *dialog = new FluidCheckDialog(view->project(), this);
 			dialog->setAttribute(Qt::WA_DeleteOnClose);
 			dialog->show();
 		}
@@ -2405,6 +2418,7 @@ void QETDiagramEditor::setUpMenu()
 	menu_project -> addAction(m_clean_project);
 	menu_project->addAction(m_find_duplicate_labels);
 	menu_project->addAction(m_check_potentials);
+	menu_project->addAction(m_check_fluid);
 	menu_project->addAction(m_project_languages);
 	menu_project -> addSeparator();
 	menu_project -> addAction(m_csv_export);
@@ -4036,6 +4050,7 @@ void QETDiagramEditor::slot_updateActions()
 	m_project_edit_properties     -> setEnabled(opened_project);
 	m_find_duplicate_labels->setEnabled(opened_project);
 	m_check_potentials->setEnabled(opened_project);
+	m_check_fluid->setEnabled(opened_project);
 	m_project_languages->setEnabled(opened_project);
 	m_project_history             -> setEnabled(opened_project);
 	m_export_delivery             -> setEnabled(opened_project);

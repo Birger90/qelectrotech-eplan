@@ -3,6 +3,23 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## Noch nicht veröffentlicht (Branch `feature/pneumatik`)
+
+Pneumatikpläne nach Vorbild FluidSIM 6, Stufe 1 (zeichnen, noch keine Simulation). Plan: `PLAN-PNEUMATIK.md`.
+
+- Anschlüsse tragen ein Medium (elektrisch, pneumatisch, hydraulisch, mechanisch, Marke) und einen Abschluss
+  (keiner, Schalldämpfer, Blindstopfen); beides im Anschluss-Editor. Eine Leitung verbindet nur Anschlüsse
+  mit gleichem Medium. Elektrische Anschlüsse und alte Dateien bleiben unverändert.
+- Leitungsart im Leitungs-Fenster: Arbeitsleitung, Steuerleitung, Abluft/Leckleitung (`fluid_line`).
+- Schalldämpfer und Blindstopfen werden am freien Anschluss gezeichnet (Form wie in FluidSIM) und verschwinden,
+  sobald eine Leitung angeschlossen ist.
+- Spule ↔ Ventil über Master/Slave: Ventil = Master (`<fluid kind="valve">`), Ventilspule = Slave
+  (`<fluid kind="solenoid"/>`). Der Querverweis am Ventil zeigt die Spule mit dem Magnetsymbol nach ISO 1219.
+- Projekt → „Fluidtechnik prüfen…“: offene pneumatische/hydraulische Anschlüsse ohne Leitung und Abschluss,
+  Magnetventile ohne verknüpfte Spule, Spulen ohne Ventil. Ein Klick wählt das Bauteil auf seinem Blatt.
+- Beispielbauteile in `bauteile/pneumatik/`: 5/2-Magnetventil mit Federrückstellung (Master, Schalldämpfer an
+  3 und 5) und Ventilspule (Slave).
+
 ## 1.9.0 – 13.11.2026
 
 - Neues Werkzeug „Klemmleiste zeichnen“ (Werkzeugleiste neben „Kabel zeichnen“): ein Strich quer über Leitungen

@@ -999,6 +999,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/ui/projectlanguagesdialog.h
   ${QET_DIR}/sources/ui/potentialcheckdialog.cpp
   ${QET_DIR}/sources/ui/potentialcheckdialog.h
+  ${QET_DIR}/sources/ui/fluidcheckdialog.cpp
+  ${QET_DIR}/sources/ui/fluidcheckdialog.h
   ${QET_DIR}/sources/ui/potentialsourceswidget.cpp
   ${QET_DIR}/sources/ui/potentialsourceswidget.h
   ${QET_DIR}/sources/ui/potentialtypeswidget.cpp

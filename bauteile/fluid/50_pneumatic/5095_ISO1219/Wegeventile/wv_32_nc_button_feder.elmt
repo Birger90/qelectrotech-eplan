@@ -1,0 +1,42 @@
+<definition version="0.90" type="element" link_type="simple" width="130" height="70" hotspot_x="70" hotspot_y="50">
+    <uuid uuid="{6288c750-d493-5316-9a51-3dfe05eb0595}"/>
+    <names>
+        <name lang="de">3/2-Wegeventil, Ruhestellung gesperrt, Taster – Feder</name>
+        <name lang="en">3/2 way valve, normally closed, push button – spring</name>
+    </names>
+    <fluid kind="valve" prefix="SJ">
+        <positions initial="2">
+            <position><path from="1" to="2"/><path from="3"/></position>
+            <position><path from="2" to="3"/><path from="1"/></position>
+        </positions>
+        <actuation side="left" types="button"/>
+        <actuation side="right" types="" spring="true"/>
+    </fluid>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <rect x="-40" y="-20" width="40" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="-30" y1="0" x2="-30" y2="-16.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <polygon x1="-30" y1="-20" x2="-28.4" y2="-16" x3="-31.6" y3="-16" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true"/>
+        <line x1="-10" y1="0" x2="-10" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="-13" y1="-6" x2="-7" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <rect x="0" y="-20" width="40" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="10" y1="-20" x2="27.53" y2="-2.47" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <polygon x1="30" y1="0" x2="26.04" y2="-1.7" x3="28.3" y3="-3.96" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true"/>
+        <line x1="10" y1="0" x2="10" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="7" y1="-6" x2="13" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="-40" y1="-10" x2="-46" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <arc x="-51" y="-13" width="6" height="6" start="90" angle="180" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <polygon x1="40" y1="-10" x2="42.4" y2="-14" x3="44.8" y3="-6" x4="47.2" y4="-14" x5="49.6" y5="-6" x6="52" y6="-14" x7="54" y7="-10" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="10" y1="0" x2="10" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="30" y1="0" x2="30" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="10" y1="-20" x2="10" y2="-30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-68" y="-49" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{69316cbd-7ad2-588e-b16f-3d76439813a0}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <dynamic_text x="11.5" y="1.5" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{cf1c1ed3-7928-5399-92c0-17d16b0a1d87}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>1</text></dynamic_text>
+        <dynamic_text x="31.5" y="1.5" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{8338cbba-fc86-506d-aed5-b3a92b33bb1b}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>3</text></dynamic_text>
+        <dynamic_text x="11.5" y="-28" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{08b59def-94da-5d66-b2d3-3971d609c064}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>2</text></dynamic_text>
+        <terminal uuid="{72f682b3-b0a0-5b6d-8a7d-4cc2978a1549}" name="1" x="10" y="10" orientation="s" type="Generic" medium="pneumatic"/>
+        <terminal uuid="{89c0730f-3d74-5abd-b02b-4eb37d60872b}" name="3" x="30" y="10" orientation="s" type="Generic" medium="pneumatic" port_end="silencer"/>
+        <terminal uuid="{32f5073d-24cc-57fd-a0d8-ee12b81b5ea2}" name="2" x="10" y="-30" orientation="n" type="Generic" medium="pneumatic"/>
+    </description>
+</definition>

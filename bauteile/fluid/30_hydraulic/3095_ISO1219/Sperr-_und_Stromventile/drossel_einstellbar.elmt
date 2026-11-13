@@ -1,0 +1,22 @@
+<definition version="0.90" type="element" link_type="simple" width="80" height="90" hotspot_x="40" hotspot_y="50">
+    <uuid uuid="{4ca609c1-b9c6-54c2-a831-b66fd396d44b}"/>
+    <names>
+        <name lang="de">Drosselventil, einstellbar</name>
+        <name lang="en">Adjustable throttle</name>
+    </names>
+    <fluid kind="flow_control" prefix="RZ"/>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <line x1="0" y1="20" x2="0" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <arc x="-26" y="-12" width="24" height="24" start="-40" angle="80" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <arc x="2" y="-12" width="24" height="24" start="140" angle="80" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="-10" y1="10" x2="10" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <polygon x1="10" y1="-10" x2="8.23" y2="-6.11" x3="6.11" y3="-8.23" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true"/>
+        <line x1="0" y1="20" x2="0" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="0" y1="-20" x2="0" y2="-30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-38" y="-49" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{d06168d9-f4af-573c-9cbf-6607bb243e54}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <terminal uuid="{c6f283f9-2fbe-57b2-8a94-0c8be597ae98}" name="A" x="0" y="30" orientation="s" type="Generic" medium="hydraulic"/>
+        <terminal uuid="{642f429b-10d8-55e9-b2df-f9e913cde0ab}" name="B" x="0" y="-30" orientation="n" type="Generic" medium="hydraulic"/>
+    </description>
+</definition>

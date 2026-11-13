@@ -1,0 +1,21 @@
+<definition version="0.90" type="element" link_type="simple" width="60" height="70" hotspot_x="30" hotspot_y="50">
+    <uuid uuid="{2f9c8284-2aee-57df-8454-fe5114f7d90a}"/>
+    <names>
+        <name lang="de">Verdichter</name>
+        <name lang="en">Compressor</name>
+    </names>
+    <fluid kind="source" prefix="GP"/>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <ellipse x="-12" y="-24" width="24" height="24" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <polygon x1="0" y1="-23.5" x2="3" y2="-18.5" x3="-3" y3="-18.5" closed="true" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="12" y1="-12" x2="20" y2="-12" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="20" y1="-14" x2="20" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="0" y1="0" x2="0" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="0" y1="-24" x2="0" y2="-32" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-28" y="-49" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{d760bb6d-8d68-58ba-89fd-64cbb1d52ba3}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <terminal uuid="{872fb2b9-ea85-56e8-8edc-0520c7698b27}" name="1" x="0" y="10" orientation="s" type="Generic" medium="pneumatic"/>
+        <terminal uuid="{68f48bee-8a93-5bb1-8918-e7e0d8ab9413}" name="2" x="0" y="-32" orientation="n" type="Generic" medium="pneumatic"/>
+    </description>
+</definition>

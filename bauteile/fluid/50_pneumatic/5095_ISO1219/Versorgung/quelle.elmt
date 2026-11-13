@@ -1,0 +1,17 @@
+<definition version="0.90" type="element" link_type="simple" width="40" height="60" hotspot_x="20" hotspot_y="40">
+    <uuid uuid="{eff1e9a9-e739-5d0c-94bd-f762a306b93c}"/>
+    <names>
+        <name lang="de">Druckluftquelle</name>
+        <name lang="en">Compressed air supply</name>
+    </names>
+    <fluid kind="source" prefix="GP"/>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <ellipse x="-8" y="-8" width="16" height="16" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <polygon x1="0" y1="-8" x2="3" y2="-3" x3="-3" y3="-3" closed="true" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="0" y1="-8" x2="0" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-18" y="-39" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{49b3cb64-4d37-5f56-a48e-46c5012580f1}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <terminal uuid="{784d5e0f-7ec9-5444-b0ea-780e9d4d517d}" name="1" x="0" y="-20" orientation="n" type="Generic" medium="pneumatic"/>
+    </description>
+</definition>

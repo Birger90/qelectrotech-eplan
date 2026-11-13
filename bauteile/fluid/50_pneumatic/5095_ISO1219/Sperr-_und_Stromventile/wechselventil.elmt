@@ -1,0 +1,26 @@
+<definition version="0.90" type="element" link_type="simple" width="90" height="60" hotspot_x="50" hotspot_y="40">
+    <uuid uuid="{17d92c59-8a24-5d86-86d6-4468abba98cd}"/>
+    <names>
+        <name lang="de">Wechselventil (ODER)</name>
+        <name lang="en">Shuttle valve (OR)</name>
+    </names>
+    <fluid kind="logic_valve" prefix="KH"/>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <rect x="-20" y="-8" width="40" height="16" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <ellipse x="-4" y="-4" width="8" height="8" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <polygon x1="-12" y1="-8" x2="-6" y2="0" x3="-12" y3="8" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <polygon x1="12" y1="-8" x2="6" y2="0" x3="12" y3="8" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="-20" y1="0" x2="-30" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="20" y1="0" x2="30" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="0" y1="-8" x2="0" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-48" y="-39" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{666935f2-b5eb-5bb0-9b76-b0c400cc29f6}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <dynamic_text x="-28" y="1.5" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{804bfc5d-cc66-542d-bbe7-c11a1f5bd380}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>1</text></dynamic_text>
+        <dynamic_text x="25" y="1.5" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{097262c3-e07d-5c97-92b2-ad8a69934a51}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>1</text></dynamic_text>
+        <dynamic_text x="1.5" y="-18" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{252fdb86-84dc-5ec3-b65d-5f660c2dc7bb}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>2</text></dynamic_text>
+        <terminal uuid="{06706659-844a-51e8-9869-5665ea68cbe8}" name="1.1" x="-30" y="0" orientation="w" type="Generic" medium="pneumatic"/>
+        <terminal uuid="{9fb406c2-937a-5c59-b549-d5aba034e189}" name="1.2" x="30" y="0" orientation="e" type="Generic" medium="pneumatic"/>
+        <terminal uuid="{386d9bd4-755b-5d17-bebe-72d93bcc9428}" name="2" x="0" y="-20" orientation="n" type="Generic" medium="pneumatic"/>
+    </description>
+</definition>

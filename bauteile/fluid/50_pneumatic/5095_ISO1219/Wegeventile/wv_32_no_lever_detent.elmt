@@ -1,0 +1,44 @@
+<definition version="0.90" type="element" link_type="simple" width="130" height="70" hotspot_x="70" hotspot_y="50">
+    <uuid uuid="{8f258538-8c17-5015-aa62-3d0223551b89}"/>
+    <names>
+        <name lang="de">3/2-Wegeventil, Ruhestellung offen, Hebel – Raste</name>
+        <name lang="en">3/2 way valve, normally open, lever – detent</name>
+    </names>
+    <fluid kind="valve" prefix="SJ">
+        <positions initial="2">
+            <position><path from="2" to="3"/><path from="1"/></position>
+            <position><path from="1" to="2"/><path from="3"/></position>
+        </positions>
+        <actuation side="left" types="lever"/>
+        <actuation side="right" types="detent"/>
+    </fluid>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <rect x="-40" y="-20" width="40" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="-30" y1="-20" x2="-12.47" y2="-2.47" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <polygon x1="-10" y1="0" x2="-13.96" y2="-1.7" x3="-11.7" y3="-3.96" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true"/>
+        <line x1="-30" y1="0" x2="-30" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="-33" y1="-6" x2="-27" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <rect x="0" y="-20" width="40" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="10" y1="0" x2="10" y2="-16.5" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <polygon x1="10" y1="-20" x2="11.6" y2="-16" x3="8.4" y3="-16" closed="true" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true"/>
+        <line x1="30" y1="0" x2="30" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="27" y1="-6" x2="33" y2="-6" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="-40" y1="-10" x2="-44" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="-44" y1="-10" x2="-50" y2="-17" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <ellipse x="-52.3" y="-19.5" width="3" height="3" style="line-style:normal;line-weight:thin;filling:black;color:black" antialias="true"/>
+        <line x1="40" y1="-10" x2="46" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <polygon x1="43" y1="-15" x2="46" y2="-12" x3="49" y3="-15" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="10" y1="0" x2="10" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="30" y1="0" x2="30" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="10" y1="-20" x2="10" y2="-30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-68" y="-49" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{729d48bd-7ec5-53e0-ad24-47e878478e24}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <dynamic_text x="11.5" y="1.5" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{5e75f3ae-df33-5ec8-b069-32da7654d388}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>1</text></dynamic_text>
+        <dynamic_text x="31.5" y="1.5" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{83c42dd0-eaac-5de4-89fe-80fb4deb44bf}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>3</text></dynamic_text>
+        <dynamic_text x="11.5" y="-28" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{b04adf0a-3189-5cdc-b2c1-218f4ac07ee8}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>2</text></dynamic_text>
+        <terminal uuid="{6f55bcc0-699f-50df-81cd-82786e832e1b}" name="1" x="10" y="10" orientation="s" type="Generic" medium="pneumatic"/>
+        <terminal uuid="{e7ac9f41-7129-5015-9dbc-d810ceb210c7}" name="3" x="30" y="10" orientation="s" type="Generic" medium="pneumatic" port_end="silencer"/>
+        <terminal uuid="{1bfd5216-61ab-54b9-9e0f-a7ac4570f1d7}" name="2" x="10" y="-30" orientation="n" type="Generic" medium="pneumatic"/>
+    </description>
+</definition>

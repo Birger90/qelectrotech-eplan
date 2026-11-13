@@ -1,0 +1,25 @@
+<definition version="0.90" type="element" link_type="simple" width="130" height="60" hotspot_x="40" hotspot_y="40">
+    <uuid uuid="{66cf64d4-df69-5742-b8c2-044112dcf6db}"/>
+    <names>
+        <name lang="de">Zylinder, doppeltwirkend, durchgehende Kolbenstange</name>
+        <name lang="en">Double acting cylinder, through rod</name>
+    </names>
+    <fluid kind="cylinder" prefix="MM">
+        <cylinder action="double" through_rod="true"/>
+    </fluid>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <rect x="0" y="-20" width="60" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="20" y1="-20" x2="20" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="20" y1="-10" x2="80" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="20" y1="-10" x2="-20" y2="-10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="10" y1="0" x2="10" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="50" y1="0" x2="50" y2="10" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-38" y="-39" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{c0329612-7c94-52aa-bd90-d545e94182aa}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <dynamic_text x="11.5" y="1.5" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{09abb643-0e79-51fe-a7b7-5cf20c3869df}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>1</text></dynamic_text>
+        <dynamic_text x="51.5" y="1.5" z="31" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="UserText" uuid="{a9d65f30-37df-5de6-a91c-0e1adb6207c5}" font="Liberation Sans,4,-1,5,0,0,0,0,0,0,Regular"><text>2</text></dynamic_text>
+        <terminal uuid="{5b2269f4-a340-50f3-bbf6-597c5c3f29eb}" name="1" x="10" y="10" orientation="s" type="Generic" medium="hydraulic"/>
+        <terminal uuid="{b0f65d3e-7ada-5c6b-ab57-85a4724d15d8}" name="2" x="50" y="10" orientation="s" type="Generic" medium="hydraulic"/>
+    </description>
+</definition>

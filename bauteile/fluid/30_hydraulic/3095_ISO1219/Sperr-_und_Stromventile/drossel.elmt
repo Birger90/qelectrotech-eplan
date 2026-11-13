@@ -1,0 +1,20 @@
+<definition version="0.90" type="element" link_type="simple" width="80" height="90" hotspot_x="40" hotspot_y="50">
+    <uuid uuid="{af0d51e3-5c01-54af-8ec8-ebc5dda23918}"/>
+    <names>
+        <name lang="de">Drosselventil, konstant</name>
+        <name lang="en">Fixed throttle</name>
+    </names>
+    <fluid kind="flow_control" prefix="RZ"/>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <line x1="0" y1="20" x2="0" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <arc x="-26" y="-12" width="24" height="24" start="-40" angle="80" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <arc x="2" y="-12" width="24" height="24" start="140" angle="80" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="0" y1="20" x2="0" y2="30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <line x1="0" y1="-20" x2="0" y2="-30" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-38" y="-49" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{ea30f82b-6d09-53da-b809-6d25d5f7cc53}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <terminal uuid="{946cfedb-83b9-5be2-bf93-2c7e3c356466}" name="A" x="0" y="30" orientation="s" type="Generic" medium="hydraulic"/>
+        <terminal uuid="{b0fea2ff-50e5-55a1-93b5-49ada5867a5c}" name="B" x="0" y="-30" orientation="n" type="Generic" medium="hydraulic"/>
+    </description>
+</definition>

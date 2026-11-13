@@ -485,6 +485,9 @@ install(DIRECTORY ico/breeze-icons/64x64   DESTINATION ${QET_ICONS_PATH})
 install(DIRECTORY ico/breeze-icons/128x128 DESTINATION ${QET_ICONS_PATH})
 install(DIRECTORY ico/breeze-icons/256x256 DESTINATION ${QET_ICONS_PATH})
 install(DIRECTORY elements    DESTINATION ${QET_DATA_PATH})
+# The fork's own pneumatic and hydraulic symbols after ISO 1219
+# (tools/symbole/iso1219_symbole.py) join the common collection
+install(DIRECTORY bauteile/fluid/ DESTINATION ${QET_DATA_PATH}elements)
 install(DIRECTORY examples    DESTINATION ${QET_DATA_PATH})
 install(DIRECTORY titleblocks DESTINATION ${QET_DATA_PATH})
 # The MCP server (misc/qet-mcp) finds this QElectroTech and its elements

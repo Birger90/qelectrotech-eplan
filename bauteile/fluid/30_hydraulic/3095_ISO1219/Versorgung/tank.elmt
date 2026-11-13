@@ -1,0 +1,16 @@
+<definition version="0.90" type="element" link_type="simple" width="50" height="60" hotspot_x="30" hotspot_y="40">
+    <uuid uuid="{9510f1e7-6a1f-5967-9d27-2a02636eb4de}"/>
+    <names>
+        <name lang="de">Tank</name>
+        <name lang="en">Tank</name>
+    </names>
+    <fluid kind="source" prefix="CM"/>
+    <informations>Author: Fork qelectrotech-eplan, drawn after ISO 1219-1 (tools/symbole/iso1219_symbole.py)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <polygon x1="-14" y1="-6" x2="-14" y2="6" x3="14" y3="6" x4="14" y4="-6" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="true"/>
+        <line x1="0" y1="2" x2="0" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" antialias="false"/>
+        <dynamic_text x="-28" y="-39" z="30" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{7948e4d9-b050-5527-9436-112c9063a9d5}" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name></dynamic_text>
+        <terminal uuid="{905cece3-cde3-5d7d-bd6c-150e3ed7fc22}" name="T" x="0" y="-20" orientation="n" type="Generic" medium="hydraulic"/>
+    </description>
+</definition>

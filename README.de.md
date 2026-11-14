@@ -132,7 +132,8 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
   Leitungen unter Druck werden blau bzw. rot, stromführende Drähte rot, aktive Schritte bekommen eine Marke; Taster und
   Ventile bedient man im Fenster oder per Klick auf das Symbol; eine Liste zeigt die SPS- und GRAFCET-Variablen.
 - Ohne Oberfläche: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv weg.csv --png ordner`.
-  `--simulate-reference` prüft den Rechenkern gegen analytische Lösungen und OpenModelica-Läufe.
+  `--simulate-reference` prüft den Rechenkern gegen analytische Lösungen, OpenModelica-Läufe (Weg und Drücke) und
+  Testprojekte von Anfang bis Ende; ungültige Daten und Rechenfehler brechen einen Lauf mit Meldung ab.
   Anleitung: [tools/simulation/README.md](tools/simulation/README.md).
 
 ## Werkzeuge

@@ -713,6 +713,12 @@ int simulateProject(QETProject &project, const QStringList &args)
 	std::sort(events.begin(), events.end(), [](const Event &x, const Event &y) { return x.t < y.t; });
 	SimulationModel sim(project.diagrams(), pressure);
 	out << sim.summary() << "\n";
+	for (const QString &e : sim.modelErrors()) err << "Model error: " << e << "\n";
+	if (sim.failed()) {
+		err << "Model error: the simulation does not run: " << sim.failure() << "\n";
+		err.flush();
+		return 3;
+	}
 	for (const QString &e : sim.programErrors()) err << "PLC program: " << e << "\n";
 	bool png_done = png_dir.isEmpty();
 	auto write_png = [&]() {
@@ -770,6 +776,7 @@ int simulateProject(QETProject &project, const QStringList &args)
 		sim.step(dt);
 		for (const auto &m : sim.takeMessages())
 			out << QString::number(m.time, 'f', 3).rightJustified(8) << " s  " << m.text << "\n";
+		if (sim.failed()) break;
 	}
 	if (!png_done) write_png();
 	const QHash<QString, double> vars = sim.plcVariables();
@@ -781,6 +788,11 @@ int simulateProject(QETProject &project, const QStringList &args)
 		out << "PLC variables at the end: " << parts.join(QStringLiteral(", ")) << "\n";
 	}
 	out.flush();
+	if (sim.failed()) {
+		err << "Model error: " << sim.failure() << "\n";
+		err.flush();
+		return 3;
+	}
 	return 0;
 }
 

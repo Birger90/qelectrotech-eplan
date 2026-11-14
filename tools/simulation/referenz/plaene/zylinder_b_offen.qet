@@ -1,0 +1,725 @@
+<project title="Simulation Test 5/2 Zylinder" uuid="{260f5bd4-da14-5960-8243-770948e9ae02}" version="0.200.1">
+    <properties/>
+    <usage enabled="true" time_spent="0"/>
+    <symbol_texts upright="true"/>
+    <newdiagrams>
+        <border cols="17" colsize="60" displaycols="true" displayrows="true" rows="8" rowsize="80"/>
+        <inset author="" auto_page_num="" date="null" displayAt="bottom" filename="" folio="" indexrev="" locmach="" plant="" title="" version=""/>
+        <conductors bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <report label="%f-%l%c"/>
+        <xrefs>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="cable" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="coil" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="commutator" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="plc" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="protection" xrefpos="AlignBottom"/>
+        </xrefs>
+        <conductors_autonums auto_break_conductors="false" current_autonum="" freeze_new_conductors="false"/>
+        <folio_autonums/>
+        <element_autonums current_autonum="" freeze_new_elements="false"/>
+        <guides/>
+    </newdiagrams>
+    <diagram author="" auto_page_num="" cols="17" colsize="60" date="null" displayAt="bottom" displaycols="true" displayrows="true" filename="" folio="" freezeNewConductor="false" freezeNewElement="false" height="660" indexrev="" locmach="" order="1" plant="" rows="8" rowsize="80" title="" uuid="{82fd04cf-df0a-40f0-a08b-a8226a3e5f7b}" version="0.200.1-dev">
+        <defaultconductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <elements>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GP" type="embed://import/50_pneumatic/5010_compressed_air/501015_pipes_connections/50101545_source_energie_pneumatique.elmt" uuid="{dfab4cc9-5b86-448d-8646-8cfa5a3273fe}" x="140" y="400" z="10">
+                <terminals>
+                    <terminal id="0" orientation="1" x="16" y="0"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-PZ1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{2505fed1-8527-43a9-87e8-e87b36c7e89e}" x="4" y="-20.95">
+                        <text>-PZ1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="QM" type="embed://import/50_pneumatic/5020_velves/502010_control/50201060_5_2_way/5020106020_elec/502010602010_5_2_way_010.elmt" uuid="{9dd18712-3694-4b74-846f-673cb82ec26b}" x="330" y="400" z="10">
+                <terminals>
+                    <terminal id="1" orientation="0" x="10" y="-16"/>
+                    <terminal id="2" orientation="0" x="30" y="-16"/>
+                    <terminal id="3" orientation="2" x="10" y="6"/>
+                    <terminal id="4" orientation="2" x="20" y="6"/>
+                    <terminal id="5" orientation="2" x="30" y="6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-QM1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{081f349e-6acd-43d2-bd3e-741f55d21685}" x="-35" y="-40">
+                        <text>-QM1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{22244335-1b65-4575-b04e-4a42e12306b4}" x="3" y="1">
+                        <text>5</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{84e8626b-0206-4329-b75b-34fabbabf521}" x="23" y="-24">
+                        <text>2</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{653a7264-e24b-4abb-9834-0d4192092a20}" x="-35" y="-20">
+                        <text>14</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{2c1e3f7a-39fe-4d5d-8145-9fd3a75162e7}" x="32" y="-20">
+                        <text>12</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{bea28316-f010-4b5a-86d4-39cefa74dc54}" x="23" y="1">
+                        <text>3</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{690357df-a053-4e35-84d7-55dc3a5ba9a4}" x="13" y="1">
+                        <text>1</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{b0a420e4-9583-4cb9-929e-4a37a4fada8e}" x="3" y="-24">
+                        <text>4</text>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/50_pneumatic/5030_actuators/503010_cylinder_lin/50301011_double_acting/5030101100_double_effet.elmt" uuid="{a7841cbd-a8fb-45a8-9f35-f106f1b7ec73}" x="360" y="200" z="10">
+                <terminals>
+                    <terminal id="6" orientation="2" x="-30" y="16"/>
+                    <terminal id="7" orientation="2" x="20" y="16"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-MM1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{68f2fd10-de6e-4dad-9a3f-7ce8846f6def}" x="-32" y="-25.95">
+                        <text>-MM1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+        </elements>
+        <conductors>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{dfab4cc9-5b86-448d-8646-8cfa5a3273fe}" element1_label="-PZ1" element1_name="Pneumatic energy source" element2="{9dd18712-3694-4b74-846f-673cb82ec26b}" element2_label="-QM1" element2_name="5/2e [elec]-[spring]" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{80922545-03a6-4f12-83c4-e963a497feae}" terminal2="{fa41901e-252d-4b01-83c8-1f76cdb5c7d9}" terminalname1="1" terminalname2="1" text_color="#000000" type="multi" uuid="{2c617555-99c3-4203-9902-2165db4ef37d}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{9dd18712-3694-4b74-846f-673cb82ec26b}" element1_label="-QM1" element1_name="5/2e [elec]-[spring]" element2="{a7841cbd-a8fb-45a8-9f35-f106f1b7ec73}" element2_label="-MM1" element2_name="double acting" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{cd1228b7-ce2b-4176-b8ae-56e60a0ec85c}" terminal2="{23c888b0-cc9b-402b-827c-177017ce9ce1}" terminalname1="4" terminalname2="A" text_color="#000000" type="multi" uuid="{af9bb052-6bcd-4a0f-bbd7-53f418e9d6c9}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            
+        </conductors>
+    </diagram>
+    <collection>
+        <category name="import">
+            <names>
+                <name lang="ca">Elements importats</name>
+                <name lang="cs">Zavedené prvky</name>
+                <name lang="da">Importerede elementer</name>
+                <name lang="de">Importierte Elemente</name>
+                <name lang="el">Εισηγμένα στοιχεία</name>
+                <name lang="en">Imported elements</name>
+                <name lang="es">Elementos importados</name>
+                <name lang="fr">Éléments importés</name>
+                <name lang="hr">Uvezeni elementi</name>
+                <name lang="it">Elementi importati</name>
+                <name lang="ja">インバートされた要素</name>
+                <name lang="ko">전기 심볼 요소</name>
+                <name lang="ko_KR">전기 심볼 요소</name>
+                <name lang="lv">Importētie elementi</name>
+                <name lang="nl">Elementen geïmporteerd</name>
+                <name lang="nl_BE">Elementen geïmporteerd</name>
+                <name lang="pl">Elementy importowane</name>
+                <name lang="pt">Elementos importados</name>
+                <name lang="pt_BR">Elementos importados</name>
+                <name lang="ro">Elemente importate</name>
+                <name lang="ru">Импортированные элементы</name>
+                <name lang="sk">Importované prvky</name>
+                <name lang="sl">Uvoženi elementi</name>
+                <name lang="sv">Importerade element</name>
+                <name lang="tr">İthal öğeler</name>
+                <name lang="uk">Імпортовані елементи</name>
+                <name lang="zh">导入元件</name>
+            </names>
+        <category name="50_pneumatic">
+                <names>
+                    <name lang="ar">بضغط الهواء</name>
+                    <name lang="ca">Pneumàtica</name>
+                    <name lang="cs">Pneumatika</name>
+                    <name lang="da">Pneumatik</name>
+                    <name lang="de">Pneumatik</name>
+                    <name lang="el">Πνευματικά</name>
+                    <name lang="en">Pneumatic</name>
+                    <name lang="es">Neumática</name>
+                    <name lang="fi">Pneumaattinen</name>
+                    <name lang="fr">Pneumatique</name>
+                    <name lang="hr">pneumatika</name>
+                    <name lang="hu">pneumatika</name>
+                    <name lang="it">Pneumatica</name>
+                    <name lang="ja">空気圧</name>
+                    <name lang="ko">공압</name>
+                    <name lang="mn">пневматик</name>
+                    <name lang="nb">pneumatik</name>
+                    <name lang="nl">Pneumatiek</name>
+                    <name lang="nl_BE">Pneumatique</name>
+                    <name lang="pl">Pneumatyka</name>
+                    <name lang="pt">pneumática</name>
+                    <name lang="pt_BR">pneumática</name>
+                    <name lang="ro">pneumatice</name>
+                    <name lang="ru">Пневматика</name>
+                    <name lang="sk">Pneumatické</name>
+                    <name lang="sl">pnevmatike</name>
+                    <name lang="sr">пнеуматика</name>
+                    <name lang="sv">Pneumatik</name>
+                    <name lang="tr">pnömatik</name>
+                    <name lang="uk">Пневматика</name>
+                    <name lang="zh">50_气动</name>
+                    <name lang="zn">气动学</name>
+                </names>
+                <category name="5010_compressed_air">
+                    <names>
+                        <name lang="ar">هواء مضغوط</name>
+                        <name lang="ca">Aire comprimit</name>
+                        <name lang="cs">stlačený vzduch</name>
+                        <name lang="da">komprimeret luft</name>
+                        <name lang="de">Druckluft</name>
+                        <name lang="el">συμπιεσμένος αέρας</name>
+                        <name lang="en">compressed air</name>
+                        <name lang="es">aire comprimido</name>
+                        <name lang="fi">paineilma</name>
+                        <name lang="fr">air comprimé</name>
+                        <name lang="hr">potisnut zrak</name>
+                        <name lang="hu">sűrített levegő</name>
+                        <name lang="it">aria compressa</name>
+                        <name lang="ja">圧縮空気</name>
+                        <name lang="ko">압축 공기</name>
+                        <name lang="mn">шахсан агаар</name>
+                        <name lang="nb">trykkluft</name>
+                        <name lang="nl">perslucht</name>
+                        <name lang="nl_BE">perslucht</name>
+                        <name lang="pl">skompresowane powietrze</name>
+                        <name lang="pt">ar comprimido</name>
+                        <name lang="pt_BR">ar comprimido</name>
+                        <name lang="ro">aer comprimat</name>
+                        <name lang="ru">сжатый воздух</name>
+                        <name lang="sk">stlačený vzduch</name>
+                        <name lang="sl">stisnjen zrak</name>
+                        <name lang="sr">компресован ваздух</name>
+                        <name lang="sv">tryckluft</name>
+                        <name lang="tr">sıkıştırılmış hava</name>
+                        <name lang="uk">стиснене повітря</name>
+                        <name lang="zh">压缩空气</name>
+                    </names>
+                    <category name="501015_pipes_connections">
+                        <names>
+                            <name lang="ar">الخطوط والوصلات</name>
+                            <name lang="ca">Línies i connexions</name>
+                            <name lang="cs">linky a spoje</name>
+                            <name lang="da">linjer og forbindelser</name>
+                            <name lang="de">Leitungen und Anschlüsse</name>
+                            <name lang="el">γραμμές και συνδέσεις</name>
+                            <name lang="en">lines and connections</name>
+                            <name lang="es">lineas y conexiones</name>
+                            <name lang="fi">linjat ja liitännät</name>
+                            <name lang="fr">lignes et connexions</name>
+                            <name lang="hr">vodovi i veze</name>
+                            <name lang="hu">vonalak és kapcsolatok</name>
+                            <name lang="it">linee e collegamenti</name>
+                            <name lang="ja">回線と接続</name>
+                            <name lang="ko">라인 및 연결</name>
+                            <name lang="mn">шугам ба холболтууд</name>
+                            <name lang="nb">linjer og forbindelser</name>
+                            <name lang="nl">lijnen en verbindingen</name>
+                            <name lang="nl_BE">leidingen en aansluitingen</name>
+                            <name lang="pl">linie i połączenia</name>
+                            <name lang="pt">linhas e conexões</name>
+                            <name lang="pt_BR">linhas e conexões</name>
+                            <name lang="ro">linii și conexiuni</name>
+                            <name lang="ru">линии и соединения</name>
+                            <name lang="sk">vedenia a pripojenia</name>
+                            <name lang="sl">linije in povezave</name>
+                            <name lang="sr">линије и везе</name>
+                            <name lang="sv">ledningar och anslutningar</name>
+                            <name lang="tr">hatlar ve bağlantılar</name>
+                            <name lang="uk">лінії та з'єднання</name>
+                            <name lang="zh">管道连接</name>
+                        </names>
+                        <element name="50101545_source_energie_pneumatique.elmt">
+                            <definition height="20" hotspot_x="2" hotspot_y="10" link_type="simple" type="element" version="0.100.0" width="30">
+                                <uuid uuid="{d2443321-00a4-f1a1-8790-552aeb9c389e}"/>
+                                <names>
+                                    <name lang="ar">مصدر طاقة نيوماتية</name>
+                                    <name lang="ca">Font d'energia pneumàtica</name>
+                                    <name lang="cs">Zdroje vzduchové energie</name>
+                                    <name lang="da">Pneumatisk energikilde</name>
+                                    <name lang="de">Druckluftquelle</name>
+                                    <name lang="el">Πηγή πνευματικής ενέργειας</name>
+                                    <name lang="en">Pneumatic energy source</name>
+                                    <name lang="es">Fuente de energía neumática</name>
+                                    <name lang="fi">Pneumaattinen energialähde</name>
+                                    <name lang="fr">Source d'énergie pneumatique</name>
+                                    <name lang="hr">Izvor pneumatske energije</name>
+                                    <name lang="hu">Sűrítettlevegő-forrás</name>
+                                    <name lang="it">Alimentazione motore</name>
+                                    <name lang="ja">空気圧エネルギー源</name>
+                                    <name lang="ko">공압 에너지 공급원</name>
+                                    <name lang="mn">Пневматик энергийн эх үүсвэр</name>
+                                    <name lang="nb">Pneumatisk energikilde</name>
+                                    <name lang="nl">Toevoer lucht</name>
+                                    <name lang="nl_BE">Pneumatische energiebron</name>
+                                    <name lang="pl">Źródło energii pneumatycznej, symbol ogólny uprzoszczony</name>
+                                    <name lang="pt">Fonte de energia pneumática</name>
+                                    <name lang="pt_BR">Fonte de energia pneumática</name>
+                                    <name lang="ro">Sursă de energie pneumatică</name>
+                                    <name lang="ru">Источник пневматической энергии</name>
+                                    <name lang="sk">Zdroj pneumatickej energie</name>
+                                    <name lang="sl">Vir pnevmatske energije</name>
+                                    <name lang="sr">Извор пнеуматске енергије</name>
+                                    <name lang="sv">Pneumatisk energikälla</name>
+                                    <name lang="tr">Pnömatik enerji kaynağı</name>
+                                    <name lang="uk">Джерело пневматичної енергії</name>
+                                    <name lang="zh">气源</name>
+                                </names>
+                                <fluid function="supply.pump" kind="source" prefix="GP">
+                                    <parameter name="displacement" unit="cm3" value="8"/>
+                                    <parameter name="rpm" unit="1/min" value="1450"/>
+                                    <parameter name="pMax" unit="MPa" value="6"/>
+                                </fluid>
+                                <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                <description>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="10" x2="20" y1="0" y2="0"/>
+                                    <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{d4b1ace1-e3dc-486b-b2a5-0bbdb7234b12}" x="4" y="-20.95" z="2">
+                                        <text/>
+                                        <info_name>label</info_name>
+                                    </dynamic_text>
+                                    <polygon antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="10" x3="0" y1="5" y2="0" y3="-5"/>
+                                    <terminal medium="pneumatic" name="1" orientation="e" type="Generic" uuid="{80922545-03a6-4f12-83c4-e963a497feae}" x="20" y="0"/>
+                                </description>
+                            </definition>
+                        </element>
+                    </category>
+                </category>
+                <category name="5020_velves">
+                    <names>
+                        <name lang="ar">الصمامات</name>
+                        <name lang="ca">Vàlvules</name>
+                        <name lang="cs">ventily</name>
+                        <name lang="da">ventiler</name>
+                        <name lang="de">Ventile</name>
+                        <name lang="el">βαλβίδες</name>
+                        <name lang="en">valves</name>
+                        <name lang="es">válvulas</name>
+                        <name lang="fi">venttiilit</name>
+                        <name lang="fr">vannes</name>
+                        <name lang="hr">ventili</name>
+                        <name lang="hu">szelepek</name>
+                        <name lang="it">valvole</name>
+                        <name lang="ja">バルブ</name>
+                        <name lang="ko">밸브</name>
+                        <name lang="mn">хавхлагууд</name>
+                        <name lang="nb">ventiler</name>
+                        <name lang="nl">kleppen</name>
+                        <name lang="nl_BE">kleppen</name>
+                        <name lang="pl">zawory</name>
+                        <name lang="pt">válvulas</name>
+                        <name lang="pt_BR">Valvulas</name>
+                        <name lang="ro">supape</name>
+                        <name lang="ru">клапаны</name>
+                        <name lang="sk">ventily</name>
+                        <name lang="sl">ventili</name>
+                        <name lang="sr">вентили</name>
+                        <name lang="sv">ventiler</name>
+                        <name lang="tr">vanalar</name>
+                        <name lang="uk">клапани</name>
+                        <name lang="zh">阀门</name>
+                    </names>
+                    <category name="502010_control">
+                        <names>
+                            <name lang="ar">صمامات التحكم</name>
+                            <name lang="ca">Vàlvules de control</name>
+                            <name lang="cs">Regulační ventily</name>
+                            <name lang="da">Kontrolventiler</name>
+                            <name lang="de">Steuerventile</name>
+                            <name lang="el">Βαλβίδες ελέγχου</name>
+                            <name lang="en">Control valves</name>
+                            <name lang="es">Válvulas de control</name>
+                            <name lang="fi">Säätöventtiilit</name>
+                            <name lang="fr">Vannes de régulation</name>
+                            <name lang="hr">Kontrolni ventili</name>
+                            <name lang="hu">Szabályozó szelepek</name>
+                            <name lang="it">Valvole di controllo</name>
+                            <name lang="ja">コントロールバルブ</name>
+                            <name lang="ko">제어 밸브</name>
+                            <name lang="mn">Хяналтын хавхлагууд</name>
+                            <name lang="nb">Kontrollventiler</name>
+                            <name lang="nl">Regelkleppen</name>
+                            <name lang="nl_BE">Stuurkranen</name>
+                            <name lang="pl">Zawory regulacyjne</name>
+                            <name lang="pt">Válvulas de controle</name>
+                            <name lang="pt_BR">Válvulas de controle</name>
+                            <name lang="ro">Supape de control</name>
+                            <name lang="ru">Клапаны управления</name>
+                            <name lang="sk">Riadiacе ventily</name>
+                            <name lang="sl">Krmilni ventili</name>
+                            <name lang="sr">Контролни вентили</name>
+                            <name lang="sv">Riktningsventiler</name>
+                            <name lang="tr">Kontrol vanaları</name>
+                            <name lang="uk">Регулювальні клапани</name>
+                            <name lang="zh">控制阀</name>
+                        </names>
+                        <category name="50201060_5_2_way">
+                            <names>
+                                <name lang="ar">5/2 طريقة صمام</name>
+                                <name lang="ca">Vàlvula 5/2</name>
+                                <name lang="cs">5/2 cestný ventil</name>
+                                <name lang="da">5/2 vejs ventil</name>
+                                <name lang="de">5/2 Wegeventil</name>
+                                <name lang="el">Βαλβίδα 5/2 κατευθύνσεων</name>
+                                <name lang="en">5/2 way valve</name>
+                                <name lang="es">válvula de 5/2 vías</name>
+                                <name lang="fi">5/2-tieventtiili</name>
+                                <name lang="fr">Vanne 5/2 voies</name>
+                                <name lang="hr">5/2 putni ventil</name>
+                                <name lang="hu">5/2 utas szelep</name>
+                                <name lang="it">Valvola a 5/2 vie</name>
+                                <name lang="ja">5/2ウェイバルブ</name>
+                                <name lang="ko">5/2 방향 밸브</name>
+                                <name lang="mn">5/2 талын хавхлага</name>
+                                <name lang="nb">5/2 veis ventil</name>
+                                <name lang="nl">5/2-weg ventiel</name>
+                                <name lang="nl_BE">5/2-wegklep</name>
+                                <name lang="pl">Zawór 5/2-drogowy</name>
+                                <name lang="pt">válvula de 5/2 vias</name>
+                                <name lang="pt_BR">valvula de 5/2 vias</name>
+                                <name lang="ro">Supapă cu 5/2 căi</name>
+                                <name lang="ru">5/2-ходовой клапан</name>
+                                <name lang="sk">5/2 cestný ventil</name>
+                                <name lang="sl">5/2 potni ventil</name>
+                                <name lang="sr">5/2-краки вентил</name>
+                                <name lang="sv">5/2-vägsventil</name>
+                                <name lang="tr">5/2 yollu vana</name>
+                                <name lang="uk">Клапан 5/2</name>
+                                <name lang="zh">5/2 通阀</name>
+                            </names>
+                            <category name="5020106020_elec">
+                                <names>
+                                    <name lang="ar">كهربائي</name>
+                                    <name lang="ca">Elèctrica</name>
+                                    <name lang="cs">elektrický</name>
+                                    <name lang="da">elektrisk</name>
+                                    <name lang="de">eletrisch</name>
+                                    <name lang="el">ηλεκτρικός</name>
+                                    <name lang="en">electric</name>
+                                    <name lang="es">eléctrico</name>
+                                    <name lang="fi">sähköinen</name>
+                                    <name lang="fr">électrique</name>
+                                    <name lang="hr">električni</name>
+                                    <name lang="hu">elektromos</name>
+                                    <name lang="it">elettrico</name>
+                                    <name lang="ja">電気の</name>
+                                    <name lang="ko">전기</name>
+                                    <name lang="mn">цахилгаан</name>
+                                    <name lang="nb">elektrisk</name>
+                                    <name lang="nl">elektrisch</name>
+                                    <name lang="nl_BE">électrique</name>
+                                    <name lang="pl">elektryczny</name>
+                                    <name lang="pt">elétrico</name>
+                                    <name lang="pt_BR">elétrico</name>
+                                    <name lang="ro">electric</name>
+                                    <name lang="ru">электрический</name>
+                                    <name lang="sk">elektrické</name>
+                                    <name lang="sl">električni</name>
+                                    <name lang="sr">електрични</name>
+                                    <name lang="sv">elektrisk</name>
+                                    <name lang="tr">elektrik</name>
+                                    <name lang="uk">електричний</name>
+                                    <name lang="zh">电气控制</name>
+                                </names>
+                                <element name="502010602010_5_2_way_010.elmt">
+                                    <definition height="50" hotspot_x="42" hotspot_y="31" link_type="simple" type="element" version="0.90" width="90">
+                                        <uuid uuid="{64df94dd-03f5-171e-85de-1b917631e75b}"/>
+                                        <names>
+                                            <name lang="ar">5/2e [elec]-[spring]</name>
+                                            <name lang="ca">5/2e [elec]-[spring]</name>
+                                            <name lang="cs">5/2e [elec]-[spring]</name>
+                                            <name lang="da">5/2e [elec]-[spring]</name>
+                                            <name lang="de">5/2e [elec]-[spring]</name>
+                                            <name lang="el">5/2e [elec]-[spring]</name>
+                                            <name lang="en">5/2e [elec]-[spring]</name>
+                                            <name lang="es">5/2e [elec]-[spring]</name>
+                                            <name lang="fi">5/2e [sähkö]-[jousi]</name>
+                                            <name lang="fr">5/2e [elec]-[spring]</name>
+                                            <name lang="hr">5/2e [elec]-[spring]</name>
+                                            <name lang="hu">5/2e [elec]-[spring]</name>
+                                            <name lang="it">5/2e [elec]-[spring]</name>
+                                            <name lang="ja">5/2e [elec]-[spring]</name>
+                                            <name lang="ko">5/2e [전기]-[스프링]</name>
+                                            <name lang="mn">5/2e [elec]-[spring]</name>
+                                            <name lang="nb">5/2e [elec]-[spring]</name>
+                                            <name lang="nl">5/2e [elec]-[spring]</name>
+                                            <name lang="nl_BE">5/2e [elec]-[spring]</name>
+                                            <name lang="pl">5/2e [elec]-[spring]</name>
+                                            <name lang="pt">5/2e [elec]-[spring]</name>
+                                            <name lang="pt_BR">5/2e [elec]-[spring]</name>
+                                            <name lang="ro">5/2e [elec]-[spring]</name>
+                                            <name lang="ru">5/2e [elec]-[spring]</name>
+                                            <name lang="sk">5/2e [elec]-[spring]</name>
+                                            <name lang="sl">5/2e [elec]-[spring]</name>
+                                            <name lang="sr">5/2e [elec]-[spring]</name>
+                                            <name lang="sv">5/2e [el]-[fjäder]</name>
+                                            <name lang="tr">5/2e [elec]-[spring]</name>
+                                            <name lang="uk">5/2e [електр.]-[пружина]</name>
+                                            <name lang="zh">5/2通电磁阀010</name>
+                                        </names>
+                                        <fluid function="directional_valve.five_pins" kind="valve" prefix="QM">
+                                            <positions initial="2">
+                                                <position>
+                                                    <path from="1" to="4"/>
+                                                    <path from="2" to="3"/>
+                                                    <path from="5"/>
+                                                </position>
+                                                <position>
+                                                    <path from="1" to="2"/>
+                                                    <path from="4" to="5"/>
+                                                    <path from="3"/>
+                                                </position>
+                                            </positions>
+                                            <actuation side="left" spring="false" types="solenoid"/>
+                                            <actuation side="right" spring="true" types=""/>
+                                            <parameter name="qNN" unit="l/min" value="60"/>
+                                            <parameter name="onDelay" unit="s" value="0.02"/>
+                                            <parameter name="offDelay" unit="s" value="0.03"/>
+                                            <parameter name="F_spring" unit="N" value="20"/>
+                                            <parameter name="F_EL" unit="N" value="70"/>
+                                            <parameter name="F_ER" unit="N" value="70"/>
+                                            <parameter name="areaPilotL" unit="cm2" value="1.4"/>
+                                            <parameter name="areaPilotR" unit="cm2" value="1.4"/>
+                                            <parameter name="posNoMax" value="2"/>
+                                            <parameter name="posNoInit" value="2"/>
+                                        </fluid>
+                                        <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                        <description>
+                                            <polygon antialias="false" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-35" x2="-25" x3="-25" x4="-35" x5="-35" x6="-35" x7="-33" x8="-27" y1="-3" y2="-3" y3="3" y4="3" y5="-3" y6="3" y7="3" y8="-3"/>
+                                            <line antialias="false" end1="none" end2="none" length1="0" length2="0" style="line-style:normal;line-weight:normal;filling:black;color:black" x1="-9.84" x2="-18.78" y1="4.68" y2="-12.67"/>
+                                            <polygon antialias="false" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="35.11" x2="37" x3="38" x4="40" x5="41" x6="43" x7="44.17" y1="-2.7" y2="3" y3="-3" y4="3" y5="-3" y6="3" y7="-2.58"/>
+                                            <polygon antialias="true" style="line-style:normal;line-weight:thin;filling:black;color:black" x1="-19.41" x2="-17.05" x3="-20.09" x4="-19.46" y1="-11.1" y2="-12.65" y3="-14.72" y4="-11.17"/>
+                                            <polygon antialias="true" style="line-style:normal;line-weight:thin;filling:black;color:black" x1="0" x2="-1.95" x3="2.05" y1="4.3" y2="0.35" y3="0.35"/>
+                                            <polygon antialias="true" style="line-style:normal;line-weight:thin;filling:black;color:black" x1="26.81" x2="29.57" x3="30" x4="26.78" y1="-11.53" y2="-10.05" y3="-14.26" y4="-11.57"/>
+                                            <line antialias="false" end1="none" end2="none" length1="0" length2="0" style="line-style:normal;line-weight:normal;filling:black;color:black" x1="0" x2="0" y1="0" y2="-15"/>
+                                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20" x2="-20" y1="5" y2="0"/>
+                                            <polygon antialias="true" style="line-style:normal;line-weight:thin;filling:black;color:black" x1="10" x2="8" x3="12" y1="4.42" y2="0.47" y3="0.47"/>
+                                            <line antialias="false" end1="none" end2="none" length1="0" length2="0" style="line-style:normal;line-weight:normal;filling:black;color:black" x1="20" x2="28.5" y1="5" y2="-11.42"/>
+                                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-22" x2="-18" y1="0" y2="0"/>
+                                            <rect antialias="false" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="30" x="-25" y="-15"/>
+                                            <line antialias="false" end1="none" end2="none" length1="0" length2="0" style="line-style:normal;line-weight:normal;filling:black;color:black" x1="10" x2="10" y1="0" y2="-18"/>
+                                            <rect antialias="false" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="30" x="5" y="-15"/>
+                                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="30" x2="30" y1="5" y2="0"/>
+                                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="28" x2="32" y1="0" y2="0"/>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{40900961-25e8-f739-16ec-6b44e6976ba6}" x="-35" y="-40" z="31">
+                                                <text/>
+                                                <info_name>label</info_name>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="-1" uuid="{edc0ea81-6dd2-bed8-32aa-59e25a4d4cd7}" x="3" y="1" z="32">
+                                                <text>5</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="0" uuid="{7c9622eb-49ef-45c6-43b8-390d231738af}" x="23" y="-24" z="32">
+                                                <text>2</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="0" uuid="{dd2c88c1-1756-6344-f625-f65d28608f9c}" x="-35" y="-20" z="32">
+                                                <text>14</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="0" uuid="{0cc6a605-8cbf-4c85-a29d-a848050e59c8}" x="32" y="-20" z="32">
+                                                <text>12</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="-1" uuid="{3a4307f6-47fb-68da-cdf5-2670a12e5c18}" x="23" y="1" z="32">
+                                                <text>3</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="-1" uuid="{17d528d9-dfae-8415-38e6-17fb0b85db60}" x="13" y="1" z="32">
+                                                <text>1</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="0" uuid="{a5a53a1f-d60e-8245-406b-142e3fa5e101}" x="3" y="-24" z="32">
+                                                <text>4</text>
+                                            </dynamic_text>
+                                            <terminal medium="pneumatic" name="5" orientation="s" type="Generic" uuid="{0d5afb67-53af-4352-927f-0f355bde32a3}" x="10" y="10"/>
+                                            <terminal medium="pneumatic" name="2" orientation="n" type="Generic" uuid="{0eb4e305-c12d-4d7e-aec5-a95e45c51a16}" x="30" y="-20"/>
+                                            <terminal medium="pneumatic" name="3" orientation="s" type="Generic" uuid="{96cd18ff-c198-4c40-b5bf-6b7994c06dc9}" x="30" y="10"/>
+                                            <terminal medium="pneumatic" name="4" orientation="n" type="Generic" uuid="{cd1228b7-ce2b-4176-b8ae-56e60a0ec85c}" x="10" y="-20"/>
+                                            <terminal medium="pneumatic" name="1" orientation="s" type="Generic" uuid="{fa41901e-252d-4b01-83c8-1f76cdb5c7d9}" x="20" y="10"/>
+                                        </description>
+                                    </definition>
+                                </element>
+                            </category>
+                        </category>
+                    </category>
+                </category>
+                <category name="5030_actuators">
+                    <names>
+                        <name lang="ar">المحركات</name>
+                        <name lang="ca">Actuadors</name>
+                        <name lang="cs">Akční členy</name>
+                        <name lang="da">Aktuatorer</name>
+                        <name lang="de">Aktuatoren</name>
+                        <name lang="el">Ενεργοποιητές</name>
+                        <name lang="en">Actuators</name>
+                        <name lang="es">Actuadores</name>
+                        <name lang="fi">Toimilaitteet</name>
+                        <name lang="fr">Actionneurs</name>
+                        <name lang="hr">Aktuatori</name>
+                        <name lang="hu">Működtetők</name>
+                        <name lang="it">Attuatori</name>
+                        <name lang="ja">アクチュエータ</name>
+                        <name lang="ko">액추에이터</name>
+                        <name lang="mn">Хөдөлгүүрүүд</name>
+                        <name lang="nb">Aktuatorer</name>
+                        <name lang="nl">Actuatoren</name>
+                        <name lang="nl_BE">Actuatoren</name>
+                        <name lang="pl">Siłowniki</name>
+                        <name lang="pt">Atuadores</name>
+                        <name lang="pt_BR">Atuadores</name>
+                        <name lang="ro">Actuatoare</name>
+                        <name lang="ru">Приводы</name>
+                        <name lang="sk">Pohony</name>
+                        <name lang="sl">Aktuatorji</name>
+                        <name lang="sr">Актуатори</name>
+                        <name lang="sv">Ställdon</name>
+                        <name lang="tr">aktüatörler</name>
+                        <name lang="uk">Виконавчі механізми</name>
+                        <name lang="zh">执行器</name>
+                    </names>
+                    <category name="503010_cylinder_lin">
+                        <names>
+                            <name lang="ar">خطي</name>
+                            <name lang="ca">lineal</name>
+                            <name lang="cs">lineární</name>
+                            <name lang="da">lineær</name>
+                            <name lang="de">linear</name>
+                            <name lang="el">γραμμικά</name>
+                            <name lang="en">linear</name>
+                            <name lang="es">lineal</name>
+                            <name lang="fi">lineaarinen</name>
+                            <name lang="fr">linéaire</name>
+                            <name lang="hr">linearni</name>
+                            <name lang="hu">lineáris</name>
+                            <name lang="it">lineare</name>
+                            <name lang="ja">リニア</name>
+                            <name lang="ko">직선형</name>
+                            <name lang="mn">шугаман</name>
+                            <name lang="nb">lineær</name>
+                            <name lang="nl">lineair</name>
+                            <name lang="nl_BE">lineair</name>
+                            <name lang="pl">liniowy</name>
+                            <name lang="pt">linear</name>
+                            <name lang="pt_BR">linear</name>
+                            <name lang="ro">liniar</name>
+                            <name lang="ru">линейный</name>
+                            <name lang="sk">lineárny</name>
+                            <name lang="sl">linearni</name>
+                            <name lang="sr">линеарни</name>
+                            <name lang="sv">linjär</name>
+                            <name lang="tr">doğrusal</name>
+                            <name lang="uk">лінійний</name>
+                            <name lang="zh">直线气缸</name>
+                        </names>
+                        <category name="50301011_double_acting">
+                            <names>
+                                <name lang="ar">اسطوانة مزدوجة التمثيل</name>
+                                <name lang="ca">Simple efecte</name>
+                                <name lang="cs">dvoučinný</name>
+                                <name lang="da">single acting</name>
+                                <name lang="de">Doppeltwirkend</name>
+                                <name lang="el">single acting</name>
+                                <name lang="en">double acting</name>
+                                <name lang="es">single acting</name>
+                                <name lang="fi">kaksitoiminen</name>
+                                <name lang="fr">double effet</name>
+                                <name lang="hr">single acting</name>
+                                <name lang="hu">single acting</name>
+                                <name lang="it">doppio effetto</name>
+                                <name lang="ja">single acting</name>
+                                <name lang="ko">복동</name>
+                                <name lang="mn">single acting</name>
+                                <name lang="nb">single acting</name>
+                                <name lang="nl">dubbelwerkende</name>
+                                <name lang="nl_BE">single acting</name>
+                                <name lang="pl">dwustronnego działania</name>
+                                <name lang="pt">single acting</name>
+                                <name lang="pt_BR">simples acting</name>
+                                <name lang="ro">single acting</name>
+                                <name lang="ru">single acting</name>
+                                <name lang="sk">dvojčinný</name>
+                                <name lang="sl">single acting</name>
+                                <name lang="sr">single acting</name>
+                                <name lang="sv">dubbelverkande</name>
+                                <name lang="tr">single acting</name>
+                                <name lang="uk">Двосторонньої дії</name>
+                                <name lang="zh">双作用气缸</name>
+                            </names>
+                            <element name="5030101100_double_effet.elmt">
+                                <definition height="40" hotspot_x="38" hotspot_y="10" link_type="simple" type="element" version="0.90" width="70">
+                                    <uuid uuid="{10ae0ca0-05be-bfb1-fc07-9c070f14f6cd}"/>
+                                    <names>
+                                        <name lang="ar">التمثيل المزدوج</name>
+                                        <name lang="ca">Doble efecte</name>
+                                        <name lang="cs">dvojí působení</name>
+                                        <name lang="da">dobbeltvirkende</name>
+                                        <name lang="de">Doppeltwirkend</name>
+                                        <name lang="el">διπλής ενέργειας</name>
+                                        <name lang="en">double acting</name>
+                                        <name lang="es">doble efecto</name>
+                                        <name lang="fi">kaksitoiminen</name>
+                                        <name lang="fr">double jeu</name>
+                                        <name lang="hr">dvostrukog djelovanja</name>
+                                        <name lang="hu">kettős szereplés</name>
+                                        <name lang="it">doppio effetto</name>
+                                        <name lang="ja">複動式</name>
+                                        <name lang="ko">복동</name>
+                                        <name lang="mn">давхар жүжиглэлт</name>
+                                        <name lang="nb">dobbeltvirkende</name>
+                                        <name lang="nl">dubbelwerkende</name>
+                                        <name lang="nl_BE">single acting</name>
+                                        <name lang="pl">dwustronnego działania</name>
+                                        <name lang="pt">dupla açao</name>
+                                        <name lang="pt_BR">dupla açao</name>
+                                        <name lang="ro">cu dublă acțiune</name>
+                                        <name lang="ru">двойного действия</name>
+                                        <name lang="sk">dvojčinný</name>
+                                        <name lang="sl">dvojnega delovanja</name>
+                                        <name lang="sr">двоструког дејства</name>
+                                        <name lang="sv">dubbelverkande</name>
+                                        <name lang="tr">çift ​​oyunculuk</name>
+                                        <name lang="uk">Двосторонньої дії</name>
+                                        <name lang="zh">双作用气缸 5030101100</name>
+                                    </names>
+                                    <fluid function="actuator.cyl_conf" kind="cylinder" prefix="MM">
+                                        <cylinder action="double" bore_mm="20" rod_mm="8" stroke_mm="100"/>
+                                        <parameter name="d_piston" unit="mm" value="20"/>
+                                        <parameter name="d_rod" unit="mm" value="8"/>
+                                        <parameter name="xMax" unit="mm" value="100"/>
+                                        <parameter name="xStart" unit="mm" value="0"/>
+                                        <parameter name="F_extern_const" unit="N" value="0"/>
+                                        <parameter name="m_ext" unit="kg" value="0"/>
+                                        <parameter name="len_damp" unit="mm" value="10"/>
+                                    </fluid>
+                                    <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                    <description>
+                                        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{dbd71dbe-d663-477f-9dfd-8725fc661135}" x="-32" y="-25.95" z="1">
+                                            <text/>
+                                            <info_name>label</info_name>
+                                        </dynamic_text>
+                                        <rect antialias="false" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="3" x="-27" y="-5"/>
+                                        <polygon antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="18" x2="22" x3="20" y1="15" y2="15" y3="11"/>
+                                        <polygon antialias="false" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="28" x2="-24" x3="-24" x4="28" y1="3" y2="3" y3="7" y4="7"/>
+                                        <polygon antialias="true" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="23" x2="23" x3="-33" x4="-33" x5="23" x6="23" y1="7" y2="15" y3="15" y4="-5" y5="-5" y6="3"/>
+                                        <polygon antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-32" x2="-28" x3="-30" y1="15" y2="15" y3="11"/>
+                                        <terminal medium="pneumatic" name="A" orientation="s" type="Generic" uuid="{23c888b0-cc9b-402b-827c-177017ce9ce1}" x="-30" y="20"/>
+                                        <terminal medium="pneumatic" name="B" orientation="s" type="Generic" uuid="{8f3be32e-851a-427c-a68d-b241257f983c}" x="20" y="20"/>
+                                    </description>
+                                </definition>
+                            </element>
+                        </category>
+                    </category>
+                </category>
+            </category>
+        </category>
+    </collection>
+</project>

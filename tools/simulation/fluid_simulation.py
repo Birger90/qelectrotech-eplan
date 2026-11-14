@@ -222,6 +222,7 @@ class Ventil:
         self.seiten = {a.get("side"): a for a in b.fluid.findall("actuation")}
         self.betaetigt = {"left": False, "right": False}
         self.umschalten_um = None
+        self.umschalt_beginn = None
         self.c = leitwert_aus_qnn(b.wert("qNN", 60.0))
         self.rt = b.wert("rT", 0.1)
         self.hydraulisch = b.medium == "hydraulic"
@@ -481,20 +482,32 @@ class Simulation:
             ziel = v.soll()
             if ziel != v.ziel:
                 v.ziel = ziel
+                v.umschalt_beginn = t
                 v.umschalten_um = t + (v.t_ein if ziel != v.ruhe else v.t_aus)
             if v.umschalten_um is not None and t >= v.umschalten_um:
                 if v.stellung != v.ziel:
                     self.meldungen.append((t, f"{v.b.label} schaltet in Stellung {v.ziel + 1}"))
                 v.stellung, v.umschalten_um = v.ziel, None
-            for a, b in v.stellungen[v.stellung]:
-                ka, kb = self.netz.knoten(v.b.uuid, a), self.netz.knoten(v.b.uuid, b)
-                pa = self.p[ka] if ka is not None else P_ATM
-                pb = self.p[kb] if kb is not None else P_ATM
-                m = volumenstrom(pa, pb, v.rt) if v.hydraulisch else massenstrom(pa, pb, v.c)
-                if ka is not None:
-                    mdot[ka] -= m
-                if kb is not None:
-                    mdot[kb] += m
+            # Schieber bewegt sich: alte Wege schließen, neue öffnen (linear über die Schaltzeit), wie im C++-Kern
+            offen = 1.0
+            if v.umschalten_um is not None and v.umschalten_um > v.umschalt_beginn:
+                offen = min(1.0, max(0.0, (t - v.umschalt_beginn) / (v.umschalten_um - v.umschalt_beginn)))
+            if v.umschalten_um is not None and v.ziel != v.stellung:
+                anteile = [(v.stellung, 1.0 - offen), (v.ziel, offen)]
+            else:
+                anteile = [(v.stellung, 1.0)]
+            for stellung, anteil in anteile:
+                if anteil <= 0.0:
+                    continue
+                for a, b in v.stellungen[stellung]:
+                    ka, kb = self.netz.knoten(v.b.uuid, a), self.netz.knoten(v.b.uuid, b)
+                    pa = self.p[ka] if ka is not None else P_ATM
+                    pb = self.p[kb] if kb is not None else P_ATM
+                    m = anteil * (volumenstrom(pa, pb, v.rt) if v.hydraulisch else massenstrom(pa, pb, v.c))
+                    if ka is not None:
+                        mdot[ka] -= m
+                    if kb is not None:
+                        mdot[kb] += m
         def druck(k):
             return self.p[k] if k is not None else P_ATM
 

@@ -112,7 +112,8 @@
 >   Lines under pressure turn blue/red, live wires red, active steps get a token; buttons and valves are operated in
 >   the window or by clicking the symbol; a live list shows the PLC and GRAFCET variables.
 > - Headless: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv out.csv --png folder`.
->   `--simulate-reference` checks the simulation core against analytical solutions and OpenModelica runs.
+>   `--simulate-reference` checks the simulation core against analytical solutions, OpenModelica runs (motion and
+>   pressures) and test projects run end to end; invalid data and computing faults stop a run with a message.
 >   Guide: [tools/simulation/README.md](tools/simulation/README.md).
 >
 > **Tools** (`tools/symbole/`)

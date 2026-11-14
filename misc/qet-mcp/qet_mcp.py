@@ -1294,8 +1294,10 @@ def parse_simulation_output(stdout: str, stderr: str = "") -> dict:
             files.append(line.strip())
     errors = [l[len("PLC program: "):].strip() for l in stderr.splitlines()
               if l.startswith("PLC program: ")]
+    model = [l[len("Model error: "):].strip() for l in stderr.splitlines()
+             if l.startswith("Model error: ")]
     return {"summary": summary, "events": events, "variables": variables,
-            "program_errors": errors, "png_files": files}
+            "program_errors": errors, "model_errors": model, "png_files": files}
 
 
 def parse_reference_output(stdout: str) -> dict:
@@ -1303,12 +1305,16 @@ def parse_reference_output(stdout: str) -> dict:
     checks, current = [], None
     for raw in stdout.splitlines():
         line = raw.rstrip()
-        if line.startswith("OK    ") or line.startswith("FEHLER"):
-            current = {"passed": line.startswith("OK"), "name": line[6:].strip(), "detail": ""}
+        if line.startswith(("OK    ", "FEHLER", "SKIP  ")):
+            current = {"passed": line.startswith("OK"), "skipped": line.startswith("SKIP"),
+                       "name": line[6:].strip(), "detail": ""}
             checks.append(current)
         elif current is not None and line.startswith("        "):
             current["detail"] = line.strip()
-    return {"checks": checks, "all_passed": bool(checks) and all(c["passed"] for c in checks)}
+    run = [c for c in checks if not c["skipped"]]
+    return {"checks": checks, "all_passed": bool(run) and all(c["passed"] for c in run),
+            "failed": sum(1 for c in run if not c["passed"]),
+            "skipped": sum(1 for c in checks if c["skipped"])}
 
 
 def tool_simulate(binary: str, project: str, events: list | None = None,

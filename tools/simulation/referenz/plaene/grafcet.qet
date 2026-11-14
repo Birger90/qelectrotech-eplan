@@ -1,0 +1,2149 @@
+<project title="Simulation Test GRAFCET" uuid="{10a358e4-a530-5ec7-a1fc-13720c29e507}" version="0.200.1">
+    <properties/>
+    <usage enabled="true" time_spent="0"/>
+    <symbol_texts upright="true"/>
+    <newdiagrams>
+        <border cols="17" colsize="60" displaycols="true" displayrows="true" rows="8" rowsize="80"/>
+        <inset author="" auto_page_num="" date="null" displayAt="bottom" filename="" folio="" indexrev="" locmach="" plant="" title="" version=""/>
+        <conductors bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <report label="%f-%l%c"/>
+        <xrefs>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="cable" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="coil" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="commutator" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="plc" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="protection" xrefpos="AlignBottom"/>
+        </xrefs>
+        <conductors_autonums auto_break_conductors="false" current_autonum="" freeze_new_conductors="false"/>
+        <folio_autonums/>
+        <element_autonums current_autonum="" freeze_new_elements="false"/>
+        <guides/>
+    </newdiagrams>
+    <diagram author="" auto_page_num="" cols="17" colsize="60" date="null" displayAt="bottom" displaycols="true" displayrows="true" filename="" folio="" freezeNewConductor="false" freezeNewElement="false" height="660" indexrev="" locmach="" order="1" plant="" rows="8" rowsize="80" title="Pneumatik" uuid="{a06a8908-2bf6-48f6-9db0-45f2ded99ba0}" version="0.200.1-dev">
+        <defaultconductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <elements>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GP" type="embed://import/50_pneumatic/5010_compressed_air/501015_pipes_connections/50101545_source_energie_pneumatique.elmt" uuid="{c3e73df8-427d-4bbf-b4f8-ce2b79351165}" x="100" y="480" z="10">
+                <terminals>
+                    <terminal id="0" orientation="1" x="16" y="0"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-PZ1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{7c60f3ec-bed9-4b53-aa52-a65c1d799676}" x="4" y="-20.95">
+                        <text>-PZ1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="QM" type="embed://import/50_pneumatic/5020_velves/502010_control/50201060_5_2_way/5020106020_elec/502010602010_5_2_way_010.elmt" uuid="{fd94b1c9-cf66-4551-93ee-05469acbe2c5}" x="260" y="400" z="10">
+                <terminals>
+                    <terminal id="1" orientation="0" x="10" y="-16"/>
+                    <terminal id="2" orientation="0" x="30" y="-16"/>
+                    <terminal id="3" orientation="2" x="10" y="6"/>
+                    <terminal id="4" orientation="2" x="20" y="6"/>
+                    <terminal id="5" orientation="2" x="30" y="6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-QM1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{f5eb8479-139e-48ed-8430-81e515898e70}" x="-35" y="-40">
+                        <text>-QM1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{f4ed4dcb-2988-48f3-ae78-8ad530600477}" x="3" y="1">
+                        <text>5</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{f5ce9e7a-a244-4690-a7af-1911823e0b77}" x="23" y="-24">
+                        <text>2</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{0810e3af-c9fb-4766-9416-03c80388dca5}" x="-35" y="-20">
+                        <text>14</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{f8cd6073-6840-4e7e-ab44-f8b68a666e8f}" x="32" y="-20">
+                        <text>12</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{77de61a1-346e-4895-af34-a6f2c98095d9}" x="23" y="1">
+                        <text>3</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{e6edc6ee-5d6d-443f-bb2a-eee642239f83}" x="13" y="1">
+                        <text>1</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{486feefe-1395-406c-b3ce-848135331f09}" x="3" y="-24">
+                        <text>4</text>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/50_pneumatic/5030_actuators/503010_cylinder_lin/50301011_double_acting/5030101100_double_effet.elmt" uuid="{858576b1-54be-4601-bc97-11711acf3a4d}" x="300" y="180" z="10">
+                <terminals>
+                    <terminal id="6" orientation="2" x="-30" y="16"/>
+                    <terminal id="7" orientation="2" x="20" y="16"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-MM1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{1b391742-4d50-4edf-b65a-ce1bd0fdda25}" x="-32" y="-25.95">
+                        <text>-MM1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="QM" type="embed://import/50_pneumatic/5020_velves/502010_control/50201060_5_2_way/5020106020_elec/502010602010_5_2_way_010.elmt" uuid="{49e18fef-735a-48e1-b7a9-b394f41ab273}" x="610" y="400" z="10">
+                <terminals>
+                    <terminal id="8" orientation="0" x="10" y="-16"/>
+                    <terminal id="9" orientation="0" x="30" y="-16"/>
+                    <terminal id="10" orientation="2" x="10" y="6"/>
+                    <terminal id="11" orientation="2" x="20" y="6"/>
+                    <terminal id="12" orientation="2" x="30" y="6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-QM2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{db2f40ef-9e22-4d74-a7fd-57e687450f22}" x="-35" y="-40">
+                        <text>-QM2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{724d8fe1-c629-48b2-8264-1a2d4b3ae6cf}" x="3" y="1">
+                        <text>5</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{e62e0b44-5720-4ebf-abea-0c409fb3f9e9}" x="23" y="-24">
+                        <text>2</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{ea8ef035-64be-40ee-97df-3e6c4258d248}" x="-35" y="-20">
+                        <text>14</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{cc24e333-132e-4878-8235-e196e6973503}" x="32" y="-20">
+                        <text>12</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{c602ee34-d982-427d-a242-7bad3200931e}" x="23" y="1">
+                        <text>3</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{433ea0a8-05b7-4dac-ba5e-dc2b4e4a9d74}" x="13" y="1">
+                        <text>1</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{6e3d0ce4-9cc5-4870-b838-868d32e6c065}" x="3" y="-24">
+                        <text>4</text>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/50_pneumatic/5030_actuators/503010_cylinder_lin/50301011_double_acting/5030101100_double_effet.elmt" uuid="{a94b51fe-0626-455d-9e3c-36f85d76de8f}" x="650" y="180" z="10">
+                <terminals>
+                    <terminal id="13" orientation="2" x="-30" y="16"/>
+                    <terminal id="14" orientation="2" x="20" y="16"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-MM2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{58bbd958-93e9-4580-8208-21b48bc51796}" x="-32" y="-25.95">
+                        <text>-MM2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+        </elements>
+        <conductors>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{c3e73df8-427d-4bbf-b4f8-ce2b79351165}" element1_label="-PZ1" element1_name="Pneumatic energy source" element2="{fd94b1c9-cf66-4551-93ee-05469acbe2c5}" element2_label="-QM1" element2_name="5/2e [elec]-[spring]" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{80922545-03a6-4f12-83c4-e963a497feae}" terminal2="{fa41901e-252d-4b01-83c8-1f76cdb5c7d9}" terminalname1="1" terminalname2="1" text_color="#000000" type="multi" uuid="{10e1fb8d-52b4-4ae2-afb7-24c72332146d}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{c3e73df8-427d-4bbf-b4f8-ce2b79351165}" element1_label="-PZ1" element1_name="Pneumatic energy source" element2="{49e18fef-735a-48e1-b7a9-b394f41ab273}" element2_label="-QM2" element2_name="5/2e [elec]-[spring]" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{80922545-03a6-4f12-83c4-e963a497feae}" terminal2="{fa41901e-252d-4b01-83c8-1f76cdb5c7d9}" terminalname1="1" terminalname2="1" text_color="#000000" type="multi" uuid="{e86bf8c2-790d-4c85-9932-9bc43d82a7e0}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{fd94b1c9-cf66-4551-93ee-05469acbe2c5}" element1_label="-QM1" element1_name="5/2e [elec]-[spring]" element2="{858576b1-54be-4601-bc97-11711acf3a4d}" element2_label="-MM1" element2_name="double acting" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{cd1228b7-ce2b-4176-b8ae-56e60a0ec85c}" terminal2="{23c888b0-cc9b-402b-827c-177017ce9ce1}" terminalname1="4" terminalname2="A" text_color="#000000" type="multi" uuid="{d6c40e85-874d-4b0a-9578-1492404c7fc3}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{fd94b1c9-cf66-4551-93ee-05469acbe2c5}" element1_label="-QM1" element1_name="5/2e [elec]-[spring]" element2="{858576b1-54be-4601-bc97-11711acf3a4d}" element2_label="-MM1" element2_name="double acting" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{0eb4e305-c12d-4d7e-aec5-a95e45c51a16}" terminal2="{8f3be32e-851a-427c-a68d-b241257f983c}" terminalname1="2" terminalname2="B" text_color="#000000" type="multi" uuid="{a152d048-04f9-4b46-af8e-30e14a4e9dcf}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{49e18fef-735a-48e1-b7a9-b394f41ab273}" element1_label="-QM2" element1_name="5/2e [elec]-[spring]" element2="{a94b51fe-0626-455d-9e3c-36f85d76de8f}" element2_label="-MM2" element2_name="double acting" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{cd1228b7-ce2b-4176-b8ae-56e60a0ec85c}" terminal2="{23c888b0-cc9b-402b-827c-177017ce9ce1}" terminalname1="4" terminalname2="A" text_color="#000000" type="multi" uuid="{0a788712-9ca9-4ad7-878e-af43dd204144}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{49e18fef-735a-48e1-b7a9-b394f41ab273}" element1_label="-QM2" element1_name="5/2e [elec]-[spring]" element2="{a94b51fe-0626-455d-9e3c-36f85d76de8f}" element2_label="-MM2" element2_name="double acting" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{0eb4e305-c12d-4d7e-aec5-a95e45c51a16}" terminal2="{8f3be32e-851a-427c-a68d-b241257f983c}" terminalname1="2" terminalname2="B" text_color="#000000" type="multi" uuid="{1f072ea8-fe49-43fc-8ee5-e4ffe4e94097}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+        </conductors>
+    </diagram>
+    <diagram author="" auto_page_num="" cols="17" colsize="60" date="null" displayAt="bottom" displaycols="true" displayrows="true" filename="" folio="" freezeNewConductor="false" freezeNewElement="false" height="660" indexrev="" locmach="" order="2" plant="" rows="8" rowsize="80" title="Taster und Endschalter" uuid="{25974eeb-38fc-47ad-b2df-06384d3b2946}" version="0.200.1-dev">
+        <defaultconductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <elements>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="S" type="embed://import/10_electric/10_allpole/380_signaling_operating/20_push_buttons/poussoir.elmt" uuid="{343e3761-38e8-46cd-9d98-ee45d427a83e}" x="150" y="200" z="10">
+                <terminals>
+                    <terminal id="0" orientation="0" x="0" y="-17"/>
+                    <terminal id="1" orientation="2" x="0" y="17"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-SF1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{b13f08eb-f185-455b-88d9-2e5dcb88c0db}" x="2.75" y="-9.5">
+                        <text>-SF1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="S" type="embed://import/10_electric/10_allpole/390_sensors_instruments/41_limit_switches/fin_de_course_no.elmt" uuid="{dee26603-8597-49d9-b60f-2ae207b2966b}" x="270" y="200" z="10">
+                <terminals>
+                    <terminal id="2" orientation="0" x="0" y="-17"/>
+                    <terminal id="3" orientation="2" x="0" y="17"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="function" show="1">-MM1 hinten</elementInformation>
+                    <elementInformation name="label" show="1">-BG1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{37709f4a-d0f3-4c62-ab84-562fcb88070a}" x="2.75" y="-9.5">
+                        <text>-BG1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="S" type="embed://import/10_electric/10_allpole/390_sensors_instruments/41_limit_switches/fin_de_course_no.elmt" uuid="{0d3787ca-c78f-47fd-ac00-e5934a91a9f9}" x="390" y="200" z="10">
+                <terminals>
+                    <terminal id="4" orientation="0" x="0" y="-17"/>
+                    <terminal id="5" orientation="2" x="0" y="17"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="function" show="1">-MM1 vorne</elementInformation>
+                    <elementInformation name="label" show="1">-BG2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{67699f57-abbc-4745-9197-c82b13389d82}" x="2.75" y="-9.5">
+                        <text>-BG2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="S" type="embed://import/10_electric/10_allpole/390_sensors_instruments/41_limit_switches/fin_de_course_no.elmt" uuid="{c629f5aa-da22-4f12-8b78-fe8ceb64cc80}" x="510" y="200" z="10">
+                <terminals>
+                    <terminal id="6" orientation="0" x="0" y="-17"/>
+                    <terminal id="7" orientation="2" x="0" y="17"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="function" show="1">-MM2 hinten</elementInformation>
+                    <elementInformation name="label" show="1">-BG3</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{69b086e8-2bb3-49b8-8550-44150eeee34e}" x="2.75" y="-9.5">
+                        <text>-BG3</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="S" type="embed://import/10_electric/10_allpole/390_sensors_instruments/41_limit_switches/fin_de_course_no.elmt" uuid="{8aa75a5d-9cab-4621-b9a9-6bf2734657e3}" x="630" y="200" z="10">
+                <terminals>
+                    <terminal id="8" orientation="0" x="0" y="-17"/>
+                    <terminal id="9" orientation="2" x="0" y="17"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="function" show="1">-MM2 vorne</elementInformation>
+                    <elementInformation name="label" show="1">-BG4</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{7316bdba-d93f-4f33-ab6d-30fc4154ea29}" x="2.75" y="-9.5">
+                        <text>-BG4</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+        </elements>
+    </diagram>
+    <diagram author="" auto_page_num="" cols="17" colsize="60" date="null" displayAt="bottom" displaycols="true" displayrows="true" filename="" folio="" freezeNewConductor="false" freezeNewElement="false" height="660" indexrev="" locmach="" order="3" plant="" rows="8" rowsize="80" title="GRAFCET" uuid="{1447e9fd-bc4c-4236-a95b-0db8b6874c19}" version="0.200.1-dev">
+        <defaultconductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <elements>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202001_step.elmt" uuid="{abe5c245-6960-4c20-a924-c00ee9700caf}" x="100" y="300" z="10">
+                <terminals>
+                    <terminal id="0" orientation="0" x="0" y="-16"/>
+                    <terminal id="1" orientation="1" x="16" y="0"/>
+                    <terminal id="2" orientation="2" x="0" y="16"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">6</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{da4e1e40-ab0a-4a35-a2a6-e10775fe783b}" x="-7.33594" y="-11">
+                        <text>6</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202060_transition.elmt" uuid="{0af03ec4-e9d0-4cfb-b416-cc394ff97201}" x="100" y="350" z="10">
+                <terminals>
+                    <terminal id="3" orientation="0" x="0" y="-6"/>
+                    <terminal id="4" orientation="2" x="0" y="6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">0,5s/X6</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{2a77d532-db50-4be2-8ba6-cd69372c7442}" x="18" y="-10.5">
+                        <text>0,5s/X6</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202001_step.elmt" uuid="{55b7bccd-9558-49f3-9af6-d4a57053e34a}" x="100" y="400" z="10">
+                <terminals>
+                    <terminal id="5" orientation="0" x="0" y="-16"/>
+                    <terminal id="6" orientation="1" x="16" y="0"/>
+                    <terminal id="7" orientation="2" x="0" y="16"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">7</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{6173889a-71e0-4e7a-a937-240bde5660e6}" x="-7.33594" y="-11">
+                        <text>7</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202000_step.elmt" uuid="{7516b98f-70fe-428f-8a70-015956237fe1}" x="200" y="80" z="10">
+                <terminals>
+                    <terminal id="8" orientation="0" x="0" y="-16"/>
+                    <terminal id="9" orientation="1" x="16" y="0"/>
+                    <terminal id="10" orientation="2" x="0" y="16"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">0</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{7d42c920-3608-46e9-8d03-482e4dd64f80}" x="-7.33594" y="-11">
+                        <text>0</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202060_transition.elmt" uuid="{402a1c72-b7e7-4f98-9245-5fe9de49ba9e}" x="200" y="130" z="10">
+                <terminals>
+                    <terminal id="11" orientation="0" x="0" y="-6"/>
+                    <terminal id="12" orientation="2" x="0" y="6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">↑-SF1 · -BG1 · -BG3</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{e228b036-cd31-4956-b146-4965880f62f8}" x="18" y="-10.5">
+                        <text>↑-SF1 · -BG1 · -BG3</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202001_step.elmt" uuid="{313f446c-591b-43e2-ba57-0b1b0a0fe663}" x="200" y="180" z="10">
+                <terminals>
+                    <terminal id="13" orientation="0" x="0" y="-16"/>
+                    <terminal id="14" orientation="1" x="16" y="0"/>
+                    <terminal id="15" orientation="2" x="0" y="16"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{68204094-f01b-455f-a55e-484f3b258197}" x="-7.33594" y="-11">
+                        <text>1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202060_transition.elmt" uuid="{e8c26dcf-6dde-43f7-8148-34e4fa2bcf1e}" x="200" y="230" z="10">
+                <terminals>
+                    <terminal id="16" orientation="0" x="0" y="-6"/>
+                    <terminal id="17" orientation="2" x="0" y="6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-BG2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{3a0ff114-dbcc-4218-a2ca-5da2caec31f2}" x="18" y="-10.5">
+                        <text>-BG2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202070_parallel_branch.elmt" uuid="{b67b8e55-7849-46a5-8255-1b58f91c25a9}" x="200" y="260" z="10">
+                <terminals>
+                    <terminal id="18" orientation="0" x="0" y="-6"/>
+                    <terminal id="19" orientation="3" x="-106" y="0"/>
+                    <terminal id="20" orientation="1" x="106" y="0"/>
+                    <terminal id="21" orientation="2" x="-100" y="6"/>
+                    <terminal id="22" orientation="2" x="100" y="6"/>
+                </terminals>
+                <inputs/>
+                <dynamic_texts/>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202071_synchronization.elmt" uuid="{2b69110c-f96a-43fd-9581-ebc4a4ba0b50}" x="200" y="440" z="10">
+                <terminals>
+                    <terminal id="23" orientation="0" x="-100" y="-6"/>
+                    <terminal id="24" orientation="0" x="100" y="-6"/>
+                    <terminal id="25" orientation="3" x="-106" y="0"/>
+                    <terminal id="26" orientation="1" x="106" y="0"/>
+                    <terminal id="27" orientation="2" x="0" y="6"/>
+                </terminals>
+                <inputs/>
+                <dynamic_texts/>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202060_transition.elmt" uuid="{03b3b694-3eb3-45d2-a357-00b4d94b86bf}" x="200" y="480" z="10">
+                <terminals>
+                    <terminal id="28" orientation="0" x="0" y="-6"/>
+                    <terminal id="29" orientation="2" x="0" y="6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">1s/X3</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{c591601e-3b40-41d2-9696-eb7651823941}" x="18" y="-10.5">
+                        <text>1s/X3</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202090_jump.elmt" uuid="{77c590c6-a7df-44eb-b953-b8aee3341784}" x="200" y="520" z="10">
+                <terminals>
+                    <terminal id="30" orientation="0" x="0" y="-16"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">4</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{5c620cb6-0f30-4332-b922-81de6d056c31}" x="10" y="-16.5">
+                        <text>4</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202020_action.elmt" uuid="{550bea8d-cf97-4774-a68d-a5f955438be4}" x="220" y="180" z="10">
+                <terminals>
+                    <terminal id="31" orientation="3" x="4" y="0"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-QM1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{aee2a651-b007-49fc-8525-c2871be76ef4}" x="62.2656" y="-10.5">
+                        <text>-QM1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202001_step.elmt" uuid="{5693fee3-7587-4821-b3d4-552ae11fa695}" x="300" y="300" z="10">
+                <terminals>
+                    <terminal id="32" orientation="0" x="0" y="-16"/>
+                    <terminal id="33" orientation="1" x="16" y="0"/>
+                    <terminal id="34" orientation="2" x="0" y="16"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{75832e11-8779-4eb3-9bb1-0b5b75fa7b64}" x="-7.33594" y="-11">
+                        <text>2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202060_transition.elmt" uuid="{b8ede2c7-dc0b-4f02-ab61-fe0273140040}" x="300" y="350" z="10">
+                <terminals>
+                    <terminal id="35" orientation="0" x="0" y="-6"/>
+                    <terminal id="36" orientation="2" x="0" y="6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-BG4</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{64eac12a-31f8-484d-a56a-4c3757c73065}" x="18" y="-10.5">
+                        <text>-BG4</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202001_step.elmt" uuid="{c871a626-abcf-4efe-a62b-5ce11321bd34}" x="300" y="400" z="10">
+                <terminals>
+                    <terminal id="37" orientation="0" x="0" y="-16"/>
+                    <terminal id="38" orientation="1" x="16" y="0"/>
+                    <terminal id="39" orientation="2" x="0" y="16"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">3</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{306d59ef-0001-44d0-b979-ca9694afcc8c}" x="-7.33594" y="-11">
+                        <text>3</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202020_action.elmt" uuid="{533eaa6c-a2e4-4413-97de-6b33426b8f78}" x="320" y="300" z="10">
+                <terminals>
+                    <terminal id="40" orientation="3" x="4" y="0"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-QM1, -QM2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{df517512-d7c6-439f-82f0-9dbb8aa95e8a}" x="45.4844" y="-10.5">
+                        <text>-QM1, -QM2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202020_action.elmt" uuid="{98d3ba13-86e9-481b-9978-fc4667c81910}" x="320" y="400" z="10">
+                <terminals>
+                    <terminal id="41" orientation="3" x="4" y="0"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-QM1, -QM2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{a2842076-c6c2-400e-bb1d-4b9ff976b702}" x="45.4844" y="-10.5">
+                        <text>-QM1, -QM2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202001_step.elmt" uuid="{a72d1c1d-2eb9-47c2-82f3-d4ce8c190f74}" x="650" y="120" z="10">
+                <terminals>
+                    <terminal id="42" orientation="0" x="0" y="-16"/>
+                    <terminal id="43" orientation="1" x="16" y="0"/>
+                    <terminal id="44" orientation="2" x="0" y="16"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">4</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{68abaaef-899d-4b37-ad30-61c47e648592}" x="-7.33594" y="-11">
+                        <text>4</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202060_transition.elmt" uuid="{f960086d-a9a3-4e63-902c-9534aac3e679}" x="650" y="170" z="10">
+                <terminals>
+                    <terminal id="45" orientation="0" x="0" y="-6"/>
+                    <terminal id="46" orientation="2" x="0" y="6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-BG1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{69fd15fb-6b41-4126-af96-260d527e31b1}" x="18" y="-10.5">
+                        <text>-BG1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202001_step.elmt" uuid="{f89efa83-ec65-4b40-a8c5-87a7eea09672}" x="650" y="220" z="10">
+                <terminals>
+                    <terminal id="47" orientation="0" x="0" y="-16"/>
+                    <terminal id="48" orientation="1" x="16" y="0"/>
+                    <terminal id="49" orientation="2" x="0" y="16"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">5</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{24ae9a84-7ede-4e11-a0ad-9185573a391b}" x="-7.33594" y="-11">
+                        <text>5</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202060_transition.elmt" uuid="{885013bc-c0ec-4f82-a4e0-eb1544e73e46}" x="650" y="270" z="10">
+                <terminals>
+                    <terminal id="50" orientation="0" x="0" y="-6"/>
+                    <terminal id="51" orientation="2" x="0" y="6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-BG3</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{405c4de0-7336-41c4-9f29-2eb89d68e41c}" x="18" y="-10.5">
+                        <text>-BG3</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202090_jump.elmt" uuid="{7e8eb5e9-e304-42cc-8281-60263b8f643e}" x="650" y="310" z="10">
+                <terminals>
+                    <terminal id="52" orientation="0" x="0" y="-16"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">0</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{0085c263-4874-48b5-b7ba-0110e6d40a9d}" x="10" y="-16.5">
+                        <text>0</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202020_action.elmt" uuid="{b7b5d217-d42e-4ef7-b690-a75678327a69}" x="670" y="120" z="10">
+                <terminals>
+                    <terminal id="53" orientation="3" x="4" y="0"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-QM2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{6b081f8b-3b80-40ee-9f0b-ad5090ec7ffb}" x="62.2656" y="-10.5">
+                        <text>-QM2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/20_logic/2020_flow_chart/202020_grafcet/20202022_action.elmt" uuid="{557a7bb9-1729-489e-98e4-d4223d48c581}" x="670" y="220" z="10">
+                <terminals>
+                    <terminal id="54" orientation="3" x="4" y="0"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">Zyklen := Zyklen + 1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{8613e679-c3de-4d45-b59f-d0357e2087f4}" x="26.5313" y="-10.5">
+                        <text>Zyklen := Zyklen + 1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+        </elements>
+        <conductors>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{abe5c245-6960-4c20-a924-c00ee9700caf}" element1_label="6" element1_name="Step" element2="{0af03ec4-e9d0-4cfb-b416-cc394ff97201}" element2_label="0,5s/X6" element2_name="transition" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{dc8fcf90-56b1-4565-8c78-fc7d71d779db}" terminal2="{51cb8195-fe7d-4fa6-9d8a-d07da42c9b4a}" terminalname1="out" terminalname2="in" text_color="#000000" type="multi" uuid="{c6c9ceed-c173-4756-83f1-8a08e410b3f9}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{abe5c245-6960-4c20-a924-c00ee9700caf}" element1_label="6" element1_name="Step" element2="{b67b8e55-7849-46a5-8255-1b58f91c25a9}" element2_label="" element2_name="parallel branch" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{56517bf3-3bf7-44bf-90a0-0f149538420e}" terminal2="{1d9ac490-5669-4ed3-9d28-b52ec7fc38d6}" terminalname1="in" terminalname2="1" text_color="#000000" type="multi" uuid="{583af533-ec08-4540-8fff-fae0ac221297}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{0af03ec4-e9d0-4cfb-b416-cc394ff97201}" element1_label="0,5s/X6" element1_name="transition" element2="{55b7bccd-9558-49f3-9af6-d4a57053e34a}" element2_label="7" element2_name="Step" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{bdb11747-9b9c-42c4-87fe-1a81af467dac}" terminal2="{56517bf3-3bf7-44bf-90a0-0f149538420e}" terminalname1="out" terminalname2="in" text_color="#000000" type="multi" uuid="{9ec3a6e5-988d-44a2-abca-5078340eb84f}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{55b7bccd-9558-49f3-9af6-d4a57053e34a}" element1_label="7" element1_name="Step" element2="{2b69110c-f96a-43fd-9581-ebc4a4ba0b50}" element2_label="" element2_name="synchronization" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{dc8fcf90-56b1-4565-8c78-fc7d71d779db}" terminal2="{198b1627-e7cd-4d9e-be24-e4a3cfe91f32}" terminalname1="out" terminalname2="1" text_color="#000000" type="multi" uuid="{28361ec0-517b-4d31-a910-70aa4602198e}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{7516b98f-70fe-428f-8a70-015956237fe1}" element1_label="0" element1_name="initial step" element2="{402a1c72-b7e7-4f98-9245-5fe9de49ba9e}" element2_label="↑-SF1 · -BG1 · -BG3" element2_name="transition" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{d88af62a-ca14-483f-8273-a4b34ce628a7}" terminal2="{51cb8195-fe7d-4fa6-9d8a-d07da42c9b4a}" terminalname1="out" terminalname2="in" text_color="#000000" type="multi" uuid="{5db40c18-0c9b-4b32-8271-5759137ebe43}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{402a1c72-b7e7-4f98-9245-5fe9de49ba9e}" element1_label="↑-SF1 · -BG1 · -BG3" element1_name="transition" element2="{313f446c-591b-43e2-ba57-0b1b0a0fe663}" element2_label="1" element2_name="Step" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{bdb11747-9b9c-42c4-87fe-1a81af467dac}" terminal2="{56517bf3-3bf7-44bf-90a0-0f149538420e}" terminalname1="out" terminalname2="in" text_color="#000000" type="multi" uuid="{95841af3-ce70-4dc1-926f-3ca6f26e8fe9}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{313f446c-591b-43e2-ba57-0b1b0a0fe663}" element1_label="1" element1_name="Step" element2="{e8c26dcf-6dde-43f7-8148-34e4fa2bcf1e}" element2_label="-BG2" element2_name="transition" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{dc8fcf90-56b1-4565-8c78-fc7d71d779db}" terminal2="{51cb8195-fe7d-4fa6-9d8a-d07da42c9b4a}" terminalname1="out" terminalname2="in" text_color="#000000" type="multi" uuid="{eb953a6f-2cf5-46f8-92de-1606f12765a9}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{e8c26dcf-6dde-43f7-8148-34e4fa2bcf1e}" element1_label="-BG2" element1_name="transition" element2="{b67b8e55-7849-46a5-8255-1b58f91c25a9}" element2_label="" element2_name="parallel branch" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{bdb11747-9b9c-42c4-87fe-1a81af467dac}" terminal2="{1d2b8fad-8728-4b0d-9205-3bb5c002b155}" terminalname1="out" terminalname2="in" text_color="#000000" type="multi" uuid="{a8cdc7dc-024b-4bb6-8eea-6bab7e5c21c2}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{b67b8e55-7849-46a5-8255-1b58f91c25a9}" element1_label="" element1_name="parallel branch" element2="{5693fee3-7587-4821-b3d4-552ae11fa695}" element2_label="2" element2_name="Step" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{8155e49f-8bd0-4dcd-8878-29228b6b2629}" terminal2="{56517bf3-3bf7-44bf-90a0-0f149538420e}" terminalname1="2" terminalname2="in" text_color="#000000" type="multi" uuid="{5d4aa3d5-0f95-45be-b588-3e49a3fe1147}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{2b69110c-f96a-43fd-9581-ebc4a4ba0b50}" element1_label="" element1_name="synchronization" element2="{03b3b694-3eb3-45d2-a357-00b4d94b86bf}" element2_label="1s/X3" element2_name="transition" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{0d91d3ef-415d-479c-b491-7ae7fe55b51f}" terminal2="{51cb8195-fe7d-4fa6-9d8a-d07da42c9b4a}" terminalname1="out" terminalname2="in" text_color="#000000" type="multi" uuid="{c0e20150-16ba-40fa-9658-a288e1468dee}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{2b69110c-f96a-43fd-9581-ebc4a4ba0b50}" element1_label="" element1_name="synchronization" element2="{c871a626-abcf-4efe-a62b-5ce11321bd34}" element2_label="3" element2_name="Step" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{ec262f25-807a-42f4-acbb-fb435c6b6f5d}" terminal2="{dc8fcf90-56b1-4565-8c78-fc7d71d779db}" terminalname1="2" terminalname2="out" text_color="#000000" type="multi" uuid="{3551387b-c9cb-4f4b-b5cf-52430d6817f8}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{03b3b694-3eb3-45d2-a357-00b4d94b86bf}" element1_label="1s/X3" element1_name="transition" element2="{77c590c6-a7df-44eb-b953-b8aee3341784}" element2_label="4" element2_name="Jump" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{bdb11747-9b9c-42c4-87fe-1a81af467dac}" terminal2="{c4d4c964-9576-447c-a3b8-e2b00dd44c95}" terminalname1="out" terminalname2="in" text_color="#000000" type="multi" uuid="{aaadfb64-97fc-48c3-a1e5-4ff71ea08ffb}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{5693fee3-7587-4821-b3d4-552ae11fa695}" element1_label="2" element1_name="Step" element2="{b8ede2c7-dc0b-4f02-ab61-fe0273140040}" element2_label="-BG4" element2_name="transition" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{dc8fcf90-56b1-4565-8c78-fc7d71d779db}" terminal2="{51cb8195-fe7d-4fa6-9d8a-d07da42c9b4a}" terminalname1="out" terminalname2="in" text_color="#000000" type="multi" uuid="{835632f5-b99b-4867-a360-4eb43502f3eb}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{b8ede2c7-dc0b-4f02-ab61-fe0273140040}" element1_label="-BG4" element1_name="transition" element2="{c871a626-abcf-4efe-a62b-5ce11321bd34}" element2_label="3" element2_name="Step" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{bdb11747-9b9c-42c4-87fe-1a81af467dac}" terminal2="{56517bf3-3bf7-44bf-90a0-0f149538420e}" terminalname1="out" terminalname2="in" text_color="#000000" type="multi" uuid="{db19cd52-6c09-4a1f-a7a5-e40a6ef4f431}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{a72d1c1d-2eb9-47c2-82f3-d4ce8c190f74}" element1_label="4" element1_name="Step" element2="{f960086d-a9a3-4e63-902c-9534aac3e679}" element2_label="-BG1" element2_name="transition" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{dc8fcf90-56b1-4565-8c78-fc7d71d779db}" terminal2="{51cb8195-fe7d-4fa6-9d8a-d07da42c9b4a}" terminalname1="out" terminalname2="in" text_color="#000000" type="multi" uuid="{a7662b0c-c3ab-4c20-803e-7187b3df3a4f}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{f960086d-a9a3-4e63-902c-9534aac3e679}" element1_label="-BG1" element1_name="transition" element2="{f89efa83-ec65-4b40-a8c5-87a7eea09672}" element2_label="5" element2_name="Step" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{bdb11747-9b9c-42c4-87fe-1a81af467dac}" terminal2="{56517bf3-3bf7-44bf-90a0-0f149538420e}" terminalname1="out" terminalname2="in" text_color="#000000" type="multi" uuid="{fd161294-cb77-4211-b665-e7401bf38de9}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{f89efa83-ec65-4b40-a8c5-87a7eea09672}" element1_label="5" element1_name="Step" element2="{885013bc-c0ec-4f82-a4e0-eb1544e73e46}" element2_label="-BG3" element2_name="transition" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{dc8fcf90-56b1-4565-8c78-fc7d71d779db}" terminal2="{51cb8195-fe7d-4fa6-9d8a-d07da42c9b4a}" terminalname1="out" terminalname2="in" text_color="#000000" type="multi" uuid="{8bfca510-4c56-429d-8cd0-2b62595cf008}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{885013bc-c0ec-4f82-a4e0-eb1544e73e46}" element1_label="-BG3" element1_name="transition" element2="{7e8eb5e9-e304-42cc-8281-60263b8f643e}" element2_label="0" element2_name="Jump" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{bdb11747-9b9c-42c4-87fe-1a81af467dac}" terminal2="{c4d4c964-9576-447c-a3b8-e2b00dd44c95}" terminalname1="out" terminalname2="in" text_color="#000000" type="multi" uuid="{51101968-e2e5-4bca-9111-b27d7e0c954f}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+        </conductors>
+    </diagram>
+    <collection>
+        <category name="import">
+            <names>
+                <name lang="ca">Elements importats</name>
+                <name lang="cs">Zavedené prvky</name>
+                <name lang="da">Importerede elementer</name>
+                <name lang="de">Importierte Elemente</name>
+                <name lang="el">Εισηγμένα στοιχεία</name>
+                <name lang="en">Imported elements</name>
+                <name lang="es">Elementos importados</name>
+                <name lang="fr">Éléments importés</name>
+                <name lang="hr">Uvezeni elementi</name>
+                <name lang="it">Elementi importati</name>
+                <name lang="ja">インバートされた要素</name>
+                <name lang="ko">전기 심볼 요소</name>
+                <name lang="ko_KR">전기 심볼 요소</name>
+                <name lang="lv">Importētie elementi</name>
+                <name lang="nl">Elementen geïmporteerd</name>
+                <name lang="nl_BE">Elementen geïmporteerd</name>
+                <name lang="pl">Elementy importowane</name>
+                <name lang="pt">Elementos importados</name>
+                <name lang="pt_BR">Elementos importados</name>
+                <name lang="ro">Elemente importate</name>
+                <name lang="ru">Импортированные элементы</name>
+                <name lang="sk">Importované prvky</name>
+                <name lang="sl">Uvoženi elementi</name>
+                <name lang="sv">Importerade element</name>
+                <name lang="tr">İthal öğeler</name>
+                <name lang="uk">Імпортовані елементи</name>
+                <name lang="zh">导入元件</name>
+            </names>
+        <category name="50_pneumatic">
+                <names>
+                    <name lang="ar">بضغط الهواء</name>
+                    <name lang="ca">Pneumàtica</name>
+                    <name lang="cs">Pneumatika</name>
+                    <name lang="da">Pneumatik</name>
+                    <name lang="de">Pneumatik</name>
+                    <name lang="el">Πνευματικά</name>
+                    <name lang="en">Pneumatic</name>
+                    <name lang="es">Neumática</name>
+                    <name lang="fi">Pneumaattinen</name>
+                    <name lang="fr">Pneumatique</name>
+                    <name lang="hr">pneumatika</name>
+                    <name lang="hu">pneumatika</name>
+                    <name lang="it">Pneumatica</name>
+                    <name lang="ja">空気圧</name>
+                    <name lang="ko">공압</name>
+                    <name lang="mn">пневматик</name>
+                    <name lang="nb">pneumatik</name>
+                    <name lang="nl">Pneumatiek</name>
+                    <name lang="nl_BE">Pneumatique</name>
+                    <name lang="pl">Pneumatyka</name>
+                    <name lang="pt">pneumática</name>
+                    <name lang="pt_BR">pneumática</name>
+                    <name lang="ro">pneumatice</name>
+                    <name lang="ru">Пневматика</name>
+                    <name lang="sk">Pneumatické</name>
+                    <name lang="sl">pnevmatike</name>
+                    <name lang="sr">пнеуматика</name>
+                    <name lang="sv">Pneumatik</name>
+                    <name lang="tr">pnömatik</name>
+                    <name lang="uk">Пневматика</name>
+                    <name lang="zh">50_气动</name>
+                    <name lang="zn">气动学</name>
+                </names>
+                <category name="5010_compressed_air">
+                    <names>
+                        <name lang="ar">هواء مضغوط</name>
+                        <name lang="ca">Aire comprimit</name>
+                        <name lang="cs">stlačený vzduch</name>
+                        <name lang="da">komprimeret luft</name>
+                        <name lang="de">Druckluft</name>
+                        <name lang="el">συμπιεσμένος αέρας</name>
+                        <name lang="en">compressed air</name>
+                        <name lang="es">aire comprimido</name>
+                        <name lang="fi">paineilma</name>
+                        <name lang="fr">air comprimé</name>
+                        <name lang="hr">potisnut zrak</name>
+                        <name lang="hu">sűrített levegő</name>
+                        <name lang="it">aria compressa</name>
+                        <name lang="ja">圧縮空気</name>
+                        <name lang="ko">압축 공기</name>
+                        <name lang="mn">шахсан агаар</name>
+                        <name lang="nb">trykkluft</name>
+                        <name lang="nl">perslucht</name>
+                        <name lang="nl_BE">perslucht</name>
+                        <name lang="pl">skompresowane powietrze</name>
+                        <name lang="pt">ar comprimido</name>
+                        <name lang="pt_BR">ar comprimido</name>
+                        <name lang="ro">aer comprimat</name>
+                        <name lang="ru">сжатый воздух</name>
+                        <name lang="sk">stlačený vzduch</name>
+                        <name lang="sl">stisnjen zrak</name>
+                        <name lang="sr">компресован ваздух</name>
+                        <name lang="sv">tryckluft</name>
+                        <name lang="tr">sıkıştırılmış hava</name>
+                        <name lang="uk">стиснене повітря</name>
+                        <name lang="zh">压缩空气</name>
+                    </names>
+                    <category name="501015_pipes_connections">
+                        <names>
+                            <name lang="ar">الخطوط والوصلات</name>
+                            <name lang="ca">Línies i connexions</name>
+                            <name lang="cs">linky a spoje</name>
+                            <name lang="da">linjer og forbindelser</name>
+                            <name lang="de">Leitungen und Anschlüsse</name>
+                            <name lang="el">γραμμές και συνδέσεις</name>
+                            <name lang="en">lines and connections</name>
+                            <name lang="es">lineas y conexiones</name>
+                            <name lang="fi">linjat ja liitännät</name>
+                            <name lang="fr">lignes et connexions</name>
+                            <name lang="hr">vodovi i veze</name>
+                            <name lang="hu">vonalak és kapcsolatok</name>
+                            <name lang="it">linee e collegamenti</name>
+                            <name lang="ja">回線と接続</name>
+                            <name lang="ko">라인 및 연결</name>
+                            <name lang="mn">шугам ба холболтууд</name>
+                            <name lang="nb">linjer og forbindelser</name>
+                            <name lang="nl">lijnen en verbindingen</name>
+                            <name lang="nl_BE">leidingen en aansluitingen</name>
+                            <name lang="pl">linie i połączenia</name>
+                            <name lang="pt">linhas e conexões</name>
+                            <name lang="pt_BR">linhas e conexões</name>
+                            <name lang="ro">linii și conexiuni</name>
+                            <name lang="ru">линии и соединения</name>
+                            <name lang="sk">vedenia a pripojenia</name>
+                            <name lang="sl">linije in povezave</name>
+                            <name lang="sr">линије и везе</name>
+                            <name lang="sv">ledningar och anslutningar</name>
+                            <name lang="tr">hatlar ve bağlantılar</name>
+                            <name lang="uk">лінії та з'єднання</name>
+                            <name lang="zh">管道连接</name>
+                        </names>
+                        <element name="50101545_source_energie_pneumatique.elmt">
+                            <definition height="20" hotspot_x="2" hotspot_y="10" link_type="simple" type="element" version="0.100.0" width="30">
+                                <uuid uuid="{d2443321-00a4-f1a1-8790-552aeb9c389e}"/>
+                                <names>
+                                    <name lang="ar">مصدر طاقة نيوماتية</name>
+                                    <name lang="ca">Font d'energia pneumàtica</name>
+                                    <name lang="cs">Zdroje vzduchové energie</name>
+                                    <name lang="da">Pneumatisk energikilde</name>
+                                    <name lang="de">Druckluftquelle</name>
+                                    <name lang="el">Πηγή πνευματικής ενέργειας</name>
+                                    <name lang="en">Pneumatic energy source</name>
+                                    <name lang="es">Fuente de energía neumática</name>
+                                    <name lang="fi">Pneumaattinen energialähde</name>
+                                    <name lang="fr">Source d'énergie pneumatique</name>
+                                    <name lang="hr">Izvor pneumatske energije</name>
+                                    <name lang="hu">Sűrítettlevegő-forrás</name>
+                                    <name lang="it">Alimentazione motore</name>
+                                    <name lang="ja">空気圧エネルギー源</name>
+                                    <name lang="ko">공압 에너지 공급원</name>
+                                    <name lang="mn">Пневматик энергийн эх үүсвэр</name>
+                                    <name lang="nb">Pneumatisk energikilde</name>
+                                    <name lang="nl">Toevoer lucht</name>
+                                    <name lang="nl_BE">Pneumatische energiebron</name>
+                                    <name lang="pl">Źródło energii pneumatycznej, symbol ogólny uprzoszczony</name>
+                                    <name lang="pt">Fonte de energia pneumática</name>
+                                    <name lang="pt_BR">Fonte de energia pneumática</name>
+                                    <name lang="ro">Sursă de energie pneumatică</name>
+                                    <name lang="ru">Источник пневматической энергии</name>
+                                    <name lang="sk">Zdroj pneumatickej energie</name>
+                                    <name lang="sl">Vir pnevmatske energije</name>
+                                    <name lang="sr">Извор пнеуматске енергије</name>
+                                    <name lang="sv">Pneumatisk energikälla</name>
+                                    <name lang="tr">Pnömatik enerji kaynağı</name>
+                                    <name lang="uk">Джерело пневматичної енергії</name>
+                                    <name lang="zh">气源</name>
+                                </names>
+                                <fluid function="supply.pump" kind="source" prefix="GP">
+                                    <parameter name="displacement" unit="cm3" value="8"/>
+                                    <parameter name="rpm" unit="1/min" value="1450"/>
+                                    <parameter name="pMax" unit="MPa" value="6"/>
+                                </fluid>
+                                <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                <description>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="10" x2="20" y1="0" y2="0"/>
+                                    <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{d4b1ace1-e3dc-486b-b2a5-0bbdb7234b12}" x="4" y="-20.95" z="2">
+                                        <text/>
+                                        <info_name>label</info_name>
+                                    </dynamic_text>
+                                    <polygon antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="10" x3="0" y1="5" y2="0" y3="-5"/>
+                                    <terminal medium="pneumatic" name="1" orientation="e" type="Generic" uuid="{80922545-03a6-4f12-83c4-e963a497feae}" x="20" y="0"/>
+                                </description>
+                            </definition>
+                        </element>
+                    </category>
+                </category>
+                <category name="5020_velves">
+                    <names>
+                        <name lang="ar">الصمامات</name>
+                        <name lang="ca">Vàlvules</name>
+                        <name lang="cs">ventily</name>
+                        <name lang="da">ventiler</name>
+                        <name lang="de">Ventile</name>
+                        <name lang="el">βαλβίδες</name>
+                        <name lang="en">valves</name>
+                        <name lang="es">válvulas</name>
+                        <name lang="fi">venttiilit</name>
+                        <name lang="fr">vannes</name>
+                        <name lang="hr">ventili</name>
+                        <name lang="hu">szelepek</name>
+                        <name lang="it">valvole</name>
+                        <name lang="ja">バルブ</name>
+                        <name lang="ko">밸브</name>
+                        <name lang="mn">хавхлагууд</name>
+                        <name lang="nb">ventiler</name>
+                        <name lang="nl">kleppen</name>
+                        <name lang="nl_BE">kleppen</name>
+                        <name lang="pl">zawory</name>
+                        <name lang="pt">válvulas</name>
+                        <name lang="pt_BR">Valvulas</name>
+                        <name lang="ro">supape</name>
+                        <name lang="ru">клапаны</name>
+                        <name lang="sk">ventily</name>
+                        <name lang="sl">ventili</name>
+                        <name lang="sr">вентили</name>
+                        <name lang="sv">ventiler</name>
+                        <name lang="tr">vanalar</name>
+                        <name lang="uk">клапани</name>
+                        <name lang="zh">阀门</name>
+                    </names>
+                    <category name="502010_control">
+                        <names>
+                            <name lang="ar">صمامات التحكم</name>
+                            <name lang="ca">Vàlvules de control</name>
+                            <name lang="cs">Regulační ventily</name>
+                            <name lang="da">Kontrolventiler</name>
+                            <name lang="de">Steuerventile</name>
+                            <name lang="el">Βαλβίδες ελέγχου</name>
+                            <name lang="en">Control valves</name>
+                            <name lang="es">Válvulas de control</name>
+                            <name lang="fi">Säätöventtiilit</name>
+                            <name lang="fr">Vannes de régulation</name>
+                            <name lang="hr">Kontrolni ventili</name>
+                            <name lang="hu">Szabályozó szelepek</name>
+                            <name lang="it">Valvole di controllo</name>
+                            <name lang="ja">コントロールバルブ</name>
+                            <name lang="ko">제어 밸브</name>
+                            <name lang="mn">Хяналтын хавхлагууд</name>
+                            <name lang="nb">Kontrollventiler</name>
+                            <name lang="nl">Regelkleppen</name>
+                            <name lang="nl_BE">Stuurkranen</name>
+                            <name lang="pl">Zawory regulacyjne</name>
+                            <name lang="pt">Válvulas de controle</name>
+                            <name lang="pt_BR">Válvulas de controle</name>
+                            <name lang="ro">Supape de control</name>
+                            <name lang="ru">Клапаны управления</name>
+                            <name lang="sk">Riadiacе ventily</name>
+                            <name lang="sl">Krmilni ventili</name>
+                            <name lang="sr">Контролни вентили</name>
+                            <name lang="sv">Riktningsventiler</name>
+                            <name lang="tr">Kontrol vanaları</name>
+                            <name lang="uk">Регулювальні клапани</name>
+                            <name lang="zh">控制阀</name>
+                        </names>
+                        <category name="50201060_5_2_way">
+                            <names>
+                                <name lang="ar">5/2 طريقة صمام</name>
+                                <name lang="ca">Vàlvula 5/2</name>
+                                <name lang="cs">5/2 cestný ventil</name>
+                                <name lang="da">5/2 vejs ventil</name>
+                                <name lang="de">5/2 Wegeventil</name>
+                                <name lang="el">Βαλβίδα 5/2 κατευθύνσεων</name>
+                                <name lang="en">5/2 way valve</name>
+                                <name lang="es">válvula de 5/2 vías</name>
+                                <name lang="fi">5/2-tieventtiili</name>
+                                <name lang="fr">Vanne 5/2 voies</name>
+                                <name lang="hr">5/2 putni ventil</name>
+                                <name lang="hu">5/2 utas szelep</name>
+                                <name lang="it">Valvola a 5/2 vie</name>
+                                <name lang="ja">5/2ウェイバルブ</name>
+                                <name lang="ko">5/2 방향 밸브</name>
+                                <name lang="mn">5/2 талын хавхлага</name>
+                                <name lang="nb">5/2 veis ventil</name>
+                                <name lang="nl">5/2-weg ventiel</name>
+                                <name lang="nl_BE">5/2-wegklep</name>
+                                <name lang="pl">Zawór 5/2-drogowy</name>
+                                <name lang="pt">válvula de 5/2 vias</name>
+                                <name lang="pt_BR">valvula de 5/2 vias</name>
+                                <name lang="ro">Supapă cu 5/2 căi</name>
+                                <name lang="ru">5/2-ходовой клапан</name>
+                                <name lang="sk">5/2 cestný ventil</name>
+                                <name lang="sl">5/2 potni ventil</name>
+                                <name lang="sr">5/2-краки вентил</name>
+                                <name lang="sv">5/2-vägsventil</name>
+                                <name lang="tr">5/2 yollu vana</name>
+                                <name lang="uk">Клапан 5/2</name>
+                                <name lang="zh">5/2 通阀</name>
+                            </names>
+                            <category name="5020106020_elec">
+                                <names>
+                                    <name lang="ar">كهربائي</name>
+                                    <name lang="ca">Elèctrica</name>
+                                    <name lang="cs">elektrický</name>
+                                    <name lang="da">elektrisk</name>
+                                    <name lang="de">eletrisch</name>
+                                    <name lang="el">ηλεκτρικός</name>
+                                    <name lang="en">electric</name>
+                                    <name lang="es">eléctrico</name>
+                                    <name lang="fi">sähköinen</name>
+                                    <name lang="fr">électrique</name>
+                                    <name lang="hr">električni</name>
+                                    <name lang="hu">elektromos</name>
+                                    <name lang="it">elettrico</name>
+                                    <name lang="ja">電気の</name>
+                                    <name lang="ko">전기</name>
+                                    <name lang="mn">цахилгаан</name>
+                                    <name lang="nb">elektrisk</name>
+                                    <name lang="nl">elektrisch</name>
+                                    <name lang="nl_BE">électrique</name>
+                                    <name lang="pl">elektryczny</name>
+                                    <name lang="pt">elétrico</name>
+                                    <name lang="pt_BR">elétrico</name>
+                                    <name lang="ro">electric</name>
+                                    <name lang="ru">электрический</name>
+                                    <name lang="sk">elektrické</name>
+                                    <name lang="sl">električni</name>
+                                    <name lang="sr">електрични</name>
+                                    <name lang="sv">elektrisk</name>
+                                    <name lang="tr">elektrik</name>
+                                    <name lang="uk">електричний</name>
+                                    <name lang="zh">电气控制</name>
+                                </names>
+                                <element name="502010602010_5_2_way_010.elmt">
+                                    <definition height="50" hotspot_x="42" hotspot_y="31" link_type="simple" type="element" version="0.90" width="90">
+                                        <uuid uuid="{64df94dd-03f5-171e-85de-1b917631e75b}"/>
+                                        <names>
+                                            <name lang="ar">5/2e [elec]-[spring]</name>
+                                            <name lang="ca">5/2e [elec]-[spring]</name>
+                                            <name lang="cs">5/2e [elec]-[spring]</name>
+                                            <name lang="da">5/2e [elec]-[spring]</name>
+                                            <name lang="de">5/2e [elec]-[spring]</name>
+                                            <name lang="el">5/2e [elec]-[spring]</name>
+                                            <name lang="en">5/2e [elec]-[spring]</name>
+                                            <name lang="es">5/2e [elec]-[spring]</name>
+                                            <name lang="fi">5/2e [sähkö]-[jousi]</name>
+                                            <name lang="fr">5/2e [elec]-[spring]</name>
+                                            <name lang="hr">5/2e [elec]-[spring]</name>
+                                            <name lang="hu">5/2e [elec]-[spring]</name>
+                                            <name lang="it">5/2e [elec]-[spring]</name>
+                                            <name lang="ja">5/2e [elec]-[spring]</name>
+                                            <name lang="ko">5/2e [전기]-[스프링]</name>
+                                            <name lang="mn">5/2e [elec]-[spring]</name>
+                                            <name lang="nb">5/2e [elec]-[spring]</name>
+                                            <name lang="nl">5/2e [elec]-[spring]</name>
+                                            <name lang="nl_BE">5/2e [elec]-[spring]</name>
+                                            <name lang="pl">5/2e [elec]-[spring]</name>
+                                            <name lang="pt">5/2e [elec]-[spring]</name>
+                                            <name lang="pt_BR">5/2e [elec]-[spring]</name>
+                                            <name lang="ro">5/2e [elec]-[spring]</name>
+                                            <name lang="ru">5/2e [elec]-[spring]</name>
+                                            <name lang="sk">5/2e [elec]-[spring]</name>
+                                            <name lang="sl">5/2e [elec]-[spring]</name>
+                                            <name lang="sr">5/2e [elec]-[spring]</name>
+                                            <name lang="sv">5/2e [el]-[fjäder]</name>
+                                            <name lang="tr">5/2e [elec]-[spring]</name>
+                                            <name lang="uk">5/2e [електр.]-[пружина]</name>
+                                            <name lang="zh">5/2通电磁阀010</name>
+                                        </names>
+                                        <fluid function="directional_valve.five_pins" kind="valve" prefix="QM">
+                                            <positions initial="2">
+                                                <position>
+                                                    <path from="1" to="4"/>
+                                                    <path from="2" to="3"/>
+                                                    <path from="5"/>
+                                                </position>
+                                                <position>
+                                                    <path from="1" to="2"/>
+                                                    <path from="4" to="5"/>
+                                                    <path from="3"/>
+                                                </position>
+                                            </positions>
+                                            <actuation side="left" spring="false" types="solenoid"/>
+                                            <actuation side="right" spring="true" types=""/>
+                                            <parameter name="qNN" unit="l/min" value="60"/>
+                                            <parameter name="onDelay" unit="s" value="0.02"/>
+                                            <parameter name="offDelay" unit="s" value="0.03"/>
+                                            <parameter name="F_spring" unit="N" value="20"/>
+                                            <parameter name="F_EL" unit="N" value="70"/>
+                                            <parameter name="F_ER" unit="N" value="70"/>
+                                            <parameter name="areaPilotL" unit="cm2" value="1.4"/>
+                                            <parameter name="areaPilotR" unit="cm2" value="1.4"/>
+                                            <parameter name="posNoMax" value="2"/>
+                                            <parameter name="posNoInit" value="2"/>
+                                        </fluid>
+                                        <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                        <description>
+                                            <polygon antialias="false" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-35" x2="-25" x3="-25" x4="-35" x5="-35" x6="-35" x7="-33" x8="-27" y1="-3" y2="-3" y3="3" y4="3" y5="-3" y6="3" y7="3" y8="-3"/>
+                                            <line antialias="false" end1="none" end2="none" length1="0" length2="0" style="line-style:normal;line-weight:normal;filling:black;color:black" x1="-9.84" x2="-18.78" y1="4.68" y2="-12.67"/>
+                                            <polygon antialias="false" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="35.11" x2="37" x3="38" x4="40" x5="41" x6="43" x7="44.17" y1="-2.7" y2="3" y3="-3" y4="3" y5="-3" y6="3" y7="-2.58"/>
+                                            <polygon antialias="true" style="line-style:normal;line-weight:thin;filling:black;color:black" x1="-19.41" x2="-17.05" x3="-20.09" x4="-19.46" y1="-11.1" y2="-12.65" y3="-14.72" y4="-11.17"/>
+                                            <polygon antialias="true" style="line-style:normal;line-weight:thin;filling:black;color:black" x1="0" x2="-1.95" x3="2.05" y1="4.3" y2="0.35" y3="0.35"/>
+                                            <polygon antialias="true" style="line-style:normal;line-weight:thin;filling:black;color:black" x1="26.81" x2="29.57" x3="30" x4="26.78" y1="-11.53" y2="-10.05" y3="-14.26" y4="-11.57"/>
+                                            <line antialias="false" end1="none" end2="none" length1="0" length2="0" style="line-style:normal;line-weight:normal;filling:black;color:black" x1="0" x2="0" y1="0" y2="-15"/>
+                                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20" x2="-20" y1="5" y2="0"/>
+                                            <polygon antialias="true" style="line-style:normal;line-weight:thin;filling:black;color:black" x1="10" x2="8" x3="12" y1="4.42" y2="0.47" y3="0.47"/>
+                                            <line antialias="false" end1="none" end2="none" length1="0" length2="0" style="line-style:normal;line-weight:normal;filling:black;color:black" x1="20" x2="28.5" y1="5" y2="-11.42"/>
+                                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-22" x2="-18" y1="0" y2="0"/>
+                                            <rect antialias="false" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="30" x="-25" y="-15"/>
+                                            <line antialias="false" end1="none" end2="none" length1="0" length2="0" style="line-style:normal;line-weight:normal;filling:black;color:black" x1="10" x2="10" y1="0" y2="-18"/>
+                                            <rect antialias="false" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="30" x="5" y="-15"/>
+                                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="30" x2="30" y1="5" y2="0"/>
+                                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="28" x2="32" y1="0" y2="0"/>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{40900961-25e8-f739-16ec-6b44e6976ba6}" x="-35" y="-40" z="31">
+                                                <text/>
+                                                <info_name>label</info_name>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="-1" uuid="{edc0ea81-6dd2-bed8-32aa-59e25a4d4cd7}" x="3" y="1" z="32">
+                                                <text>5</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="0" uuid="{7c9622eb-49ef-45c6-43b8-390d231738af}" x="23" y="-24" z="32">
+                                                <text>2</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="0" uuid="{dd2c88c1-1756-6344-f625-f65d28608f9c}" x="-35" y="-20" z="32">
+                                                <text>14</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="0" uuid="{0cc6a605-8cbf-4c85-a29d-a848050e59c8}" x="32" y="-20" z="32">
+                                                <text>12</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="-1" uuid="{3a4307f6-47fb-68da-cdf5-2670a12e5c18}" x="23" y="1" z="32">
+                                                <text>3</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="-1" uuid="{17d528d9-dfae-8415-38e6-17fb0b85db60}" x="13" y="1" z="32">
+                                                <text>1</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="0" uuid="{a5a53a1f-d60e-8245-406b-142e3fa5e101}" x="3" y="-24" z="32">
+                                                <text>4</text>
+                                            </dynamic_text>
+                                            <terminal medium="pneumatic" name="5" orientation="s" type="Generic" uuid="{0d5afb67-53af-4352-927f-0f355bde32a3}" x="10" y="10"/>
+                                            <terminal medium="pneumatic" name="2" orientation="n" type="Generic" uuid="{0eb4e305-c12d-4d7e-aec5-a95e45c51a16}" x="30" y="-20"/>
+                                            <terminal medium="pneumatic" name="3" orientation="s" type="Generic" uuid="{96cd18ff-c198-4c40-b5bf-6b7994c06dc9}" x="30" y="10"/>
+                                            <terminal medium="pneumatic" name="4" orientation="n" type="Generic" uuid="{cd1228b7-ce2b-4176-b8ae-56e60a0ec85c}" x="10" y="-20"/>
+                                            <terminal medium="pneumatic" name="1" orientation="s" type="Generic" uuid="{fa41901e-252d-4b01-83c8-1f76cdb5c7d9}" x="20" y="10"/>
+                                        </description>
+                                    </definition>
+                                </element>
+                            </category>
+                        </category>
+                    </category>
+                </category>
+                <category name="5030_actuators">
+                    <names>
+                        <name lang="ar">المحركات</name>
+                        <name lang="ca">Actuadors</name>
+                        <name lang="cs">Akční členy</name>
+                        <name lang="da">Aktuatorer</name>
+                        <name lang="de">Aktuatoren</name>
+                        <name lang="el">Ενεργοποιητές</name>
+                        <name lang="en">Actuators</name>
+                        <name lang="es">Actuadores</name>
+                        <name lang="fi">Toimilaitteet</name>
+                        <name lang="fr">Actionneurs</name>
+                        <name lang="hr">Aktuatori</name>
+                        <name lang="hu">Működtetők</name>
+                        <name lang="it">Attuatori</name>
+                        <name lang="ja">アクチュエータ</name>
+                        <name lang="ko">액추에이터</name>
+                        <name lang="mn">Хөдөлгүүрүүд</name>
+                        <name lang="nb">Aktuatorer</name>
+                        <name lang="nl">Actuatoren</name>
+                        <name lang="nl_BE">Actuatoren</name>
+                        <name lang="pl">Siłowniki</name>
+                        <name lang="pt">Atuadores</name>
+                        <name lang="pt_BR">Atuadores</name>
+                        <name lang="ro">Actuatoare</name>
+                        <name lang="ru">Приводы</name>
+                        <name lang="sk">Pohony</name>
+                        <name lang="sl">Aktuatorji</name>
+                        <name lang="sr">Актуатори</name>
+                        <name lang="sv">Ställdon</name>
+                        <name lang="tr">aktüatörler</name>
+                        <name lang="uk">Виконавчі механізми</name>
+                        <name lang="zh">执行器</name>
+                    </names>
+                    <category name="503010_cylinder_lin">
+                        <names>
+                            <name lang="ar">خطي</name>
+                            <name lang="ca">lineal</name>
+                            <name lang="cs">lineární</name>
+                            <name lang="da">lineær</name>
+                            <name lang="de">linear</name>
+                            <name lang="el">γραμμικά</name>
+                            <name lang="en">linear</name>
+                            <name lang="es">lineal</name>
+                            <name lang="fi">lineaarinen</name>
+                            <name lang="fr">linéaire</name>
+                            <name lang="hr">linearni</name>
+                            <name lang="hu">lineáris</name>
+                            <name lang="it">lineare</name>
+                            <name lang="ja">リニア</name>
+                            <name lang="ko">직선형</name>
+                            <name lang="mn">шугаман</name>
+                            <name lang="nb">lineær</name>
+                            <name lang="nl">lineair</name>
+                            <name lang="nl_BE">lineair</name>
+                            <name lang="pl">liniowy</name>
+                            <name lang="pt">linear</name>
+                            <name lang="pt_BR">linear</name>
+                            <name lang="ro">liniar</name>
+                            <name lang="ru">линейный</name>
+                            <name lang="sk">lineárny</name>
+                            <name lang="sl">linearni</name>
+                            <name lang="sr">линеарни</name>
+                            <name lang="sv">linjär</name>
+                            <name lang="tr">doğrusal</name>
+                            <name lang="uk">лінійний</name>
+                            <name lang="zh">直线气缸</name>
+                        </names>
+                        <category name="50301011_double_acting">
+                            <names>
+                                <name lang="ar">اسطوانة مزدوجة التمثيل</name>
+                                <name lang="ca">Simple efecte</name>
+                                <name lang="cs">dvoučinný</name>
+                                <name lang="da">single acting</name>
+                                <name lang="de">Doppeltwirkend</name>
+                                <name lang="el">single acting</name>
+                                <name lang="en">double acting</name>
+                                <name lang="es">single acting</name>
+                                <name lang="fi">kaksitoiminen</name>
+                                <name lang="fr">double effet</name>
+                                <name lang="hr">single acting</name>
+                                <name lang="hu">single acting</name>
+                                <name lang="it">doppio effetto</name>
+                                <name lang="ja">single acting</name>
+                                <name lang="ko">복동</name>
+                                <name lang="mn">single acting</name>
+                                <name lang="nb">single acting</name>
+                                <name lang="nl">dubbelwerkende</name>
+                                <name lang="nl_BE">single acting</name>
+                                <name lang="pl">dwustronnego działania</name>
+                                <name lang="pt">single acting</name>
+                                <name lang="pt_BR">simples acting</name>
+                                <name lang="ro">single acting</name>
+                                <name lang="ru">single acting</name>
+                                <name lang="sk">dvojčinný</name>
+                                <name lang="sl">single acting</name>
+                                <name lang="sr">single acting</name>
+                                <name lang="sv">dubbelverkande</name>
+                                <name lang="tr">single acting</name>
+                                <name lang="uk">Двосторонньої дії</name>
+                                <name lang="zh">双作用气缸</name>
+                            </names>
+                            <element name="5030101100_double_effet.elmt">
+                                <definition height="40" hotspot_x="38" hotspot_y="10" link_type="simple" type="element" version="0.90" width="70">
+                                    <uuid uuid="{10ae0ca0-05be-bfb1-fc07-9c070f14f6cd}"/>
+                                    <names>
+                                        <name lang="ar">التمثيل المزدوج</name>
+                                        <name lang="ca">Doble efecte</name>
+                                        <name lang="cs">dvojí působení</name>
+                                        <name lang="da">dobbeltvirkende</name>
+                                        <name lang="de">Doppeltwirkend</name>
+                                        <name lang="el">διπλής ενέργειας</name>
+                                        <name lang="en">double acting</name>
+                                        <name lang="es">doble efecto</name>
+                                        <name lang="fi">kaksitoiminen</name>
+                                        <name lang="fr">double jeu</name>
+                                        <name lang="hr">dvostrukog djelovanja</name>
+                                        <name lang="hu">kettős szereplés</name>
+                                        <name lang="it">doppio effetto</name>
+                                        <name lang="ja">複動式</name>
+                                        <name lang="ko">복동</name>
+                                        <name lang="mn">давхар жүжиглэлт</name>
+                                        <name lang="nb">dobbeltvirkende</name>
+                                        <name lang="nl">dubbelwerkende</name>
+                                        <name lang="nl_BE">single acting</name>
+                                        <name lang="pl">dwustronnego działania</name>
+                                        <name lang="pt">dupla açao</name>
+                                        <name lang="pt_BR">dupla açao</name>
+                                        <name lang="ro">cu dublă acțiune</name>
+                                        <name lang="ru">двойного действия</name>
+                                        <name lang="sk">dvojčinný</name>
+                                        <name lang="sl">dvojnega delovanja</name>
+                                        <name lang="sr">двоструког дејства</name>
+                                        <name lang="sv">dubbelverkande</name>
+                                        <name lang="tr">çift ​​oyunculuk</name>
+                                        <name lang="uk">Двосторонньої дії</name>
+                                        <name lang="zh">双作用气缸 5030101100</name>
+                                    </names>
+                                    <fluid function="actuator.cyl_conf" kind="cylinder" prefix="MM">
+                                        <cylinder action="double" bore_mm="20" rod_mm="8" stroke_mm="100"/>
+                                        <parameter name="d_piston" unit="mm" value="20"/>
+                                        <parameter name="d_rod" unit="mm" value="8"/>
+                                        <parameter name="xMax" unit="mm" value="100"/>
+                                        <parameter name="xStart" unit="mm" value="0"/>
+                                        <parameter name="F_extern_const" unit="N" value="0"/>
+                                        <parameter name="m_ext" unit="kg" value="0"/>
+                                        <parameter name="len_damp" unit="mm" value="10"/>
+                                    </fluid>
+                                    <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                    <description>
+                                        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{dbd71dbe-d663-477f-9dfd-8725fc661135}" x="-32" y="-25.95" z="1">
+                                            <text/>
+                                            <info_name>label</info_name>
+                                        </dynamic_text>
+                                        <rect antialias="false" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="3" x="-27" y="-5"/>
+                                        <polygon antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="18" x2="22" x3="20" y1="15" y2="15" y3="11"/>
+                                        <polygon antialias="false" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="28" x2="-24" x3="-24" x4="28" y1="3" y2="3" y3="7" y4="7"/>
+                                        <polygon antialias="true" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="23" x2="23" x3="-33" x4="-33" x5="23" x6="23" y1="7" y2="15" y3="15" y4="-5" y5="-5" y6="3"/>
+                                        <polygon antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-32" x2="-28" x3="-30" y1="15" y2="15" y3="11"/>
+                                        <terminal medium="pneumatic" name="A" orientation="s" type="Generic" uuid="{23c888b0-cc9b-402b-827c-177017ce9ce1}" x="-30" y="20"/>
+                                        <terminal medium="pneumatic" name="B" orientation="s" type="Generic" uuid="{8f3be32e-851a-427c-a68d-b241257f983c}" x="20" y="20"/>
+                                    </description>
+                                </definition>
+                            </element>
+                        </category>
+                    </category>
+                </category>
+            </category>
+            <category name="10_electric">
+                <names>
+                    <name lang="ar">كهربائي</name>
+                    <name lang="ca">Elèctric</name>
+                    <name lang="cs">Elektrotechnika</name>
+                    <name lang="da">Elektrisk</name>
+                    <name lang="de">Elektrik</name>
+                    <name lang="el">Ηλεκτρικά</name>
+                    <name lang="en">Electric</name>
+                    <name lang="es">Eléctrica</name>
+                    <name lang="fi">Sähkö</name>
+                    <name lang="fr">Electrique</name>
+                    <name lang="hr">Električno</name>
+                    <name lang="hu">Elektromos</name>
+                    <name lang="it">Elettrica</name>
+                    <name lang="ja">電気</name>
+                    <name lang="ko">전기</name>
+                    <name lang="mn">Цахилгаан</name>
+                    <name lang="nb">Elektrisk</name>
+                    <name lang="nl">Elektrotechniek</name>
+                    <name lang="nl_BE">Elektrisch</name>
+                    <name lang="pl">Elektrotechnika</name>
+                    <name lang="pt">Elétrico</name>
+                    <name lang="pt_BR">Elétrica</name>
+                    <name lang="ro">Electric</name>
+                    <name lang="ru">Электротехника</name>
+                    <name lang="sk">Elektrické</name>
+                    <name lang="sl">Elektrika</name>
+                    <name lang="sr">Електрика</name>
+                    <name lang="sv">El</name>
+                    <name lang="tr">Elektrik</name>
+                    <name lang="uk">Електрика</name>
+                    <name lang="zh">10_电气</name>
+                    <name lang="zn">电气工程</name>
+                </names>
+                <category name="10_allpole">
+                    <names>
+                        <name lang="ar">متعدد الأقطاب</name>
+                        <name lang="ca">Multifilar</name>
+                        <name lang="cs">Vícežilový</name>
+                        <name lang="da">Flere ledere</name>
+                        <name lang="de">Allpolig</name>
+                        <name lang="el">Πολυγραμμικό</name>
+                        <name lang="en">All-pole</name>
+                        <name lang="es">Multifilar</name>
+                        <name lang="fi">Yleisnapa</name>
+                        <name lang="fr">Multifilaire</name>
+                        <name lang="hr">Univerzalni</name>
+                        <name lang="hu">Többvonalas szimbólumok</name>
+                        <name lang="it">Multifilare</name>
+                        <name lang="ja">複線</name>
+                        <name lang="ko">다-극</name>
+                        <name lang="mn">Бүх туйл</name>
+                        <name lang="nb">Alle poler</name>
+                        <name lang="nl">Veel polig</name>
+                        <name lang="nl_BE">All-pole</name>
+                        <name lang="pl">Schematy wieloliniowe</name>
+                        <name lang="pt">Multipolar</name>
+                        <name lang="pt_BR">Multifilar</name>
+                        <name lang="ro">Bipolar</name>
+                        <name lang="ru">Многополюсные</name>
+                        <name lang="sk">Všepólové</name>
+                        <name lang="sl">Vsi poli</name>
+                        <name lang="sr">Свe-полни</name>
+                        <name lang="sv">Allpolig</name>
+                        <name lang="tr">Çok kutuplu</name>
+                        <name lang="uk">Багатополюсні</name>
+                        <name lang="zh">10_全极</name>
+                    </names>
+                    <category name="380_signaling_operating">
+                        <names>
+                            <name lang="ar">الإشارات والتشغيل</name>
+                            <name lang="ca">Senyalització i commandament</name>
+                            <name lang="cs">Značení a příkazy</name>
+                            <name lang="da">Signalering og betjening</name>
+                            <name lang="de">Melde- und Bedieneinrichtungen</name>
+                            <name lang="el">Σήμανση και χειρισμός</name>
+                            <name lang="en">Signaling and operating</name>
+                            <name lang="es">Señalización y comando</name>
+                            <name lang="fi">Merkinnät ja käyttö</name>
+                            <name lang="fr">Signalétique et commande</name>
+                            <name lang="hr">Signalizacija i upravljanje</name>
+                            <name lang="hu">Jelzés és kezelés</name>
+                            <name lang="it">Segnalazione e comando</name>
+                            <name lang="ja">信号と操作</name>
+                            <name lang="ko">신호 및 작동</name>
+                            <name lang="mn">Дохиолол ба удирдлага</name>
+                            <name lang="nb">Signalering og betjening</name>
+                            <name lang="nl">Signalering en bediening</name>
+                            <name lang="nl_BE">Signalering en bediening</name>
+                            <name lang="pl">Obwody sterownicze</name>
+                            <name lang="pt">Sinalização e comando</name>
+                            <name lang="pt_BR">Sinalização e Comando</name>
+                            <name lang="ro">Semnalizare și operare</name>
+                            <name lang="ru">Сигнализация и управление</name>
+                            <name lang="sk">Signalizácia a ovládanie</name>
+                            <name lang="sl">Signalizacija in upravljanje</name>
+                            <name lang="sr">Сигнализација и управљање</name>
+                            <name lang="sv">Signalering och manövrering</name>
+                            <name lang="tr">Sinyalizasyon ve kumanda</name>
+                            <name lang="uk">Сигналізація та керування</name>
+                            <name lang="zh">信号与操作</name>
+                        </names>
+                        <category name="20_push_buttons">
+                            <names>
+                                <name lang="ar">مفاتيح ضاغطة</name>
+                                <name lang="ca">Polsadors</name>
+                                <name lang="cs">Tlačítka</name>
+                                <name lang="da">Trykknapper</name>
+                                <name lang="de">Drucktaster</name>
+                                <name lang="el">Μπουτόν</name>
+                                <name lang="en">Push-buttons</name>
+                                <name lang="es">Pulsadores</name>
+                                <name lang="fi">Painikkeet</name>
+                                <name lang="fr">Boutons-poussoirs</name>
+                                <name lang="hr">Tipkala</name>
+                                <name lang="hu">Nyomógombok</name>
+                                <name lang="it">Pulsanti</name>
+                                <name lang="ja">押しボタン</name>
+                                <name lang="ko">푸시 버튼</name>
+                                <name lang="mn">Товчлуур</name>
+                                <name lang="nb">Trykknapper</name>
+                                <name lang="nl">Knop druk</name>
+                                <name lang="nl_BE">Drukknoppen</name>
+                                <name lang="pl">Przyciski</name>
+                                <name lang="pt">Botões de pressão</name>
+                                <name lang="pt_BR">Botões de pressão</name>
+                                <name lang="ro">Butoane</name>
+                                <name lang="ru">Кнопки</name>
+                                <name lang="sk">Tlačidlá</name>
+                                <name lang="sl">Tipke</name>
+                                <name lang="sr">Тастери</name>
+                                <name lang="sv">Tryckknappar</name>
+                                <name lang="tr">Butonlar</name>
+                                <name lang="uk">Кнопки</name>
+                                <name lang="zh">20_按钮</name>
+                            </names>
+                            <element name="poussoir.elmt">
+                                <definition height="60" hotspot_x="12" hotspot_y="30" link_type="master" type="element" version="0.100.0" width="20">
+                                    <uuid uuid="{0d256453-ab42-30c1-1d91-b3ec0fb1298c}"/>
+                                    <names>
+                                        <name lang="ar">زرّ ضاغط</name>
+                                        <name lang="ca">Pulsador</name>
+                                        <name lang="cs">Tlačítko</name>
+                                        <name lang="da">Trykknap</name>
+                                        <name lang="de">Drucktaster Schliesser</name>
+                                        <name lang="el">Μπουτόν, ανοικτή επαφή</name>
+                                        <name lang="en">Push-button</name>
+                                        <name lang="es">Pulsador</name>
+                                        <name lang="fi">Painike</name>
+                                        <name lang="fr">Bouton poussoir</name>
+                                        <name lang="hr">Pritisni gumb</name>
+                                        <name lang="hu">Nyomógomb</name>
+                                        <name lang="it">Pulsante (NA)</name>
+                                        <name lang="ja">押しボタン</name>
+                                        <name lang="ko">푸시 버튼</name>
+                                        <name lang="mn">Товчлуур</name>
+                                        <name lang="nb">Trykknapp</name>
+                                        <name lang="nl">Drukknop (NO)</name>
+                                        <name lang="nl_BE">Drukknop</name>
+                                        <name lang="pl">Łącznik przyciskowy z powrotem samoczynnym</name>
+                                        <name lang="pt">Botão de pressão (NA)</name>
+                                        <name lang="pt_BR">Botão de pressão (NA)</name>
+                                        <name lang="ro">Buton</name>
+                                        <name lang="ru">Кнопка (НР)</name>
+                                        <name lang="sk">Tlačidlo</name>
+                                        <name lang="sl">Tipkalo</name>
+                                        <name lang="sr">Тастер</name>
+                                        <name lang="sv">Tryckknapp</name>
+                                        <name lang="tr">Buton</name>
+                                        <name lang="uk">Кнопка</name>
+                                        <name lang="zh">按钮</name>
+                                    </names>
+                                    <kindInformations>
+                                        <kindInformation name="type">commutator</kindInformation>
+                                    </kindInformations>
+                                    <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                    <description>
+                                        <polygon antialias="true" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-5" x2="0" x3="0" y1="-10" y2="10" y3="20"/>
+                                        <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20" y2="-10"/>
+                                        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{3ac3e811-49e9-45f5-bf98-2082cf23b2f9}" x="2.75" y="-9.5" z="3">
+                                            <text/>
+                                            <info_name>label</info_name>
+                                        </dynamic_text>
+                                        <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:dashed;line-weight:thin;filling:none;color:black" x1="-10" x2="-3" y1="0" y2="0"/>
+                                        <polygon antialias="false" closed="false" style="line-style:normal;line-weight:thin;filling:none;color:black" x1="-7" x2="-10" x3="-10" x4="-7" y1="-5" y2="-5" y3="5" y4="5"/>
+                                        <terminal name="" orientation="n" type="Generic" uuid="{1db4e4bd-ec1e-4fdb-84cb-2d7d0b7cac74}" x="0" y="-21"/>
+                                        <terminal name="" orientation="s" type="Generic" uuid="{2c393aa3-238f-446c-bc5d-022946342bb8}" x="0" y="21"/>
+                                    </description>
+                                </definition>
+                            </element>
+                        </category>
+                    </category>
+                    <category name="390_sensors_instruments">
+                        <names>
+                            <name lang="ar">حساسات وأجهزة قياس</name>
+                            <name lang="ca">Sensors i instruments</name>
+                            <name lang="cs">Čidla a měřiče</name>
+                            <name lang="da">Sensorer og instrumenter</name>
+                            <name lang="de">Sensoren und Messgeräte</name>
+                            <name lang="el">Αισθητήρες και όργανα</name>
+                            <name lang="en">Sensors and instruments</name>
+                            <name lang="es">Sensores e instrumentos</name>
+                            <name lang="fi">Anturit ja mittalaitteet</name>
+                            <name lang="fr">Capteurs et instruments</name>
+                            <name lang="hr">Senzori i instrumenti</name>
+                            <name lang="hu">Érzékelők és műszerek</name>
+                            <name lang="it">Sensori e misuratori</name>
+                            <name lang="ja">センサと計器</name>
+                            <name lang="ko">센서 및 계기</name>
+                            <name lang="mn">Мэдрэгч ба хэмжих хэрэгсэл</name>
+                            <name lang="nb">Sensorer og instrumenter</name>
+                            <name lang="nl">Sensoren en instrumenten</name>
+                            <name lang="nl_BE">Sensoren en instrumenten</name>
+                            <name lang="pl">Czujniki i przyrządy</name>
+                            <name lang="pt">Sensores e instrumentos</name>
+                            <name lang="pt_BR">Sensores e instrumentos</name>
+                            <name lang="ro">Senzori și instrumente</name>
+                            <name lang="ru">Датчики и инструменты</name>
+                            <name lang="sk">Snímače a prístroje</name>
+                            <name lang="sl">Senzorji in instrumenti</name>
+                            <name lang="sr">Сензори и инструменти</name>
+                            <name lang="sv">Sensorer och instrument</name>
+                            <name lang="tr">Sensörler ve ölçüm cihazları</name>
+                            <name lang="uk">Давачі та прилади</name>
+                            <name lang="zh">传感器与仪表</name>
+                        </names>
+                        <category name="41_limit_switches">
+                            <names>
+                                <name lang="ar">مفاتيح حدّ</name>
+                                <name lang="ca">Finals de cursa</name>
+                                <name lang="cs">Koncové spínače</name>
+                                <name lang="da">Grænsekontakter</name>
+                                <name lang="de">Endschalter</name>
+                                <name lang="el">Τερματικά</name>
+                                <name lang="en">Limits</name>
+                                <name lang="es">Finales de carrera</name>
+                                <name lang="fi">Rajat</name>
+                                <name lang="fr">Fins de course</name>
+                                <name lang="hr">Krajnje sklopke</name>
+                                <name lang="hu">Végállások</name>
+                                <name lang="it">Finecorsa</name>
+                                <name lang="ja">リミット</name>
+                                <name lang="ko">리밋 스위치</name>
+                                <name lang="mn">Хязгаарлагч</name>
+                                <name lang="nb">Grensebrytere</name>
+                                <name lang="nl">mechanische contacten</name>
+                                <name lang="nl_BE">Eindeloop</name>
+                                <name lang="pl">Łączniki krańcowe</name>
+                                <name lang="pt">Fins de curso</name>
+                                <name lang="pt_BR">Fins de curso</name>
+                                <name lang="ro">Limite</name>
+                                <name lang="ru">Концевые выключатели</name>
+                                <name lang="sk">Koncové spínače</name>
+                                <name lang="sl">Končna stikala</name>
+                                <name lang="sr">Гранични прекидачи</name>
+                                <name lang="sv">Gränslägen</name>
+                                <name lang="tr">Limitler</name>
+                                <name lang="uk">Кінцеві вимикачі</name>
+                                <name lang="zh">限位开关</name>
+                            </names>
+                            <element name="fin_de_course_no.elmt">
+                                <definition height="60" hotspot_x="12" hotspot_y="30" link_type="simple" type="element" version="0.100.0" width="20">
+                                    <uuid uuid="{820d9760-2e4e-4588-2902-f8ad344b20b9}"/>
+                                    <names>
+                                        <name lang="ar">مفتاح نهاية مشوار (NO)</name>
+                                        <name lang="ca">Interruptor de límit (NO)</name>
+                                        <name lang="cs">Koncový spínač NO</name>
+                                        <name lang="da">Endestopkontakt (NO)</name>
+                                        <name lang="de">Schliesser mechanisch</name>
+                                        <name lang="el">Τερματικό, Ανοικτό</name>
+                                        <name lang="en">Limitswitch (NO)</name>
+                                        <name lang="es">Final de carrera</name>
+                                        <name lang="fi">Rajarajakytkin (NO)</name>
+                                        <name lang="fr">Fin de course</name>
+                                        <name lang="hr">Krajnja sklopka (NO)</name>
+                                        <name lang="hu">Végálláskapcsoló (NO)</name>
+                                        <name lang="it">Finecorsa (NA)</name>
+                                        <name lang="ja">リミットスイッチ (NO)</name>
+                                        <name lang="ko">리밋 스위치 (NO)</name>
+                                        <name lang="mn">Хязгаарын унтраалга (NO)</name>
+                                        <name lang="nb">Grensebryter (NO)</name>
+                                        <name lang="nl">Eindschakelaar (NO)</name>
+                                        <name lang="nl_BE">Eindeschakelaar (NO)</name>
+                                        <name lang="pl">Zestyk zwierny łącznika krańcowego</name>
+                                        <name lang="pt">Fim de curso (NO)</name>
+                                        <name lang="pt_BR">Fim de curso (NA)</name>
+                                        <name lang="ro">Întrerupător de limită (NO)</name>
+                                        <name lang="ru">Концевой контакт (НР)</name>
+                                        <name lang="sk">Koncový spínač (NO)</name>
+                                        <name lang="sl">Končno stikalo (NO)</name>
+                                        <name lang="sr">Гранични прекидач (NO)</name>
+                                        <name lang="sv">Gränslägesbrytare (NO)</name>
+                                        <name lang="tr">Limit anahtarı (NO)</name>
+                                        <name lang="uk">Кінцевий вимикач (NO)</name>
+                                        <name lang="zh">限位开关_常开</name>
+                                    </names>
+                                    <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                    <description>
+                                        <polygon antialias="true" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-5" x2="0" x3="0" y1="-10" y2="10" y3="20"/>
+                                        <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{0ae1e1d2-ebd8-4473-845f-f8ca95767896}" x="2.75" y="-9.5" z="2">
+                                            <text/>
+                                            <info_name>label</info_name>
+                                        </dynamic_text>
+                                        <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20" y2="-10"/>
+                                        <polygon antialias="true" closed="false" style="line-style:normal;line-weight:thin;filling:none;color:black" x1="-4" x2="-9" x3="-1" y1="-6" y2="-4" y3="6.5"/>
+                                        <terminal name="" orientation="n" type="Generic" uuid="{a9bdca54-fa34-422a-81d9-004da34268e9}" x="0" y="-21"/>
+                                        <terminal name="" orientation="s" type="Generic" uuid="{5bb36cc1-2b1a-433b-a0e4-277ef9ce6f5d}" x="0" y="21"/>
+                                    </description>
+                                </definition>
+                            </element>
+                        </category>
+                    </category>
+                </category>
+            </category>
+            <category name="20_logic">
+                <names>
+                    <name lang="ar">المنطق</name>
+                    <name lang="ca">Lògiques</name>
+                    <name lang="cs">logiky</name>
+                    <name lang="da">logikker</name>
+                    <name lang="de">Logik</name>
+                    <name lang="el">λογικές</name>
+                    <name lang="en">logics</name>
+                    <name lang="es">lógicas</name>
+                    <name lang="fi">logiikka</name>
+                    <name lang="fr">logiques</name>
+                    <name lang="hr">logike</name>
+                    <name lang="hu">logikák</name>
+                    <name lang="it">logiche</name>
+                    <name lang="ja">ロジック</name>
+                    <name lang="ko">논리</name>
+                    <name lang="mn">логик</name>
+                    <name lang="nb">logikk</name>
+                    <name lang="nl">logica's</name>
+                    <name lang="nl_BE">Logica</name>
+                    <name lang="pl">logika</name>
+                    <name lang="pt">lógicas</name>
+                    <name lang="pt_BR">lógicas</name>
+                    <name lang="ro">logici</name>
+                    <name lang="ru">логика</name>
+                    <name lang="sk">Logika</name>
+                    <name lang="sl">logike</name>
+                    <name lang="sr">логике</name>
+                    <name lang="sv">logik</name>
+                    <name lang="tr">mantık</name>
+                    <name lang="uk">Логіка</name>
+                    <name lang="zh">20_逻辑</name>
+                    <name lang="zn">逻辑学</name>
+                </names>
+                <category name="2020_flow_chart">
+                    <names>
+                        <name lang="ar">المخططات الانسيابية</name>
+                        <name lang="ca">Diagrames de flux</name>
+                        <name lang="cs">vývojové diagramy</name>
+                        <name lang="da">flowdiagrammer</name>
+                        <name lang="de">Ablaufdiagramme</name>
+                        <name lang="el">διαγράμματα ροής</name>
+                        <name lang="en">flowcharts</name>
+                        <name lang="es">diagramas de flujo</name>
+                        <name lang="fi">vuokaaviot</name>
+                        <name lang="fr">organigrammes</name>
+                        <name lang="hr">dijagrami toka</name>
+                        <name lang="hu">folyamatábrák</name>
+                        <name lang="it">diagrammi di flusso</name>
+                        <name lang="ja">フローチャート</name>
+                        <name lang="ko">플로우차트</name>
+                        <name lang="mn">урсгал диаграммууд</name>
+                        <name lang="nb">flytskjemaer</name>
+                        <name lang="nl">stroomschema's</name>
+                        <name lang="nl_BE">stroomdiagrammen</name>
+                        <name lang="pl">schematy blokowe</name>
+                        <name lang="pt">fluxogramas</name>
+                        <name lang="pt_BR">fluxogramas</name>
+                        <name lang="ro">organigrame</name>
+                        <name lang="ru">блок-схемы</name>
+                        <name lang="sk">vývojové diagramy</name>
+                        <name lang="sl">diagrami poteka</name>
+                        <name lang="sr">дијаграми тока</name>
+                        <name lang="sv">flödesscheman</name>
+                        <name lang="tr">akış şemaları</name>
+                        <name lang="uk">Блок-схеми</name>
+                        <name lang="zh">流程图</name>
+                    </names>
+                    <category name="202020_grafcet">
+                        <names>
+                            <name lang="ca">Grafcet</name>
+                            <name lang="de">Grafcet</name>
+                            <name lang="ko">그라프세트</name>
+                            <name lang="pt_BR">Diagrama sequencial GRAFCET</name>
+                            <name lang="zh">GRAFCET</name>
+                        </names>
+                        <element name="20202000_step.elmt">
+                            <definition height="40" hotspot_x="20" hotspot_y="20" link_type="simple" type="element" version="0.100" width="40">
+                                <uuid uuid="{044e1891-af87-8827-226f-aba03fb1da61}"/>
+                                <names>
+                                    <name lang="ar">خطوة أولية</name>
+                                    <name lang="ca">pas inicial</name>
+                                    <name lang="cs">počáteční krok</name>
+                                    <name lang="da">indledende trin</name>
+                                    <name lang="de">ersten Schritt</name>
+                                    <name lang="el">αρχικό βήμα</name>
+                                    <name lang="en">initial step</name>
+                                    <name lang="es">paso inicial</name>
+                                    <name lang="fi">alkuaskel</name>
+                                    <name lang="fr">première étape</name>
+                                    <name lang="hr">početni korak</name>
+                                    <name lang="hu">kezdeti lépés</name>
+                                    <name lang="it">passo iniziale</name>
+                                    <name lang="ja">最初のステップ</name>
+                                    <name lang="ko">초기 스텝</name>
+                                    <name lang="mn">эхний алхам</name>
+                                    <name lang="nb">innledende trinn</name>
+                                    <name lang="nl">eerste stap</name>
+                                    <name lang="nl_BE">initiële stap</name>
+                                    <name lang="pl">pierwszy krok</name>
+                                    <name lang="pt">passo inicial</name>
+                                    <name lang="pt_BR">passo inicial</name>
+                                    <name lang="ro">pas inițial</name>
+                                    <name lang="ru">начальный шаг</name>
+                                    <name lang="sk">počiatočný krok</name>
+                                    <name lang="sl">začetni korak</name>
+                                    <name lang="sr">почетни корак</name>
+                                    <name lang="sv">initialsteg</name>
+                                    <name lang="tr">ilk adım</name>
+                                    <name lang="uk">Початковий крок</name>
+                                    <name lang="zh">步骤_00</name>
+                                </names>
+                                <informations>Author: The QElectroTech team; redrawn on the 10 grid (QElectroTech-EPLAN)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                <description>
+                                    <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="40" x="-20" y="-20"/>
+                                    <rect antialias="false" height="32" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="32" x="-16" y="-16"/>
+                                    <terminal name="in" orientation="n" type="Generic" uuid="{e98eb260-634b-4753-b050-4846fe2c9cff}" x="0" y="-20"/>
+                                    <terminal name="out" orientation="s" type="Generic" uuid="{d88af62a-ca14-483f-8273-a4b34ce628a7}" x="0" y="20"/>
+                                    <terminal name="action" orientation="e" type="Generic" uuid="{30732d87-1bf4-4515-b821-c8554d92bc8e}" x="20" y="0"/>
+                                    <dynamic_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{ef1e6fe6-985f-4ac5-af11-ce1d309f3197}" x="-4" y="-11" z="5">
+                                        <text/>
+                                        <info_name>label</info_name>
+                                    </dynamic_text>
+                                </description>
+                            </definition>
+                        </element>
+                        <element name="20202060_transition.elmt">
+                            <definition height="20" hotspot_x="20" hotspot_y="10" link_type="simple" type="element" version="0.100" width="130">
+                                <uuid uuid="{7981b8f4-4cd2-bb8a-50f6-275c1dea7a8c}"/>
+                                <names>
+                                    <name lang="ar">انتقال</name>
+                                    <name lang="ca">transició</name>
+                                    <name lang="cs">přechod</name>
+                                    <name lang="da">overgang</name>
+                                    <name lang="de">Überleitung</name>
+                                    <name lang="el">μετάβαση</name>
+                                    <name lang="en">transition</name>
+                                    <name lang="es">transición</name>
+                                    <name lang="fi">siirtymä</name>
+                                    <name lang="fr">passage</name>
+                                    <name lang="hr">tranzicija</name>
+                                    <name lang="hu">átmenet</name>
+                                    <name lang="it">transizione</name>
+                                    <name lang="ja">遷移</name>
+                                    <name lang="ko">전이</name>
+                                    <name lang="mn">шилжилт</name>
+                                    <name lang="nb">overgang</name>
+                                    <name lang="nl">overgang</name>
+                                    <name lang="nl_BE">transitie</name>
+                                    <name lang="pl">przemiana</name>
+                                    <name lang="pt">transição</name>
+                                    <name lang="pt_BR">transição</name>
+                                    <name lang="ro">tranziție</name>
+                                    <name lang="ru">переход</name>
+                                    <name lang="sk">prechod</name>
+                                    <name lang="sl">prehod</name>
+                                    <name lang="sr">прелаз</name>
+                                    <name lang="sv">övergång</name>
+                                    <name lang="tr">geçiş</name>
+                                    <name lang="uk">Перехід</name>
+                                    <name lang="zh">转换</name>
+                                </names>
+                                <informations>Author: The QElectroTech team; redrawn on the 10 grid (QElectroTech-EPLAN)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                <description>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-10" y2="10"/>
+                                    <rect antialias="false" height="4" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:black;color:black" width="24" x="-12" y="-2"/>
+                                    <terminal name="in" orientation="n" type="Generic" uuid="{51cb8195-fe7d-4fa6-9d8a-d07da42c9b4a}" x="0" y="-10"/>
+                                    <terminal name="out" orientation="s" type="Generic" uuid="{bdb11747-9b9c-42c4-87fe-1a81af467dac}" x="0" y="10"/>
+                                    <dynamic_text Halignment="AlignLeft" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{7e7ea9af-e72e-43e4-8641-7ae5b28b68a8}" x="18" y="-10.5" z="5">
+                                        <text/>
+                                        <info_name>label</info_name>
+                                    </dynamic_text>
+                                </description>
+                            </definition>
+                        </element>
+                        <element name="20202001_step.elmt">
+                            <definition height="40" hotspot_x="20" hotspot_y="20" link_type="simple" type="element" version="0.100" width="40">
+                                <uuid uuid="{27b733f0-b52d-8a3e-d209-8dd2a654c7bd}"/>
+                                <names>
+                                    <name lang="ar">خطوة</name>
+                                    <name lang="ca">Pas</name>
+                                    <name lang="cs">Krok</name>
+                                    <name lang="da">Trin</name>
+                                    <name lang="de">Schritt</name>
+                                    <name lang="el">Βήμα</name>
+                                    <name lang="en">Step</name>
+                                    <name lang="es">Paso</name>
+                                    <name lang="fi">Askel</name>
+                                    <name lang="fr">Étape</name>
+                                    <name lang="hr">Korak</name>
+                                    <name lang="hu">Lépés</name>
+                                    <name lang="it">Fare un passo</name>
+                                    <name lang="ja">ステップ</name>
+                                    <name lang="ko">스텝</name>
+                                    <name lang="mn">Алхам</name>
+                                    <name lang="nb">Steg</name>
+                                    <name lang="nl">Stap</name>
+                                    <name lang="nl_BE">Stap</name>
+                                    <name lang="pl">Krok</name>
+                                    <name lang="pt">Etapa</name>
+                                    <name lang="pt_BR">Etapa</name>
+                                    <name lang="ro">Etapa</name>
+                                    <name lang="ru">Шаг</name>
+                                    <name lang="sk">Krok</name>
+                                    <name lang="sl">korak</name>
+                                    <name lang="sr">Корак</name>
+                                    <name lang="sv">Steg</name>
+                                    <name lang="tr">Adım</name>
+                                    <name lang="uk">Крок</name>
+                                    <name lang="zh">步骤_01</name>
+                                </names>
+                                <informations>Author: The QElectroTech team; redrawn on the 10 grid (QElectroTech-EPLAN)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                <description>
+                                    <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="40" x="-20" y="-20"/>
+                                    <terminal name="in" orientation="n" type="Generic" uuid="{56517bf3-3bf7-44bf-90a0-0f149538420e}" x="0" y="-20"/>
+                                    <terminal name="out" orientation="s" type="Generic" uuid="{dc8fcf90-56b1-4565-8c78-fc7d71d779db}" x="0" y="20"/>
+                                    <terminal name="action" orientation="e" type="Generic" uuid="{9889aa41-493b-4df2-bc19-2232e6e16d8a}" x="20" y="0"/>
+                                    <dynamic_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{29e6fa41-c8de-49a1-a29e-3e9fb6554a78}" x="-4" y="-11" z="5">
+                                        <text/>
+                                        <info_name>label</info_name>
+                                    </dynamic_text>
+                                </description>
+                            </definition>
+                        </element>
+                        <element name="20202020_action.elmt">
+                            <definition height="30" hotspot_x="0" hotspot_y="15" link_type="simple" type="element" version="0.100" width="150">
+                                <uuid uuid="{8ddf521c-f644-07f7-43ec-d5d1a5f20d4e}"/>
+                                <names>
+                                    <name lang="ar">العمل المستمر</name>
+                                    <name lang="ca">Acció contínua</name>
+                                    <name lang="cs">Nepřetržité působení</name>
+                                    <name lang="da">Kontinuerlig handling</name>
+                                    <name lang="de">Kontinuierliche Aktion</name>
+                                    <name lang="el">Συνεχής δράση</name>
+                                    <name lang="en">Continuous action</name>
+                                    <name lang="es">Acción continua</name>
+                                    <name lang="fi">Jatkuva toiminto</name>
+                                    <name lang="fr">Action continue</name>
+                                    <name lang="hr">Kontinuirano djelovanje</name>
+                                    <name lang="hu">Folyamatos cselekvés</name>
+                                    <name lang="it">Azione continua</name>
+                                    <name lang="ja">連続行動</name>
+                                    <name lang="ko">연속 동작</name>
+                                    <name lang="mn">Тасралтгүй үйлдэл</name>
+                                    <name lang="nb">Kontinuerlig handling</name>
+                                    <name lang="nl">Continue actie</name>
+                                    <name lang="nl_BE">Continue actie</name>
+                                    <name lang="pl">Ciągłe działanie</name>
+                                    <name lang="pt">Ação contínua</name>
+                                    <name lang="pt_BR">Ação contínua</name>
+                                    <name lang="ro">Acțiune continuă</name>
+                                    <name lang="ru">Непрерывное действие</name>
+                                    <name lang="sk">Nepretržitá akcia</name>
+                                    <name lang="sl">Neprekinjeno delovanje</name>
+                                    <name lang="sr">Континуирана акција</name>
+                                    <name lang="sv">Kontinuerlig åtgärd</name>
+                                    <name lang="tr">Sürekli eylem</name>
+                                    <name lang="uk">Безперервна дія</name>
+                                    <name lang="zh">动作_20</name>
+                                </names>
+                                <informations>Author: The QElectroTech team; redrawn on the 10 grid (QElectroTech-EPLAN)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                <description>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="10" y1="0" y2="0"/>
+                                    <rect antialias="false" height="30" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="140" x="10" y="-15"/>
+                                    <terminal name="step" orientation="w" type="Generic" uuid="{b8f1f20e-9e67-469d-ad0d-8a57d4053615}" x="0" y="0"/>
+                                    <dynamic_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{79ca79c2-c690-4b46-ae8c-18df0309b718}" x="76" y="-10.5" z="5">
+                                        <text/>
+                                        <info_name>label</info_name>
+                                    </dynamic_text>
+                                </description>
+                            </definition>
+                        </element>
+                        <element name="20202070_parallel_branch.elmt">
+                            <definition height="20" hotspot_x="120" hotspot_y="10" link_type="simple" type="element" version="0.100" width="240">
+                                <uuid uuid="{3642e3d7-7371-556f-e07a-b6a9d1d2bdcf}"/>
+                                <names>
+                                    <name lang="ar">فرع مواز</name>
+                                    <name lang="ca">branca paral·lela</name>
+                                    <name lang="cs">paralelní větev</name>
+                                    <name lang="da">parallel gren</name>
+                                    <name lang="de">Parallelverzweigung</name>
+                                    <name lang="el">παράλληλος κλάδος</name>
+                                    <name lang="en">parallel branch</name>
+                                    <name lang="es">rama paralela</name>
+                                    <name lang="fi">rinnakkainen haara</name>
+                                    <name lang="fr">branche parallèle</name>
+                                    <name lang="hr">paralelna grana</name>
+                                    <name lang="hu">párhuzamos ág</name>
+                                    <name lang="it">ramo parallelo</name>
+                                    <name lang="ja">並列分岐</name>
+                                    <name lang="ko">병렬 분기</name>
+                                    <name lang="mn">зэрэгцээ салбар</name>
+                                    <name lang="nb">parallell gren</name>
+                                    <name lang="nl">parallelle tak</name>
+                                    <name lang="nl_BE">parallelle vertakking</name>
+                                    <name lang="pl">gałąź równoległa</name>
+                                    <name lang="pt">ramo paralelo</name>
+                                    <name lang="pt_BR">ramo paralelo</name>
+                                    <name lang="ro">ramură paralelă</name>
+                                    <name lang="ru">параллельная ветвь</name>
+                                    <name lang="sk">paralelná vetva</name>
+                                    <name lang="sl">vzporedna veja</name>
+                                    <name lang="sr">паралелна грана</name>
+                                    <name lang="sv">parallell gren</name>
+                                    <name lang="tr">paralel dal</name>
+                                    <name lang="uk">Паралельне розгалуження</name>
+                                    <name lang="zh">并行分支</name>
+                                </names>
+                                <informations>Author: The QElectroTech team; redrawn on the 10 grid (QElectroTech-EPLAN)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                <description>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-110" x2="110" y1="0" y2="0"/>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-110" x2="110" y1="3" y2="3"/>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-10" y2="0"/>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-100" x2="-100" y1="3" y2="10"/>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="100" x2="100" y1="3" y2="10"/>
+                                    <terminal name="in" orientation="n" type="Generic" uuid="{1d2b8fad-8728-4b0d-9205-3bb5c002b155}" x="0" y="-10"/>
+                                    <terminal name="1" orientation="s" type="Generic" uuid="{1d9ac490-5669-4ed3-9d28-b52ec7fc38d6}" x="-100" y="10"/>
+                                    <terminal name="2" orientation="s" type="Generic" uuid="{8155e49f-8bd0-4dcd-8878-29228b6b2629}" x="100" y="10"/>
+                                    <terminal name="w" orientation="w" type="Generic" uuid="{f46b5bb3-9fad-49ad-b169-3880fd1bc44c}" x="-110" y="0"/>
+                                    <terminal name="e" orientation="e" type="Generic" uuid="{8afad8e9-1d16-4478-8f0f-25d937a5afbc}" x="110" y="0"/>
+                                </description>
+                            </definition>
+                        </element>
+                        <element name="20202071_synchronization.elmt">
+                            <definition height="20" hotspot_x="120" hotspot_y="10" link_type="simple" type="element" version="0.100" width="240">
+                                <uuid uuid="{505533f9-301f-f11f-6e78-5dfbf81e5529}"/>
+                                <names>
+                                    <name lang="ar">التزامن</name>
+                                    <name lang="ca">sincronització</name>
+                                    <name lang="cs">synchronizace</name>
+                                    <name lang="da">synkronisering</name>
+                                    <name lang="de">Synchronisierung</name>
+                                    <name lang="el">συγχρονισμός</name>
+                                    <name lang="en">synchronization</name>
+                                    <name lang="es">sincronización</name>
+                                    <name lang="fi">synkronointi</name>
+                                    <name lang="fr">synchronisation</name>
+                                    <name lang="hr">sinkronizacija</name>
+                                    <name lang="hu">szinkronizálás</name>
+                                    <name lang="it">sincronizzazione</name>
+                                    <name lang="ja">同期</name>
+                                    <name lang="ko">동기화</name>
+                                    <name lang="mn">синхрончлол</name>
+                                    <name lang="nb">synkronisering</name>
+                                    <name lang="nl">synchronisatie</name>
+                                    <name lang="nl_BE">synchronisatie</name>
+                                    <name lang="pl">synchronizacja</name>
+                                    <name lang="pt">sincronização</name>
+                                    <name lang="pt_BR">sincronização</name>
+                                    <name lang="ro">sincronizare</name>
+                                    <name lang="ru">синхронизация</name>
+                                    <name lang="sk">synchronizácia</name>
+                                    <name lang="sl">sinhronizacijo</name>
+                                    <name lang="sr">синхронизација</name>
+                                    <name lang="sv">synkronisering</name>
+                                    <name lang="tr">senkronizasyon</name>
+                                    <name lang="uk">Синхронізація</name>
+                                    <name lang="zh">同步</name>
+                                </names>
+                                <informations>Author: The QElectroTech team; redrawn on the 10 grid (QElectroTech-EPLAN)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                <description>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-110" x2="110" y1="-3" y2="-3"/>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-110" x2="110" y1="0" y2="0"/>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="0" y2="10"/>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-100" x2="-100" y1="-10" y2="-3"/>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="100" x2="100" y1="-10" y2="-3"/>
+                                    <terminal name="1" orientation="n" type="Generic" uuid="{198b1627-e7cd-4d9e-be24-e4a3cfe91f32}" x="-100" y="-10"/>
+                                    <terminal name="2" orientation="n" type="Generic" uuid="{ec262f25-807a-42f4-acbb-fb435c6b6f5d}" x="100" y="-10"/>
+                                    <terminal name="out" orientation="s" type="Generic" uuid="{0d91d3ef-415d-479c-b491-7ae7fe55b51f}" x="0" y="10"/>
+                                    <terminal name="w" orientation="w" type="Generic" uuid="{8be1770b-5789-45ec-8e16-6f4b88bc41b3}" x="-110" y="0"/>
+                                    <terminal name="e" orientation="e" type="Generic" uuid="{c2cf6b68-8322-40f4-b1e0-e998d4c3dd7d}" x="110" y="0"/>
+                                </description>
+                            </definition>
+                        </element>
+                        <element name="20202090_jump.elmt">
+                            <definition height="30" hotspot_x="10" hotspot_y="20" link_type="simple" type="element" version="0.100" width="60">
+                                <uuid uuid="{986ce5c4-419e-9d90-65f2-e77c6dba12e2}"/>
+                                <names>
+                                    <name lang="ar">القفز</name>
+                                    <name lang="ca">Saltar</name>
+                                    <name lang="cs">Skok</name>
+                                    <name lang="da">Hoppe</name>
+                                    <name lang="de">Springen</name>
+                                    <name lang="el">Αλμα</name>
+                                    <name lang="en">Jump</name>
+                                    <name lang="es">Saltar</name>
+                                    <name lang="fi">Hyppy</name>
+                                    <name lang="fr">Saut</name>
+                                    <name lang="hr">Skok</name>
+                                    <name lang="hu">Ugrás</name>
+                                    <name lang="it">Salto</name>
+                                    <name lang="ja">ジャンプ</name>
+                                    <name lang="ko">점프</name>
+                                    <name lang="mn">Үсрэх</name>
+                                    <name lang="nb">Hoppe</name>
+                                    <name lang="nl">Springen</name>
+                                    <name lang="nl_BE">Brug</name>
+                                    <name lang="pl">Skok</name>
+                                    <name lang="pt">Pular</name>
+                                    <name lang="pt_BR">Pular</name>
+                                    <name lang="ro">A sari</name>
+                                    <name lang="ru">Прыгать</name>
+                                    <name lang="sk">Prepojenie</name>
+                                    <name lang="sl">Skok</name>
+                                    <name lang="sr">Скочи</name>
+                                    <name lang="sv">Hopp</name>
+                                    <name lang="tr">Zıplamak</name>
+                                    <name lang="uk">Перемичка</name>
+                                    <name lang="zh">跳转</name>
+                                </names>
+                                <informations>Author: The QElectroTech team; redrawn on the 10 grid (QElectroTech-EPLAN)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                <description>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20" y2="0"/>
+                                    <polygon antialias="true" closed="true" style="line-style:normal;line-weight:normal;filling:black;color:black" x1="0" x2="-4" x3="4" y1="0" y2="-8" y3="-8"/>
+                                    <terminal name="in" orientation="n" type="Generic" uuid="{c4d4c964-9576-447c-a3b8-e2b00dd44c95}" x="0" y="-20"/>
+                                    <dynamic_text Halignment="AlignLeft" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{0e1f6473-ba31-4ea5-b006-329bc9cc8a98}" x="10" y="-16.5" z="5">
+                                        <text/>
+                                        <info_name>label</info_name>
+                                    </dynamic_text>
+                                </description>
+                            </definition>
+                        </element>
+                        <element name="20202022_action.elmt">
+                            <definition height="45" hotspot_x="0" hotspot_y="30" link_type="simple" type="element" version="0.100" width="150">
+                                <uuid uuid="{c8a6a5c3-2005-c545-9fa1-540f32e74d2d}"/>
+                                <names>
+                                    <name lang="ar">الإجراء الذي يحفظ عند تنشيطه</name>
+                                    <name lang="ca">Acció que desa quan s'activa</name>
+                                    <name lang="cs">Akce, která se při aktivaci uloží</name>
+                                    <name lang="da">Handling, der gemmer, når den aktiveres</name>
+                                    <name lang="de">Speichernd wirkende Aktion bei Aktivierung</name>
+                                    <name lang="el">Ενέργεια που αποθηκεύει όταν ενεργοποιηθεί</name>
+                                    <name lang="en">Action that saves when activated</name>
+                                    <name lang="es">Acción que guarda cuando se activa</name>
+                                    <name lang="fi">Toiminto, joka tallentuu aktivoitaessa</name>
+                                    <name lang="fr">Action qui enregistre lorsqu'elle est activée</name>
+                                    <name lang="hr">Akcija koja sprema kada se aktivira</name>
+                                    <name lang="hu">Művelet, amely aktiváláskor ment</name>
+                                    <name lang="it">Azione che salva quando attivata</name>
+                                    <name lang="ja">起動時に保存するアクション</name>
+                                    <name lang="ko">활성화 시 저장하는 동작</name>
+                                    <name lang="mn">Идэвхжүүлсэн үед хадгалдаг үйлдэл</name>
+                                    <name lang="nb">Handling som lagrer når den er aktivert</name>
+                                    <name lang="nl">Actie die wordt opgeslagen wanneer geactiveerd</name>
+                                    <name lang="nl_BE">Actie die opslaat bij activering</name>
+                                    <name lang="pl">Akcja, która zapisuje się po aktywacji</name>
+                                    <name lang="pt">Ação que salva quando ativada</name>
+                                    <name lang="pt_BR">Ação que salva queo ativada</name>
+                                    <name lang="ro">Acțiune care salvează atunci când este activată</name>
+                                    <name lang="ru">Действие, которое сохраняется при активации</name>
+                                    <name lang="sk">Akcia, ktorá sa uloží pri aktivácii</name>
+                                    <name lang="sl">Dejanje, ki shrani, ko je aktivirano</name>
+                                    <name lang="sr">Радња која се чува када се активира</name>
+                                    <name lang="sv">Åtgärd som sparas vid aktivering</name>
+                                    <name lang="tr">Etkinleştirildiğinde kaydeden eylem</name>
+                                    <name lang="uk">Дія, що зберігається при активації</name>
+                                    <name lang="zh">动作_22</name>
+                                </names>
+                                <informations>Author: The QElectroTech team; redrawn on the 10 grid (QElectroTech-EPLAN)
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                <description>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="10" y1="0" y2="0"/>
+                                    <rect antialias="false" height="30" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="140" x="10" y="-15"/>
+                                    <terminal name="step" orientation="w" type="Generic" uuid="{3240f2dd-8705-4e52-8b79-43c811ca4b60}" x="0" y="0"/>
+                                    <dynamic_text Halignment="AlignHCenter" Valignment="AlignVCenter" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{f46d05c4-ecbc-4145-93ca-05f37eb13058}" x="76" y="-10.5" z="5">
+                                        <text/>
+                                        <info_name>label</info_name>
+                                    </dynamic_text>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="22" x2="22" y1="-15" y2="-27"/>
+                                    <polygon antialias="true" closed="true" style="line-style:normal;line-weight:normal;filling:black;color:black" x1="22" x2="19" x3="25" y1="-29" y2="-23" y3="-23"/>
+                                </description>
+                            </definition>
+                        </element>
+                    </category>
+                </category>
+            </category>
+        </category>
+    </collection>
+</project>

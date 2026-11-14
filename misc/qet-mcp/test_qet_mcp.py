@@ -7012,6 +7012,18 @@ class SimulateTools(unittest.TestCase):
         self.assertEqual(r["checks"][1]["detail"], "zu langsam")
         self.assertFalse(r["all_passed"])
 
+    def test_reference_skip_is_not_a_pass(self):
+        r = m.parse_reference_output("OK      A" + chr(10) + "        x" + chr(10)
+                                     + "SKIP    Vergleich" + chr(10) + "        keine Referenzdaten" + chr(10))
+        self.assertTrue(r["checks"][1]["skipped"])
+        self.assertFalse(r["checks"][1]["passed"])
+        self.assertEqual(r["skipped"], 1)
+        self.assertTrue(r["all_passed"])
+
+    def test_model_errors_are_reported(self):
+        r = m.parse_simulation_output("", "Model error: -MM1: ungültige Zylinderdaten" + chr(10))
+        self.assertEqual(r["model_errors"], ["-MM1: ungültige Zylinderdaten"])
+
 
 if __name__ == "__main__":
     print(f"binary   : {BINARY or '(none: integration tests skipped)'}")

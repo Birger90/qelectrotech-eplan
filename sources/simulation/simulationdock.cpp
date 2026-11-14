@@ -152,8 +152,10 @@ void SimulationDock::start()
 		}
 		m_project = project;
 		m_model = std::make_unique<SimulationModel>(project->diagrams(), m_supply->value());
-		m_summary->setText(m_model->programErrors().isEmpty() ? m_model->summary()
-			: m_model->summary() + QStringLiteral("\n") + m_model->programErrors().join(QStringLiteral("\n")));
+		const QStringList problems = m_model->modelErrors() + m_model->programErrors();
+		m_summary->setStyleSheet(problems.isEmpty() ? QStringLiteral("color: gray") : QStringLiteral("color: #c00000"));
+		m_summary->setText(problems.isEmpty() ? m_model->summary()
+			: m_model->summary() + QStringLiteral("\n") + problems.join(QStringLiteral("\n")));
 		m_log->clear();
 		rebuildControls();
 		// push buttons and valves can also be operated by clicking their symbol
@@ -278,6 +280,11 @@ void SimulationDock::tick()
 	const double real = m_clock.restart() / 1000.0;
 	const double target = m_model->time() + std::min(real * speed, 0.05);
 	m_model->runUntil(target);
+	if (m_model->failed()) {
+		pause();
+		m_summary->setStyleSheet(QStringLiteral("color: #c00000"));
+		m_summary->setText(tr("Simulation stopped: %1").arg(m_model->failure()));
+	}
 	for (const auto &m : m_model->takeMessages())
 		m_log->addItem(QStringLiteral("%1 s  %2").arg(m.time, 0, 'f', 3).arg(m.text));
 	m_log->scrollToBottom();

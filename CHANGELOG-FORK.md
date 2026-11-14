@@ -3,6 +3,28 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.20.0 – 14.11.2026
+
+Nach einer externen Prüfung des Stands 5be3d74 (sechs Befunde, alle bestätigt und behoben):
+
+- Öl unter der Druckuntergrenze geht nicht mehr verloren: der fehlende Inhalt wird als Hohlraum bilanziert und beim
+  Nachströmen zuerst gefüllt (Meldung „Hohlraum“), auch in Netzen mit Speicher.
+- Nicht endliche Werte werden nicht mehr zum Mindestdruck: die Rechnung bricht mit Meldung und Netzbezug ab;
+  unmögliche Zylinder-, Speicher- und Pumpendaten verhindern den Start. `--simulate` meldet `Model error:` und endet
+  mit Rückgabewert 3, das Simulationsfenster zeigt den Fehler rot.
+- Blindstopfen an freien Anschlüssen verschließen (eigenes, dichtes Volumen), Schalldämpfer entlüften über ihren
+  Widerstand; vorher waren beide offen.
+- Druckbegrenzungsventil mit Eingang 1 und Rücklauf 2 (öffnet nach dem Unterschied, gleicher Strom in den Rücklauf),
+  statt eines zufälligen Anschlusses gegen Atmosphäre.
+- Kennwerte nach ihrer Einheit (`MPa`, `bar`, `l`, `cm3`, `1/min` …) statt nach der Größe der Zahl (vorher wurde
+  `pMax` ab 100 als bar gelesen).
+- Wegeventile: der Schieber bewegt sich während der Schaltzeit (alte Wege schließen, neue öffnen) statt zu springen –
+  damit stimmen die eingeschlossenen Drücke beim Halten mit OpenModelica überein.
+- `--simulate-reference` (22 Prüfungen): Druckvergleiche gegen OpenModelica, geprüfte Referenzdateien (falsche oder
+  fehlende Daten = FEHLER, fehlender Ordner = SKIP), Hohlraum- und Negativfälle, Einheiten und sechs Projekte, die
+  durch dasselbe `SimulationModel` wie Fenster und CLI laufen (`tools/simulation/referenz/plaene`).
+- MCP: `qet_simulate` liefert `model_errors`, `qet_simulate_reference` kennt `SKIP`.
+
 ## 1.19.0 – 14.11.2026
 
 - GRAFCET-Symbole neu gezeichnet (gleiche Pfade, `bauteile/grafcet`, Generator `tools/symbole/grafcet_symbole.py`):

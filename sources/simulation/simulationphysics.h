@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 /**
 	The integration steps of the simulation (explicit Euler), shared by
@@ -29,18 +30,51 @@
 */
 namespace SimPhysics {
 
-	/// isothermal gas volume: V dp/dt + p dV/dt = R T sum(m_flow)
+constexpr double NOT_A_NUMBER = std::numeric_limits<double>::quiet_NaN();
+
+	/**
+		isothermal gas volume: V dp/dt + p dV/dt = R T sum(m_flow).
+		A value that is not finite (or a volume <= 0) stays not finite, so the
+		caller sees the fault instead of a plausible floor pressure.
+	*/
 inline double gasNode(double p, double volume, double dvdt, double m_flow, double rt, double dt,
 					  double p_min = 1000.0)
 {
-	return std::max(p_min, p + (rt * m_flow - p * dvdt) / volume * dt);
+	const double next = p + (rt * m_flow - p * dvdt) / volume * dt;
+	if (!std::isfinite(next) || !(volume > 0.0)) return NOT_A_NUMBER;
+	return std::max(p_min, next);
 }
 
-	/// liquid volume with bulk modulus E: (V/E) dp/dt = sum(q) - dV/dt
+	/**
+		liquid volume with bulk modulus E: (V/E) dp/dt = sum(q) - dV/dt.
+
+		Single phase only down to @a p_min (absolute). Oil that would have to
+		leave below it is not lost: it becomes the void @a cavity (m³) at
+		p_min, and oil flowing in fills that void first before the pressure
+		rises again, so the volume balance holds in every step. The caller
+		reports a void (the model has no vapour pressure or degassing).
+		Not finite input or a volume/bulk modulus <= 0 gives NaN.
+	*/
 inline double oilNode(double p, double volume, double dvdt, double q, double bulk, double dt,
-					  double p_min)
+					  double p_min, double &cavity)
 {
-	return std::max(p_min, p + bulk / volume * (q - dvdt) * dt);
+	double inflow = (q - dvdt) * dt;
+	if (!std::isfinite(inflow) || !std::isfinite(p) || !(volume > 0.0) || !(bulk > 0.0)) return NOT_A_NUMBER;
+	double next;
+	if (cavity > 0.0) {
+		if (inflow <= cavity) {            // the void grows or is partly refilled; the pressure stays
+			cavity -= inflow;
+			return p_min;
+		}
+		inflow -= cavity;                  // refilled: the rest compresses the oil from p_min
+		cavity = 0.0;
+		next = p_min + bulk / volume * inflow;
+	} else {
+		next = p + bulk / volume * (q - dvdt) * dt;
+	}
+	if (next >= p_min) return next;
+	cavity += (p_min - next) * volume / bulk;
+	return p_min;
 }
 
 	/// gas side of a hydraulic accumulator: precharge @a p_pre (absolute) at gas volume @a v0, exponent @a n
@@ -60,20 +94,39 @@ inline double accumulatorOil(double p, const GasCharge &g)
 	*/
 template <class List>
 double oilNodeWithAccumulators(double p, double volume, double dvdt, double q, double bulk, double dt,
-							   double p_min, const List &gas)
+							   double p_min, const List &gas, double &cavity)
 {
 	auto stored = [&](double x) {
 		double s = 0.0;
 		for (const GasCharge &g : gas) s += accumulatorOil(x, g);
 		return s;
 	};
-	const double inflow = (q - dvdt) * dt;
+	double inflow = (q - dvdt) * dt;
+	if (!std::isfinite(inflow) || !std::isfinite(p) || !(volume > 0.0) || !(bulk > 0.0)) return NOT_A_NUMBER;
+	for (const GasCharge &g : gas)
+		if (!(g.p_pre > 0.0) || !(g.v0 > 0.0) || !(g.n > 0.0)) return NOT_A_NUMBER;
+	if (cavity > 0.0) {                    // a void at p_min is refilled first (see oilNode)
+		if (inflow <= cavity) {
+			cavity -= inflow;
+			return p_min;
+		}
+		inflow -= cavity;
+		cavity = 0.0;
+		p = p_min;
+	}
 	const double before = stored(p);
 	auto f = [&](double x) { return volume / bulk * (x - p) + stored(x) - before - inflow; };
 	const double rigid = p + bulk / volume * inflow;     // no gas: the largest change
 	double lo = std::min(p, rigid), hi = std::max(p, rigid);
-	lo = std::max(lo, p_min);
-	if (hi <= lo || f(lo) >= 0.0) return std::max(p_min, lo);
+	if (lo < p_min) {
+		const double excess = f(p_min);      // > 0: even at p_min more oil than there is
+		if (excess >= 0.0) {
+			cavity += excess;
+			return p_min;
+		}
+		lo = p_min;
+	}
+	if (hi <= lo) return lo;
 	// bisection to the last bit, so rounding does not add up over many steps
 	for (int i = 0; i < 200; ++i) {
 		const double m = 0.5 * (lo + hi);

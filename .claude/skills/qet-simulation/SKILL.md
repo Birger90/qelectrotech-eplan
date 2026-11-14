@@ -5,7 +5,7 @@ description: Pläne in QElectroTech (EPLAN-Fork) simulieren – Pneumatik, Hydra
 
 # Simulation in QElectroTech (EPLAN-Fork)
 
-Stand 14.11.2026, Fork 1.19.0. Anleitung für Anwender: `tools/simulation/README.md` (Modelltabelle, Konventionen,
+Stand 14.11.2026, Fork 1.20.0. Anleitung für Anwender: `tools/simulation/README.md` (Modelltabelle, Konventionen,
 Prüffälle). Hier steht, wie man damit arbeitet und was beim Bauen gelernt wurde. Neue Erkenntnisse unten unter
 „Gelernt“ nachtragen – sofort, nicht erst am Ende.
 
@@ -45,6 +45,11 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
 - Öl: Kompressionsmodul 7e8 Pa, Netzvolumen 0,1 l; Widerstand `rT` als geglättete Wurzelkennlinie
   q = k·Δp/(Δp² + 0,3 bar²)^¼ (gleiche Kleinsignal-Steigung wie die frühere lineare Zone → gleich stabil).
 - Netze mit Hydrospeicher: Druck **implizit** aus der Volumenbilanz (Bisektion bis zum letzten Bit).
+- Unter 0,11 bar abs reißt das Öl ab: **Hohlraum bilanziert** (`cavity`), beim Nachströmen zuerst gefüllt.
+- Nicht endliche Werte → NaN durchreichen, Lauf bricht ab (`failed()`), CLI Rückgabewert 3, `Model error:`.
+- Freie Anschlüsse: offen = Atmosphäre, `port_end="plug"` = dichtes eigenes Volumen, Schalldämpfer = Widerstand.
+- Wegeventil: Schieber bewegt sich über die Schaltzeit (lineare Überblendung der Stellungen).
+- Kennwerte über `paramIn` nach `unit` (`simulationunits.h`); unbekannte Einheit = Modellfehler.
 - Pumpe: volle Förderung bis 1 bar unter `pMax`, bei `pMax` null. Rückschlagventil öffnet stetig ab `p0`.
 - Zylinder: Kraftbilanz, Haft-/Gleitreibung, harte Endanschläge; Unterdruck im Öl wird gemeldet, nicht gerechnet.
 - SPS: ST-Teilmenge (BOOL/INT, IF/ELSIF, CASE, TON/TOF/CTU/CTD/R_TRIG/F_TRIG/SR/RS, R_EDGE/↑), alle Werte `double`.
@@ -54,8 +59,9 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
 ## Prüfen (jede Änderung am Kern)
 
 1. Bauen, `tools/deploy_lokal.ps1`.
-2. `--simulate-reference`: alle Prüfungen bestanden (analytisch mit Konvergenz bei halbem dt, OpenModelica-Läufe
-   des Referenzpakets für pneumatischen und hydraulischen Zylinderzyklus, SPS-Sprache, GRAFCET-Schreibweise).
+2. `--simulate-reference`: alle 22 Prüfungen bestanden, kein SKIP (analytisch mit Konvergenz, OpenModelica-Vergleich
+   mit Drücken, Hohlraum, Negativfälle, Einheiten, sechs `.qet`-Projekte durch `SimulationModel`). Eine neue
+   Funktion bekommt ein Projekt in `tools/simulation/referenz/plaene` (Erzeuger `_test/sim/plaene_referenz.py`).
 3. Gegenprobe C++ ↔ Python-Prototyp (`tools/simulation/fluid_simulation.py`) auf den Testplänen: 0 Abweichungen.
    Physik-Änderungen in beiden Programmen gleich machen, sonst zeigt die Gegenprobe nichts.
 4. Testpläne (Pendel, Selbsthaltung, Hydraulik, Drossel, Zeitrelais, Stromteiler, SPS, Zähler, Schrittkette,
@@ -88,8 +94,18 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
 - Beim Schreiben von C++/PowerShell über Shell-Heredocs gehen Backslashes verloren (`\n`, `\r`, `\20`): Patch-Skripte
   als Datei schreiben und Strings mit `chr(92)` prüfen.
 
+- **Ein Prüfstand, der den Kern nur nachbaut, prüft nicht das Programm.** Externe Prüfung 14.11.2026: Vergleich
+  ohne Drücke, falsche Referenzdaten akzeptiert, Grenzfall (Druckuntergrenze) übersprungen. Darum jetzt
+  Ende-zu-Ende-Projekte durch `SimulationModel` und Gegenproben mit absichtlich falschen Daten.
+- **Druckgrenzen nie mit `std::max` „reparieren“**: verliert Volumen und versteckt NaN. Bilanzieren oder abbrechen.
+- **Eine falsche Erwartung im Test ist kein Kernfehler**: Blindstopfen-Zylinder fuhr trotzdem aus – nachgerechnet
+  (isotherme Luftfeder 33 → 7 cm³ = 3,85 bar), Kriterium korrigiert, nicht den Kern.
+- **Haltedrücke hängen an der Schieberbewegung**: sprunghaftes Schließen gab 6,3/8,8 statt 8,6/12,3 bar; mit
+  Überblendung über die Schaltzeit 8,5/12,1 bar. Testparameter (30 ms = 3 τ) vorher aus der Physik festlegen.
+- Offener Fluidanschluss hat 0 bar Überdruck, nicht „nicht definiert“ (`pressureBar`).
+
 ## Offen
 
-Schieberdynamik der Wegeventile (heute Schaltzeit, dann sprunghaft), thermische Pneumatik, Leitungsträgheit,
+Schieberdynamik mit Überdeckung/Kennlinie (heute lineare Überblendung), thermische Pneumatik, Leitungsträgheit,
 Kavitation, Hydromotoren, Proportionalventile, analoge SPS-Werte, Makroschritte/Zwangssteuerung im GRAFCET,
 Vergleich mit FluidSIM, Simulationsfenster im laufenden QET mit Bedienung angesehen.

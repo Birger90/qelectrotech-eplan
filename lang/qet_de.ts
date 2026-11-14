@@ -23811,6 +23811,10 @@ Andere Felder werden nicht verwendet.</translation>
         <translation>rechts</translation>
     </message>
     <message>
+        <source>Simulation stopped: %1</source>
+        <translation>Simulation abgebrochen: %1</translation>
+    </message>
+    <message>
         <source>The project has no PLC (module with an IO table).</source>
         <translation>Das Projekt hat keine SPS (Baugruppe mit E/A-Tabelle).</translation>
     </message>

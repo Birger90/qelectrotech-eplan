@@ -18,7 +18,8 @@ Betätigung, Kennwerte) und der elektrischen Steuerung.
 
 | Bauteil | Modell |
 |---|---|
-| Leitungsnetz | Knoten mit Volumen; Luft isotherm (ideales Gas), Öl mit Kompressionsmodul; offener Anschluss = ins Freie |
+| Leitungsnetz | Knoten mit Volumen; Luft isotherm (ideales Gas), Öl mit Kompressionsmodul. Freier Anschluss: offen = ins Freie, Blindstopfen (`port_end="plug"`) = verschlossen (eigenes, dichtes Volumen), Schalldämpfer = über dessen Widerstand ins Freie |
+| Unterdruck im Öl | unter 0,11 bar abs reißt das Öl ab: der fehlende Inhalt wird als Hohlraum bilanziert und beim Nachströmen zuerst wieder gefüllt (Meldung „Hohlraum“); Dampfdruck und Ausgasen werden nicht gerechnet |
 | Druckluftquelle | hält den Versorgungsdruck (Fenster: *Versorgungsdruck*) |
 | Hydraulikpumpe | Verdrängung × Drehzahl, eingebaute Druckbegrenzung: volle Förderung bis 1 bar unter `pMax`, bei `pMax` null |
 | Hydrospeicher (`supply.accumulator`, Öl) | Gasvolumen `V0`, Vorfülldruck `p0`, Polytropenexponent `k`; unter dem Vorfülldruck leer. Der Druck im Netz wird implizit aus der Volumenbilanz gelöst, die Ölmenge bleibt bei jedem Zeitschritt erhalten |
@@ -27,10 +28,10 @@ Betätigung, Kennwerte) und der elektrischen Steuerung.
 | Wechselventil, Zweidruckventil | Ausgang 2 vom Eingang mit höherem (ODER) bzw. niedrigerem Druck (UND) |
 | Zeitverzögerungsventil | schaltet 1 → 2, wenn Steueranschluss 3 `t_delay` lang Druck hat; sonst entlüftet 2 |
 | Tank | drucklos |
-| Wegeventil | Schaltwege der Stellung; Luft nach ISO 6358 aus `qNN`, Öl mit Widerstand `rT` (Δp = rT·Q², um Δp = 0 stetig geglättet: Q ∝ Δp/(Δp² + 0,3 bar²)^¼); Schaltzeiten `onDelay`/`offDelay`; Feder in die Ruhestellung, ohne Feder bleibt die Stellung; Steuerdruck an 14/12 |
+| Wegeventil | Schaltwege der Stellung; Luft nach ISO 6358 aus `qNN`, Öl mit Widerstand `rT` (Δp = rT·Q², um Δp = 0 stetig geglättet: Q ∝ Δp/(Δp² + 0,3 bar²)^¼); Schaltzeiten `onDelay`/`offDelay`: der Schieber bewegt sich in dieser Zeit, die Wege der alten Stellung schließen, die der neuen öffnen (linear); Feder in die Ruhestellung, ohne Feder bleibt die Stellung; Steuerdruck an 14/12 |
 | Rückschlag-, Drosselrückschlagventil | freie Richtung `free_from` → `free_to` (aus der Zeichnung); öffnet stetig ab dem Öffnungsdruck `p0`; entsperrbar über Steueranschluss |
 | Drossel, Absperrventil, Schalldämpfer, Schnellentlüftung | Leitwert aus `qNN` bzw. `rT` |
-| Druckbegrenzung, Druckregler | Einstelldruck `p0`, Öffnungsbereich `dpEnd` |
+| Druckbegrenzung, Druckregler | Einstelldruck `p0`, Öffnungsbereich `dpEnd`; Druckbegrenzung von Eingang 1 (P) in den Rücklauf 2 (T), ohne Rücklaufleitung ins Freie, öffnet nach dem Unterschied Eingang – Rücklauf |
 | Zylinder | Kraftbilanz: Drücke × Flächen, Masse, Haft-/Gleitreibung, Feder, Last, Endanschläge; meldet Unterdruck im Öl (Kavitation wird nicht gerechnet) |
 | Spannungsquelle | oberer Anschluss Plus, unterer Minus |
 | Taster, Endschalter | Schließer/Öffner aus dem Symbol |
@@ -141,8 +142,12 @@ Modelica-Referenzmodellen (Luft isotherm, R = 287,05 J/(kg K), T = 300 K, linear
 | AccumulatorCharge | p = 10 bar · (1 l/(1 l − Q·t))^1,4; außerdem Laden ab 1 bar über den Vorfülldruck | Fehler ≤ 0,1 Pa bzw. 1 Pa |
 | Hydraulik-CylinderCycle | Pumpe, 4/3-Ventil, Differentialzylinder: aus, halten, zurück | Weg −0,1…100,1 mm, vor 0,7 s ≥ 75 mm, Haltedrift < 2 mm, nach 1,75 s < 2 mm, Drücke > −0,98 bar und < 100 bar, Volumenbilanz; mit Referenzlauf: Aus-/Einfahrgeschwindigkeit ±3 %, Rückhubzeit ±5 % |
 | CylinderCycle | Ausfahren vor 0,4 s, Rückhub bis 1 s | Weg −2…62 mm, vorne ≥ 59 mm vor 0,4 s, nach 0,9 s < 1 mm; Hubzeiten ±1 ms bei halbem Zeitschritt; mit Ordner: Hubzeiten ±5 % gegen den OpenModelica-Lauf |
+| OpenModelica-Vergleich pneumatisch / hydraulisch | Weg und Kammerdrücke gegen die Referenzläufe | pneumatisch an jedem ms Weg ≤ 1 mm, Druck ≤ 0,1 bar; hydraulisch Geschwindigkeiten ±3 %, Kammerdrücke beim Ausfahren, Halten und Einfahren ±10 % bzw. 1 bar; ungültige oder fehlende Referenzdatei = FEHLER |
+| Unterdruck im Öl | 10 cm³ aus 0,1 l abziehen und wieder zuführen | Bilanz je Schritt, Druck nie unter der Grenze, danach wieder Ausgangsdruck |
+| Ungültige Werte, Einheiten | NaN, Volumen 0, Speicherdaten; MPa/bar/cm³/1/min, unbekannte Einheit | NaN statt Mindestdruck; 99 und 100 MPa beide als MPa |
+| Projekte (Ende zu Ende, `referenz/plaene`) | Hydraulik, Blindstopfen, Druckbegrenzung, GRAFCET, Speicher/Druckschalter/Logikventile, ungültige Daten | durch dasselbe `SimulationModel` wie Fenster und CLI, jeweils gegen Handrechnung oder erwartete Folge |
 
-Der Ordner enthält die Ergebnisdateien der OpenModelica-Läufe (DASSL, Toleranz 1e-9) für den pneumatischen und den
+Fehlt der Ordner, erscheinen die Vergleiche als `SKIP` (nie als bestanden; Rückgabewert 2). Der Ordner enthält die Ergebnisdateien der OpenModelica-Läufe (DASSL, Toleranz 1e-9) für den pneumatischen und den
 hydraulischen Zyklus; sie liegen unter `tools/simulation/referenz/` und werden mit dem Programm installiert, so dass
 `--simulate-reference` ohne Ordner sie findet. Über MCP: `qet_simulate` und `qet_simulate_reference`. Der Zylinder dort hat elastische
 Anschläge und eine geglättete Reibung, unserer harte Anschläge und Haft-/Gleitreibung; deshalb wird die Hubzeit
@@ -153,7 +158,11 @@ verglichen, nicht jeder Punkt.
 - **Ventilspule → Ventil:** Die Spule trägt das Kennzeichen des Ventils, z. B. `-QM1`. Bei zwei Magneten
   `-QM1/14` (links) und `-QM1/12` (rechts).
 - **Endschalter → Zylinder:** Funktionstext des Schalters „`-MM1 vorne`“ bzw. „`-MM1 hinten`“.
-- **Kennwerte** stehen als `<parameter>` im Symbol und lassen sich je Bauteil anpassen.
+- **Kennwerte** stehen als `<parameter>` im Symbol und lassen sich je Bauteil anpassen. Umgerechnet wird nach der
+  Einheit (`unit="MPa"`, `bar`, `l`, `cm3`, `1/min` …), nie nach der Größe der Zahl; eine unbekannte oder unpassende
+  Einheit und unmögliche Werte (Hub, Masse, Fläche, Speichervolumen ≤ 0) sind Fehler: die Simulation startet dann
+  nicht und nennt das Bauteil. Ein Rechenfehler (nicht endlicher Wert) bricht den Lauf mit Meldung ab;
+  `--simulate` endet dann mit Rückgabewert 3 und `Model error:` auf der Fehlerausgabe.
 
 ## Grenzen
 

@@ -86,6 +86,13 @@ class SimulationModel
 		QList<Element *> activeSteps() const;
 			/// errors of the PLC programs, empty when they compiled
 		QStringList programErrors() const { return m_program_errors; }
+			/// errors of the plan data (units, cylinder, accumulator, pump values); the run does not start
+		QStringList modelErrors() const { return m_model_errors; }
+			/// true once the run stopped on invalid data or a computing fault (not finite value)
+		bool failed() const { return m_failed; }
+		QString failure() const { return m_failure; }
+			/// void (m³) torn off in the oil net of @a terminal, 0 when filled
+		double cavity(Terminal *terminal) const;
 			/// current value of a PLC variable (address, symbol or flag)
 		double plcValue(const QString &name) const;
 			/// all PLC variables with their current value (inputs, outputs, flags, block outputs)
@@ -118,6 +125,8 @@ class SimulationModel
 		void buildNets(const QList<Diagram *> &diagrams);
 		void buildComponents(const QList<Diagram *> &diagrams, double supply_bar);
 		void electrics();
+		void fail(const QString &why);
+		QString netName(int net) const;
 		bool contactClosed(const Contact &c) const;
 
 		QHash<Terminal *, int> m_node_of;
@@ -140,10 +149,16 @@ class SimulationModel
 		QHash<int, double> m_extra_volume;          // compressed air receivers (m³ per net)
 		QList<QPair<int, int>> m_vessel_links;      // ports of one receiver
 		double m_vessel_c = 0.0;
-		QSet<QString> m_cavitation;                 // cylinder ports already reported
 		QHash<QString, double> m_plc_vars;
 		std::unique_ptr<Grafcet> m_grafcet;
 		QStringList m_program_errors;
+		QStringList m_model_errors;
+		bool m_failed = false;
+		QString m_failure;
+		QHash<int, double> m_cavity;                // oil nets: void volume at the lowest pressure (m³)
+		QSet<int> m_cavity_open;
+		QList<int> m_silenced;                      // free ports with a silencer
+		double m_silencer_c = 0.0;
 		double m_next_plc_cycle = 0.0;
 		QList<QPair<QList<int>, QList<int>>> m_sources;
 		QSet<int> m_plus_nets;

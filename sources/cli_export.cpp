@@ -28,6 +28,7 @@
 #include "diagram.h"
 #include "diagramcontext.h"
 #include "editor/terminalnamecheck.h"
+#include "fluid/fluiddata.h"
 #include "import/eplandxf/eplanpartimporter.h"
 #include "import/portals/manufacturerportals.h"
 #include "import/portals/partfetcher.h"
@@ -610,6 +611,30 @@ int checkOneElement(const QString &path)
 		out << "FAIL  " << path << "  (repeated terminal names: "
 			<< TerminalNameCheck::describe(repeated) << ")\n";
 		return 2;
+	}
+
+	// Fluid data (simulation): must load in the model, and every path of a
+	// valve position must name terminals the element has.
+	const QDomElement fluid = root.firstChildElement(FluidData::xmlTagName());
+	if (!fluid.isNull()) {
+		FluidData data;
+		if (!data.fromXml(fluid)) {
+			out << "FAIL  " << path << "  (<fluid> does not load: kind \""
+				<< fluid.attribute("kind") << "\")\n";
+			return 2;
+		}
+		QStringList unknown;
+		for (const FluidData::Position &position : data.m_positions)
+			for (const FluidData::Path &p : position.paths)
+				for (const QString &port : {p.from, p.to})
+					if (!port.isEmpty() && !terminal_names.contains(port)
+						&& !unknown.contains(port))
+						unknown << port;
+		if (!unknown.isEmpty()) {
+			out << "FAIL  " << path << "  (<fluid> path names unknown terminals: "
+				<< unknown.join(", ") << ")\n";
+			return 2;
+		}
 	}
 
 	// QET loads the element but leaves out a shape with a "nan" or "inf"

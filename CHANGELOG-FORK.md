@@ -3,6 +3,20 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.13.0 – 14.11.2026
+
+- Pneumatik und Hydraulik: Die Symbole der QElectroTech-Standardsammlung (437, Grafik unverändert) tragen
+  Simulationsdaten und ersetzen die eigenen ISO-1219-Symbole aus 1.12.0. Jedes Symbol hat benannte Anschlüsse
+  mit Medium, Art, Funktion, Kennbuchstaben und Kennwerte (Startwerte); alle 172 Wegeventile und 30
+  Ventilbausteine haben Stellungen, Schaltwege, Ruhestellung und Betätigung, gelesen aus der Zeichnung
+  (`tools/symbole/qet_fluid_daten.py`, Ablage `bauteile/fluid` mit den Pfaden der Standardsammlung).
+- Fluiddaten: `<fluid function="…">` und `<parameter name value unit>` für Kennwerte (`FluidData`).
+- `--check-elements` liest den `<fluid>`-Block mit dem Fluidmodell und meldet Schaltwege auf unbekannte
+  Anschlüsse.
+- Werkzeuge für FluidSIM-Bibliotheken (nur zur eigenen Verwendung, nicht im Fork abgelegt):
+  `fluid_raster_einpassen.py` (Anschlüsse aufs Raster ohne Haken), `fluid_schaltwege.py`, `fluid_kennwerte.py`,
+  `fluid_katalog.py`.
+
 ## 1.12.0 – 13.11.2026
 
 - Pneumatik und Hydraulik: die eigenen, neu gezeichneten Symbole nach ISO 1219 (322 Bauteile) ersetzen die

@@ -49,9 +49,8 @@ if (-not $python) {
     }
 }
 
-# Pneumatik- und Hydrauliksymbole nach ISO 1219 (bauteile/fluid, eigene Zeichnung): fest im Repository,
-# in jede Standardsammlung. Frühere Stände (umgewandelte FluidSIM-Symbole, alte Fork-Symbole) werden
-# vorher entfernt, damit nur diese Symbole in der Sammlung stehen.
+# Pneumatik- und Hydrauliksymbole der Standardsammlung mit Simulationsdaten (bauteile/fluid, gleiche Pfade)
+# ersetzen die Originale. Frühere Stände (FluidSIM-Symbole, alte ISO-1219-Ordner) werden vorher entfernt.
 $fluid_eigen = Join-Path $repo "bauteile\fluid"
 if ((Test-Path $fluid_eigen) -and (Test-Path $sammlung)) {
     foreach ($alt in @("50_pneumatic\5090_FluidSIM", "30_hydraulic\3090_FluidSIM",

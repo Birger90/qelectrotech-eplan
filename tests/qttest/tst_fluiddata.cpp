@@ -156,6 +156,27 @@ class tst_fluiddata : public QObject
 			}
 		}
 
+		void functionAndParametersRoundTrip()
+		{
+			FluidData d;
+			d.m_kind = FluidData::Kind::Other;
+			d.m_function = "pressure_relief";
+			d.m_parameters << FluidData::Parameter{"p_open", "5", "MPa"}
+						   << FluidData::Parameter{"note", "x", ""};
+			QDomDocument doc;
+			const auto e = d.toXml(doc);
+			QCOMPARE(e.attribute("function"), QString("pressure_relief"));
+			QCOMPARE(e.elementsByTagName("parameter").count(), 2);
+			const FluidData r = roundTrip(d);
+			QVERIFY(r == d);
+			QCOMPARE(r.parameter("p_open"), QString("5"));
+			QCOMPARE(r.parameter("missing", "-"), QString("-"));
+				// nothing written when not given
+			FluidData plain;
+			plain.m_kind = FluidData::Kind::Other;
+			QVERIFY(!plain.toXml(doc).hasAttribute("function"));
+		}
+
 		void prefixRoundTripsAndIsOptional()
 		{
 			FluidData d = valve52();

@@ -155,6 +155,17 @@ QDomElement FluidData::toXml(QDomDocument &document) const
 		root.appendChild(cyl);
 	}
 
+	if (!m_function.isEmpty())
+		root.setAttribute(QStringLiteral("function"), m_function);
+	for (const Parameter &p : m_parameters) {
+		auto xp = document.createElement(QStringLiteral("parameter"));
+		xp.setAttribute(QStringLiteral("name"), p.name);
+		xp.setAttribute(QStringLiteral("value"), p.value);
+		if (!p.unit.isEmpty())
+			xp.setAttribute(QStringLiteral("unit"), p.unit);
+		root.appendChild(xp);
+	}
+
 	if (m_flow_qn_nl_min > 0.0 || m_flow_c > 0.0 || m_flow_b > 0.0) {
 		auto params = document.createElement(QStringLiteral("params"));
 		if (m_flow_qn_nl_min > 0.0)
@@ -244,6 +255,17 @@ bool FluidData::fromXml(const QDomElement &fluid_element)
 		d.m_stroke_mm = textNumber(cyl, QStringLiteral("stroke_mm"));
 	}
 
+	d.m_function = fluid_element.attribute(QStringLiteral("function")).trimmed();
+	for (auto xp = fluid_element.firstChildElement(QStringLiteral("parameter"));
+		 !xp.isNull();
+		 xp = xp.nextSiblingElement(QStringLiteral("parameter"))) {
+		const QString name = xp.attribute(QStringLiteral("name")).trimmed();
+		if (name.isEmpty())
+			continue;
+		d.m_parameters << Parameter{name, xp.attribute(QStringLiteral("value")),
+									xp.attribute(QStringLiteral("unit"))};
+	}
+
 	const auto params = fluid_element.firstChildElement(QStringLiteral("params"));
 	if (!params.isNull()) {
 		d.m_flow_qn_nl_min = textNumber(params, QStringLiteral("qn_nl_min"));
@@ -266,6 +288,14 @@ FluidData FluidData::fromElementDefinition(const QDomElement &definition)
 	FluidData d;
 	d.fromXml(definition.firstChildElement(xmlTagName()));
 	return d;
+}
+
+QString FluidData::parameter(const QString &name, const QString &fallback) const
+{
+	for (const Parameter &p : m_parameters)
+		if (p.name == name)
+			return p.value;
+	return fallback;
 }
 
 int FluidData::solenoidSides() const
@@ -294,6 +324,8 @@ bool FluidData::operator==(const FluidData &o) const
 		&& m_bore_mm == o.m_bore_mm
 		&& m_rod_mm == o.m_rod_mm
 		&& m_stroke_mm == o.m_stroke_mm
+		&& m_function == o.m_function
+		&& m_parameters == o.m_parameters
 		&& m_flow_qn_nl_min == o.m_flow_qn_nl_min
 		&& m_flow_c == o.m_flow_c
 		&& m_flow_b == o.m_flow_b;

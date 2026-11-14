@@ -476,10 +476,10 @@ cp "${current_dir}/misc/qet-mcp/qet_mcp.py" "${current_dir}/misc/qet-mcp/README.
     $BUNDLE/Contents/Resources/mcp/ \
     || { echo "ERROR: cannot copy the MCP server"; exit 1; }
 
-# The fork's own pneumatic and hydraulic symbols after ISO 1219 join the
+# Pneumatic and hydraulic symbols with simulation data (bauteile/fluid) replace the
 # common collection of the bundle
 if [ -d "${current_dir}/bauteile/fluid" ]; then
-    cp -R "${current_dir}/bauteile/fluid/." "$BUNDLE/Contents/Resources/elements/"         || { echo "ERROR: cannot copy the ISO 1219 symbols"; exit 1; }
+    cp -R "${current_dir}/bauteile/fluid/." "$BUNDLE/Contents/Resources/elements/"         || { echo "ERROR: cannot copy the fluid symbols"; exit 1; }
 fi
 
 # The assistant's bridge (Claude) beside the MCP server it uses, and the

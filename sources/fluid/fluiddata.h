@@ -141,6 +141,28 @@ class FluidData
 		double m_rod_mm    = 0.0;
 		double m_stroke_mm = 0.0;
 
+			/// One characteristic value for a later simulation, e.g.
+			/// opening pressure p_open = 5 MPa or flow q = 20 l/min.
+			/// Kept as text so nothing is lost or rounded.
+		struct Parameter {
+			QString name;
+			QString value;
+			QString unit;
+			bool operator==(const Parameter &o) const
+			{ return name == o.name && value == o.value && unit == o.unit; }
+		};
+
+			/// What the element does for a simulation, more precise than
+			/// the kind, e.g. "pressure_relief", "check", "pump"; empty
+			/// when not given. Written as function="..." on <fluid>.
+		QString m_function;
+			/// Characteristic values, written as <parameter/> children
+		QList<Parameter> m_parameters;
+
+			/// @return the value of parameter @a name, or @a fallback
+		QString parameter(const QString &name,
+						  const QString &fallback = QString()) const;
+
 			// flow values, kept for a later simulation; 0 = not given
 		double m_flow_qn_nl_min = 0.0; ///< standard nominal flow rate, l/min
 		double m_flow_c         = 0.0; ///< sonic conductance C (ISO 6358)

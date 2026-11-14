@@ -8513,6 +8513,187 @@ Mit dem Import dieser Datei bestätigen Sie, dass:
     </message>
 </context>
 <context>
+    <name>FluidPropertiesWidget</name>
+    <message>
+        <source>Use the values of the symbol</source>
+        <translation type="unfinished">Werte des Symbols verwenden</translation>
+    </message>
+    <message>
+        <source>Kind:</source>
+        <translation type="unfinished">Art:</translation>
+    </message>
+    <message>
+        <source>Positions:</source>
+        <translation type="unfinished">Schaltstellungen:</translation>
+    </message>
+    <message>
+        <source>Left actuation:</source>
+        <translation type="unfinished">Betätigung links:</translation>
+    </message>
+    <message>
+        <source>Right actuation:</source>
+        <translation type="unfinished">Betätigung rechts:</translation>
+    </message>
+    <message>
+        <source>Action:</source>
+        <translation type="unfinished">Wirkungsweise:</translation>
+    </message>
+    <message>
+        <source>Bore:</source>
+        <translation type="unfinished">Kolbendurchmesser:</translation>
+    </message>
+    <message>
+        <source>Rod:</source>
+        <translation type="unfinished">Stangendurchmesser:</translation>
+    </message>
+    <message>
+        <source>Stroke:</source>
+        <translation type="unfinished">Hub:</translation>
+    </message>
+    <message>
+        <source>A value set here applies to this placed cylinder only. At 0, the value of the symbol applies.</source>
+        <translation type="unfinished">Ein hier gesetzter Wert gilt nur für diesen platzierten Zylinder. Bei 0 gilt der Wert des Symbols.</translation>
+    </message>
+    <message>
+        <source>Fluid power</source>
+        <translation type="unfinished">Fluidtechnik</translation>
+    </message>
+    <message>
+        <source> mm</source>
+        <comment>length unit</comment>
+        <translation type="unfinished"> mm</translation>
+    </message>
+    <message>
+        <source>%1 mm (symbol)</source>
+        <comment>value of the symbol definition</comment>
+        <translation type="unfinished">%1 mm (Symbol)</translation>
+    </message>
+    <message>
+        <source>Not given</source>
+        <translation type="unfinished">Nicht angegeben</translation>
+    </message>
+    <message>
+        <source>Directional valve</source>
+        <translation type="unfinished">Wegeventil</translation>
+    </message>
+    <message>
+        <source>Cylinder</source>
+        <translation type="unfinished">Zylinder</translation>
+    </message>
+    <message>
+        <source>Supply</source>
+        <translation type="unfinished">Versorgung</translation>
+    </message>
+    <message>
+        <source>Air treatment</source>
+        <translation type="unfinished">Druckluftaufbereitung</translation>
+    </message>
+    <message>
+        <source>Flow or shut-off valve</source>
+        <translation type="unfinished">Strom- oder Sperrventil</translation>
+    </message>
+    <message>
+        <source>Logic valve</source>
+        <translation type="unfinished">Logikventil</translation>
+    </message>
+    <message>
+        <source>Sensor or gauge</source>
+        <translation type="unfinished">Sensor oder Anzeige</translation>
+    </message>
+    <message>
+        <source>Other fluid part</source>
+        <translation type="unfinished">Sonstiges Fluidbauteil</translation>
+    </message>
+    <message>
+        <source>Valve solenoid</source>
+        <translation type="unfinished">Ventilspule</translation>
+    </message>
+    <message>
+        <source>solenoid</source>
+        <translation type="unfinished">Elektromagnet</translation>
+    </message>
+    <message>
+        <source>manual</source>
+        <translation type="unfinished">Muskelkraft</translation>
+    </message>
+    <message>
+        <source>push button</source>
+        <translation type="unfinished">Drucktaster</translation>
+    </message>
+    <message>
+        <source>lever</source>
+        <translation type="unfinished">Hebel</translation>
+    </message>
+    <message>
+        <source>pedal</source>
+        <translation type="unfinished">Pedal</translation>
+    </message>
+    <message>
+        <source>detent</source>
+        <translation type="unfinished">Raste</translation>
+    </message>
+    <message>
+        <source>plunger</source>
+        <translation type="unfinished">Stößel</translation>
+    </message>
+    <message>
+        <source>roller</source>
+        <translation type="unfinished">Rolle</translation>
+    </message>
+    <message>
+        <source>idle roller</source>
+        <translation type="unfinished">Leerlaufrolle</translation>
+    </message>
+    <message>
+        <source>pneumatic</source>
+        <translation type="unfinished">pneumatisch</translation>
+    </message>
+    <message>
+        <source>pilot</source>
+        <translation type="unfinished">vorgesteuert</translation>
+    </message>
+    <message>
+        <source>spring</source>
+        <translation type="unfinished">Feder</translation>
+    </message>
+    <message>
+        <source>air spring</source>
+        <translation type="unfinished">Luftfeder</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <comment>valve actuation</comment>
+        <translation type="unfinished">Keine</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n position(s), at rest in position %1</source>
+        <translation type="unfinished">
+            <numerusform>%n Schaltstellung, Ruhestellung %1</numerusform>
+            <numerusform>%n Schaltstellungen, Ruhestellung %1</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>single acting</source>
+        <translation type="unfinished">einfachwirkend</translation>
+    </message>
+    <message>
+        <source>double acting</source>
+        <translation type="unfinished">doppeltwirkend</translation>
+    </message>
+    <message>
+        <source>spring on the rod side</source>
+        <translation type="unfinished">Feder auf der Stangenseite</translation>
+    </message>
+    <message>
+        <source>spring on the piston side</source>
+        <translation type="unfinished">Feder auf der Kolbenseite</translation>
+    </message>
+    <message>
+        <source>Set the fluid power values</source>
+        <translation type="unfinished">Fluidwerte setzen</translation>
+    </message>
+</context>
+<context>
     <name>FolioAutonumberingW</name>
     <message>
         <source>Form</source>

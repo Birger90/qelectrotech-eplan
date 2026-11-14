@@ -3175,6 +3175,18 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
         <translation>Bus:</translation>
     </message>
     <message>
+        <source>Length :</source>
+        <translation type="unfinished">Länge:</translation>
+    </message>
+    <message>
+        <source>Length of this hose or pipe, with its unit: 1.5 m, 80 cm or 350 mm. A number without a unit is in metres. The fluid parts list adds the lengths up.</source>
+        <translation type="unfinished">Länge dieses Schlauchs oder Rohrs mit Einheit: 1,5 m, 80 cm oder 350 mm. Eine Zahl ohne Einheit gilt in Metern. Die Fluid-Stückliste addiert die Längen.</translation>
+    </message>
+    <message>
+        <source>e.g. 1.5 m</source>
+        <translation type="unfinished">z. B. 1,5 m</translation>
+    </message>
+    <message>
         <source>TextLabel</source>
         <translation>TextLabel</translation>
     </message>
@@ -8502,6 +8514,36 @@ Mit dem Import dieser Datei bestätigen Sie, dass:
         <translation type="unfinished">Luftfeder</translation>
     </message>
     <message>
+        <source>size not given</source>
+        <translation type="unfinished">Größe nicht angegeben</translation>
+    </message>
+    <message>
+        <source>size %1</source>
+        <translation type="unfinished">Größe %1</translation>
+    </message>
+    <message>
+        <source>length to be measured</source>
+        <translation type="unfinished">Länge aufmessen</translation>
+    </message>
+    <message>
+        <source>total %1 m</source>
+        <translation type="unfinished">Summe %1 m</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n line(s) without length</source>
+        <translation type="unfinished">
+            <numerusform>%n Leitung ohne Länge</numerusform>
+            <numerusform>%n Leitungen ohne Länge</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n length(s) not understood: %1</source>
+        <translation type="unfinished">
+            <numerusform>%n Länge nicht verstanden: %1</numerusform>
+            <numerusform>%n Längen nicht verstanden: %1</numerusform>
+        </translation>
+    </message>
+    <message>
         <source>Directional valve</source>
         <translation type="unfinished">Wegeventil</translation>
     </message>
@@ -8634,11 +8676,11 @@ Mit dem Import dieser Datei bestätigen Sie, dass:
     </message>
     <message>
         <source>size not given; length to be measured</source>
-        <translation type="unfinished">Größe nicht angegeben; Länge aufmessen</translation>
+        <translation type="obsolete">Größe nicht angegeben; Länge aufmessen</translation>
     </message>
     <message>
         <source>size %1; length to be measured</source>
-        <translation type="unfinished">Größe %1; Länge aufmessen</translation>
+        <translation type="obsolete">Größe %1; Länge aufmessen</translation>
     </message>
     <message>
         <source>line(s)</source>

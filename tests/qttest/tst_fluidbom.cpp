@@ -1,10 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include <QtTest>
 
+#include <QDomDocument>
+
+#include "conductorproperties.h"
 #include "fluid/fluidbom.h"
+#include "qetapp.h"
+
+	// qet.cpp needs it; the application is not linked
+QString QETApp::m_interface_language;
 
 // The fluid parts list: what is grouped, what each line says, and that the
-// lines of a project are counted by kind and size, their length left open.
+// lines of a project are counted by kind and size, with the lengths typed
+// into them added up and those without one counted.
 class tst_fluidbom : public QObject
 {
 	Q_OBJECT
@@ -102,6 +110,96 @@ class tst_fluidbom : public QObject
 			QVERIFY(r.at(1).at(5).contains("length to be measured"));
 			QCOMPARE(r.at(2).at(3), QString("Pilot line"));
 			QCOMPARE(r.at(3).at(1), QString("1"));
+		}
+
+		void lengthsAreRead()
+		{
+			double mm = 0;
+			QVERIFY(FluidBom::lengthInMm("1.5 m", &mm));
+			QCOMPARE(mm, 1500.0);
+			QVERIFY(FluidBom::lengthInMm("1,25m", &mm));
+			QCOMPARE(mm, 1250.0);
+			QVERIFY(FluidBom::lengthInMm(" 80 cm ", &mm));
+			QCOMPARE(mm, 800.0);
+			QVERIFY(FluidBom::lengthInMm("350 MM", &mm));
+			QCOMPARE(mm, 350.0);
+			QVERIFY(FluidBom::lengthInMm("2", &mm));   // no unit: metres
+			QCOMPARE(mm, 2000.0);
+			QVERIFY(!FluidBom::lengthInMm("", &mm));
+			QVERIFY(!FluidBom::lengthInMm("about 2 m", &mm));
+			QVERIFY(!FluidBom::lengthInMm("2 ft", &mm));
+			QVERIFY(!FluidBom::lengthInMm("-1 m", &mm));
+		}
+
+		void lengthsAreAddedUp()
+		{
+			using K = Fluid::LineKind;
+			const QList<FluidBom::Line> lines {
+				{K::Working, "8x6", "1.5 m"}, {K::Working, "8x6", "1200 mm"},
+				{K::Working, "8x6", "50 cm"}};
+			int rows = 0;
+			const auto r = records(FluidBom::csv({}, lines, &rows));
+			QCOMPARE(rows, 1);
+			QCOMPARE(r.at(1).at(1), QString("3"));
+			QCOMPARE(r.at(1).at(5), QString("size 8x6; total 3.2 m"));
+		}
+
+		void linesWithoutLengthAreCounted()
+		{
+			using K = Fluid::LineKind;
+			const QList<FluidBom::Line> lines {
+				{K::Working, "8x6", "1.5 m"}, {K::Working, "8x6", ""},
+				{K::Working, "8x6", "1,7 m"}, {K::Working, "8x6", " "},
+				{K::Pilot, "", "ca. 2 m"}, {K::Pilot, "", ""},
+				{K::Exhaust, "6x4", ""}};
+			int rows = 0;
+			const auto r = records(FluidBom::csv({}, lines, &rows));
+			QCOMPARE(rows, 3);
+			QCOMPARE(r.at(1).at(1), QString("4"));
+			QCOMPARE(r.at(1).at(5),
+				 QString("size 8x6; total 3.2 m; 2 line(s) without length"));
+				// A length not understood is named, not guessed at
+			QCOMPARE(r.at(2).at(5),
+				 QString("size not given; length to be measured; "
+					 "1 length(s) not understood: ca. 2 m"));
+				// No length at all: still to be measured, as before
+			QCOMPARE(r.at(3).at(5),
+				 QString("size 6x4; length to be measured"));
+		}
+
+		void lineLengthRoundTrip()
+		{
+			QDomDocument document;
+			QDomElement element = document.createElement(QStringLiteral("conductor"));
+			document.appendChild(element);
+			ConductorProperties none;
+			none.m_fluid_line = Fluid::LineKind::Working;
+			none.toXml(element);
+			QVERIFY2(!element.hasAttribute(QStringLiteral("length")),
+				 "a line without a length writes no attribute");
+
+			ConductorProperties properties;
+			properties.m_fluid_line = Fluid::LineKind::Working;
+			properties.m_wire_section = QStringLiteral("8x6");
+			properties.m_length = QStringLiteral("1,5 m");
+			QDomElement written = document.createElement(QStringLiteral("conductor"));
+			properties.toXml(written);
+			QCOMPARE(written.attribute(QStringLiteral("length")),
+				 QStringLiteral("1,5 m"));
+			ConductorProperties read_back;
+			read_back.fromXml(written);
+			QCOMPARE(read_back.m_length, QStringLiteral("1,5 m"));
+			QCOMPARE(read_back.m_fluid_line, Fluid::LineKind::Working);
+			QCOMPARE(read_back.m_wire_section, QStringLiteral("8x6"));
+
+				// A file from before: no attribute, no length
+			QDomElement old = document.createElement(QStringLiteral("conductor"));
+			old.setAttribute(QStringLiteral("conductor_section"),
+					 QStringLiteral("8x6"));
+			ConductorProperties old_read;
+			old_read.m_length = QStringLiteral("left over");
+			old_read.fromXml(old);
+			QVERIFY(old_read.m_length.isEmpty());
 		}
 };
 

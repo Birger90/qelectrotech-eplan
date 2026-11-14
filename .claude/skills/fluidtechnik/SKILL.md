@@ -91,8 +91,13 @@ nur an, wenn noch keine `qet_labels.xml` da ist). ISO/IEC 81346-2 selbst liegt n
 - Stückliste: `QElectroTech --export-fluid-bom PROJEKT.qet AUSGABE.csv`. Eine Zeile je gleichem Teil
   (Name, Bauart, Kenndaten, Hersteller, Bestellnummer aus den Bauteilinformationen `manufacturer`,
   `manufacturer_reference`), mit Anzahl und Kennzeichnungen; Zylinder mit Ø/Stange/Hub, Ventile mit Stellungen
-  und Betätigung. Leitungen mit Leitungsart als Schläuche nach Art und Feld „Querschnitt“ gezählt; die Länge
-  steht nicht im Plan (kein Maßstab) und bleibt aufzumessen.
+  und Betätigung. Leitungen mit Leitungsart als Schläuche nach Art und Feld „Querschnitt“ gezählt, dazu die
+  Summe ihrer Längen. Die Länge ist ein Feld der einzelnen Leitung (Leitungsfenster, nur bei Fluidleitung
+  sichtbar; .qet-Attribut `length`; Skript/MCP `set_conductor` mit `property: "length"`), Freitext mit
+  Einheit wie bei Kabeln: „1,5 m“, „80 cm“, „350 mm“, ohne Einheit Meter. Sie gehört der Leitung, nicht dem
+  Potential: Bearbeiten mit „auf alle Leiter des Potentials anwenden“ und `set_conductor` übertragen sie
+  nicht. In der Stückliste: „Summe 3.2 m“, fehlen welche „n line(s) without length“, nicht lesbare werden
+  genannt; hat keine Leitung der Art eine Länge, bleibt „length to be measured“ (kein Maßstab im Plan).
 
 ## FluidSIM-Schaltungen übernehmen
 

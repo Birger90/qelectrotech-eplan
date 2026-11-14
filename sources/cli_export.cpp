@@ -472,7 +472,8 @@ int exportBom(QETProject &project, const QString &output,
 /**
 	Parts list of the fluid power side: every element with fluid data
 	(valves, cylinders, valve solenoids...), identical ones on one line,
-	and the fluid lines counted by kind and size (FluidBom::csv()).
+	and the fluid lines counted by kind and size with the sum of their
+	lengths (FluidBom::csv()).
 */
 int exportFluidBom(QETProject &project, const QString &output)
 {
@@ -497,7 +498,8 @@ int exportFluidBom(QETProject &project, const QString &output)
 			const ConductorProperties cp = conductor->properties();
 			if (cp.m_fluid_line == Fluid::LineKind::None)
 				continue;
-			lines << FluidBom::Line{cp.m_fluid_line, cp.m_wire_section};
+			lines << FluidBom::Line{cp.m_fluid_line, cp.m_wire_section,
+						cp.m_length};
 		}
 	}
 	int rows = 0;

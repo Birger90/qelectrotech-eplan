@@ -34,8 +34,10 @@
 	gathered by the caller (cli_export.cpp), so they can be tested
 	without a project.
 
-	A line's length is not known: a diagram is not drawn to scale. The
-	list counts the lines and leaves their length to be filled in.
+	A diagram is not drawn to scale, so a line's length is what was
+	typed into it (ConductorProperties::m_length). The list adds up the
+	lengths of each kind and size, says how many lines have none, and
+	leaves the length to be measured when no line of it has one.
 */
 namespace FluidBom
 {
@@ -53,16 +55,22 @@ namespace FluidBom
 	struct Line {
 		Fluid::LineKind kind = Fluid::LineKind::None;
 		QString section;       ///< the conductor's section field (hose size)
+		QString length;        ///< its length as typed in, may be empty
 	};
 
 	QString kindText(FluidData::Kind kind);
 	QString lineKindText(Fluid::LineKind kind);
 	QString details(const FluidData &data);
 
+		/// Reads a length as typed into a line: a number with "," or "."
+		/// for decimals and a unit mm, cm or m; without a unit, metres.
+		/// @return false when @p text is empty or not such a length
+	bool lengthInMm(const QString &text, double *mm);
+
 		/// The list as CSV (BomExport::csvRecord): a header, then one
 		/// record per identical part, then one per kind and size of
-		/// line. @p rows, when given, receives the number of records
-		/// after the header.
+		/// line with the sum of their lengths. @p rows, when given,
+		/// receives the number of records after the header.
 	QByteArray csv(const QList<Part> &parts, const QList<Line> &lines,
 				   int *rows = nullptr);
 }

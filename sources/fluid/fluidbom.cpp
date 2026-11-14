@@ -22,6 +22,7 @@
 #include <QCoreApplication>
 #include <QHash>
 #include <QPair>
+#include <QRegularExpression>
 #include <QStringList>
 
 namespace
@@ -64,6 +65,62 @@ namespace
 	{
 		return QString::number(kind) + QLatin1Char('|') + section;
 	}
+
+		/// What the lines of one kind and size add up to
+	struct LineSum {
+		int count = 0;
+		double mm = 0;           ///< sum of the lengths that could be read
+		int without = 0;         ///< lines with no length typed in
+		QStringList unreadable;  ///< lengths typed in but not understood
+	};
+
+		/// The size, then the length: summed, partly summed, or to be
+		/// measured when no line of this kind and size has one
+	QString lineCharacteristics(const QString &section, const LineSum &sum)
+	{
+		QStringList words;
+		words << (section.isEmpty() ? T::tr("size not given")
+					    : T::tr("size %1").arg(section));
+		const int known = sum.count - sum.without - sum.unreadable.size();
+		if (known == 0) {
+			words << T::tr("length to be measured");
+		} else {
+				// To the millimetre, in metres: 3200 mm is "3.2 m"
+			const double metres = qRound64(sum.mm) / 1000.0;
+			words << T::tr("total %1 m")
+				 .arg(QString::number(metres, 'g', 12));
+			if (sum.without > 0)
+				words << T::tr("%n line(s) without length", nullptr,
+					       sum.without);
+		}
+		if (!sum.unreadable.isEmpty())
+			words << T::tr("%n length(s) not understood: %1", nullptr,
+				       sum.unreadable.size())
+					 .arg(sum.unreadable.join(QStringLiteral(", ")));
+		return words.join(QStringLiteral("; "));
+	}
+}
+
+bool FluidBom::lengthInMm(const QString &text, double *mm)
+{
+	static const QRegularExpression rx(
+		QStringLiteral("^\\s*(\\d+(?:[.,]\\d+)?)\\s*(mm|cm|m)?\\s*$"),
+		QRegularExpression::CaseInsensitiveOption);
+	const QRegularExpressionMatch match = rx.match(text);
+	if (!match.hasMatch())
+		return false;
+	bool ok = false;
+	const double value = match.captured(1)
+			.replace(QLatin1Char(','), QLatin1Char('.')).toDouble(&ok);
+	if (!ok)
+		return false;
+	const QString unit = match.captured(2).toLower();
+	const double factor = unit == QLatin1String("mm") ? 1.0
+			    : unit == QLatin1String("cm") ? 10.0
+			    : 1000.0;   // "m", or no unit
+	if (mm)
+		*mm = value * factor;
+	return true;
 }
 
 QString FluidBom::kindText(FluidData::Kind kind)
@@ -157,28 +214,35 @@ QByteArray FluidBom::csv(const QList<Part> &parts, const QList<Line> &lines,
 			key.at(4), labels.value(key).join(QStringLiteral(", "))});
 	}
 
-		// Lines by kind and size: counted, their length to be filled in
+		// Lines by kind and size: counted, their lengths added up
 	QList<QPair<int, QString>> line_keys;
-	QHash<QString, int> line_counts;
+	QHash<QString, LineSum> line_sums;
 	for (const Line &l : lines) {
 		if (l.kind == Fluid::LineKind::None)
 			continue;
 		const int kind = static_cast<int>(l.kind);
 		const QString key = lineKey(kind, l.section);
-		if (!line_counts.contains(key))
+		if (!line_sums.contains(key))
 			line_keys << qMakePair(kind, l.section);
-		++line_counts[key];
+		LineSum &sum = line_sums[key];
+		++sum.count;
+		double mm = 0;
+		const QString length = l.length.trimmed();
+		if (length.isEmpty())
+			++sum.without;
+		else if (lengthInMm(length, &mm))
+			sum.mm += mm;
+		else
+			sum.unreadable << length;
 	}
 	for (const auto &k : line_keys) {
-		const QString characteristics = k.second.isEmpty()
-				? T::tr("size not given; length to be measured")
-				: T::tr("size %1; length to be measured").arg(k.second);
+		const LineSum sum = line_sums.value(lineKey(k.first, k.second));
 		out += BomExport::csvRecord({
 			QString::number(++item),
-			QString::number(line_counts.value(lineKey(k.first, k.second))),
+			QString::number(sum.count),
 			T::tr("line(s)"),
 			lineKindText(static_cast<Fluid::LineKind>(k.first)),
-			T::tr("Hose or pipe"), characteristics,
+			T::tr("Hose or pipe"), lineCharacteristics(k.second, sum),
 			QString(), QString(), QString()});
 	}
 	if (rows)

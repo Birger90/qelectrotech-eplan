@@ -18,6 +18,9 @@
 #include "simulationdock.h"
 
 #include "simulationmodel.h"
+#include "simulationoverlay.h"
+#include "plcprogram.h"
+#include "../undocommand/changeelementinformationcommand.h"
 #include "../diagram.h"
 #include "../fluid/fluidtypes.h"
 #include "../qetdiagrameditor.h"
@@ -29,6 +32,7 @@
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
+#include <QInputDialog>
 #include <QGraphicsPathItem>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsSimpleTextItem>
@@ -46,7 +50,8 @@
 SimulationDock::SimulationDock(QETDiagramEditor *editor) :
 	QDockWidget(tr("Simulation"), editor),
 	m_editor(editor),
-	m_timer(new QTimer(this))
+	m_timer(new QTimer(this)),
+	m_overlay(std::make_unique<SimulationOverlay>())
 {
 	setObjectName(QStringLiteral("simulation_dock"));
 	auto *content = new QWidget(this);
@@ -62,6 +67,9 @@ SimulationDock::SimulationDock(QETDiagramEditor *editor) :
 	buttons->addWidget(m_pause);
 	buttons->addWidget(m_stop);
 	layout->addLayout(buttons);
+	m_program = new QPushButton(tr("PLC program..."), content);
+	m_program->setToolTip(tr("Write the program a PLC of the project runs in the simulation"));
+	layout->addWidget(m_program);
 
 	auto *form = new QFormLayout();
 	m_speed = new QComboBox(content);
@@ -106,6 +114,7 @@ SimulationDock::SimulationDock(QETDiagramEditor *editor) :
 	connect(m_start, &QPushButton::clicked, this, &SimulationDock::start);
 	connect(m_pause, &QPushButton::clicked, this, &SimulationDock::pause);
 	connect(m_stop, &QPushButton::clicked, this, &SimulationDock::stop);
+	connect(m_program, &QPushButton::clicked, this, &SimulationDock::editProgram);
 	connect(m_timer, &QTimer::timeout, this, &SimulationDock::tick);
 	connect(this, &QDockWidget::visibilityChanged, this, [this](bool visible) {
 		if (!visible && m_model) stop();
@@ -127,7 +136,8 @@ void SimulationDock::start()
 		}
 		m_project = project;
 		m_model = std::make_unique<SimulationModel>(project->diagrams(), m_supply->value());
-		m_summary->setText(m_model->summary());
+		m_summary->setText(m_model->programErrors().isEmpty() ? m_model->summary()
+			: m_model->summary() + QStringLiteral("\n") + m_model->programErrors().join(QStringLiteral("\n")));
 		m_log->clear();
 		rebuildControls();
 		// push buttons and valves can also be operated by clicking their symbol
@@ -226,65 +236,8 @@ void SimulationDock::tick()
 
 void SimulationDock::updateOverlay()
 {
-	if (!m_project) return;
-	for (Diagram *d : m_project->diagrams()) {
-		for (Conductor *c : d->conductors()) {
-			Terminal *t = c->terminal1;
-			QColor colour;
-			double width = 3.0;
-			if (m_model->isFluid(t)) {
-				const double bar = m_model->pressureBar(t);
-				const bool oil = t->medium() == Fluid::Medium::Hydraulic;
-				if (!std::isnan(bar) && bar > 0.2) {
-					const double share = std::min(1.0, bar / (oil ? 60.0 : 6.0));
-					colour = oil ? QColor(220, 40, 30) : QColor(0, 90, 220);
-					colour.setAlpha(int(70 + 160 * share));
-					width = 2.0 + 3.0 * share;
-				}
-			} else if (m_model->isElectric(t) && m_model->energized(t)) {
-				colour = QColor(230, 0, 0, 200);
-				width = 2.5;
-			}
-			QGraphicsItem *&item = m_wire_items[c];
-			if (!colour.isValid()) {
-				if (item) item->setVisible(false);
-				continue;
-			}
-			auto *path = static_cast<QGraphicsPathItem *>(item);
-			if (!path) {
-				path = new QGraphicsPathItem();
-				path->setZValue(10000);
-				path->setAcceptedMouseButtons(Qt::NoButton);
-				d->addItem(path);
-				item = path;
-			}
-			path->setPath(c->mapToScene(c->path()));
-			path->setPen(QPen(colour, width, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-			path->setVisible(true);
-		}
-	}
-	auto text_at = [this](Element *e, const QString &text) {
-		if (!e || !e->scene()) return;
-		QGraphicsItem *&item = m_element_items[e];
-		auto *label = static_cast<QGraphicsSimpleTextItem *>(item);
-		if (!label) {
-			label = new QGraphicsSimpleTextItem();
-			label->setZValue(10001);
-			label->setBrush(QColor(0, 120, 120));
-			label->setAcceptedMouseButtons(Qt::NoButton);
-			e->scene()->addItem(label);
-			item = label;
-		}
-		label->setText(text);
-		const QRectF r = e->sceneBoundingRect();
-		label->setPos(r.left(), r.top() - 14);
-	};
-	for (const auto &c : m_model->cylinders())
-		text_at(c.element, QStringLiteral("%1: %2 / %3 mm%4").arg(c.label)
-				.arg(c.x_mm, 0, 'f', 0).arg(c.stroke_mm, 0, 'f', 0)
-				.arg(c.v > 1e-3 ? QStringLiteral("  >>") : (c.v < -1e-3 ? QStringLiteral("  <<") : QString())));
-	for (const auto &v : m_model->valveStates())
-		text_at(v.element, tr("%1: position %2").arg(v.label).arg(v.position));
+	if (!m_project || !m_model) return;
+	m_overlay->update(*m_model, m_project->diagrams());
 }
 
 /**
@@ -346,21 +299,62 @@ bool SimulationDock::eventFilter(QObject *watched, QEvent *event)
 
 void SimulationDock::clearOverlay()
 {
-	if (!m_project) {          // the folios are gone, and with them every overlay item
-		m_wire_items.clear();
-		m_element_items.clear();
+	m_overlay->clear(!m_project.isNull());
+}
+
+/**
+	Edits the program of a PLC of the current project (Structured Text, see
+	PlcProgram). It is kept as the element information "sim_program" of the
+	PLC module, with undo.
+*/
+void SimulationDock::editProgram()
+{
+	QETProject *project = m_editor->currentProject();
+	if (!project) return;
+	QList<Element *> plcs;
+	QStringList names;
+	for (Diagram *d : project->diagrams())
+		for (Element *e : d->elements()) {
+			const ElementData data = e->elementData();
+			if (data.m_type == ElementData::Master && data.m_master_type == ElementData::PLC) {
+				plcs << e;
+				const QString lbl = e->elementInformations()[QStringLiteral("label")].toString();
+				names << QStringLiteral("%1 (%2, Blatt %3)").arg(lbl.isEmpty() ? e->name() : lbl, e->name())
+						 .arg(d->folioIndex() + 1);
+			}
+		}
+	if (plcs.isEmpty()) {
+		m_summary->setText(tr("The project has no PLC (module with an IO table)."));
 		return;
 	}
-	for (QGraphicsItem *item : std::as_const(m_wire_items)) {
-		if (!item) continue;
-		if (item->scene()) item->scene()->removeItem(item);
-		delete item;
+	int index = 0;
+	if (plcs.size() > 1) {
+		bool ok = false;
+		const QString choice = QInputDialog::getItem(this, tr("PLC program"), tr("Program of which PLC?"),
+													 names, 0, false, &ok);
+		if (!ok) return;
+		index = static_cast<int>(names.indexOf(choice));
 	}
-	for (QGraphicsItem *item : std::as_const(m_element_items)) {
-		if (!item) continue;
-		if (item->scene()) item->scene()->removeItem(item);
-		delete item;
-	}
-	m_wire_items.clear();
-	m_element_items.clear();
+	Element *plc = plcs.at(index);
+	const DiagramContext old_info = plc->elementInformations();
+	QString source = old_info[QStringLiteral("sim_program")].toString();
+	if (source.isEmpty())
+		source = QStringLiteral("(* Strukturierter Text, z. B.:\n"
+								"VAR T1 : TON; END_VAR\n"
+								"Lauf := (DI0 OR Lauf) AND NOT DI1;\n"
+								"T1(IN := DI2, PT := T#1s);\n"
+								"DQ0 := Lauf AND NOT T1.Q; *)\n");
+	bool ok = false;
+	const QString text = QInputDialog::getMultiLineText(this, tr("PLC program"),
+		tr("Structured Text (IEC 61131-3 subset). Variables are the IO addresses and symbols of the IO table, "
+		   "function blocks TON, TOF, CTU:"), source, &ok);
+	if (!ok || text == source) return;
+	PlcProgram check;
+	QString error;
+	if (!check.compile(text, &error))
+		m_summary->setText(tr("Saved, but the program has an error: %1").arg(error));
+	DiagramContext new_info = old_info;
+	new_info.addValue(QStringLiteral("sim_program"), text);
+	if (plc->diagram())
+		plc->diagram()->undoStack().push(new ChangeElementInformationCommand(plc, old_info, new_info));
 }

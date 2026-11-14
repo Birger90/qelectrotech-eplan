@@ -10,7 +10,8 @@ Betätigung, Kennwerte) und der elektrischen Steuerung.
   Hälfte diese Seite (Handhilfsbetätigung). *Stopp* entfernt die Anzeige; das Projekt wird nicht verändert.
 - **Ohne Oberfläche:** `QElectroTech --simulate plan.qet --event "0.2 -SF1 an" --event "0.3 -SF1 aus"
   --duration 2 --csv weg.csv` gibt alle Ereignisse mit Zeit aus (Ventil schaltet, Endlage erreicht, Relais zieht
-  an …). Ventil von Hand: `--event "0.2 -QM1 links an"`.
+  an …). Ventil von Hand: `--event "0.2 -QM1 links an"`. Mit `--png ordner --at 0.5` entstehen Bilder aller
+  Blätter mit der Simulationsanzeige zu diesem Zeitpunkt.
 - **Prototyp in Python** (Referenz, mit Diagramm): `tools/simulation/fluid_simulation.py`.
 
 ## Was gerechnet wird
@@ -31,6 +32,26 @@ Betätigung, Kennwerte) und der elektrischen Steuerung.
 | Relais | Spule (Master) und verknüpfte Kontakte (Slaves), Anzug 10 ms, Abfall 8 ms |
 | Zeitrelais | ansprech- bzw. abfallverzögerte Spule oder Kontakte; Zeit im Funktionstext der Spule („1 s“, „500 ms“) |
 
+| Zähler | Zählersymbol zählt jede steigende Flanke; Vorwahl im Funktionstext („3“); Kontakte mit gleichem Kennzeichen schalten bei Erreichen; Rücksetzen über ein zweites Zählersymbol `-PF1/R` |
+| SPS | Kanäle (verknüpfte SPS-Slaves) lesen bzw. schreiben ihre Adresse aus der E/A-Tabelle (z. B. `DI0`, `DQ0`); Programm alle 10 ms |
+
+## SPS-Programm
+
+Das Programm steht an der SPS-Baugruppe (Element-Information `sim_program`) und wird im Simulationsfenster mit
+*SPS-Programm …* bearbeitet. Sprache: Teil von Strukturiertem Text (IEC 61131-3):
+
+```
+VAR T1 : TON; Z1 : CTU; END_VAR
+Lauf := (DI0 OR Lauf) AND NOT DI1 AND NOT T1.Q AND NOT Z1.Q;   (* Selbsthaltung *)
+T1(IN := DI2, PT := T#1s);
+Z1(CU := DI2, R := DI1, PV := 3);
+DQ0 := Lauf;
+```
+
+Variablen sind die Adressen und Symbole (Funktionstext) der E/A-Tabelle; Merker brauchen keine Deklaration.
+Operatoren NOT, AND, XOR, OR, Klammern, `IF … THEN … ELSE … END_IF`; Bausteine TON, TOF (IN, PT, Q), CTU (CU, R,
+PV, Q). Programme aller SPS-Baugruppen eines Projekts teilen sich die Variablen.
+
 ## Zuordnungen im Plan
 
 - **Ventilspule → Ventil:** Die Spule trägt das Kennzeichen des Ventils, z. B. `-QM1`. Bei zwei Magneten
@@ -41,4 +62,5 @@ Betätigung, Kennwerte) und der elektrischen Steuerung.
 ## Grenzen
 
 Die Modelle sind eigene, aus der Fachphysik; sie sind gegen Handrechnungen geprüft (Hydraulik: Geschwindigkeit =
-Förderstrom/Fläche), noch nicht gegen FluidSIM. Noch nicht simuliert: Stromteiler, Zähler, SPS/GRAFCET.
+Förderstrom/Fläche), noch nicht gegen FluidSIM. Nicht simuliert: GRAFCET-Pläne, analoge SPS-Werte, Proportionalventile
+mit Stellsignal.

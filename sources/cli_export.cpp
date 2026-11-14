@@ -30,6 +30,7 @@
 #include "editor/terminalnamecheck.h"
 #include "fluid/fluiddata.h"
 #include "simulation/simulationmodel.h"
+#include "simulation/simulationoverlay.h"
 #include "import/eplandxf/eplanpartimporter.h"
 #include "import/portals/manufacturerportals.h"
 #include "import/portals/partfetcher.h"
@@ -683,8 +684,8 @@ int checkOneElement(const QString &path)
 /// Events press/release a push button ("0.2 -SF1 an") or actuate a valve by hand ("0.2 -QM1 links an").
 int simulateProject(QETProject &project, const QStringList &args)
 {
-	double duration = 2.0, pressure = 6.0;
-	QString csv_path;
+	double duration = 2.0, pressure = 6.0, png_at = -1.0;
+	QString csv_path, png_dir;
 	struct Event { double t; QString label; int side; bool on; };
 	QList<Event> events;
 	static const QRegularExpression ev_re(QStringLiteral(
@@ -695,6 +696,8 @@ int simulateProject(QETProject &project, const QStringList &args)
 		if (a == QLatin1String("--duration")) { duration = v.toDouble(); ++i; }
 		else if (a == QLatin1String("--pressure")) { pressure = v.toDouble(); ++i; }
 		else if (a == QLatin1String("--csv")) { csv_path = v; ++i; }
+		else if (a == QLatin1String("--png")) { png_dir = v; ++i; }
+		else if (a == QLatin1String("--at")) { png_at = v.toDouble(); ++i; }
 		else if (a == QLatin1String("--event")) {
 			const auto m = ev_re.match(v);
 			if (!m.hasMatch()) { err << "event not understood: " << v << "\n"; return 2; }
@@ -708,6 +711,29 @@ int simulateProject(QETProject &project, const QStringList &args)
 	std::sort(events.begin(), events.end(), [](const Event &x, const Event &y) { return x.t < y.t; });
 	SimulationModel sim(project.diagrams(), pressure);
 	out << sim.summary() << "\n";
+	for (const QString &e : sim.programErrors()) err << "PLC program: " << e << "\n";
+	bool png_done = png_dir.isEmpty();
+	auto write_png = [&]() {
+		// the folios with the simulation display (pressure, live wires, states) at this moment
+		SimulationOverlay overlay;
+		overlay.update(sim, project.diagrams());
+		QDir().mkpath(png_dir);
+		int index = 0;
+		for (Diagram *diagram : project.diagrams()) {
+			++index;
+			const QRect r = diagramRect(diagram);
+			QImage image(r.size(), QImage::Format_ARGB32);
+			image.fill(Qt::white);
+			QPainter painter(&image);
+			painter.setRenderHint(QPainter::Antialiasing, true);
+			renderDiagram(diagram, painter, QRectF(QPointF(0, 0), r.size()), false);
+			painter.end();
+			const QString path = QDir(png_dir).filePath(diagramStem(diagram, index) + ".png");
+			image.save(path);
+			out << "  " << path << "\n";
+		}
+		overlay.clear(true);
+	};
 	QFile csv(csv_path);
 	QTextStream csv_out(&csv);
 	if (!csv_path.isEmpty() && csv.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -735,10 +761,15 @@ int simulateProject(QETProject &project, const QStringList &args)
 			csv_out << "\n";
 			next_row += raster;
 		}
+		if (!png_done && sim.time() >= (png_at < 0 ? duration : png_at) - 1e-9) {
+			write_png();
+			png_done = true;
+		}
 		sim.step(dt);
 		for (const auto &m : sim.takeMessages())
 			out << QString::number(m.time, 'f', 3).rightJustified(8) << " s  " << m.text << "\n";
 	}
+	if (!png_done) write_png();
 	out.flush();
 	return 0;
 }

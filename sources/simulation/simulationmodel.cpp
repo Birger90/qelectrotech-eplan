@@ -17,6 +17,8 @@
 */
 #include "simulationmodel.h"
 
+#include "plcprogram.h"
+
 #include "../diagram.h"
 #include "../fluid/fluiddata.h"
 #include "../fluid/fluidtypes.h"
@@ -183,6 +185,30 @@ struct SimulationModel::Coil {
 	bool on = false, known = false;
 };
 
+struct SimulationModel::Counter {
+	Element *e = nullptr;
+	QString label;
+	int n1 = -1, n2 = -1;
+	QList<int> nodes;             // every terminal: a counter symbol may have several
+	int preset = 1, count = 0;
+	bool last = false;
+	bool reset_coil = false;      // label ends with "/R": resets the counter of that label
+};
+
+struct SimulationModel::PlcChannel {
+	Element *e = nullptr;
+	bool output = false;
+	QStringList names;            // variable names: address and symbol
+	QList<int> signal, plus, minus;
+	bool value = false;
+};
+
+struct SimulationModel::Plc {
+	Element *e = nullptr;
+	QString label;
+	std::shared_ptr<PlcProgram> program;
+};
+
 // ------------------------------------------------------------------------- construction
 SimulationModel::SimulationModel(const QList<Diagram *> &diagrams, double supply_bar)
 {
@@ -199,6 +225,9 @@ SimulationModel::~SimulationModel()
 	qDeleteAll(m_contacts);
 	qDeleteAll(m_relays);
 	qDeleteAll(m_coils);
+	qDeleteAll(m_counters);
+	qDeleteAll(m_plc_channels);
+	qDeleteAll(m_plcs);
 }
 
 void SimulationModel::buildNets(const QList<Diagram *> &diagrams)
@@ -360,6 +389,89 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 			const bool nc_name = name.contains(QStringLiteral("öffner")) || name.contains(QLatin1String(" nc"))
 				|| name.contains(QLatin1String("(nc)")) || path.endsWith(QLatin1String("_nf.elmt"))
 				|| path.endsWith(QLatin1String("_nc.elmt"));
+			if (data.m_type == ElementData::Master && data.m_master_type == ElementData::PLC) {
+				// a PLC (module): its program is the element information "sim_program"
+				const QString source = info(e, "sim_program");
+				if (!source.trimmed().isEmpty()) {
+					auto *plc = new Plc;
+					plc->e = e;
+					plc->label = label(e);
+					plc->program = std::make_shared<PlcProgram>();
+					QString error;
+					if (!plc->program->compile(source, &error))
+						m_program_errors << QStringLiteral("%1: %2").arg(plc->label, error);
+					m_plcs << plc;
+				}
+				// its supply terminals feed the channels
+				for (Terminal *t : e->terminals()) {
+					const QString tn = t->name().toUpper();
+					if (tn == QLatin1String("L+") || tn == QLatin1String("24V") || tn == QLatin1String("VS"))
+						m_sources << qMakePair(QList<int>{node(t)}, QList<int>{});
+					else if (tn == QLatin1String("M") || tn == QLatin1String("0V") || tn == QLatin1String("L-"))
+						m_sources << qMakePair(QList<int>{}, QList<int>{node(t)});
+				}
+				continue;
+			}
+			if (data.m_type == ElementData::Slave && data.m_slave_type == ElementData::PLCSlave) {
+				// a PLC channel: its IO entry in the linked module gives address and direction
+				auto *ch = new PlcChannel;
+				ch->e = e;
+				const auto linked = e->linkedElements();
+				Element *master = linked.isEmpty() ? nullptr : linked.first();
+				// the link keeps the IO index on the module; the channel also carries address and type
+				int io = master ? master->groupIndexForElement(e) : -1;
+				if (master && io < 0) io = e->groupIndexForElement(master);
+				const QString address = info(e, "plc_address");
+				const QString io_type = info(e, "plc_type").toLower();
+				if (!address.isEmpty()) {
+					ch->names << PlcProgram::normalized(address);
+					ch->output = io_type.contains(QLatin1String("output")) || io_type.contains(QLatin1String("ausgang"));
+				} else if (master && io >= 0 && io < master->elementData().plcMasterData().ios.size()) {
+					const ElementData::PlcIO entry = master->elementData().plcMasterData().ios.at(io);
+					ch->output = entry.type == ElementData::SortieDigitale || entry.type == ElementData::SortieAnalogique
+								 || entry.type == ElementData::SortieUniverselle;
+					if (!entry.address.isEmpty()) ch->names << PlcProgram::normalized(entry.address);
+					if (!entry.functionText.isEmpty())
+						ch->names << PlcProgram::normalized(QString(entry.functionText).replace(QLatin1Char(' '), QLatin1Char('_')));
+				}
+				// a channel takes the label of its module, so the label only names it when nothing else does
+				if (ch->names.isEmpty() && !label(e).isEmpty()) ch->names << PlcProgram::normalized(label(e));
+				for (Terminal *t : e->terminals()) {
+					const QString tn = t->name().toUpper();
+					const int k = node(t);
+					if (k < 0) continue;
+					if (tn == QLatin1String("VS") || tn == QLatin1String("L+") || tn == QLatin1String("24V"))
+						ch->plus << k;
+					else if (tn == QLatin1String("M") || tn == QLatin1String("0V") || tn == QLatin1String("L-"))
+						ch->minus << k;
+					else if (tn != QLatin1String("AUX"))
+						ch->signal << k;
+				}
+				m_plc_channels << ch;
+				continue;
+			}
+			if (path.contains(QLatin1String("comptage")) || name.contains(QStringLiteral("zähler"))) {
+				const QString lbl = label(e);
+				if (name.contains(QStringLiteral("betätigt")) || path.contains(QLatin1String("act_comptage"))) {
+					auto *c = new Contact;
+					c->e = e;
+					c->kind = QStringLiteral("counter");
+					c->nc = nc_name;
+					c->n1 = n.at(0); c->n2 = n.at(1);
+					c->trigger = lbl;
+					m_contacts << c;
+				} else {
+					auto *z = new Counter;
+					z->e = e;
+					z->reset_coil = lbl.endsWith(QLatin1String("/R"));
+					z->label = z->reset_coil ? lbl.chopped(2) : lbl;
+					z->n1 = n.at(0); z->n2 = n.at(1);
+					z->nodes = n;
+					z->preset = std::max(1, int(timeFromText(info(e, "function"), 1.0)));
+					m_counters << z;
+				}
+				continue;
+			}
 			if (data.m_type == ElementData::Master && data.m_master_type == ElementData::Coil) {
 				auto *r = new Relay;
 				r->e = e;
@@ -439,6 +551,9 @@ bool SimulationModel::contactClosed(const Contact &c) const
 	} else if (c.kind == QLatin1String("limit")) {
 		const QStringList parts = c.trigger.split(QLatin1Char(' '), Qt::SkipEmptyParts);
 		actuated = parts.size() == 2 && m_end_position.value(parts.at(0)) == parts.at(1);
+	} else if (c.kind == QLatin1String("counter")) {
+		for (const Counter *z : m_counters)
+			if (!z->reset_coil && z->label == c.trigger) actuated = z->count >= z->preset;
 	} else if (c.relay) {
 		const Relay *r = c.relay;
 		const QString mode = c.mode.isEmpty() ? r->mode : c.mode;
@@ -454,7 +569,7 @@ bool SimulationModel::contactClosed(const Contact &c) const
 
 void SimulationModel::electrics()
 {
-	if (m_sources.isEmpty()) return;
+	if (m_sources.isEmpty() && m_plc_channels.isEmpty()) return;
 	QHash<int, int> parent;
 	std::function<int(int)> root = [&](int a) {
 		while (parent.value(a, a) != a) {
@@ -473,6 +588,34 @@ void SimulationModel::electrics()
 	for (const auto &s : m_sources) {
 		for (int x : s.first) if (x >= 0) plus << root(x);
 		for (int x : s.second) if (x >= 0) minus << root(x);
+	}
+	for (const PlcChannel *ch : m_plc_channels) {
+		for (int x : ch->plus) plus << root(x);
+		for (int x : ch->minus) minus << root(x);
+		if (ch->output && ch->value)
+			for (int x : ch->signal) plus << root(x);
+	}
+	// PLC: read the inputs, run the programs every 10 ms, write the outputs
+	for (PlcChannel *ch : m_plc_channels) {
+		if (ch->output) continue;
+		bool on = false;
+		for (int x : ch->signal) on = on || plus.contains(root(x));
+		ch->value = on;
+		for (const QString &nm : ch->names) m_plc_vars.insert(nm, on);
+	}
+	if (!m_plcs.isEmpty() && m_time >= m_next_plc_cycle - 1e-12) {
+		m_next_plc_cycle = m_time + 0.010;
+		for (Plc *plc : m_plcs) plc->program->cycle(m_time, m_plc_vars);
+		for (PlcChannel *ch : m_plc_channels) {
+			if (!ch->output) continue;
+			bool on = false;
+			for (const QString &nm : ch->names) on = on || m_plc_vars.value(nm, false);
+			if (on != ch->value) {
+				ch->value = on;
+				m_messages << Message{m_time, QStringLiteral("SPS-Ausgang %1 %2").arg(ch->names.value(0),
+					on ? QStringLiteral("an") : QStringLiteral("aus"))};
+			}
+		}
 	}
 	m_plus_nets.clear();
 	for (int x : m_electric)
@@ -496,6 +639,25 @@ void SimulationModel::electrics()
 			r->on = r->target;
 			r->switch_at = -1;
 		}
+	}
+	for (Counter *z : m_counters) {
+		// counts when any of its terminals has plus and another one minus
+		bool has_plus = false, has_minus = false;
+		for (int x : z->nodes) {
+			if (x < 0) continue;
+			has_plus = has_plus || plus.contains(root(x));
+			has_minus = has_minus || minus.contains(root(x));
+		}
+		const bool on = has_plus && has_minus;
+		if (z->reset_coil) {
+			if (on)
+				for (Counter *o : m_counters)
+					if (!o->reset_coil && o->label == z->label) o->count = 0;
+		} else if (on && !z->last) {
+			++z->count;
+			m_messages << Message{m_time, QStringLiteral("Zähler %1: %2 von %3").arg(z->label).arg(z->count).arg(z->preset)};
+		}
+		z->last = on;
 	}
 	for (Coil *c : m_coils) {
 		const bool on = powered(c->n1, c->n2);
@@ -727,7 +889,35 @@ QString SimulationModel::summary() const
 						  "%6 Zylinder, %7 Kontakte, %8 Relais, %9 Ventilspulen")
 		.arg(m_p.size()).arg(m_fixed.size()).arg(m_pumps.size()).arg(m_valves.size())
 		.arg(m_flow_valves.size()).arg(m_cylinders.size()).arg(m_contacts.size())
-		.arg(m_relays.size()).arg(m_coils.size());
+		.arg(m_relays.size()).arg(m_coils.size())
+		+ QStringLiteral(", %1 Zähler, %2 SPS-Programme, %3 SPS-Kanäle")
+		.arg(m_counters.size()).arg(m_plcs.size()).arg(m_plc_channels.size());
+}
+
+QList<QPair<Element *, QString>> SimulationModel::elementStates() const
+{
+	QList<QPair<Element *, QString>> out;
+	for (Cylinder *z : m_cylinders)
+		out << qMakePair(z->e, QStringLiteral("%1: %2 / %3 mm%4").arg(z->label)
+			.arg(z->x * 1000.0, 0, 'f', 0).arg(z->stroke * 1000.0, 0, 'f', 0)
+			.arg(z->v > 1e-3 ? QStringLiteral("  >>") : (z->v < -1e-3 ? QStringLiteral("  <<") : QString())));
+	for (Valve *v : m_valves)
+		out << qMakePair(v->e, QStringLiteral("%1: Stellung %2").arg(v->label).arg(v->position + 1));
+	for (Relay *r : m_relays)
+		out << qMakePair(r->e, r->on ? QStringLiteral("%1: angezogen").arg(r->label) : QString());
+	for (Coil *c : m_coils)
+		out << qMakePair(c->e, c->on ? QStringLiteral("%1: an").arg(c->label) : QString());
+	for (Counter *z : m_counters)
+		if (!z->reset_coil)
+			out << qMakePair(z->e, QStringLiteral("%1: %2 / %3").arg(z->label).arg(z->count).arg(z->preset));
+	for (PlcChannel *ch : m_plc_channels)
+		out << qMakePair(ch->e, ch->value ? QStringLiteral("%1 = 1").arg(ch->names.value(0)) : QString());
+	return out;
+}
+
+bool SimulationModel::plcValue(const QString &name) const
+{
+	return m_plc_vars.value(PlcProgram::normalized(name), false);
 }
 
 double SimulationModel::pressureBar(Terminal *t) const

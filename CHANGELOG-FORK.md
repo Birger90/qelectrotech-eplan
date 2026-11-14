@@ -3,6 +3,16 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.15.0 – 14.11.2026
+
+- Simulation mit SPS: Kanäle lesen und schreiben ihre Adresse aus der E/A-Tabelle, das Programm in Strukturiertem
+  Text (IEC-61131-3-Teilmenge mit TON, TOF, CTU, IF) steht an der SPS-Baugruppe und wird im Simulationsfenster
+  bearbeitet (*SPS-Programm …*, mit Rückgängig).
+- Zähler: Zählersymbol mit Vorwahl im Funktionstext, Kontakte mit gleichem Kennzeichen, Rücksetzen über `…/R`.
+- Taster und Wegeventile lassen sich während der Simulation direkt im Plan bedienen (Maustaste halten).
+- `--simulate … --png ordner --at t`: Bilder der Blätter mit Simulationsanzeige; Zustände (Zylinderweg,
+  Ventilstellung, Relais, Zähler, SPS-Ein-/Ausgänge) stehen rechts neben dem Symbol.
+
 ## 1.14.0 – 14.11.2026
 
 - Simulation von Pneumatik, Hydraulik und elektrischer Steuerung (Menü *Anzeige → Simulation*): Leitungen unter

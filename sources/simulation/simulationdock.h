@@ -37,6 +37,7 @@ class QETProject;
 class Conductor;
 class Element;
 class SimulationModel;
+class SimulationOverlay;
 
 /**
 	@brief The SimulationDock class
@@ -66,21 +67,21 @@ class SimulationDock : public QDockWidget
 		void rebuildControls();
 		void updateOverlay();
 		void clearOverlay();
+		void editProgram();
 
 		QETDiagramEditor *m_editor;
 		QPointer<QETProject> m_project;
 		std::unique_ptr<SimulationModel> m_model;
 		QTimer *m_timer;
 		QElapsedTimer m_clock;
-		QPushButton *m_start, *m_pause, *m_stop;
+		QPushButton *m_start, *m_pause, *m_stop, *m_program;
 		QComboBox *m_speed;
 		QDoubleSpinBox *m_supply;
 		QLabel *m_time, *m_summary;
 		QWidget *m_controls;
 		QVBoxLayout *m_controls_layout;
 		QListWidget *m_log;
-		QHash<Conductor *, QGraphicsItem *> m_wire_items;
-		QHash<Element *, QGraphicsItem *> m_element_items;
+		std::unique_ptr<SimulationOverlay> m_overlay;
 		QString m_held_button;
 		QString m_held_valve;
 		bool m_held_left = true;

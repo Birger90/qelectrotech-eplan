@@ -23715,6 +23715,14 @@ Andere Felder werden nicht verwendet.</translation>
         <translation>Simulation beenden und ihre Anzeige von den Blättern entfernen</translation>
     </message>
     <message>
+        <source>PLC program...</source>
+        <translation>SPS-Programm …</translation>
+    </message>
+    <message>
+        <source>Write the program a PLC of the project runs in the simulation</source>
+        <translation>Programm schreiben, das eine SPS des Projekts in der Simulation ausführt</translation>
+    </message>
+    <message>
         <source>1/10 (slow motion)</source>
         <translation>1/10 (Zeitlupe)</translation>
     </message>
@@ -23787,8 +23795,28 @@ Andere Felder werden nicht verwendet.</translation>
         <translation>rechts</translation>
     </message>
     <message>
+        <source>The project has no PLC (module with an IO table).</source>
+        <translation>Das Projekt hat keine SPS (Baugruppe mit E/A-Tabelle).</translation>
+    </message>
+    <message>
+        <source>PLC program</source>
+        <translation>SPS-Programm</translation>
+    </message>
+    <message>
+        <source>Program of which PLC?</source>
+        <translation>Programm welcher SPS?</translation>
+    </message>
+    <message>
+        <source>Structured Text (IEC 61131-3 subset). Variables are the IO addresses and symbols of the IO table, function blocks TON, TOF, CTU:</source>
+        <translation>Strukturierter Text (Teil von IEC 61131-3). Variablen sind die Adressen und Symbole der E/A-Tabelle, Funktionsbausteine TON, TOF, CTU:</translation>
+    </message>
+    <message>
+        <source>Saved, but the program has an error: %1</source>
+        <translation>Gespeichert, aber das Programm hat einen Fehler: %1</translation>
+    </message>
+    <message>
         <source>%1: position %2</source>
-        <translation>%1: Stellung %2</translation>
+        <translation type="vanished">%1: Stellung %2</translation>
     </message>
 </context>
 <context>

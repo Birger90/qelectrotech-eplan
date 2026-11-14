@@ -25,10 +25,12 @@
 #include <QString>
 #include <QStringList>
 #include <QVector>
+#include <memory>
 
 class Diagram;
 class Element;
 class Terminal;
+class PlcProgram;
 
 /**
 	@brief The SimulationModel class
@@ -77,6 +79,12 @@ class SimulationModel
 		QList<ValveState> valveStates() const;
 		QList<Message> takeMessages();
 		QString summary() const;
+			/// short state text per element for the display (stroke, position, relay, counter, PLC)
+		QList<QPair<Element *, QString>> elementStates() const;
+			/// errors of the PLC programs, empty when they compiled
+		QStringList programErrors() const { return m_program_errors; }
+			/// current value of a PLC variable (address, symbol or flag)
+		bool plcValue(const QString &name) const;
 
 			/// gauge pressure (bar) at a fluid terminal; NaN when not fluid
 		double pressureBar(Terminal *terminal) const;
@@ -94,6 +102,9 @@ class SimulationModel
 		struct Contact;
 		struct Relay;
 		struct Coil;
+		struct Counter;
+		struct PlcChannel;
+		struct Plc;
 
 		int node(Terminal *t) const;
 		int node(Element *e, const QString &port) const;
@@ -114,6 +125,12 @@ class SimulationModel
 		QList<Contact *> m_contacts;
 		QList<Relay *> m_relays;
 		QList<Coil *> m_coils;
+		QList<Counter *> m_counters;
+		QList<PlcChannel *> m_plc_channels;
+		QList<Plc *> m_plcs;
+		QHash<QString, bool> m_plc_vars;
+		QStringList m_program_errors;
+		double m_next_plc_cycle = 0.0;
 		QList<QPair<QList<int>, QList<int>>> m_sources;
 		QSet<int> m_plus_nets;
 		QSet<QString> m_pressed;

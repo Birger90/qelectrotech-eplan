@@ -20,13 +20,18 @@ Betätigung, Kennwerte) und der elektrischen Steuerung.
 |---|---|
 | Leitungsnetz | Knoten mit Volumen; Luft isotherm (ideales Gas), Öl mit Kompressionsmodul; offener Anschluss = ins Freie |
 | Druckluftquelle | hält den Versorgungsdruck (Fenster: *Versorgungsdruck*) |
-| Hydraulikpumpe | Verdrängung × Drehzahl, eingebaute Druckbegrenzung bei `pMax` |
+| Hydraulikpumpe | Verdrängung × Drehzahl, eingebaute Druckbegrenzung: volle Förderung bis 1 bar unter `pMax`, bei `pMax` null |
+| Hydrospeicher (`supply.accumulator`, Öl) | Gasvolumen `V0`, Vorfülldruck `p0`, Polytropenexponent `k`; unter dem Vorfülldruck leer. Der Druck im Netz wird implizit aus der Volumenbilanz gelöst, die Ölmenge bleibt bei jedem Zeitschritt erhalten |
+| Druckluftbehälter (`supply.accumulator`, Luft) | Volumen `V0` im Netz, Anfangsdruck `p0`; ein endlicher Vorrat, keine Quelle |
+| Druckschalter (`sensor.pressure_switch`) | schaltet bei `p0` ein, `p_hyst` darunter aus; Kontakte mit Funktionstext „`-BP1`“, im GRAFCET `-BP1` |
+| Wechselventil, Zweidruckventil | Ausgang 2 vom Eingang mit höherem (ODER) bzw. niedrigerem Druck (UND) |
+| Zeitverzögerungsventil | schaltet 1 → 2, wenn Steueranschluss 3 `t_delay` lang Druck hat; sonst entlüftet 2 |
 | Tank | drucklos |
-| Wegeventil | Schaltwege der Stellung; Luft nach ISO 6358 aus `qNN`, Öl mit Widerstand `rT` (Δp = rT·Q²); Schaltzeiten `onDelay`/`offDelay`; Feder in die Ruhestellung, ohne Feder bleibt die Stellung; Steuerdruck an 14/12 |
-| Rückschlag-, Drosselrückschlagventil | freie Richtung `free_from` → `free_to` (aus der Zeichnung); entsperrbar über Steueranschluss |
+| Wegeventil | Schaltwege der Stellung; Luft nach ISO 6358 aus `qNN`, Öl mit Widerstand `rT` (Δp = rT·Q², um Δp = 0 stetig geglättet: Q ∝ Δp/(Δp² + 0,3 bar²)^¼); Schaltzeiten `onDelay`/`offDelay`; Feder in die Ruhestellung, ohne Feder bleibt die Stellung; Steuerdruck an 14/12 |
+| Rückschlag-, Drosselrückschlagventil | freie Richtung `free_from` → `free_to` (aus der Zeichnung); öffnet stetig ab dem Öffnungsdruck `p0`; entsperrbar über Steueranschluss |
 | Drossel, Absperrventil, Schalldämpfer, Schnellentlüftung | Leitwert aus `qNN` bzw. `rT` |
 | Druckbegrenzung, Druckregler | Einstelldruck `p0`, Öffnungsbereich `dpEnd` |
-| Zylinder | Kraftbilanz: Drücke × Flächen, Masse, Haft-/Gleitreibung, Feder, Last, Endanschläge |
+| Zylinder | Kraftbilanz: Drücke × Flächen, Masse, Haft-/Gleitreibung, Feder, Last, Endanschläge; meldet Unterdruck im Öl (Kavitation wird nicht gerechnet) |
 | Spannungsquelle | oberer Anschluss Plus, unterer Minus |
 | Taster, Endschalter | Schließer/Öffner aus dem Symbol |
 | Relais | Spule (Master) und verknüpfte Kontakte (Slaves), Anzug 10 ms, Abfall 8 ms |
@@ -129,10 +134,15 @@ Modelica-Referenzmodellen (Luft isotherm, R = 287,05 J/(kg K), T = 300 K, linear
 | PeriodicCounter | SPS-Zähler zählt alle 0,1 s, 9 bei 0,95 s | exakter Wert und Zeitpunkt |
 | SPS-Sprachumfang | ELSIF, CASE mit Bereich und ELSE, MOD, INT-Division, SR, RS, F_TRIG, TOF, CTD; Syntaxfehler | 14 Handrechnungen, Fehler mit richtiger Zeile |
 | GRAFCET-Schreibweise | `2s/X3`, `t/X1/500ms`, `-BG1 · /-BG2`, `-QM1/14 ∨ DI0`, `=1`, Flanke `↑-SF1` | 8 Fälle |
+| PumpFill | p = 10⁷ Pa/s · t | Fehler ≤ 0,1 Pa |
+| Orifice | Blende vorwärts, rückwärts, Gleichdruck | Wert wie OpenModelica auf 1e-12 m³/s, Verlustleistung ≥ 0, ungerade |
+| AccumulatorCharge | p = 10 bar · (1 l/(1 l − Q·t))^1,4; außerdem Laden ab 1 bar über den Vorfülldruck | Fehler ≤ 0,1 Pa bzw. 1 Pa |
+| Hydraulik-CylinderCycle | Pumpe, 4/3-Ventil, Differentialzylinder: aus, halten, zurück | Weg −0,1…100,1 mm, vor 0,7 s ≥ 75 mm, Haltedrift < 2 mm, nach 1,75 s < 2 mm, Drücke > −0,98 bar und < 100 bar, Volumenbilanz; mit Referenzlauf: Aus-/Einfahrgeschwindigkeit ±3 %, Rückhubzeit ±5 % |
 | CylinderCycle | Ausfahren vor 0,4 s, Rückhub bis 1 s | Weg −2…62 mm, vorne ≥ 59 mm vor 0,4 s, nach 0,9 s < 1 mm; Hubzeiten ±1 ms bei halbem Zeitschritt; mit Ordner: Hubzeiten ±5 % gegen den OpenModelica-Lauf |
 
-Der Ordner enthält die Ergebnisdatei `OwnSim.Examples.CylinderCycle_res.csv` des OpenModelica-Laufs (DASSL,
-Toleranz 1e-9); die Datei liegt unter `tools/simulation/referenz/`. Der Zylinder dort hat elastische
+Der Ordner enthält die Ergebnisdateien der OpenModelica-Läufe (DASSL, Toleranz 1e-9) für den pneumatischen und den
+hydraulischen Zyklus; sie liegen unter `tools/simulation/referenz/` und werden mit dem Programm installiert, so dass
+`--simulate-reference` ohne Ordner sie findet. Über MCP: `qet_simulate` und `qet_simulate_reference`. Der Zylinder dort hat elastische
 Anschläge und eine geglättete Reibung, unserer harte Anschläge und Haft-/Gleitreibung; deshalb wird die Hubzeit
 verglichen, nicht jeder Punkt.
 

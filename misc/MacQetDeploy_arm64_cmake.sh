@@ -481,6 +481,11 @@ cp "${current_dir}/misc/qet-mcp/qet_mcp.py" "${current_dir}/misc/qet-mcp/README.
 if [ -d "${current_dir}/bauteile/fluid" ]; then
     cp -R "${current_dir}/bauteile/fluid/." "$BUNDLE/Contents/Resources/elements/"         || { echo "ERROR: cannot copy the fluid symbols"; exit 1; }
 fi
+# Reference runs of the simulation (--simulate-reference)
+if [ -d "${current_dir}/tools/simulation/referenz" ]; then
+    mkdir -p "$BUNDLE/Contents/Resources/simulation"
+    cp -R "${current_dir}/tools/simulation/referenz" "$BUNDLE/Contents/Resources/simulation/" || { echo "ERROR: cannot copy the simulation references"; exit 1; }
+fi
 
 # The assistant's bridge (Claude) beside the MCP server it uses, and the
 # EPLAN project import (File > Import EPLAN project) with its page

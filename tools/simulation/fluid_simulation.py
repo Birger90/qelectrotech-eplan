@@ -163,10 +163,8 @@ def volumenstrom(p1, p2, rt):
     dp = p1 - p2
     if rt <= 0:
         rt = 1e-4
-    dp_bar = abs(dp) / 1e5
-    lam = DP_LAMINAR / 1e5
-    q_lmin = math.sqrt(dp_bar / rt) if dp_bar > lam else math.sqrt(lam / rt) * dp_bar / lam
-    return math.copysign(q_lmin / 60000, dp)
+    k = 1.0 / (60000.0 * math.sqrt(1e5 * rt))      # wie SimPhysics::orificeFlow
+    return k * dp / (dp * dp + DP_LAMINAR * DP_LAMINAR) ** 0.25
 
 
 class Pumpe:
@@ -177,7 +175,7 @@ class Pumpe:
         self.q = b.wert("displacement", 8.0) * 1e-6 * b.wert("rpm", 1450) / 60
         pmax = b.wert("pMax", 6.0)
         self.p_max = P_ATM + (pmax * 1e6 if pmax < 100 else pmax * 1e5)   # MPa bzw. bar
-        self.band = 5e5
+        self.band = 1e5                     # wie im C++-Kern: volle Förderung bis pMax - 1 bar
 
 
 class Stromventil:
@@ -527,8 +525,10 @@ class Simulation:
                 steuer = [n for n in s.namen if n not in (von, nach)]
                 if steuer and kn.get(steuer[0]) is not None:                       # entsperrbar
                     entsperrt = druck(kn[steuer[0]]) - P_ATM > P_STEUER
-                if pv - pn > s.p0 or entsperrt:
+                if entsperrt:
                     buche(kn[von], kn[nach], s.fluss(pv, pn, frei=True))
+                elif pv - pn > s.p0:                                               # stetig ab Öffnungsdruck
+                    buche(kn[von], kn[nach], s.fluss(pv - s.p0, pn, frei=True))
             elif f == "flow_control_valve.flow_divider":
                 # Stromteiler: Eingang 1 bzw. P auf die übrigen Anschlüsse, je gleicher Leitwert
                 ein = "1" if "1" in kn else ("P" if "P" in kn else s.namen[0])

@@ -1265,6 +1265,110 @@ def tool_export(binary: str, project: str, format: str, output: str,
 
 
 # --------------------------------------------------------------------------
+# qet_simulate / qet_simulate_reference: the simulation, headless
+# --------------------------------------------------------------------------
+
+_SIM_EVENT = re.compile(r"^\s*\d+(?:[.,]\d+)?\s+-?\S+(?:\s+(?:links|rechts|left|right))?\s+(?:an|aus|on|off)\s*$",
+                        re.IGNORECASE)
+_SIM_LINE = re.compile(r"^\s*(\d+(?:\.\d+)?) s  (.*)$")
+
+
+def parse_simulation_output(stdout: str, stderr: str = "") -> dict:
+    """Split the text --simulate prints into summary, events and PLC variables."""
+    summary, events, variables, files = "", [], {}, []
+    for raw in stdout.splitlines():
+        line = raw.rstrip()
+        m = _SIM_LINE.match(line)
+        if m:
+            events.append({"t": float(m.group(1)), "text": m.group(2)})
+        elif line.startswith("PLC variables at the end: "):
+            for part in line[len("PLC variables at the end: "):].split(", "):
+                name, _, value = part.partition("=")
+                try:
+                    variables[name.strip()] = float(value)
+                except ValueError:
+                    variables[name.strip()] = value
+        elif "Netze" in line and not summary:
+            summary = line.strip()
+        elif line.strip().lower().endswith(".png"):
+            files.append(line.strip())
+    errors = [l[len("PLC program: "):].strip() for l in stderr.splitlines()
+              if l.startswith("PLC program: ")]
+    return {"summary": summary, "events": events, "variables": variables,
+            "program_errors": errors, "png_files": files}
+
+
+def parse_reference_output(stdout: str) -> dict:
+    """The checks --simulate-reference prints: name, passed, detail."""
+    checks, current = [], None
+    for raw in stdout.splitlines():
+        line = raw.rstrip()
+        if line.startswith("OK    ") or line.startswith("FEHLER"):
+            current = {"passed": line.startswith("OK"), "name": line[6:].strip(), "detail": ""}
+            checks.append(current)
+        elif current is not None and line.startswith("        "):
+            current["detail"] = line.strip()
+    return {"checks": checks, "all_passed": bool(checks) and all(c["passed"] for c in checks)}
+
+
+def tool_simulate(binary: str, project: str, events: list | None = None,
+                  duration: float = 2.0, pressure: float | None = None,
+                  csv: str | None = None, png_dir: str | None = None,
+                  at: float | None = None, timeout: int = 300) -> dict:
+    proj = Path(project).expanduser()
+    if not proj.is_file():
+        raise ValueError(f"no such project: {proj}")
+    args = ["--simulate", str(proj)]
+    for ev in events or []:
+        if not isinstance(ev, str) or not _SIM_EVENT.match(ev):
+            raise ValueError(f"event {ev!r}: expected \"<seconds> <label> an|aus\" or "
+                             "\"<seconds> <valve> links|rechts an|aus\", e.g. \"0.2 -SF1 an\"")
+        time_text, _, rest = ev.strip().partition(" ")
+        args += ["--event", time_text.replace(",", ".") + " " + rest.strip()]
+    if not 0 < float(duration) <= 3600:
+        raise ValueError("duration must be between 0 and 3600 seconds")
+    args += ["--duration", str(float(duration))]
+    if pressure is not None:
+        args += ["--pressure", str(float(pressure))]
+    if csv:
+        args += ["--csv", csv]
+    if png_dir:
+        args += ["--png", png_dir]
+        if at is not None:
+            args += ["--at", str(float(at))]
+    result = _run_qet(binary, args, timeout, tail=200000)
+    parsed = parse_simulation_output(result.get("stdout", ""), result.get("stderr", ""))
+    out = {"ok": result.get("ok", False), **parsed}
+    if not out["ok"]:
+        out["exit_code"] = result.get("exit_code")
+        out["stderr"] = _keep_tail(result.get("stderr", ""), 4000)
+        if result.get("timed_out"):
+            out["timed_out"] = True
+    if csv:
+        out["csv"] = str(Path(csv).expanduser())
+    if not parsed["summary"]:
+        out["hint"] = ("this QElectroTech printed no simulation summary; it needs a build with "
+                       "--simulate (QElectroTech-EPLAN 1.14 or later)")
+    return out
+
+
+def tool_simulate_reference(binary: str, reference_dir: str | None = None,
+                            timeout: int = 300) -> dict:
+    args = ["--simulate-reference"]
+    if reference_dir:
+        ref = Path(reference_dir).expanduser()
+        if not ref.is_dir():
+            raise ValueError(f"no such directory: {ref}")
+        args.append(str(ref))
+    result = _run_qet(binary, args, timeout, tail=200000)
+    out = {"ok": result.get("ok", False), **parse_reference_output(result.get("stdout", ""))}
+    if not out["checks"]:
+        out["hint"] = ("this QElectroTech has no --simulate-reference; it needs "
+                       "QElectroTech-EPLAN 1.16 or later")
+    return out
+
+
+# --------------------------------------------------------------------------
 # qet_element_build: author a .elmt definition
 # --------------------------------------------------------------------------
 
@@ -5395,6 +5499,59 @@ TOOLS = [
                                          a.get("no_junctions", False)),
     },
     {
+        "name": "qet_simulate",
+        "description": "Simulate a project headlessly: pneumatics and hydraulics (pressures, "
+                       "cylinders, valves, accumulators), the electric control (contacts, "
+                       "relays, timers, counters, coils), the PLC programs (Structured Text "
+                       "in the element information \"sim_program\" of a PLC module, write it "
+                       "with qet_edit set_info) and GRAFCET charts drawn with the GRAFCET "
+                       "symbols (step number = label, receptivity = transition label, action "
+                       "text in the box). Events press push buttons or actuate valves by "
+                       "hand at a time. Returns every event (valve switches, end positions, "
+                       "relays, GRAFCET steps ...), the PLC and GRAFCET variables at the end "
+                       "and errors in programs or charts. Does not change the project.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "binary": {"type": "string", "description": "the qelectrotech executable; leave it out to use the one this server is configured with"},
+                "project": {"type": "string"},
+                "events": {"type": "array", "items": {"type": "string"},
+                           "description": "\"0.2 -SF1 an\", \"0.4 -SF1 aus\" (push button), "
+                                          "\"0.5 -QM1 links an\" (valve by hand)"},
+                "duration": {"type": "number", "default": 2.0, "description": "simulated seconds"},
+                "pressure": {"type": "number", "description": "air supply in bar (default 6)"},
+                "csv": {"type": "string", "description": "write the strokes and pressures over time to this file"},
+                "png_dir": {"type": "string", "description": "write a picture of every folio with the simulation display into this new folder"},
+                "at": {"type": "number", "description": "with png_dir: the time of the pictures (default: the end)"},
+                "overwrite": {"type": "boolean", "default": False},
+                "timeout": {"type": "integer", "default": 300},
+            },
+            "required": ["project"],
+        },
+        "handler": lambda a: tool_simulate(a["binary"], a["project"], a.get("events"),
+                                           a.get("duration", 2.0), a.get("pressure"),
+                                           a.get("csv"), a.get("png_dir"), a.get("at"),
+                                           a.get("timeout", 300)),
+    },
+    {
+        "name": "qet_simulate_reference",
+        "description": "Check the simulation core against reference cases with known solutions "
+                       "(gas and oil charging, pump, orifice, accumulator, PLC counter and "
+                       "language, GRAFCET notation) and, with reference_dir, against "
+                       "OpenModelica runs of a pneumatic and a hydraulic cylinder cycle. "
+                       "Returns each check with passed and a detail line.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "binary": {"type": "string", "description": "the qelectrotech executable; leave it out to use the one this server is configured with"},
+                "reference_dir": {"type": "string", "description": "folder with the OpenModelica result files; leave it out to use the ones installed with QElectroTech (simulation/referenz)"},
+                "timeout": {"type": "integer", "default": 300},
+            },
+        },
+        "handler": lambda a: tool_simulate_reference(a["binary"], a.get("reference_dir"),
+                                                     a.get("timeout", 300)),
+    },
+    {
         "name": "qet_edit",
         "description": "Edit a project through QElectroTech's own scripting API "
                        "and report what actually changed. Places, moves, rotates, "
@@ -6440,6 +6597,8 @@ _DATA_PATHS = {
     "qet_dataportal_search": {},
     "qet_dataportal_import": {},
     "qet_export":        {"read": ("project",), "write": ("output",)},
+    "qet_simulate":       {"read": ("project",), "write": ("csv", "png_dir")},
+    "qet_simulate_reference": {"read": ("reference_dir",)},
     "qet_edit":           {"read": ("project",), "write": ("output",)},
     "qet_query":          {"read": ("project",)},
     "qet_continuity":     {"read": ("project",)},
@@ -6466,7 +6625,7 @@ _DATA_PATHS = {
 }
 
 # Tools that launch QElectroTech, and so take "binary" and "elements_dir".
-_LAUNCHES_QET = {"qet_export", "qet_edit", "qet_query", "qet_continuity",
+_LAUNCHES_QET = {"qet_simulate", "qet_simulate_reference", "qet_export", "qet_edit", "qet_query", "qet_continuity",
                  "qet_check", "qet_layout_check", "qet_project_new", "qet_script_api",
                  "qet_script_test", "qet_recording_check", "qet_live_layout_check",
                  "qet_dataportal_import"}

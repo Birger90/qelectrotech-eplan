@@ -3,6 +3,19 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.18.0 – 14.11.2026
+
+- Simulation nach dem Referenzpaket 2.0 (Hydraulik) verbessert und gegen dessen OpenModelica-Läufe geprüft:
+  Ölwiderstände mit stetig geglätteter Wurzelkennlinie, Rückschlagventile öffnen stetig ab dem Öffnungsdruck,
+  Pumpe fördert voll bis 1 bar unter `pMax`.
+- Neu gerechnet: Hydrospeicher (Gasgesetz mit Vorfülldruck, Druck implizit aus der Volumenbilanz – vorher als
+  feste Druckquelle behandelt), Druckluftbehälter als endliches Volumen, Druckschalter mit Hysterese (Kontakte und
+  GRAFCET), Wechsel- und Zweidruckventil, Zeitverzögerungsventil; Warnung bei Unterdruck im Öl.
+- `--simulate-reference`: 11 Prüfungen, neu Pumpe, Blende, Hydrospeicher und hydraulischer Zylinderzyklus
+  (Geschwindigkeiten auf 0,3 % wie OpenModelica); die Referenzläufe werden mit dem Programm installiert.
+- MCP-Server: Werkzeuge `qet_simulate` (Plan simulieren mit Ereignissen, liefert Ereignisse, SPS-/GRAFCET-Variablen,
+  Fehler, CSV, Bilder) und `qet_simulate_reference`.
+
 ## 1.17.0 – 14.11.2026
 
 - GRAFCET nach IEC 60848: Mit den GRAFCET-Symbolen der Standardsammlung gezeichnete Ablaufpläne laufen in der

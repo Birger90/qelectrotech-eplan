@@ -20,6 +20,9 @@ Copy-Item (Join-Path $build "lang\*.qm") (Join-Path $deploy "lang") -Force
 # Python-Teile, wie sie "cmake --install" ablegt
 New-Item -ItemType Directory -Force (Join-Path $deploy "mcp\qet-assistent") | Out-Null
 Copy-Item (Join-Path $repo "misc\qet-mcp\qet_mcp.py") (Join-Path $deploy "mcp") -Force
+# Referenzläufe der Simulation (--simulate-reference)
+New-Item -ItemType Directory -Force (Join-Path $deploy "simulation") | Out-Null
+Copy-Item (Join-Path $repo "tools\simulation\referenz") (Join-Path $deploy "simulation") -Recurse -Force
 Copy-Item (Join-Path $repo "misc\qet-assistent\bruecke.py") (Join-Path $deploy "mcp\qet-assistent") -Force
 $ziel = Join-Path $deploy "eplan_import"
 New-Item -ItemType Directory -Force $ziel | Out-Null

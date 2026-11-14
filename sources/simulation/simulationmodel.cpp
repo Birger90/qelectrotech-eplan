@@ -50,6 +50,7 @@ constexpr double P_PILOT = 1.5e5;       // Pa gauge that switches a pilot
 constexpr double E_OIL = 7e8;           // Pa effective bulk modulus
 constexpr double V_HYD = 1e-4;          // m³ per hydraulic net
 constexpr double DP_LAMINAR = 0.3e5;    // Pa
+constexpr double P_CAVITATION = P_ATM - 0.9e5;   // Pa abs: lowest oil pressure the model allows
 constexpr double T_PULL_IN = 0.010;     // s relay
 constexpr double T_DROP_OUT = 0.008;    // s relay
 
@@ -75,10 +76,8 @@ double volumeFlow(double p1, double p2, double rt)
 {
 	const double dp = p1 - p2;
 	if (rt <= 0) rt = 1e-4;
-	const double dp_bar = std::abs(dp) / 1e5;
-	const double lam = DP_LAMINAR / 1e5;
-	const double q = dp_bar > lam ? std::sqrt(dp_bar / rt) : std::sqrt(lam / rt) * dp_bar / lam;
-	return std::copysign(q / 60000.0, dp);
+	// rT in bar/(l/min)²: dp = rT Q² for |dp| >> DP_LAMINAR, smooth and odd around dp = 0
+	return SimPhysics::orificeFlow(dp, 1.0 / (60000.0 * std::sqrt(1e5 * rt)), DP_LAMINAR);
 }
 
 QString label(Element *e) { return e->elementInformations()[QStringLiteral("label")].toString(); }
@@ -144,7 +143,7 @@ struct SimulationModel::Cylinder {
 
 struct SimulationModel::Pump {
 	Element *e = nullptr;
-	double q = 0, p_max = 0, band = 5e5;
+	double q = 0, p_max = 0, band = 1e5;          // relief characteristic: full flow up to p_max - band
 };
 
 struct SimulationModel::FlowValve {
@@ -154,6 +153,7 @@ struct SimulationModel::FlowValve {
 	QString free_from, free_to;
 	bool hydraulic = false;
 	double c = 0, c_free = 0, rt = 0.1, rt_free = 0.05, p0 = 0, dp_end = 0.5e5;
+	double t_delay = 1.0, since = -1.0;         // time delay valve
 
 	double flow(double pa, double pb, double share = 1.0, bool free = false) const {
 		if (share <= 0) return 0.0;
@@ -198,6 +198,21 @@ struct SimulationModel::Counter {
 	bool reset_coil = false;      // label ends with "/R": resets the counter of that label
 };
 
+struct SimulationModel::Accumulator {
+	Element *e = nullptr;
+	QString label;
+	int node = -1;
+	double v0 = 1e-3, p_pre = 0.0, n = 1.4;    // gas volume at precharge, precharge absolute, exponent
+};
+
+struct SimulationModel::PressureSwitch {
+	Element *e = nullptr;
+	QString label;
+	int node = -1;
+	double p_on = 4e5, p_off = 3.5e5;          // gauge
+	bool on = false;
+};
+
 struct SimulationModel::PlcChannel {
 	Element *e = nullptr;
 	bool output = false;
@@ -231,6 +246,8 @@ SimulationModel::~SimulationModel()
 	qDeleteAll(m_counters);
 	qDeleteAll(m_plc_channels);
 	qDeleteAll(m_plcs);
+	qDeleteAll(m_accumulators);
+	qDeleteAll(m_pressure_switches);
 }
 
 void SimulationModel::buildNets(const QList<Diagram *> &diagrams)
@@ -305,7 +322,9 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 		{QStringLiteral("flow_control_valve.one_way_flow_control_valve"), 40},
 		{QStringLiteral("pressure_valve.pressure_regulator"), 200},
 		{QStringLiteral("pressure_valve.pressure_relief_valve01"), 200},
-		{QStringLiteral("flow_control_valve.flow_divider"), 100}};
+		{QStringLiteral("flow_control_valve.flow_divider"), 100},
+		{QStringLiteral("logic.shuttle_valve"), 150}, {QStringLiteral("logic.dual_pressure_valve"), 150},
+		{QStringLiteral("logic.time_delay_valve"), 100}};
 
 	for (Diagram *d : diagrams) {
 		for (Element *e : d->elements()) {
@@ -325,6 +344,29 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					const double pmax = param(f, QStringLiteral("pMax"), 6.0);
 					p->p_max = P_ATM + (pmax < 100 ? pmax * 1e6 : pmax * 1e5);
 					m_pumps << p;
+				} else if (f.m_kind == FluidData::Kind::Source && fn == QLatin1String("supply.accumulator")) {
+					// a finite volume, not an ideal source: hydraulic accumulator with gas precharge,
+					// compressed air receiver with its volume
+					QList<int> ks;
+					for (Terminal *t : e->terminals())
+						if (node(t) >= 0) ks << node(t);
+					const double v0 = param(f, QStringLiteral("V0"), 1.0) * 1e-3;
+					const double p0 = param(f, QStringLiteral("p0"), 0.4) * 1e6;
+					if (ks.isEmpty()) continue;
+					if (hyd) {
+						auto *a = new Accumulator;
+						a->e = e;
+						a->label = label(e);
+						a->node = ks.first();
+						a->v0 = v0;
+						a->p_pre = P_ATM + p0;
+						a->n = param(f, QStringLiteral("k"), 1.4);
+						m_accumulators << a;
+					} else {
+						m_extra_volume[ks.first()] += v0;
+						for (int k : ks) m_p[k] = P_ATM + p0;
+						for (int i = 1; i < ks.size(); ++i) m_vessel_links << qMakePair(ks.first(), ks.at(i));
+					}
 				} else if (f.m_kind == FluidData::Kind::Source) {
 					for (Terminal *t : e->terminals())
 						if (node(t) >= 0) m_fixed.insert(node(t), p_supply);
@@ -365,6 +407,15 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					c->x = param(f, QStringLiteral("xStart"), 0.0) / 1000.0;
 					m_cylinders << c;
 					m_end_position.insert(c->label, QString());
+				} else if (f.m_kind == FluidData::Kind::Sensor && fn == QLatin1String("sensor.pressure_switch")) {
+					auto *s = new PressureSwitch;
+					s->e = e;
+					s->label = label(e);
+					for (Terminal *t : e->terminals())
+						if (node(t) >= 0) { s->node = node(t); break; }
+					s->p_on = param(f, QStringLiteral("p0"), 0.4) * 1e6;
+					s->p_off = s->p_on - std::max(param(f, QStringLiteral("p_hyst"), 0.05) * 1e6, 1e3);
+					m_pressure_switches << s;
 				} else if (flow_qnn.contains(fn)) {
 					auto *fv = new FlowValve;
 					fv->e = e;
@@ -378,6 +429,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					fv->rt = param(f, QStringLiteral("rT"), fn.contains(QLatin1String("flow_control")) ? 1.0 : 0.1);
 					fv->p0 = param(f, QStringLiteral("p0"), 0.0) * 1e6;
 					fv->dp_end = std::max(param(f, QStringLiteral("dpEnd"), 0.05) * 1e6, 0.1e5);
+					fv->t_delay = param(f, QStringLiteral("t_delay"), 1.0);
 					m_flow_valves << fv;
 				}
 				continue;
@@ -518,6 +570,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 				c->n1 = n.at(0); c->n2 = n.at(1);
 				m_contacts << c;
 			} else if (path.contains(QLatin1String("limit_switches")) || name.contains(QLatin1String("endschalter"))
+					   || path.contains(QLatin1String("pressostat")) || name.contains(QStringLiteral("druckschalter"))
 					   || name.contains(QLatin1String("limitswitch")) || name.contains(QLatin1String("grenztaster"))) {
 				auto *c = new Contact;
 				c->e = e;
@@ -545,6 +598,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 	}
 	for (auto it = m_fixed.constBegin(); it != m_fixed.constEnd(); ++it)
 		m_p[it.key()] = it.value();
+	m_vessel_c = conductanceFromQnn(3000);
 	m_grafcet = std::make_unique<Grafcet>(diagrams, [this](Terminal *t) { return node(t); });
 	if (m_grafcet->isEmpty()) m_grafcet.reset();
 	else m_program_errors << m_grafcet->errors();
@@ -560,6 +614,9 @@ bool SimulationModel::contactClosed(const Contact &c) const
 	} else if (c.kind == QLatin1String("limit")) {
 		const QStringList parts = c.trigger.split(QLatin1Char(' '), Qt::SkipEmptyParts);
 		actuated = parts.size() == 2 && m_end_position.value(parts.at(0)) == parts.at(1);
+		if (parts.size() == 1)          // function text "-BP1": contact of that pressure switch
+			for (const PressureSwitch *s : m_pressure_switches)
+				if (s->label == parts.at(0)) actuated = s->on;
 	} else if (c.kind == QLatin1String("counter")) {
 		for (const Counter *z : m_counters)
 			if (!z->reset_coil && z->label == c.trigger) actuated = z->count >= z->preset;
@@ -619,6 +676,8 @@ void SimulationModel::electrics()
 			for (Contact *c : m_contacts)
 				if ((c->kind == QLatin1String("button") || c->kind == QLatin1String("limit")) && !label(c->e).isEmpty())
 					m_plc_vars.insert(Grafcet::labelVariable(label(c->e)), (contactClosed(*c) != c->nc) ? 1.0 : 0.0);
+			for (const PressureSwitch *s : std::as_const(m_pressure_switches))
+				if (!s->label.isEmpty()) m_plc_vars.insert(Grafcet::labelVariable(s->label), s->on ? 1.0 : 0.0);
 			QStringList texts;
 			m_grafcet->cycle(m_time, m_plc_vars, &texts);
 			for (const QString &text : std::as_const(texts)) m_messages << Message{m_time, text};
@@ -718,6 +777,8 @@ void SimulationModel::step(double dt)
 	QVector<double> flow(n, 0.0), dvdt(n, 0.0), vol(n, V_LINE);
 	for (int k = 0; k < n; ++k)
 		if (m_hydraulic.contains(k)) vol[k] = V_HYD;
+	for (auto it = m_extra_volume.constBegin(); it != m_extra_volume.constEnd(); ++it)
+		if (it.key() >= 0 && it.key() < n) vol[it.key()] += it.value();
 	auto p = [&](int k) { return k >= 0 ? m_p.at(k) : P_ATM; };
 	auto book = [&](int a, int b, double m) {
 		if (a >= 0) flow[a] -= m;
@@ -782,8 +843,10 @@ void SimulationModel::step(double dt)
 			for (const QString &port : s->ports)
 				if (port != s->free_from && port != s->free_to && kn.value(port) >= 0)
 					unlocked = p(kn.value(port)) - P_ATM > P_PILOT;
-			if (p(a) - p(b) > s->p0 || unlocked)
+			if (unlocked)
 				book(a, b, s->flow(p(a), p(b), 1.0, true));
+			else if (p(a) - p(b) > s->p0)    // flow grows from zero at the cracking pressure
+				book(a, b, s->flow(p(a) - s->p0, p(b), 1.0, true));
 		} else if (fn == QLatin1String("flow_control_valve.flow_divider")) {
 			// inlet 1 (or P) feeds every other port through equal conductances
 			const QString in_port = kn.contains(QStringLiteral("1")) ? QStringLiteral("1")
@@ -792,6 +855,29 @@ void SimulationModel::step(double dt)
 			for (const QString &port : s->ports)
 				if (port != in_port)
 					book(in, kn.value(port), s->flow(p(in), p(kn.value(port))));
+		} else if (fn == QLatin1String("logic.shuttle_valve") || fn == QLatin1String("logic.dual_pressure_valve")) {
+			// output 2; OR: the input with the higher pressure feeds it, AND: the one with the lower
+			const int out = kn.value(QStringLiteral("2"), -1);
+			QList<int> ins;
+			for (const QString &port : s->ports)
+				if (port != QLatin1String("2") && kn.value(port, -1) >= 0) ins << kn.value(port);
+			if (out < 0 || ins.isEmpty()) continue;
+			int in = ins.first();
+			const bool shuttle = fn == QLatin1String("logic.shuttle_valve");
+			for (int k : ins)
+				if (shuttle ? p(k) > p(in) : p(k) < p(in)) in = k;
+			book(in, out, s->flow(p(in), p(out)));
+		} else if (fn == QLatin1String("logic.time_delay_valve")) {
+			// 3/2 valve opens 1 -> 2 when the control port 3 has held pressure for t_delay; else 2 exhausts
+			const int in = kn.value(QStringLiteral("1"), -1), out = kn.value(QStringLiteral("2"), -1);
+			const int ctl = kn.value(QStringLiteral("3"), -1);
+			const bool pilot = ctl >= 0 && p(ctl) - P_ATM > P_PILOT;
+			if (pilot && s->since < 0) s->since = m_time;
+			if (!pilot) s->since = -1;
+			const bool open = pilot && m_time - s->since >= s->t_delay;
+			if (out < 0) continue;
+			if (open) book(in, out, s->flow(p(in), p(out)));
+			else book(out, -1, s->flow(p(out), P_ATM));
 		} else if (fn == QLatin1String("shutoff_valve.quick_exhaust_valve")) {
 			const int in = kn.value(QStringLiteral("1"), -1), out = kn.value(QStringLiteral("2"), -1);
 			if (p(in) >= p(out)) book(in, out, s->flow(p(in), p(out), 1.0, true));
@@ -826,12 +912,43 @@ void SimulationModel::step(double dt)
 		}
 	}
 
+	// all ports of a compressed air receiver are one vessel
+	for (const auto &link : std::as_const(m_vessel_links))
+		book(link.first, link.second, massFlow(p(link.first), p(link.second), m_vessel_c));
+	QHash<int, QVector<SimPhysics::GasCharge>> gas;
+	for (const Accumulator *a : std::as_const(m_accumulators))
+		gas[a->node] << SimPhysics::GasCharge{a->p_pre, a->v0, a->n};
+
 	for (int k = 0; k < n; ++k) {
 		if (m_fixed.contains(k) || m_electric.contains(k)) continue;
-		if (m_hydraulic.contains(k))
-			m_p[k] = SimPhysics::oilNode(m_p.at(k), vol.at(k), dvdt.at(k), flow.at(k), E_OIL, dt, P_ATM - 0.9e5);
+		if (m_hydraulic.contains(k) && gas.contains(k))
+			m_p[k] = SimPhysics::oilNodeWithAccumulators(m_p.at(k), vol.at(k), dvdt.at(k), flow.at(k), E_OIL, dt,
+														 P_CAVITATION, gas.value(k));
+		else if (m_hydraulic.contains(k))
+			m_p[k] = SimPhysics::oilNode(m_p.at(k), vol.at(k), dvdt.at(k), flow.at(k), E_OIL, dt, P_CAVITATION);
 		else
 			m_p[k] = SimPhysics::gasNode(m_p.at(k), vol.at(k), dvdt.at(k), flow.at(k), R_AIR * T_AIR, dt);
+	}
+	// oil below the vapour limit: the model has no cavitation, so it says so
+	for (Cylinder *z : m_cylinders)
+		for (const QString &port : {QStringLiteral("A"), QStringLiteral("B")}) {
+			const int k = node(z->e, port);
+			const QString key = z->label + QLatin1Char('/') + port;
+			if (k >= 0 && m_hydraulic.contains(k) && m_p.at(k) <= P_CAVITATION + 1.0 && !m_cavitation.contains(key)) {
+				m_cavitation.insert(key);
+				m_messages << Message{m_time, QStringLiteral("%1 Anschluss %2: Unterdruck, Kavitationsgefahr "
+					"(nicht simuliert; Nachsaugen oder Gegenhalteventil vorsehen)").arg(z->label, port)};
+			}
+		}
+	for (PressureSwitch *s : m_pressure_switches) {
+		if (s->node < 0) continue;
+		const double g = m_p.at(s->node) - P_ATM;
+		const bool on = s->on ? g > s->p_off : g >= s->p_on;
+		if (on != s->on) {
+			s->on = on;
+			m_messages << Message{m_time, QStringLiteral("Druckschalter %1 %2 bei %3 bar").arg(s->label,
+				on ? QStringLiteral("schaltet ein") : QStringLiteral("schaltet aus")).arg(g / 1e5, 0, 'f', 2)};
+		}
 	}
 	m_time += dt;
 }
@@ -912,6 +1029,7 @@ QString SimulationModel::summary() const
 		.arg(m_relays.size()).arg(m_coils.size())
 		+ QStringLiteral(", %1 Zähler, %2 SPS-Programme, %3 SPS-Kanäle")
 		.arg(m_counters.size()).arg(m_plcs.size()).arg(m_plc_channels.size())
+		+ QStringLiteral(", %1 Hydrospeicher, %2 Druckschalter").arg(m_accumulators.size()).arg(m_pressure_switches.size())
 		+ (m_grafcet ? QStringLiteral(", GRAFCET mit %1 Schritten und %2 Transitionen")
 						   .arg(m_grafcet->stepCount()).arg(m_grafcet->transitionCount())
 					 : QString());
@@ -935,6 +1053,11 @@ QList<QPair<Element *, QString>> SimulationModel::elementStates() const
 			out << qMakePair(z->e, QStringLiteral("%1: %2 / %3").arg(z->label).arg(z->count).arg(z->preset));
 	for (PlcChannel *ch : m_plc_channels)
 		out << qMakePair(ch->e, ch->value ? QStringLiteral("%1 = 1").arg(ch->names.value(0)) : QString());
+	for (PressureSwitch *s : m_pressure_switches)
+		out << qMakePair(s->e, s->on ? QStringLiteral("%1: ein").arg(s->label) : QString());
+	for (Accumulator *a : m_accumulators)
+		out << qMakePair(a->e, QStringLiteral("%1: %2 bar").arg(a->label)
+			.arg((m_p.value(a->node, P_ATM) - P_ATM) / 1e5, 0, 'f', 1));
 	return out;
 }
 

@@ -21,7 +21,9 @@
 #include "plcprogram.h"
 #include "simulationphysics.h"
 
+#include <QCoreApplication>
 #include <QDir>
+#include <QFileInfo>
 #include <QFile>
 #include <QHash>
 #include <QStringList>
@@ -41,6 +43,7 @@
 namespace {
 
 constexpr double RT = 287.05 * 300.0;
+constexpr double DP_SMOOTH = 0.3e5;     // smoothing pressure of the oil orifices in SimulationModel
 
 struct Check {
 	QString name;
@@ -147,8 +150,21 @@ bool readResult(const QString &file, const QStringList &columns, QVector<QVector
 
 }
 
-int runSimulationReference(const QString &reference_dir, QTextStream &out)
+int runSimulationReference(const QString &reference_dir_given, QTextStream &out)
 {
+	// without a folder: the reference runs installed beside the program
+	QString reference_dir = reference_dir_given;
+	if (reference_dir.isEmpty()) {
+		const QDir app(QCoreApplication::applicationDirPath());
+		for (const QString &rel : {QStringLiteral("simulation/referenz"), QStringLiteral("../simulation/referenz"),
+								   QStringLiteral("../Resources/simulation/referenz"),
+								   QStringLiteral("../share/qelectrotech/simulation/referenz")})
+			if (QFileInfo::exists(app.filePath(rel + QStringLiteral("/OwnSim.Examples.CylinderCycle_res.csv")))) {
+				reference_dir = QDir::cleanPath(app.filePath(rel));
+				break;
+			}
+	}
+	if (!reference_dir.isEmpty()) out << "Referenzläufe: " << QDir::toNativeSeparators(reference_dir) << "\n";
 	QList<Check> checks;
 
 	// GasFill: constant mass flow into a fixed volume, p = p0 + R T m t / V
@@ -256,6 +272,166 @@ int runSimulationReference(const QString &reference_dir, QTextStream &out)
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? QStringLiteral("alle 14 Erwartungen erfüllt, Syntaxfehler: „%1“").arg(bad_error)
 								   : wrong.join(QStringLiteral("; "));
+		checks << c;
+	}
+
+	// ---- hydraulics (OwnHydraulics reference models, gauge pressure, SI)
+	const double kOrifice = 0.65 * 3e-6 * std::sqrt(2.0 / 850.0);   // Cd A sqrt(2/rho)
+
+	// PumpFill: 1e-5 m³/s into 1 l with E = 1e9 Pa: p = 1e7 Pa/s · t
+	checks << analytical(QStringLiteral("PumpFill (Pumpe in Ölvolumen)"), 0.0, 0.1, true,
+		[](double p, double dt) {
+			return SimPhysics::oilNode(p, 1e-3, 0.0, 1e-5, 1e9, dt, -std::numeric_limits<double>::infinity());
+		},
+		[](double t) { return 1e7 * t; });
+
+	// Orifice: square-root law, both directions, zero at equal pressure, passive and odd
+	{
+		Check c{QStringLiteral("Orifice (Blende vorwärts, rückwärts, gleicher Druck, Passivität)")};
+		const double fwd = SimPhysics::orificeFlow(1e6, kOrifice, 1000.0);
+		const double rev = SimPhysics::orificeFlow(-1e6, kOrifice, 1000.0);
+		const double zero = SimPhysics::orificeFlow(0.0, kOrifice, 1000.0);
+		const double ref = 9.458887011696121e-05;       // OpenModelica, OrificeForward
+		bool passive = true, odd = true;
+		for (int i = -200; i <= 200; ++i) {
+			const double dp = i * 5000.0;
+			const double q = SimPhysics::orificeFlow(dp, kOrifice, 1000.0);
+			passive = passive && dp * q >= 0.0;
+			odd = odd && std::abs(q + SimPhysics::orificeFlow(-dp, kOrifice, 1000.0)) < 1e-18;
+		}
+		c.passed = std::abs(fwd - ref) < 1e-12 && std::abs(rev + ref) < 1e-12 && zero == 0.0 && passive && odd;
+		c.detail = QStringLiteral("q(10 bar) = %1 m³/s (Referenz %2), rückwärts %3, bei Gleichdruck %4; "
+								  "Verlustleistung nie negativ: %5, ungerade: %6")
+					   .arg(fwd, 0, 'g', 10).arg(ref, 0, 'g', 10).arg(rev, 0, 'g', 10).arg(zero)
+					   .arg(passive ? QStringLiteral("ja") : QStringLiteral("nein"))
+					   .arg(odd ? QStringLiteral("ja") : QStringLiteral("nein"));
+		checks << c;
+	}
+
+	// AccumulatorCharge: 1e-5 m³/s into an accumulator, 1 l gas at 10 bar abs, n = 1.4:
+	// p_abs = 1e6 (0.001 / (0.001 - 1e-5 t))^1.4
+	{
+		auto run = [](double dt) {
+			double p = 1e6, worst = 0.0;
+			const long long n = std::llround(1.0 / dt), every = std::llround(0.001 / dt);
+			for (long long i = 0; i <= n; ++i) {
+				const double t = i * dt;
+				if (i % every == 0)
+					worst = std::max(worst, std::abs(p - 1e6 * std::pow(0.001 / (0.001 - 1e-5 * t), 1.4)));
+				if (i < n)
+					p = SimPhysics::oilNodeWithAccumulators(p, 1e-12, 0.0, 1e-5, 1e9, dt, 0.0,
+						QVector<SimPhysics::GasCharge>{{1e6, 1e-3, 1.4}});
+			}
+			return worst;
+		};
+		const double e1 = run(1e-5), e2 = run(5e-6);
+		// filling from 1 bar abs through the precharge (5.013 bar abs): 1.933e-4 m³/s, 1 l gas, oil 1e-4 m³ with E = 7e8
+		auto fill = [](double dt) {
+			const double pa = 1.013e5, pre = pa + 0.4e6, q = 8e-6 * 1450.0 / 60.0;
+			const QVector<SimPhysics::GasCharge> g{{pre, 1e-3, 1.4}};
+			double p = pa;
+			const long long n = std::llround(2.0 / dt);
+			for (long long i = 0; i < n; ++i) p = SimPhysics::oilNodeWithAccumulators(p, 1e-4, 0.0, q, 7e8, dt, 0.0, g);
+			// exact: oil q·2 s minus what compressed the line oil, gas law for the rest
+			double lo = pre, hi = 1e8;
+			for (int i = 0; i < 200; ++i) {
+				const double m = 0.5 * (lo + hi);
+				const double oil = 1e-3 - 1e-3 * std::pow(pre / m, 1.0 / 1.4) + 1e-4 / 7e8 * (m - pa);
+				(oil > q * 2.0 ? hi : lo) = m;
+			}
+			return std::abs(p - 0.5 * (lo + hi));
+		};
+		const double f1 = fill(1e-5), f2 = fill(1e-4);
+		Check c{QStringLiteral("AccumulatorCharge (Hydrospeicher, Gasgesetz n = 1,4, auch über den Vorfülldruck)")};
+		c.passed = e1 <= 0.1 && e2 <= 0.1 && f1 <= 1.0 && f2 <= 1.0;
+		c.detail = QStringLiteral("Referenzfall max. Fehler %1 Pa (dt 10 µs), %2 Pa (dt 5 µs); Laden ab 1 bar über den "
+								  "Vorfülldruck: Fehler nach 2 s %3 Pa (dt 10 µs), %4 Pa (dt 100 µs); Grenzen 0,1 / 1 Pa")
+					   .arg(e1, 0, 'g', 3).arg(e2, 0, 'g', 3).arg(f1, 0, 'g', 3).arg(f2, 0, 'g', 3);
+		checks << c;
+	}
+
+	// hydraulic CylinderCycle: pump, 4/3 valve, differential cylinder (OwnHydraulics.Examples.CylinderCycle)
+	{
+		struct Run { QVector<Sample> s; double balance = 0.0, pmin = 0.0, pmax = 0.0; };
+		auto run = [&](double dt) {
+			Run r;
+			const double bulk = 5e8, aa = 1e-3, ab = 7e-4, dead = 1e-4, floor = -0.9e5;
+			Piston z;
+			z.m = 50.0; z.stroke = 0.1; z.f_static = 20.0; z.f_slide = 20.0; z.damping = 5000.0; z.x = 0.02;
+			double ps = 0.0, pa = 0.0, pb = 0.0;
+			r.pmin = 0.0; r.pmax = 0.0;
+			const long long n = std::llround(1.8 / dt), every = std::llround(0.001 / dt);
+			for (long long i = 0; i <= n; ++i) {
+				const double t = i * dt;
+				if (i % every == 0) r.s << Sample{t, z.x, pa, pb};
+				if (i == n) break;
+				const int cmd = t < 0.7 ? 1 : (t < 0.9 ? 0 : -1);
+				// pump 1e-4 m³/s, built-in pressure limit 5.1 MPa (full flow up to 5.0 MPa, as the reference relief valve)
+				const double q_pump = 1e-4 * qBound(0.0, (5.1e6 - ps) / 1e5, 1.0);
+				const double q_pa = cmd > 0 ? SimPhysics::orificeFlow(ps - pa, kOrifice, DP_SMOOTH) : 0.0;
+				const double q_bt = cmd > 0 ? SimPhysics::orificeFlow(pb, kOrifice, DP_SMOOTH) : 0.0;
+				const double q_pb = cmd < 0 ? SimPhysics::orificeFlow(ps - pb, kOrifice, DP_SMOOTH) : 0.0;
+				const double q_at = cmd < 0 ? SimPhysics::orificeFlow(pa, kOrifice, DP_SMOOTH) : 0.0;
+				SimPhysics::pistonStep(z, pa * aa - pb * ab, dt);
+				const double va = dead + aa * z.x, vb = dead + ab * (z.stroke - z.x);
+				const double pa_new = SimPhysics::oilNode(pa, va, aa * z.v, q_pa - q_at, bulk, dt, floor);
+				const double pb_new = SimPhysics::oilNode(pb, vb, -ab * z.v, q_pb - q_bt, bulk, dt, floor);
+				// volume balance of chamber A: inflow = compression + displacement
+				if (pa_new > floor)
+					r.balance = std::max(r.balance, std::abs((q_pa - q_at) * dt - (va / bulk * (pa_new - pa) + aa * z.v * dt)));
+				pa = pa_new;
+				pb = pb_new;
+				ps = SimPhysics::oilNode(ps, 1e-4, 0.0, q_pump - q_pa - q_pb, bulk, dt, floor);
+				r.pmin = std::min({r.pmin, pa, pb});
+				r.pmax = std::max({r.pmax, pa, pb, ps});
+			}
+			return r;
+		};
+		const Run a = run(1e-5), b = run(5e-6);
+		Check c{QStringLiteral("Hydraulik-CylinderCycle (Pumpe, 4/3-Ventil, Differentialzylinder)")};
+		auto at = [](const QVector<Sample> &s, double t) {
+			const long long k = std::llround(t / 0.001);
+			return k >= 0 && k < s.size() ? s.at(k).x : std::numeric_limits<double>::quiet_NaN();
+		};
+		double xmin = 1e9, xmax = -1e9;
+		for (const Sample &s : a.s) { xmin = std::min(xmin, s.x); xmax = std::max(xmax, s.x); }
+		const double drift = std::abs(at(a.s, 0.9) - at(a.s, 0.8));
+		const double t_back = firstTime(a.s, 0.9, [](const Sample &s) { return s.x <= 0.002; });
+		const double t_back2 = firstTime(b.s, 0.9, [](const Sample &s) { return s.x <= 0.002; });
+		bool ok = xmin >= -0.0001 && xmax <= 0.1001 && at(a.s, 0.699) >= 0.075 && at(a.s, 1.75) < 0.002
+				  && drift < 0.002 && a.pmin > -98000 && a.pmax < 1e7 && a.balance < 1e-12
+				  && std::abs(at(a.s, 0.699) - at(b.s, 0.699)) < 1e-4 && std::abs(t_back - t_back2) <= 0.002;
+		c.detail = QStringLiteral("bei 0,7 s %1 mm, Halten 0,8–0,9 s Drift %2 mm, zurück (< 2 mm) bei %3 s; Drücke %4 … %5 bar; "
+								  "Volumenbilanz Kammer A %6 m³ je Schritt; dt halbiert: %7 mm / %8 s")
+					   .arg(at(a.s, 0.699) * 1000, 0, 'f', 2).arg(drift * 1000, 0, 'f', 3).arg(t_back, 0, 'f', 3)
+					   .arg(a.pmin / 1e5, 0, 'f', 2).arg(a.pmax / 1e5, 0, 'f', 1).arg(a.balance, 0, 'g', 2)
+					   .arg(at(b.s, 0.699) * 1000, 0, 'f', 2).arg(t_back2, 0, 'f', 3);
+		const QString file = QDir(reference_dir).filePath(QStringLiteral("OwnHydraulics.Examples.CylinderCycle_res.csv"));
+		QVector<QVector<double>> ref;
+		if (!reference_dir.isEmpty()
+			&& readResult(file, {QStringLiteral("cylinder.x"), QStringLiteral("cylinder.pressureA"),
+								 QStringLiteral("cylinder.pressureB")}, &ref)) {
+			QVector<Sample> r;
+			for (const auto &row : ref) r << Sample{row.at(0), row.at(1), row.at(2), row.at(3)};
+			auto ref_at = [&](double t) {
+				for (const Sample &s : r) if (s.t >= t - 1e-9) return s.x;
+				return std::numeric_limits<double>::quiet_NaN();
+			};
+			const double r_back = firstTime(r, 0.9, [](const Sample &s) { return s.x <= 0.002; });
+			// speeds: extend between 0.1 and 0.6 s, retract between 1.0 and 1.4 s
+			const double v_out = (at(a.s, 0.6) - at(a.s, 0.1)) / 0.5, rv_out = (ref_at(0.6) - ref_at(0.1)) / 0.5;
+			const double v_in = (at(a.s, 1.4) - at(a.s, 1.0)) / 0.4, rv_in = (ref_at(1.4) - ref_at(1.0)) / 0.4;
+			const bool close = std::abs(v_out / rv_out - 1.0) <= 0.03 && std::abs(v_in / rv_in - 1.0) <= 0.03
+							   && std::abs(t_back - r_back) <= 0.05 * (r_back - 0.9);
+			ok = ok && close;
+			c.detail += QStringLiteral("; OpenModelica: Ausfahren %1 mm/s (wir %2), Einfahren %3 mm/s (wir %4), "
+									   "zurück bei %5 s (Grenze ±3 % Geschwindigkeit, ±5 % Rückhubzeit)")
+							.arg(rv_out * 1000, 0, 'f', 2).arg(v_out * 1000, 0, 'f', 2)
+							.arg(rv_in * 1000, 0, 'f', 2).arg(v_in * 1000, 0, 'f', 2).arg(r_back, 0, 'f', 3);
+		} else {
+			c.detail += QStringLiteral("; ohne Vergleichslauf");
+		}
+		c.passed = ok;
 		checks << c;
 	}
 

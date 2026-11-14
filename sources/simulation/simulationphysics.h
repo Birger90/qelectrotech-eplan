@@ -43,6 +43,57 @@ inline double oilNode(double p, double volume, double dvdt, double q, double bul
 	return std::max(p_min, p + bulk / volume * (q - dvdt) * dt);
 }
 
+	/// gas side of a hydraulic accumulator: precharge @a p_pre (absolute) at gas volume @a v0, exponent @a n
+struct GasCharge { double p_pre, v0, n; };
+
+	/// oil in the accumulator at absolute pressure @a p (gas law; empty below the precharge)
+inline double accumulatorOil(double p, const GasCharge &g)
+{
+	return p <= g.p_pre ? 0.0 : g.v0 - g.v0 * std::pow(g.p_pre / p, 1.0 / g.n);
+}
+
+	/**
+		liquid volume with accumulators on it, solved implicitly from the volume
+		balance  V/E (p_new - p) + oil(p_new) - oil(p) = (sum(q) - dV/dt) dt,
+		so the oil is conserved for any step, also when the pressure crosses a
+		precharge (where the explicit form would overshoot)
+	*/
+template <class List>
+double oilNodeWithAccumulators(double p, double volume, double dvdt, double q, double bulk, double dt,
+							   double p_min, const List &gas)
+{
+	auto stored = [&](double x) {
+		double s = 0.0;
+		for (const GasCharge &g : gas) s += accumulatorOil(x, g);
+		return s;
+	};
+	const double inflow = (q - dvdt) * dt;
+	const double before = stored(p);
+	auto f = [&](double x) { return volume / bulk * (x - p) + stored(x) - before - inflow; };
+	const double rigid = p + bulk / volume * inflow;     // no gas: the largest change
+	double lo = std::min(p, rigid), hi = std::max(p, rigid);
+	lo = std::max(lo, p_min);
+	if (hi <= lo || f(lo) >= 0.0) return std::max(p_min, lo);
+	// bisection to the last bit, so rounding does not add up over many steps
+	for (int i = 0; i < 200; ++i) {
+		const double m = 0.5 * (lo + hi);
+		if (m <= lo || m >= hi) break;
+		(f(m) > 0.0 ? hi : lo) = m;
+	}
+	return std::abs(f(lo)) <= std::abs(f(hi)) ? lo : hi;
+}
+
+	/**
+		orifice with the square-root law, smoothed near equal pressure so it
+		is odd, passive and continuously differentiable:
+		q = k dp / (dp² + ps²)^(1/4), k = Cd A sqrt(2/rho); for |dp| >> ps q = k sqrt(dp)
+	*/
+inline double orificeFlow(double dp, double k, double ps)
+{
+	return k * dp / std::pow(dp * dp + ps * ps, 0.25);
+}
+
+
 	/**
 		piston with static and sliding friction, viscous damping and hard end
 		stops; @a force is the pressure, load and spring force in +x.

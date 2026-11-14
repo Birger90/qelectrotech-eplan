@@ -176,7 +176,8 @@ class ToolRegistry(unittest.TestCase):
     def test_expected_tools_exist(self):
         self.assertEqual({t["name"] for t in m.TOOLS}, {
             "qet_project_info", "qet_elements", "qet_conductors", "qet_diff",
-            "qet_scan", "qet_element_info", "qet_export", "qet_edit", "qet_query",
+            "qet_scan", "qet_element_info", "qet_export", "qet_simulate",
+            "qet_simulate_reference", "qet_edit", "qet_query",
             "qet_project_new", "qet_element_search", "qet_check", "qet_element_build",
             "qet_continuity", "qet_items", "qet_script_api", "qet_script_test",
         "qet_script_install", "qet_script_list", "qet_script_read",
@@ -544,6 +545,9 @@ class EditValidation(unittest.TestCase):
             "remove_folio": [f, {"op": "remove_folio", "folio": "$f"}],
             "set_folio": [f, {"op": "set_folio", "folio": "$f", "property": "author", "value": "a"}],
             "add_text": [f, {"op": "add_text", "id": "t", "folio": "$f", "text": "x", "x": 0, "y": 0}],
+            "add_terminals": [f, {"op": "add_terminals", "folio": "$f", "strip": "-X1", "first": 1,
+                                  "element": "", "article": "", "pe_article": "",
+                                  "x1": 0, "y1": 0, "x2": 100, "y2": 0}],
             "set_text": [f, {"op": "set_text", "folio": "$f", "index": 0, "text": "x"}],
             "set_text_color": [f, {"op": "set_text_color", "folio": "$f", "index": 0, "color": "#000"}],
             "rotate_text": [f, {"op": "rotate_text", "folio": "$f", "index": 0, "angle": 5}],
@@ -6962,6 +6966,51 @@ class TestKeepTail(unittest.TestCase):
         self.assertIn('"kind": "save"', kept)
         self.assertEqual(kept.count('"kind": "save"'), 1)
         self.assertEqual(m._parse_script_output(kept).get("missing_methods"), [])
+
+
+class SimulateTools(unittest.TestCase):
+    """qet_simulate and qet_simulate_reference: arguments and parsing, without a QElectroTech."""
+
+    def run_simulate(self, **kw):
+        seen = []
+        def fake(binary, args, timeout=180, **rest):
+            seen.extend(args)
+            return {"ok": True, "stdout": "3 Netze, 1 Zylinder" + chr(10)
+                    + "   0.110 s  GRAFCET Schritt 1 aktiv" + chr(10)
+                    + "PLC variables at the end: X0=1, ZYKLEN=2" + chr(10),
+                    "stderr": "PLC program: GRAFCET: Sprung zu Schritt 9, den es nicht gibt" + chr(10)}
+        with tempfile.TemporaryDirectory() as tmp:
+            proj = Path(tmp) / "a.qet"
+            proj.write_text("<project/>")
+            with unittest.mock.patch.object(m, "_run_qet", fake):
+                result = m.tool_simulate("qet", str(proj), **kw)
+        return seen, result
+
+    def test_events_become_flags(self):
+        args, _ = self.run_simulate(events=["0,2 -SF1 an", "0.5 -QM1 links an"], duration=1.5, pressure=5)
+        self.assertEqual(args[0], "--simulate")
+        self.assertIn("0.2 -SF1 an", args)
+        self.assertIn("0.5 -QM1 links an", args)
+        self.assertEqual(args[args.index("--duration") + 1], "1.5")
+        self.assertEqual(args[args.index("--pressure") + 1], "5.0")
+
+    def test_result_is_parsed(self):
+        _, r = self.run_simulate()
+        self.assertEqual(r["events"], [{"t": 0.11, "text": "GRAFCET Schritt 1 aktiv"}])
+        self.assertEqual(r["variables"], {"X0": 1.0, "ZYKLEN": 2.0})
+        self.assertEqual(r["program_errors"], ["GRAFCET: Sprung zu Schritt 9, den es nicht gibt"])
+        self.assertTrue(r["summary"].startswith("3 Netze"))
+
+    def test_bad_event_is_refused(self):
+        with self.assertRaises(ValueError):
+            self.run_simulate(events=["-SF1 drücken"])
+
+    def test_reference_output(self):
+        r = m.parse_reference_output("OK      GasFill" + chr(10) + "        Fehler 1e-7 Pa" + chr(10)
+                                     + "FEHLER  Zylinder" + chr(10) + "        zu langsam" + chr(10))
+        self.assertEqual([c["passed"] for c in r["checks"]], [True, False])
+        self.assertEqual(r["checks"][1]["detail"], "zu langsam")
+        self.assertFalse(r["all_passed"])
 
 
 if __name__ == "__main__":

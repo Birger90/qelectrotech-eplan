@@ -110,6 +110,8 @@ class SimulationModel
 		struct Counter;
 		struct PlcChannel;
 		struct Plc;
+		struct Accumulator;
+		struct PressureSwitch;
 
 		int node(Terminal *t) const;
 		int node(Element *e, const QString &port) const;
@@ -133,6 +135,12 @@ class SimulationModel
 		QList<Counter *> m_counters;
 		QList<PlcChannel *> m_plc_channels;
 		QList<Plc *> m_plcs;
+		QList<Accumulator *> m_accumulators;
+		QList<PressureSwitch *> m_pressure_switches;
+		QHash<int, double> m_extra_volume;          // compressed air receivers (m³ per net)
+		QList<QPair<int, int>> m_vessel_links;      // ports of one receiver
+		double m_vessel_c = 0.0;
+		QSet<QString> m_cavitation;                 // cylinder ports already reported
 		QHash<QString, double> m_plc_vars;
 		std::unique_ptr<Grafcet> m_grafcet;
 		QStringList m_program_errors;

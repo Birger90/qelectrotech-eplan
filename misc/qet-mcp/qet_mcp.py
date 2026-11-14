@@ -385,6 +385,7 @@ def _conductor_row(folio: int, c: ET.Element, index: dict | None = None) -> dict
         "color": c.get("conductor_color", ""),
         "section": c.get("conductor_section", ""),
         "type": c.get("type", ""),
+        "length": c.get("length", ""),
     }
 
 
@@ -1796,7 +1797,11 @@ CONDUCTOR_PROPERTIES = ["num", "formula", "function", "bus", "cable",
                         "conductor_section", "color", "text_color",
                         # the conductor's look, under the file's own names
                         "color2", "bicolor", "style", "dash-size",
-                        "condsize", "numsize", "displaytext"]
+                        "condsize", "numsize", "displaytext",
+                        # a fluid line's (hose's) own length, "1.5 m" or
+                        # "350 mm"; the one property that stays on the
+                        # conductor and is not given to its potential
+                        "length"]
 
 # A folio's conductor defaults take the same names, plus the folio-wide
 # "one text per potential" switch, which no single conductor carries.
@@ -5460,7 +5465,9 @@ TOOLS = [
                         "needs one of the conductor's two terminals to carry only it, "
                         "and a conductor qet_conductors lists with an empty uuid has "
                         "none to give). A uuid names one wire, but set_conductor still "
-                        "changes its whole potential, as it does by terminal. "
+                        "changes its whole potential, as it does by terminal -- "
+                        "except \"length\" (a hose's own length, \"1.5 m\"), which "
+                        "only that conductor takes. "
                         "set_conductor's \"property\" is one of " + ", ".join(CONDUCTOR_PROPERTIES) +
                         ". move_conductor_segment reroutes the drawn path itself rather "
                         "than a property of the potential -- addressed the same way (a "

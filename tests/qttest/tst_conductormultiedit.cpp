@@ -333,6 +333,48 @@ class tst_conductormultiedit : public QObject
 			QCOMPARE(b.m_properties.m_wire_section, QStringLiteral("2.5"));
 		}
 
+			// A length belongs to one drawn line (a hose): editing it on
+			// the picked wire never copies it over the potential, while
+			// a section edited with it still reaches the whole potential
+		void lengthStaysOnThePickedWire()
+		{
+			FakeWire a("1", "", "", {}), b("1", "", "", {});
+			a.m_properties.m_length = "1 m";
+			b.m_properties.m_length = "2 m";
+			FakeWire::join({&a, &b});
+			const Wires t = ConductorMultiEdit::targets(Wires {&a}, true);
+			QCOMPARE(t.size(), 2);
+
+			ConductorProperties after = edited(a.properties(),
+				&ConductorProperties::m_length, "3.5 m");
+			after.m_wire_section = "8x6";
+			QUndoStack stack;
+			stack.push(ConductorMultiEdit::undo(t, a.properties(), after,
+				QSet<FakeWire *>(), QSet<FakeWire *> {&b}));
+			QCOMPARE(a.m_properties.m_length, QStringLiteral("3.5 m"));
+			QCOMPARE(b.m_properties.m_length, QStringLiteral("2 m"));
+			QCOMPARE(b.m_properties.m_wire_section, QStringLiteral("8x6"));
+			stack.undo();
+			QCOMPARE(a.m_properties.m_length, QStringLiteral("1 m"));
+
+				// Both picked: both take it
+			stack.push(ConductorMultiEdit::undo(Wires {&a, &b}, a.properties(),
+				edited(a.properties(), &ConductorProperties::m_length, "4 m")));
+			QCOMPARE(b.m_properties.m_length, QStringLiteral("4 m"));
+		}
+
+			// Lengths that differ show as a mixed field
+		void differentLengthsAreMixed()
+		{
+			FakeWire a("1", "", "", {}), b("1", "", "", {});
+			a.m_properties.m_length = "1 m";
+			b.m_properties.m_length = "2 m";
+			QCOMPARE(ConductorMultiEdit::mixedTextFields(
+						 {a.properties(), b.properties()}),
+				 (QList<ConductorMultiEdit::TextField> {
+					 ConductorMultiEdit::Length}));
+		}
+
 		void oneWireIsNeverMixed()
 		{
 			FakeWire a("1", "fn", "", {});

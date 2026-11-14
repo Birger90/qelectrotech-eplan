@@ -148,6 +148,10 @@ namespace ConductorMultiEdit
 		function separated terminal element links to the edited
 		conductors: they get the voltage / protocol and nothing else
 		(@see ConductorProperties::applyTensionProtocolChange)
+		@param potential_only : the targets reached only through the
+		potential of an edited conductor, not picked by the user: they
+		take the edit but keep their own length, which belongs to one
+		drawn line (a hose) and not to the potential
 		@return one undo step giving each target the fields that differ
 		between shown and edited, or nullptr if no conductor changes
 	*/
@@ -155,7 +159,8 @@ namespace ConductorMultiEdit
 	QUndoCommand *undo(const QList<T *> &targets,
 			   const ConductorProperties &shown,
 			   const ConductorProperties &edited,
-			   const QSet<T *> &function_separated = QSet<T *>())
+			   const QSet<T *> &function_separated = QSet<T *>(),
+			   const QSet<T *> &potential_only = QSet<T *>())
 	{
 		if (edited == shown)
 			return nullptr;
@@ -170,6 +175,8 @@ namespace ConductorMultiEdit
 				properties.applyTensionProtocolChange(shown, edited);
 			else
 				properties.applyChanges(shown, edited);
+			if (potential_only.contains(conductor))
+				properties.m_length = old_properties.m_length;
 			if (properties == old_properties)
 				continue;
 
@@ -197,13 +204,13 @@ namespace ConductorMultiEdit
 		/// agree on one, the panel shows it blank.
 	enum TextField {
 		Text, Formula, Function, TensionProtocol,
-		WireColor, WireSection, WireType, Cable, Bus
+		WireColor, WireSection, WireType, Cable, Bus, Length
 	};
 
 	inline QList<TextField> textFields()
 	{
 		return {Text, Formula, Function, TensionProtocol,
-			WireColor, WireSection, WireType, Cable, Bus};
+			WireColor, WireSection, WireType, Cable, Bus, Length};
 	}
 
 	inline QString &textField(ConductorProperties &p, TextField field)
@@ -218,6 +225,7 @@ namespace ConductorMultiEdit
 			case WireSection:     return p.m_wire_section;
 			case WireType:        return p.m_conductor_type;
 			case Cable:           return p.m_cable;
+			case Length:          return p.m_length;
 			case Bus:             break;
 		}
 		return p.m_bus;

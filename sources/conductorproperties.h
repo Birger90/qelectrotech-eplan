@@ -114,6 +114,13 @@ class ConductorProperties
 			/// conductor, and only another value is saved.
 		Fluid::LineKind m_fluid_line = Fluid::LineKind::None;
 
+			/// The length of this one line (a hose, a pipe) as it is
+			/// written down: free text with its unit, "1.5 m" or
+			/// "350 mm", like Cable::length(). Empty when not known,
+			/// and only then not saved. It belongs to the drawn line,
+			/// not to its potential: an edit never copies it there.
+		QString m_length;
+
 			/// The cable of the project this conductor is a core of, null
 			/// when it belongs to no cable. The text shown in m_cable is
 			/// generated from the cable and never typed in: this reference

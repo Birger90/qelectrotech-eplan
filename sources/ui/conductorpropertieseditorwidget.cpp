@@ -390,7 +390,16 @@ QUndoCommand *ConductorPropertiesEditorWidget::associatedUndo() const
 		}
 	}
 
-	return ConductorMultiEdit::undo(all_targets, m_shown, edited, function_separated);
+		//What only the potential reaches keeps its own length: a length
+		//belongs to one drawn line (a hose), not to what it joins
+	QSet<Conductor *> potential_only;
+	for (Conductor *conductor : targets)
+		if (!selected.contains(conductor)
+				&& !function_separated.contains(conductor))
+			potential_only.insert(conductor);
+
+	return ConductorMultiEdit::undo(all_targets, m_shown, edited,
+					function_separated, potential_only);
 }
 
 /**

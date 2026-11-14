@@ -60,6 +60,7 @@ class ConductorPropertiesWidget : public QWidget
 	private:
 		void initWidget();
 		void updateDashPatternPreview();
+		void updateLengthVisibility();
 		void selectPotentialType(const QString &name);
 		void setConductorType(ConductorProperties::ConductorType type);
 

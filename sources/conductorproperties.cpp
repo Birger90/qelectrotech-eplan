@@ -346,6 +346,9 @@ QList<QPair<QString, QString>> ConductorProperties::attributes() const
 		add("conductor_type", m_conductor_type);
 	if (m_fluid_line != Fluid::LineKind::None)
 		add("fluid_line", Fluid::lineKindToString(m_fluid_line));
+		//The length of a hose or pipe, only written when known
+	if (!m_length.isEmpty())
+		add("length", m_length);
 	add("numsize", QString::number(text_size));
 	add("condsize", QString::number(cond_size));
 	add("displaytext", QString::number(m_show_text));
@@ -427,6 +430,7 @@ void ConductorProperties::fromXml(QDomElement &e)
 	m_wire_section       = e.attribute("conductor_section");
 	m_conductor_type     = e.attribute("conductor_type");
 	m_fluid_line         = Fluid::lineKindFromString(e.attribute("fluid_line"));
+	m_length             = e.attribute("length");
 	text_size            = e.attribute("numsize", QString::number(9)).toInt();
 	cond_size            = e.attribute("condsize", QString::number(1)).toDouble();
 	m_show_text          = e.attribute("displaytext", QString::number(1)).toInt();
@@ -606,6 +610,7 @@ void ConductorProperties::applyForEqualAttributes(QList<ConductorProperties> lis
 		m_wire_section       = cp.m_wire_section;
 		m_conductor_type     = cp.m_conductor_type;
 		m_fluid_line         = cp.m_fluid_line;
+		m_length             = cp.m_length;
 		text_size            = cp.text_size;
 		cond_size            = cp.cond_size;
 		m_show_text          = cp.m_show_text;
@@ -834,6 +839,17 @@ void ConductorProperties::applyForEqualAttributes(QList<ConductorProperties> lis
 		m_fluid_line = fluid_line;
 	equal = true;
 
+		//Length of a fluid line
+	s_value = clist.first().m_length;
+	for(const ConductorProperties &cp : clist)
+	{
+		if (cp.m_length != s_value)
+			equal = false;
+	}
+	if (equal)
+		m_length = s_value;
+	equal = true;
+
 
 		//text size
 	i_value = clist.first().text_size;
@@ -995,6 +1011,7 @@ void ConductorProperties::applyChanges(const ConductorProperties &before,
 	take(m_wire_color,           before.m_wire_color,           after.m_wire_color);
 	take(m_wire_section,         before.m_wire_section,         after.m_wire_section);
 	take(m_fluid_line,           before.m_fluid_line,           after.m_fluid_line);
+	take(m_length,               before.m_length,               after.m_length);
 	take(m_show_text,            before.m_show_text,            after.m_show_text);
 	take(text_size,              before.text_size,              after.text_size);
 	take(cond_size,              before.cond_size,              after.cond_size);
@@ -1086,6 +1103,7 @@ bool ConductorProperties::operator==(const ConductorProperties &other) const
 		other.m_wire_section == m_wire_section && \
 		other.m_conductor_type == m_conductor_type && \
 		other.m_fluid_line == m_fluid_line && \
+		other.m_length == m_length && \
 		other.m_show_text == m_show_text &&\
 		other.text_size == text_size &&\
 		other.cond_size == cond_size &&\

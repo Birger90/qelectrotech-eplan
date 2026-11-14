@@ -103,6 +103,8 @@ void ConductorPropertiesWidget::setProperties(
 	ui->m_conductor_type_le     -> setText    (m_properties.m_conductor_type);
 	ui->m_fluid_line_cb         -> setCurrentIndex(qMax(0, ui->m_fluid_line_cb->findData(
 						   static_cast<int>(m_properties.m_fluid_line))));
+	ui->m_length_le             -> setText    (m_properties.m_length);
+	updateLengthVisibility();
 	ui->m_text_size_sb          -> setValue   (m_properties.text_size);
 	ui->m_cond_size_sb          -> setValue   (m_properties.cond_size);
 	ui->m_show_text_cb          -> setChecked (m_properties.m_show_text);
@@ -194,6 +196,7 @@ ConductorProperties ConductorPropertiesWidget::properties() const
 	properties_.m_conductor_type        = ui -> m_conductor_type_le->text();
 	properties_.m_fluid_line            = static_cast<Fluid::LineKind>(
 			ui->m_fluid_line_cb->currentData().toInt());
+	properties_.m_length                = ui->m_length_le->text().trimmed();
 	properties_.text_size               = ui -> m_text_size_sb -> value();
 	properties_.cond_size               = ui -> m_cond_size_sb -> value();
 	properties_.m_show_text             = ui -> m_show_text_cb -> isChecked();
@@ -316,7 +319,8 @@ void ConductorPropertiesWidget::setMixedTextFields(
 		{WireSection,     ui->m_wire_section_le},
 		{WireType,        ui->m_conductor_type_le},
 		{Cable,           ui->m_cable_le},
-		{Bus,             ui->m_bus_le}};
+		{Bus,             ui->m_bus_le},
+		{Length,          ui->m_length_le}};
 
 	for (const auto &edit : edits)
 		edit.second->setPlaceholderText(mixed.contains(edit.first)
@@ -401,10 +405,12 @@ void ConductorPropertiesWidget::initWidget()
 					 static_cast<int>(Fluid::LineKind::Pilot));
 	ui -> m_fluid_line_cb -> addItem(tr("Exhaust line", "fluid line kind"),
 					 static_cast<int>(Fluid::LineKind::Exhaust));
+	updateLengthVisibility();
 		//Chosen by the user, never when the form is filled: the line
 		//takes the style ISO 1219-1 gives its kind, and that style
 		//can still be changed afterwards
 	connect(ui->m_fluid_line_cb, QOverload<int>::of(&QComboBox::activated), this, [this]() {
+		updateLengthVisibility();
 		const auto kind = static_cast<Fluid::LineKind>(
 				ui->m_fluid_line_cb->currentData().toInt());
 		if (kind == Fluid::LineKind::None)
@@ -515,6 +521,21 @@ void ConductorPropertiesWidget::on_m_neutral_cb_toggled(bool checked) {
 void ConductorPropertiesWidget::on_m_update_preview_pb_clicked()
 {
 	updatePreview();
+}
+
+/**
+	@brief ConductorPropertiesWidget::updateLengthVisibility
+	Show the length field for a fluid line only: an electric conductor
+	has no length of its own here, a cable has one (Cable::length()).
+	A length typed in earlier is kept when the field is hidden.
+*/
+void ConductorPropertiesWidget::updateLengthVisibility()
+{
+	const bool fluid = static_cast<Fluid::LineKind>(
+			ui->m_fluid_line_cb->currentData().toInt())
+			!= Fluid::LineKind::None;
+	ui->m_length_label->setVisible(fluid);
+	ui->m_length_le->setVisible(fluid);
 }
 
 /**

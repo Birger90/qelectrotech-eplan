@@ -30,6 +30,7 @@
 #include "scripting/scriptmanagerdialog.h"
 #include "scripting/liveserver.h"
 #include "assistant/assistantdock.h"
+#include "simulation/simulationdock.h"
 #include "scripting/macrorecorder.h"
 #include "scripting/assistantinfo.h"
 #endif
@@ -342,6 +343,7 @@ QETDiagramEditor::QETDiagramEditor(const QStringList &files, QWidget *parent) :
 	setUpAutonumberingWidget();
 	setUpDeviceNavigatorDock();
 	setUpAssistantDock();
+	setUpSimulationDock();
 
 	setUpActions();
 	setUpToolBar();
@@ -546,6 +548,25 @@ void QETDiagramEditor::setUpAssistantDock()
 	m_assistant_dock->toggleViewAction()->setStatusTip(tr("Show or hide the assistant (Claude)"));
 	m_assistant_dock->toggleViewAction()->setIcon(AssistantDock::icon());
 	m_assistant_dock->hide();
+}
+
+/**
+	@brief QETDiagramEditor::setUpSimulationDock
+	Set up the simulation dock (pneumatics, hydraulics, electric control),
+	shown from the Display menu
+*/
+void QETDiagramEditor::setUpSimulationDock()
+{
+	m_simulation_dock = new SimulationDock(this);
+	m_simulation_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+	m_simulation_dock->setFeatures(
+		QDockWidget::DockWidgetClosable |
+		QDockWidget::DockWidgetMovable |
+		QDockWidget::DockWidgetFloatable);
+	addDockWidget(Qt::RightDockWidgetArea, m_simulation_dock);
+	m_simulation_dock->toggleViewAction()->setStatusTip(
+		tr("Show or hide the simulation of pneumatics, hydraulics and the electric control"));
+	m_simulation_dock->hide();
 }
 
 /**
@@ -2521,6 +2542,9 @@ void QETDiagramEditor::setUpMenu()
 	}
 	if (m_assistant_dock) {
 		menu_affichage -> addAction(m_assistant_dock->toggleViewAction());
+	}
+	if (m_simulation_dock) {
+		menu_affichage -> addAction(m_simulation_dock->toggleViewAction());
 	}
 	menu_affichage -> addSeparator();
 	menu_affichage -> addActions(m_zoom_actions_group.actions());

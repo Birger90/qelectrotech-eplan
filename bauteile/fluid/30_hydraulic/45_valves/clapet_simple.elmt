@@ -35,6 +35,8 @@
     </names>
     <fluid kind="flow_control" prefix="RM" function="shutoff_valve.check_valve">
         <parameter name="p0" value="0" unit="MPa"/>
+        <parameter name="free_from" value="A"/>
+        <parameter name="free_to" value="P"/>
     </fluid>
     <informations>Author: The QElectroTech team
 License: see http://qelectrotech.org/wiki/doc/elements_license</informations>

@@ -29,6 +29,7 @@
 #include "diagramcontext.h"
 #include "editor/terminalnamecheck.h"
 #include "fluid/fluiddata.h"
+#include "simulation/simulationmodel.h"
 #include "import/eplandxf/eplanpartimporter.h"
 #include "import/portals/manufacturerportals.h"
 #include "import/portals/partfetcher.h"
@@ -116,6 +117,7 @@ const QHash<QString, QString> &exportFlags()
 		{"--from-database", "fromdb"},
 		{"--set-titleblock", "settb"},
 		{"--query", "query"},
+		{"--simulate", "simulate"},
 	};
 	return flags;
 }
@@ -677,6 +679,70 @@ int checkOneElement(const QString &path)
 }
 
 /// Validate a single .elmt file or every .elmt under a directory.
+/// --simulate <project> [--event "0.2 -SF1 an"]... [--duration s] [--pressure bar] [--csv file]
+/// Events press/release a push button ("0.2 -SF1 an") or actuate a valve by hand ("0.2 -QM1 links an").
+int simulateProject(QETProject &project, const QStringList &args)
+{
+	double duration = 2.0, pressure = 6.0;
+	QString csv_path;
+	struct Event { double t; QString label; int side; bool on; };
+	QList<Event> events;
+	static const QRegularExpression ev_re(QStringLiteral(
+		"^\\s*([\\d.]+)\\s+(\\S+)\\s+(?:(links|rechts|left|right)\\s+)?(an|aus|on|off)\\s*$"));
+	for (int i = 0; i < args.size(); ++i) {
+		const QString a = args.at(i);
+		const QString v = args.value(i + 1);
+		if (a == QLatin1String("--duration")) { duration = v.toDouble(); ++i; }
+		else if (a == QLatin1String("--pressure")) { pressure = v.toDouble(); ++i; }
+		else if (a == QLatin1String("--csv")) { csv_path = v; ++i; }
+		else if (a == QLatin1String("--event")) {
+			const auto m = ev_re.match(v);
+			if (!m.hasMatch()) { err << "event not understood: " << v << "\n"; return 2; }
+			const QString s = m.captured(3);
+			events << Event{m.captured(1).toDouble(), m.captured(2),
+							s.isEmpty() ? -1 : (s == QLatin1String("links") || s == QLatin1String("left") ? 0 : 1),
+							m.captured(4) == QLatin1String("an") || m.captured(4) == QLatin1String("on")};
+			++i;
+		}
+	}
+	std::sort(events.begin(), events.end(), [](const Event &x, const Event &y) { return x.t < y.t; });
+	SimulationModel sim(project.diagrams(), pressure);
+	out << sim.summary() << "\n";
+	QFile csv(csv_path);
+	QTextStream csv_out(&csv);
+	if (!csv_path.isEmpty() && csv.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		csv_out << "t";
+		for (const auto &c : sim.cylinders()) csv_out << ";" << c.label << " x [mm]";
+		for (const auto &v : sim.valveStates()) csv_out << ";" << v.label << " Stellung";
+		csv_out << "\n";
+	}
+	const double dt = 1e-5, raster = 0.005;
+	double next_row = 0.0;
+	int ei = 0;
+	while (sim.time() <= duration + 1e-12) {
+		while (ei < events.size() && events.at(ei).t <= sim.time()) {
+			const Event &e = events.at(ei++);
+			if (e.side < 0) sim.pressButton(e.label, e.on);
+			else if (!sim.actuateValve(e.label, e.side == 0, e.on)) {
+				err << "no valve labelled " << e.label << "\n";
+				return 2;
+			}
+		}
+		if (csv.isOpen() && sim.time() >= next_row - 1e-12) {
+			csv_out << QString::number(sim.time(), 'f', 4);
+			for (const auto &c : sim.cylinders()) csv_out << ";" << QString::number(c.x_mm, 'f', 2);
+			for (const auto &v : sim.valveStates()) csv_out << ";" << v.position;
+			csv_out << "\n";
+			next_row += raster;
+		}
+		sim.step(dt);
+		for (const auto &m : sim.takeMessages())
+			out << QString::number(m.time, 'f', 3).rightJustified(8) << " s  " << m.text << "\n";
+	}
+	out.flush();
+	return 0;
+}
+
 int checkElements(const QString &path)
 {
 	QStringList files;
@@ -1710,6 +1776,10 @@ int run(const QStringList &args)
 			<< " (state " << project.state() << ")\n";
 		return 1;
 	}
+
+	// --simulate runs the pneumatic/hydraulic/electric simulation headless
+	if (format == "simulate")
+		return simulateProject(project, rest.mid(1));
 
 	// --info writes JSON to stdout, or to an optional output file.
 	if (format == "info")

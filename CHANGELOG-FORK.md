@@ -3,6 +3,21 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.14.0 – 14.11.2026
+
+- Simulation von Pneumatik, Hydraulik und elektrischer Steuerung (Menü *Anzeige → Simulation*): Leitungen unter
+  Druck werden eingefärbt, stromführende Drähte rot, Zylinderweg und Ventilstellung stehen am Symbol; Taster und
+  Ventile werden im Fenster bedient, Echtzeit oder Zeitlupe. Das Projekt bleibt unverändert.
+- Gerechnet wird aus den Simulationsdaten der Symbole: Druckluft nach ISO 6358 (qNN), Öl mit Widerstand rT und
+  Kompressionsmodul, Wegeventile mit Schaltwegen, Schaltzeiten, Feder und Steuerdruck; Rückschlag-, Drossel-,
+  Drosselrückschlag-, Absperr-, Schnellentlüftungs-, Druckbegrenzungs- und Druckregelventil, Stromteiler,
+  Schalldämpfer; Druckluftquelle, Pumpe mit Maximaldruck, Tank; Zylinder mit Kraftbilanz, Reibung, Feder,
+  Endlagen. Elektrik: Spannungsquelle, Taster, Endschalter, Relais mit verknüpften Kontakten, Zeitrelais,
+  Ventilspulen (Zuordnung über Kennzeichen, siehe `tools/simulation/README.md`).
+- `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv weg.csv`: dieselbe Simulation ohne Oberfläche.
+- Rückschlag- und Drosselrückschlagventile tragen ihre freie Durchflussrichtung (`free_from`/`free_to`, aus der
+  Zeichnung gelesen).
+
 ## 1.13.0 – 14.11.2026
 
 - Pneumatik und Hydraulik: Die Symbole der QElectroTech-Standardsammlung (437, Grafik unverändert) tragen

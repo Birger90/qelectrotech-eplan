@@ -578,6 +578,50 @@ def baustein_daten(desc, terms):
     return daten
 
 
+def freier_fluss(desc, terms):
+    """Freie Richtung eines Rückschlagventils: die Kugel (kleiner Kreis) liegt im Sitz (V). Drückt das Fluid von
+    der Kugelseite, presst es die Kugel in den Sitz (gesperrt); von der Sitzseite hebt es sie ab (frei).
+    Also fließt es frei von der Sitzseite zur Kugelseite. Rückgabe (von, nach) oder None."""
+    kugeln = []
+    for e in desc:
+        if e.tag in ("ellipse", "circle"):
+            w = fz(e, "width", fz(e, "diameter"))
+            h = fz(e, "height", w)
+            if 2 <= w <= 16 and abs(w - h) < 0.6:
+                kugeln.append((fz(e, "x") + w / 2, fz(e, "y") + h / 2, w))
+    if len(kugeln) != 1:
+        return None
+    cx, cy, d = kugeln[0]
+    haupt = [x for x in terms if x["o"] in ("e", "w")]
+    if len(haupt) < 2:
+        haupt = [x for x in terms if x["o"] in ("n", "s")]
+    if len(haupt) < 2:
+        return None
+    reihe = sorted(haupt, key=lambda x: (x["x"], x["y"]))
+    a, b = reihe[0], reihe[-1]
+    ax, ay = b["x"] - a["x"], b["y"] - a["y"]
+    lg = math.hypot(ax, ay) or 1
+    ux, uy = ax / lg, ay / lg
+    punkte = []
+    for s in strecken(desc):
+        x1, y1, x2, y2, e = s
+        if e.tag == "polygon" and len(polypunkte(e)) > 4:      # Feder (Zickzack), kein Sitz
+            continue
+        laenge = math.hypot(x2 - x1, y2 - y1)
+        auf_achse = abs((x1 - cx) * uy - (y1 - cy) * ux) < 0.8 and abs((x2 - cx) * uy - (y2 - cy) * ux) < 0.8
+        if auf_achse and laenge > d:
+            continue
+        for x, y in ((x1, y1), (x2, y2)):
+            if math.hypot(x - cx, y - cy) < 1.9 * d:
+                punkte.append((x, y))
+    if not punkte:
+        return None
+    seite = sum((x - cx) * ux + (y - cy) * uy for x, y in punkte) / len(punkte)
+    if abs(seite) < 0.3:
+        return None
+    return (b["name"], a["name"]) if seite > 0 else (a["name"], b["name"])
+
+
 # --------------------------------------------------------------------------- von Hand festgelegt
 # Diese Hydraulikventile haben an beiden Kästchen Anschlüsse bzw. eine Mittelstellung ohne Kästchenrahmen;
 # die Wege sind an der Zeichnung abgelesen. Anschlüsse: (x, y) -> Name; Anschlüsse am betätigten Kästchen
@@ -652,7 +696,18 @@ def bearbeiten(pfad, rel):
             fkt = "supply.variable_pump"
         elif art == "motor" and ("variable" in n or "verstell" in n):
             fkt = "motor.variable_motor"
-        daten = {"kind": kind, "prefix": prefix, "function": fkt, "inner": [], "kw": KW.get(art, []), "info": ""}
+        kw = list(KW.get(art, []))
+        info = ""
+        if art in ("rueckschlag", "drossel"):
+            frei = freier_fluss(desc, terms)
+            if frei:
+                kw += [("free_from", frei[0], ""), ("free_to", frei[1], "")]
+                info = f"frei {frei[0]}>{frei[1]}"
+                if art == "drossel":
+                    fkt = "flow_control_valve.one_way_flow_control_valve"
+            if art == "drossel":
+                kw += [("qNN", "40", "l/min")]
+        daten = {"kind": kind, "prefix": prefix, "function": fkt, "inner": [], "kw": kw, "info": info}
         if kind == "cylinder":
             daten["inner"] = ['<cylinder action="double"/>']
     daten["medium"] = medium

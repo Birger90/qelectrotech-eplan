@@ -250,6 +250,10 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/fluid/fluiddata.h
   ${QET_DIR}/sources/fluid/fluidtypes.cpp
   ${QET_DIR}/sources/fluid/fluidtypes.h
+  ${QET_DIR}/sources/simulation/simulationmodel.cpp
+  ${QET_DIR}/sources/simulation/simulationmodel.h
+  ${QET_DIR}/sources/simulation/simulationdock.cpp
+  ${QET_DIR}/sources/simulation/simulationdock.h
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/conductordashpattern.h
   ${QET_DIR}/sources/conductorprofile.cpp

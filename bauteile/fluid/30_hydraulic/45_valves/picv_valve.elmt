@@ -35,6 +35,7 @@
     </names>
     <fluid kind="flow_control" prefix="RZ" function="flow_control_valve.throttle_valve">
         <parameter name="rT" value="1" unit="bar.min2/l2"/>
+        <parameter name="qNN" value="40" unit="l/min"/>
     </fluid>
     <informations>Author: Ruben Garmyn
 License: see http://qelectrotech.org/wiki/doc/elements_license</informations>

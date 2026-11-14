@@ -16251,6 +16251,10 @@ Verfügbare Optionen:
         <translation>Assistent (Claude) ein- oder ausblenden</translation>
     </message>
     <message>
+        <source>Show or hide the simulation of pneumatics, hydraulics and the electric control</source>
+        <translation>Simulation von Pneumatik, Hydraulik und elektrischer Steuerung ein- oder ausblenden</translation>
+    </message>
+    <message>
         <source>Export in pdf</source>
         <translation>Als PDF speichern</translation>
     </message>
@@ -23682,6 +23686,109 @@ Andere Felder werden nicht verwendet.</translation>
         <source>Shortcuts</source>
         <comment>configuration page title</comment>
         <translation>Tastenkombinationen</translation>
+    </message>
+</context>
+<context>
+    <name>SimulationDock</name>
+    <message>
+        <source>Simulation</source>
+        <translation>Simulation</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>Start</translation>
+    </message>
+    <message>
+        <source>Pause</source>
+        <translation>Pause</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation>Stopp</translation>
+    </message>
+    <message>
+        <source>Simulate the current project: pneumatics, hydraulics and the electric control</source>
+        <translation>Aktuelles Projekt simulieren: Pneumatik, Hydraulik und elektrische Steuerung</translation>
+    </message>
+    <message>
+        <source>End the simulation and remove its display from the folios</source>
+        <translation>Simulation beenden und ihre Anzeige von den Blättern entfernen</translation>
+    </message>
+    <message>
+        <source>1/10 (slow motion)</source>
+        <translation>1/10 (Zeitlupe)</translation>
+    </message>
+    <message>
+        <source>1/4</source>
+        <translation>1/4</translation>
+    </message>
+    <message>
+        <source>1/2</source>
+        <translation>1/2</translation>
+    </message>
+    <message>
+        <source>real time</source>
+        <translation>Echtzeit</translation>
+    </message>
+    <message>
+        <source> bar</source>
+        <translation> bar</translation>
+    </message>
+    <message>
+        <source>Pressure of the compressed air sources, used at the next start</source>
+        <translation>Druck der Druckluftquellen, gilt ab dem nächsten Start</translation>
+    </message>
+    <message>
+        <source>stopped</source>
+        <translation type="unfinished">abgebrochen</translation>
+    </message>
+    <message>
+        <source>Speed:</source>
+        <translation>Geschwindigkeit:</translation>
+    </message>
+    <message>
+        <source>Air supply:</source>
+        <translation>Versorgungsdruck:</translation>
+    </message>
+    <message>
+        <source>Time:</source>
+        <translation>Zeit:</translation>
+    </message>
+    <message>
+        <source>Operate (hold the button):</source>
+        <translation>Bedienen (Knopf gedrückt halten):</translation>
+    </message>
+    <message>
+        <source>Events:</source>
+        <translation>Ereignisse:</translation>
+    </message>
+    <message>
+        <source>Open a project first.</source>
+        <translation>Bitte zuerst ein Projekt öffnen.</translation>
+    </message>
+    <message>
+        <source>Continue</source>
+        <translation>Weiter</translation>
+    </message>
+    <message>
+        <source>Push button %1</source>
+        <translation>Taster %1</translation>
+    </message>
+    <message>
+        <source>Valve %1 by hand:</source>
+        <translation>Ventil %1 von Hand:</translation>
+    </message>
+    <message>
+        <source>left</source>
+        <translation>links</translation>
+    </message>
+    <message>
+        <source>right</source>
+        <translation>rechts</translation>
+    </message>
+    <message>
+        <source>%1: position %2</source>
+        <translation>%1: Stellung %2</translation>
     </message>
 </context>
 <context>

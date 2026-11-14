@@ -56,6 +56,7 @@ class CommandSearchPopup;
 class AutoNumberingDockWidget;
 class DeviceNavigatorDockWidget;
 class AssistantDock;
+class SimulationDock;
 class TerminalNumberingDialog;
 
 class KAutoSaveFile;
@@ -123,6 +124,7 @@ class QETDiagramEditor : public QETMainWindow
 		void setUpAutonumberingWidget();
 		void setUpDeviceNavigatorDock();
 		void setUpAssistantDock();
+		void setUpSimulationDock();
 		void setUpActions       ();
 		void setUpToolBar       ();
 		void setUpMenu          ();
@@ -456,6 +458,7 @@ class QETDiagramEditor : public QETMainWindow
 		AutoNumberingDockWidget *m_autonumbering_dock;
 		DeviceNavigatorDockWidget *m_device_navigator_dock = nullptr;
 		AssistantDock *m_assistant_dock = nullptr;
+		SimulationDock *m_simulation_dock = nullptr;
 		int activeSubWindowIndex;
 		SearchAndReplaceWidget m_search_and_replace_widget;
 };

@@ -16709,6 +16709,41 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
         <translation>Offene pneumatische und hydraulische Anschlüsse sowie Magnetventile ohne Spule auflisten</translation>
     </message>
     <message>
+        <source>Export the fluid parts list...</source>
+        <translation type="unfinished">Fluid-Stückliste exportieren...</translation>
+    </message>
+    <message>
+        <source>Write valves, cylinders and other fluid parts, and the fluid lines by kind and size, to a CSV file</source>
+        <translation type="unfinished">Ventile, Zylinder und andere Fluidbauteile sowie die Fluidleitungen nach Art und Größe in eine CSV-Datei schreiben</translation>
+    </message>
+    <message>
+        <source>%1 - fluid parts.csv</source>
+        <translation type="unfinished">%1 - Fluid-Stückliste.csv</translation>
+    </message>
+    <message>
+        <source>Project</source>
+        <translation type="unfinished">Projekt</translation>
+    </message>
+    <message>
+        <source>Export the fluid parts list</source>
+        <translation type="unfinished">Fluid-Stückliste exportieren</translation>
+    </message>
+    <message>
+        <source>CSV file (*.csv)</source>
+        <translation type="unfinished">CSV-Datei (*.csv)</translation>
+    </message>
+    <message>
+        <source>The file could not be written: %1</source>
+        <translation type="unfinished">Die Datei konnte nicht geschrieben werden: %1</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n line(s) from %1 fluid part(s) and %2 fluid line(s) written to %3</source>
+        <translation type="unfinished">
+            <numerusform>%n Zeile aus %1 Fluidbauteil(en) und %2 Fluidleitung(en) in %3 geschrieben</numerusform>
+            <numerusform>%n Zeilen aus %1 Fluidbauteil(en) und %2 Fluidleitung(en) in %3 geschrieben</numerusform>
+        </translation>
+    </message>
+    <message>
         <source>Project languages...</source>
         <translation>Projektsprachen...</translation>
     </message>

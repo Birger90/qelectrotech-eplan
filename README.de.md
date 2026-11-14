@@ -104,6 +104,37 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
 - Skript-API: `setShapePanel`, `shapePanel`, `panelReport`, `exportPanelDxf`, `stepInfo`, `exportPanel3D`,
   `addPanelGrid`.
 
+## EPLAN-Projekte und eingebauter Assistent
+
+- Datei > *EPLAN-Projekt importieren* (`.zw1`): das ganze Projekt als verknüpftes QET-Projekt – Formulare und
+  Schriftfelder, SPS-Karten als SPS-Master mit Kanaltabelle, symbolische Adressen wie in EPLAN verfolgt, Bericht über
+  nicht verknüpfte Kanäle (`sps_bericht.txt`).
+- Claude-Assistent als Andockfenster (Knopf *Claude* in der Hauptwerkzeugleiste): liest und ändert das offene Projekt
+  über den MCP-Server unten; Bilder und PDFs lassen sich mitschicken. Mit API-Schlüssel oder in eigenen Builds
+  (`-DQET_CLAUDE_KONTO=ON`) über das eigene Claude-Konto.
+- *Klemmleiste zeichnen*: ein Strich quer über Leitungen setzt auf jede eine Klemme aus dem Klemmenkatalog (Filter,
+  maßstäbliche Vorschau, Foto), auch Mehrstockklemmen (L/N/PE).
+- Herstellerportale (Siemens, Rittal, 3Dfindit, SEW, WAGO, Keyence): Konten im Schlüsselspeicher des Systems, fehlende
+  Bauteile automatisch holen (`--fetch-parts`). Läuft unter Windows und macOS (Workflow `macos-build.yml`).
+
+## Pneumatik, Hydraulik und Simulation
+
+Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser Fork.
+
+- Die 437 Pneumatik- und Hydrauliksymbole der Standardsammlung tragen Simulationsdaten (Grafik unverändert): benannte
+  Anschlüsse mit Medium, Funktion, Stellungen und Schaltwege aller Wegeventile, Betätigung, Zylinderdaten und Kennwerte
+  (`<fluid>`, Generator `tools/symbole/qet_fluid_daten.py`). Ventilspule ↔ Ventil und Relais ↔ Kontakte als
+  Master/Slave, Schalldämpfer und Blindstopfen an freien Anschlüssen, *Projekt > Fluidtechnik prüfen*.
+- Anzeige > *Simulation*: Pneumatik (Durchfluss nach ISO 6358), Hydraulik (Blenden, Pumpen, Druckbegrenzung,
+  Hydrospeicher mit Gasgesetz), Zylinder mit Kraftbilanz und Reibung, elektrische Steuerung (Taster, End- und
+  Druckschalter, Relais, Zeitrelais, Zähler, Spulen), SPS-Programme in Strukturiertem Text (Teil von IEC 61131-3 mit
+  Schrittketten) und GRAFCET nach IEC 60848 mit den GRAFCET-Symbolen (im Raster neu gezeichnet, `bauteile/grafcet`).
+  Leitungen unter Druck werden blau bzw. rot, stromführende Drähte rot, aktive Schritte bekommen eine Marke; Taster und
+  Ventile bedient man im Fenster oder per Klick auf das Symbol; eine Liste zeigt die SPS- und GRAFCET-Variablen.
+- Ohne Oberfläche: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv weg.csv --png ordner`.
+  `--simulate-reference` prüft den Rechenkern gegen analytische Lösungen und OpenModelica-Läufe.
+  Anleitung: [tools/simulation/README.md](tools/simulation/README.md).
+
 ## Werkzeuge
 
 In `tools/symbole/`:
@@ -120,15 +151,19 @@ In `tools/symbole/`:
 Unter `misc/qet-mcp/` liegt ein Model-Context-Protocol-Server (nur Python-Standardbibliothek), mit dem ein
 KI-Assistent QElectroTech-Projekte lesen, prüfen und ändern kann: Projektinfo, Elemente, Leiter, Unterschiede
 (Diff), Export ohne Oberfläche, Bearbeiten, Symbole bauen, Suche und Import im EPLAN Data Portal, Regel- und
-Layoutprüfung, SQL auf die Projektdatenbank, Skript-Knöpfe und ein Live-Modus auf dem geöffneten Projekt.
+Layoutprüfung, SQL auf die Projektdatenbank, Skript-Knöpfe, ein Live-Modus auf dem geöffneten Projekt und die
+Simulation (`qet_simulate`, `qet_simulate_reference`).
 Einrichtung und alle Werkzeuge: [misc/qet-mcp/README.md](misc/qet-mcp/README.md).
 
 ## Für KI-Assistenten
 
-Zwei Skills unter `.claude/skills/` (Claude Code lädt sie im Klon automatisch; andere Werkzeuge: die jeweilige
+Skills unter `.claude/skills/` (Claude Code lädt sie im Klon automatisch; andere Werkzeuge: die jeweilige
 `SKILL.md` lesen, sie verweist auf ihre Unterdateien):
 
-- `qet-schaltplan-zeichnen` – wie man EPLAN-artige Blätter per Skript zeichnet, prüft und verknüpft.
+- `qet-schaltplan-zeichnen` – wie man EPLAN-artige Blätter per Skript zeichnet, prüft und verknüpft, auch GRAFCET.
+- `fluidtechnik` – Pneumatik- und Hydraulikpläne: Datenmodell, Anschlüsse, Spule ↔ Ventil, FluidSIM-Übernahme.
+- `qet-simulation` – Pläne simulieren: Konventionen, SPS-Programme, GRAFCET, Prüfung des Rechenkerns, Erfahrungen.
+- `bauteile-herunterladen` – Herstellerdaten (EPLAN-Makros, DXF, STEP) für fehlende Bauteile holen.
 - `eplan-wissen` – die EPLAN-Plattform-Hilfe 2.9 in eigenen Worten (PDF-Sprünge, Querverweise, Kennzeichnung,
   Klemmen, Kabel, SPS, Auswertungen, Makros/Artikel, Eigenschafts-IDs, Prüfmeldungen …), jede Regel mit Quell-URL und
   „Bedeutung für QET“. Einstieg: `.claude/skills/eplan-wissen/SKILL.md`.

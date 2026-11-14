@@ -5,12 +5,12 @@ description: Pneumatik- und Hydraulikpläne in QElectroTech (EPLAN-Fork) nach Vo
 
 # Fluidtechnik (Pneumatik, Hydraulik) in QElectroTech
 
-Stand 13.11.2026, Branch `feature/pneumatik` (noch nicht in `main`). Was hier steht, ist gebaut
-und an FluidSIM-Beispielen geprüft; Unbelegtes ist als offen markiert. Plan und Format:
-`PLAN-PNEUMATIK.md`. Neue Erkenntnisse unten unter „Gelernt“ nachtragen.
+Stand 14.11.2026, Fork ab 1.13.0 (`main`). Was hier steht, ist gebaut und geprüft; Unbelegtes ist als offen
+markiert. Plan und Format: `PLAN-PNEUMATIK.md`. Neue Erkenntnisse unten unter „Gelernt“ nachtragen.
+**Simulation** (Physik, SPS, GRAFCET, Prüfstand): eigener Skill `qet-simulation`.
 
-**Nur der Build dieses Branches kennt die Fluid-Funktionen.** Ein QET ohne sie lädt die Bauteile,
-behandelt alle Anschlüsse aber als elektrisch und zeichnet keine Schalldämpfer.
+Ein QET ohne die Fluid-Funktionen dieses Forks lädt die Bauteile, behandelt alle Anschlüsse aber als elektrisch und
+zeichnet keine Schalldämpfer.
 
 ## Datenmodell (sources/fluid/)
 
@@ -35,14 +35,12 @@ behandelt alle Anschlüsse aber als elektrisch und zeichnet keine Schalldämpfer
 
 | Ordner der Standardsammlung | Inhalt |
 |---|---|
-| `50_pneumatic/…` | QET-Bauteile, nachgerüstet: Medium an jedem Anschluss, Portnummern (alle Wegeventile) |
-| `50_pneumatic/5090_FluidSIM/Pneumatic/…` | 150 FluidSIM-Symbole, deutsche Namen, Portnummern, Abschlüsse, Master/Slave |
-| `30_hydraulic/…` | QET-Bauteile, nur Medium (keine Portnummern gezeichnet) |
-| `30_hydraulic/3090_FluidSIM/Hydraulic/…` | 172 FluidSIM-Hydrauliksymbole |
+| `50_pneumatic/…`, `30_hydraulic/…` | die 437 QET-Symbole, Grafik unverändert, mit Simulationsdaten: benannte Anschlüsse mit Medium, `<fluid function=…>`, Stellungen und Schaltwege aller 172 Wegeventile und 30 Ventilbausteine, Betätigung, Zylinderdaten, Kennwerte als `<parameter>` (Ablage `bauteile/fluid`, gleiche Pfade; Generator `tools/symbole/qet_fluid_daten.py`) |
+| `20_logic/2020_flow_chart/202020_grafcet` | GRAFCET-Symbole, im Raster neu gezeichnet (`bauteile/grafcet`, `tools/symbole/grafcet_symbole.py`) |
 | `bauteile/pneumatik/` (Repo) | Beispiel: 5/2-Magnetventil (Master) und Ventilspule (Slave) |
 
-Erzeugt werden sie von `tools/deploy_lokal.ps1` (aus der unveränderten Sammlung im Repo und der
-FluidSIM-Installation). Von Hand:
+FluidSIM-Symbole gehören nur in die Firmensammlung, nie in den öffentlichen Fork (Lizenz). `tools/deploy_lokal.ps1`
+legt `bauteile/fluid` und `bauteile/grafcet` über die Sammlung. Ältere Werkzeuge von Hand:
 
     python tools/symbole/fluid_nachruesten.py elements/50_pneumatic --ziel <Sammlung>/50_pneumatic
     python tools/symbole/fluidsim_symbole.py --fluidsim "C:/Program Files (x86)/Didactic/FluidSIM6" --bereich ~FolderPneumatic --ziel <Ordner>
@@ -128,4 +126,4 @@ speichert keine), Leitungswege (QET legt sie neu).
 ## Offen
 
 Ventil- und Zylinder-Editor (Symbol zur Laufzeit), Wegmaßstab, Stückliste mit Schläuchen,
-`fluid_line` in Skript/MCP, Simulation (Stufe 2), ISO 1219-1 und 81346-2 im Wortlaut.
+`fluid_line` in Skript/MCP, ISO 1219-1 und 81346-2 im Wortlaut. Simulation: siehe `qet-simulation`.

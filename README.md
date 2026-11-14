@@ -88,6 +88,33 @@
 > - Script API: `setShapePanel`, `shapePanel`, `panelReport`, `exportPanelDxf`, `stepInfo`, `exportPanel3D`,
 >   `addPanelGrid`.
 >
+> **EPLAN projects and the built-in assistant**
+> - File > *Import EPLAN project* (`.zw1`): the whole project becomes a linked QET project -- forms and title blocks,
+>   PLC cards as PLC masters with their channel table, symbolic addresses traced like EPLAN, a report of channels it
+>   could not link (`sps_bericht.txt`).
+> - Claude assistant as a dock window (button *Claude* in the main toolbar): it reads and changes the open project
+>   through the MCP server below; images and PDFs can be attached. With an API key, or in own builds
+>   (`-DQET_CLAUDE_KONTO=ON`) through one's own Claude account.
+> - *Draw terminal strip*: one stroke across conductors places a terminal on each, from a terminal catalogue (filter,
+>   preview to scale, photo), multi-level terminals (L/N/PE) included.
+> - Manufacturer portals (Siemens, Rittal, 3Dfindit, SEW, WAGO, Keyence): accounts in the system key store, missing
+>   parts fetched automatically (`--fetch-parts`). Runs on Windows and macOS (workflow `macos-build.yml`).
+>
+> **Pneumatics, hydraulics and simulation** -- unlike the upstream note further down, this fork simulates
+> - The 437 pneumatic and hydraulic symbols of the common collection carry simulation data (graphics unchanged):
+>   named ports with medium, function, positions and flow paths of every directional valve, actuation, cylinder data
+>   and characteristic values (`<fluid>`, generator `tools/symbole/qet_fluid_daten.py`). Valve coil ↔ valve and relay
+>   ↔ contacts as master/slave, silencers and plugs at free ports, *Project > Check fluid power*.
+> - View > *Simulation*: pneumatics (ISO 6358 flow), hydraulics (orifices, pumps, relief, accumulators with gas
+>   law), cylinders with force balance and friction, the electric control (buttons, limit and pressure switches,
+>   relays, timers, counters, coils), PLC programs in Structured Text (IEC 61131-3 subset with step sequences) and
+>   GRAFCET charts after IEC 60848 drawn with the GRAFCET symbols (redrawn on the grid, `bauteile/grafcet`).
+>   Lines under pressure turn blue/red, live wires red, active steps get a token; buttons and valves are operated in
+>   the window or by clicking the symbol; a live list shows the PLC and GRAFCET variables.
+> - Headless: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv out.csv --png folder`.
+>   `--simulate-reference` checks the simulation core against analytical solutions and OpenModelica runs.
+>   Guide: [tools/simulation/README.md](tools/simulation/README.md).
+>
 > **Tools** (`tools/symbole/`)
 > - `pdf_symbol.py` / `pdf_blatt.py`: take symbols or whole sheets 1:1 from a vector PDF (e.g. an EPLAN plan), with
 >   real conductors and nodes.
@@ -99,12 +126,16 @@
 > **MCP server** (`misc/qet-mcp/`): a Model Context Protocol server (Python standard library only) that lets an
 > AI assistant read, check and change QElectroTech projects -- project info, elements, conductors, diffs, headless
 > exports, edits, symbol building, EPLAN Data Portal search and import, design-rule and layout checks, SQL over the
-> project database, script buttons, and a live mode on the open project. Set it up and see every tool in
+> project database, script buttons, a live mode on the open project, and the simulation (`qet_simulate`,
+> `qet_simulate_reference`). Set it up and see every tool in
 > [misc/qet-mcp/README.md](misc/qet-mcp/README.md).
 >
-> **For AI assistants**: two skills in `.claude/skills/` (Claude Code loads them in a clone; other tools: read the
+> **For AI assistants**: skills in `.claude/skills/` (Claude Code loads them in a clone; other tools: read the
 > `SKILL.md`, it points to its sub files):
-> - `qet-schaltplan-zeichnen` – how to draw, check and link EPLAN-style sheets by script.
+> - `qet-schaltplan-zeichnen` – how to draw, check and link EPLAN-style sheets by script, GRAFCET included.
+> - `fluidtechnik` – pneumatic and hydraulic plans: data model, ports, coil ↔ valve, FluidSIM import.
+> - `qet-simulation` – simulating plans: conventions, PLC programs, GRAFCET, how the core is checked, lessons.
+> - `bauteile-herunterladen` – fetching manufacturer data (EPLAN macros, DXF, STEP) for missing parts.
 > - `eplan-wissen` – the EPLAN platform help 2.9 in own words (PDF jumps, cross references, designations, terminals,
 >   cables, PLC, reports, macros/articles, property IDs, check messages …), every rule with its source URL and its
 >   meaning for QET. Start: `.claude/skills/eplan-wissen/SKILL.md`.

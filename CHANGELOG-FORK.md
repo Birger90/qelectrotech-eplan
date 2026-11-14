@@ -3,6 +3,18 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.16.0 – 14.11.2026
+
+- SPS-Programm für Ablaufsteuerungen: Zahlenwerte (`INT`, Startwerte in `VAR`), Vergleiche und Rechnen
+  (`= <> < > <= >= + - * / MOD`), `ELSIF`, Schrittketten mit `CASE … OF` (Marken, Listen, Bereiche, `ELSE`),
+  Bausteine `R_TRIG`, `F_TRIG`, `SR`, `RS`, `CTD`, Ausgänge `.ET`/`.CV` als Zahl; Fehler mit Zeilennummer.
+- Simulationsfenster: Liste *SPS-Variablen* mit den aktuellen Werten (Ein-/Ausgänge, Merker, Schritt,
+  Bausteinausgänge); `--simulate` gibt sie am Ende aus.
+- `--simulate-reference [ordner]`: Prüfstand für den Rechenkern mit denselben Integrationsschritten
+  (`simulationphysics.h`) – Gasbefüllung, Gasladung und Hydraulikladung gegen die analytische Lösung samt
+  Konvergenz bei halbem Zeitschritt, SPS-Zähler und Sprachumfang, Zylinderzyklus gegen einen OpenModelica-Lauf
+  (`tools/simulation/referenz`): Hubzeiten gleich auf 1 ms, Weg auf 0,13 mm.
+
 ## 1.15.0 – 14.11.2026
 
 - Simulation mit SPS: Kanäle lesen und schreiben ihre Adresse aus der E/A-Tabelle, das Programm in Strukturiertem

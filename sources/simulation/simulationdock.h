@@ -31,6 +31,8 @@ class QLabel;
 class QListWidget;
 class QPushButton;
 class QTimer;
+class QTreeWidget;
+class QTreeWidgetItem;
 class QVBoxLayout;
 class QETDiagramEditor;
 class QETProject;
@@ -68,6 +70,7 @@ class SimulationDock : public QDockWidget
 		void updateOverlay();
 		void clearOverlay();
 		void editProgram();
+		void updateVariables();
 
 		QETDiagramEditor *m_editor;
 		QPointer<QETProject> m_project;
@@ -81,6 +84,9 @@ class SimulationDock : public QDockWidget
 		QWidget *m_controls;
 		QVBoxLayout *m_controls_layout;
 		QListWidget *m_log;
+		QLabel *m_vars_label;
+		QTreeWidget *m_vars;
+		QHash<QString, QTreeWidgetItem *> m_var_items;
 		std::unique_ptr<SimulationOverlay> m_overlay;
 		QString m_held_button;
 		QString m_held_valve;

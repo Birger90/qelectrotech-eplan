@@ -84,7 +84,9 @@ class SimulationModel
 			/// errors of the PLC programs, empty when they compiled
 		QStringList programErrors() const { return m_program_errors; }
 			/// current value of a PLC variable (address, symbol or flag)
-		bool plcValue(const QString &name) const;
+		double plcValue(const QString &name) const;
+			/// all PLC variables with their current value (inputs, outputs, flags, block outputs)
+		QHash<QString, double> plcVariables() const { return m_plc_vars; }
 
 			/// gauge pressure (bar) at a fluid terminal; NaN when not fluid
 		double pressureBar(Terminal *terminal) const;
@@ -128,7 +130,7 @@ class SimulationModel
 		QList<Counter *> m_counters;
 		QList<PlcChannel *> m_plc_channels;
 		QList<Plc *> m_plcs;
-		QHash<QString, bool> m_plc_vars;
+		QHash<QString, double> m_plc_vars;
 		QStringList m_program_errors;
 		double m_next_plc_cycle = 0.0;
 		QList<QPair<QList<int>, QList<int>>> m_sources;

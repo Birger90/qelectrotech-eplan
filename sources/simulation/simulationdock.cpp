@@ -43,6 +43,8 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QTimer>
+#include <QTreeWidget>
+#include <QHeaderView>
 #include <QVBoxLayout>
 #include <cmath>
 #include <functional>
@@ -103,6 +105,20 @@ SimulationDock::SimulationDock(QETDiagramEditor *editor) :
 	scroll->setWidget(m_controls);
 	layout->addWidget(new QLabel(tr("Operate (hold the button):"), content));
 	layout->addWidget(scroll, 1);
+
+	m_vars_label = new QLabel(tr("PLC variables:"), content);
+	m_vars = new QTreeWidget(content);
+	m_vars->setColumnCount(2);
+	m_vars->setHeaderLabels({tr("Variable"), tr("Value")});
+	m_vars->setRootIsDecorated(false);
+	m_vars->setSortingEnabled(true);
+	m_vars->sortByColumn(0, Qt::AscendingOrder);
+	m_vars->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+	m_vars->setToolTip(tr("Current values of the PLC: inputs, outputs, flags, steps and function block outputs"));
+	layout->addWidget(m_vars_label);
+	layout->addWidget(m_vars, 1);
+	m_vars_label->hide();
+	m_vars->hide();
 
 	m_log = new QListWidget(content);
 	layout->addWidget(new QLabel(tr("Events:"), content));
@@ -184,6 +200,41 @@ void SimulationDock::stop()
 	m_stop->setEnabled(false);
 	m_supply->setEnabled(true);
 	m_time->setText(tr("stopped"));
+	m_vars->clear();
+	m_var_items.clear();
+	m_vars_label->hide();
+	m_vars->hide();
+}
+
+void SimulationDock::updateVariables()
+{
+	if (!m_model) return;
+	const QHash<QString, double> vars = m_model->plcVariables();
+	const bool any = !vars.isEmpty();
+	m_vars_label->setVisible(any);
+	m_vars->setVisible(any);
+	if (!any) return;
+	m_vars->setSortingEnabled(false);
+	for (auto it = vars.constBegin(); it != vars.constEnd(); ++it) {
+		QTreeWidgetItem *item = m_var_items.value(it.key());
+		if (!item) {
+			item = new QTreeWidgetItem(m_vars, {it.key(), QString()});
+			m_var_items.insert(it.key(), item);
+		}
+		const double v = it.value();
+		const QString text = it.key().endsWith(QLatin1String(".ET"))
+			? QStringLiteral("%1 s").arg(v, 0, 'f', 2)
+			: (std::fabs(v - std::round(v)) < 1e-9 ? QString::number(qint64(std::llround(v)))
+												  : QString::number(v, 'g', 6));
+		if (item->text(1) != text) {
+			item->setText(1, text);
+			QFont f = item->font(1);
+			f.setBold(v != 0.0);
+			item->setFont(1, f);
+			item->setFont(0, f);
+		}
+	}
+	m_vars->setSortingEnabled(true);
 }
 
 void SimulationDock::rebuildControls()
@@ -231,6 +282,7 @@ void SimulationDock::tick()
 		m_log->addItem(QStringLiteral("%1 s  %2").arg(m.time, 0, 'f', 3).arg(m.text));
 	m_log->scrollToBottom();
 	m_time->setText(QStringLiteral("%1 s").arg(m_model->time(), 0, 'f', 2));
+	updateVariables();
 	updateOverlay();
 }
 
@@ -339,15 +391,19 @@ void SimulationDock::editProgram()
 	const DiagramContext old_info = plc->elementInformations();
 	QString source = old_info[QStringLiteral("sim_program")].toString();
 	if (source.isEmpty())
-		source = QStringLiteral("(* Strukturierter Text, z. B.:\n"
-								"VAR T1 : TON; END_VAR\n"
-								"Lauf := (DI0 OR Lauf) AND NOT DI1;\n"
-								"T1(IN := DI2, PT := T#1s);\n"
-								"DQ0 := Lauf AND NOT T1.Q; *)\n");
+		source = QStringLiteral("(* Strukturierter Text, z. B. eine Schrittkette:\n"
+								"VAR Schritt : INT := 0; T1 : TON; END_VAR\n"
+								"CASE Schritt OF\n"
+								"  0: IF DI0 THEN Schritt := 1; END_IF;\n"
+								"  1: DQ0 := TRUE; IF DI1 THEN Schritt := 2; END_IF;\n"
+								"  2: T1(IN := TRUE, PT := T#1s);\n"
+								"     IF T1.Q THEN DQ0 := FALSE; T1(IN := FALSE); Schritt := 0; END_IF;\n"
+								"END_CASE; *)\n");
 	bool ok = false;
 	const QString text = QInputDialog::getMultiLineText(this, tr("PLC program"),
-		tr("Structured Text (IEC 61131-3 subset). Variables are the IO addresses and symbols of the IO table, "
-		   "function blocks TON, TOF, CTU:"), source, &ok);
+		tr("Structured Text (IEC 61131-3 subset): IF/ELSIF, CASE step sequences, INT and BOOL, "
+		   "TON, TOF, CTU, CTD, R_TRIG, F_TRIG, SR, RS. Variables are the IO addresses and symbols of the IO table:"),
+		source, &ok);
 	if (!ok || text == source) return;
 	PlcProgram check;
 	QString error;

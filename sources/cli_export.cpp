@@ -31,6 +31,7 @@
 #include "fluid/fluiddata.h"
 #include "simulation/simulationmodel.h"
 #include "simulation/simulationoverlay.h"
+#include "simulation/simulationreference.h"
 #include "import/eplandxf/eplanpartimporter.h"
 #include "import/portals/manufacturerportals.h"
 #include "import/portals/partfetcher.h"
@@ -119,6 +120,7 @@ const QHash<QString, QString> &exportFlags()
 		{"--set-titleblock", "settb"},
 		{"--query", "query"},
 		{"--simulate", "simulate"},
+		{"--simulate-reference", "simreference"},
 	};
 	return flags;
 }
@@ -770,6 +772,14 @@ int simulateProject(QETProject &project, const QStringList &args)
 			out << QString::number(m.time, 'f', 3).rightJustified(8) << " s  " << m.text << "\n";
 	}
 	if (!png_done) write_png();
+	const QHash<QString, double> vars = sim.plcVariables();
+	if (!vars.isEmpty()) {
+		QStringList names = vars.keys();
+		names.sort();
+		QStringList parts;
+		for (const QString &n : names) parts << n + QLatin1Char('=') + QString::number(vars.value(n), 'g', 6);
+		out << "PLC variables at the end: " << parts.join(QStringLiteral(", ")) << "\n";
+	}
 	out.flush();
 	return 0;
 }
@@ -1781,6 +1791,11 @@ int run(const QStringList &args)
 		}
 		return 0;
 	}
+
+	// --simulate-reference checks the simulation against analytical solutions
+	// and an optional folder of OpenModelica reference runs; no project needed.
+	if (format == "simreference")
+		return runSimulationReference(rest.value(0), out);
 
 	// --query runs one query on many projects, each opened in turn.
 	if (format == "query") {

@@ -26,22 +26,28 @@
 
 /**
 	@brief The PlcProgram class
-	A small subset of IEC 61131-3 Structured Text to simulate the program of
-	a PLC drawn in a project:
+	A subset of IEC 61131-3 Structured Text to simulate the program of a PLC
+	drawn in a project, enough for logic and step sequences:
 
 	@code
-	VAR T1 : TON; T2 : TOF; Z1 : CTU; END_VAR
-	Lauf := (DI0 OR Lauf) AND NOT DI1 AND NOT T1.Q;   (* self-holding *)
-	T1(IN := DI2, PT := T#1s);
-	Z1(CU := DI3, R := DI1, PV := 3);
-	IF Z1.Q THEN DQ1 := TRUE; ELSE DQ1 := FALSE; END_IF;
-	DQ0 := Lauf;
+	VAR Schritt : INT := 0; T1 : TON; F1 : R_TRIG; END_VAR
+	F1(CLK := DI0);
+	CASE Schritt OF
+	  0: IF F1.Q THEN Schritt := 1; END_IF;
+	  1: DQ0 := TRUE; IF DI2 THEN Schritt := 2; END_IF;
+	  2: T1(IN := TRUE, PT := T#1s);
+	     IF T1.Q THEN DQ0 := FALSE; Schritt := 0; END_IF;
+	END_CASE;
 	@endcode
 
-	Boolean variables need no declaration; names are compared without case
-	and without a leading '%'. Operators: NOT, AND (&), XOR, OR, brackets,
-	TRUE/FALSE. Function blocks: TON, TOF (IN, PT, .Q, .ET), CTU (CU, R, PV,
-	.Q, .CV). Comments (* ... *) and // ... are ignored.
+	Values are numbers; FALSE = 0, TRUE = 1, times are seconds. Variables need
+	no declaration (VAR ... END_VAR declares function blocks, INT variables and
+	start values); names are compared without case and without a leading '%'.
+	Operators: NOT, AND (&), XOR, OR, = <> < > <= >=, + - * / MOD, brackets.
+	Statements: :=, IF/ELSIF/ELSE/END_IF, CASE/OF/ELSE/END_CASE (labels 1, 2,
+	3..5). Function blocks: TON, TOF (IN, PT, .Q, .ET), CTU (CU, R, PV, .Q,
+	.CV), CTD (CD, LD, PV, .Q, .CV), R_TRIG, F_TRIG (CLK, .Q), SR (S1, R, .Q1),
+	RS (S, R1, .Q1). Comments (* ... *) and // ... are ignored.
 */
 class PlcProgram
 {
@@ -52,7 +58,7 @@ class PlcProgram
 			/// @return false and an error text with line when the source has a fault
 		bool compile(const QString &source, QString *error = nullptr);
 			/// runs the program once; @a vars are read and written
-		void cycle(double time, QHash<QString, bool> &vars);
+		void cycle(double time, QHash<QString, double> &vars);
 		bool isEmpty() const { return m_statements.isEmpty(); }
 
 		static QString normalized(const QString &name);
@@ -63,7 +69,9 @@ class PlcProgram
 	private:
 		QVector<std::function<void()>> m_statements;
 		QHash<QString, std::shared_ptr<Block>> m_blocks;
-		QHash<QString, bool> *m_vars = nullptr;
+		QHash<QString, double> m_initial;
+		bool m_initialised = false;
+		QHash<QString, double> *m_vars = nullptr;
 		double m_time = 0.0;
 };
 

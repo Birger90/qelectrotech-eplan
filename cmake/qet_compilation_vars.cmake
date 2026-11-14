@@ -258,6 +258,9 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/simulation/simulationoverlay.h
   ${QET_DIR}/sources/simulation/plcprogram.cpp
   ${QET_DIR}/sources/simulation/plcprogram.h
+  ${QET_DIR}/sources/simulation/simulationphysics.h
+  ${QET_DIR}/sources/simulation/simulationreference.cpp
+  ${QET_DIR}/sources/simulation/simulationreference.h
   ${QET_DIR}/sources/conductordashpattern.cpp
   ${QET_DIR}/sources/conductordashpattern.h
   ${QET_DIR}/sources/conductorprofile.cpp

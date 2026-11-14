@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "simulationmodel.h"
+#include "simulationphysics.h"
 
 #include "plcprogram.h"
 
@@ -601,7 +602,7 @@ void SimulationModel::electrics()
 		bool on = false;
 		for (int x : ch->signal) on = on || plus.contains(root(x));
 		ch->value = on;
-		for (const QString &nm : ch->names) m_plc_vars.insert(nm, on);
+		for (const QString &nm : ch->names) m_plc_vars.insert(nm, on ? 1.0 : 0.0);
 	}
 	if (!m_plcs.isEmpty() && m_time >= m_next_plc_cycle - 1e-12) {
 		m_next_plc_cycle = m_time + 0.010;
@@ -609,7 +610,7 @@ void SimulationModel::electrics()
 		for (PlcChannel *ch : m_plc_channels) {
 			if (!ch->output) continue;
 			bool on = false;
-			for (const QString &nm : ch->names) on = on || m_plc_vars.value(nm, false);
+			for (const QString &nm : ch->names) on = on || m_plc_vars.value(nm, 0.0) != 0.0;
 			if (on != ch->value) {
 				ch->value = on;
 				m_messages << Message{m_time, QStringLiteral("SPS-Ausgang %1 %2").arg(ch->names.value(0),
@@ -785,16 +786,7 @@ void SimulationModel::step(double dt)
 	for (Cylinder *z : m_cylinders) {
 		const int ka = node(z->e, QStringLiteral("A")), kb = node(z->e, QStringLiteral("B"));
 		const double f = (p(ka) - P_ATM) * z->a_k - (p(kb) - P_ATM) * z->a_r - z->f_load - z->f_spring;
-		if (std::abs(z->v) < 1e-4 && std::abs(f) <= z->f_static) {
-			z->v = 0.0;
-		} else {
-			const double dir = std::abs(z->v) >= 1e-4 ? z->v : f;
-			const double f_net = f - std::copysign(z->f_slide, dir) - z->damping * z->v;
-			z->v += f_net / z->m * dt;
-			z->x += z->v * dt;
-			if (z->x <= 0.0) { z->x = 0.0; z->v = 0.0; }
-			else if (z->x >= z->stroke) { z->x = z->stroke; z->v = 0.0; }
-		}
+		SimPhysics::pistonStep(*z, f, dt);
 		if (ka >= 0) { vol[ka] += V_DEAD + z->a_k * z->x; dvdt[ka] += z->a_k * z->v; }
 		if (kb >= 0) { vol[kb] += V_DEAD + z->a_r * (z->stroke - z->x); dvdt[kb] -= z->a_r * z->v; }
 		const QString end = z->x <= 0.0005 ? QStringLiteral("hinten")
@@ -809,9 +801,9 @@ void SimulationModel::step(double dt)
 	for (int k = 0; k < n; ++k) {
 		if (m_fixed.contains(k) || m_electric.contains(k)) continue;
 		if (m_hydraulic.contains(k))
-			m_p[k] = std::max(P_ATM - 0.9e5, m_p.at(k) + E_OIL / vol.at(k) * (flow.at(k) - dvdt.at(k)) * dt);
+			m_p[k] = SimPhysics::oilNode(m_p.at(k), vol.at(k), dvdt.at(k), flow.at(k), E_OIL, dt, P_ATM - 0.9e5);
 		else
-			m_p[k] = std::max(1000.0, m_p.at(k) + (R_AIR * T_AIR * flow.at(k) - m_p.at(k) * dvdt.at(k)) / vol.at(k) * dt);
+			m_p[k] = SimPhysics::gasNode(m_p.at(k), vol.at(k), dvdt.at(k), flow.at(k), R_AIR * T_AIR, dt);
 	}
 	m_time += dt;
 }
@@ -915,9 +907,9 @@ QList<QPair<Element *, QString>> SimulationModel::elementStates() const
 	return out;
 }
 
-bool SimulationModel::plcValue(const QString &name) const
+double SimulationModel::plcValue(const QString &name) const
 {
-	return m_plc_vars.value(PlcProgram::normalized(name), false);
+	return m_plc_vars.value(PlcProgram::normalized(name), 0.0);
 }
 
 double SimulationModel::pressureBar(Terminal *t) const

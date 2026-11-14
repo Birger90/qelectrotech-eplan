@@ -48,9 +48,57 @@ Z1(CU := DI2, R := DI1, PV := 3);
 DQ0 := Lauf;
 ```
 
+Ablaufsteuerungen (statt GRAFCET) als Schrittkette mit `CASE`, hier A+ B+ A- B- mit zwei Zylindern
+(Testplan `test_schrittkette`):
+
+```
+VAR Schritt : INT := 0; F1 : R_TRIG; END_VAR
+F1(CLK := DI0);                                   (* Start: steigende Flanke *)
+CASE Schritt OF
+  0: IF F1.Q AND DI1 AND DI3 THEN Schritt := 1; END_IF;
+  1: IF DI2 THEN Schritt := 2; END_IF;            (* A+ bis -MM1 vorne *)
+  2: IF DI4 THEN Schritt := 3; END_IF;            (* B+ *)
+  3: IF DI1 THEN Schritt := 4; END_IF;            (* A- *)
+  4: IF DI3 THEN Schritt := 0; END_IF;            (* B- *)
+END_CASE;
+DQ0 := Schritt = 1 OR Schritt = 2;
+DQ1 := Schritt = 2 OR Schritt = 3;
+```
+
 Variablen sind die Adressen und Symbole (Funktionstext) der E/A-Tabelle; Merker brauchen keine Deklaration.
-Operatoren NOT, AND, XOR, OR, Klammern, `IF … THEN … ELSE … END_IF`; Bausteine TON, TOF (IN, PT, Q), CTU (CU, R,
-PV, Q). Programme aller SPS-Baugruppen eines Projekts teilen sich die Variablen.
+Werte sind Zahlen (FALSE = 0, TRUE = 1, Zeiten in Sekunden); `VAR` deklariert Bausteine, `INT`/`BOOL` und
+Startwerte (`Schritt : INT := 0`).
+
+| Sprachmittel | Umfang |
+|---|---|
+| Anweisungen | `:=`, `IF … THEN … ELSIF … ELSE … END_IF`, `CASE … OF 1: … 2, 3: … 4..6: … ELSE … END_CASE` |
+| Operatoren | `NOT`, `AND` (`&`), `XOR`, `OR`, `= <> < > <= >=`, `+ - * /`, `MOD`, Klammern |
+| Konstanten | `TRUE`, `FALSE`, Zahlen, Zeiten `T#1s`, `T#500ms`, `T#1m30s` |
+| Bausteine | `TON`, `TOF` (IN, PT → Q, ET), `CTU` (CU, R, PV → Q, CV), `CTD` (CD, LD, PV → Q, CV), `R_TRIG`, `F_TRIG` (CLK → Q), `SR` (S1, R → Q1), `RS` (S, R1 → Q1) |
+
+Programme aller SPS-Baugruppen eines Projekts teilen sich die Variablen. Das Simulationsfenster zeigt sie
+während des Laufs in der Liste *SPS-Variablen* (Ein- und Ausgänge, Merker, Schritt, Bausteinausgänge);
+`--simulate` gibt am Ende die Werte aus.
+
+## Prüfung gegen Referenzfälle
+
+`QElectroTech --simulate-reference [ordner]` rechnet mit denselben Integrationsschritten wie die Simulation
+(`sources/simulation/simulationphysics.h`) Referenzfälle mit bekannter Lösung, Parameter wie in den
+Modelica-Referenzmodellen (Luft isotherm, R = 287,05 J/(kg K), T = 300 K, linearer Ventilleitwert):
+
+| Fall | Erwartung | Kriterium |
+|---|---|---|
+| GasFill | p = 1 bar + 861,15 Pa/s · t | Fehler ≤ 0,05 Pa |
+| GasCharge | p = 2 bar − 1 bar · e^(−t/0,2 s) | Fehler ≤ 5 Pa, Konvergenz 1. Ordnung bei halbem Zeitschritt |
+| HydraulicCharge | p = 10 bar · (1 − e^(−t/1 s)) | Fehler ≤ 5 Pa, Konvergenz 1. Ordnung |
+| PeriodicCounter | SPS-Zähler zählt alle 0,1 s, 9 bei 0,95 s | exakter Wert und Zeitpunkt |
+| SPS-Sprachumfang | ELSIF, CASE mit Bereich und ELSE, MOD, INT-Division, SR, RS, F_TRIG, TOF, CTD; Syntaxfehler | 14 Handrechnungen, Fehler mit richtiger Zeile |
+| CylinderCycle | Ausfahren vor 0,4 s, Rückhub bis 1 s | Weg −2…62 mm, vorne ≥ 59 mm vor 0,4 s, nach 0,9 s < 1 mm; Hubzeiten ±1 ms bei halbem Zeitschritt; mit Ordner: Hubzeiten ±5 % gegen den OpenModelica-Lauf |
+
+Der Ordner enthält die Ergebnisdatei `OwnSim.Examples.CylinderCycle_res.csv` des OpenModelica-Laufs (DASSL,
+Toleranz 1e-9); die Datei liegt unter `tools/simulation/referenz/`. Der Zylinder dort hat elastische
+Anschläge und eine geglättete Reibung, unserer harte Anschläge und Haft-/Gleitreibung; deshalb wird die Hubzeit
+verglichen, nicht jeder Punkt.
 
 ## Zuordnungen im Plan
 
@@ -62,5 +110,5 @@ PV, Q). Programme aller SPS-Baugruppen eines Projekts teilen sich die Variablen.
 ## Grenzen
 
 Die Modelle sind eigene, aus der Fachphysik; sie sind gegen Handrechnungen geprüft (Hydraulik: Geschwindigkeit =
-Förderstrom/Fläche), noch nicht gegen FluidSIM. Nicht simuliert: GRAFCET-Pläne, analoge SPS-Werte, Proportionalventile
+Förderstrom/Fläche), gegen analytische Lösungen und einen OpenModelica-Lauf (siehe oben), noch nicht gegen FluidSIM. Nicht simuliert: GRAFCET-Pläne (Schrittketten in ST als Ersatz), analoge SPS-Ein-/Ausgänge, Proportionalventile
 mit Stellsignal.

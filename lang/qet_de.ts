@@ -23767,6 +23767,22 @@ Andere Felder werden nicht verwendet.</translation>
         <translation>Bedienen (Knopf gedrückt halten):</translation>
     </message>
     <message>
+        <source>PLC variables:</source>
+        <translation>SPS-Variablen:</translation>
+    </message>
+    <message>
+        <source>Variable</source>
+        <translation>Variable</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation type="unfinished">Wert</translation>
+    </message>
+    <message>
+        <source>Current values of the PLC: inputs, outputs, flags, steps and function block outputs</source>
+        <translation>Aktuelle Werte der SPS: Ein- und Ausgänge, Merker, Schritte und Bausteinausgänge</translation>
+    </message>
+    <message>
         <source>Events:</source>
         <translation>Ereignisse:</translation>
     </message>
@@ -23807,8 +23823,12 @@ Andere Felder werden nicht verwendet.</translation>
         <translation>Programm welcher SPS?</translation>
     </message>
     <message>
+        <source>Structured Text (IEC 61131-3 subset): IF/ELSIF, CASE step sequences, INT and BOOL, TON, TOF, CTU, CTD, R_TRIG, F_TRIG, SR, RS. Variables are the IO addresses and symbols of the IO table:</source>
+        <translation>Strukturierter Text (Teil von IEC 61131-3): IF/ELSIF, Schrittketten mit CASE, INT und BOOL, TON, TOF, CTU, CTD, R_TRIG, F_TRIG, SR, RS. Variablen sind die Adressen und Symbole der E/A-Tabelle:</translation>
+    </message>
+    <message>
         <source>Structured Text (IEC 61131-3 subset). Variables are the IO addresses and symbols of the IO table, function blocks TON, TOF, CTU:</source>
-        <translation>Strukturierter Text (Teil von IEC 61131-3). Variablen sind die Adressen und Symbole der E/A-Tabelle, Funktionsbausteine TON, TOF, CTU:</translation>
+        <translation type="vanished">Strukturierter Text (Teil von IEC 61131-3). Variablen sind die Adressen und Symbole der E/A-Tabelle, Funktionsbausteine TON, TOF, CTU:</translation>
     </message>
     <message>
         <source>Saved, but the program has an error: %1</source>

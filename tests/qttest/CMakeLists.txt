@@ -1718,6 +1718,19 @@ if(QET_HAS_SCRIPTING)
     "QET_TEST_BINARY_PATH=\"$<TARGET_FILE:qelectrotech>\"")
 endif()
 
+# A placed cylinder can have its own bore, rod and stroke (<fluidOverride>
+# on the element), saved only when set and held by the project database.
+if(QET_HAS_SCRIPTING)
+  add_executable(
+    tst_fluidoverride
+    tst_fluidoverride.cpp)
+  add_test(NAME tst_fluidoverride COMMAND tst_fluidoverride)
+  add_dependencies(tst_fluidoverride qelectrotech)
+  target_link_libraries(tst_fluidoverride PRIVATE Qt::Test Qt::Xml)
+  target_compile_definitions(tst_fluidoverride PRIVATE
+    "QET_TEST_BINARY_PATH=\"$<TARGET_FILE:qelectrotech>\"")
+endif()
+
 # A free text can lead to a folio: saved, in the project database, and a PDF link.
 if(QET_HAS_SCRIPTING)
   add_executable(

@@ -147,4 +147,46 @@ class FluidData
 		double m_flow_b         = 0.0; ///< critical pressure ratio b (ISO 6358)
 };
 
+/**
+	@brief The FluidOverride class
+	The fluid values of one placed element that differ from those of its
+	definition: two cylinders of the same symbol with another bore or
+	stroke. Stored in the project, in the <element> of the placed element,
+	as one <fluidOverride> block.
+
+	A value of 0 is not set: the definition's value applies. A placed
+	element without that block keeps the values of its definition, and
+	nothing is written for it, so projects made before stay the same.
+*/
+class FluidOverride
+{
+	public:
+		FluidOverride() = default;
+
+		bool isNull() const
+		{ return m_bore_mm <= 0.0 && m_rod_mm <= 0.0 && m_stroke_mm <= 0.0; }
+
+		QDomElement toXml(QDomDocument &document) const;
+		bool fromXml(const QDomElement &override_element);
+
+		FluidData appliedTo(const FluidData &definition) const;
+
+		bool operator==(const FluidOverride &other) const
+		{
+			return m_bore_mm == other.m_bore_mm
+				&& m_rod_mm == other.m_rod_mm
+				&& m_stroke_mm == other.m_stroke_mm;
+		}
+		bool operator!=(const FluidOverride &other) const
+		{ return !(*this == other); }
+
+		static QString xmlTagName() { return QStringLiteral("fluidOverride"); }
+
+	public:
+			// cylinder; 0 = as in the definition
+		double m_bore_mm   = 0.0;
+		double m_rod_mm    = 0.0;
+		double m_stroke_mm = 0.0;
+};
+
 #endif // FLUIDDATA_H

@@ -683,6 +683,9 @@ bool ElementData::operator==(const ElementData &data) const
 	if (data.m_fluid != m_fluid) {
 		return false;
 	}
+	if (data.m_fluid_override != m_fluid_override) {
+		return false;
+	}
 
 	if (data.m_type == ElementData::Master) {
 		if(data.m_master_type != m_master_type) {

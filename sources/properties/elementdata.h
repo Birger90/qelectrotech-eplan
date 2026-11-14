@@ -350,6 +350,15 @@ class ElementData : public PropertiesInterface
 			/// What this element is in a fluid power diagram (valve,
 			/// cylinder...). Null for every other element.
 		FluidData m_fluid;
+			/// The fluid values of this placed element that differ from
+			/// m_fluid (a cylinder's bore, rod, stroke). Saved in the
+			/// project, never in the definition. Null for most elements.
+		FluidOverride m_fluid_override;
+
+			/// @return m_fluid with m_fluid_override applied: the fluid
+			/// data of this placed element
+		FluidData fluid() const
+		{ return m_fluid_override.appliedTo(m_fluid); }
 
 	private:
 		ElementData::TerminalType m_override_terminal_type = ElementData::TTGeneric;

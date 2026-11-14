@@ -316,6 +316,62 @@ QString FluidData::kindToString(Kind kind)
 	return QString();
 }
 
+/**
+	@return the <fluidOverride> element of these values, or a null element
+	when none is set
+*/
+QDomElement FluidOverride::toXml(QDomDocument &document) const
+{
+	if (isNull())
+		return QDomElement();
+
+	auto e = document.createElement(xmlTagName());
+	if (m_bore_mm > 0.0)
+		e.setAttribute(QStringLiteral("bore_mm"), numberText(m_bore_mm));
+	if (m_rod_mm > 0.0)
+		e.setAttribute(QStringLiteral("rod_mm"), numberText(m_rod_mm));
+	if (m_stroke_mm > 0.0)
+		e.setAttribute(QStringLiteral("stroke_mm"), numberText(m_stroke_mm));
+	return e;
+}
+
+/**
+	Load from a <fluidOverride> element. A null element, or one with no
+	value above 0, leaves this object null.
+	@return true when a value was read
+*/
+bool FluidOverride::fromXml(const QDomElement &override_element)
+{
+	*this = FluidOverride();
+	if (override_element.isNull()
+		|| override_element.tagName() != xmlTagName())
+		return false;
+
+	m_bore_mm   = textNumber(override_element, QStringLiteral("bore_mm"));
+	m_rod_mm    = textNumber(override_element, QStringLiteral("rod_mm"));
+	m_stroke_mm = textNumber(override_element, QStringLiteral("stroke_mm"));
+	return !isNull();
+}
+
+/**
+	@return @p definition with the values set here in place of its own.
+	The cylinder values apply to a cylinder only: any other kind is
+	returned unchanged.
+*/
+FluidData FluidOverride::appliedTo(const FluidData &definition) const
+{
+	FluidData d = definition;
+	if (d.m_kind != FluidData::Kind::Cylinder)
+		return d;
+	if (m_bore_mm > 0.0)
+		d.m_bore_mm = m_bore_mm;
+	if (m_rod_mm > 0.0)
+		d.m_rod_mm = m_rod_mm;
+	if (m_stroke_mm > 0.0)
+		d.m_stroke_mm = m_stroke_mm;
+	return d;
+}
+
 FluidData::Kind FluidData::kindFromString(const QString &string)
 {
 	if (string == QLatin1String("valve"))        return Kind::Valve;

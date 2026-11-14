@@ -3,6 +3,14 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.19.0 – 14.11.2026
+
+- GRAFCET-Symbole neu gezeichnet (gleiche Pfade, `bauteile/grafcet`, Generator `tools/symbole/grafcet_symbole.py`):
+  Schrittnummer mittig im 40er-Kasten, Weiterschaltbedingung rechts neben der Transition, Aktionstext mittig im Kasten,
+  alle Anschlüsse im 10er-Raster auf der Kante (keine Stummel, keine leeren Platzhaltertexte mehr), Parallelverzweigung
+  und Synchronisierung mit Anschluss in der Mitte – gerade Leitungen ohne Knicke. Die Markierung aktiver Schritte passt
+  zum neuen Kasten.
+
 ## 1.18.0 – 14.11.2026
 
 - Simulation nach dem Referenzpaket 2.0 (Hydraulik) verbessert und gegen dessen OpenModelica-Läufe geprüft:

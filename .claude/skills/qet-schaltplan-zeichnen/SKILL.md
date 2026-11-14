@@ -253,3 +253,14 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
   read-only catalogue in the type window (filters: catalogue, cores, core cross section, energy chain, properties).
   Build it from EPLAN article data with `tools/kabelkatalog/kabelkatalog_eplan.py` (cable article = function
   template category 400, cores = category 4 / id 4 with `connectionDesignation` as colour).
+- **Every drawing is checked before it is shown**, test plans and pictures for an answer included:
+  `qet_layout_check` over the whole project (no `folio`), then the PDF at 300 dpi in parts. Hide empty conductor
+  numbers with `set_conductor_default displaytext=false` before the wires, on fluid and GRAFCET folios too.
+- **GRAFCET**: the fork ships its own symbols (`bauteile/grafcet`, generator `tools/symbole/grafcet_symbole.py`,
+  same paths as the collection). Step box 40 x 40 with terminals `in`/`out`/`action` on its edge; transition
+  `in`/`out`, 20 high; an action's terminal `step` goes straight onto the step's `action` terminal (x + 20, no
+  wire); parallel branch `in` at the top, branches `1`/`2` at ±100, synchronisation mirrored. On the 10 grid,
+  step – transition – step every 50 px makes every wire straight and 20 px long. Step number, receptivity and
+  action text are the labels (`set_label`).
+- QElectroTech does not draw the terminal stub in PDF/PNG: a symbol's graphics must reach each terminal, or a gap
+  shows.

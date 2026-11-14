@@ -488,6 +488,8 @@ install(DIRECTORY elements    DESTINATION ${QET_DATA_PATH})
 # Pneumatic and hydraulic symbols of the common collection with simulation data
 # (bauteile/fluid, same paths) replace the originals
 install(DIRECTORY bauteile/fluid/ DESTINATION ${QET_DATA_PATH}elements)
+# GRAFCET symbols redrawn on the 10 grid (bauteile/grafcet, same paths) replace the originals
+install(DIRECTORY bauteile/grafcet/ DESTINATION ${QET_DATA_PATH}elements)
 # Reference runs for QElectroTech --simulate-reference (and the MCP tool qet_simulate_reference)
 install(DIRECTORY tools/simulation/referenz DESTINATION ${QET_DATA_PATH}simulation)
 install(DIRECTORY examples    DESTINATION ${QET_DATA_PATH})

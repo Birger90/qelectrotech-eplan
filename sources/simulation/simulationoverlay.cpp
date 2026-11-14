@@ -95,9 +95,9 @@ void SimulationOverlay::update(const SimulationModel &model, const QList<Diagram
 			item = mark;
 		}
 		QPainterPath frame;
-		frame.addRect(e->mapRectToScene(QRectF(-17, -17, 34, 34)));
+		frame.addRect(e->mapRectToScene(QRectF(-22, -22, 44, 44)));
 		QPainterPath token;
-		token.addEllipse(e->mapToScene(QPointF(0, 0)), 4.5, 4.5);
+		token.addEllipse(e->mapToScene(QPointF(0, 12)), 3.5, 3.5);   // under the step number
 		mark->setPath(frame);
 		auto *dot = static_cast<QGraphicsPathItem *>(m_tokens.value(e));
 		if (!dot) {

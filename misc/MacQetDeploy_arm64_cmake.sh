@@ -481,6 +481,10 @@ cp "${current_dir}/misc/qet-mcp/qet_mcp.py" "${current_dir}/misc/qet-mcp/README.
 if [ -d "${current_dir}/bauteile/fluid" ]; then
     cp -R "${current_dir}/bauteile/fluid/." "$BUNDLE/Contents/Resources/elements/"         || { echo "ERROR: cannot copy the fluid symbols"; exit 1; }
 fi
+# GRAFCET symbols redrawn on the 10 grid (bauteile/grafcet)
+if [ -d "${current_dir}/bauteile/grafcet" ]; then
+    cp -R "${current_dir}/bauteile/grafcet/." "$BUNDLE/Contents/Resources/elements/" || { echo "ERROR: cannot copy the GRAFCET symbols"; exit 1; }
+fi
 # Reference runs of the simulation (--simulate-reference)
 if [ -d "${current_dir}/tools/simulation/referenz" ]; then
     mkdir -p "$BUNDLE/Contents/Resources/simulation"

@@ -69,4 +69,10 @@ if ((Test-Path $fluid_eigen) -and (Test-Path $sammlung)) {
     }
 }
 
+# GRAFCET-Symbole im 10er-Raster mit mittiger Schrittnummer (bauteile/grafcet, gleiche Pfade) ersetzen die Originale
+$grafcet_eigen = Join-Path $repo "bauteile\grafcet\20_logic"
+if ((Test-Path $grafcet_eigen) -and (Test-Path $sammlung)) {
+    Copy-Item -Recurse -Force (Join-Path $grafcet_eigen "*") (Join-Path $sammlung "20_logic")
+}
+
 Write-Output "build\deploy aktuell: $((& $exe --version | Out-String).Trim())"

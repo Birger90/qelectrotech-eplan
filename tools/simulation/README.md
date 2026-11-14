@@ -87,7 +87,9 @@ während des Laufs in der Liste *SPS-Variablen* (Ein- und Ausgänge, Merker, Sch
 
 ## GRAFCET (IEC 60848)
 
-Ein GRAFCET wird mit den GRAFCET-Symbolen der Standardsammlung gezeichnet (*Logik → Ablaufplan → GRAFCET*) und
+Ein GRAFCET wird mit den GRAFCET-Symbolen der Standardsammlung gezeichnet (*Logik → Ablaufplan → GRAFCET*; die Fork
+liefert sie neu gezeichnet: Schrittkasten 40 × 40 mit mittiger Nummer, Anschlüsse im 10er-Raster auf der Kante, Zweige
+im Abstand 200, Generator `tools/symbole/grafcet_symbole.py`, Ablage `bauteile/grafcet`) und
 in der Simulation nach IEC 60848 ausgeführt, alle 10 ms (zusammen mit der SPS, vor deren Programm). Aktive
 Schritte bekommen im Plan eine Marke (Punkt und grüner Rahmen), die Variablenliste zeigt `X1`, `X1.T` usw.
 
@@ -95,11 +97,11 @@ Schritte bekommen im Plan eine Marke (Punkt und grüner Rahmen), die Variablenli
 |---|---|---|
 | Anfangsschritt, Schritt | Kennzeichen = Schrittnummer (`0`, `1`, …) | Variable `X1` (aktiv), `X1.T` (Aktivzeit in s) |
 | Transition | Kennzeichen = Weiterschaltbedingung | z. B. `-BG2`, `↑-SF1 · -BG1`, `DI0 AND NOT DI1`, `2s/X3`, `t/X3/500ms`, `=1` |
-| Kontinuierliche Aktion | Text im Kasten (oder Kennzeichen) | Variablen, solange der Schritt aktiv ist: `-QM1, DQ0` |
+| Kontinuierliche Aktion | Kennzeichen (steht mittig im Kasten); Anschluss direkt an den Schritt legen | Variablen, solange der Schritt aktiv ist: `-QM1, DQ0` |
 | Kontinuierliche Aktion mit Bedingung | Bedingung über dem Kasten | nur wenn die Bedingung erfüllt ist |
 | Speichernde Aktion bei Aktivierung / Deaktivierung | Strukturierter Text | z. B. `Zyklen := Zyklen + 1` |
 | Speichernde Aktion bei Ereignis | Ereignis über dem Kasten | z. B. `↑-BG4` |
-| Parallelverzweigung, Synchronisierung | – | UND-Verzweigung und -Zusammenführung |
+| Parallelverzweigung, Synchronisierung | – | UND-Verzweigung und -Zusammenführung; Anschluss oben bzw. unten in der Mitte, Zweige bei ±100 |
 | Sprung | Kennzeichen = Zielschritt | Rücksprung, z. B. zum Anfangsschritt `0` |
 
 Ablauf nach der Norm: Eine Transition ist freigegeben, wenn alle Schritte davor aktiv sind, und schaltet, wenn

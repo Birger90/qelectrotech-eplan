@@ -586,6 +586,10 @@ qet_add_app_test(tst_elementarticleswidget tst_elementarticleswidget.cpp)
 target_compile_definitions(tst_elementarticleswidget PRIVATE
   "QET_EXAMPLES_DIR=\"${QET_DIR}/examples\"")
 
+# The "Fluid power" tab of a placed symbol with fluid data: a cylinder's own
+# bore, rod and stroke, through the undo stack.
+qet_add_app_test(tst_fluidpropertieswidget tst_fluidpropertieswidget.cpp)
+
 # An elements collection item set up after the application object is gone.
 qet_add_app_test(tst_collectionitemafterquit tst_collectionitemafterquit.cpp)
 

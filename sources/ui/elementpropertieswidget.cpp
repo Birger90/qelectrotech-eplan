@@ -31,6 +31,7 @@
 #include "dynamicelementtextitemeditor.h"
 #include "elementarticleswidget.h"
 #include "elementinfowidget.h"
+#include "fluidpropertieswidget.h"
 #include "linksingleelementwidget.h"
 #include "masterpropertieswidget.h"
 #include "plclinkwidget.h"
@@ -390,6 +391,9 @@ void ElementPropertiesWidget::updateUi()
 		//The types its terminals give, in a project that takes them there
 	if (PotentialSourcesWidget::isWanted(m_element))
 		m_list_editor << new PotentialSourcesWidget(m_element, this);
+		//Valve, cylinder...: its fluid data, a cylinder's own sizes
+	if (FluidPropertiesWidget::isWanted(m_element))
+		m_list_editor << new FluidPropertiesWidget(m_element, this);
 	m_list_editor << new DynamicElementTextItemEditor(m_element, this);
 
 		//Add each editors in tab widget

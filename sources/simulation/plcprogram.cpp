@@ -251,7 +251,30 @@ struct PlcProgram::Parser {
 		}
 		return left;
 	}
+	/// rising (or falling) edge of @a inner: true in the cycle the value changes;
+	/// several evaluations in the same cycle give the same answer
+	Expr edge(const Expr &inner, bool rising) {
+		struct State { double time = -1.0, last = 0.0, result = 0.0; };
+		auto st = std::make_shared<State>();
+		PlcProgram *p = prog;
+		return [inner, rising, st, p]() {
+			if (p->m_time != st->time) {
+				const bool now = inner() != 0.0, before = st->last != 0.0;
+				st->result = truth(rising ? (now && !before) : (!now && before));
+				st->last = truth(now);
+				st->time = p->m_time;
+			}
+			return st->result;
+		};
+	}
 	Expr unary() {
+		if (peek() == QStringLiteral("↑") || peek() == QStringLiteral("↓")) {
+			const bool rising = peek() == QStringLiteral("↑");
+			++pos;
+			Expr inner = unary();
+			if (!inner) return {};
+			return edge(inner, rising);
+		}
 		if (peek() == QLatin1String("NOT")) {
 			++pos;
 			Expr inner = unary();
@@ -288,6 +311,12 @@ struct PlcProgram::Parser {
 		}
 		if (!isName(t)) { fail(QStringLiteral("unerwartet: „%1“").arg(t)); return {}; }
 		++pos;
+		if ((up == QLatin1String("R_EDGE") || up == QLatin1String("F_EDGE")) && peek() == QLatin1String("(")) {
+			++pos;
+			Expr inner = expr();
+			if (!inner || !expect(QStringLiteral(")"))) return {};
+			return edge(inner, up == QLatin1String("R_EDGE"));
+		}
 		const QString name = PlcProgram::normalized(t);
 		const int dot = static_cast<int>(name.lastIndexOf(QLatin1Char('.')));
 		if (dot > 0) {
@@ -526,12 +555,9 @@ QString PlcProgram::normalized(const QString &name)
 	return n;
 }
 
-bool PlcProgram::compile(const QString &source, QString *error)
+namespace {
+QVector<Token> tokenize(const QString &source)
 {
-	m_statements.clear();
-	m_blocks.clear();
-	m_initial.clear();
-	m_initialised = false;
 	QString src = source;
 	// keep line numbers: a comment becomes as many line breaks as it spans
 	static const QRegularExpression block_comment(QStringLiteral("\\(\\*[\\s\\S]*?\\*\\)"));
@@ -546,13 +572,52 @@ bool PlcProgram::compile(const QString &source, QString *error)
 	QVector<Token> tokens;
 	static const QRegularExpression tok(QStringLiteral(
 		"(:=|<=|>=|<>|\\.\\.|(?:T|TIME)#(?:[0-9.]+(?:ms|s|m|h|d))+|%?[A-Za-z_][A-Za-z0-9_.]*"
-		"|[0-9]+(?:\\.[0-9]+)?(?:[eE][-+]?[0-9]+)?|[();,:&=<>+\\-*/])"),
+		"|[0-9]+(?:\\.[0-9]+)?(?:[eE][-+]?[0-9]+)?|[();,:&=<>+\\-*/\\x{2191}\\x{2193}])"),
 		QRegularExpression::CaseInsensitiveOption);
 	const QStringList lines = src.split(QLatin1Char('\n'));
 	for (int i = 0; i < lines.size(); ++i) {
 		auto t = tok.globalMatch(lines.at(i));
 		while (t.hasNext()) tokens << Token{t.next().captured(1), i + 1};
 	}
+	return tokens;
+}
+}
+
+bool PlcProgram::compileExpression(const QString &source, QString *error)
+{
+	m_statements.clear();
+	m_blocks.clear();
+	m_initial.clear();
+	m_expression = {};
+	Parser p{this, tokenize(source)};
+	Expr e = p.expr();
+	if (e && !p.atEnd()) p.fail(QStringLiteral("unerwartet: „%1“").arg(p.tokens.at(p.pos).text));
+	if (!e || !p.error.isEmpty()) {
+		if (error) *error = p.error.isEmpty() ? QStringLiteral("Ausdruck erwartet") : p.error;
+		return false;
+	}
+	m_expression = e;
+	return true;
+}
+
+double PlcProgram::evaluate(double time, QHash<QString, double> &vars)
+{
+	if (!m_expression) return 0.0;
+	m_vars = &vars;
+	m_time = time;
+	const double v = m_expression();
+	m_vars = nullptr;
+	return v;
+}
+
+bool PlcProgram::compile(const QString &source, QString *error)
+{
+	m_statements.clear();
+	m_blocks.clear();
+	m_initial.clear();
+	m_expression = {};
+	m_initialised = false;
+	const QVector<Token> tokens = tokenize(source);
 	Parser p{this, tokens};
 	if (p.declarations())
 		p.block(m_statements, {});

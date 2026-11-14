@@ -3,6 +3,18 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.17.0 – 14.11.2026
+
+- GRAFCET nach IEC 60848: Mit den GRAFCET-Symbolen der Standardsammlung gezeichnete Ablaufpläne laufen in der
+  Simulation – Anfangsschritt, Schritt, Transition, Parallelverzweigung und Synchronisierung, ODER-Verzweigung,
+  Sprung; kontinuierliche Aktion (auch mit Bedingung), speichernde Aktionen bei Aktivierung, Deaktivierung und
+  Ereignis; Schaltregeln der Norm mit gleichzeitigem Schalten und flüchtiger Entwicklung. Weiterschaltbedingungen
+  mit SPS-Variablen oder direkt mit Kennzeichen (`-BG1`), Zeiten (`2s/X3`), Flanken (`↑-SF1`), `·`, `∨`, `/`;
+  Aktionen schalten SPS-Variablen oder Ventile (`-QM1`, `-QM1/14`). Aktive Schritte bekommen im Plan eine Marke,
+  `X1`/`X1.T` stehen in der Variablenliste. Fehler im GRAFCET werden beim Start gemeldet.
+- SPS-Ausdrücke mit Flanken `R_EDGE(…)`, `F_EDGE(…)`, `↑`, `↓`.
+- `--simulate-reference` prüft zusätzlich die GRAFCET-Schreibweise.
+
 ## 1.16.0 – 14.11.2026
 
 - SPS-Programm für Ablaufsteuerungen: Zahlenwerte (`INT`, Startwerte in `VAR`), Vergleiche und Rechnen

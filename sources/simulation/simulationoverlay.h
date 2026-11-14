@@ -48,6 +48,8 @@ class SimulationOverlay
 		void text(Element *element, const QString &text);
 		QHash<Conductor *, QGraphicsItem *> m_wires;
 		QHash<Element *, QGraphicsItem *> m_texts;
+		QHash<Element *, QGraphicsItem *> m_marks;     // GRAFCET: frame of an active step
+		QHash<Element *, QGraphicsItem *> m_tokens;    // GRAFCET: token of an active step
 };
 
 #endif // SIMULATIONOVERLAY_H

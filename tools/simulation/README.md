@@ -80,6 +80,41 @@ Programme aller SPS-Baugruppen eines Projekts teilen sich die Variablen. Das Sim
 während des Laufs in der Liste *SPS-Variablen* (Ein- und Ausgänge, Merker, Schritt, Bausteinausgänge);
 `--simulate` gibt am Ende die Werte aus.
 
+## GRAFCET (IEC 60848)
+
+Ein GRAFCET wird mit den GRAFCET-Symbolen der Standardsammlung gezeichnet (*Logik → Ablaufplan → GRAFCET*) und
+in der Simulation nach IEC 60848 ausgeführt, alle 10 ms (zusammen mit der SPS, vor deren Programm). Aktive
+Schritte bekommen im Plan eine Marke (Punkt und grüner Rahmen), die Variablenliste zeigt `X1`, `X1.T` usw.
+
+| Symbol | Eintrag | Bedeutung |
+|---|---|---|
+| Anfangsschritt, Schritt | Kennzeichen = Schrittnummer (`0`, `1`, …) | Variable `X1` (aktiv), `X1.T` (Aktivzeit in s) |
+| Transition | Kennzeichen = Weiterschaltbedingung | z. B. `-BG2`, `↑-SF1 · -BG1`, `DI0 AND NOT DI1`, `2s/X3`, `t/X3/500ms`, `=1` |
+| Kontinuierliche Aktion | Text im Kasten (oder Kennzeichen) | Variablen, solange der Schritt aktiv ist: `-QM1, DQ0` |
+| Kontinuierliche Aktion mit Bedingung | Bedingung über dem Kasten | nur wenn die Bedingung erfüllt ist |
+| Speichernde Aktion bei Aktivierung / Deaktivierung | Strukturierter Text | z. B. `Zyklen := Zyklen + 1` |
+| Speichernde Aktion bei Ereignis | Ereignis über dem Kasten | z. B. `↑-BG4` |
+| Parallelverzweigung, Synchronisierung | – | UND-Verzweigung und -Zusammenführung |
+| Sprung | Kennzeichen = Zielschritt | Rücksprung, z. B. zum Anfangsschritt `0` |
+
+Ablauf nach der Norm: Eine Transition ist freigegeben, wenn alle Schritte davor aktiv sind, und schaltet, wenn
+ihre Bedingung erfüllt ist. Alle schaltbaren Transitionen schalten gleichzeitig (Aktivieren hat Vorrang vor
+Deaktivieren), das wiederholt sich bis zur stabilen Situation. Kontinuierliche Aktionen wirken nur in der stabilen
+Situation, speichernde auch auf flüchtigen Schritten. ODER-Verzweigungen sind einfache Leitungsabzweige.
+
+Namen in Bedingungen und Aktionen:
+
+- **SPS-Variablen** wie im SPS-Programm (`DI0`, Symbole, Merker); so läuft das GRAFCET „in der SPS“ und schaltet
+  über `DQ0` die Spulen.
+- **Kennzeichen** direkt, ohne SPS: `-SF1` (Taster gedrückt), `-BG1` (Endschalter betätigt); in Aktionen `-QM1`
+  (Magnet des Ventils), `-QM1/14` (links), `-QM1/12` (rechts).
+- Operatoren: UND `·` oder `AND`, ODER `OR` oder `∨` (`+` bleibt Addition), NICHT `NOT`, `¬` oder `/a`; Flanken `↑a`, `↓a`, `R_EDGE(a)`,
+  `F_EDGE(a)`; Zeiten `2s/X3` (seit 2 s aktiv).
+
+Fehler im GRAFCET (Transition ohne Schritt davor, Sprung ins Leere, unlesbare Bedingung …) stehen beim Start im
+Simulationsfenster bzw. bei `--simulate` auf der Fehlerausgabe. Testplan: `test_grafcet` (zwei Zylinder,
+Parallelverzweigung, Wartezeit, Sprung, Zykluszähler).
+
 ## Prüfung gegen Referenzfälle
 
 `QElectroTech --simulate-reference [ordner]` rechnet mit denselben Integrationsschritten wie die Simulation
@@ -93,6 +128,7 @@ Modelica-Referenzmodellen (Luft isotherm, R = 287,05 J/(kg K), T = 300 K, linear
 | HydraulicCharge | p = 10 bar · (1 − e^(−t/1 s)) | Fehler ≤ 5 Pa, Konvergenz 1. Ordnung |
 | PeriodicCounter | SPS-Zähler zählt alle 0,1 s, 9 bei 0,95 s | exakter Wert und Zeitpunkt |
 | SPS-Sprachumfang | ELSIF, CASE mit Bereich und ELSE, MOD, INT-Division, SR, RS, F_TRIG, TOF, CTD; Syntaxfehler | 14 Handrechnungen, Fehler mit richtiger Zeile |
+| GRAFCET-Schreibweise | `2s/X3`, `t/X1/500ms`, `-BG1 · /-BG2`, `-QM1/14 ∨ DI0`, `=1`, Flanke `↑-SF1` | 8 Fälle |
 | CylinderCycle | Ausfahren vor 0,4 s, Rückhub bis 1 s | Weg −2…62 mm, vorne ≥ 59 mm vor 0,4 s, nach 0,9 s < 1 mm; Hubzeiten ±1 ms bei halbem Zeitschritt; mit Ordner: Hubzeiten ±5 % gegen den OpenModelica-Lauf |
 
 Der Ordner enthält die Ergebnisdatei `OwnSim.Examples.CylinderCycle_res.csv` des OpenModelica-Laufs (DASSL,
@@ -110,5 +146,5 @@ verglichen, nicht jeder Punkt.
 ## Grenzen
 
 Die Modelle sind eigene, aus der Fachphysik; sie sind gegen Handrechnungen geprüft (Hydraulik: Geschwindigkeit =
-Förderstrom/Fläche), gegen analytische Lösungen und einen OpenModelica-Lauf (siehe oben), noch nicht gegen FluidSIM. Nicht simuliert: GRAFCET-Pläne (Schrittketten in ST als Ersatz), analoge SPS-Ein-/Ausgänge, Proportionalventile
+Förderstrom/Fläche), gegen analytische Lösungen und einen OpenModelica-Lauf (siehe oben), noch nicht gegen FluidSIM. Nicht simuliert: Makroschritte und einschließende Schritte (laufen als normale Schritte), Zwangssteuerung, analoge SPS-Ein-/Ausgänge, Proportionalventile
 mit Stellsignal.

@@ -17,6 +17,7 @@
 */
 #include "simulationreference.h"
 
+#include "grafcet.h"
 #include "plcprogram.h"
 #include "simulationphysics.h"
 
@@ -255,6 +256,44 @@ int runSimulationReference(const QString &reference_dir, QTextStream &out)
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? QStringLiteral("alle 14 Erwartungen erfüllt, Syntaxfehler: „%1“").arg(bad_error)
 								   : wrong.join(QStringLiteral("; "));
+		checks << c;
+	}
+
+	// GRAFCET notation (IEC 60848) to Structured Text, then evaluated
+	{
+		Check c{QStringLiteral("GRAFCET-Schreibweise (Zeiten, Kennzeichen, ·, /, Flanke)")};
+		QStringList wrong;
+		struct Case { QString text; QHash<QString, double> vars; double want; };
+		const QList<Case> cases{
+			{QStringLiteral("2s/X3"), {{QStringLiteral("X3.T"), 2.0}}, 1.0},
+			{QStringLiteral("2s/X3"), {{QStringLiteral("X3.T"), 1.99}}, 0.0},
+			{QStringLiteral("t/X1/500ms"), {{QStringLiteral("X1.T"), 0.5}}, 1.0},
+			{QStringLiteral("-BG1 · /-BG2"), {{QStringLiteral("BMK_BG1"), 1.0}}, 1.0},
+			{QStringLiteral("-BG1 · /-BG2"), {{QStringLiteral("BMK_BG1"), 1.0}, {QStringLiteral("BMK_BG2"), 1.0}}, 0.0},
+			{QStringLiteral("-QM1/14 ∨ DI0"), {{QStringLiteral("BMK_QM1__14"), 1.0}}, 1.0},
+			{QStringLiteral("=1"), {}, 1.0},
+		};
+		for (const Case &k : cases) {
+			PlcProgram e;
+			QString error;
+			QHash<QString, double> v = k.vars;
+			if (!e.compileExpression(Grafcet::toStructuredText(k.text), &error))
+				wrong << QStringLiteral("„%1“: %2").arg(k.text, error);
+			else if (e.evaluate(0.0, v) != k.want)
+				wrong << QStringLiteral("„%1“ ergibt %2 statt %3").arg(k.text).arg(e.evaluate(0.0, v)).arg(k.want);
+		}
+		// rising edge: true only in the cycle the value changes
+		PlcProgram edge;
+		edge.compileExpression(Grafcet::toStructuredText(QStringLiteral("↑-SF1")));
+		QHash<QString, double> v;
+		QString seen;
+		for (int i = 0; i < 4; ++i) {
+			v.insert(QStringLiteral("BMK_SF1"), i >= 1 ? 1.0 : 0.0);
+			seen += edge.evaluate(i * 0.01, v) != 0.0 ? QLatin1Char('1') : QLatin1Char('0');
+		}
+		if (seen != QLatin1String("0100")) wrong << QStringLiteral("Flanke ↑-SF1: %1 statt 0100").arg(seen);
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? QStringLiteral("8 Fälle richtig") : wrong.join(QStringLiteral("; "));
 		checks << c;
 	}
 

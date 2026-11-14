@@ -31,6 +31,7 @@ class Diagram;
 class Element;
 class Terminal;
 class PlcProgram;
+class Grafcet;
 
 /**
 	@brief The SimulationModel class
@@ -81,6 +82,8 @@ class SimulationModel
 		QString summary() const;
 			/// short state text per element for the display (stroke, position, relay, counter, PLC)
 		QList<QPair<Element *, QString>> elementStates() const;
+			/// active steps of the GRAFCET charts
+		QList<Element *> activeSteps() const;
 			/// errors of the PLC programs, empty when they compiled
 		QStringList programErrors() const { return m_program_errors; }
 			/// current value of a PLC variable (address, symbol or flag)
@@ -131,6 +134,7 @@ class SimulationModel
 		QList<PlcChannel *> m_plc_channels;
 		QList<Plc *> m_plcs;
 		QHash<QString, double> m_plc_vars;
+		std::unique_ptr<Grafcet> m_grafcet;
 		QStringList m_program_errors;
 		double m_next_plc_cycle = 0.0;
 		QList<QPair<QList<int>, QList<int>>> m_sources;

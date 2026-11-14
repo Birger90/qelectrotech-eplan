@@ -26,6 +26,9 @@
 
 #include <QGraphicsPathItem>
 #include <QGraphicsSimpleTextItem>
+#include <QPainterPath>
+#include <QGraphicsPathItem>
+#include <QPen>
 #include <QPen>
 #include <cmath>
 
@@ -74,6 +77,43 @@ void SimulationOverlay::update(const SimulationModel &model, const QList<Diagram
 	}
 	for (const auto &state : model.elementStates())
 		text(state.first, state.second);
+	// GRAFCET: active steps get a token and a green frame
+	const QList<Element *> active = model.activeSteps();
+	for (auto it = m_marks.begin(); it != m_marks.end(); ++it)
+		if (it.value()) it.value()->setVisible(active.contains(it.key()));
+	for (Element *e : active) {
+		if (!e->scene()) continue;
+		QGraphicsItem *&item = m_marks[e];
+		auto *mark = static_cast<QGraphicsPathItem *>(item);
+		if (!mark) {
+			mark = new QGraphicsPathItem();
+			mark->setZValue(10002);
+			mark->setAcceptedMouseButtons(Qt::NoButton);
+			mark->setPen(QPen(QColor(0, 150, 60), 2.5));
+			mark->setBrush(QColor(0, 150, 60, 60));
+			e->scene()->addItem(mark);
+			item = mark;
+		}
+		QPainterPath frame;
+		frame.addRect(e->mapRectToScene(QRectF(-17, -17, 34, 34)));
+		QPainterPath token;
+		token.addEllipse(e->mapToScene(QPointF(0, 0)), 4.5, 4.5);
+		mark->setPath(frame);
+		auto *dot = static_cast<QGraphicsPathItem *>(m_tokens.value(e));
+		if (!dot) {
+			dot = new QGraphicsPathItem();
+			dot->setZValue(10003);
+			dot->setAcceptedMouseButtons(Qt::NoButton);
+			dot->setPen(Qt::NoPen);
+			dot->setBrush(QColor(20, 20, 20));
+			e->scene()->addItem(dot);
+			m_tokens.insert(e, dot);
+		}
+		dot->setPath(token);
+		mark->setVisible(true);
+	}
+	for (auto it = m_tokens.begin(); it != m_tokens.end(); ++it)
+		if (it.value()) it.value()->setVisible(active.contains(it.key()));
 }
 
 void SimulationOverlay::text(Element *e, const QString &text)
@@ -109,7 +149,15 @@ void SimulationOverlay::clear(bool scenes_alive)
 			if (item->scene()) item->scene()->removeItem(item);
 			delete item;
 		}
+		for (const auto *list : {&m_marks, &m_tokens})
+			for (QGraphicsItem *item : *list) {
+				if (!item) continue;
+				if (item->scene()) item->scene()->removeItem(item);
+				delete item;
+			}
 	}
 	m_wires.clear();
 	m_texts.clear();
+	m_marks.clear();
+	m_tokens.clear();
 }

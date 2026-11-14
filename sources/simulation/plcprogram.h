@@ -59,7 +59,12 @@ class PlcProgram
 		bool compile(const QString &source, QString *error = nullptr);
 			/// runs the program once; @a vars are read and written
 		void cycle(double time, QHash<QString, double> &vars);
-		bool isEmpty() const { return m_statements.isEmpty(); }
+		bool isEmpty() const { return m_statements.isEmpty() && !m_expression; }
+
+			/// a single expression (GRAFCET receptivity, action condition); also R_EDGE(x), F_EDGE(x), ↑x, ↓x
+		bool compileExpression(const QString &source, QString *error = nullptr);
+			/// value of the expression compiled with compileExpression(); edges compare with the previous call
+		double evaluate(double time, QHash<QString, double> &vars);
 
 		static QString normalized(const QString &name);
 
@@ -69,6 +74,7 @@ class PlcProgram
 	private:
 		QVector<std::function<void()>> m_statements;
 		QHash<QString, std::shared_ptr<Block>> m_blocks;
+		std::function<double()> m_expression;
 		QHash<QString, double> m_initial;
 		bool m_initialised = false;
 		QHash<QString, double> *m_vars = nullptr;

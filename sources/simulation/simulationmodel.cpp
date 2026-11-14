@@ -17,6 +17,7 @@
 */
 #include "simulationmodel.h"
 #include "simulationphysics.h"
+#include "grafcet.h"
 
 #include "plcprogram.h"
 
@@ -119,12 +120,13 @@ struct SimulationModel::Valve {
 	int rest = 0, position = 0, target = 0;
 	FluidData::Actuation side[2];
 	bool actuated[2] = {false, false};
+	bool forced[2] = {false, false};      // actuated by a GRAFCET action (-QM1, -QM1/14, -QM1/12)
 	double switch_at = -1;
 	double c = 0, rt = 0.1, t_on = 0.02, t_off = 0.03;
 	bool hydraulic = false;
 
 	int wanted() const {
-		const bool l = actuated[0], r = actuated[1];
+		const bool l = actuated[0] || forced[0], r = actuated[1] || forced[1];
 		if (l && !r) return 0;
 		if (r && !l) return static_cast<int>(positions.size()) - 1;
 		if (l && r) return position;
@@ -381,6 +383,9 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 				continue;
 			}
 
+			// GRAFCET charts are run by Grafcet, not as electric parts
+			if (Grafcet::isGrafcet(e)) continue;
+
 			// electric parts
 			const QString path = e->location().toString().toLower();
 			const QString name = e->name().toLower();
@@ -540,6 +545,9 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 	}
 	for (auto it = m_fixed.constBegin(); it != m_fixed.constEnd(); ++it)
 		m_p[it.key()] = it.value();
+	m_grafcet = std::make_unique<Grafcet>(diagrams, [this](Terminal *t) { return node(t); });
+	if (m_grafcet->isEmpty()) m_grafcet.reset();
+	else m_program_errors << m_grafcet->errors();
 	electrics();
 }
 
@@ -570,7 +578,7 @@ bool SimulationModel::contactClosed(const Contact &c) const
 
 void SimulationModel::electrics()
 {
-	if (m_sources.isEmpty() && m_plc_channels.isEmpty()) return;
+	if (m_sources.isEmpty() && m_plc_channels.isEmpty() && !m_grafcet) return;
 	QHash<int, int> parent;
 	std::function<int(int)> root = [&](int a) {
 		while (parent.value(a, a) != a) {
@@ -604,8 +612,28 @@ void SimulationModel::electrics()
 		ch->value = on;
 		for (const QString &nm : ch->names) m_plc_vars.insert(nm, on ? 1.0 : 0.0);
 	}
-	if (!m_plcs.isEmpty() && m_time >= m_next_plc_cycle - 1e-12) {
+	if ((!m_plcs.isEmpty() || m_grafcet) && m_time >= m_next_plc_cycle - 1e-12) {
 		m_next_plc_cycle = m_time + 0.010;
+		if (m_grafcet) {
+			// labels of push buttons and limit switches: actuated or not
+			for (Contact *c : m_contacts)
+				if ((c->kind == QLatin1String("button") || c->kind == QLatin1String("limit")) && !label(c->e).isEmpty())
+					m_plc_vars.insert(Grafcet::labelVariable(label(c->e)), (contactClosed(*c) != c->nc) ? 1.0 : 0.0);
+			QStringList texts;
+			m_grafcet->cycle(m_time, m_plc_vars, &texts);
+			for (const QString &text : std::as_const(texts)) m_messages << Message{m_time, text};
+			// valves named in actions: -QM1 (its solenoid), -QM1/14 (left), -QM1/12 (right)
+			for (Valve *v : m_valves) {
+				const QString base = Grafcet::labelVariable(v->label);
+				const bool any = m_plc_vars.value(base, 0.0) != 0.0;
+				const bool l = m_plc_vars.value(base + QStringLiteral("__14"), 0.0) != 0.0;
+				const bool r = m_plc_vars.value(base + QStringLiteral("__12"), 0.0) != 0.0;
+				const int single = v->side[1].types.contains(QLatin1String("solenoid"))
+								   && !v->side[0].types.contains(QLatin1String("solenoid")) ? 1 : 0;
+				v->forced[0] = l || (any && single == 0);
+				v->forced[1] = r || (any && single == 1);
+			}
+		}
 		for (Plc *plc : m_plcs) plc->program->cycle(m_time, m_plc_vars);
 		for (PlcChannel *ch : m_plc_channels) {
 			if (!ch->output) continue;
@@ -883,7 +911,10 @@ QString SimulationModel::summary() const
 		.arg(m_flow_valves.size()).arg(m_cylinders.size()).arg(m_contacts.size())
 		.arg(m_relays.size()).arg(m_coils.size())
 		+ QStringLiteral(", %1 Zähler, %2 SPS-Programme, %3 SPS-Kanäle")
-		.arg(m_counters.size()).arg(m_plcs.size()).arg(m_plc_channels.size());
+		.arg(m_counters.size()).arg(m_plcs.size()).arg(m_plc_channels.size())
+		+ (m_grafcet ? QStringLiteral(", GRAFCET mit %1 Schritten und %2 Transitionen")
+						   .arg(m_grafcet->stepCount()).arg(m_grafcet->transitionCount())
+					 : QString());
 }
 
 QList<QPair<Element *, QString>> SimulationModel::elementStates() const
@@ -905,6 +936,11 @@ QList<QPair<Element *, QString>> SimulationModel::elementStates() const
 	for (PlcChannel *ch : m_plc_channels)
 		out << qMakePair(ch->e, ch->value ? QStringLiteral("%1 = 1").arg(ch->names.value(0)) : QString());
 	return out;
+}
+
+QList<Element *> SimulationModel::activeSteps() const
+{
+	return m_grafcet ? m_grafcet->activeSteps() : QList<Element *>();
 }
 
 double SimulationModel::plcValue(const QString &name) const

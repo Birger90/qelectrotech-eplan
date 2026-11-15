@@ -260,6 +260,8 @@ ALIAS = [
     ("PressureRegulator", "pressure_valve.pressure_regulator"),
     ("Supply.PumpBlock", "supply.pump"),
     ("Supply.SimpleFlowSource", "supply.pump"),
+    ("FlowValve.FlowDivider", "flow_control_valve.flow_divider"),
+    ("NozzleVariable", "flow_control_valve.throttle_valve"),
     ("Supply.Accumulator", "supply.accumulator"),
     ("Pneu.Supply.AirServiceUnit", "pressure_valve.pressure_regulator"),
     ("Pneu.Supply.Filter", "flow_control_valve.throttle_valve"),

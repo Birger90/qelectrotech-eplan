@@ -134,6 +134,9 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
 - Ohne Oberfläche: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv weg.csv --png ordner`.
   `--simulate-reference` prüft den Rechenkern gegen analytische Lösungen, OpenModelica-Läufe (Weg und Drücke) und
   Testprojekte von Anfang bis Ende; ungültige Daten und Rechenfehler brechen einen Lauf mit Meldung ab.
+  Jedes Bauteil wird nur über den versionierten Modellkatalog gerechnet (`--simulate-catalog`); Bauteile ohne
+  Modell verhindern den Start. `--signals/--measure` liefern Drücke, gerichtete Durchflüsse, Zylinderweg,
+  -geschwindigkeit und -kraft in SI-Einheiten. Stand der Roadmap: [tools/simulation/ROADMAP_STAND.md](tools/simulation/ROADMAP_STAND.md).
   Anleitung: [tools/simulation/README.md](tools/simulation/README.md).
 - Datei > *FluidSIM-Schaltung importieren (.circ)*: FluidSIM-6-Schaltungen werden ein Projekt, das sofort simuliert –
   Bauteile, Leitungen, Spulen- und Relaisverknüpfungen, die Schaltwege jeder Ventilstellung, alle Kennwerte mit

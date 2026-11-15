@@ -126,6 +126,35 @@ Fehler im GRAFCET (Transition ohne Schritt davor, Sprung ins Leere, unlesbare Be
 Simulationsfenster bzw. bei `--simulate` auf der Fehlerausgabe. Testplan: `test_grafcet` (zwei Zylinder,
 Parallelverzweigung, Wartezeit, Sprung, Zykluszähler).
 
+## Modellkatalog (welches Bauteil wie gerechnet wird)
+
+Jede Fluidfunktion hat genau eine Entscheidung im versionierten Katalog (`sources/simulation/simulationcatalog.cpp`,
+`--simulate-catalog` gibt ihn als JSON aus): **physical** (ein Rechenmodell des Kerns, mit Anschlüssen, Kennwerten,
+Grenzen und den Prüfungen, die es abdecken), **ideal_connection** (verlustfreie Verbindung: Leitung, Kupplung,
+Verteiler), **display** (Messstelle ohne Rückwirkung; Durchflussmesser verbinden ihre Anschlüsse), **graphic**
+(Zeichenbaustein) oder **unsupported**. Ein Bauteil ohne Rechenmodell oder mit einer Funktion, die nicht im Katalog
+steht, verhindert den Start mit Kennzeichen und Funktion – die Simulation errät kein Modell aus Art oder Symbol
+(eine unbekannte Quelle ist keine Druckquelle, ein Greifer kein Linearzylinder). Filter, Wartungseinheit, Öler,
+Trockner, Kühler, Heizer und Anlaufventil laufen als Durchgangswiderstand (`passthrough`, ohne Wärme- oder
+Filterwirkung). Ein pneumatischer „pump“ ist ein Verdichter und damit ideale Druckquelle.
+
+Nicht unterstützt (Start abgewiesen): Stetig-/Proportionalventile, Dreh-, Schwenk-, Greifer-, Muskel- und
+Motorantriebe, Verstell- und Load-Sensing-Pumpen, Folge-, Senkbrems- und Kompensatorventile, Vakuum, Ventilgruppen
+und pneumatische Zeitglieder/Zähler – siehe Roadmap (R07–R13).
+
+## Messgrößen und Ergebnisse
+
+`--simulate plan.qet --signals` listet alle Messgrößen als JSON (Kennung, Größe, SI-Einheit, Bezug, Bauteil,
+Anschluss). Kennungen: `p:<Bauteil>.<Anschluss>` Überdruck in Pa (über P_ATM = 101300 Pa), `pa:` absolut,
+`q:` Durchfluss **in das Bauteil hinein** an diesem Anschluss (Luft kg/s, Öl m³/s; positiv = hinein), `x:`/`v:`
+Zylinderweg in m (0 = eingefahren) und Geschwindigkeit in m/s (positiv ausfahrend), `F:` Druckkraft auf den
+Kolben in N (ohne Reibung, Last, Feder), `pos:` Ventilstellung (1 … n von links). `--measure all` oder
+`--measure p:-QM1.4,q:-QM1.4` schreibt sie in die CSV (Kopf „Kennung [Einheit]“), `--raster 0.001` setzt das
+Ausgaberaster (der Integrationsschritt bleibt 10 µs), `--meta lauf.json` schreibt Programm- und Katalogfassung,
+SHA-256 des Projekts, Versorgungsdruck, Schrittweiten, Eingaben, Status und erreichte Endzeit. Eine unbekannte
+Kennung bricht mit Meldung ab (keine Spalte voller Nullen); Messen verändert den Lauf nicht (Prüfung
+„Messgrößen“). Die Ausgabe endet mit `Status: ok|abgebrochen, Endzeit … s`.
+
 ## Prüfung gegen Referenzfälle
 
 `QElectroTech --simulate-reference [ordner]` rechnet mit denselben Integrationsschritten wie die Simulation

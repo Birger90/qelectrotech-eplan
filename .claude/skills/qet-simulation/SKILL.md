@@ -5,7 +5,7 @@ description: Pläne in QElectroTech (EPLAN-Fork) simulieren – Pneumatik, Hydra
 
 # Simulation in QElectroTech (EPLAN-Fork)
 
-Stand 15.11.2026, Fork 1.22.0. Anleitung für Anwender: `tools/simulation/README.md` (Modelltabelle, Konventionen,
+Stand 15.11.2026, Fork 1.23.0. Roadmap-Stand: `tools/simulation/ROADMAP_STAND.md`. Anleitung für Anwender: `tools/simulation/README.md` (Modelltabelle, Konventionen,
 Prüffälle). Hier steht, wie man damit arbeitet und was beim Bauen gelernt wurde. Neue Erkenntnisse unten unter
 „Gelernt“ nachtragen – sofort, nicht erst am Ende.
 
@@ -126,6 +126,11 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
   FluidSIMs Reibungsmodell (F_ref bei v_ref) fehlte. Geschwindigkeiten gegen die Erfahrung halten (≈ 1 m/s).
 - **Erkennung über Namen bricht bei fremden Bibliotheken**: Quellen, Taster, Spulen aus FluidSIM wurden nicht
   erkannt. Darum `sim_role` – der Import sagt, was ein Bauteil ist, statt dass der Kern es rät.
+- **Modell nur aus dem Katalog** (R00, `simulationcatalog.cpp`): neue Fluidfunktion = neuer Katalogeintrag mit Rolle,
+  Modell, Grenzen und Prüfung; ohne Eintrag startet der Lauf nicht. Nie wieder aus `kind` raten („source“ wurde
+  sonst zur Druckquelle, auch Kühler und Vakuumerzeuger). Pneumatischer `supply.pump` = Verdichter.
+- **Messgrößen** (R01): `signalList()/signalValue()`, CLI `--signals/--measure/--raster/--meta`; Durchflüsse nur mit
+  `setRecordFlows(true)` (sonst NaN, keine erfundenen Nullen); Abgriff darf den Lauf nicht ändern (Prüfung).
 - Der Python-Prototyp kennt die FluidSIM-Erweiterungen (`sim_role`, Wahlschalter, Hubbereich-Auslöser, Wechsler,
   `pNom`, `F_ref`/`v_ref`) nicht; die Gegenprobe läuft nur auf Plänen ohne sie. Neue Physik dort nachziehen, sobald
   ein Testplan sie benutzt.

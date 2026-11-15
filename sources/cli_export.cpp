@@ -30,6 +30,12 @@
 #include "editor/terminalnamecheck.h"
 #include "fluid/fluiddata.h"
 #include "simulation/simulationmodel.h"
+#include "simulation/simulationcatalog.h"
+#include "qetversion.h"
+#include <QCryptographicHash>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include "simulation/simulationoverlay.h"
 #include "simulation/simulationreference.h"
 #include "import/eplandxf/eplanpartimporter.h"
@@ -121,6 +127,7 @@ const QHash<QString, QString> &exportFlags()
 		{"--query", "query"},
 		{"--simulate", "simulate"},
 		{"--simulate-reference", "simreference"},
+		{"--simulate-catalog", "simcatalog"},
 	};
 	return flags;
 }
@@ -683,11 +690,16 @@ int checkOneElement(const QString &path)
 
 /// Validate a single .elmt file or every .elmt under a directory.
 /// --simulate <project> [--event "0.2 -SF1 an"]... [--duration s] [--pressure bar] [--csv file]
+///            [--measure all|id,id…] [--raster s] [--meta file.json] [--signals]
+/// --signals lists the measurable quantities (id, unit, reference) as JSON and ends; --measure adds them
+/// to the CSV (header "id [unit]"); --raster is the output step (the integration step stays 10 µs);
+/// --meta writes the run's identity and status (program, catalog, parameters, end time, error).
 /// Events press/release a push button ("0.2 -SF1 an") or actuate a valve by hand ("0.2 -QM1 links an").
 int simulateProject(QETProject &project, const QStringList &args)
 {
-	double duration = 2.0, pressure = 6.0, png_at = -1.0;
-	QString csv_path, png_dir;
+	double duration = 2.0, pressure = 6.0, png_at = -1.0, raster = 0.005;
+	QString csv_path, png_dir, measure, meta_path;
+	bool list_signals = false;
 	struct Event { double t; QString label; int side; bool on; };
 	QList<Event> events;
 	static const QRegularExpression ev_re(QStringLiteral(
@@ -700,6 +712,10 @@ int simulateProject(QETProject &project, const QStringList &args)
 		else if (a == QLatin1String("--csv")) { csv_path = v; ++i; }
 		else if (a == QLatin1String("--png")) { png_dir = v; ++i; }
 		else if (a == QLatin1String("--at")) { png_at = v.toDouble(); ++i; }
+		else if (a == QLatin1String("--measure")) { measure = v; ++i; }
+		else if (a == QLatin1String("--raster")) { raster = v.toDouble(); ++i; }
+		else if (a == QLatin1String("--meta")) { meta_path = v; ++i; }
+		else if (a == QLatin1String("--signals")) list_signals = true;
 		else if (a == QLatin1String("--event")) {
 			const auto m = ev_re.match(v);
 			if (!m.hasMatch()) { err << "event not understood: " << v << "\n"; return 2; }
@@ -712,7 +728,7 @@ int simulateProject(QETProject &project, const QStringList &args)
 	}
 	std::sort(events.begin(), events.end(), [](const Event &x, const Event &y) { return x.t < y.t; });
 	SimulationModel sim(project.diagrams(), pressure);
-	out << sim.summary() << "\n";
+	if (!list_signals) out << sim.summary() << "\n";
 	for (const QString &e : sim.modelErrors()) err << "Model error: " << e << "\n";
 	if (sim.failed()) {
 		err << "Model error: the simulation does not run: " << sim.failure() << "\n";
@@ -720,6 +736,38 @@ int simulateProject(QETProject &project, const QStringList &args)
 		return 3;
 	}
 	for (const QString &e : sim.programErrors()) err << "PLC program: " << e << "\n";
+	if (list_signals) {
+		QJsonArray list;
+		for (const auto &s : sim.signalList()) {
+			QJsonObject o;
+			o.insert(QStringLiteral("id"), s.id);
+			o.insert(QStringLiteral("quantity"), s.quantity);
+			o.insert(QStringLiteral("unit"), s.unit);
+			o.insert(QStringLiteral("reference"), s.reference);
+			o.insert(QStringLiteral("part"), s.part);
+			o.insert(QStringLiteral("port"), s.port);
+			list.append(o);
+		}
+		out << QString::fromUtf8(QJsonDocument(list).toJson(QJsonDocument::Indented));
+		out.flush();
+		return 0;
+	}
+	if (!(raster > 0) || !std::isfinite(raster)) { err << "raster must be a positive number of seconds\n"; return 2; }
+	// the measured quantities: all, or the ids asked for; an unknown id is an error, not a column of zeros
+	QList<SimulationModel::Signal> measured;
+	if (!measure.isEmpty()) {
+		const QList<SimulationModel::Signal> all = sim.signalList();
+		if (measure == QLatin1String("all")) measured = all;
+		else
+			for (const QString &id : measure.split(QLatin1Char(','), Qt::SkipEmptyParts)) {
+				auto it = std::find_if(all.begin(), all.end(), [&](const SimulationModel::Signal &s) { return s.id == id.trimmed(); });
+				if (it == all.end()) { err << "unknown or unsupported signal: " << id.trimmed() << " (see --signals)\n"; return 2; }
+				measured << *it;
+			}
+		bool flows = false;
+		for (const auto &s : measured) flows = flows || s.id.startsWith(QLatin1String("q:")) || s.id.startsWith(QLatin1String("F:"));
+		sim.setRecordFlows(flows);
+	}
 	bool png_done = png_dir.isEmpty();
 	auto write_png = [&]() {
 		// the folios with the simulation display (pressure, live wires, states) at this moment
@@ -748,9 +796,10 @@ int simulateProject(QETProject &project, const QStringList &args)
 		csv_out << "t";
 		for (const auto &c : sim.cylinders()) csv_out << ";" << c.label << " x [mm]";
 		for (const auto &v : sim.valveStates()) csv_out << ";" << v.label << " Stellung";
+		for (const auto &s : measured) csv_out << ";" << s.id << " [" << s.unit << "]";
 		csv_out << "\n";
 	}
-	const double dt = 1e-5, raster = 0.005;
+	const double dt = 1e-5;
 	double next_row = 0.0;
 	int ei = 0;
 	while (sim.time() <= duration + 1e-12) {
@@ -766,6 +815,11 @@ int simulateProject(QETProject &project, const QStringList &args)
 			csv_out << QString::number(sim.time(), 'f', 4);
 			for (const auto &c : sim.cylinders()) csv_out << ";" << QString::number(c.x_mm, 'f', 2);
 			for (const auto &v : sim.valveStates()) csv_out << ";" << v.position;
+			for (const auto &s : measured) {
+				bool ok = false;
+				const double val = sim.signalValue(s.id, &ok);
+				csv_out << ";" << (ok && std::isfinite(val) ? QString::number(val, 'g', 9) : QStringLiteral("NaN"));
+			}
 			csv_out << "\n";
 			next_row += raster;
 		}
@@ -779,6 +833,42 @@ int simulateProject(QETProject &project, const QStringList &args)
 		if (sim.failed()) break;
 	}
 	if (!png_done) write_png();
+	out << "Status: " << (sim.failed() ? "abgebrochen" : "ok") << ", Endzeit " << QString::number(sim.time(), 'f', 4) << " s\n";
+	if (!meta_path.isEmpty()) {
+		// identity of the run (K15): program, catalog, project, inputs, solver settings, status
+		QJsonObject meta;
+		meta.insert(QStringLiteral("program"), QStringLiteral("QElectroTech ") + QetVersion::displayedVersionWithFork());
+		meta.insert(QStringLiteral("catalogVersion"), SimulationCatalog::version());
+		meta.insert(QStringLiteral("project"), QFileInfo(project.filePath()).absoluteFilePath());
+		QFile pf(project.filePath());
+		if (pf.open(QIODevice::ReadOnly))
+			meta.insert(QStringLiteral("projectSha256"), QString::fromLatin1(QCryptographicHash::hash(pf.readAll(), QCryptographicHash::Sha256).toHex()));
+		meta.insert(QStringLiteral("supplyPressureBar"), pressure);
+		meta.insert(QStringLiteral("durationS"), duration);
+		meta.insert(QStringLiteral("integrationStepS"), dt);
+		meta.insert(QStringLiteral("outputRasterS"), raster);
+		meta.insert(QStringLiteral("integrator"), QStringLiteral("explicit Euler; oil nets with accumulator implicit (bisection)"));
+		QJsonArray evs;
+		for (const auto &e : events)
+			evs.append(QStringLiteral("%1 %2 %3%4").arg(e.t).arg(e.label)
+					   .arg(e.side < 0 ? QString() : (e.side == 0 ? QStringLiteral("links ") : QStringLiteral("rechts ")))
+					   .arg(e.on ? QStringLiteral("an") : QStringLiteral("aus")));
+		meta.insert(QStringLiteral("events"), evs);
+		QJsonArray sig;
+		for (const auto &s : measured) {
+			QJsonObject o;
+			o.insert(QStringLiteral("id"), s.id);
+			o.insert(QStringLiteral("unit"), s.unit);
+			o.insert(QStringLiteral("reference"), s.reference);
+			sig.append(o);
+		}
+		meta.insert(QStringLiteral("signals"), sig);
+		meta.insert(QStringLiteral("status"), sim.failed() ? QStringLiteral("failed") : QStringLiteral("ok"));
+		meta.insert(QStringLiteral("endTimeS"), sim.time());
+		if (sim.failed()) meta.insert(QStringLiteral("error"), sim.failure());
+		QFile mf(meta_path);
+		if (mf.open(QIODevice::WriteOnly)) mf.write(QJsonDocument(meta).toJson(QJsonDocument::Indented));
+	}
 	const QHash<QString, double> vars = sim.plcVariables();
 	if (!vars.isEmpty()) {
 		QStringList names = vars.keys();
@@ -1808,6 +1898,13 @@ int run(const QStringList &args)
 	// and an optional folder of OpenModelica reference runs; no project needed.
 	if (format == "simreference")
 		return runSimulationReference(rest.value(0), out);
+
+	// --simulate-catalog prints the model catalog (R00): every fluid function, its role and model
+	if (format == "simcatalog") {
+		out << QString::fromUtf8(SimulationCatalog::json());
+		out.flush();
+		return 0;
+	}
 
 	// --query runs one query on many projects, each opened in turn.
 	if (format == "query") {

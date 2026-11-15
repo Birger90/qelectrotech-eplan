@@ -3,6 +3,27 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.23.0 – 15.11.2026
+
+Simulations-Roadmap (externer Auftrag, Pakete R00 und R01):
+
+- **R00 Modellkatalog** (`simulationcatalog.cpp`, `--simulate-catalog`, Katalog 1.0): jede der 98 bekannten
+  Fluidfunktionen mit Rolle (physical, ideal_connection, display, graphic, unsupported), Modell, Anschlüssen,
+  Kennwerten, Grenzen und abdeckenden Prüfungen. Das Modell kommt nur noch aus dem Katalog, nicht aus der Art:
+  unbekannte Quellen sind keine Druckquellen mehr, Greifer und Schwenkantriebe keine Linearzylinder; Bauteile
+  ohne Modell oder mit unbekannter Funktion verhindern den Start mit Kennzeichen und Funktion. Leitungen,
+  Kupplungen und Verteiler sind ideale Verbindungen, Messgeräte Messstellen; Aufbereitung als Durchgangswiderstand.
+  Prüfung „Modellkatalog“: Vakuumerzeuger, Greifer und unbekannte Funktion abgewiesen, Grafikbaustein ignoriert,
+  alle 437 Fluidsymbole der Sammlung (43 Funktionen) entschieden. FluidSIM-Beispiele: 989 von 1136 starten, 147
+  werden mit genanntem fehlendem Modell abgewiesen (vorher liefen sie mit erfundener Ersatzphysik).
+- **R01 Messgrößen**: `SimulationModel::signalList()/signalValue()`, CLI `--signals`, `--measure`, `--raster`,
+  `--meta`; Drücke mit Bezug, gerichtete Durchflüsse je Bauteilanschluss, Zylinderweg, -geschwindigkeit,
+  -druckkraft, Ventilstellung; Laufidentität und Status (Programm, Katalog, Projekt-SHA-256, Eingaben,
+  Schrittweiten, Endzeit, Fehler). Prüfung „Messgrößen“: Abgriff ohne Rückwirkung, Ventilbilanz ≤ 1e-19 m³/s,
+  Pumpe = Verdrängung · Drehzahl, unbekannte Kennung ohne Wert. MCP `qet_simulate`: `measure`, `raster`, `meta`,
+  `signals`, Status mit Endzeit.
+- `--simulate-reference`: 24 Prüfungen, alle bestanden.
+
 ## 1.22.0 – 15.11.2026
 
 FluidSIM-Schaltungen werden simulierbar übernommen, mit eigener Grafik:

@@ -63,6 +63,15 @@ class SimulationModel
 		struct Message { double time; QString text; };
 		struct CylinderState { Element *element; QString label; double x_mm; double stroke_mm; double v; };
 		struct ValveState { Element *element; QString label; int position; int positions; };
+			/// a measurable quantity (roadmap R01): stable id, SI unit, reference and sign
+		struct Signal {
+			QString id;          ///< e.g. "p:-QM1.4", "q:-QM1.4", "x:-MM1"
+			QString quantity;    ///< pressure, mass_flow, volume_flow, position, velocity, force, state
+			QString unit;        ///< SI: Pa, kg/s, m3/s, m, m/s, N, 1
+			QString reference;   ///< gauge (to 101325 Pa), absolute, into_part, extending …
+			QString part;        ///< label of the part, else its name
+			QString port;        ///< port name, empty for the part as a whole
+		};
 
 		explicit SimulationModel(const QList<Diagram *> &diagrams, double supply_bar = 6.0);
 		~SimulationModel();
@@ -105,6 +114,13 @@ class SimulationModel
 		bool isFluid(Terminal *terminal) const;
 		bool isElectric(Terminal *terminal) const;
 		bool isPressed(const QString &label) const { return m_pressed.contains(label); }
+
+			/// every quantity this model can measure (ids stable for the same project)
+		QList<Signal> signalList() const;
+			/// the current value of @a id in its SI unit; @a ok false for an unknown id (no invented 0)
+		double signalValue(const QString &id, bool *ok = nullptr) const;
+			/// record the directed flow at each part port (needed for the q: signals); off by default
+		void setRecordFlows(bool on) { m_record_flows = on; }
 
 	private:
 		struct Valve;
@@ -167,6 +183,9 @@ class SimulationModel
 		QSet<int> m_plus_nets;
 		QSet<QString> m_pressed;
 		QHash<QString, QString> m_end_position;   // cylinder label -> "vorne"/"hinten"/""
+		bool m_record_flows = false;
+		QHash<QPair<Element *, int>, double> m_port_flow;   // flow into the part at its port's net (last step)
+		QHash<Element *, double> m_cylinder_force;           // fluid force on the piston (last step)
 		QList<Message> m_messages;
 		double m_time = 0.0;
 };

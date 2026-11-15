@@ -1275,7 +1275,7 @@ _SIM_LINE = re.compile(r"^\s*(\d+(?:\.\d+)?) s  (.*)$")
 
 def parse_simulation_output(stdout: str, stderr: str = "") -> dict:
     """Split the text --simulate prints into summary, events and PLC variables."""
-    summary, events, variables, files = "", [], {}, []
+    summary, events, variables, files, status = "", [], {}, [], {}
     for raw in stdout.splitlines():
         line = raw.rstrip()
         m = _SIM_LINE.match(line)
@@ -1288,6 +1288,11 @@ def parse_simulation_output(stdout: str, stderr: str = "") -> dict:
                     variables[name.strip()] = float(value)
                 except ValueError:
                     variables[name.strip()] = value
+        elif line.startswith("Status: "):
+            status["state"] = "ok" if line.startswith("Status: ok") else "failed"
+            m2 = re.search(r"Endzeit ([0-9.]+) s", line)
+            if m2:
+                status["end_time"] = float(m2.group(1))
         elif "Netze" in line and not summary:
             summary = line.strip()
         elif line.strip().lower().endswith(".png"):
@@ -1297,7 +1302,7 @@ def parse_simulation_output(stdout: str, stderr: str = "") -> dict:
     model = [l[len("Model error: "):].strip() for l in stderr.splitlines()
              if l.startswith("Model error: ")]
     return {"summary": summary, "events": events, "variables": variables,
-            "program_errors": errors, "model_errors": model, "png_files": files}
+            "program_errors": errors, "model_errors": model, "png_files": files, "status": status}
 
 
 def parse_reference_output(stdout: str) -> dict:
@@ -1320,7 +1325,8 @@ def parse_reference_output(stdout: str) -> dict:
 def tool_simulate(binary: str, project: str, events: list | None = None,
                   duration: float = 2.0, pressure: float | None = None,
                   csv: str | None = None, png_dir: str | None = None,
-                  at: float | None = None, timeout: int = 300) -> dict:
+                  at: float | None = None, timeout: int = 300, measure: str | None = None,
+                  raster: float | None = None, meta: str | None = None, signals: bool = False) -> dict:
     proj = Path(project).expanduser()
     if not proj.is_file():
         raise ValueError(f"no such project: {proj}")
@@ -1338,6 +1344,20 @@ def tool_simulate(binary: str, project: str, events: list | None = None,
         args += ["--pressure", str(float(pressure))]
     if csv:
         args += ["--csv", csv]
+    if measure:
+        args += ["--measure", str(measure)]
+    if raster is not None:
+        args += ["--raster", str(float(raster))]
+    if meta:
+        args += ["--meta", meta]
+    if signals:
+        result = _run_qet(binary, args + ["--signals"], timeout, tail=2000000)
+        text = result.get("stdout", "")
+        start = text.find("[")
+        try:
+            return {"ok": result.get("ok", False), "signals": json.loads(text[start:]) if start >= 0 else []}
+        except json.JSONDecodeError:
+            return {"ok": False, "stderr": _keep_tail(result.get("stderr", ""), 4000), "stdout": _keep_tail(text, 4000)}
     if png_dir:
         args += ["--png", png_dir]
         if at is not None:
@@ -5579,6 +5599,10 @@ TOOLS = [
                 "csv": {"type": "string", "description": "write the strokes and pressures over time to this file"},
                 "png_dir": {"type": "string", "description": "write a picture of every folio with the simulation display into this new folder"},
                 "at": {"type": "number", "description": "with png_dir: the time of the pictures (default: the end)"},
+                "measure": {"type": "string", "description": "with csv: \"all\" or ids from signals (p:-QM1.4 gauge Pa, pa: absolute Pa, q: flow into the part kg/s or m3/s, x:/v:/F: of a cylinder, pos: of a valve)"},
+                "raster": {"type": "number", "description": "output step of the csv in s (integration stays 10 µs)"},
+                "meta": {"type": "string", "description": "write the run's identity and status (program, catalog, project hash, inputs, end time) as JSON"},
+                "signals": {"type": "boolean", "default": False, "description": "only list the measurable quantities with id, unit and reference"},
                 "overwrite": {"type": "boolean", "default": False},
                 "timeout": {"type": "integer", "default": 300},
             },
@@ -5587,7 +5611,8 @@ TOOLS = [
         "handler": lambda a: tool_simulate(a["binary"], a["project"], a.get("events"),
                                            a.get("duration", 2.0), a.get("pressure"),
                                            a.get("csv"), a.get("png_dir"), a.get("at"),
-                                           a.get("timeout", 300)),
+                                           a.get("timeout", 300), a.get("measure"), a.get("raster"),
+                                           a.get("meta"), a.get("signals", False)),
     },
     {
         "name": "qet_fluidsim_import",
@@ -6676,7 +6701,7 @@ _DATA_PATHS = {
     "qet_dataportal_search": {},
     "qet_dataportal_import": {},
     "qet_export":        {"read": ("project",), "write": ("output",)},
-    "qet_simulate":       {"read": ("project",), "write": ("csv", "png_dir")},
+    "qet_simulate":       {"read": ("project",), "write": ("csv", "png_dir", "meta")},
     "qet_simulate_reference": {"read": ("reference_dir",)},
     "qet_fluidsim_import": {"read": ("circuit",), "write": ("output",)},
     "qet_edit":           {"read": ("project",), "write": ("output",)},

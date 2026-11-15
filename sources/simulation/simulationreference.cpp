@@ -19,6 +19,7 @@
 
 #include "grafcet.h"
 #include "plcprogram.h"
+#include "simulationcatalog.h"
 #include "simulationmodel.h"
 #include "simulationphysics.h"
 #include "simulationunits.h"
@@ -28,6 +29,7 @@
 #include "../qetgraphicsitem/element.h"
 #include "../qetgraphicsitem/terminal.h"
 #include "../qetproject.h"
+#include "../qetapp.h"
 
 #include <algorithm>
 #include <memory>
@@ -35,6 +37,7 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QDirIterator>
 #include <QFileInfo>
 #include <QFile>
 #include <QHash>
@@ -296,7 +299,8 @@ struct ProjectRun {
 	}
 };
 
-ProjectRun runProject(const QString &file, double supply_bar, QList<Input> input, double duration)
+ProjectRun runProject(const QString &file, double supply_bar, QList<Input> input, double duration,
+					  const std::function<void(SimulationModel &)> &each_step = nullptr, bool record = false)
 {
 	ProjectRun r;
 	if (!QFileInfo::exists(file)) {
@@ -313,6 +317,7 @@ ProjectRun runProject(const QString &file, double supply_bar, QList<Input> input
 		r.error = QStringLiteral("Modell: %1").arg(r.sim->failure());
 		return r;
 	}
+	r.sim->setRecordFlows(record);
 	std::sort(input.begin(), input.end(), [](const Input &a, const Input &b) { return a.t < b.t; });
 	int next = 0;
 	const double dt = 1e-5;
@@ -323,6 +328,7 @@ ProjectRun runProject(const QString &file, double supply_bar, QList<Input> input
 			else r.sim->actuateValve(in.label, in.kind == 1, in.on);
 		}
 		r.sim->step(dt);
+		if (each_step) each_step(*r.sim);
 		for (const auto &m : r.sim->takeMessages()) r.events << qMakePair(m.time, m.text);
 		if (r.sim->failed()) {
 			r.error = QStringLiteral("Abbruch: %1").arg(r.sim->failure());
@@ -363,6 +369,37 @@ QString variant(const QString &file, const QString &param, const QString &attr, 
 	return out;
 }
 
+	/// a copy of @a file in the temporary folder where the fluid function @a from is @a to
+QString functionVariant(const QString &file, const QString &from, const QString &to, const QString &name)
+{
+	QFile f(file);
+	if (!f.open(QIODevice::ReadOnly)) return QString();
+	QString text = QString::fromUtf8(f.readAll());
+	const QString old = QStringLiteral("function=\"%1\"").arg(from);
+	if (!text.contains(old)) return QString();
+	text.replace(old, QStringLiteral("function=\"%1\"").arg(to));
+	const QString out = QDir(QDir::tempPath()).filePath(name);
+	QFile o(out);
+	if (!o.open(QIODevice::WriteOnly)) return QString();
+	o.write(text.toUtf8());
+	return out;
+}
+
+	/// every fluid function of the element collection in @a dir: {function: number of symbols}
+QHash<QString, int> collectionFunctions(const QString &dir)
+{
+	QHash<QString, int> out;
+	static const QRegularExpression fluid(QStringLiteral("<fluid\\b[^>]*\\bfunction=\"([^\"]*)\""));
+	QDirIterator it(dir, {QStringLiteral("*.elmt")}, QDir::Files, QDirIterator::Subdirectories);
+	while (it.hasNext()) {
+		QFile f(it.next());
+		if (!f.open(QIODevice::ReadOnly)) continue;
+		const auto m = fluid.match(QString::fromUtf8(f.readAll()));
+		if (m.hasMatch()) out[m.captured(1)] += 1;
+	}
+	return out;
+}
+
 	/// characteristic value of the fluid symbol @a e in unit @a to
 double symbolValue(Element *e, const QString &name, const QString &to)
 {
@@ -383,7 +420,9 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Projekt Druckbegrenzung: Eingang 1, Rücklauf 2, öffnet erst über dem Einstelldruck"),
 		QStringLiteral("Projekt GRAFCET: Schrittfolge, Parallelzweig, Synchronisation, Zykluszähler"),
 		QStringLiteral("Projekt Speicher, Druckschalter, Wechsel- und Zweidruckventil"),
-		QStringLiteral("Projekt mit ungültigen Daten: Lauf startet nicht, Fehler mit Bauteil")};
+		QStringLiteral("Projekt mit ungültigen Daten: Lauf startet nicht, Fehler mit Bauteil"),
+		QStringLiteral("Modellkatalog: ohne Rechenmodell abgewiesen, Grafikbaustein ignoriert"),
+		QStringLiteral("Messgrößen: Abgriff ohne Rückwirkung, Durchfluss bilanziert, Pumpe = Verdrängung · Drehzahl")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -566,6 +605,115 @@ QList<Check> endToEnd(const QString &reference_dir)
 			? QStringLiteral("abgewiesen mit Bauteil und Kennwert: %1; runUntil auf ungültigem Modell kehrt sofort zurück: %2")
 				  .arg(seen.join(QStringLiteral(", ")), loop_ok ? QStringLiteral("ja") : QStringLiteral("nein"))
 			: wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 7. model catalog (R00): a part without a model stops the run with its name and function, an
+		//    unknown function as well (no guessed source, no linear piston for a gripper); a graphic part is ignored
+		struct Case { const char *from, *to, *expect; };
+		const QList<Case> cases{
+			{"supply.pump", "vacuum.vacuum_generator", "vacuum.vacuum_generator hat kein Rechenmodell"},
+			{"actuator.cyl_conf", "actuator.gripper", "actuator.gripper hat kein Rechenmodell"},
+			{"supply.tank", "unbekannt.pruefling", "steht nicht im Modellkatalog"},
+			{"actuator.cyl_conf", "directional_valve.part", ""},
+		};
+		const QString hyd = path("hydraulik.qet");
+		Check c{names.at(6)};
+		QStringList wrong, seen;
+		int i = 0;
+		for (const Case &k : cases) {
+			const QString file = functionVariant(hyd, QString::fromLatin1(k.from), QString::fromLatin1(k.to),
+												 QStringLiteral("qet_sim_katalog_%1.qet").arg(i++));
+			if (file.isEmpty()) { wrong << QStringLiteral("%1 nicht im Projekt").arg(QString::fromLatin1(k.from)); continue; }
+			ProjectRun r = runProject(file, 6.0, {}, 0.05);
+			const QString expect = QString::fromUtf8(k.expect);
+			if (expect.isEmpty()) {
+				if (!r.error.isEmpty()) wrong << QStringLiteral("Grafikbaustein: „%1“").arg(r.error.left(120));
+				else seen << QStringLiteral("Grafikbaustein ignoriert");
+			} else if (!r.error.contains(expect)) {
+				wrong << QStringLiteral("%1 → %2: „%3“").arg(QString::fromLatin1(k.from), QString::fromLatin1(k.to), r.error.left(160));
+			} else {
+				seen << QString::fromLatin1(k.to) + QStringLiteral(" abgewiesen");
+			}
+			QFile::remove(file);
+		}
+		// every function of the installed collection is decided in the catalog
+		// the collection installed with this program first (elements/ beside it), then the configured one
+		QHash<QString, int> funcs;
+		QString where;
+		const QDir app(QCoreApplication::applicationDirPath());
+		for (const QString &d : {app.filePath(QStringLiteral("elements")),
+								 app.filePath(QStringLiteral("../share/qelectrotech/elements")),
+								 QETApp::commonElementsDir()}) {
+			if (!funcs.isEmpty() || !QFileInfo(d).isDir()) continue;
+			funcs = collectionFunctions(d);
+			where = QDir::toNativeSeparators(d);
+		}
+		QStringList missing;
+		int symbols = 0;
+		for (auto it = funcs.constBegin(); it != funcs.constEnd(); ++it) {
+			symbols += it.value();
+			if (!SimulationCatalog::find(it.key())) missing << it.key();
+		}
+		if (funcs.isEmpty()) wrong << QStringLiteral("keine Fluidsymbole in der Sammlung gefunden (%1)").arg(where);
+		if (!missing.isEmpty()) wrong << QStringLiteral("nicht im Katalog: %1").arg(missing.join(QStringLiteral(", ")));
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty()
+			? QStringLiteral("%1; Sammlung %5: %2 Fluidsymbole mit %3 Funktionen, alle im Katalog %4")
+				  .arg(seen.join(QStringLiteral(", "))).arg(symbols).arg(funcs.size()).arg(SimulationCatalog::version(), where)
+			: wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 8. measurement contract (R01): reading does not change the run, flows balance over a part,
+		//    the pump delivers displacement · speed below its limit, an unknown id gives no value
+		Check c{names.at(7)};
+		QStringList wrong;
+		const QString hyd = path("hydraulik.qet");
+		const QList<Input> in{{0.3, QStringLiteral("-SF1"), 0, true}};
+		ProjectRun plain = runProject(hyd, 6.0, in, 0.6);
+		double worst_balance = 0.0, pump_q = std::nan(""), valve_flow = 0.0;
+		double expected_q = std::nan("");
+		bool unknown_ok = true;
+		ProjectRun probed = runProject(hyd, 6.0, in, 0.6, [&](SimulationModel &s) {
+			// every signal read in every step: must not change anything
+			QStringList qs;
+			for (const auto &sig : s.signalList()) {
+				bool ok = false;
+				const double v = s.signalValue(sig.id, &ok);
+				Q_UNUSED(v);
+				if (sig.id.startsWith(QLatin1String("q:-QM1."))) qs << sig.id;
+			}
+			double sum = 0.0, mag = 0.0;
+			for (const QString &id : qs) { const double v = s.signalValue(id); sum += v; mag += std::abs(v); }
+			worst_balance = std::max(worst_balance, std::abs(sum));
+			valve_flow = std::max(valve_flow, mag / 2);
+			if (std::abs(s.time() - 0.45) < 5e-6) pump_q = -s.signalValue(QStringLiteral("q:-GP1.P"));
+			bool ok = true;
+			s.signalValue(QStringLiteral("p:-GIBT.ES_NICHT"), &ok);
+			unknown_ok = unknown_ok && !ok;
+		}, true);
+		if (!plain.error.isEmpty() || !probed.error.isEmpty()) {
+			c.detail = plain.error + probed.error;
+		} else {
+			const double x1 = plain.cylinder(QStringLiteral("-MM1")).x_mm, x2 = probed.cylinder(QStringLiteral("-MM1")).x_mm;
+			if (x1 != x2) wrong << QStringLiteral("Abgriff verändert den Lauf: Weg %1 statt %2 mm").arg(x2).arg(x1);
+			for (Diagram *d : probed.project->diagrams())
+				for (Element *e : d->elements())
+					if (e->elementData().m_fluid.m_function == QLatin1String("supply.pump"))
+						expected_q = symbolValue(e, QStringLiteral("displacement"), QStringLiteral("m3"))
+								   * symbolValue(e, QStringLiteral("rpm"), QStringLiteral("1/s"));
+			if (!(valve_flow > 0)) wrong << QStringLiteral("kein Durchfluss am Ventil gemessen");
+			else if (worst_balance > 1e-9 * valve_flow + 1e-15)
+				wrong << QStringLiteral("Ventilbilanz %1 m³/s bei %2 m³/s Durchfluss").arg(worst_balance).arg(valve_flow);
+			if (!(std::abs(pump_q - expected_q) <= 1e-6 * std::abs(expected_q)))
+				wrong << QStringLiteral("Pumpe %1 m³/s statt %2 m³/s").arg(pump_q).arg(expected_q);
+			if (!unknown_ok) wrong << QStringLiteral("unbekannte Messgröße lieferte einen Wert");
+			c.passed = wrong.isEmpty();
+			c.detail = wrong.isEmpty()
+				? QStringLiteral("Weg mit und ohne Abgriff gleich (%1 mm), Ventilbilanz ≤ %2 m³/s bei %3 l/min, Pumpe %4 l/min "
+								 "= Verdrängung · Drehzahl, unbekannte Kennung ohne Wert")
+					  .arg(x1, 0, 'f', 3).arg(worst_balance, 0, 'g', 2).arg(valve_flow * 60000, 0, 'f', 2).arg(pump_q * 60000, 0, 'f', 3)
+				: wrong.join(QStringLiteral("; "));
+		}
 		out << c;
 	}
 	return out;

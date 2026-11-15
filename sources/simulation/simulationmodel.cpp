@@ -75,6 +75,14 @@ double conductanceFromQnn(double qnn_l_min)
 	return (qnn_l_min / 1000.0 / 60.0) / (p1 * f);
 }
 
+	/// conductance that passes @a q_l_min (normal litres per minute) from @a p1 to @a p2 (absolute)
+double conductanceAt(double q_l_min, double p1, double p2)
+{
+	const double r = p2 / p1;
+	const double f = r <= B_CRIT ? 1.0 : std::sqrt(std::max(1e-6, 1.0 - std::pow((r - B_CRIT) / (1.0 - B_CRIT), 2)));
+	return (q_l_min / 1000.0 / 60.0) / (p1 * f);
+}
+
 double volumeFlow(double p1, double p2, double rt)
 {
 	const double dp = p1 - p2;
@@ -233,6 +241,33 @@ struct SimulationModel::Cylinder {
 	double a_k = 0, a_r = 0, stroke = 0.1, m = 0.1, f_static = 0, f_slide = 0, damping = 20;
 	double stop_k = 0, stop_c = 0;   // elastic end stop (R02); 0: hard stop
 	double f_spring = 0, f_load = 0, x = 0, v = 0;
+	// R10 semi-rotary drive: x, stroke in rad, v in rad/s, a_k = a_r displacement per radian [m³/rad]
+	// (= torque per pascal), m the moment of inertia [kg·m²], forces are torques [N·m]
+	bool rotary = false;
+	/// position compared with a marker "-MM1 lo..hi": metres, for a rotary drive degrees / 1000
+	double markPos() const { return rotary ? x * 180.0 / M_PI / 1000.0 : x; }
+};
+
+	/// vacuum generator (ejector, R10): supply 1, vacuum port 2, exhaust to the air
+struct SimulationModel::Ejector {
+	Element *e = nullptr;
+	QString label;
+	double pu_min = -0.085e6;     // best vacuum (gauge, < 0) at the optimal supply pressure
+	double dp_opt = 0.5e6;        // optimal supply pressure (gauge)
+	double c_drive = 0;           // conductance of the driving nozzle (air consumption)
+	double q_max = 0;             // suction mass flow against the atmosphere at dp_opt [kg/s]
+};
+
+	/// suction cup (R10): a small volume, sealed by a workpiece or open to the air
+struct SimulationModel::SuctionCup {
+	Element *e = nullptr;
+	QString label;
+	int node = -1;
+	double area = 0, weight = 0, safety = 1.0;    // effective area [m²], weight force m·g [N]
+	double c_leak = 0, c_open = 0;
+	bool object = true;           // a workpiece lies on the cup
+	bool held = false;
+	double force = 0;             // holding force (p_atm - p)·A [N]
 };
 
 struct SimulationModel::Pump {
@@ -326,6 +361,7 @@ struct SimulationModel::PressureSwitch {
 	int node = -1;
 	double p_on = 4e5, p_off = 3.5e5;          // gauge
 	bool on = false;
+	bool vacuum = false;                       // vacuum switch (R10): on below p_on, off above p_off
 };
 
 struct SimulationModel::PlcChannel {
@@ -365,6 +401,8 @@ SimulationModel::~SimulationModel()
 	qDeleteAll(m_plcs);
 	qDeleteAll(m_accumulators);
 	qDeleteAll(m_pressure_switches);
+	qDeleteAll(m_ejectors);
+	qDeleteAll(m_cups);
 }
 
 void SimulationModel::buildNets(const QList<Diagram *> &diagrams)
@@ -651,6 +689,66 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					v->t_off = paramIn(f, QStringLiteral("offDelay"), 0.03, QStringLiteral("s"), &m_model_errors, who, Range::NonNegative);
 					v->hydraulic = hyd;
 					m_valves << v;
+				} else if (model == QLatin1String("rotary_actuator")) {
+					// R10 semi-rotary drive: the rotary analogue of the cylinder. M_6bar is the torque at
+					// 6 bar, so the displacement per radian (= torque per pascal) is M_6bar / 6 bar on
+					// both sides; angle and stroke in rad, inertia I as mass, viscous friction f
+					auto *c = new Cylinder;
+					c->e = e;
+					c->rotary = true;
+					c->label = label(e);
+					const QString who = c->label.isEmpty() ? e->name() : c->label;
+					const QString rad = QStringLiteral("rad"), nm = QStringLiteral("N.m");
+					const double m6 = paramIn(f, QStringLiteral("M_6bar"), 2.0, nm, &m_model_errors, who, Range::Positive);
+					c->a_k = c->a_r = m6 / 6e5;
+					c->stroke = paramIn(f, QStringLiteral("xMax"), M_PI, rad, &m_model_errors, who, Range::Positive);
+					c->x = paramIn(f, QStringLiteral("xStart"), 0.0, rad, &m_model_errors, who, Range::NonNegative);
+					c->m = paramIn(f, QStringLiteral("I"), 2.5e-3, QStringLiteral("kg.m2"), &m_model_errors, who, Range::Positive);
+					c->damping = paramIn(f, QStringLiteral("f"), 0.1, QStringLiteral("N.m.s/rad"), &m_model_errors, who, Range::NonNegative);
+					c->f_static = paramIn(f, QStringLiteral("M_stat"), 0.02 * m6, nm, &m_model_errors, who, Range::NonNegative);
+					c->f_slide = 0.7 * c->f_static;
+					c->f_load = paramIn(f, QStringLiteral("M_ext"), 0.0, nm, &m_model_errors, who);
+					c->stop_k = paramIn(f, QStringLiteral("stop_k"), 0.0, QStringLiteral("N.m/rad"), &m_model_errors, who, Range::NonNegative);
+					c->stop_c = paramIn(f, QStringLiteral("stop_c"), 0.0, QStringLiteral("N.m.s/rad"), &m_model_errors, who, Range::NonNegative);
+					m_cylinders << c;
+					m_end_position.insert(c->label, QString());
+				} else if (model == QLatin1String("vacuum_generator")) {
+					// R10 ejector: the driving air 1 -> exhaust sucks the vacuum port 2. Linear suction
+					// characteristic between the best vacuum pu_min (no flow) and the atmosphere (qns_max),
+					// both scaled with the supply pressure up to the optimum dp_max
+					auto *v = new Ejector;
+					v->e = e;
+					v->label = label(e);
+					const QString who = v->label.isEmpty() ? e->name() : v->label;
+					const QString pa = QStringLiteral("Pa"), lmin = QStringLiteral("l/min");
+					v->pu_min = paramIn(f, f.parameter(QStringLiteral("pu_min")).isEmpty() ? QStringLiteral("p_vac") : QStringLiteral("pu_min"), -0.085e6, pa, &m_model_errors, who);
+					v->dp_opt = paramIn(f, QStringLiteral("dp_max"), 0.5e6, pa, &m_model_errors, who, Range::Positive);
+					const double qac = paramIn(f, QStringLiteral("qn_ac"), 11.6, lmin, &m_model_errors, who, Range::Positive);
+					const double qs = paramIn(f, QStringLiteral("qns_max"), 6.0, lmin, &m_model_errors, who, Range::Positive);
+					if (!(v->pu_min < 0) || v->pu_min <= -P_ATM)
+						m_model_errors << QStringLiteral("%1: Vakuum pu_min %2 kPa muss zwischen 0 und -101 kPa liegen").arg(who).arg(v->pu_min / 1e3);
+					v->c_drive = conductanceAt(qac, P_ATM + v->dp_opt, P_ATM);
+					v->q_max = qs / 60000.0 * RHO_N;
+					m_ejectors << v;
+				} else if (model == QLatin1String("suction_cup")) {
+					// R10 suction cup: holding force (p_atm - p)·π d²/4 against the weight m·g with the
+					// safety factor s; leakage qLeak at -0.6 bar when a workpiece lies on it, else open
+					auto *s = new SuctionCup;
+					s->e = e;
+					s->label = label(e);
+					for (Terminal *t : e->terminals())
+						if (node(t) >= 0) { s->node = node(t); break; }
+					const QString who = s->label.isEmpty() ? e->name() : s->label;
+					const double d = paramIn(f, QStringLiteral("d"), 0.02, QStringLiteral("m"), &m_model_errors, who, Range::Positive);
+					s->area = M_PI * d * d / 4;
+					s->weight = 9.81 * paramIn(f, QStringLiteral("m"), 0.1, QStringLiteral("kg"), &m_model_errors, who, Range::NonNegative);
+					s->safety = paramNative(f, QStringLiteral("s"), 1.0, QString(), &m_model_errors, who, Range::Positive);
+					const double leak = paramIn(f, QStringLiteral("qLeak"), 0.0, QStringLiteral("l/min"), &m_model_errors, who, Range::NonNegative);
+					s->c_leak = leak > 0 ? conductanceAt(leak, P_ATM, P_ATM - 0.6e5) : 0.0;
+					s->c_open = conductanceAt(50.0 * d / 0.02, P_ATM, P_ATM - 0.1e5);   // open cup: 50 l/min at 0.1 bar (d 20 mm)
+					s->object = paramNative(f, QStringLiteral("object"), 1.0, QString(), &m_model_errors, who, Range::NonNegative) > 0.5;
+					if (s->node >= 0) m_extra_volume[s->node] += s->area * 0.005;   // cup volume: 5 mm deep
+					m_cups << s;
 				} else if (model == QLatin1String("linear_cylinder")) {
 					auto *c = new Cylinder;
 					c->e = e;
@@ -683,6 +781,9 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						const double vr = paramIn(f, QStringLiteral("v_ref"), 1.0, QStringLiteral("m/s"), &m_model_errors, who, Range::Positive);
 						if (fr > 0 && vr > 0) c->damping = fr / vr;
 					}
+					// R10 gripper: substitute model, a single-acting cylinder with return spring; the jaw
+					// force is the piston force (signal F:)
+					if (fn == QLatin1String("actuator.gripper") && c->f_spring <= 0) c->f_spring = 0.15 * c->a_k * 6e5;
 					m_cylinders << c;
 					m_end_position.insert(c->label, QString());
 				} else if (model == QLatin1String("pressure_switch")) {
@@ -693,7 +794,10 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						if (node(t) >= 0) { s->node = node(t); break; }
 					const QString who = s->label.isEmpty() ? e->name() : s->label;
 					s->p_on = paramIn(f, QStringLiteral("p0"), 0.4e6, QStringLiteral("Pa"), &m_model_errors, who);
-					s->p_off = s->p_on - std::max(paramIn(f, QStringLiteral("p_hyst"), 0.05e6, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative), 1e3);
+					const double hyst = std::max(paramIn(f, QStringLiteral("p_hyst"), 0.05e6, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative), 1e3);
+					// a negative switching point is a vacuum switch (R10): on below it, off above it + hysteresis
+					s->vacuum = s->p_on < 0;
+					s->p_off = s->vacuum ? s->p_on + hyst : s->p_on - hyst;
 					m_pressure_switches << s;
 				} else if (flow_qnn.contains(fn) || model == QLatin1String("passthrough")) {
 					// passthrough (filter, service unit, cooler …): a resistance between the first two ports
@@ -975,6 +1079,14 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 	m_silencer_c = conductanceFromQnn(300);
 	for (const Cylinder *z : std::as_const(m_cylinders)) {
 		const QString who = z->label.isEmpty() ? z->e->name() : z->label;
+		if (z->rotary) {
+			if (!(z->stroke > 0) || !(z->m > 0) || !(z->a_k > 0) || !std::isfinite(z->x) || z->x < 0 || z->x > z->stroke
+				|| !std::isfinite(z->f_load) || !(z->f_static >= 0))
+				m_model_errors << QStringLiteral("%1: ungültige Schwenkantriebsdaten (Winkel %2°, Trägheit %3 kg·m², "
+					"Moment bei 6 bar %4 N·m, Startwinkel %5°)").arg(who).arg(z->stroke * 180 / M_PI).arg(z->m)
+					.arg(z->a_k * 6e5).arg(z->x * 180 / M_PI);
+			continue;
+		}
 		if (!(z->stroke > 0) || !(z->m > 0) || !(z->a_k > 0) || !(z->a_r > 0) || !std::isfinite(z->x)
 			|| z->x < 0 || z->x > z->stroke || !std::isfinite(z->f_load) || !(z->f_static >= 0))
 			m_model_errors << QStringLiteral("%1: ungültige Zylinderdaten (Hub %2 mm, Masse %3 kg, Kolbenfläche %4 cm², "
@@ -1014,7 +1126,7 @@ bool SimulationModel::contactClosed(const Contact &c) const
 			const double lo = parts.at(1).left(dots).toDouble(&ok1) / 1000.0;
 			const double hi = parts.at(1).mid(dots + 2).toDouble(&ok2) / 1000.0;
 			for (const Cylinder *z : m_cylinders)
-				if (ok1 && ok2 && z->label == parts.at(0)) actuated = z->x >= lo - 1e-9 && z->x <= hi + 1e-9;
+				if (ok1 && ok2 && z->label == parts.at(0)) actuated = z->markPos() >= lo - 1e-9 && z->markPos() <= hi + 1e-9;
 		}
 		if (parts.size() == 1)          // function text "-BP1": contact of that pressure switch
 			for (const PressureSwitch *s : m_pressure_switches)
@@ -1274,7 +1386,7 @@ void SimulationModel::step(double dt)
 		if (!v->trigger_cylinder.isEmpty())
 			for (const Cylinder *z : std::as_const(m_cylinders))
 				if (z->label == v->trigger_cylinder)
-					v->actuated[v->trigger_side] = z->x >= v->trigger_lo - 1e-9 && z->x <= v->trigger_hi + 1e-9;
+					v->actuated[v->trigger_side] = z->markPos() >= v->trigger_lo - 1e-9 && z->markPos() <= v->trigger_hi + 1e-9;
 		for (int s = 0; s < 2; ++s) {
 			const auto &a = v->side[s];
 			if (a.pilot && !a.types.contains(QLatin1String("solenoid"))) {
@@ -1400,6 +1512,22 @@ void SimulationModel::step(double dt)
 		}
 	}
 
+	for (const Ejector *v : std::as_const(m_ejectors)) {
+		const int k1 = node(v->e, QStringLiteral("1")), k2 = node(v->e, QStringLiteral("2"));
+		const double share = k1 >= 0 ? qBound(0.0, (p(k1) - P_ATM) / v->dp_opt, 1.0) : 0.0;
+		if (k1 >= 0) book(k1, -1, massFlow(p(k1), P_ATM, v->c_drive), v->e);
+		if (k2 < 0) continue;
+		// suction: zero at the best vacuum p_atm + pu_min·share, q_max·share against the atmosphere. The
+		// slope q_max/|pu_min| does not depend on the supply, so undriven (share 0) the vacuum port is the
+		// same linear path back to the air: one continuous characteristic
+		book(k2, -1, v->q_max * (p(k2) - P_ATM - v->pu_min * share) / (-v->pu_min), v->e);
+	}
+	for (const SuctionCup *s : std::as_const(m_cups)) {
+		if (s->node < 0) continue;
+		const double c = s->object ? s->c_leak : s->c_open;
+		if (c > 0) book(s->node, -1, massFlow(p(s->node), P_ATM, c), s->e);
+	}
+
 	for (Cylinder *z : m_cylinders) {
 		const int ka = node(z->e, QStringLiteral("A")), kb = node(z->e, QStringLiteral("B"));
 		const double f = (p(ka) - P_ATM) * z->a_k - (p(kb) - P_ATM) * z->a_r - z->f_load - z->f_spring;
@@ -1474,11 +1602,26 @@ void SimulationModel::step(double dt)
 	for (PressureSwitch *s : m_pressure_switches) {
 		if (s->node < 0) continue;
 		const double g = m_p.at(s->node) - P_ATM;
-		const bool on = s->on ? g > s->p_off : g >= s->p_on;
+		const bool on = s->vacuum ? (s->on ? g < s->p_off : g <= s->p_on) : (s->on ? g > s->p_off : g >= s->p_on);
 		if (on != s->on) {
 			s->on = on;
-			m_messages << Message{m_time, QStringLiteral("Druckschalter %1 %2 bei %3 bar").arg(s->label,
+			m_messages << Message{m_time, QStringLiteral("%1 %2 %3 bei %4 bar").arg(
+				s->vacuum ? QStringLiteral("Vakuumschalter") : QStringLiteral("Druckschalter"), s->label,
 				on ? QStringLiteral("schaltet ein") : QStringLiteral("schaltet aus")).arg(g / 1e5, 0, 'f', 2)};
+		}
+	}
+	// R10 suction cups: holding force against the weight with the safety factor
+	for (SuctionCup *s : m_cups) {
+		if (s->node < 0) continue;
+		s->force = s->object ? std::max(0.0, (P_ATM - m_p.at(s->node)) * s->area) : 0.0;
+		const bool held = s->object && s->force > 0.0 && s->force >= s->safety * s->weight;
+		if (held != s->held) {
+			s->held = held;
+			m_messages << Message{m_time, held
+				? QStringLiteral("Sauger %1 hält das Werkstück (%2 N bei %3 bar)").arg(s->label).arg(s->force, 0, 'f', 2)
+					  .arg((m_p.at(s->node) - P_ATM) / 1e5, 0, 'f', 2)
+				: QStringLiteral("Sauger %1 hält das Werkstück nicht mehr (%2 N, nötig %3 N)").arg(s->label)
+					  .arg(s->force, 0, 'f', 2).arg(s->safety * s->weight, 0, 'f', 2)};
 		}
 	}
 	m_time += dt;
@@ -1578,7 +1721,22 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 			}
 		}
 	}
+	for (const SuctionCup *s : m_cups) {
+		out << Signal{QStringLiteral("Fhold:") + s->label, QStringLiteral("force"), QStringLiteral("N"),
+					  QStringLiteral("Haltekraft (p_atm - p)·A, 0 ohne Werkstück"), s->label, QString()};
+		out << Signal{QStringLiteral("hold:") + s->label, QStringLiteral("state"), QStringLiteral("1"),
+					  QStringLiteral("1 = hält (Haltekraft ≥ s·m·g)"), s->label, QString()};
+	}
 	for (const Cylinder *z : m_cylinders) {
+		if (z->rotary) {
+			out << Signal{QStringLiteral("x:") + z->label, QStringLiteral("angle"), QStringLiteral("rad"),
+						  QStringLiteral("0 = Ausgangslage"), z->label, QString()};
+			out << Signal{QStringLiteral("v:") + z->label, QStringLiteral("angular_velocity"), QStringLiteral("rad/s"),
+						  QStringLiteral("positiv: Druck an A dreht vorwärts"), z->label, QString()};
+			out << Signal{QStringLiteral("F:") + z->label, QStringLiteral("torque"), QStringLiteral("N.m"),
+						  QStringLiteral("Druckmoment, positiv: vorwärts (ohne Reibung und Last)"), z->label, QString()};
+			continue;
+		}
 		out << Signal{QStringLiteral("x:") + z->label, QStringLiteral("position"), QStringLiteral("m"),
 					  QStringLiteral("0 = eingefahren"), z->label, QString()};
 		out << Signal{QStringLiteral("v:") + z->label, QStringLiteral("velocity"), QStringLiteral("m/s"),
@@ -1638,6 +1796,14 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 				}
 		return std::nan("");
 	}
+	if (kind == QLatin1String("Fhold") || kind == QLatin1String("hold")) {
+		for (const SuctionCup *s : m_cups)
+			if (s->label == rest) {
+				if (ok) *ok = true;
+				return kind == QLatin1String("hold") ? (s->held ? 1.0 : 0.0) : s->force;
+			}
+		return std::nan("");
+	}
 	if (kind == QLatin1String("pos")) {
 		for (const Valve *v : m_valves)
 			if (v->label == rest) { if (ok) *ok = true; return v->position + 1; }
@@ -1688,7 +1854,8 @@ QList<SimulationModel::CylinderState> SimulationModel::cylinders() const
 {
 	QList<CylinderState> out;
 	for (Cylinder *z : m_cylinders)
-		out << CylinderState{z->e, z->label, z->x * 1000.0, z->stroke * 1000.0, z->v};
+		out << CylinderState{z->e, z->label, z->rotary ? z->x * 180.0 / M_PI : z->x * 1000.0,
+							 z->rotary ? z->stroke * 180.0 / M_PI : z->stroke * 1000.0, z->v};
 	return out;
 }
 
@@ -1726,8 +1893,10 @@ QList<QPair<Element *, QString>> SimulationModel::elementStates() const
 {
 	QList<QPair<Element *, QString>> out;
 	for (Cylinder *z : m_cylinders)
-		out << qMakePair(z->e, QStringLiteral("%1: %2 / %3 mm%4").arg(z->label)
-			.arg(z->x * 1000.0, 0, 'f', 0).arg(z->stroke * 1000.0, 0, 'f', 0)
+		out << qMakePair(z->e, QStringLiteral("%1: %2 / %3 %4%5").arg(z->label)
+			.arg(z->rotary ? z->x * 180.0 / M_PI : z->x * 1000.0, 0, 'f', 0)
+			.arg(z->rotary ? z->stroke * 180.0 / M_PI : z->stroke * 1000.0, 0, 'f', 0)
+			.arg(z->rotary ? QStringLiteral("°") : QStringLiteral("mm"))
 			.arg(z->v > 1e-3 ? QStringLiteral("  >>") : (z->v < -1e-3 ? QStringLiteral("  <<") : QString())));
 	for (Valve *v : m_valves)
 		out << qMakePair(v->e, QStringLiteral("%1: Stellung %2").arg(v->label).arg(v->position + 1));

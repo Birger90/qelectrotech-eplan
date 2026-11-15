@@ -57,6 +57,11 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
   jeder Fehler landet in `modelErrors()`, der Lauf startet nicht. `runUntil` hört bei `failed()` auf.
 - Pumpe: volle Förderung bis 1 bar unter `pMax`, bei `pMax` null. Rückschlagventil öffnet stetig ab `p0`.
 - Zylinder: Kraftbilanz, Haft-/Gleitreibung, harte Endanschläge; Unterdruck im Öl wird gemeldet, nicht gerechnet.
+- Hydromotor (R08) über `SimPhysics::Shaft`; Schwenkantrieb (R10) ist ein `Cylinder` mit `rotary` (Winkel in rad,
+  Flächen = M_6bar/6 bar, Masse = Trägheit, Wegmarken in Grad über `markPos()`).
+- Vakuum (R10): Ejektor mit stetiger linearer Saugkennlinie, Sauger mit Haltekraft gegen s·m·g, Vakuumschalter =
+  Druckschalter mit negativem p0. Prüfplan `referenz/plaene/vakuum.qet`; Varianten im Prüfstand per `textVariant`
+  (Parameter in den eingebetteten `<fluid>`-Block schreiben, selbstschließendes Tag beachten).
 - SPS: ST-Teilmenge (BOOL/INT, IF/ELSIF, CASE, TON/TOF/CTU/CTD/R_TRIG/F_TRIG/SR/RS, R_EDGE/↑), alle Werte `double`.
 - GRAFCET (`sources/simulation/grafcet.*`): IEC-60848-Schaltregeln, gleichzeitiges Schalten, flüchtige Entwicklung,
   kontinuierliche Aktionen nur in stabiler Situation; läuft vor den ST-Programmen im 10-ms-Zyklus.
@@ -147,8 +152,17 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
 - Batch-Läufe nicht während eines Deploys starten: der Lauf benutzt `build/deploy/QElectroTech.exe`; bauen geht
   (`build/`), deployen erst danach.
 
+- **Sonderfall weg, Kennlinie stetig**: Ein Ejektor-Rückströmterm „nur ohne Versorgung“ verfälschte das Vakuum bei
+  Teilversorgung (−0,35 statt −0,56 bar). Die lineare Saugkennlinie hat für s → 0 von selbst den Rückweg zur Luft.
+- **Prüfpläne aus der Fork-Sammlung**: `bauteile/fluid` liegt außerhalb des MCP-Arbeitsbereichs; für `qet_edit` in
+  `Schaltplaene/_test/fluid_elements` kopieren und als `elements_dir` (`common://`) angeben.
+
+- **Formelbeleg**: Jede neue Formel des Kerns bekommt vor der Freigabe eine Zeile in `tools/simulation/FORMELN.md`
+  (Codestelle, Herkunftsart, F-/S-ID des Roadmap-Quellenregisters, Grenze, Prüfung). Gewählte Vorgaben als
+  Projektdefinition kennzeichnen, nie als Messwert oder Literaturwert ausgeben.
+
 ## Offen
 
 Schieberdynamik mit Überdeckung/Kennlinie (heute lineare Überblendung), thermische Pneumatik, Leitungsträgheit,
-Kavitation, Hydromotoren, Proportionalventile, analoge SPS-Werte, Makroschritte/Zwangssteuerung im GRAFCET,
+Kavitation, Proportionalventile, Greiferkinematik, Abblasen am Ejektor, analoge SPS-Werte, Makroschritte/Zwangssteuerung im GRAFCET,
 Vergleich mit FluidSIM, Simulationsfenster im laufenden QET mit Bedienung angesehen.

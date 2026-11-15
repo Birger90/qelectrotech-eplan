@@ -57,9 +57,18 @@ QList<Entry> build()
 			      "displacement [m3/U], alpha (-1 … 1), GLeak [m3/(s.Pa)], I bzw. J [kg.m2], f [N.m.s/rad], M_fric [N.m], M_load bzw. M_ext [N.m]",
 			      "Welle mit Trägheit, viskoser und geglätteter trockener Reibung, Leckage A→B; Druckluftmotoren nicht (abgewiesen)",
 			      "Hydromotor (R08)");
-	for (const char *f : {"actuator.gripper", "actuator.semi_rotary", "actuator.fluidic_muscle1", "actuator.fluidic_muscle3",
-			       "actuator.loading_unit_2", "actuator.motor_with_mid_exhaust", "actuator.semi_rotary_motor2"})
-		e << other(f, Role::Unsupported, "", "Dreh-, Greifer-, Muskel- und Motorantriebe brauchen eigene Mechanik (Roadmap R08, R10, R12); kein Linearkolben als Ersatz");
+	for (const char *f : {"actuator.semi_rotary", "actuator.semi_rotary_motor2"})
+		e << physical(f, "rotary_actuator", "both", "A, B",
+			      "M_6bar [N.m] Moment bei 6 bar, xMax, xStart [deg], I [kg.m2], f [N.m.s/rad], M_stat, M_ext [N.m]; stop_k [N.m/rad], stop_c [N.m.s/rad]",
+			      "Drehanalogon des Zylinders: Schluckvolumen je Radiant M_6bar/6 bar beidseitig, Endanschläge hart oder elastisch, keine Endlagendämpfung; Wegmarken in Grad (Sensor ±1°)",
+			      "Vakuum und Schwenk-/Greiferantriebe (R10)");
+	e << physical("actuator.gripper", "linear_cylinder", "pneumatic", "A",
+		      "d_piston, xMax [m], m_cyl [kg], F_stat [N] wie Zylinder",
+		      "Ersatzmodell: einfachwirkender Zylinder mit Rückstellfeder, Greifkraft = Kolbenkraft (F:); keine Backenkinematik, kein Werkstückanschlag",
+		      "Vakuum und Schwenk-/Greiferantriebe (R10)");
+	for (const char *f : {"actuator.fluidic_muscle1", "actuator.fluidic_muscle3",
+			       "actuator.loading_unit_2", "actuator.motor_with_mid_exhaust"})
+		e << other(f, Role::Unsupported, "", "Muskel-, Lade- und Druckluftmotorantriebe brauchen eigene Mechanik (Roadmap R12); kein Linearkolben als Ersatz");
 	// ---------------------------------------------------------- Wegeventile
 	for (const char *f : {"directional_valve.two_pins", "directional_valve.three_pins", "directional_valve.four_pins",
 			       "directional_valve.five_pins"})
@@ -112,11 +121,23 @@ QList<Entry> build()
 	for (const char *f : {"connection.line", "connection.quick_coupling", "supply.manifold_c8", "supply.hose_line"})
 		e << other(f, Role::Ideal, "ideal_connection", "verlustfreie Verbindung; Kupplung immer gekuppelt, kein Rohrmodell (Roadmap R05)");
 	for (const char *f : {"supply.load_sensing_pump_unit", "supply.steering_unit_1",
-			       "vacuum.vacuum_generator", "vacuum.vacuum_generator_05_h", "vacuum.vacuum_generator_05_l",
-			       "vacuum.suction_cup", "vacuum.vacuum_suction_cup", "vacuum.vacuum_efficiency_valve", "vacuum.vacuum_switch",
+			       "vacuum.vacuum_efficiency_valve",
 			       "valve_group.control_block_for_two_hand_start", "valve_group.taa_01", "valve_group.tab_01",
 			       "valve_group.timer3", "valve_group.timer4", "other.misc"})
-		e << other(f, Role::Unsupported, "", "kein Modell (Verstellpumpen R08, Vakuum R10, Ventilgruppen); keine Überdruckquelle als Ersatz");
+		e << other(f, Role::Unsupported, "", "kein Modell (Load-Sensing, Lenkung, Vakuum-Sparventil, Ventilgruppen); keine Überdruckquelle als Ersatz");
+	// ---------------------------------------------------------- Vakuum (R10)
+	for (const char *f : {"vacuum.vacuum_generator", "vacuum.vacuum_generator_05_h", "vacuum.vacuum_generator_05_l"})
+		e << physical(f, "vacuum_generator", "pneumatic", "1 (Versorgung), 2 (Vakuum)",
+			      "pu_min [Pa] bestes Vakuum, dp_max [Pa] optimaler Versorgungsdruck, qn_ac [l/min] Luftverbrauch, qns_max [l/min] Saugvolumenstrom",
+			      "Ejektor mit linearer Saugkennlinie zwischen pu_min (kein Fluss) und Atmosphäre (qns_max), beide mit dem Versorgungsdruck bis dp_max skaliert; über dp_max kein Abfall des Vakuums",
+			      "Vakuum und Schwenk-/Greiferantriebe (R10)");
+	for (const char *f : {"vacuum.suction_cup", "vacuum.vacuum_suction_cup"})
+		e << physical(f, "suction_cup", "pneumatic", "erster Anschluss",
+			      "d [m] Durchmesser, m [kg] Werkstückmasse, s Sicherheitsfaktor, qLeak [l/min] Leckage bei -0,6 bar, object (1 = Werkstück liegt an)",
+			      "Haltekraft (p_atm - p)·π d²/4 gegen s·m·g, Volumen 5 mm tief; ohne Werkstück offen (50 l/min bei 0,1 bar); keine Verformung, keine Querkräfte",
+			      "Vakuum und Schwenk-/Greiferantriebe (R10)");
+	e << physical("vacuum.vacuum_switch", "pressure_switch", "pneumatic", "erster Anschluss", "p0 [Pa] (negativ), p_hyst [Pa]",
+		      "schaltet unter p0 ein, über p0 + p_hyst aus; ohne Schaltzeit", "Vakuum und Schwenk-/Greiferantriebe (R10)");
 	// ---------------------------------------------------------- Messen
 	e << physical("sensor.pressure_switch", "pressure_switch", "both", "erster Anschluss", "p0, p_hyst [Pa]", "ohne Schaltzeit", "Projekt Speicher");
 	for (const char *f : {"sensor.manometer", "measure.indicator", "sensor.pressure_sensor", "sensor.pressure_sensor1_a1_d",

@@ -155,6 +155,11 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
   (kleinste Abstandssumme), sonst bekommt Anschluss 5 die „1“.
 - Manche FluidSIM-Symbole zeichnen nur in einer ausgeblendeten Ebene (Spule im Leiterdiagramm).
 - `qet_mcp.py` aus 1.9.0 hatte einen Syntaxfehler (unmaskierte Anführungszeichen); behoben in f726acb7a.
+- Vakuum und Schwenkantriebe (Fork 1.27.0, R10): FluidSIM `VacuumGenerator_05H/_05L` → `vacuum.vacuum_generator_05_h/_l`
+  (Anschluss 1 Versorgung, 2 Vakuum), `VacuumSuctionCup` → Sauger (Haltekraft gegen s·m·g), `VacuumSwitch` →
+  Druckschalter mit negativem p0, `SemiRotaryMotor2` → Schwenkantrieb; dessen eingebaute Sensoren (label1–3,
+  x11–x32 in Grad) werden Wegmarken „-MM1 89..91“ (±1°), ohne FluidSIM-Kennzeichnung bekommt er -MM n.
+  `VacuumEfficiencyValve` (Sparventil) hat noch kein Modell.
 
 ## Offen
 

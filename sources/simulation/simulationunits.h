@@ -55,6 +55,7 @@ inline Unit unit(const QString &u)
 		{QStringLiteral("N.m.s/rad"), {1.0, "rotary_damping"}}, {QStringLiteral("kg.m2"), {1.0, "inertia"}},
 		{QStringLiteral("l/(min.bar)"), {1e-3 / 60.0 / 1e5, "leakage"}}, {QStringLiteral("m3/(s.Pa)"), {1.0, "leakage"}},
 		{QStringLiteral("rad/s"), {1.0, "angular_velocity"}}, {QStringLiteral("deg"), {M_PI / 180.0, "angle"}},
+		{QStringLiteral("rad"), {1.0, "angle"}}, {QStringLiteral("N.m/rad"), {1.0, "rotary_stiffness"}},
 		{QStringLiteral("m/s"), {1.0, "velocity"}}, {QStringLiteral("mm/s"), {1e-3, "velocity"}},
 		{QStringLiteral("N.s/m"), {1.0, "damping"}},
 		{QStringLiteral("N/m"), {1.0, "stiffness"}}, {QStringLiteral("N/mm"), {1e3, "stiffness"}},

@@ -389,10 +389,31 @@ def elektro_rolle(objekt, typ, o):
     return ""
 
 
-def wegmarken(alle, zylinder):
+def wegmarken(alle, zylinder, schwenk=None):
     """Wegmarken der Wegmaßstäbe (Mech.FS3.DistanceRule): {Kennzeichnung: "-MM1 lo..hi"} (mm), jeweils am
-    Zylinder, dem der Maßstab am nächsten liegt."""
+    Zylinder, dem der Maßstab am nächsten liegt. Schwenkantriebe (R10) tragen ihre Marken selbst (label1..3,
+    x11..x32 in Grad): der Sensor erfasst ±1°, eine Marke am Ende des Schwenkwinkels reicht bis in den
+    Anschlag."""
     out = {}
+    for o in alle:
+        lbl = (schwenk or {}).get(o.get("ident"))
+        if not lbl:
+            continue
+        w = fluidsim_grafcet.werte(o)
+        try:
+            xmax = float(w.get("xMax", "180"))
+        except ValueError:
+            xmax = 180.0
+        for i in range(1, 7):
+            name = w.get(f"label{i}", "").strip()
+            try:
+                lo, hi = float(w.get(f"x{i}1", "-1")), float(w.get(f"x{i}2", "-1"))
+            except ValueError:
+                continue
+            if name and lo >= 0 and hi >= lo:
+                lo2 = 0.0 if lo - 1.0 <= 0 else lo - 1.0
+                hi2 = xmax + 1.0 if hi + 1.0 >= xmax else hi + 1.0
+                out[name] = f"{lbl} {lo2:g}..{hi2:g}"
     for o in alle:
         if o.get("object-ref") != "Mech.FS3.DistanceRule" or not zylinder:
             continue
@@ -442,6 +463,7 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
         textfelder = {t.get("ident"): t for t in co.iter("text-box")} if co is not None else {}
         hier = {}       # FluidSIM-Ident -> Bauteil dieses Blatts
         zylinder = []   # (Kennzeichnung, Mitte)
+        schwenk = {}    # ident des Schwenkantriebs -> Kennzeichnung (R10)
         kontakte = []   # (Bauteil, Klasse, Objekt, Kennzeichnung) für Endschalter über Wegmarken
 
         for o in alle:
@@ -490,16 +512,17 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
             if label.startswith("?"):
                 label = ""
             art = re.search(r'<fluid kind="(valve|cylinder)"', erg["text"])
+            schwenkt = "SemiRotaryMotor" in o.get("object-ref", "")   # Schwenkantrieb: wie ein Zylinder (R10)
             rolle = elektro_rolle(objekt, erg["klasse"], o)
             # Rollenhebelventile tragen ihre Kennzeichnung (= Wegmarke) an der Betätigung (mechanical-label)
             marke = next((c.get("designation") for c in symbole[o.get("symbol-ref")].iter("connector")
                           if c.get("type") == "mechanical-label" and c.get("designation")), "")
             if not label and art and art.group(1) == "valve" and marke:
                 label = marke
-            if not label and (art or rolle.startswith(("button", "switch"))):
+            if not label and (art or schwenkt or rolle.startswith(("button", "switch"))):
                 # Die Simulation bedient Ventile und Taster und meldet Zylinder über ihre Kennzeichnung: ohne
                 # eine aus FluidSIM bekommen sie die nächste freie nach DIN EN 81346-2 (-QM1, -MM1, -SF1 …)
-                vorsilbe = "-SF" if not art else "-QM" if art.group(1) == "valve" else "-MM"
+                vorsilbe = "-MM" if schwenkt else "-SF" if not art else "-QM" if art.group(1) == "valve" else "-MM"
                 k = 1
                 while f"{vorsilbe}{k}" in vergeben:
                     k += 1
@@ -526,6 +549,8 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
                 ops.append({"op": "set_info", "folio": blatt, "element": el, "key": "sim_io", "value": ";".join(zeilen)})
             if art and art.group(1) == "cylinder" and label:
                 zylinder.append((label, fs.mitte(o)))
+            if "SemiRotaryMotor" in o.get("object-ref", "") and label:
+                schwenk[o.get("ident")] = label
             if erg["klasse"] in ("make-contact", "break-contact", "proximity-switch") and label:
                 kontakte.append((el, erg["klasse"], objekt, label))
             if art and art.group(1) == "valve" and (marke or label) and re.search(r'types="[^"]*roller', erg["text"]):
@@ -564,7 +589,7 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
             zahl["bauteile"] += 1
 
         # Endschalter: Kontakte, deren Kennzeichnung eine Wegmarke an einem Zylinder ist
-        marken = wegmarken(alle, zylinder)
+        marken = wegmarken(alle, zylinder, schwenk)
         for el, klasse, objekt, label in kontakte:
             if label in marken and klasse == "valve":
                 ops.append({"op": "set_info", "folio": blatt, "element": el, "key": "function", "value": marken[label]})

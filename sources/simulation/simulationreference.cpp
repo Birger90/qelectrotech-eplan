@@ -386,6 +386,24 @@ QString functionVariant(const QString &file, const QString &from, const QString 
 	return out;
 }
 
+	/// copy of @a file with every pair (old text, new text) replaced once; empty when one is missing
+QString textVariant(const QString &file, const QList<QPair<QString, QString>> &pairs, const QString &name)
+{
+	QFile f(file);
+	if (!f.open(QIODevice::ReadOnly)) return QString();
+	QString text = QString::fromUtf8(f.readAll());
+	for (const auto &pr : pairs) {
+		const int at = static_cast<int>(text.indexOf(pr.first));
+		if (at < 0) return QString();
+		text.replace(at, pr.first.size(), pr.second);
+	}
+	const QString out = QDir(QDir::tempPath()).filePath(name);
+	QFile o(out);
+	if (!o.open(QIODevice::WriteOnly)) return QString();
+	o.write(text.toUtf8());
+	return out;
+}
+
 	/// every fluid function of the element collection in @a dir: {function: number of symbols}
 QHash<QString, int> collectionFunctions(const QString &dir)
 {
@@ -425,7 +443,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Modellkatalog: ohne Rechenmodell abgewiesen, Grafikbaustein ignoriert"),
 		QStringLiteral("Messgrößen: Abgriff ohne Rückwirkung, Durchfluss bilanziert, Pumpe = Verdrängung · Drehzahl"),
 		QStringLiteral("Netze, Stabilität, Ereignisse (R03): Widersprüche und Instabilität gemeldet, gleichzeitige Eingaben reproduzierbar"),
-		QStringLiteral("Hydromotor (R08): Drehzahl, Moment, Lastsprung, Umkehr, Leistungsbilanz, Projekt")};
+		QStringLiteral("Hydromotor (R08): Drehzahl, Moment, Lastsprung, Umkehr, Leistungsbilanz, Projekt"),
+		QStringLiteral("Vakuum und Schwenk-/Greiferantriebe (R10): Saugen, Halten, Leckage, Last, Loslassen, Schwenkwinkel und -moment")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -611,11 +630,11 @@ QList<Check> endToEnd(const QString &reference_dir)
 		out << c;
 	}
 	{   // 7. model catalog (R00): a part without a model stops the run with its name and function, an
-		//    unknown function as well (no guessed source, no linear piston for a gripper); a graphic part is ignored
+		//    unknown function as well (no guessed source, no linear piston for a muscle); a graphic part is ignored
 		struct Case { const char *from, *to, *expect; };
 		const QList<Case> cases{
-			{"supply.pump", "vacuum.vacuum_generator", "vacuum.vacuum_generator hat kein Rechenmodell"},
-			{"actuator.cyl_conf", "actuator.gripper", "actuator.gripper hat kein Rechenmodell"},
+			{"supply.pump", "vacuum.vacuum_efficiency_valve", "vacuum.vacuum_efficiency_valve hat kein Rechenmodell"},
+			{"actuator.cyl_conf", "actuator.fluidic_muscle1", "actuator.fluidic_muscle1 hat kein Rechenmodell"},
 			{"supply.tank", "unbekannt.pruefling", "steht nicht im Modellkatalog"},
 			{"actuator.cyl_conf", "directional_valve.part", ""},
 		};
@@ -717,6 +736,157 @@ QList<Check> endToEnd(const QString &reference_dir)
 		else seen << QStringLiteral("gleichzeitige Eingaben in beiden Reihenfolgen gleich (%1 Werte)").arg(trace1.size());
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? QStringLiteral("erkannt: %1").arg(seen.join(QStringLiteral(", "))) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 11. vacuum, semi-rotary and gripper drives (R10). Plan vakuum.qet: source -GP1, 3/2 valve -QM1,
+		//     ejector -UG1 (best vacuum p_vac -0.08 MPa at 0.5 MPa, suction 6 l/min), suction cup -UG2
+		//     (Ø 20 mm, 0.1 kg), pressure switch -BP1 on the vacuum net
+		Check c{names.at(10)};
+		QStringList wrong, seen;
+		const QString vak = path("vakuum.qet");
+		const double area = M_PI * 0.02 * 0.02 / 4, pu = -0.08e6;
+		const QList<Input> grip{{0.1, QStringLiteral("-QM1"), 1, true}, {1.0, QStringLiteral("-QM1"), 1, false}};
+		auto sample = [](double at, QHash<QString, double> &into, const QStringList &ids) {
+			return [at, &into, ids](SimulationModel &s) {
+				if (std::abs(s.time() - at) < 5e-6)
+					for (const QString &id : ids) into.insert(id, s.signalValue(id));
+			};
+		};
+		const QStringList ids{QStringLiteral("p:-UG2.1"), QStringLiteral("p:-UG1.1"), QStringLiteral("Fhold:-UG2"), QStringLiteral("hold:-UG2")};
+		auto near = [](double a, double b, double rel) { return std::isfinite(a) && std::abs(a - b) <= rel * std::abs(b); };
+		// a) tight cup: best vacuum scaled with the supply, holding force (p_atm - p)·A, release after closing
+		for (double bar : {6.0, 3.5}) {
+			QHash<QString, double> v;
+			ProjectRun pr = runProject(vak, bar, grip, 1.5, sample(0.95, v, ids));
+			if (!pr.error.isEmpty()) { wrong << QStringLiteral("Vakuum %1 bar: %2").arg(bar).arg(pr.error); continue; }
+			const double share = std::min(1.0, v.value(ids.at(1)) / 0.5e6), expect = pu * share;
+			const double force = -v.value(ids.at(0)) * area;
+			const double release = pr.eventTime(QStringLiteral("hält das Werkstück nicht mehr"), 1.0);
+			if (!near(v.value(ids.at(0)), expect, 0.005)) wrong << QStringLiteral("Vakuum bei %1 bar: %2 bar statt %3").arg(bar).arg(v.value(ids.at(0)) / 1e5).arg(expect / 1e5);
+			else if (!near(v.value(ids.at(2)), force, 1e-6) || v.value(ids.at(3)) != 1.0) wrong << QStringLiteral("Haltekraft %1 N statt %2").arg(v.value(ids.at(2))).arg(force);
+			else if (!(release > 1.0 && release < 1.4)) wrong << QStringLiteral("Loslassen nach dem Schließen fehlt (%1 s)").arg(release);
+			else seen << QStringLiteral("%1 bar: %2 bar (soll %3), %4 N, lässt bei %5 s los").arg(bar, 0, 'f', 1)
+							 .arg(v.value(ids.at(0)) / 1e5, 0, 'f', 3).arg(expect / 1e5, 0, 'f', 3).arg(v.value(ids.at(2)), 0, 'f', 2).arg(release, 0, 'f', 3);
+		}
+		const QString cup = QStringLiteral("<fluid function=\"vacuum.suction_cup\" kind=\"other\" prefix=\"MM\"");
+		auto cupVariant = [&](const QString &params, const char *name) {
+			return textVariant(vak, {{cup + QStringLiteral("/>"), cup + QStringLiteral(">") + params + QStringLiteral("</fluid>")}},
+							   QString::fromLatin1(name));
+		};
+		// b) leaking contact: equilibrium of the linear suction characteristic and the leakage (qLeak
+		//    1.8 l/min at -0.6 bar through the ISO 6358 orifice, b = 0.3), solved by bisection
+		{
+			const QString file = cupVariant(QStringLiteral("<parameter name=\"qLeak\" unit=\"l/min\" value=\"1.8\"/>"), "qet_sim_r10_leck.qet");
+			QHash<QString, double> v;
+			ProjectRun pr = runProject(file, 6.0, grip, 1.5, sample(0.95, v, ids));
+			if (!pr.error.isEmpty()) wrong << QStringLiteral("Leckage: %1").arg(pr.error);
+			else {
+				const double patm = 101300.0, b = 0.3;
+				auto iso = [b](double r) { return r <= b ? 1.0 : std::sqrt(std::max(0.0, 1.0 - std::pow((r - b) / (1.0 - b), 2))); };
+				const double pmin = pu * std::min(1.0, v.value(ids.at(1)) / 0.5e6);
+				auto excess = [&](double g) {   // suction minus leakage in l/min, g gauge
+					return 6.0 * (g - pmin) / (-pmin) - 1.8 * iso((patm + g) / patm) / iso((patm - 0.6e5) / patm);
+				};
+				double lo = pmin, hi = 0.0;
+				for (int i = 0; i < 100; ++i) { const double m = 0.5 * (lo + hi); (excess(m) > 0 ? hi : lo) = m; }
+				if (!near(v.value(ids.at(0)), lo, 0.005)) wrong << QStringLiteral("Leckage: %1 bar statt %2").arg(v.value(ids.at(0)) / 1e5).arg(lo / 1e5);
+				else seen << QStringLiteral("Leckage 1,8 l/min: %1 bar (Gleichgewicht %2)").arg(v.value(ids.at(0)) / 1e5, 0, 'f', 3).arg(lo / 1e5, 0, 'f', 3);
+			}
+			QFile::remove(file);
+		}
+		// c) no workpiece: the open cup builds no vacuum worth the name and holds nothing
+		{
+			const QString file = cupVariant(QStringLiteral("<parameter name=\"object\" value=\"0\"/>"), "qet_sim_r10_frei.qet");
+			QHash<QString, double> v;
+			ProjectRun pr = runProject(file, 6.0, grip, 1.5, sample(0.95, v, ids));
+			if (!pr.error.isEmpty()) wrong << QStringLiteral("ohne Werkstück: %1").arg(pr.error);
+			else if (v.value(ids.at(3)) != 0.0 || v.value(ids.at(2)) != 0.0 || !(v.value(ids.at(0)) > -0.1e5)
+					 || std::isfinite(pr.eventTime(QStringLiteral("hält das Werkstück"))))
+				wrong << QStringLiteral("ohne Werkstück: %1 bar, Haltekraft %2 N").arg(v.value(ids.at(0)) / 1e5).arg(v.value(ids.at(2)));
+			else seen << QStringLiteral("ohne Werkstück offen (%1 bar), hält nicht").arg(v.value(ids.at(0)) / 1e5, 0, 'f', 3);
+			QFile::remove(file);
+		}
+		// d) a known load: 2 kg holds from (p_atm - p)·A = m·g on; with the safety factor 1.5 it never holds
+		for (const char *s : {"1", "1.5"}) {
+			const QString file = cupVariant(QStringLiteral("<parameter name=\"m\" unit=\"kg\" value=\"2\"/><parameter name=\"s\" value=\"%1\"/>")
+												.arg(QString::fromLatin1(s)), "qet_sim_r10_last.qet");
+			double onset = std::nan("");
+			bool was = false;
+			ProjectRun pr = runProject(file, 6.0, grip, 1.5, [&](SimulationModel &m) {
+				const bool h = m.signalValue(QStringLiteral("hold:-UG2")) == 1.0;
+				if (h && !was && !std::isfinite(onset)) onset = m.signalValue(QStringLiteral("Fhold:-UG2"));
+				was = h;
+			});
+			const bool safe = QString::fromLatin1(s) == QLatin1String("1.5");
+			if (!pr.error.isEmpty()) wrong << QStringLiteral("Last: %1").arg(pr.error);
+			else if (safe && std::isfinite(onset)) wrong << QStringLiteral("Last mit s = 1,5 gehalten (%1 N)").arg(onset);
+			else if (!safe && !near(onset, 2 * 9.81, 0.01)) wrong << QStringLiteral("Last 2 kg: hält ab %1 N statt 19,62 N").arg(onset);
+			else seen << (safe ? QStringLiteral("2 kg mit s = 1,5: hält nicht (max. %1 N < 29,43 N)").arg(-pu * area, 0, 'f', 2)
+							   : QStringLiteral("2 kg hält ab %1 N (m·g 19,62 N)").arg(onset, 0, 'f', 2));
+			QFile::remove(file);
+		}
+		// e) vacuum switch: p0 -50 kPa, hysteresis 10 kPa: on when the net falls below -0.5 bar, off above -0.4 bar
+		{
+			const QString f1 = variant(vak, QStringLiteral("p0"), QStringLiteral("value"), QStringLiteral("-0.05"), QStringLiteral("qet_sim_r10_vs1.qet"));
+			const QString file = f1.isEmpty() ? QString() : variant(f1, QStringLiteral("p_hyst"), QStringLiteral("value"), QStringLiteral("0.01"), QStringLiteral("qet_sim_r10_vs.qet"));
+			double t_down = std::nan(""), t_up = std::nan("");
+			ProjectRun pr = runProject(file, 6.0, grip, 1.5, [&](SimulationModel &m) {
+				const double g = m.signalValue(QStringLiteral("p:-BP1.1"));
+				if (!std::isfinite(t_down) && g <= -0.5e5) t_down = m.time();
+				if (std::isfinite(t_down) && !std::isfinite(t_up) && m.time() > 1.0 && g > -0.4e5) t_up = m.time();
+			});
+			const double on = pr.eventTime(QStringLiteral("Vakuumschalter -BP1 schaltet ein"));
+			const double off = pr.eventTime(QStringLiteral("Vakuumschalter -BP1 schaltet aus"));
+			if (!pr.error.isEmpty() || file.isEmpty()) wrong << QStringLiteral("Vakuumschalter: %1").arg(file.isEmpty() ? QStringLiteral("Variante fehlt") : pr.error);
+			else if (!(std::abs(on - t_down) <= 2e-5) || !(std::abs(off - t_up) <= 2e-5))
+				wrong << QStringLiteral("Vakuumschalter ein %1 s (Druck %2 s), aus %3 s (Druck %4 s)").arg(on).arg(t_down).arg(off).arg(t_up);
+			else seen << QStringLiteral("Vakuumschalter ein bei -0,5 bar (%1 s), aus über -0,4 bar (%2 s)").arg(on, 0, 'f', 4).arg(off, 0, 'f', 4);
+			QFile::remove(f1);
+			QFile::remove(file);
+		}
+		// f) semi-rotary drive in place of the cylinder of zylinder_b_offen.qet: 90°, M_6bar 2 N·m
+		const QString cyl = path("zylinder_b_offen.qet");
+		auto rotary = [&](const QString &load, const char *name) {
+			return textVariant(cyl, {{QStringLiteral("function=\"actuator.cyl_conf\""), QStringLiteral("function=\"actuator.semi_rotary\"")},
+									 {QStringLiteral("<parameter name=\"xMax\" unit=\"mm\" value=\"100\"/>"),
+									  QStringLiteral("<parameter name=\"xMax\" unit=\"deg\" value=\"90\"/>")},
+									 {QStringLiteral("<parameter name=\"xStart\" unit=\"mm\" value=\"0\"/>"),
+									  QStringLiteral("<parameter name=\"xStart\" unit=\"deg\" value=\"0\"/>")},
+									 {QStringLiteral("<parameter name=\"F_extern_const\" unit=\"N\" value=\"0\"/>"),
+									  QStringLiteral("<parameter name=\"M_ext\" unit=\"N.m\" value=\"%1\"/>").arg(load)}},
+							   QString::fromLatin1(name));
+		};
+		{
+			const QString file = rotary(QStringLiteral("0"), "qet_sim_r10_schwenk.qet");
+			QHash<QString, double> v;
+			const QStringList rid{QStringLiteral("x:-MM1"), QStringLiteral("F:-MM1")};
+			ProjectRun pr = runProject(file, 6.0, {{0.2, QStringLiteral("-QM1"), 1, true}}, 1.5, sample(1.4, v, rid), true);
+			const double end = pr.eventTime(QStringLiteral("-MM1 Endlage vorne"));
+			if (!pr.error.isEmpty() || file.isEmpty()) wrong << QStringLiteral("Schwenkantrieb: %1").arg(file.isEmpty() ? QStringLiteral("Variante fehlt") : pr.error);
+			else if (!(end > 0.2) || std::abs(v.value(rid.at(0)) - M_PI / 2) > 1e-9 || !near(v.value(rid.at(1)), 2.0, 0.01))
+				wrong << QStringLiteral("Schwenkantrieb: Endlage %1 s, Winkel %2 rad, Moment %3 N·m").arg(end).arg(v.value(rid.at(0))).arg(v.value(rid.at(1)));
+			else seen << QStringLiteral("Schwenkantrieb 90° in %1 s, Moment in der Endlage %2 N·m (M_6bar 2)").arg(end - 0.2, 0, 'f', 3).arg(v.value(rid.at(1)), 0, 'f', 3);
+			QFile::remove(file);
+		}
+		{   // a load torque above the drive torque at 6 bar: it does not turn
+			const QString file = rotary(QStringLiteral("3"), "qet_sim_r10_schwenk_last.qet");
+			QHash<QString, double> v;
+			ProjectRun pr = runProject(file, 6.0, {{0.2, QStringLiteral("-QM1"), 1, true}}, 1.5, sample(1.4, v, {QStringLiteral("x:-MM1")}));
+			if (!pr.error.isEmpty()) wrong << QStringLiteral("Schwenkantrieb mit Last: %1").arg(pr.error);
+			else if (!(v.value(QStringLiteral("x:-MM1")) < 1e-6)) wrong << QStringLiteral("Schwenkantrieb dreht gegen 3 N·m (%1 rad)").arg(v.value(QStringLiteral("x:-MM1")));
+			else seen << QStringLiteral("gegen 3 N·m Last steht er");
+			QFile::remove(file);
+		}
+		{   // gripper (substitute model): closes against its return spring
+			const QString file = functionVariant(cyl, QStringLiteral("actuator.cyl_conf"), QStringLiteral("actuator.gripper"), QStringLiteral("qet_sim_r10_greifer.qet"));
+			ProjectRun pr = runProject(file, 6.0, {{0.2, QStringLiteral("-QM1"), 1, true}}, 1.5);
+			if (!pr.error.isEmpty()) wrong << QStringLiteral("Greifer: %1").arg(pr.error);
+			else if (!std::isfinite(pr.eventTime(QStringLiteral("-MM1 Endlage vorne")))) wrong << QStringLiteral("Greifer schließt nicht");
+			else seen << QStringLiteral("Greifer schließt (%1 s)").arg(pr.eventTime(QStringLiteral("-MM1 Endlage vorne")) - 0.2, 0, 'f', 3);
+			QFile::remove(file);
+		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
 		out << c;
 	}
 	{   // 10. hydraulic motor (R08) with the shaft model of the core (SimPhysics::Shaft), fed by an ideal flow

@@ -139,9 +139,29 @@ steht, verhindert den Start mit Kennzeichen und Funktion – die Simulation err�
 Trockner, Kühler, Heizer und Anlaufventil laufen als Durchgangswiderstand (`passthrough`, ohne Wärme- oder
 Filterwirkung). Ein pneumatischer „pump“ ist ein Verdichter und damit ideale Druckquelle.
 
-Nicht unterstützt (Start abgewiesen): Stetig-/Proportionalventile, Dreh-, Schwenk-, Greifer-, Muskel- und
-Motorantriebe, Verstell- und Load-Sensing-Pumpen, Folge-, Senkbrems- und Kompensatorventile, Vakuum, Ventilgruppen
-und pneumatische Zeitglieder/Zähler – siehe Roadmap (R07–R13).
+Nicht unterstützt (Start abgewiesen): Stetig-/Proportionalventile, Muskel-, Lade- und Druckluftmotorantriebe,
+Load-Sensing-Pumpen, Folge-, Senkbrems- und Kompensatorventile, Vakuum-Sparventil, Ventilgruppen und pneumatische
+Zeitglieder/Zähler – siehe Roadmap (R07–R13).
+
+Herkunft, Beleg und Grenze jeder Formel stehen im [Formelregister](FORMELN.md).
+
+## Vakuum, Schwenk- und Greiferantriebe (R10)
+
+- **Ejektor** (`vacuum.vacuum_generator`): Anschluss 1 Versorgung, 2 Vakuum. Luftverbrauch `qn_ac` beim optimalen
+  Versorgungsdruck `dp_max`; Anteil s = min(1, p₁/dp_max). Saugstrom q = q_max·(p₂ − p_atm − pu_min·s)/|pu_min|
+  (q_max aus `qns_max`): null beim besten Vakuum pu_min·s, q_max·s gegen die Atmosphäre; ohne Versorgung derselbe
+  lineare Weg zurück an die Luft. Über `dp_max` kein Abfall des Vakuums (nicht modelliert). Abblasen über ein
+  eigenes Ventil auf das Vakuumnetz wird als normaler Netzzufluss gerechnet; ein Abblasanschluss des Ejektors fehlt.
+- **Sauger** (`vacuum.suction_cup`): Volumen π d²/4 · 5 mm; Haltekraft (p_atm − p)·π d²/4, hält bei ≥ s·m·g
+  (Kennwerte `d`, `m`, `s`); `qLeak` ist die Leckage bei −0,6 bar (ISO-6358-Blende), `object` 0 = kein Werkstück
+  (offen, 50 l/min bei 0,1 bar für Ø 20 mm). Messgrößen `Fhold:<Sauger>` [N], `hold:<Sauger>` [1].
+- **Vakuumschalter**: Druckschalter mit negativem `p0`; ein unter p0, aus über p0 + `p_hyst`.
+- **Schwenkantrieb** (`actuator.semi_rotary`): wie der Zylinder, aber Winkel. Schluckvolumen je Radiant = Moment je
+  Pascal = `M_6bar`/6 bar auf beiden Seiten, `xMax`/`xStart` in Grad, Trägheit `I`, viskose Reibung `f`,
+  Haftmoment `M_stat` (Vorgabe 2 % von M_6bar), Lastmoment `M_ext`, Anschläge wie beim Zylinder. `x:` in rad,
+  `v:` in rad/s, `F:` ist das Druckmoment in N·m; Wegmarken („-MM1 89..91“) am Schwenkantrieb gelten in Grad.
+- **Greifer** (`actuator.gripper`): Ersatzmodell einfachwirkender Zylinder mit Rückstellfeder, Greifkraft = `F:`;
+  keine Backenkinematik.
 
 ## Netze, Numerik und Ereignisse
 

@@ -3,6 +3,32 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.27.0 – 15.11.2026
+
+Simulations-Roadmap R10 (Vakuum, Schwenk- und Greiferantriebe):
+
+- Vakuumerzeuger/Ejektor (`vacuum.vacuum_generator`, FluidSIM `VacuumGenerator_05H/_05L`): Versorgung 1, Vakuum 2,
+  Luftverbrauch `qn_ac` aus der Versorgung, lineare Saugkennlinie zwischen dem besten Vakuum `pu_min` (bzw. `p_vac`)
+  und der Atmosphäre (`qns_max`), beide mit dem Versorgungsdruck bis zum Optimum `dp_max` skaliert; ohne Versorgung
+  derselbe Weg zurück an die Luft (eine stetige Kennlinie).
+- Sauger (`vacuum.suction_cup`, FluidSIM `VacuumSuctionCup`): Volumen, Haltekraft (p_atm − p)·π d²/4 gegen s·m·g,
+  Leckage `qLeak` bei −0,6 bar, ohne Werkstück (`object` 0) offen; Meldungen „hält das Werkstück“ / „hält nicht mehr“,
+  Messgrößen `Fhold:` und `hold:`.
+- Vakuumschalter (`vacuum.vacuum_switch`, Druckschalter mit negativem p0): schaltet unter p0 ein, über p0 + p_hyst aus.
+- Schwenkantrieb (`actuator.semi_rotary`, FluidSIM `SemiRotaryMotor2`) als Drehanalogon des Zylinders: Schluckvolumen je
+  Radiant M_6bar/6 bar, Winkel in rad (Anzeige in Grad), Trägheit, viskose Reibung, Lastmoment, harte oder elastische
+  Anschläge; `x:`/`v:`/`F:` als Winkel, Winkelgeschwindigkeit, Moment. Der Import übernimmt die eingebauten Sensoren
+  (label1–3, x11–x32) als Wegmarken in Grad (Sensor ±1°).
+- Greifer (`actuator.gripper`) als dokumentiertes Ersatzmodell: einfachwirkender Zylinder mit Rückstellfeder.
+- Neue Prüfung „Vakuum und Schwenk-/Greiferantriebe (R10)“ mit eigenem Plan `referenz/plaene/vakuum.qet`: −0,800 bar bei
+  6 bar, −0,555 bar bei 3,5 bar (Skalierung), Haltekraft 25,13 N, Leckage im Gleichgewicht (−0,562 bar), ohne
+  Werkstück offen, 2 kg hält ab m·g, mit s = 1,5 nicht, Vakuumschalter genau an seinen Schaltpunkten, Loslassen,
+  Schwenkantrieb 90° mit 2,000 N·m in der Endlage, steht gegen 3 N·m Last, Greifer schließt. 28 Prüfungen, alle bestanden.
+- Formelregister `tools/simulation/FORMELN.md`: jede Beziehung des Rechenkerns mit Codestelle, Herkunft (Literatur,
+  eigene Ableitung, Modellnäherung), Beleg (Quellenregister des Roadmap-Pakets bzw. ISO 6358/8778), Grenze und Prüfung;
+  gewählte Vorgabewerte ausdrücklich als Projektdefinition, nicht als Messwert.
+- FluidSIM-Batch: 1020 von 1136 Beispielen starten (vorher 989).
+
 ## 1.26.0 – 15.11.2026
 
 Simulations-Roadmap R08 (Pumpen und Hydromotoren):

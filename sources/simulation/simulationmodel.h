@@ -139,6 +139,8 @@ class SimulationModel
 		struct Plc;
 		struct Accumulator;
 		struct PressureSwitch;
+		struct Ejector;
+		struct SuctionCup;
 
 		int node(Terminal *t) const;
 		int node(Element *e, const QString &port) const;
@@ -158,6 +160,8 @@ class SimulationModel
 		QList<Cylinder *> m_cylinders;
 		QList<Pump *> m_pumps;
 		QList<Motor *> m_motors;
+		QList<Ejector *> m_ejectors;               // vacuum generators (R10)
+		QList<SuctionCup *> m_cups;                // suction cups (R10)
 		QList<FlowValve *> m_flow_valves;
 		QList<Contact *> m_contacts;
 		QList<Relay *> m_relays;

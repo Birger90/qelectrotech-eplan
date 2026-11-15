@@ -422,6 +422,27 @@ void SimulationModel::buildNets(const QList<Diagram *> &diagrams)
 		}
 	}
 	m_p.fill(P_ATM, nets);
+	m_watch.fill(SimPhysics::OscillationWatch{}, nets);
+	// R03: one net with pneumatic and hydraulic ports (or fluid and electric ones) is a drawing error
+	{
+		QHash<int, QSet<int>> media;
+		QHash<int, QString> where;
+		for (auto it = m_node_of.constBegin(); it != m_node_of.constEnd(); ++it) {
+			const Fluid::Medium m = it.key()->medium();
+			const int kind = m == Fluid::Medium::Pneumatic ? 1 : m == Fluid::Medium::Hydraulic ? 2 : m == Fluid::Medium::Electric ? 3 : 0;
+			if (!kind) continue;
+			media[it.value()] << kind;
+			if (Element *e = it.key()->parentElement()) {
+				const QString l = e->elementInformations()[QStringLiteral("label")].toString();
+				where[it.value()] = l.isEmpty() ? e->name() : l;
+			}
+		}
+		for (auto it = media.constBegin(); it != media.constEnd(); ++it)
+			if (it.value().size() > 1)
+				m_model_errors << QStringLiteral("Netz an %1: verbindet %2 – Leitung prüfen").arg(where.value(it.key()),
+					it.value().contains(3) ? QStringLiteral("Fluid- und elektrische Anschlüsse")
+										   : QStringLiteral("Pneumatik- und Hydraulikanschlüsse"));
+	}
 	for (auto it = m_node_of.constBegin(); it != m_node_of.constEnd(); ++it) {
 		const Fluid::Medium m = it.key()->medium();
 		if (m == Fluid::Medium::Hydraulic) m_hydraulic << it.value();
@@ -459,6 +480,17 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 			const QString fn = f.m_function;
 			const bool hyd = medium(e) == Fluid::Medium::Hydraulic;
 			if (!f.isNull() && f.m_kind != FluidData::Kind::Solenoid) {
+				// R03: two parts holding one net at different fixed pressures contradict each other
+				auto fixPressure = [&](int k, double p, const QString &who) {
+					if (m_fixed.contains(k) && std::abs(m_fixed.value(k) - p) > 1.0) {
+						m_model_errors << QStringLiteral("Netz an %1: widersprüchliche Quellen – %2 hält %3 bar, %4 hält %5 bar")
+											  .arg(netName(k), m_fixed_by.value(k)).arg((m_fixed.value(k) - P_ATM) / 1e5, 0, 'f', 2)
+											  .arg(who).arg((p - P_ATM) / 1e5, 0, 'f', 2);
+						return;
+					}
+					m_fixed.insert(k, p);
+					m_fixed_by.insert(k, who);
+				};
 				// the model comes from the catalog (R00), never from the kind or the symbol: an unknown
 				// function or one without a model stops the run before it starts
 				const SimulationCatalog::Entry *ce = SimulationCatalog::find(fn);
@@ -478,7 +510,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 				if (model == QLatin1String("fixed_displacement_pump") && !hyd) model = QStringLiteral("pressure_source");
 				if (model == QLatin1String("tank")) {
 					for (Terminal *t : e->terminals())
-						if (node(t) >= 0) m_fixed.insert(node(t), P_ATM);
+						if (node(t) >= 0) fixPressure(node(t), P_ATM, part);
 				} else if (model == QLatin1String("fixed_displacement_pump")) {
 					auto *p = new Pump;
 					p->e = e;
@@ -520,7 +552,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						p = P_ATM + paramIn(f, QStringLiteral("pNom"), supply_bar * 1e5, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
 					}
 					for (Terminal *t : e->terminals())
-						if (node(t) >= 0) m_fixed.insert(node(t), p);
+						if (node(t) >= 0) fixPressure(node(t), p, part);
 				} else if (model == QLatin1String("directional_valve") && f.m_positions.isEmpty()) {
 					m_model_errors << QStringLiteral("%1: Wegeventil ohne Stellungen und Schaltwege").arg(part);
 				} else if (model == QLatin1String("directional_valve")) {
@@ -1336,6 +1368,7 @@ void SimulationModel::step(double dt)
 	for (const Accumulator *a : std::as_const(m_accumulators))
 		gas[a->node] << SimPhysics::GasCharge{a->p_pre, a->v0, a->n};
 
+	const QVector<double> before = m_p;
 	for (int k = 0; k < n; ++k) {
 		if (m_fixed.contains(k) || m_electric.contains(k)) continue;
 		if (m_hydraulic.contains(k) && gas.contains(k))
@@ -1346,6 +1379,15 @@ void SimulationModel::step(double dt)
 										 m_cavity[k]);
 		else
 			m_p[k] = SimPhysics::gasNode(m_p.at(k), vol.at(k), dvdt.at(k), flow.at(k), R_AIR * T_AIR, dt);
+	}
+	// R03: a net swinging from step to step is numerically unstable: stop with a diagnosis
+	for (int k = 0; k < n && !m_failed; ++k) {
+		if (m_fixed.contains(k) || m_electric.contains(k) || k >= m_watch.size()) continue;
+		const double dp = m_p.at(k) - before.at(k);
+		if (m_watch[k].update(dp, std::max(1e4, 1e-3 * m_p.at(k))))
+			fail(QStringLiteral("Numerisch instabil im Netz an %1: der Druck schwingt von Schritt zu Schritt (zuletzt %2 bar je "
+								"Schritt). Das Netzvolumen ist für die Durchflüsse zu klein bzw. ein Widerstand zu klein "
+								"(Kennwerte qNN/rT prüfen).").arg(netName(k)).arg(dp / 1e5, 0, 'g', 3));
 	}
 	// a computing fault ends the run with a message instead of a plausible looking value
 	for (int k = 0; k < n && !m_failed; ++k)

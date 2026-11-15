@@ -142,6 +142,17 @@ Nicht unterstützt (Start abgewiesen): Stetig-/Proportionalventile, Dreh-, Schwe
 Motorantriebe, Verstell- und Load-Sensing-Pumpen, Folge-, Senkbrems- und Kompensatorventile, Vakuum, Ventilgruppen
 und pneumatische Zeitglieder/Zähler – siehe Roadmap (R07–R13).
 
+## Netze, Numerik und Ereignisse
+
+Vor dem Lauf gemeldet: zwei Bauteile, die ein Netz auf verschiedenen festen Drücken halten (z. B. Druckquelle und
+Tank an derselben Leitung), Luft- und Ölanschlüsse oder Fluid- und elektrische Anschlüsse in einem Netz. Gerechnet
+wird mit festem Schritt 10 µs (expliziter Euler, Netze mit Hydrospeicher implizit); schwingt ein Netzdruck von
+Schritt zu Schritt, ohne abzuklingen, bricht der Lauf mit dem Netz und dem Hinweis ab, dass Volumen oder Widerstand
+für diesen Schritt zu klein sind. Ereignisse (Taster, Ventile von Hand) wirken ab dem ersten Schritt, dessen Zeit
+nicht kleiner ist als ihre; gleichzeitige Ereignisse in der angegebenen Reihenfolge, das Ergebnis hängt davon nicht ab.
+Gültige Kennwertbereiche: alle Längen, Flächen, Volumen, Massen > 0 bzw. ≥ 0 (Anfangsweg, Last), Zeiten ≥ 0,
+Leitwerte qNN > 0, Widerstände rT > 0 und groß genug für den Schritt (sonst Abbruch wie oben).
+
 ## Messgrößen und Ergebnisse
 
 `--simulate plan.qet --signals` listet alle Messgrößen als JSON (Kennung, Größe, SI-Einheit, Bezug, Bauteil,

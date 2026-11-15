@@ -423,7 +423,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Projekt Speicher, Druckschalter, Wechsel- und Zweidruckventil"),
 		QStringLiteral("Projekt mit ungültigen Daten: Lauf startet nicht, Fehler mit Bauteil"),
 		QStringLiteral("Modellkatalog: ohne Rechenmodell abgewiesen, Grafikbaustein ignoriert"),
-		QStringLiteral("Messgrößen: Abgriff ohne Rückwirkung, Durchfluss bilanziert, Pumpe = Verdrängung · Drehzahl")};
+		QStringLiteral("Messgrößen: Abgriff ohne Rückwirkung, Durchfluss bilanziert, Pumpe = Verdrängung · Drehzahl"),
+		QStringLiteral("Netze, Stabilität, Ereignisse (R03): Widersprüche und Instabilität gemeldet, gleichzeitige Eingaben reproduzierbar")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -662,6 +663,59 @@ QList<Check> endToEnd(const QString &reference_dir)
 			? QStringLiteral("%1; Sammlung %5: %2 Fluidsymbole mit %3 Funktionen, alle im Katalog %4")
 				  .arg(seen.join(QStringLiteral(", "))).arg(symbols).arg(funcs.size()).arg(SimulationCatalog::version(), where)
 			: wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 9. nets, numerics and events (R03): contradicting sources and mixed media stop the run before it
+		//    starts, a numerically unstable net stops it with a diagnosis, simultaneous inputs give the same
+		//    run in any order
+		Check c{names.at(8)};
+		QStringList wrong, seen;
+		const QString hyd = path("hydraulik.qet");
+		auto expectError = [&](const QString &file, const QString &what, const QString &expect, double duration) {
+			if (file.isEmpty()) { wrong << what + QStringLiteral(": Variante nicht erzeugt"); return; }
+			ProjectRun r = runProject(file, 6.0, {{0.3, QStringLiteral("-SF1"), 0, true}}, duration);
+			if (!r.error.contains(expect)) wrong << QStringLiteral("%1: „%2“").arg(what, r.error.left(160));
+			else seen << what;
+			QFile::remove(file);
+		};
+		// the pump as an ideal pressure source holds its tank port at 6 bar against the tank at 0 bar
+		expectError(functionVariant(hyd, QStringLiteral("supply.pump"), QStringLiteral("supply.air_supply"),
+									QStringLiteral("qet_sim_r03_quellen.qet")),
+					QStringLiteral("widersprüchliche Quellen"), QStringLiteral("widersprüchliche Quellen"), 0.05);
+		{   // one hydraulic port marked pneumatic
+			QFile f(hyd);
+			QString file;
+			if (f.open(QIODevice::ReadOnly)) {
+				QString text = QString::fromUtf8(f.readAll());
+				const int at = static_cast<int>(text.indexOf(QStringLiteral("medium=\"hydraulic\"")));
+				if (at >= 0) {
+					text.replace(at, 18, QStringLiteral("medium=\"pneumatic\""));
+					file = QDir(QDir::tempPath()).filePath(QStringLiteral("qet_sim_r03_medium.qet"));
+					QFile o(file);
+					if (o.open(QIODevice::WriteOnly)) o.write(text.toUtf8()); else file.clear();
+				}
+			}
+			expectError(file, QStringLiteral("Luft und Öl in einem Netz"), QStringLiteral("Pneumatik- und Hydraulikanschlüsse"), 0.05);
+		}
+		// a valve resistance far too small for the step: the run stops with the net instead of computing nonsense
+		expectError(variant(hyd, QStringLiteral("rT"), QStringLiteral("value"), QStringLiteral("0.0001"),
+							QStringLiteral("qet_sim_r03_instabil.qet")),
+					QStringLiteral("instabiles Netz"), QStringLiteral("Numerisch instabil im Netz an"), 0.5);
+		// simultaneous inputs in either order: the same run, step for step
+		const QString sp = path("speicher_druckschalter_logik.qet");
+		QVector<double> trace1, trace2;
+		auto tracer = [](QVector<double> &tr) {
+			return [&tr](SimulationModel &s) {
+				for (const auto &cyl : s.cylinders()) tr << cyl.x_mm;
+			};
+		};
+		ProjectRun a1 = runProject(sp, 6.0, {{0.1, QStringLiteral("-QM1"), 1, true}, {0.1, QStringLiteral("-QM2"), 1, true}}, 1.0, tracer(trace1));
+		ProjectRun a2 = runProject(sp, 6.0, {{0.1, QStringLiteral("-QM2"), 1, true}, {0.1, QStringLiteral("-QM1"), 1, true}}, 1.0, tracer(trace2));
+		if (!a1.error.isEmpty() || !a2.error.isEmpty()) wrong << a1.error + a2.error;
+		else if (trace1 != trace2 || trace1.isEmpty()) wrong << QStringLiteral("gleichzeitige Eingaben: Reihenfolge ändert den Lauf");
+		else seen << QStringLiteral("gleichzeitige Eingaben in beiden Reihenfolgen gleich (%1 Werte)").arg(trace1.size());
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? QStringLiteral("erkannt: %1").arg(seen.join(QStringLiteral(", "))) : wrong.join(QStringLiteral("; "));
 		out << c;
 	}
 	{   // 8. measurement contract (R01): reading does not change the run, flows balance over a part,

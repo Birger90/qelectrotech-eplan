@@ -726,7 +726,8 @@ int simulateProject(QETProject &project, const QStringList &args)
 			++i;
 		}
 	}
-	std::sort(events.begin(), events.end(), [](const Event &x, const Event &y) { return x.t < y.t; });
+	// R03: events at the same time keep the order of the command line (stable), so a run is reproducible
+	std::stable_sort(events.begin(), events.end(), [](const Event &x, const Event &y) { return x.t < y.t; });
 	SimulationModel sim(project.diagrams(), pressure);
 	if (!list_signals) out << sim.summary() << "\n";
 	for (const QString &e : sim.modelErrors()) err << "Model error: " << e << "\n";

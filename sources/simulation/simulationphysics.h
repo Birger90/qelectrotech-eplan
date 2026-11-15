@@ -77,6 +77,26 @@ inline double oilNode(double p, double volume, double dvdt, double q, double bul
 	return p_min;
 }
 
+	/**
+		watch for a numerically unstable node (roadmap R03): with an explicit step a
+		net whose volume is too small for its flows swings from step to step with
+		growing or steady amplitude instead of settling. @a update gets the pressure
+		change of each step and returns true once the sign has alternated for
+		@a limit steps in a row with changes above @a floor that do not die out.
+	*/
+struct OscillationWatch {
+	double last = 0.0;
+	int count = 0;
+	bool update(double dp, double floor, int limit = 200)
+	{
+		const bool swing = std::abs(dp) > floor && std::abs(last) > floor && (dp > 0) != (last > 0)
+						   && std::abs(dp) >= 0.9 * std::abs(last);
+		count = swing ? count + 1 : 0;
+		last = dp;
+		return count >= limit;
+	}
+};
+
 	/// gas side of a hydraulic accumulator: precharge @a p_pre (absolute) at gas volume @a v0, exponent @a n
 struct GasCharge { double p_pre, v0, n; };
 

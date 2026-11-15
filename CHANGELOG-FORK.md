@@ -3,6 +3,21 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.25.0 – 15.11.2026
+
+Simulations-Roadmap R03 (Anfangszustand, Numerik, Ereignisse):
+
+- Widersprüchliche Netze werden vor dem Lauf gemeldet: zwei Bauteile halten ein Netz auf verschiedenen festen
+  Drücken (mit beiden Kennzeichen und Drücken), Luft- und Ölanschlüsse oder Fluid- und elektrische Anschlüsse in
+  einem Netz.
+- Schwingungswächter je Netz: schwingt ein Druck von Schritt zu Schritt ohne abzuklingen (expliziter Schritt zu groß
+  für Netzvolumen und Widerstand), bricht der Lauf nach 200 Schritten mit Netz und Hinweis ab, statt Unsinn zu
+  rechnen (z. B. rT = 1e-4 bar·min²/l² am Hydraulikventil).
+- Ereignisse zur selben Zeit behalten die Reihenfolge der Eingabe (stabile Sortierung); gleichzeitige Eingaben
+  ergeben in jeder Reihenfolge denselben Lauf. GRAFCET-Entwicklung bleibt auf 100 Runden begrenzt, alle Schleifen
+  enden bei Fehlern.
+- Neue Prüfung „Netze, Stabilität, Ereignisse (R03)“; `--simulate-reference`: 26 Prüfungen, alle bestanden.
+
 ## 1.24.0 – 15.11.2026
 
 Simulations-Roadmap R02 (Endanschlag und Drucktransienten), geprüft gegen OpenModelica 1.26.3 (jetzt installiert):

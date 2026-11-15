@@ -27,6 +27,8 @@
 #include <QVector>
 #include <memory>
 
+#include "simulationphysics.h"
+
 class Diagram;
 class Element;
 class Terminal;
@@ -183,6 +185,8 @@ class SimulationModel
 		QSet<int> m_plus_nets;
 		QSet<QString> m_pressed;
 		QHash<QString, QString> m_end_position;   // cylinder label -> "vorne"/"hinten"/""
+		QHash<int, QString> m_fixed_by;            // which part holds a net at a fixed pressure (R03)
+		QVector<SimPhysics::OscillationWatch> m_watch;   // numerical stability per net (R03)
 		bool m_record_flows = false;
 		QHash<QPair<Element *, int>, double> m_port_flow;   // flow into the part at its port's net (last step)
 		QHash<Element *, double> m_cylinder_force;           // fluid force on the piston (last step)

@@ -30,6 +30,13 @@ foreach ($teil in "eplan_zw1", "planvorlagen") {
     Copy-Item (Join-Path $repo "tools\eplan_import\$teil") $ziel -Recurse -Force
 }
 Get-ChildItem $ziel -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
+# FluidSIM-Import (Datei > FluidSIM-Schaltung importieren) mit dem Symbolumwandler, den er braucht
+$fs = Join-Path $deploy "fluidsim_import"
+New-Item -ItemType Directory -Force (Join-Path $fs "symbole") | Out-Null
+Copy-Item (Join-Path $repo "tools\fluidsim_import\*.py") $fs -Force
+foreach ($datei in "fluidsim_symbole.py", "fluid_schaltwege.py", "fluid_kennwerte.py") {
+    Copy-Item (Join-Path $repo "tools\symbole\$datei") (Join-Path $fs "symbole") -Force
+}
 
 # Fluidtechnik: die Pneumatik- und Hydraulikbauteile der Sammlung durch nachgerüstete ersetzen (Medium und
 # Portnummern an jedem Anschluss, gleiche Pfade).

@@ -1268,7 +1268,7 @@ def tool_export(binary: str, project: str, format: str, output: str,
 # qet_simulate / qet_simulate_reference: the simulation, headless
 # --------------------------------------------------------------------------
 
-_SIM_EVENT = re.compile(r"^\s*\d+(?:[.,]\d+)?\s+-?\S+(?:\s+(?:links|rechts|left|right))?\s+(?:an|aus|on|off)\s*$",
+_SIM_EVENT = re.compile(r"^\s*\d+(?:[.,]\d+)?\s+\S.*?(?:\s+(?:links|rechts|left|right))?\s+(?:an|aus|on|off)\s*$",
                         re.IGNORECASE)
 _SIM_LINE = re.compile(r"^\s*(\d+(?:\.\d+)?) s  (.*)$")
 
@@ -1372,6 +1372,56 @@ def tool_simulate_reference(binary: str, reference_dir: str | None = None,
         out["hint"] = ("this QElectroTech has no --simulate-reference; it needs "
                        "QElectroTech-EPLAN 1.16 or later")
     return out
+
+
+def _fluidsim_program() -> Path | None:
+    """fluidsim_plan.py: next to an installed QElectroTech (<data>/fluidsim_import, beside this
+    server's mcp folder) or in the source tree (tools/fluidsim_import)."""
+    here = Path(__file__).resolve().parent
+    env = os.environ.get("QET_FLUIDSIM_IMPORT", "").strip()
+    for c in ([Path(env)] if env else []) + [here.parent / "fluidsim_import" / "fluidsim_plan.py",
+                                            here.parents[1] / "tools" / "fluidsim_import" / "fluidsim_plan.py"]:
+        if c.is_file():
+            return c
+    return None
+
+
+def tool_fluidsim_import(binary: str, circuit: str, output: str, timeout: int = 600) -> dict:
+    """Import FluidSIM 6 circuits (.circ, or a folder of them, one folio each) as a QElectroTech project."""
+    src = Path(circuit).expanduser()
+    if not (src.is_file() or src.is_dir()):
+        raise ValueError(f"no such circuit or folder: {src}")
+    out = Path(output).expanduser()
+    if out.suffix.lower() != ".qet":
+        raise ValueError("output must end in .qet")
+    program = _fluidsim_program()
+    if program is None:
+        raise ValueError("the FluidSIM import program (fluidsim_import/fluidsim_plan.py) is not "
+                         "installed next to this server; set QET_FLUIDSIM_IMPORT to its path")
+    with tempfile.TemporaryDirectory(prefix="qet-fluidsim-") as tmp:
+        report = Path(tmp) / "bericht.json"
+        env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUTF8="1")
+        try:
+            r = subprocess.run([sys.executable, str(program), str(src), str(out), "--qet", str(binary),
+                                "--bericht", str(report)], capture_output=True, text=True,
+                               encoding="utf-8", errors="replace", timeout=timeout, env=env)
+        except subprocess.TimeoutExpired:
+            return {"ok": False, "timed_out": True}
+        result = {"ok": r.returncode == 0 and report.is_file(), "output": str(out)}
+        if report.is_file():
+            data = json.loads(report.read_text(encoding="utf-8"))
+            result.update({
+                "parts": data.get("bauteile"), "wires": data.get("leitungen"), "links": data.get("verknuepfungen"),
+                "simulation_roles": data.get("rollen"), "labels_added": data.get("kennzeichnungen"),
+                "grafcet": {"steps": data.get("schritte"), "transitions": data.get("transitionen"),
+                            "actions": data.get("aktionen")},
+                "push_buttons": data.get("taster", []), "hand_valves": data.get("handventile", []),
+                "not_imported": data.get("offen", []), "failed_operations": data.get("fehler", []),
+            })
+        if not result["ok"]:
+            result["exit_code"] = r.returncode
+            result["stderr"] = _keep_tail(r.stderr or r.stdout, 4000)
+        return result
 
 
 # --------------------------------------------------------------------------
@@ -5540,6 +5590,29 @@ TOOLS = [
                                            a.get("timeout", 300)),
     },
     {
+        "name": "qet_fluidsim_import",
+        "description": "Import FluidSIM 6 circuits (.circ; a folder gives one folio per circuit) as a new "
+                       "QElectroTech project that can be simulated at once: every part with its symbol, "
+                       "wires, coil-valve and relay-contact links, the valves' flow paths per position, "
+                       "all parameters with units, the electric roles (supply, push buttons, limit "
+                       "switches from the distance rules, valve solenoids), and the GRAFCET charts with "
+                       "the GRAFCET PLC's inputs and outputs. Returns the counts, the push buttons and "
+                       "hand valves to use as qet_simulate events, and what was not imported.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "binary": {"type": "string", "description": "the qelectrotech executable; leave it out to use the one this server is configured with"},
+                "circuit": {"type": "string", "description": "a FluidSIM circuit (.circ) or a folder of them"},
+                "output": {"type": "string", "description": "the project to write (.qet)"},
+                "overwrite": {"type": "boolean", "default": False},
+                "timeout": {"type": "integer", "default": 600},
+            },
+            "required": ["circuit", "output"],
+        },
+        "handler": lambda a: tool_fluidsim_import(a["binary"], a["circuit"], a["output"],
+                                                  a.get("timeout", 600)),
+    },
+    {
         "name": "qet_simulate_reference",
         "description": "Check the simulation core against reference cases with known solutions "
                        "(gas and oil charging, pump, orifice, accumulator, PLC counter and "
@@ -6605,6 +6678,7 @@ _DATA_PATHS = {
     "qet_export":        {"read": ("project",), "write": ("output",)},
     "qet_simulate":       {"read": ("project",), "write": ("csv", "png_dir")},
     "qet_simulate_reference": {"read": ("reference_dir",)},
+    "qet_fluidsim_import": {"read": ("circuit",), "write": ("output",)},
     "qet_edit":           {"read": ("project",), "write": ("output",)},
     "qet_query":          {"read": ("project",)},
     "qet_continuity":     {"read": ("project",)},
@@ -6631,7 +6705,7 @@ _DATA_PATHS = {
 }
 
 # Tools that launch QElectroTech, and so take "binary" and "elements_dir".
-_LAUNCHES_QET = {"qet_simulate", "qet_simulate_reference", "qet_export", "qet_edit", "qet_query", "qet_continuity",
+_LAUNCHES_QET = {"qet_simulate", "qet_simulate_reference", "qet_fluidsim_import", "qet_export", "qet_edit", "qet_query", "qet_continuity",
                  "qet_check", "qet_layout_check", "qet_project_new", "qet_script_api",
                  "qet_script_test", "qet_recording_check", "qet_live_layout_check",
                  "qet_dataportal_import"}

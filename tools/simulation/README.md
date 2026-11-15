@@ -20,7 +20,7 @@ Betätigung, Kennwerte) und der elektrischen Steuerung.
 |---|---|
 | Leitungsnetz | Knoten mit Volumen; Luft isotherm (ideales Gas), Öl mit Kompressionsmodul. Freier Anschluss: offen = ins Freie, Blindstopfen (`port_end="plug"`) = verschlossen (eigenes, dichtes Volumen), Schalldämpfer = über dessen Widerstand ins Freie |
 | Unterdruck im Öl | unter 0,11 bar abs reißt das Öl ab: der fehlende Inhalt wird als Hohlraum bilanziert und beim Nachströmen zuerst wieder gefüllt (Meldung „Hohlraum“); Dampfdruck und Ausgasen werden nicht gerechnet |
-| Druckluftquelle | hält den Versorgungsdruck (Fenster: *Versorgungsdruck*) |
+| Druckluftquelle | hält den Versorgungsdruck (Fenster: *Versorgungsdruck*); mit eigenem Nenndruck `pNom` (aus FluidSIM übernommen) diesen |
 | Hydraulikpumpe | Verdrängung × Drehzahl, eingebaute Druckbegrenzung: volle Förderung bis 1 bar unter `pMax`, bei `pMax` null |
 | Hydrospeicher (`supply.accumulator`, Öl) | Gasvolumen `V0`, Vorfülldruck `p0`, Polytropenexponent `k`; unter dem Vorfülldruck leer. Der Druck im Netz wird implizit aus der Volumenbilanz gelöst, die Ölmenge bleibt bei jedem Zeitschritt erhalten |
 | Druckluftbehälter (`supply.accumulator`, Luft) | Volumen `V0` im Netz, Anfangsdruck `p0`; ein endlicher Vorrat, keine Quelle |
@@ -32,9 +32,12 @@ Betätigung, Kennwerte) und der elektrischen Steuerung.
 | Rückschlag-, Drosselrückschlagventil | freie Richtung `free_from` → `free_to` (aus der Zeichnung); öffnet stetig ab dem Öffnungsdruck `p0`; entsperrbar über Steueranschluss |
 | Drossel, Absperrventil, Schalldämpfer, Schnellentlüftung | Leitwert aus `qNN` bzw. `rT` |
 | Druckbegrenzung, Druckregler | Einstelldruck `p0`, Öffnungsbereich `dpEnd`; Druckbegrenzung von Eingang 1 (P) in den Rücklauf 2 (T), ohne Rücklaufleitung ins Freie, öffnet nach dem Unterschied Eingang – Rücklauf |
-| Zylinder | Kraftbilanz: Drücke × Flächen, Masse, Haft-/Gleitreibung, Feder, Last, Endanschläge; meldet Unterdruck im Öl (Kavitation wird nicht gerechnet) |
+| Zylinder | Kraftbilanz: Drücke × Flächen, Masse, Haft-/Gleitreibung (mit `F_ref`/`v_ref` aus FluidSIM viskos F_ref/v_ref, sonst 20 N·s/m), Feder, Last, Endanschläge; meldet Unterdruck im Öl (Kavitation wird nicht gerechnet) |
 | Spannungsquelle | oberer Anschluss Plus, unterer Minus |
-| Taster, Endschalter | Schließer/Öffner aus dem Symbol |
+| Taster, Endschalter | Schließer/Öffner aus dem Symbol; Wahlschalter (Rastung, `sim_role` `switch`) schaltet bei jedem Druck um; Endschalter auch über einen Hubbereich „`-MM1 0..2`“ (mm) |
+| Handventil mit Wahlschalter | nur auf einer Seite von Hand betätigt, ohne Feder: jeder Druck schaltet um, das Ventil bleibt stehen |
+| Rollenhebel-, Stößelventil | Betätigung `roller`/`plunger` mit Funktionstext „`-MM1 0..2`“: betätigt, solange der Kolben im Bereich steht |
+| GRAFCET-SPS (`sim_role` `grafcet_io`) | Elementinformation `sim_io` „`I0=-KF1;Q0=-MB1`“: Eingang wahr, solange sein Anschluss Plus hat; Ausgangsanschluss hat Plus, solange die Variable wahr ist |
 | Relais | Spule (Master) und verknüpfte Kontakte (Slaves), Anzug 10 ms, Abfall 8 ms |
 | Zeitrelais | ansprech- bzw. abfallverzögerte Spule oder Kontakte; Zeit im Funktionstext der Spule („1 s“, „500 ms“) |
 
@@ -157,7 +160,15 @@ verglichen, nicht jeder Punkt.
 
 - **Ventilspule → Ventil:** Die Spule trägt das Kennzeichen des Ventils, z. B. `-QM1`. Bei zwei Magneten
   `-QM1/14` (links) und `-QM1/12` (rechts).
-- **Endschalter → Zylinder:** Funktionstext des Schalters „`-MM1 vorne`“ bzw. „`-MM1 hinten`“.
+- **Endschalter → Zylinder:** Funktionstext des Schalters „`-MM1 vorne`“ bzw. „`-MM1 hinten`“ oder ein Hubbereich
+  „`-MM1 0..2`“ in mm (so übernimmt der FluidSIM-Import die Wegmarken des Wegmaßstabs).
+- **Ventilspule ohne Ventilkennzeichen:** über die Verknüpfung (Spule als Slave des Ventils), Seite aus der
+  Elementinformation `valve_side` (`left`/`right`); ein Spulenkennzeichen in einer GRAFCET-Aktion (`-MB1`) betätigt
+  diese Seite.
+- **Rolle eines elektrischen Bauteils (`sim_role`):** eine Elementinformation `sim_role` legt fest, wie ein elektrisches Bauteil
+  gerechnet wird, statt es am Symbolnamen zu erkennen: `supply+`/`supply-` (alle Anschlüsse Plus bzw. Minus),
+  `voltage` (Anschlüsse p/+ und n/−), `button`, `switch` (Wahlschalter), `limit`, jeweils mit `_nc` als Öffner,
+  `solenoid`, `grafcet_io`. Der FluidSIM-Import setzt sie.
 - **Kennwerte** stehen als `<parameter>` im Symbol und lassen sich je Bauteil anpassen. Umgerechnet wird nach der
   Einheit (`unit="MPa"`, `bar`, `l`, `cm3`, `1/min` …), nie nach der Größe der Zahl; eine unbekannte oder unpassende
   Einheit, unlesbare Zahlen und Werte außerhalb ihres Bereichs (Durchmesser, Hub, Masse, Zeiten, Volumen ≤ 0, Kolbenstange
@@ -168,5 +179,7 @@ verglichen, nicht jeder Punkt.
 ## Grenzen
 
 Die Modelle sind eigene, aus der Fachphysik; sie sind gegen Handrechnungen geprüft (Hydraulik: Geschwindigkeit =
-Förderstrom/Fläche), gegen analytische Lösungen und einen OpenModelica-Lauf (siehe oben), noch nicht gegen FluidSIM. Nicht simuliert: Makroschritte und einschließende Schritte (laufen als normale Schritte), Zwangssteuerung, analoge SPS-Ein-/Ausgänge, Proportionalventile
+Förderstrom/Fläche), gegen analytische Lösungen und einen OpenModelica-Lauf (siehe oben), nicht Wert für Wert gegen
+FluidSIM; die 1136 FluidSIM-Beispiele laufen über `tools/fluidsim_import/fluidsim_batch.py` als Rauchprüfung (Import,
+Modell, Bewegung). Nicht simuliert: Makroschritte und einschließende Schritte (laufen als normale Schritte), Zwangssteuerung, analoge SPS-Ein-/Ausgänge, Proportionalventile
 mit Stellsignal.

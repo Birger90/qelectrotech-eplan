@@ -115,6 +115,13 @@
 >   `--simulate-reference` checks the simulation core against analytical solutions, OpenModelica runs (motion and
 >   pressures) and test projects run end to end; invalid data and computing faults stop a run with a message.
 >   Guide: [tools/simulation/README.md](tools/simulation/README.md).
+> - File > *Import FluidSIM circuit (.circ)*: FluidSIM 6 circuits become a project that simulates at once -- parts,
+>   wires, coil and relay links, the flow paths of every valve position, all parameters with their units, the
+>   electric roles (supply, push buttons, limit switches from the distance rules, valve solenoids) and the GRAFCET
+>   charts with the GRAFCET PLC. Also `tools/fluidsim_import/fluidsim_plan.py` and MCP `qet_fluidsim_import`;
+>   `fluidsim_batch.py` imports and simulates all FluidSIM examples as a check. Every part is drawn with the fork's
+>   own symbols after ISO 1219 / IEC 60617 (only connections and data are read from the file), so anyone can
+>   import a circuit, without FluidSIM installed and without Festo graphics in the project.
 >
 > **Tools** (`tools/symbole/`)
 > - `pdf_symbol.py` / `pdf_blatt.py`: take symbols or whole sheets 1:1 from a vector PDF (e.g. an EPLAN plan), with
@@ -127,8 +134,8 @@
 > **MCP server** (`misc/qet-mcp/`): a Model Context Protocol server (Python standard library only) that lets an
 > AI assistant read, check and change QElectroTech projects -- project info, elements, conductors, diffs, headless
 > exports, edits, symbol building, EPLAN Data Portal search and import, design-rule and layout checks, SQL over the
-> project database, script buttons, a live mode on the open project, and the simulation (`qet_simulate`,
-> `qet_simulate_reference`). Set it up and see every tool in
+> project database, script buttons, a live mode on the open project, the simulation (`qet_simulate`,
+> `qet_simulate_reference`) and the FluidSIM import (`qet_fluidsim_import`). Set it up and see every tool in
 > [misc/qet-mcp/README.md](misc/qet-mcp/README.md).
 >
 > **For AI assistants**: skills in `.claude/skills/` (Claude Code loads them in a clone; other tools: read the

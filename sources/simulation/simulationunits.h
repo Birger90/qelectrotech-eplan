@@ -52,6 +52,8 @@ inline Unit unit(const QString &u)
 		{QStringLiteral("N"), {1.0, "force"}}, {QStringLiteral("kN"), {1e3, "force"}},
 		{QStringLiteral("kg"), {1.0, "mass"}}, {QStringLiteral("g"), {1e-3, "mass"}},
 		{QStringLiteral("Nm"), {1.0, "torque"}},
+		{QStringLiteral("m/s"), {1.0, "velocity"}}, {QStringLiteral("mm/s"), {1e-3, "velocity"}},
+		{QStringLiteral("N.s/m"), {1.0, "damping"}},
 	};
 	return units.value(u.trimmed(), Unit{std::nan(""), ""});
 }

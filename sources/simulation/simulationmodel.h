@@ -114,6 +114,7 @@ class SimulationModel
 		struct Contact;
 		struct Relay;
 		struct Coil;
+		struct GrafcetIo;
 		struct Counter;
 		struct PlcChannel;
 		struct Plc;
@@ -141,6 +142,8 @@ class SimulationModel
 		QList<Contact *> m_contacts;
 		QList<Relay *> m_relays;
 		QList<Coil *> m_coils;
+		QList<GrafcetIo *> m_grafcet_io;
+		QSet<QString> m_latched;                   // selector switches switched on
 		QList<Counter *> m_counters;
 		QList<PlcChannel *> m_plc_channels;
 		QList<Plc *> m_plcs;

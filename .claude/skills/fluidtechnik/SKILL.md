@@ -95,9 +95,33 @@ nur an, wenn noch keine `qet_labels.xml` da ist). ISO/IEC 81346-2 selbst liegt n
 Übernimmt Bauteile mit Lage (Drehung, Spiegelung), Kennzeichnung, deutsche Namen, sichtbare Werte als
 Text, Zylindermaße, Leitungen (Verzweigungen werden Leitungen am selben Anschluss), Schalldämpfer/
 Blindstopfen, Spule ↔ Ventil und Relais ↔ Kontakte (auch über Blätter). Läuft über QETs Skript-
-Schnittstelle (`misc/qet-mcp/qet_mcp.py`, setzt `QET_ENABLE_SCRIPTING=1`). Alle 1072 Beispiele lassen
-sich umwandeln. Nicht übernommen: Rahmen, Tabellen, Zustandsdiagramme, GRAFCET, Artikeldaten (FluidSIM
-speichert keine), Leitungswege (QET legt sie neu).
+Schnittstelle (`misc/qet-mcp/qet_mcp.py`, setzt `QET_ENABLE_SCRIPTING=1`).
+
+Seit 1.22.0 mit **eigener Grafik** (`tools/fluidsim_import/eigene_grafik.py`: Ventilkästen aus den Schaltwegen,
+Betätigungen aus den Ebenennamen, Zylinder, Quelle, Tank, Messgerät, Rückschlag-/Drossel-/Absperrventil längs der
+Anschlussachse, Druck- und Logikventile, Kontakte, Spulen, Leuchten, Potentiale; sonst Kasten mit Klassenname).
+Aus der .circ nur Anschlusslagen und Daten – jeder kann übernehmen, ohne FluidSIM und ohne Festo-Grafik im Projekt.
+`--fluidsim-grafik` nimmt die Originalgrafik (nur Eigengebrauch mit Lizenz). Und sofort simulierbar (auch: Datei → „FluidSIM-Schaltung importieren (.circ)…“, MCP
+`qet_fluidsim_import`, Gesamtprüfung `tools/fluidsim_import/fluidsim_batch.py --ausgabe ORDNER`; 15.11.2026: 1136/1136 übernommen, 0 Modellfehler, Zylinder bewegt sich in 276/461):
+- **Schaltwege** je Stellung aus den Stellungsbausteinen `B<n>_<nr>` des Ventilsymbols (nach `ref-x`),
+  Anschlussnamen aus `CON<n>`; gespiegelt (`scale-x=-1`) oder 180° gedreht → Stellungen, Ruhestellung
+  und Seiten tauschen (Klick links = linke Hälfte der Zeichnung).
+- **Kennwerte** der Schaltung (`<parameter>`/`<const>` mit Einheit) in den `<fluid>`-Block; FluidSIM-
+  Klassen unter dem Namen des Simulationskerns (`ALIAS`/`UMBAU` in `fluidsim_plan.py`), z. B.
+  `ThrottleCheckValve` → `one_way_flow_control_valve` (frei Anschluss 2 → 1 = Abluftdrosselung, 304 von
+  334 Beispielen mit Anschluss 1 am Zylinder), `level` = Öffnung in %, `MPa.min2/l2` → ×10 bar.
+- **Elektrik** über Elementinformation `sim_role`: `supply+`/`supply-` (Pot24V/Pot0V/Ground), `voltage`,
+  `button`/`switch` (mit Rastung = Wahlschalter)/`_nc`, `limit` (+ `function` „-MM1 0..2“ aus dem
+  Wegmaßstab `Mech.FS3.DistanceRule`: label1..6, x11/x12 … in mm, am nächstgelegenen Zylinder),
+  `solenoid` (+ `valve_side`), `grafcet_io` (+ `sim_io` „I0=-KF1;Q0=-MB1“ aus LabelIn/LabelOut).
+  Rollenhebelventile bekommen dieselbe Wegmarke als `function`.
+- **Magnet ↔ Ventil**: neben `link-props/target` steht die Spulenkennzeichnung in der Betätigungsebene
+  `AEML…`/`AEMR…` als `<connector type="electric-label" designation="-MB1">`.
+- **GRAFCET** (`fluidsim_grafcet.py`): Grafcet.Step (flags initial), Transition (condition: `*`→`·`,
+  `+`→`∨`, `RE`→`↑`, `.signal` weg), Action (actionType 0 N, 1 bedingt, 2/3 speichernd bei Aktivierung/
+  Deaktivierung, 4 beim Auslösen ≈ 2, 5 bei Ereignis, 6 Zwangssteuerung – nicht), MultiPin/SyncRule.
+Nicht übernommen: Rahmen, Tabellen, Zustandsdiagramme, Digitaltechnik (LOGO), Teil-GRAFCETs,
+Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
 
 ## FluidSIM-Format (Kurzfassung, ausführlich in PLAN-PNEUMATIK.md)
 
@@ -111,6 +135,15 @@ speichert keine), Leitungswege (QET legt sie neu).
 - Leitung: `<connect con1="Oxx.C4" con2="Oyy.A" points="relativ zu con1">`; `C4` → `con-ref` → `Ebene.Ident`.
 - Verzweigung: `Interface.MultiPin`. Schalldämpfer: eigenes Bauteil, Anschluss liegt auf dem Ventilanschluss.
 - Spule ↔ Ventil: am Ventilanschluss `link-props/type = solenoid-valve-coil-target`, `target value="-MB1" comp-ref`.
+- **Gepackte Koordinaten** (357 ältere Beispiele): `<line>` / `<polyline count=n>` ohne Attribute, Text =
+  Hex von little-endian-Doubles, erst alle x, dann alle y (Linie: x1, x2, y1, y2). `fluidsim_symbole.entpacken`
+  schreibt sie in Attribute um – ohne das stehen alle Linien auf 0 und kein Ventil hat Schaltwege.
+- Anschlüsse ohne `designation` (Zylinder, Quellen, Spulen, GRAFCET-SPS): Name = Anschlussname am Bauteil
+  (`<connector ident="A" con-ref="CON1.1">`), so heißen Zylinderanschlüsse A/B und SPS-Anschlüsse I0/Q0.
+- Pneumatische Betätigung heißt `APNEUL`/`APNEUR` (wie `PLT…` Vorsteuerung), mechanische `AMECHL/R` (Rolle).
+  3/2-Ventile nennen ihren einzigen Steueranschluss oft „12“ (ISO 5599: verbindet 1 mit 2).
+- Zylinder: `F_ref`/`v_ref` (auto_friction) = viskose Reibung F_ref/v_ref; ohne sie fährt ein leichter
+  Zylinder an einem 1000-l/min-Ventil unrealistisch schnell (100 mm in 27 ms statt ≈ 130 ms).
 
 ## Gelernt
 

@@ -506,6 +506,12 @@ install(PROGRAMS misc/qet-assistent/bruecke.py DESTINATION ${QET_DATA_PATH}mcp/q
 install(DIRECTORY tools/eplan_import/eplan_zw1 tools/eplan_import/planvorlagen
 	DESTINATION ${QET_DATA_PATH}eplan_import
 	PATTERN "__pycache__" EXCLUDE)
+# FluidSIM import (File > Import FluidSIM circuit): the Python program and the
+# FluidSIM symbol converter it uses; it finds mcp/ and elements/ next to it
+install(FILES tools/fluidsim_import/fluidsim_plan.py tools/fluidsim_import/fluidsim_grafcet.py tools/fluidsim_import/eigene_grafik.py
+	tools/fluidsim_import/fluidsim_batch.py DESTINATION ${QET_DATA_PATH}fluidsim_import)
+install(FILES tools/symbole/fluidsim_symbole.py tools/symbole/fluid_schaltwege.py tools/symbole/fluid_kennwerte.py
+	DESTINATION ${QET_DATA_PATH}fluidsim_import/symbole)
 install(FILES LICENSE ELEMENTS.LICENSE CREDIT README ChangeLog DESTINATION ${QET_LICENSE_PATH})
 if(UNIX AND NOT APPLE)
     install(FILES misc/org.qelectrotech.qelectrotech.desktop DESTINATION ${QET_DESKTOP_PATH})

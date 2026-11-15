@@ -17033,6 +17033,14 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
         <translation>Ordner der Benutzersammlung öffnen</translation>
     </message>
     <message>
+        <source>Import FluidSIM circuit (.circ)…</source>
+        <translation>FluidSIM-Schaltung importieren (.circ)…</translation>
+    </message>
+    <message>
+        <source>Reads FluidSIM circuits with their parts, wires, flow paths, values and GRAFCET and opens them as a QElectroTech project</source>
+        <translation>Liest FluidSIM-Schaltungen mit Bauteilen, Leitungen, Schaltwegen, Kennwerten und GRAFCET und öffnet sie als QElectroTech-Projekt</translation>
+    </message>
+    <message>
         <source>Import EPLAN project (.zw1)…</source>
         <translation>EPLAN-Projekt importieren (.zw1)…</translation>
     </message>
@@ -19408,6 +19416,49 @@ Was möchten Sie tun?</translation>
 </context>
 <context>
     <name>QObject</name>
+    <message>
+        <source>Import FluidSIM circuit</source>
+        <translation>FluidSIM-Schaltung importieren</translation>
+    </message>
+    <message>
+        <source>The import program (%1) was not found next to QElectroTech. Set QET_FLUIDSIM_IMPORT to its path.</source>
+        <translation>Das Importprogramm (%1) liegt nicht neben QElectroTech. QET_FLUIDSIM_IMPORT auf seinen Pfad setzen.</translation>
+    </message>
+    <message>
+        <source>FluidSIM circuits (*.circ);;All files (*)</source>
+        <translation>FluidSIM-Schaltungen (*.circ);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <source>Save the imported project as</source>
+        <translation>Importiertes Projekt speichern unter</translation>
+    </message>
+    <message>
+        <source>QElectroTech projects (*.qet)</source>
+        <translation>QElectroTech-Projekte (*.qet)</translation>
+    </message>
+    <message numerus="yes">
+        <source>Importing %n FluidSIM circuit(s) …</source>
+        <translation>
+            <numerusform>Importiere %n FluidSIM-Schaltung …</numerusform>
+            <numerusform>Importiere %n FluidSIM-Schaltungen …</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>No Python could run the import program:
+%1</source>
+        <translation>Kein Python konnte das Importprogramm ausführen:
+%1</translation>
+    </message>
+    <message>
+        <source>The import did not finish:
+%1</source>
+        <translation>Der Import ist nicht fertig geworden:
+%1</translation>
+    </message>
     <message>
         <source>Apply text format</source>
         <translation>Beschriftungsart zuweisen</translation>

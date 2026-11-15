@@ -135,6 +135,13 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
   `--simulate-reference` prüft den Rechenkern gegen analytische Lösungen, OpenModelica-Läufe (Weg und Drücke) und
   Testprojekte von Anfang bis Ende; ungültige Daten und Rechenfehler brechen einen Lauf mit Meldung ab.
   Anleitung: [tools/simulation/README.md](tools/simulation/README.md).
+- Datei > *FluidSIM-Schaltung importieren (.circ)*: FluidSIM-6-Schaltungen werden ein Projekt, das sofort simuliert –
+  Bauteile, Leitungen, Spulen- und Relaisverknüpfungen, die Schaltwege jeder Ventilstellung, alle Kennwerte mit
+  Einheit, die elektrischen Rollen (Versorgung, Taster, Endschalter aus dem Wegmaßstab, Ventilmagnete) und die
+  GRAFCETs mit der GRAFCET-SPS. Auch als `tools/fluidsim_import/fluidsim_plan.py` und MCP `qet_fluidsim_import`;
+  `fluidsim_batch.py` übernimmt und simuliert zur Prüfung alle FluidSIM-Beispiele. Jedes Bauteil wird mit eigenen
+  Symbolen nach ISO 1219 / IEC 60617 gezeichnet (aus der Datei kommen nur Anschlüsse und Daten): jeder kann eine
+  Schaltung übernehmen, ohne FluidSIM und ohne Festo-Grafik im Projekt.
 
 ## Werkzeuge
 
@@ -153,7 +160,7 @@ Unter `misc/qet-mcp/` liegt ein Model-Context-Protocol-Server (nur Python-Standa
 KI-Assistent QElectroTech-Projekte lesen, prüfen und ändern kann: Projektinfo, Elemente, Leiter, Unterschiede
 (Diff), Export ohne Oberfläche, Bearbeiten, Symbole bauen, Suche und Import im EPLAN Data Portal, Regel- und
 Layoutprüfung, SQL auf die Projektdatenbank, Skript-Knöpfe, ein Live-Modus auf dem geöffneten Projekt und die
-Simulation (`qet_simulate`, `qet_simulate_reference`).
+Simulation (`qet_simulate`, `qet_simulate_reference`) und der FluidSIM-Import (`qet_fluidsim_import`).
 Einrichtung und alle Werkzeuge: [misc/qet-mcp/README.md](misc/qet-mcp/README.md).
 
 ## Für KI-Assistenten

@@ -189,8 +189,22 @@ struct SimulationModel::Valve {
 	double switch_at = -1, switch_start = -1;   // the spool moves from position to target in between
 	double c = 0, rt = 0.1, t_on = 0.02, t_off = 0.03;
 	bool hydraulic = false;
+	// selector switch: actuated by hand on one side only, without any spring (FluidSIM "mit Wahlschalter").
+	// Each press switches between the rest position and the actuated one and the valve stays there.
+	int toggle_side = -1;
+	bool latched = false;
+	// roller lever / plunger: actuated by a cylinder inside a stroke range (FluidSIM distance rule)
+	QString trigger_cylinder;
+	double trigger_lo = 0, trigger_hi = -1;
+	int trigger_side = 0;
 
+	int last() const { return static_cast<int>(positions.size()) - 1; }
 	int wanted() const {
+		if (toggle_side >= 0 && !forced[0] && !forced[1]) {
+			const int on = toggle_side == 0 ? 0 : last();
+			const int off = rest != on ? rest : last() - on;
+			return latched ? on : off;
+		}
 		const bool l = actuated[0] || forced[0], r = actuated[1] || forced[1];
 		if (l && !r) return 0;
 		if (r && !l) return static_cast<int>(positions.size()) - 1;
@@ -242,9 +256,10 @@ struct SimulationModel::Contact {
 	QString kind;          // button, limit, relay
 	bool nc = false;
 	int n1 = -1, n2 = -1;
-	QString trigger;       // limit switch: "-MM1 vorne"
+	QString trigger;       // limit switch: "-MM1 vorne", or a stroke range "-MM1 0..2" (mm)
 	Relay *relay = nullptr;
 	QString mode;
+	bool latching = false; // selector switch: each press switches it over and it stays
 };
 
 struct SimulationModel::Coil {
@@ -252,6 +267,16 @@ struct SimulationModel::Coil {
 	QString label;
 	int n1 = -1, n2 = -1;
 	bool on = false, known = false;
+	Valve *valve = nullptr;   // the valve it is linked to (master), if not found by its label
+	int side = -1;            // 0 left, 1 right, -1 the valve's only solenoid
+};
+
+	/// the inputs and outputs of a GRAFCET controller (FluidSIM "GRAFCET-SPS"): each input is true
+	/// while its terminal carries plus, each output terminal carries plus while its variable is true
+struct SimulationModel::GrafcetIo {
+	Element *e = nullptr;
+	QList<QPair<int, QString>> inputs, outputs;   // net, variable
+	QList<bool> value;                            // per output
 };
 
 struct SimulationModel::Counter {
@@ -309,6 +334,7 @@ SimulationModel::~SimulationModel()
 	qDeleteAll(m_contacts);
 	qDeleteAll(m_relays);
 	qDeleteAll(m_coils);
+	qDeleteAll(m_grafcet_io);
 	qDeleteAll(m_counters);
 	qDeleteAll(m_plc_channels);
 	qDeleteAll(m_plcs);
@@ -451,8 +477,15 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						for (int i = 1; i < ks.size(); ++i) m_vessel_links << qMakePair(ks.first(), ks.at(i));
 					}
 				} else if (f.m_kind == FluidData::Kind::Source) {
+					// a source with its own nominal pressure (FluidSIM "pNom", taken over on import) keeps it;
+					// the others supply the pressure set for the whole simulation
+					double p = p_supply;
+					if (!f.parameter(QStringLiteral("pNom")).isEmpty()) {
+						const QString who = label(e).isEmpty() ? e->name() : label(e);
+						p = P_ATM + paramIn(f, QStringLiteral("pNom"), supply_bar * 1e5, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+					}
 					for (Terminal *t : e->terminals())
-						if (node(t) >= 0) m_fixed.insert(node(t), p_supply);
+						if (node(t) >= 0) m_fixed.insert(node(t), p);
 				} else if (f.m_kind == FluidData::Kind::Valve && !f.m_positions.isEmpty()) {
 					auto *v = new Valve;
 					v->e = e;
@@ -467,6 +500,35 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						= qBound(0, f.m_initial_position - 1, static_cast<int>(f.m_positions.size()) - 1);
 					v->side[0] = f.m_left;
 					v->side[1] = f.m_right;
+					{
+						const auto handOnly = [](const FluidData::Actuation &a) {
+							return a.types == QStringList{QStringLiteral("manual")} && !a.spring && !a.air_spring && !a.pilot;
+						};
+						if (v->positions.size() >= 2) {
+							if (handOnly(f.m_left) && f.m_right.isNull()) v->toggle_side = 0;
+							else if (handOnly(f.m_right) && f.m_left.isNull()) v->toggle_side = 1;
+						}
+					}
+					{
+						// "-MM1 0..2": actuated while the piston of -MM1 is between 0 and 2 mm
+						const QStringList parts = info(e, "function").split(QLatin1Char(' '), Qt::SkipEmptyParts);
+						const int dots = parts.size() == 2 ? static_cast<int>(parts.at(1).indexOf(QLatin1String(".."))) : -1;
+						bool ok1 = false, ok2 = false;
+						if (dots > 0) {
+							v->trigger_lo = parts.at(1).left(dots).toDouble(&ok1) / 1000.0;
+							v->trigger_hi = parts.at(1).mid(dots + 2).toDouble(&ok2) / 1000.0;
+						}
+						if (ok1 && ok2) {
+							v->trigger_cylinder = parts.at(0);
+							const auto mech = [](const FluidData::Actuation &a) {
+								for (const QString &ty : a.types)
+									if (ty == QLatin1String("roller") || ty == QLatin1String("idle_roller") || ty == QLatin1String("plunger"))
+										return true;
+								return false;
+							};
+							v->trigger_side = mech(f.m_left) || !mech(f.m_right) ? 0 : 1;
+						}
+					}
 					const QString who = v->label.isEmpty() ? e->name() : v->label;
 					v->c = conductanceFromQnn(paramIn(f, QStringLiteral("qNN"), 60.0, QStringLiteral("l/min"), &m_model_errors, who, Range::Positive));
 					v->rt = paramNative(f, QStringLiteral("rT"), 0.1, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
@@ -496,6 +558,13 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					c->f_spring = f.m_spring != FluidData::SpringSide::None ? 0.15 * c->a_k * 6e5 : 0.0;
 					c->f_load = paramIn(f, QStringLiteral("F_extern_const"), 0.0, newton, &m_model_errors, who);
 					c->x = paramIn(f, QStringLiteral("xStart"), 0.0, m, &m_model_errors, who, Range::NonNegative);
+					// FluidSIM "automatic friction": a viscous force F_ref at the speed v_ref (F_ref is the piston
+					// force at the reference pressure, so the free cylinder runs at about v_ref there)
+					if (!f.parameter(QStringLiteral("F_ref")).isEmpty() && !f.parameter(QStringLiteral("v_ref")).isEmpty()) {
+						const double fr = paramIn(f, QStringLiteral("F_ref"), 0.0, newton, &m_model_errors, who, Range::NonNegative);
+						const double vr = paramIn(f, QStringLiteral("v_ref"), 1.0, QStringLiteral("m/s"), &m_model_errors, who, Range::Positive);
+						if (fr > 0 && vr > 0) c->damping = fr / vr;
+					}
 					m_cylinders << c;
 					m_end_position.insert(c->label, QString());
 				} else if (f.m_kind == FluidData::Kind::Sensor && fn == QLatin1String("sensor.pressure_switch")) {
@@ -541,6 +610,59 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 			const bool nc_name = name.contains(QStringLiteral("öffner")) || name.contains(QLatin1String(" nc"))
 				|| name.contains(QLatin1String("(nc)")) || path.endsWith(QLatin1String("_nf.elmt"))
 				|| path.endsWith(QLatin1String("_nc.elmt"));
+			// an explicit role (written by the FluidSIM import) comes before guessing from the symbol
+			const QString role = info(e, "sim_role");
+			if (!role.isEmpty()) {
+				if (role == QLatin1String("supply+") || role == QLatin1String("supply-")) {
+					QList<int> all;
+					for (int k : n) if (k >= 0) all << k;
+					if (role == QLatin1String("supply+")) m_sources << qMakePair(all, QList<int>{});
+					else m_sources << qMakePair(QList<int>{}, all);
+				} else if (role == QLatin1String("voltage")) {
+					QList<int> plus, minus;
+					for (Terminal *t : e->terminals()) {
+						const QString tn = t->name().toLower();
+						(tn == QLatin1String("p") || tn == QLatin1String("+") || tn == QLatin1String("l+") ? plus : minus) << node(t);
+					}
+					m_sources << qMakePair(plus, minus);
+				} else if (role.startsWith(QLatin1String("button")) || role.startsWith(QLatin1String("switch"))
+						   || role.startsWith(QLatin1String("limit"))) {
+					auto *c = new Contact;
+					c->e = e;
+					c->kind = role.startsWith(QLatin1String("limit")) ? QStringLiteral("limit") : QStringLiteral("button");
+					c->latching = role.startsWith(QLatin1String("switch"));
+					c->nc = role.endsWith(QLatin1String("_nc"));
+					c->n1 = n.at(0); c->n2 = n.at(1);
+					c->trigger = info(e, "function");
+					m_contacts << c;
+				} else if (role == QLatin1String("solenoid")) {
+					auto *c = new Coil;
+					c->e = e;
+					c->label = label(e);
+					c->n1 = n.at(0); c->n2 = n.at(1);
+					const QString s = info(e, "valve_side");
+					c->side = s == QLatin1String("left") ? 0 : s == QLatin1String("right") ? 1 : -1;
+					m_coils << c;
+				} else if (role == QLatin1String("grafcet_io")) {
+					auto *io = new GrafcetIo;
+					io->e = e;
+					QHash<QString, QString> names;
+					for (const QString &line : info(e, "sim_io").split(QRegularExpression(QStringLiteral("[;\\n]")), Qt::SkipEmptyParts)) {
+						const int eq = static_cast<int>(line.indexOf(QLatin1Char('=')));
+						if (eq > 0) names.insert(line.left(eq).trimmed().toUpper(), line.mid(eq + 1).trimmed());
+					}
+					for (Terminal *t : e->terminals()) {
+						const QString tn = t->name().trimmed().toUpper();
+						const QString var = names.value(tn);
+						if (var.isEmpty() || node(t) < 0) continue;
+						const QString v = var.startsWith(QLatin1Char('-')) ? Grafcet::labelVariable(var) : PlcProgram::normalized(var);
+						if (tn.startsWith(QLatin1Char('I')) || tn.startsWith(QLatin1Char('E'))) io->inputs << qMakePair(node(t), v);
+						else { io->outputs << qMakePair(node(t), v); io->value << false; }
+					}
+					m_grafcet_io << io;
+				}
+				continue;
+			}
 			if (data.m_type == ElementData::Master && data.m_master_type == ElementData::PLC) {
 				// a PLC (module): its program is the element information "sim_program"
 				const QString source = info(e, "sim_program");
@@ -637,6 +759,32 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						 || path.contains(QLatin1String("tempo_repos")))
 					r->mode = QStringLiteral("off");
 				m_relays << r;
+			} else if (data.m_type == ElementData::Slave && data.m_slave_state == ElementData::SW) {
+				// changeover contact: common (…1), break (…2) and make (…4) side, as an NC and an NO contact
+				int common = -1, brk = -1, make = -1;
+				QList<int> rest;
+				for (Terminal *t : e->terminals()) {
+					const QString tn = t->name().trimmed();
+					static const QRegularExpression digits(QStringLiteral("^\\d+$"));
+					if (!digits.match(tn).hasMatch()) { if (node(t) >= 0 && tn.isEmpty()) rest << node(t); continue; }
+					if (tn.endsWith(QLatin1Char('1')) && common < 0) common = node(t);
+					else if (tn.endsWith(QLatin1Char('2')) && brk < 0) brk = node(t);
+					else if (tn.endsWith(QLatin1Char('4')) && make < 0) make = node(t);
+					else rest << node(t);
+				}
+				if (common < 0 && !rest.isEmpty()) common = rest.takeFirst();
+				if (brk < 0 && !rest.isEmpty()) brk = rest.takeFirst();
+				if (make < 0 && !rest.isEmpty()) make = rest.takeFirst();
+				for (const bool nc : {true, false}) {
+					auto *c = new Contact;
+					c->e = e;
+					c->kind = QStringLiteral("relay");
+					c->nc = nc;
+					c->n1 = common; c->n2 = nc ? brk : make;
+					if (data.m_slave_type == ElementData::DelayOn) c->mode = QStringLiteral("on");
+					if (data.m_slave_type == ElementData::DelayOff) c->mode = QStringLiteral("off");
+					m_contacts << c;
+				}
 			} else if (data.m_type == ElementData::Slave
 					   && (data.m_slave_state == ElementData::NO || data.m_slave_state == ElementData::NC)) {
 				auto *c = new Contact;
@@ -683,6 +831,17 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 			}
 		}
 	}
+	// valve solenoids without the valve's label find it through the link
+	for (Coil *c : m_coils) {
+		bool by_label = false;
+		const int slash = static_cast<int>(c->label.indexOf(QLatin1Char('/')));
+		const QString base = slash >= 0 ? c->label.left(slash) : c->label;
+		for (Valve *v : m_valves) by_label = by_label || (!base.isEmpty() && v->label == base);
+		if (by_label) continue;
+		for (Element *other : c->e->linkedElements())
+			for (Valve *v : m_valves)
+				if (v->e == other) c->valve = v;
+	}
 	// relay contacts find their relay through the link
 	for (Contact *c : m_contacts) {
 		if (c->kind != QLatin1String("relay")) continue;
@@ -724,10 +883,19 @@ bool SimulationModel::contactClosed(const Contact &c) const
 {
 	bool actuated = false;
 	if (c.kind == QLatin1String("button")) {
-		actuated = m_pressed.contains(label(c.e));
+		actuated = c.latching ? m_latched.contains(label(c.e)) : m_pressed.contains(label(c.e));
 	} else if (c.kind == QLatin1String("limit")) {
 		const QStringList parts = c.trigger.split(QLatin1Char(' '), Qt::SkipEmptyParts);
 		actuated = parts.size() == 2 && m_end_position.value(parts.at(0)) == parts.at(1);
+		const int dots = parts.size() == 2 ? static_cast<int>(parts.at(1).indexOf(QLatin1String(".."))) : -1;
+		if (dots > 0) {
+			// a stroke range in mm (FluidSIM distance rule): actuated while the piston is inside
+			bool ok1 = false, ok2 = false;
+			const double lo = parts.at(1).left(dots).toDouble(&ok1) / 1000.0;
+			const double hi = parts.at(1).mid(dots + 2).toDouble(&ok2) / 1000.0;
+			for (const Cylinder *z : m_cylinders)
+				if (ok1 && ok2 && z->label == parts.at(0)) actuated = z->x >= lo - 1e-9 && z->x <= hi + 1e-9;
+		}
 		if (parts.size() == 1)          // function text "-BP1": contact of that pressure switch
 			for (const PressureSwitch *s : m_pressure_switches)
 				if (s->label == parts.at(0)) actuated = s->on;
@@ -769,6 +937,9 @@ void SimulationModel::electrics()
 		for (int x : s.first) if (x >= 0) plus << root(x);
 		for (int x : s.second) if (x >= 0) minus << root(x);
 	}
+	for (const GrafcetIo *io : std::as_const(m_grafcet_io))
+		for (int i = 0; i < io->outputs.size(); ++i)
+			if (io->value.at(i)) plus << root(io->outputs.at(i).first);
 	for (const PlcChannel *ch : m_plc_channels) {
 		for (int x : ch->plus) plus << root(x);
 		for (int x : ch->minus) minus << root(x);
@@ -785,6 +956,8 @@ void SimulationModel::electrics()
 	}
 	if ((!m_plcs.isEmpty() || m_grafcet) && m_time >= m_next_plc_cycle - 1e-12) {
 		m_next_plc_cycle = m_time + 0.010;
+		for (const GrafcetIo *io : std::as_const(m_grafcet_io))
+			for (const auto &in : io->inputs) m_plc_vars.insert(in.second, plus.contains(root(in.first)) ? 1.0 : 0.0);
 		if (m_grafcet) {
 			// labels of push buttons and limit switches: actuated or not
 			for (Contact *c : m_contacts)
@@ -806,6 +979,18 @@ void SimulationModel::electrics()
 				v->forced[0] = l || (any && single == 0);
 				v->forced[1] = r || (any && single == 1);
 			}
+			// a valve solenoid named in an action (-MB1) actuates its side of the linked valve
+			for (const Coil *c : std::as_const(m_coils)) {
+				if (!c->valve || c->label.isEmpty()) continue;
+				if (m_plc_vars.value(Grafcet::labelVariable(c->label), 0.0) == 0.0) continue;
+				Valve *v = c->valve;
+				const int single = v->side[1].types.contains(QLatin1String("solenoid"))
+								   && !v->side[0].types.contains(QLatin1String("solenoid")) ? 1 : 0;
+				v->forced[c->side >= 0 ? c->side : single] = true;
+			}
+			for (GrafcetIo *io : std::as_const(m_grafcet_io))
+				for (int i = 0; i < io->outputs.size(); ++i)
+					io->value[i] = m_plc_vars.value(io->outputs.at(i).second, 0.0) != 0.0;
 		}
 		for (Plc *plc : m_plcs) plc->program->cycle(m_time, m_plc_vars);
 		for (PlcChannel *ch : m_plc_channels) {
@@ -868,6 +1053,12 @@ void SimulationModel::electrics()
 				on ? QStringLiteral("an") : QStringLiteral("aus"))};
 		c->on = on;
 		c->known = true;
+		if (Valve *v = c->valve) {
+			const int single = v->side[1].types.contains(QLatin1String("solenoid"))
+							   && !v->side[0].types.contains(QLatin1String("solenoid")) ? 1 : 0;
+			v->actuated[c->side >= 0 ? c->side : single] = on;
+			continue;
+		}
 		const int slash = static_cast<int>(c->label.indexOf(QLatin1Char('/')));
 		const QString valve = slash >= 0 ? c->label.left(slash) : c->label;
 		const QString side = slash >= 0 ? c->label.mid(slash + 1) : QString();
@@ -936,10 +1127,17 @@ void SimulationModel::step(double dt)
 	}
 
 	for (Valve *v : m_valves) {
+		if (!v->trigger_cylinder.isEmpty())
+			for (const Cylinder *z : std::as_const(m_cylinders))
+				if (z->label == v->trigger_cylinder)
+					v->actuated[v->trigger_side] = z->x >= v->trigger_lo - 1e-9 && z->x <= v->trigger_hi + 1e-9;
 		for (int s = 0; s < 2; ++s) {
 			const auto &a = v->side[s];
 			if (a.pilot && !a.types.contains(QLatin1String("solenoid"))) {
-				const int k = node(v->e, s == 0 ? QStringLiteral("14") : QStringLiteral("12"));
+				// pilot port 14 left, 12 right; a valve piloted on one side only may name it either way
+				// (ISO 5599: a 3/2 valve's pilot 12 connects 1 to 2)
+				int k = node(v->e, s == 0 ? QStringLiteral("14") : QStringLiteral("12"));
+				if (k < 0 && !v->side[1 - s].pilot) k = node(v->e, s == 0 ? QStringLiteral("12") : QStringLiteral("14"));
 				if (k >= 0) v->actuated[s] = m_p.at(k) - P_ATM > P_PILOT;
 			}
 		}
@@ -1138,6 +1336,19 @@ void SimulationModel::runUntil(double time, double dt)
 // ------------------------------------------------------------------------- input / state
 void SimulationModel::pressButton(const QString &lbl, bool pressed)
 {
+	bool latching = false;
+	for (const Contact *c : std::as_const(m_contacts))
+		latching = latching || (c->latching && label(c->e) == lbl);
+	if (latching) {
+		// selector switch: a press switches it over
+		if (pressed && !m_pressed.contains(lbl)) {
+			if (m_latched.contains(lbl)) m_latched.remove(lbl); else m_latched.insert(lbl);
+			m_messages << Message{m_time, QStringLiteral("%1 %2").arg(lbl, m_latched.contains(lbl)
+				? QStringLiteral("eingeschaltet") : QStringLiteral("ausgeschaltet"))};
+		}
+		if (pressed) m_pressed.insert(lbl); else m_pressed.remove(lbl);
+		return;
+	}
 	if (pressed == m_pressed.contains(lbl)) return;
 	if (pressed) m_pressed.insert(lbl); else m_pressed.remove(lbl);
 	m_messages << Message{m_time, QStringLiteral("%1 %2").arg(lbl, pressed ? QStringLiteral("gedrückt")
@@ -1148,6 +1359,13 @@ bool SimulationModel::actuateValve(const QString &lbl, bool left, bool on)
 {
 	for (Valve *v : m_valves)
 		if (v->label == lbl) {
+			if (v->toggle_side >= 0) {
+				// selector switch: a press on either half switches it over, releasing does nothing
+				if (!on) return true;
+				v->latched = !v->latched;
+				m_messages << Message{m_time, QStringLiteral("%1 umgeschaltet").arg(lbl)};
+				return true;
+			}
 			v->actuated[left ? 0 : 1] = on;
 			m_messages << Message{m_time, QStringLiteral("%1 %2 %3").arg(lbl,
 				left ? QStringLiteral("links") : QStringLiteral("rechts"),

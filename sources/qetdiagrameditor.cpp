@@ -45,6 +45,7 @@
 #include "import/portals/portalsdialog.h"
 #include "import/eplandxf/eplanimportdialog.h"
 #include "import/eplanproject/eplanprojectimportdialog.h"
+#include "import/fluidsim/fluidsimimport.h"
 #include "ElementsCollection/elementpickerpopup.h"
 #include "shortcutbarsettings.h"
 #include "diagramtoolbarsettings.h"
@@ -2344,6 +2345,15 @@ void QETDiagramEditor::setUpMenu()
 		// the import may have written parts into the company collection
 		if (m_element_collection_widget) m_element_collection_widget->reload();
 		openAndAddProject(dialog.resultPath());
+	});
+		//FluidSIM 6 circuits (.circ) as a new QElectroTech project, ready to simulate
+	QAction *import_fluidsim = menu_fichier->addAction(
+		QET::Icons::DocumentOpen, tr("Import FluidSIM circuit (.circ)…"));
+	import_fluidsim->setObjectName(QStringLiteral("import_fluidsim"));
+	import_fluidsim->setStatusTip(tr("Reads FluidSIM circuits with their parts, wires, flow paths, values and GRAFCET and opens them as a QElectroTech project"));
+	connect(import_fluidsim, &QAction::triggered, this, [this]() {
+		const QString result = FluidSimImport::run(this);
+		if (!result.isEmpty()) openAndAddProject(result);
 	});
 	menu_fichier -> addSeparator();
 	menu_fichier -> addAction(m_export_to_images);

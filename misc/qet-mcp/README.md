@@ -44,6 +44,7 @@ it the `.qetz` itself, and write one when the output path ends in `.qetz`.
 | `qet_export` | run a headless export (pdf, png, svg, dxf, bom, cables, wires, wiring, nets, links, info) |
 | `qet_simulate` | simulate a project headlessly: pneumatics, hydraulics, electric control, PLC programs (`sim_program`), GRAFCET; events press buttons or actuate valves; returns events, PLC/GRAFCET variables, errors, optional CSV and pictures |
 | `qet_simulate_reference` | check the simulation core against analytical solutions and OpenModelica reference runs |
+| `qet_fluidsim_import` | import FluidSIM 6 circuits (.circ, or a folder) as a project ready to simulate: flow paths, parameters, electric roles, GRAFCET; returns the push buttons and valves to use as events |
 | `qet_edit` | **change a project** — place, move, rotate, label, wire, number, cross-reference, add text, shapes and images, restyle a symbol's text fields, delete; then diff the result |
 | `qet_element_build` | **author a `.elmt`** — draw a new symbol, with terminals to wire it by |
 | `qet_project_new` | **start from nothing** — an empty project with a title and folios |

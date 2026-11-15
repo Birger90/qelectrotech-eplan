@@ -27,6 +27,7 @@ import argparse
 import gzip
 import math
 import re
+import struct
 import sys
 import uuid
 import xml.etree.ElementTree as ET
@@ -44,6 +45,35 @@ ABSCHLUSS = {"Pneu.Supply.Silencer": "silencer", "Pneu.Supply.BlindPlug": "plug"
 def zahl(e, name, vorgabe=0.0):
     v = e.get(name)
     return float(v) if v not in (None, "") else vorgabe
+
+
+def entpacken(wurzel):
+    """Gepackte Koordinaten älterer FluidSIM-Dateien in Attribute umschreiben (an Ort und Stelle).
+
+    Ältere Schaltungen speichern Linien und Polylinien nicht als Attribute, sondern als Text: Gleitkommazahlen
+    (8 Byte, little endian) hexadezimal hintereinander, erst alle x-, dann alle y-Werte. Eine Linie hat vier
+    Zahlen (x1, x2, y1, y2), eine Polylinie 2·count. Danach lesen alle Werkzeuge sie wie neuere Dateien."""
+    for e in wurzel.iter():
+        if e.tag not in ("line", "polyline"):
+            continue
+        text = (e.text or "").strip()
+        if not text or len(text) % 16 or not re.fullmatch(r"[0-9A-Fa-f]+", text):
+            continue
+        roh = bytes.fromhex(text)
+        werte = list(struct.unpack("<%dd" % (len(roh) // 8), roh))
+        n = len(werte) // 2
+        xs, ys = werte[:n], werte[n:]
+        if e.tag == "line" and n == 2:
+            e.set("x1", repr(xs[0]))
+            e.set("x2", repr(xs[1]))
+            e.set("y1", repr(ys[0]))
+            e.set("y2", repr(ys[1]))
+        elif e.tag == "polyline":
+            e.set("points", " ".join(f"{x!r},{y!r}" for x, y in zip(xs, ys)))
+        else:
+            continue
+        e.text = None
+    return wurzel
 
 
 def fmt(v):
@@ -467,10 +497,13 @@ def fluid_block(objekt, w, ebenen_namen):
                 magnete += 1
             if any(n.startswith("AMAN" + kenn) for n in ebenen_namen):
                 arten.append("manual")
+            if any(n.startswith("AMECH" + kenn) for n in ebenen_namen):
+                arten.append("roller")      # Rollenhebel/Stößel: vom Zylinder über eine Wegmarke betätigt
             attr = f'side="{seite}" types="{",".join(arten)}"'
             if w.get("spring" + kenn) == "True":
                 attr += ' spring="true"'
-            if any(n.startswith("PLT" + kenn) for n in ebenen_namen):
+            # Vorsteuerung (PLT…) bzw. pneumatische Betätigung (APNEU…): Steueranschluss 14 links, 12 rechts
+            if any(n.startswith(("PLT" + kenn, "APNEU" + kenn)) for n in ebenen_namen):
                 attr += ' pilot="true"'
             if arten or "spring" in attr or "pilot" in attr:
                 seiten.append(f"        <actuation {attr}/>")
@@ -616,9 +649,17 @@ def bauteil_umwandeln(symbole, haupt, umgebung, verbindungen, namen, quelle_name
                     a["abschluss"] = art
     if not z.teile:
         return None
+    # Zylinder, Quellen, Spulen und die GRAFCET-SPS tragen am Symbol keine Bezeichnung; das Bauteil nennt seine
+    # Anschlüsse aber („A“, „B“ am Zylinder, „I0“, „Q0“ an der SPS): diesen Namen bekommt der Anschluss für die
+    # Simulation, gezeigt wird weiter nichts
+    eigene = {anschluss_schluessel(haupt, c.get("ident")): c.get("ident") for c in haupt.findall("connector")}
+    for a in z.anschluesse:
+        a["anzeige"] = a["name"]
+        if not a["name"]:
+            a["name"] = eigene.get(a["schluessel"], "")
     for a, name in zip(z.anschluesse, eindeutig([a["name"] for a in z.anschluesse])):
         a["richtung"] = z.richtung(a["p"])
-        a["anzeige"], a["name"] = a["name"], name
+        a["name"] = name
     # Fluidanschlüsse zuerst: sie bestimmen das Raster
     z.anschluesse.sort(key=lambda a: a["medium"] == "electric")
 
@@ -711,7 +752,7 @@ def main(argv=None):
         ap.error("--ziel fehlt (oder --nur-zeigen)")
 
     lib = a.fluidsim / "sym" / "sym_fs.lib"
-    wurzel = ET.fromstring(gzip.decompress(lib.read_bytes()))
+    wurzel = entpacken(ET.fromstring(gzip.decompress(lib.read_bytes())))
     sprache = Uebersetzung(a.fluidsim / "db" / "lang.db")
     praefixe = kennbuchstaben(a.fluidsim)
     oben = wurzel.find("section")

@@ -3,6 +3,32 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.22.0 – 15.11.2026
+
+FluidSIM-Schaltungen werden simulierbar übernommen, mit eigener Grafik:
+
+- **Eigene Symbole statt FluidSIM-Grafik** (`tools/fluidsim_import/eigene_grafik.py`): aus der .circ kommen nur
+  Anschlusslagen, Ebenennamen, Schaltwege und Kennwerte; gezeichnet wird nach DIN ISO 1219-1 / IEC 60617 (Ventil-
+  kästen mit Pfeilen und Sperren, Magnet/Taster/Rolle/Vorsteuerung/Feder, Zylinder, Quelle, Tank, Messgerät,
+  Rückschlag-, Drossel-, Drosselrückschlag-, Absperr-, Druck- und Logikventile, Kontakte, Spulen, Leuchten,
+  Potentiale; sonst Kasten mit Klassenname). Jeder kann übernehmen, ohne FluidSIM, ohne Festo-Grafik im Projekt.
+- **Datei > FluidSIM-Schaltung importieren (.circ)…**, MCP `qet_fluidsim_import`, Prüfung aller Beispiele mit
+  `tools/fluidsim_import/fluidsim_batch.py`.
+- Übernommen für die Simulation: Schaltwege jeder Ventilstellung (auch gespiegelt), alle Kennwerte mit Einheit,
+  FluidSIM-Klassen unter den Namen des Kerns, elektrische Rollen (`sim_role`), Endschalter und Rollenventile aus
+  den Wegmarken des Wegmaßstabs, Magnet ↔ Ventil mit Seite, GRAFCET mit GRAFCET-SPS (`sim_io`), ältere Dateien mit
+  gepackten Koordinaten, fehlende Kennzeichnungen (-QM, -MM, -SF).
+- Simulationskern: `sim_role` vor der Namenserkennung; Wechsler (Relaiskontakt mit drei Anschlüssen);
+  Wahlschalter und Handventil mit Rastung; Endschalter und Rollenventile über einen Hubbereich „-MM1 0..2“;
+  Spule → Ventil über die Verknüpfung (`valve_side`), Spulenkennzeichen in GRAFCET-Aktionen; GRAFCET-SPS-E/A;
+  eigener Nenndruck einer Quelle (`pNom`); viskose Zylinderreibung aus `F_ref`/`v_ref`; Steueranschluss 12 bzw. 14
+  bei einseitig vorgesteuerten Ventilen; Ereignisse mit Leerzeichen im Kennzeichen („0.3 Reset PB2 an“).
+- Prüfung: alle 22 Referenzprüfungen bestanden, Python-Gegenprobe 0 Abweichungen, 9 Tests der Importbausteine.
+  Alle 1136 FluidSIM-Beispiele: Import ohne Fehler (0 fehlgeschlagene Operationen, 0 Modellfehler), 45 mit GRAFCET
+  (10 mit offenen Punkten: Teil-GRAFCETs mit gleichen Schrittnummern, Zeit auf Kennzeichen „3s/-BG2“); in 276 von
+  461 Schaltungen mit Zylinder bewegt sich einer allein durch Drücken jedes Tasters und Betätigen jedes Ventils
+  (die übrigen brauchen eine bestimmte Bedienfolge, Analogtechnik oder Bauteile ohne Modell).
+
 ## 1.21.0 – 15.11.2026
 
 Nach dem Freigabetest des Stands fce93f6 (vier offene Punkte, alle bestätigt und behoben):

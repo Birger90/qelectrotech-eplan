@@ -177,7 +177,7 @@ class ToolRegistry(unittest.TestCase):
         self.assertEqual({t["name"] for t in m.TOOLS}, {
             "qet_project_info", "qet_elements", "qet_conductors", "qet_diff",
             "qet_scan", "qet_element_info", "qet_export", "qet_simulate",
-            "qet_simulate_reference", "qet_edit", "qet_query",
+            "qet_simulate_reference", "qet_fluidsim_import", "qet_edit", "qet_query",
             "qet_project_new", "qet_element_search", "qet_check", "qet_element_build",
             "qet_continuity", "qet_items", "qet_script_api", "qet_script_test",
         "qet_script_install", "qet_script_list", "qet_script_read",
@@ -189,6 +189,22 @@ class ToolRegistry(unittest.TestCase):
         "qet_live_open_project", "qet_live_switch_project", "qet_live_save_project",
         "qet_live_close_project", "qet_live_print", "qet_live_changes",
         "qet_live_layout_check", "qet_dataportal_search", "qet_dataportal_import"})
+
+
+class FluidSimImport(unittest.TestCase):
+    """qet_fluidsim_import: argument checks without FluidSIM or QElectroTech."""
+
+    def test_refuses_missing_circuit_and_wrong_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ValueError):
+                m.tool_fluidsim_import("qet", str(Path(tmp) / "fehlt.circ"), str(Path(tmp) / "a.qet"))
+            circ = Path(tmp) / "a.circ"
+            circ.write_bytes(b"")
+            with self.assertRaises(ValueError):
+                m.tool_fluidsim_import("qet", str(circ), str(Path(tmp) / "a.pdf"))
+
+    def test_finds_the_program_in_the_source_tree(self):
+        self.assertIsNotNone(m._fluidsim_program())
 
 
 class DataPortal(unittest.TestCase):

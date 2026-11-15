@@ -5,7 +5,7 @@ description: Pläne in QElectroTech (EPLAN-Fork) simulieren – Pneumatik, Hydra
 
 # Simulation in QElectroTech (EPLAN-Fork)
 
-Stand 15.11.2026, Fork 1.21.0. Anleitung für Anwender: `tools/simulation/README.md` (Modelltabelle, Konventionen,
+Stand 15.11.2026, Fork 1.22.0. Anleitung für Anwender: `tools/simulation/README.md` (Modelltabelle, Konventionen,
 Prüffälle). Hier steht, wie man damit arbeitet und was beim Bauen gelernt wurde. Neue Erkenntnisse unten unter
 „Gelernt“ nachtragen – sofort, nicht erst am Ende.
 
@@ -34,6 +34,10 @@ In QET: Anzeige → Simulation (Start/Pause/Stopp, Zeitlupe, Taster/Ventile per 
 | SPS-Kanal | verknüpfter SPS-Slave; Adresse und Richtung aus Kanal-Info `plc_address`/`plc_type`, sonst E/A-Tabelle |
 | GRAFCET | Schrittnummer, Weiterschaltbedingung, Aktionstext = Kennzeichen; `-BG1`/`-QM1` direkt oder SPS-Variablen |
 | Kennwerte | `<parameter>` im Symbol (`qNN`, `rT`, `onDelay`, `d_piston`, `pMax`, `V0`, `p0` …) |
+| Endschalter/Rollenventil über Hub | Funktionstext „`-MM1 0..2`“ (mm, FluidSIM-Wegmarke) |
+| Spule ohne Ventilkennzeichen | Verknüpfung Spule (Slave) → Ventil, Seite in `valve_side`; `-MB1` in GRAFCET-Aktion betätigt sie |
+| Rolle eines E-Bauteils | Elementinformation `sim_role`: `supply+`/`supply-`, `voltage`, `button`, `switch`, `limit` (+`_nc`), `solenoid`, `grafcet_io` (+ `sim_io` „I0=-KF1;Q0=-MB1“) – vor jeder Namenserkennung |
+| FluidSIM-Schaltung | Datei → FluidSIM-Schaltung importieren, `tools/fluidsim_import/fluidsim_plan.py`, MCP `qet_fluidsim_import` (Skill `fluidtechnik`) |
 
 ## Rechenmodell (Kurzfassung)
 
@@ -113,6 +117,20 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
   Bereich; keine stillen Vorgaben bei unlesbaren Werten.
 - **Fehlerzustand in jeder Schleife abfragen**: `step()` ohne Zeitfortschritt + `while (t < ziel)` = Endlosschleife.
 - Gegenproben des Prüfers (Manipulationen) im eigenen Prüfstand nachbilden, nicht nur seine Dateien einmal laufen lassen.
+
+- **Fremde Pläne über die Masse prüfen**: alle 1136 FluidSIM-Beispiele importieren und simulieren
+  (`fluidsim_batch.py`) fand in einem Lauf, was Einzeltests nie zeigten: gepackte Koordinaten (357 Dateien ohne
+  Schaltwege), andere Klassennamen (Drosselrückschlagventil lief als „nichts“ = gesperrt), Steueranschluss „12“
+  am 3/2-Ventil, Rollenventile, Wahlschalter ohne Rückweg. Ergebnis je Schaltung als CSV, nach Ursachen gruppieren.
+- **Plausibel heißt nicht richtig**: 100 mm Hub in 27 ms war rechnerisch möglich (1000 l/min, 0,14 kg), aber
+  FluidSIMs Reibungsmodell (F_ref bei v_ref) fehlte. Geschwindigkeiten gegen die Erfahrung halten (≈ 1 m/s).
+- **Erkennung über Namen bricht bei fremden Bibliotheken**: Quellen, Taster, Spulen aus FluidSIM wurden nicht
+  erkannt. Darum `sim_role` – der Import sagt, was ein Bauteil ist, statt dass der Kern es rät.
+- Der Python-Prototyp kennt die FluidSIM-Erweiterungen (`sim_role`, Wahlschalter, Hubbereich-Auslöser, Wechsler,
+  `pNom`, `F_ref`/`v_ref`) nicht; die Gegenprobe läuft nur auf Plänen ohne sie. Neue Physik dort nachziehen, sobald
+  ein Testplan sie benutzt.
+- Batch-Läufe nicht während eines Deploys starten: der Lauf benutzt `build/deploy/QElectroTech.exe`; bauen geht
+  (`build/`), deployen erst danach.
 
 ## Offen
 

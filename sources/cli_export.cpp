@@ -691,7 +691,7 @@ int simulateProject(QETProject &project, const QStringList &args)
 	struct Event { double t; QString label; int side; bool on; };
 	QList<Event> events;
 	static const QRegularExpression ev_re(QStringLiteral(
-		"^\\s*([\\d.]+)\\s+(\\S+)\\s+(?:(links|rechts|left|right)\\s+)?(an|aus|on|off)\\s*$"));
+		"^\\s*([\\d.]+)\\s+(.+?)\\s+(?:(links|rechts|left|right)\\s+)?(an|aus|on|off)\\s*$"));
 	for (int i = 0; i < args.size(); ++i) {
 		const QString a = args.at(i);
 		const QString v = args.value(i + 1);

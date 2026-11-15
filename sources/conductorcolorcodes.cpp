@@ -49,7 +49,7 @@ const QList<ConductorColorCodes::Code> &ConductorColorCodes::all()
 		{QStringLiteral("RD"),   QT_TRANSLATE_NOOP("ConductorColorToolButton", "Red"),          QColor(0xFF, 0x00, 0x00), QColor()},
 		{QStringLiteral("OG"),   QT_TRANSLATE_NOOP("ConductorColorToolButton", "Orange"),       QColor(0xFF, 0x80, 0x00), QColor()},
 		{QStringLiteral("YE"),   QT_TRANSLATE_NOOP("ConductorColorToolButton", "Yellow"),       QColor(0xFF, 0xD8, 0x00), QColor()},
-		{QStringLiteral("VT"),   QT_TRANSLATE_NOOP("ConductorColorToolButton", "Purple"),       QColor(0x80, 0x00, 0x80), QColor()},
+		{QStringLiteral("VT"),   QT_TRANSLATE_NOOP("ConductorColorToolButton", "Violet"),       QColor(0x80, 0x00, 0x80), QColor()},
 		{QStringLiteral("WH"),   QT_TRANSLATE_NOOP("ConductorColorToolButton", "White"),        QColor(0xFF, 0xFF, 0xFF), QColor()},
 		{QStringLiteral("PK"),   QT_TRANSLATE_NOOP("ConductorColorToolButton", "Pink"),         QColor(0xFF, 0x80, 0xC0), QColor()},
 		{QStringLiteral("TQ"),   QT_TRANSLATE_NOOP("ConductorColorToolButton", "Turquoise"),    QColor(0x40, 0xE0, 0xD0), QColor()},

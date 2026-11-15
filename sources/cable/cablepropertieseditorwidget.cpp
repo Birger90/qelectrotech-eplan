@@ -21,6 +21,7 @@
 #include "cablepart.h"
 #include "cablepropertieswidget.h"
 #include "editcablecommand.h"
+#include <conductorcolorcodes.h>
 #include <qeticons.h>
 #include <qetproject.h>
 
@@ -293,6 +294,9 @@ void CablePropertiesEditorWidget::updateFreeCores()
 								: tr("Core %1 — %2").arg(i + 1).arg(color),
 				m_free_cores);
 			item->setData(Qt::UserRole, i);
+			if (const auto *code = ConductorColorCodes::find(color)) {
+				item->setIcon(ConductorColorCodes::swatch(*code));
+			}
 		}
 	}
 

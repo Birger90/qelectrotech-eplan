@@ -18,6 +18,7 @@
 #include "cablecreatedialog.h"
 
 #include "editcablecommand.h"
+#include <conductorcolorcodes.h>
 #include <diagram.h>
 #include <qetgraphicsitem/conductor.h>
 #include <qetproject.h>
@@ -34,6 +35,7 @@
 #include <QItemSelectionModel>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMenu>
 #include <QMessageBox>
 #include <QModelIndex>
 #include <QPushButton>
@@ -1557,18 +1559,17 @@ CableTypeEntryDialog::CableTypeEntryDialog(const QStringList &columns, QWidget *
 		{
 			auto *edit = new QLineEdit(this);
 			edit->setClearButtonEnabled(true);
-			if (column == QLatin1String("core_colors"))
-			{
-				edit->setPlaceholderText(QStringLiteral("br,sw,gr,bl,gnge"));
-				edit->setToolTip(tr("The color of each core, separated by a "
-									"comma and in the order of the cores."));
-			}
 			field = edit;
 		}
 
 		label->setBuddy(field);
 		grid->addWidget(label, i, 0, Qt::AlignRight | Qt::AlignVCenter);
-		grid->addWidget(field, i, 1);
+		if (column == QLatin1String("core_colors")) {
+			auto *edit = static_cast<QLineEdit *>(field);
+			grid->addLayout(coreColorsRow(edit), i, 1);
+		} else {
+			grid->addWidget(field, i, 1);
+		}
 		m_fields.append(field);
 	}
 	grid->setColumnStretch(1, 1);
@@ -1586,6 +1587,47 @@ CableTypeEntryDialog::CableTypeEntryDialog(const QStringList &columns, QWidget *
 	}
 
 	setMinimumWidth(420);
+}
+
+/**
+	@brief CableTypeEntryDialog::coreColorsRow
+	The field of the core colours, with a button beside it listing the
+	IEC 60757 codes (BN, BK, GY, BU, GNYE...), the ones the colour button
+	of a conductor offers. A code picked there is added at the end of the
+	field; anything typed by hand stays as it is.
+	@param edit the field of the core_colors column
+	@return the row holding the field and its button
+*/
+QHBoxLayout *CableTypeEntryDialog::coreColorsRow(QLineEdit *edit)
+{
+	edit->setPlaceholderText(QStringLiteral("BN,BK,GY,BU,GNYE"));
+	edit->setToolTip(tr("The color of each core, separated by a "
+						"comma and in the order of the cores."));
+
+	auto *menu = new QMenu(this);
+	for (const ConductorColorCodes::Code &code : ConductorColorCodes::all())
+	{
+		const QString text = code.code;
+		QAction *action = menu->addAction(
+			ConductorColorCodes::swatch(code),
+			ConductorColorCodes::displayName(code));
+		connect(action, &QAction::triggered, edit, [edit, text]() {
+			edit->setText(CableTypeList::appendCoreColor(edit->text(), text));
+			edit->setFocus();
+		});
+	}
+
+	auto *button = new QPushButton(tr("Add a color"), this);
+	button->setToolTip(tr("Adds the IEC 60757 code of a color at the end "
+						  "of the list"));
+	button->setMenu(menu);
+		//Return in a field still saves the line, it never opens the list
+	button->setAutoDefault(false);
+
+	auto *row = new QHBoxLayout;
+	row->addWidget(edit, 1);
+	row->addWidget(button);
+	return row;
 }
 
 /**

@@ -111,6 +111,9 @@ class CableTypeList
 									QStringList *own_columns = nullptr);
 		static QString catalogColumn() {return QStringLiteral("catalog");}
 
+		static QString appendCoreColor(const QString &cell,
+									   const QString &color);
+
 		//File io
 		static bool load(const QString &path, CableTypeListData *data, QString *error = nullptr);
 		static bool writeFile(const QString &path, const CableTypeListData &data, QString *error = nullptr);

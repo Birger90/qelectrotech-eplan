@@ -407,6 +407,50 @@ QString CableTypeList::manufacturerReference(const CableTypeRecord &record)
 }
 
 /**
+	@brief CableTypeList::appendCoreColor
+	Add the colour of one more core at the end of a core_colors cell,
+	the way a colour picked from a list is added to what is typed.
+	@param cell the cell as it stands, e.g. "BN,BK"
+	@param color the colour to add, e.g. "GY"
+	@return the cell with the colour added: "BN,BK,GY". The separator is
+	the one the cell already uses, a comma when it has none yet, and a
+	separator left at the end of the cell is not doubled.
+*/
+QString CableTypeList::appendCoreColor(const QString &cell,
+									   const QString &color)
+{
+	const QString added = color.trimmed();
+	if (added.isEmpty()) {
+		return cell;
+	}
+
+	QChar separator = QLatin1Char(',');
+	for (const QChar c : {QChar(QLatin1Char('|')), QChar(QLatin1Char(';'))})
+	{
+		if (cell.contains(c))
+		{
+			separator = c;
+			break;
+		}
+	}
+
+	QString result = cell.trimmed();
+	while (!result.isEmpty()
+		   && (result.endsWith(QLatin1Char(','))
+			   || result.endsWith(QLatin1Char(';'))
+			   || result.endsWith(QLatin1Char('|'))))
+	{
+		result.chop(1);
+		result = result.trimmed();
+	}
+
+	if (result.isEmpty()) {
+		return added;
+	}
+	return result + separator + added;
+}
+
+/**
 	@brief CableTypeList::headerAliasMap
 	@return every accepted header cell of a cable type file, lowercased,
 	mapped to the canonical column it means.

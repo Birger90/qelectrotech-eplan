@@ -30,6 +30,7 @@
 class Diagram;
 class QCheckBox;
 class QDialogButtonBox;
+class QHBoxLayout;
 class QLabel;
 class QLineEdit;
 class QStandardItem;
@@ -135,6 +136,8 @@ class CableTypeEntryDialog : public QDialog
 		void accept() override;
 
 	private:
+		QHBoxLayout *coreColorsRow(QLineEdit *edit);
+
 		QStringList m_columns;
 			///One field per column, in file order, for the tab key
 		QList<QWidget *> m_fields;

@@ -205,6 +205,48 @@ class tst_cabletypelist : public QObject
 		QCOMPARE(CableTypeList::designation(data.records.last()),
 				 QStringLiteral("H07V-K 3G1,5"));
 	}
+
+		//A colour code picked from the list goes at the end of the core
+		//colours, with the separator the cell already uses, and reads
+		//back as one more core.
+	void appendCoreColorKeepsTheCell_data()
+	{
+		QTest::addColumn<QString>("cell");
+		QTest::addColumn<QString>("color");
+		QTest::addColumn<QString>("expected");
+
+		const auto row = [](const char *name, const char *cell,
+							  const char *color, const char *expected) {
+			QTest::newRow(name) << QString::fromLatin1(cell)
+								<< QString::fromLatin1(color)
+								<< QString::fromLatin1(expected);
+		};
+		row("empty", "", "BN", "BN");
+		row("comma", "BN,BK", "GY", "BN,BK,GY");
+		row("bar", "BN|BK", "GNYE", "BN|BK|GNYE");
+		row("semicolon", "BN;BK", "GY", "BN;BK;GY");
+		row("trailing", "BN, ", "BU", "BN,BU");
+		row("free text", "br,sw", "GNYE", "br,sw,GNYE");
+		row("no colour", "BN", " ", "BN");
+	}
+
+	void appendCoreColorKeepsTheCell()
+	{
+		QFETCH(QString, cell);
+		QFETCH(QString, color);
+		QFETCH(QString, expected);
+
+		const QString result = CableTypeList::appendCoreColor(cell, color);
+		QCOMPARE(result, expected);
+
+		CableTypeRecord record;
+		record.setValue(QStringLiteral("core_colors"), result);
+		CableTypeRecord before;
+		before.setValue(QStringLiteral("core_colors"), cell);
+		const int added = color.trimmed().isEmpty() ? 0 : 1;
+		QCOMPARE(CableTypeList::coreColors(record).size(),
+				 CableTypeList::coreColors(before).size() + added);
+	}
 };
 
 QTEST_APPLESS_MAIN(tst_cabletypelist)

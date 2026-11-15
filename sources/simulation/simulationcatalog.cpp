@@ -49,9 +49,9 @@ QList<Entry> build()
 	QList<Entry> e;
 	// ---------------------------------------------------------- Antriebe
 	e << physical("actuator.cyl_conf", "linear_cylinder", "both", "A, B",
-		      "d_piston, d_rod, xMax, xStart [m]; m_cyl, m_ext [kg]; F_stat, F_extern_const [N]; F_ref [N]/v_ref [m/s]",
-		      "harte Endanschläge, Haft-/Gleitreibung, viskose Dämpfung, Feder als Konstantkraft; keine Endlagendämpfung, keine Leckage",
-		      "CylinderCycle, Hydraulik-CylinderCycle, OpenModelica-Vergleich pneumatisch/hydraulisch, Projekt Hydraulik, Projekt Blindstopfen");
+		      "d_piston, d_rod, xMax, xStart [m]; m_cyl, m_ext [kg]; F_stat, F_extern_const [N]; F_ref [N]/v_ref [m/s]; stop_k [N/m], stop_c [N.s/m]",
+		      "Endanschläge hart oder elastisch (stop_k, stop_c: Feder mit einseitiger Dämpfung), Haft-/Gleitreibung, viskose Dämpfung, Feder als Konstantkraft; keine hydraulische Endlagendämpfung, keine Leckage",
+		      "CylinderCycle, Hydraulik-CylinderCycle, OpenModelica-Vergleich pneumatisch/hydraulisch, Endanschlag hydraulisch (R02), Projekt Hydraulik, Projekt Blindstopfen");
 	for (const char *f : {"actuator.gripper", "actuator.semi_rotary", "actuator.fluidic_muscle1", "actuator.fluidic_muscle3",
 			       "actuator.loading_unit_2", "actuator.motor_with_mid_exhaust", "actuator.rotary_motor",
 			       "actuator.semi_rotary_motor2", "motor.fixed_motor", "motor.variable_motor"})

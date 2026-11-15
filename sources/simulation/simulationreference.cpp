@@ -114,6 +114,7 @@ Check analytical(const QString &name, double p0, double limit, bool exact_for_eu
 
 struct Piston {
 	double m = 0.5, stroke = 0.06, f_static = 5.0, f_slide = 5.0, damping = 20.0;
+	double stop_k = 0.0, stop_c = 0.0;
 	double x = 0.0, v = 0.0;
 };
 
@@ -729,19 +730,35 @@ using Curve = QVector<QPair<double, double>>;
 		A point of a with no point of b in its time window counts as outside.
 		Run both ways (tubeBoth): a spike in either curve then fails.
 	*/
+	/// how far the points of @a a lie outside the tube around curve @a b: time ±dt, value ±max(rel·|b|, abs).
+	/// @a b is a sampled continuous curve: between two samples it runs straight, so every value on a piece
+	/// of it inside the time window counts (a fast drop between two samples is not a false excess).
 double tubeExcess(const Curve &a, const Curve &b, double dt, double rel, double abs, double *at)
 {
 	if (b.isEmpty()) return std::numeric_limits<double>::infinity();
 	double worst = -std::numeric_limits<double>::infinity();
 	const double t0 = b.first().first, t1 = b.last().first;
 	int lo = 0;
+	auto valueAt = [](const QPair<double, double> &p, const QPair<double, double> &q, double t) {
+		if (q.first <= p.first) return p.second;
+		return p.second + (q.second - p.second) * (t - p.first) / (q.first - p.first);
+	};
 	for (const auto &pa : a) {
 		if (pa.first < t0 || pa.first > t1) continue;          // compare where both curves exist
-		while (lo < b.size() && b.at(lo).first < pa.first - dt) ++lo;
+		while (lo > 0 && b.at(lo).first > pa.first - dt) --lo;
+		while (lo + 1 < b.size() && b.at(lo + 1).first < pa.first - dt) ++lo;
 		double best = std::numeric_limits<double>::infinity();
 		for (int j = lo; j < b.size() && b.at(j).first <= pa.first + dt; ++j) {
-			const double tol = std::max(rel * std::abs(b.at(j).second), abs);
-			best = std::min(best, std::abs(pa.second - b.at(j).second) - tol);
+			// the piece from sample j to j+1, cut to the window [pa.t - dt, pa.t + dt]
+			const auto &p = b.at(j);
+			const auto &q = j + 1 < b.size() ? b.at(j + 1) : b.at(j);
+			const double s0 = std::max(p.first, pa.first - dt), s1 = std::min(q.first, pa.first + dt);
+			if (s1 < s0) continue;
+			const double v0 = valueAt(p, q, s0), v1 = valueAt(p, q, s1);
+			const double lo_v = std::min(v0, v1), hi_v = std::max(v0, v1);
+			const double nearest = std::clamp(pa.second, lo_v, hi_v);
+			const double tol = std::max(rel * std::abs(nearest), abs);
+			best = std::min(best, std::abs(pa.second - nearest) - tol);
 		}
 		if (best > worst) {
 			worst = best;
@@ -1004,20 +1021,36 @@ int runSimulationReference(const QString &reference_dir_given, QTextStream &out)
 	{
 		struct Run {
 			QVector<Sample> s;
+			QVector<Sample> fine;                  // every step in the end-stop window 1.570 … 1.600 s
 			double balance = 0.0, pmin = 0.0, pmax = 0.0;
 			double cav_a = 0.0, cav_b = 0.0, cav_s = 0.0, cav_max = 0.0;
+			// in the window: work of the contact force, penetration, energy of the contact
+			// (spring energy at start and end, energy taken out by the stop's damping)
+			double contact_work = 0.0, penetration = 0.0, spring0 = -1.0, spring1 = 0.0, dissipated = 0.0;
 		};
 		auto run = [&](double dt) {
 			Run r;
 			const double bulk = 5e8, aa = 1e-3, ab = 7e-4, dead = 1e-4, floor = -0.9e5;
 			Piston z;
 			z.m = 50.0; z.stroke = 0.1; z.f_static = 20.0; z.f_slide = 20.0; z.damping = 5000.0; z.x = 0.02;
+			// the reference's end stop (R02): spring 1e9 N/m, one-sided damping 1e5 N·s/m
+			z.stop_k = 1e9; z.stop_c = 1e5;
 			double ps = 0.0, pa = 0.0, pb = 0.0, spool = 0.0;
 			r.pmin = 0.0; r.pmax = 0.0;
 			const long long n = std::llround(1.8 / dt), every = std::llround(0.001 / dt);
 			for (long long i = 0; i <= n; ++i) {
 				const double t = i * dt;
 				if (i % every == 0) r.s << Sample{t, z.x, pa, pb};
+				const bool window = t >= 1.570 - 1e-12 && t <= 1.600 + 1e-12;
+				auto spring = [&]() {
+					const double pen = std::max({0.0, -z.x, z.x - z.stroke});
+					return 0.5 * z.stop_k * pen * pen;
+				};
+				if (window) {
+					if (r.spring0 < 0) r.spring0 = spring();
+					r.fine << Sample{t, z.x, pa, pb};
+					r.spring1 = spring();
+				}
 				if (i == n) break;
 				const double cmd = t < 0.7 ? 1.0 : (t < 0.9 ? 0.0 : -1.0);
 				// the spool moves like SimulationModel's valves, a first-order servo with tau = switching
@@ -1031,7 +1064,17 @@ int runSimulationReference(const QString &reference_dir_given, QTextStream &out)
 				const double q_bt = open_p * SimPhysics::orificeFlow(pb, kOrifice, DP_SMOOTH);
 				const double q_pb = open_m * SimPhysics::orificeFlow(ps - pb, kOrifice, DP_SMOOTH);
 				const double q_at = open_m * SimPhysics::orificeFlow(pa, kOrifice, DP_SMOOTH);
+				const double v_before = z.v, x_before = z.x;
+				const double contact = SimPhysics::stopForce(z.x, z.v, z.stroke, z.stop_k, z.stop_c);
 				SimPhysics::pistonStep(z, pa * aa - pb * ab, dt);
+				if (window) {
+					const double v_mid = 0.5 * (v_before + z.v);
+					r.contact_work += contact * v_mid * dt;
+					// the damping part of the contact force acts only while the piston moves into the stop
+					const bool into = (x_before < 0 && v_before < 0) || (x_before > z.stroke && v_before > 0);
+					if (into) r.dissipated += z.stop_c * std::abs(v_before) * std::abs(v_mid) * dt;
+					r.penetration = std::max({r.penetration, -x_before, x_before - z.stroke});
+				}
 				const double va = dead + aa * z.x, vb = dead + ab * (z.stroke - z.x);
 				const double ca0 = r.cav_a, cb0 = r.cav_b;
 				const double pa_new = SimPhysics::oilNode(pa, va, aa * z.v, q_pa - q_at, bulk, dt, floor, r.cav_a);
@@ -1061,7 +1104,8 @@ int runSimulationReference(const QString &reference_dir_given, QTextStream &out)
 		const double drift = std::abs(at(a.s, 0.9) - at(a.s, 0.8));
 		const double t_back = firstTime(a.s, 0.9, [](const Sample &s) { return s.x <= 0.002; });
 		const double t_back2 = firstTime(b.s, 0.9, [](const Sample &s) { return s.x <= 0.002; });
-		bool ok = xmin >= -0.0001 && xmax <= 0.1001 && at(a.s, 0.699) >= 0.075 && at(a.s, 1.75) < 0.002
+		// the elastic stop lets the piston enter by a fraction of a millimetre (reference 0.09 mm)
+		bool ok = xmin >= -0.0005 && xmax <= 0.1005 && at(a.s, 0.699) >= 0.075 && at(a.s, 1.75) < 0.002
 				  && drift < 0.002 && a.pmin > -98000 && a.pmax < 1e7 && a.balance < 1e-12
 				  && std::abs(at(a.s, 0.699) - at(b.s, 0.699)) < 1e-4 && std::abs(t_back - t_back2) <= 0.002;
 		c.detail = QStringLiteral("bei 0,7 s %1 mm, Halten 0,8–0,9 s Drift %2 mm, zurück (< 2 mm) bei %3 s; Drücke %4 … %5 bar; "
@@ -1116,12 +1160,10 @@ int runSimulationReference(const QString &reference_dir_given, QTextStream &out)
 							.arg(ours / 1e5, 0, 'f', 1).arg(theirs / 1e5, 0, 'f', 1)
 							.arg(fits ? QString() : QStringLiteral(" ✗"));
 					}
-				// whole curves, switching transients and peaks included: tube ±5 ms, pressure ±10 % or
-				// 1 bar, stroke ±2 mm, both ways (a spike in either curve fails).
-				// Only exception, a difference of the contact models: the reference stop is a spring of
-				// 1e9 N/m with damping, the piston bounces (0.09 mm) and the pressures ring for some
-				// milliseconds; ours is a hard stop. 10 ms after each impact of the reference (stroke
-				// reaching an end) are left out of the tube, and the deviation there is reported.
+				// whole curves, switching transients, impacts and peaks included: tube ±5 ms, pressure
+				// ±10 % or 1 bar, stroke ±2 mm, both ways (a spike in either curve fails). Since R02 the
+				// end stop is the reference's contact model (spring and one-sided damping), so the impact
+				// windows are no longer left out; they are reported on their own (peak, its time).
 				QVector<QPair<double, double>> impacts;
 				for (int i = 1; i < ref.size(); ++i) {
 					const double x0 = ref.at(i - 1).at(1), x1 = ref.at(i).at(1);
@@ -1131,40 +1173,121 @@ int runSimulationReference(const QString &reference_dir_given, QTextStream &out)
 						&& (impacts.isEmpty() || t > impacts.last().first + 0.05))
 						impacts << qMakePair(t, t + 0.010);
 				}
-				auto inImpact = [&](double t) {
-					for (const auto &w : impacts) if (t >= w.first && t <= w.second) return true;
-					return false;
-				};
-				QVector<QVector<double>> own_out, ref_out, own_in, ref_in;
-				for (const auto &row : own) (inImpact(row.at(0)) ? own_in : own_out) << row;
-				for (const auto &row : ref) (inImpact(row.at(0)) ? ref_in : ref_out) << row;
-				const QStringList tubes = tubeReport(own_out, ref_out, 0.005, {
+				const QStringList tubes = tubeReport(own, ref, 0.005, {
 					std::make_tuple(1, QStringLiteral("Weg"), 0.0, 0.002, 1000.0, QStringLiteral("mm")),
 					std::make_tuple(2, QStringLiteral("Druck A"), 0.10, 1e5, 1e-5, QStringLiteral("bar")),
 					std::make_tuple(3, QStringLiteral("Druck B"), 0.10, 1e5, 1e-5, QStringLiteral("bar"))}, &same);
+				// impact windows: pressure peak and its time, ours against the reference
 				QStringList excluded;
 				for (const auto &w : impacts) {
-					double dev = 0.0;
-					for (const auto &row : ref_in) {
-						if (row.at(0) < w.first || row.at(0) > w.second) continue;
-						const long long k = std::llround(row.at(0) / 0.001);
-						if (k < 0 || k >= own.size()) continue;
-						dev = std::max({dev, std::abs(own.at(k).at(2) - row.at(2)), std::abs(own.at(k).at(3) - row.at(3))});
-					}
-					excluded << QStringLiteral("%1–%2 s (Anschlagstoß, Referenz prellt elastisch; dort bis %3 bar Abweichung)")
-						.arg(w.first, 0, 'f', 4).arg(w.second, 0, 'f', 4).arg(dev / 1e5, 0, 'f', 1);
+					double own_peak = 0.0, ref_peak = 0.0, own_t = 0.0, ref_t = 0.0;
+					for (const auto &row : ref)
+						if (row.at(0) >= w.first && row.at(0) <= w.second)
+							for (int col : {2, 3}) if (std::abs(row.at(col)) > std::abs(ref_peak)) { ref_peak = row.at(col); ref_t = row.at(0); }
+					for (const auto &row : own)
+						if (row.at(0) >= w.first && row.at(0) <= w.second)
+							for (int col : {2, 3}) if (std::abs(row.at(col)) > std::abs(own_peak)) { own_peak = row.at(col); own_t = row.at(0); }
+					const bool fits = std::abs(own_peak - ref_peak) <= std::max(0.1 * std::abs(ref_peak), 1e5)
+									  && std::abs(own_t - ref_t) <= 0.005;
+					same = same && fits;
+					excluded << QStringLiteral("Anschlag %1 s: Spitze %2 bar bei %3 s (Ref. %4 bar bei %5 s)%6")
+						.arg(w.first, 0, 'f', 4).arg(own_peak / 1e5, 0, 'f', 1).arg(own_t, 0, 'f', 4)
+						.arg(ref_peak / 1e5, 0, 'f', 1).arg(ref_t, 0, 'f', 4).arg(fits ? QString() : QStringLiteral(" ✗"));
 				}
 				v.passed = same;
 				v.detail = QStringLiteral("Ausfahren %1 mm/s (Ref. %2), Einfahren %3 mm/s (Ref. %4), zurück bei %5 s (Ref. %6); "
-										  "Kammerdrücke %7; ganze Kurven: %8; ausgenommen: %9; Grenzen ±3 % Geschwindigkeit, ±5 % "
+										  "Kammerdrücke %7; ganze Kurven ohne Ausnahme: %8; Anschläge (Kontaktmodell wie Referenz): %9; Grenzen ±3 % Geschwindigkeit, ±5 % "
 										  "Rückhubzeit, Druck ±10 % bzw. 1 bar (Mittel und Schlauch), Weg ±2 mm, Zeit ±5 ms")
 							   .arg(v_out * 1000, 0, 'f', 2).arg(rv_out * 1000, 0, 'f', 2)
 							   .arg(v_in * 1000, 0, 'f', 2).arg(rv_in * 1000, 0, 'f', 2)
 							   .arg(t_back, 0, 'f', 3).arg(r_back, 0, 'f', 3)
 							   .arg(pressures.join(QStringLiteral(", ")), tubes.join(QStringLiteral(", ")),
-									excluded.isEmpty() ? QStringLiteral("nichts") : excluded.join(QStringLiteral(", ")));
+									excluded.isEmpty() ? QStringLiteral("keiner") : excluded.join(QStringLiteral(", ")));
 			}
 			checks << v;
+		}
+
+		// R02: the end stop against the OpenModelica run at 10 µs (same contact model and parameters).
+		// Limits fixed before the comparison: whole curves in the window in a tube of ±0.5 ms with pressure
+		// ±10 % or 1 bar and stroke ±0.05 mm, pressure peak ±5 % at ±1 ms, penetration ±0.02 mm, contact
+		// work ±20 % or 0.1 J, contact energy balance (−work = Δ spring energy + damping loss) to 5 %,
+		// peak within 2 % at half the step.
+		const QString stop_name = QStringLiteral("Endanschlag hydraulisch (R02): Spitze, Nachschwingen, Eindringung, Kontaktarbeit");
+		const QString fine_file = reference_dir.isEmpty() ? QString()
+			: QDir(reference_dir).filePath(QStringLiteral("OwnHydraulics.Examples.CylinderCycle_fein.csv"));
+		if (fine_file.isEmpty() || !QFileInfo::exists(fine_file)) {
+			checks << skip(stop_name, QStringLiteral("feiner Referenzlauf fehlt (erzeuge_hydraulik_fein.py)"));
+		} else {
+			QVector<QVector<double>> ref;
+			const QString error = readResult(fine_file, {QStringLiteral("cylinder.x"), QStringLiteral("cylinder.pressureA"),
+				QStringLiteral("cylinder.pressureB"), QStringLiteral("cylinder.v"), QStringLiteral("cylinder.contact")}, 1.8, &ref);
+			Check s{stop_name};
+			if (!error.isEmpty()) {
+				s.detail = error;
+			} else {
+				double t0 = std::nan("");
+				for (int i = 1; i < ref.size() && std::isnan(t0); ++i)
+					if (ref.at(i - 1).at(1) > 0.0 && ref.at(i).at(1) <= 0.0 && ref.at(i).at(0) > 1.0) t0 = ref.at(i).at(0);
+				QVector<QVector<double>> rw, ow;
+				double r_peak = 0, r_peak_t = 0, r_pen = 0, r_work = 0;
+				for (int i = 0; i < ref.size(); ++i) {
+					const auto &row = ref.at(i);
+					if (!(row.at(0) >= t0 && row.at(0) <= t0 + 0.020)) continue;
+					rw << QVector<double>{row.at(0), row.at(1), row.at(2), row.at(3)};
+					for (int col : {2, 3}) if (std::abs(row.at(col)) > std::abs(r_peak)) { r_peak = row.at(col); r_peak_t = row.at(0); }
+					r_pen = std::max(r_pen, -row.at(1));
+					if (i + 1 < ref.size()) r_work += row.at(5) * row.at(4) * (ref.at(i + 1).at(0) - row.at(0));
+				}
+				// both runs from their own arrival at the end: the contact itself is compared; the arrival
+				// differs by the small speed difference summed over the stroke (reported, limit 1 ms)
+				auto arrival = [](const QVector<Sample> &f) {
+					for (int i = 1; i < f.size(); ++i)
+						if (f.at(i - 1).x > 0.0 && f.at(i).x <= 0.0) return f.at(i).t;
+					return std::nan("");
+				};
+				const double o0 = arrival(a.fine), o0b = arrival(b.fine);
+				const double shift = t0 - o0;                       // own time + shift = reference time
+				double o_peak = 0, o_peak_t = 0, o2_peak = 0;
+				for (const Sample &q : a.fine)
+					if (q.t >= o0 && q.t <= o0 + 0.020) {
+						ow << QVector<double>{q.t + shift, q.x, q.pa, q.pb};
+						for (double pv : {q.pa, q.pb}) if (std::abs(pv) > std::abs(o_peak)) { o_peak = pv; o_peak_t = q.t + shift; }
+					}
+				for (const Sample &q : b.fine)
+					if (q.t >= o0b && q.t <= o0b + 0.020)
+						for (double pv : {q.pa, q.pb}) if (std::abs(pv) > std::abs(o2_peak)) o2_peak = pv;
+				bool ok = !std::isnan(t0) && !std::isnan(o0) && !rw.isEmpty() && !ow.isEmpty() && std::abs(shift) <= 0.001;
+				const QStringList tubes = tubeReport(ow, rw, 0.0005, {
+					std::make_tuple(1, QStringLiteral("Weg"), 0.0, 0.00005, 1000.0, QStringLiteral("mm")),
+					std::make_tuple(2, QStringLiteral("Druck A"), 0.10, 1e5, 1e-5, QStringLiteral("bar")),
+					std::make_tuple(3, QStringLiteral("Druck B"), 0.10, 1e5, 1e-5, QStringLiteral("bar"))}, &ok);
+				const bool peak_ok = std::abs(o_peak - r_peak) <= 0.05 * std::abs(r_peak) && std::abs(o_peak_t - r_peak_t) <= 0.001;
+				const bool pen_ok = std::abs(a.penetration - r_pen) <= 2e-5;
+				const bool work_ok = std::abs(a.contact_work - r_work) <= std::max(0.2 * std::abs(r_work), 0.1);
+				// energy of the contact: what the contact force took out of the piston is stored in the spring or
+				// lost in the stop's damping (to 5 %; the damping never pushes, so the loss is ≥ 0)
+				const double stored = a.spring1 - std::max(a.spring0, 0.0);
+				const double balance = -a.contact_work - (stored + a.dissipated);
+				const bool energy_ok = a.dissipated >= 0 && std::abs(balance) <= 0.05 * std::max(std::abs(a.contact_work), 1e-3);
+				const bool conv_ok = std::abs(o2_peak - o_peak) <= 0.02 * std::abs(o_peak);
+				ok = ok && peak_ok && pen_ok && work_ok && energy_ok && conv_ok;
+				s.passed = ok;
+				s.detail = QStringLiteral("Ankunft am Hubende %22 s (Ref. %1 s, Unterschied %23 ms, Grenze 1 ms), Vergleich ab der "
+										  "jeweiligen Ankunft 20 ms bis %2 s; %3; Spitze %4 bar bei %5 s (Ref. %6 bar bei %7 s)%8; Eindringung %9 mm "
+										  "(Ref. %10 mm)%11; Kontaktarbeit %12 J (Ref. %13 J)%14; Kontaktbilanz: −Arbeit %15 J = "
+										  "Federenergie %16 J + Dämpfung %17 J, Rest %18 J%19; halber Schritt: Spitze %20 bar%21")
+							   .arg(t0, 0, 'f', 4).arg(t0 + 0.020, 0, 'f', 4).arg(tubes.join(QStringLiteral(", ")))
+							   .arg(o_peak / 1e5, 0, 'f', 2).arg(o_peak_t, 0, 'f', 5).arg(r_peak / 1e5, 0, 'f', 2).arg(r_peak_t, 0, 'f', 5)
+							   .arg(peak_ok ? QString() : QStringLiteral(" ✗"))
+							   .arg(a.penetration * 1000, 0, 'f', 4).arg(r_pen * 1000, 0, 'f', 4)
+							   .arg(pen_ok ? QString() : QStringLiteral(" ✗"))
+							   .arg(a.contact_work, 0, 'f', 3).arg(r_work, 0, 'f', 3).arg(work_ok ? QString() : QStringLiteral(" ✗"))
+							   .arg(-a.contact_work, 0, 'f', 4).arg(stored, 0, 'f', 4).arg(a.dissipated, 0, 'f', 4)
+							   .arg(balance, 0, 'g', 2).arg(energy_ok ? QString() : QStringLiteral(" ✗"))
+							   .arg(o2_peak / 1e5, 0, 'f', 2).arg(conv_ok ? QString() : QStringLiteral(" ✗"))
+							   .arg(o0, 0, 'f', 4).arg(-shift * 1000, 0, 'f', 2);
+			}
+			checks << s;
 		}
 	}
 

@@ -32,7 +32,7 @@ Betätigung, Kennwerte) und der elektrischen Steuerung.
 | Rückschlag-, Drosselrückschlagventil | freie Richtung `free_from` → `free_to` (aus der Zeichnung); öffnet stetig ab dem Öffnungsdruck `p0`; entsperrbar über Steueranschluss |
 | Drossel, Absperrventil, Schalldämpfer, Schnellentlüftung | Leitwert aus `qNN` bzw. `rT` |
 | Druckbegrenzung, Druckregler | Einstelldruck `p0`, Öffnungsbereich `dpEnd`; Druckbegrenzung von Eingang 1 (P) in den Rücklauf 2 (T), ohne Rücklaufleitung ins Freie, öffnet nach dem Unterschied Eingang – Rücklauf |
-| Zylinder | Kraftbilanz: Drücke × Flächen, Masse, Haft-/Gleitreibung (mit `F_ref`/`v_ref` aus FluidSIM viskos F_ref/v_ref, sonst 20 N·s/m), Feder, Last, Endanschläge; meldet Unterdruck im Öl (Kavitation wird nicht gerechnet) |
+| Zylinder | Endanschlag hart oder elastisch (`stop_k` N/m, `stop_c` N·s/m: Feder mit einseitiger Dämpfung wie die OpenModelica-Referenz, Kolben darf eindringen und prellen); Kraftbilanz: Drücke × Flächen, Masse, Haft-/Gleitreibung (mit `F_ref`/`v_ref` aus FluidSIM viskos F_ref/v_ref, sonst 20 N·s/m), Feder, Last, Endanschläge; meldet Unterdruck im Öl (Kavitation wird nicht gerechnet) |
 | Spannungsquelle | oberer Anschluss Plus, unterer Minus |
 | Taster, Endschalter | Schließer/Öffner aus dem Symbol; Wahlschalter (Rastung, `sim_role` `switch`) schaltet bei jedem Druck um; Endschalter auch über einen Hubbereich „`-MM1 0..2`“ (mm) |
 | Handventil mit Wahlschalter | nur auf einer Seite von Hand betätigt, ohne Feder: jeder Druck schaltet um, das Ventil bleibt stehen |

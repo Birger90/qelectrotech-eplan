@@ -16,5 +16,12 @@ dann −1), Differentialzylinder Hub 100 mm, Flächen 10/7 cm², Totvolumen je 0
 Spalten Zeit, Weg, Kammerdrücke, Versorgungsdruck, Schieberstellung (Überdruck in Pa). SHA-256 der Originaldatei:
 `09feba3bfb67678c7010a13f95e4785d5e0d536ec4876be717180752e6372308`.
 
+`OwnHydraulics.Examples.CylinderCycle_fein.csv` (Roadmap R02): derselbe Zyklus mit OpenModelica v1.26.3 (64-bit), DASSL, Toleranz
+1e-9, Ausgaberaster 10 µs; jede Millisekunde, im Anschlagfenster (20 ms ab Erreichen des Hubendes) jeder Punkt, mit
+Geschwindigkeit und Kontaktkraft. Erzeugt mit `erzeuge_hydraulik_fein.py --paket <Referenzpaket> --omc <omc.exe>`;
+Herkunft und Prüfsummen der Modelle in `OwnHydraulics.Examples.CylinderCycle_fein.json`. Der Anschlag der Referenz
+ist eine Feder 1e9 N/m mit einseitiger Dämpfung 1e5 N·s/m; unser Kern rechnet dasselbe Kontaktmodell
+(`stop_k`, `stop_c`).
+
 Ohne Ordnerangabe sucht `--simulate-reference` die Dateien neben dem Programm (`simulation/referenz`), dorthin legen
 Installation, macOS-Bündel und `tools/deploy_lokal.ps1` sie ab.

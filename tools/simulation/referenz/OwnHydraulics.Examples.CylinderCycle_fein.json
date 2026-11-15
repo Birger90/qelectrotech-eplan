@@ -1,0 +1,20 @@
+{
+ "modell": "OwnHydraulics.Examples.CylinderCycle",
+ "solver": "dassl",
+ "toleranz": 1e-09,
+ "ausgaberaster_s": 1e-05,
+ "omc": "OpenModelica v1.26.3 (64-bit)",
+ "modelle_sha256": {
+  "OwnSim.mo": "39bf3082640114e92b4b68c415fe0d7c44e6a166db7b41af583e91c481f6d6a3",
+  "OwnHydraulics.mo": "4e8f1e873e707895e1062cb8d647664b70a09ca214e7f7d2420db024846e271e"
+ },
+ "zeilen_roh": 180024,
+ "zeilen_reduziert": 3798,
+ "anschlagfenster_s": [
+  [
+   1.575631128328507,
+   1.595631128328507
+  ]
+ ],
+ "csv_sha256": "03bf6d8ba77767f844348ac133f86b39f116faf6f48b5ec16351f5e540e46fd9"
+}

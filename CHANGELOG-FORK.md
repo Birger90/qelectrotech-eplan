@@ -3,6 +3,24 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.24.0 – 15.11.2026
+
+Simulations-Roadmap R02 (Endanschlag und Drucktransienten), geprüft gegen OpenModelica 1.26.3 (jetzt installiert):
+
+- Elastischer Endanschlag im Zylindermodell: Federsteifigkeit `stop_k` [N/m] und einseitige Dämpfung `stop_c`
+  [N·s/m] wie das Kontaktmodell der Referenz (Dämpfung wirkt nur beim Eindringen, kann also nur Energie
+  entziehen); ohne die Kennwerte bleibt der harte Anschlag. Ein zu weicher Anschlag, der den Kolben durch das
+  Totvolumen drückt, bricht den Lauf mit Meldung ab.
+- Feiner Referenzlauf `OwnHydraulics.Examples.CylinderCycle_fein.csv` (10 µs, DASSL 1e-9) mit Erzeuger
+  `erzeuge_hydraulik_fein.py` und Herkunftsdatei; Referenzpaket-Eigenprüfung (Integrität, Generator, Hydraulik)
+  mit omc bestanden.
+- Neue Prüfung „Endanschlag hydraulisch (R02)“: Spitze 51,01 bar (Ref. 51,01) zur selben Zeit (±0,02 ms),
+  Eindringung 0,0224 mm (Ref. 0,0226), Kontaktarbeit −0,444 J (Ref. −0,459), Kontaktbilanz bis 0,1 mJ, gleiche
+  Spitze bei halbem Schritt. Die 10-ms-Ausnahme nach dem Anschlag im hydraulischen Vergleich ist entfernt.
+- Schlauchvergleich verbindet die Abtastpunkte der Gegenkurve (vorher galt ein schneller Abfall zwischen zwei
+  Punkten fälschlich als Abweichung); die Gegenprobe mit einer eingeschmuggelten Druckspitze fällt weiter durch.
+- `--simulate-reference`: 25 Prüfungen, alle bestanden.
+
 ## 1.23.0 – 15.11.2026
 
 Simulations-Roadmap (externer Auftrag, Pakete R00 und R01):

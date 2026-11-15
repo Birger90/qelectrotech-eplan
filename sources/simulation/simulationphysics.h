@@ -148,21 +148,42 @@ inline double orificeFlow(double dp, double k, double ps)
 
 
 	/**
-		piston with static and sliding friction, viscous damping and hard end
-		stops; @a force is the pressure, load and spring force in +x.
-		Z needs m, stroke, f_static, f_slide, damping, x, v.
+		contact force of an elastic end stop (roadmap R02): a spring stop_k with
+		one-sided damping stop_c beyond 0 and beyond the stroke, as
+		  x < 0:      F = -k·x - c·min(v, 0)
+		  x > stroke: F = -k·(x - stroke) - c·max(v, 0)
+		The damping only acts while the piston moves into the stop: it can only
+		take energy out, never push.
+	*/
+inline double stopForce(double x, double v, double stroke, double k, double c)
+{
+	if (x < 0.0) return -k * x - c * std::min(v, 0.0);
+	if (x > stroke) return -k * (x - stroke) - c * std::max(v, 0.0);
+	return 0.0;
+}
+
+	/**
+		piston with static and sliding friction, viscous damping and end stops;
+		@a force is the pressure, load and spring force in +x.
+		Z needs m, stroke, f_static, f_slide, damping, stop_k, stop_c, x, v.
+		stop_k = 0: hard stops (position and speed held at the end); stop_k > 0:
+		elastic stops (stopForce), the piston may enter them and bounce back.
+		Semi-implicit Euler (speed first, then position with the new speed).
 	*/
 template <class Z>
 void pistonStep(Z &z, double force, double dt)
 {
-	if (std::abs(z.v) < 1e-4 && std::abs(force) <= z.f_static) {
+	const double contact = z.stop_k > 0.0 ? stopForce(z.x, z.v, z.stroke, z.stop_k, z.stop_c) : 0.0;
+	const double total = force + contact;
+	if (std::abs(z.v) < 1e-4 && std::abs(total) <= z.f_static) {
 		z.v = 0.0;
 		return;
 	}
-	const double dir = std::abs(z.v) >= 1e-4 ? z.v : force;
-	const double f_net = force - std::copysign(z.f_slide, dir) - z.damping * z.v;
+	const double dir = std::abs(z.v) >= 1e-4 ? z.v : total;
+	const double f_net = total - std::copysign(z.f_slide, dir) - z.damping * z.v;
 	z.v += f_net / z.m * dt;
 	z.x += z.v * dt;
+	if (z.stop_k > 0.0) return;
 	if (z.x <= 0.0) { z.x = 0.0; z.v = 0.0; }
 	else if (z.x >= z.stroke) { z.x = z.stroke; z.v = 0.0; }
 }

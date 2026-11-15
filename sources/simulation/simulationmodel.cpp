@@ -219,6 +219,7 @@ struct SimulationModel::Cylinder {
 	Element *e = nullptr;
 	QString label;
 	double a_k = 0, a_r = 0, stroke = 0.1, m = 0.1, f_static = 0, f_slide = 0, damping = 20;
+	double stop_k = 0, stop_c = 0;   // elastic end stop (R02); 0: hard stop
 	double f_spring = 0, f_load = 0, x = 0, v = 0;
 };
 
@@ -594,6 +595,9 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					c->f_spring = f.m_spring != FluidData::SpringSide::None ? 0.15 * c->a_k * 6e5 : 0.0;
 					c->f_load = paramIn(f, QStringLiteral("F_extern_const"), 0.0, newton, &m_model_errors, who);
 					c->x = paramIn(f, QStringLiteral("xStart"), 0.0, m, &m_model_errors, who, Range::NonNegative);
+					// elastic end stops (R02): stiffness [N/m] and damping [N.s/m]; without them hard stops
+					c->stop_k = paramIn(f, QStringLiteral("stop_k"), 0.0, QStringLiteral("N/m"), &m_model_errors, who, Range::NonNegative);
+					c->stop_c = paramIn(f, QStringLiteral("stop_c"), 0.0, QStringLiteral("N.s/m"), &m_model_errors, who, Range::NonNegative);
 					// FluidSIM "automatic friction": a viscous force F_ref at the speed v_ref (F_ref is the piston
 					// force at the reference pressure, so the free cylinder runs at about v_ref there)
 					if (!f.parameter(QStringLiteral("F_ref")).isEmpty() && !f.parameter(QStringLiteral("v_ref")).isEmpty()) {
@@ -1311,6 +1315,9 @@ void SimulationModel::step(double dt)
 		SimPhysics::pistonStep(*z, f, dt);
 		if (ka >= 0) { vol[ka] += V_DEAD + z->a_k * z->x; dvdt[ka] += z->a_k * z->v; }
 		if (kb >= 0) { vol[kb] += V_DEAD + z->a_r * (z->stroke - z->x); dvdt[kb] -= z->a_r * z->v; }
+		// an elastic stop may not push the piston through the dead volume of a chamber
+		if (z->stop_k > 0 && (V_DEAD + z->a_k * z->x <= 0 || V_DEAD + z->a_r * (z->stroke - z->x) <= 0) && !m_failed)
+			fail(QStringLiteral("%1: Endanschlag zu weich, Kolben dringt durch das Totvolumen (stop_k erhöhen)").arg(z->label));
 		const QString end = z->x <= 0.0005 ? QStringLiteral("hinten")
 			: (z->x >= z->stroke - 0.0005 ? QStringLiteral("vorne") : QString());
 		if (end != m_end_position.value(z->label)) {

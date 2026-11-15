@@ -5,7 +5,7 @@ description: Pläne in QElectroTech (EPLAN-Fork) simulieren – Pneumatik, Hydra
 
 # Simulation in QElectroTech (EPLAN-Fork)
 
-Stand 15.11.2026, Fork 1.23.0. Roadmap-Stand: `tools/simulation/ROADMAP_STAND.md`. Anleitung für Anwender: `tools/simulation/README.md` (Modelltabelle, Konventionen,
+Stand 15.11.2026, Fork 1.24.0. Roadmap-Stand: `tools/simulation/ROADMAP_STAND.md`. Anleitung für Anwender: `tools/simulation/README.md` (Modelltabelle, Konventionen,
 Prüffälle). Hier steht, wie man damit arbeitet und was beim Bauen gelernt wurde. Neue Erkenntnisse unten unter
 „Gelernt“ nachtragen – sofort, nicht erst am Ende.
 
@@ -131,6 +131,16 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
   sonst zur Druckquelle, auch Kühler und Vakuumerzeuger). Pneumatischer `supply.pump` = Verdichter.
 - **Messgrößen** (R01): `signalList()/signalValue()`, CLI `--signals/--measure/--raster/--meta`; Durchflüsse nur mit
   `setRecordFlows(true)` (sonst NaN, keine erfundenen Nullen); Abgriff darf den Lauf nicht ändern (Prüfung).
+- **OpenModelica 1.26.3** ist installiert (`C:\Program Files\OpenModelica1.26.3-64bit\bin\omc.exe`). Neue
+  Referenzläufe mit eigenem Skript neben `tools/simulation/referenz` (Muster `erzeuge_hydraulik_fein.py`: Modelle aus
+  dem Referenzpaket in einen Temp-Ordner, `simulate(...)` mit `variableFilter`, reduzierte CSV + Herkunfts-JSON).
+- **Zeitversatz von Vorgängen sauber trennen**: Unser Kolben kam 0,75 ms früher am Anschlag an (Geschwindigkeit
+  +0,23 % über 0,67 s). Für den Kontakt selbst beide Läufe an der Ankunft ausrichten und den Versatz eigens begrenzen;
+  die ganzen Kurven bleiben in absoluter Zeit verglichen.
+- **Schlauch mit verbundenen Punkten**: Abtastpunkte allein lassen schnelle Abfälle zwischen zwei Punkten als
+  Abweichung erscheinen. Gegenkurve stückweise linear; danach die Spitzen-Gegenprobe wiederholen.
+- **Bilanz statt Tautologie**: ΔEkin gegen die Arbeit aus der Geschwindigkeitsänderung prüft nichts. Kontaktbilanz
+  −W_Kontakt = ΔE_Feder + ∫c·v²dt prüft Modell und Integration wirklich.
 - Der Python-Prototyp kennt die FluidSIM-Erweiterungen (`sim_role`, Wahlschalter, Hubbereich-Auslöser, Wechsler,
   `pNom`, `F_ref`/`v_ref`) nicht; die Gegenprobe läuft nur auf Plänen ohne sie. Neue Physik dort nachziehen, sobald
   ein Testplan sie benutzt.

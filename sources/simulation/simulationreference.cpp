@@ -31,6 +31,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <tuple>
 
 #include <QCoreApplication>
 #include <QDir>
@@ -523,23 +524,114 @@ QList<Check> endToEnd(const QString &reference_dir)
 			out << c;
 		}
 	}
-	{   // 6. invalid data: unknown unit, cylinder without stroke
+	{   // 6. invalid data: units, values out of range, unreadable numbers; a failed model does not run
+		struct Bad { const char *param, *attr, *value, *expect; };
+		const QList<Bad> bad{
+			{"pMax", "unit", "psi", "psi"},             // unknown unit
+			{"rT", "unit", "psi", "rT"},                // rT in another unit
+			{"rT", "value", "-0.1", "rT"},              // rT not positive
+			{"d_piston", "value", "-40", "d_piston"},   // negative diameter (was squared to a valid area)
+			{"d_piston", "value", "abc", "keine Zahl"}, // unreadable
+			{"xMax", "value", "0", "xMax"},             // no stroke
+			{"m_cyl", "value", "-2", "m_cyl"},          // negative mass
+		};
 		const QString hyd = path("hydraulik.qet");
-		const QString unit = variant(hyd, QStringLiteral("pMax"), QStringLiteral("unit"), QStringLiteral("psi"),
-									 QStringLiteral("qet_sim_einheit.qet"));
-		const QString stroke = variant(hyd, QStringLiteral("xMax"), QStringLiteral("value"), QStringLiteral("0"),
-									   QStringLiteral("qet_sim_hub.qet"));
 		Check c{names.at(5)};
-		if (unit.isEmpty() || stroke.isEmpty()) {
-			c.detail = QStringLiteral("Testvarianten ließen sich nicht erzeugen (pMax/xMax nicht im Projekt gefunden)");
-		} else {
-			const ProjectRun a = runProject(unit, 6.0, {}, 0.1), b = runProject(stroke, 6.0, {}, 0.1);
-			c.passed = a.error.contains(QLatin1String("psi")) && b.error.contains(QLatin1String("Zylinderdaten"));
-			c.detail = QStringLiteral("Einheit psi: „%1“; Hub 0: „%2“").arg(a.error.left(140), b.error.left(140));
-			QFile::remove(unit);
-			QFile::remove(stroke);
+		QStringList wrong, seen;
+		bool loop_ok = true;
+		int i = 0;
+		for (const Bad &b : bad) {
+			const QString file = variant(hyd, QString::fromLatin1(b.param), QString::fromLatin1(b.attr),
+										 QString::fromLatin1(b.value), QStringLiteral("qet_sim_ungueltig_%1.qet").arg(i++));
+			if (file.isEmpty()) {
+				if (QString::fromLatin1(b.param) == QLatin1String("m_cyl")) continue;   // the symbol has no m_cyl: nothing to vary
+				wrong << QStringLiteral("%1 nicht im Projekt").arg(QString::fromLatin1(b.param));
+				continue;
+			}
+			ProjectRun r = runProject(file, 6.0, {}, 0.1);
+			if (!r.error.contains(QString::fromUtf8(b.expect)))
+				wrong << QStringLiteral("%1 %2=%3: „%4“").arg(QString::fromLatin1(b.param), QString::fromLatin1(b.attr),
+															  QString::fromLatin1(b.value), r.error.left(120));
+			else
+				seen << QStringLiteral("%1 %2").arg(QString::fromLatin1(b.param), QString::fromLatin1(b.value));
+			// the failed model must not run: runUntil returns at once (it looped before 1.21.0)
+			if (r.sim && r.sim->failed()) {
+				r.sim->runUntil(0.01);
+				loop_ok = loop_ok && r.sim->time() == 0.0;
+			}
+			QFile::remove(file);
 		}
+		c.passed = wrong.isEmpty() && loop_ok && seen.size() >= 6;
+		c.detail = wrong.isEmpty()
+			? QStringLiteral("abgewiesen mit Bauteil und Kennwert: %1; runUntil auf ungültigem Modell kehrt sofort zurück: %2")
+				  .arg(seen.join(QStringLiteral(", ")), loop_ok ? QStringLiteral("ja") : QStringLiteral("nein"))
+			: wrong.join(QStringLiteral("; "));
 		out << c;
+	}
+	return out;
+}
+
+using Curve = QVector<QPair<double, double>>;
+
+	/**
+		tube comparison (as csv-compare and the Modelica test tools use it):
+		how far a point of @a a lies outside the tube around @a b, the tube
+		being every point of b within ±@a dt in time widened by
+		±max(@a rel·|b|, @a abs) in value. <= 0: every point of a is inside.
+		A point of a with no point of b in its time window counts as outside.
+		Run both ways (tubeBoth): a spike in either curve then fails.
+	*/
+double tubeExcess(const Curve &a, const Curve &b, double dt, double rel, double abs, double *at)
+{
+	if (b.isEmpty()) return std::numeric_limits<double>::infinity();
+	double worst = -std::numeric_limits<double>::infinity();
+	const double t0 = b.first().first, t1 = b.last().first;
+	int lo = 0;
+	for (const auto &pa : a) {
+		if (pa.first < t0 || pa.first > t1) continue;          // compare where both curves exist
+		while (lo < b.size() && b.at(lo).first < pa.first - dt) ++lo;
+		double best = std::numeric_limits<double>::infinity();
+		for (int j = lo; j < b.size() && b.at(j).first <= pa.first + dt; ++j) {
+			const double tol = std::max(rel * std::abs(b.at(j).second), abs);
+			best = std::min(best, std::abs(pa.second - b.at(j).second) - tol);
+		}
+		if (best > worst) {
+			worst = best;
+			if (at) *at = pa.first;
+		}
+	}
+	return worst;
+}
+
+double tubeBoth(const Curve &ours, const Curve &ref, double dt, double rel, double abs, double *at)
+{
+	double t_a = 0.0, t_b = 0.0;
+	const double e1 = tubeExcess(ours, ref, dt, rel, abs, &t_a);
+	const double e2 = tubeExcess(ref, ours, dt, rel, abs, &t_b);
+	if (at) *at = e1 >= e2 ? t_a : t_b;
+	return std::max(e1, e2);
+}
+
+Curve column(const QVector<QVector<double>> &rows, int col)
+{
+	Curve c;
+	for (const auto &r : rows) c << qMakePair(r.at(0), r.at(col));
+	return c;
+}
+
+	/// tube check of the curves @a cols (column, name, rel, abs, display scale, unit); @return texts, @a ok cleared on failure
+QStringList tubeReport(const QVector<QVector<double>> &own, const QVector<QVector<double>> &ref, double dt,
+					   const QList<std::tuple<int, QString, double, double, double, QString>> &cols, bool *ok)
+{
+	QStringList out;
+	for (const auto &k : cols) {
+		double at_t = 0.0;
+		const double excess = tubeBoth(column(own, std::get<0>(k)), column(ref, std::get<0>(k)), dt,
+									   std::get<2>(k), std::get<3>(k), &at_t);
+		if (!(excess <= 0.0)) *ok = false;
+		out << (excess <= 0.0 ? QStringLiteral("%1 im Schlauch").arg(std::get<1>(k))
+							  : QStringLiteral("%1 %2 %3 außerhalb bei %4 s ✗").arg(std::get<1>(k))
+									.arg(excess * std::get<4>(k), 0, 'g', 4).arg(std::get<5>(k)).arg(at_t, 0, 'f', 4));
 	}
 	return out;
 }
@@ -780,10 +872,10 @@ int runSimulationReference(const QString &reference_dir_given, QTextStream &out)
 				if (i % every == 0) r.s << Sample{t, z.x, pa, pb};
 				if (i == n) break;
 				const double cmd = t < 0.7 ? 1.0 : (t < 0.9 ? 0.0 : -1.0);
-				// the spool moves like SimulationModel's valves: linear over the switching time, here
-				// 30 ms = three time constants of the reference spool (10 ms, then 95 % open)
-				constexpr double T_SPOOL = 0.03;
-				spool += qBound(-dt / T_SPOOL, cmd - spool, dt / T_SPOOL);
+				// the spool moves like SimulationModel's valves, a first-order servo with tau = switching
+				// time / 3; a switching time of 30 ms gives tau = 10 ms, the reference spool
+				constexpr double TAU_SPOOL = 0.03 / 3.0;
+				spool += (cmd - spool) * (1.0 - std::exp(-dt / TAU_SPOOL));
 				const double open_p = std::max(spool, 0.0), open_m = std::max(-spool, 0.0);
 				// pump 1e-4 m³/s, built-in pressure limit 5.1 MPa (full flow up to 5.0 MPa, as the reference relief valve)
 				const double q_pump = 1e-4 * qBound(0.0, (5.1e6 - ps) / 1e5, 1.0);
@@ -876,13 +968,53 @@ int runSimulationReference(const QString &reference_dir_given, QTextStream &out)
 							.arg(ours / 1e5, 0, 'f', 1).arg(theirs / 1e5, 0, 'f', 1)
 							.arg(fits ? QString() : QStringLiteral(" ✗"));
 					}
+				// whole curves, switching transients and peaks included: tube ±5 ms, pressure ±10 % or
+				// 1 bar, stroke ±2 mm, both ways (a spike in either curve fails).
+				// Only exception, a difference of the contact models: the reference stop is a spring of
+				// 1e9 N/m with damping, the piston bounces (0.09 mm) and the pressures ring for some
+				// milliseconds; ours is a hard stop. 10 ms after each impact of the reference (stroke
+				// reaching an end) are left out of the tube, and the deviation there is reported.
+				QVector<QPair<double, double>> impacts;
+				for (int i = 1; i < ref.size(); ++i) {
+					const double x0 = ref.at(i - 1).at(1), x1 = ref.at(i).at(1);
+					const double t = ref.at(i).at(0);
+					// the first touch of an end only; the bounces after it stay in the tube
+					if (((x0 > 0.0 && x1 <= 0.0) || (x0 < 0.1 && x1 >= 0.1))
+						&& (impacts.isEmpty() || t > impacts.last().first + 0.05))
+						impacts << qMakePair(t, t + 0.010);
+				}
+				auto inImpact = [&](double t) {
+					for (const auto &w : impacts) if (t >= w.first && t <= w.second) return true;
+					return false;
+				};
+				QVector<QVector<double>> own_out, ref_out, own_in, ref_in;
+				for (const auto &row : own) (inImpact(row.at(0)) ? own_in : own_out) << row;
+				for (const auto &row : ref) (inImpact(row.at(0)) ? ref_in : ref_out) << row;
+				const QStringList tubes = tubeReport(own_out, ref_out, 0.005, {
+					std::make_tuple(1, QStringLiteral("Weg"), 0.0, 0.002, 1000.0, QStringLiteral("mm")),
+					std::make_tuple(2, QStringLiteral("Druck A"), 0.10, 1e5, 1e-5, QStringLiteral("bar")),
+					std::make_tuple(3, QStringLiteral("Druck B"), 0.10, 1e5, 1e-5, QStringLiteral("bar"))}, &same);
+				QStringList excluded;
+				for (const auto &w : impacts) {
+					double dev = 0.0;
+					for (const auto &row : ref_in) {
+						if (row.at(0) < w.first || row.at(0) > w.second) continue;
+						const long long k = std::llround(row.at(0) / 0.001);
+						if (k < 0 || k >= own.size()) continue;
+						dev = std::max({dev, std::abs(own.at(k).at(2) - row.at(2)), std::abs(own.at(k).at(3) - row.at(3))});
+					}
+					excluded << QStringLiteral("%1–%2 s (Anschlagstoß, Referenz prellt elastisch; dort bis %3 bar Abweichung)")
+						.arg(w.first, 0, 'f', 4).arg(w.second, 0, 'f', 4).arg(dev / 1e5, 0, 'f', 1);
+				}
 				v.passed = same;
 				v.detail = QStringLiteral("Ausfahren %1 mm/s (Ref. %2), Einfahren %3 mm/s (Ref. %4), zurück bei %5 s (Ref. %6); "
-										  "Kammerdrücke %7; Grenzen ±3 % Geschwindigkeit, ±5 % Rückhubzeit, Druck ±10 % bzw. 1 bar")
+										  "Kammerdrücke %7; ganze Kurven: %8; ausgenommen: %9; Grenzen ±3 % Geschwindigkeit, ±5 % "
+										  "Rückhubzeit, Druck ±10 % bzw. 1 bar (Mittel und Schlauch), Weg ±2 mm, Zeit ±5 ms")
 							   .arg(v_out * 1000, 0, 'f', 2).arg(rv_out * 1000, 0, 'f', 2)
 							   .arg(v_in * 1000, 0, 'f', 2).arg(rv_in * 1000, 0, 'f', 2)
 							   .arg(t_back, 0, 'f', 3).arg(r_back, 0, 'f', 3)
-							   .arg(pressures.join(QStringLiteral(", ")));
+							   .arg(pressures.join(QStringLiteral(", ")), tubes.join(QStringLiteral(", ")),
+									excluded.isEmpty() ? QStringLiteral("nichts") : excluded.join(QStringLiteral(", ")));
 			}
 			checks << v;
 		}
@@ -974,15 +1106,25 @@ int runSimulationReference(const QString &reference_dir_given, QTextStream &out)
 					dx = std::max(dx, std::abs(a.at(k).x - s.x));
 					dp = std::max({dp, std::abs(a.at(k).pa - s.pa), std::abs(a.at(k).pb - s.pb)});
 				}
-				// travel time within 5 % of the stroke time, every 1-ms point: stroke 1 mm, pressure 0.1 bar
+				// travel time within 5 % of the stroke time, every 1-ms point: stroke 1 mm, pressure 0.1 bar;
+				// every reference row (events and off-grid rows too): tube ±2 ms, stroke 1 mm, pressure 0.1 bar
 				const double tol_out = 0.05 * r_out, tol_back = 0.05 * (r_back - 0.4);
-				v.passed = compared >= 900 && std::abs(t_out - r_out) <= tol_out && std::abs(t_back - r_back) <= tol_back
-						   && dx <= 0.001 && dp <= 0.1e5;
+				bool same = compared >= 900 && std::abs(t_out - r_out) <= tol_out && std::abs(t_back - r_back) <= tol_back
+							&& dx <= 0.001 && dp <= 0.1e5;
+				QVector<QVector<double>> own;
+				for (const Sample &s : a) own << QVector<double>{s.t, s.x, s.pa, s.pb};
+				const QStringList tubes = tubeReport(own, ref, 0.002, {
+					std::make_tuple(1, QStringLiteral("Weg"), 0.0, 0.001, 1000.0, QStringLiteral("mm")),
+					std::make_tuple(2, QStringLiteral("Druck A"), 0.0, 0.1e5, 1e-5, QStringLiteral("bar")),
+					std::make_tuple(3, QStringLiteral("Druck B"), 0.0, 0.1e5, 1e-5, QStringLiteral("bar"))}, &same);
+				v.passed = same;
 				v.detail = QStringLiteral("aus bei %1 s (Ref. %2), zurück bei %3 s (Ref. %4), Grenze %5 / %6 ms; "
-										  "an %7 Zeitpunkten größte Abweichung Weg %8 mm (Grenze 1), Druck %9 bar (Grenze 0,1)")
+										  "an %7 Zeitpunkten größte Abweichung Weg %8 mm (Grenze 1), Druck %9 bar (Grenze 0,1); "
+										  "ganze Kurven ±2 ms: %10")
 							   .arg(t_out, 0, 'f', 3).arg(r_out, 0, 'f', 3).arg(t_back, 0, 'f', 3).arg(r_back, 0, 'f', 3)
 							   .arg(tol_out * 1000, 0, 'f', 1).arg(tol_back * 1000, 0, 'f', 1).arg(compared)
-							   .arg(dx * 1000, 0, 'f', 2).arg(dp / 1e5, 0, 'f', 3);
+							   .arg(dx * 1000, 0, 'f', 2).arg(dp / 1e5, 0, 'f', 3)
+							   .arg(tubes.join(QStringLiteral(", ")));
 			}
 			checks << v;
 		}

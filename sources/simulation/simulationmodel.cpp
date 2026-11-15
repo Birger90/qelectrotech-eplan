@@ -84,21 +84,54 @@ double volumeFlow(double p1, double p2, double rt)
 QString label(Element *e) { return e->elementInformations()[QStringLiteral("label")].toString(); }
 QString info(Element *e, const char *key) { return e->elementInformations()[QLatin1String(key)].toString(); }
 
-double param(const FluidData &f, const QString &name, double fallback)
-{
-	bool ok = false;
-	const double v = f.parameter(name).toDouble(&ok);
-	return ok ? v : fallback;
-}
-
 	/**
 		characteristic value @a name in unit @a to, converted by the unit the
 		symbol gives (<parameter unit="MPa"/>); a value without unit is taken
 		as @a to. An unreadable number or an unknown or unfitting unit is an
 		error of the model (@a errors), and @a fallback is used.
 	*/
+enum class Range { Any, NonNegative, Positive };
+
+bool inRange(double v, Range r)
+{
+	return std::isfinite(v) && (r == Range::Any || (r == Range::NonNegative ? v >= 0.0 : v > 0.0));
+}
+
+QString rangeText(Range r)
+{
+	return r == Range::Positive ? QStringLiteral("muss größer als 0 sein")
+		: (r == Range::NonNegative ? QStringLiteral("darf nicht negativ sein") : QStringLiteral("muss endlich sein"));
+}
+
+	/**
+		characteristic value without conversion, in its own unit @a native
+		(e.g. rT in bar.min2/l2, the exponent k without unit): a different
+		unit, an unreadable number or a value outside @a range is an error.
+	*/
+double paramNative(const FluidData &f, const QString &name, double fallback, const QString &native,
+				   QStringList *errors, const QString &who, Range range)
+{
+	for (const FluidData::Parameter &p : f.m_parameters) {
+		if (p.name != name) continue;
+		if (!p.unit.isEmpty() && p.unit != native) {
+			*errors << QStringLiteral("%1: Kennwert %2 hat die Einheit „%3“, erwartet wird %4")
+						   .arg(who, name, p.unit, native.isEmpty() ? QStringLiteral("keine Einheit") : native);
+			return fallback;
+		}
+		bool ok = false;
+		const double v = QString(p.value).replace(QLatin1Char(','), QLatin1Char('.')).toDouble(&ok);
+		if (!ok || !inRange(v, range)) {
+			*errors << QStringLiteral("%1: Kennwert %2 = „%3“ %4").arg(who, name, p.value,
+				ok ? rangeText(range) : QStringLiteral("ist keine Zahl"));
+			return fallback;
+		}
+		return v;
+	}
+	return fallback;
+}
+
 double paramIn(const FluidData &f, const QString &name, double fallback, const QString &to,
-			   QStringList *errors, const QString &who)
+			   QStringList *errors, const QString &who, Range range = Range::Any)
 {
 	for (const FluidData::Parameter &p : f.m_parameters) {
 		if (p.name != name) continue;
@@ -109,9 +142,13 @@ double paramIn(const FluidData &f, const QString &name, double fallback, const Q
 			return fallback;
 		}
 		const double r = SimUnits::convert(v, p.unit.isEmpty() ? to : p.unit, to);
-		if (!std::isfinite(r)) {
+		if (std::isnan(SimUnits::convert(1.0, p.unit.isEmpty() ? to : p.unit, to))) {
 			*errors << QStringLiteral("%1: Kennwert %2 hat die Einheit „%3“, erwartet wird %4")
 						   .arg(who, name, p.unit, to);
+			return fallback;
+		}
+		if (!inRange(r, range)) {
+			*errors << QStringLiteral("%1: Kennwert %2 = %3 %4 %5").arg(who, name, p.value, p.unit, rangeText(range));
 			return fallback;
 		}
 		return r;
@@ -385,9 +422,9 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					auto *p = new Pump;
 					p->e = e;
 					const QString who = label(e).isEmpty() ? e->name() : label(e);
-					p->q = paramIn(f, QStringLiteral("displacement"), 8e-6, QStringLiteral("m3"), &m_model_errors, who)
-						 * paramIn(f, QStringLiteral("rpm"), 1450.0 / 60.0, QStringLiteral("1/s"), &m_model_errors, who);
-					p->p_max = P_ATM + paramIn(f, QStringLiteral("pMax"), 6e6, QStringLiteral("Pa"), &m_model_errors, who);
+					p->q = paramIn(f, QStringLiteral("displacement"), 8e-6, QStringLiteral("m3"), &m_model_errors, who, Range::NonNegative)
+						 * paramIn(f, QStringLiteral("rpm"), 1450.0 / 60.0, QStringLiteral("1/s"), &m_model_errors, who, Range::NonNegative);
+					p->p_max = P_ATM + paramIn(f, QStringLiteral("pMax"), 6e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive);
 					m_pumps << p;
 				} else if (f.m_kind == FluidData::Kind::Source && fn == QLatin1String("supply.accumulator")) {
 					// a finite volume, not an ideal source: hydraulic accumulator with gas precharge,
@@ -396,8 +433,8 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					for (Terminal *t : e->terminals())
 						if (node(t) >= 0) ks << node(t);
 					const QString who = label(e).isEmpty() ? e->name() : label(e);
-					const double v0 = paramIn(f, QStringLiteral("V0"), 1e-3, QStringLiteral("m3"), &m_model_errors, who);
-					const double p0 = paramIn(f, QStringLiteral("p0"), 0.4e6, QStringLiteral("Pa"), &m_model_errors, who);
+					const double v0 = paramIn(f, QStringLiteral("V0"), 1e-3, QStringLiteral("m3"), &m_model_errors, who, Range::Positive);
+					const double p0 = paramIn(f, QStringLiteral("p0"), 0.4e6, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
 					if (ks.isEmpty()) continue;
 					if (hyd) {
 						auto *a = new Accumulator;
@@ -406,7 +443,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						a->node = ks.first();
 						a->v0 = v0;
 						a->p_pre = P_ATM + p0;
-						a->n = param(f, QStringLiteral("k"), 1.4);
+						a->n = paramNative(f, QStringLiteral("k"), 1.4, QString(), &m_model_errors, who, Range::Positive);
 						m_accumulators << a;
 					} else {
 						m_extra_volume[ks.first()] += v0;
@@ -431,10 +468,10 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					v->side[0] = f.m_left;
 					v->side[1] = f.m_right;
 					const QString who = v->label.isEmpty() ? e->name() : v->label;
-					v->c = conductanceFromQnn(paramIn(f, QStringLiteral("qNN"), 60.0, QStringLiteral("l/min"), &m_model_errors, who));
-					v->rt = param(f, QStringLiteral("rT"), 0.1);
-					v->t_on = paramIn(f, QStringLiteral("onDelay"), 0.02, QStringLiteral("s"), &m_model_errors, who);
-					v->t_off = paramIn(f, QStringLiteral("offDelay"), 0.03, QStringLiteral("s"), &m_model_errors, who);
+					v->c = conductanceFromQnn(paramIn(f, QStringLiteral("qNN"), 60.0, QStringLiteral("l/min"), &m_model_errors, who, Range::Positive));
+					v->rt = paramNative(f, QStringLiteral("rT"), 0.1, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+					v->t_on = paramIn(f, QStringLiteral("onDelay"), 0.02, QStringLiteral("s"), &m_model_errors, who, Range::NonNegative);
+					v->t_off = paramIn(f, QStringLiteral("offDelay"), 0.03, QStringLiteral("s"), &m_model_errors, who, Range::NonNegative);
 					v->hydraulic = hyd;
 					m_valves << v;
 				} else if (f.m_kind == FluidData::Kind::Cylinder) {
@@ -443,19 +480,22 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					c->label = label(e);
 					const QString who = c->label.isEmpty() ? e->name() : c->label;
 					const QString m = QStringLiteral("m");
-					const double dp = paramIn(f, QStringLiteral("d_piston"), (f.m_bore_mm > 0 ? f.m_bore_mm : 20.0) / 1000.0, m, &m_model_errors, who);
-					const double dr = paramIn(f, QStringLiteral("d_rod"), (f.m_rod_mm > 0 ? f.m_rod_mm : 8.0) / 1000.0, m, &m_model_errors, who);
-					c->stroke = paramIn(f, QStringLiteral("xMax"), (f.m_stroke_mm > 0 ? f.m_stroke_mm : 100.0) / 1000.0, m, &m_model_errors, who);
+					const double dp = paramIn(f, QStringLiteral("d_piston"), (f.m_bore_mm > 0 ? f.m_bore_mm : 20.0) / 1000.0, m, &m_model_errors, who, Range::Positive);
+					const double dr = paramIn(f, QStringLiteral("d_rod"), (f.m_rod_mm > 0 ? f.m_rod_mm : 8.0) / 1000.0, m, &m_model_errors, who, Range::NonNegative);
+					if (std::isfinite(dp) && std::isfinite(dr) && dp > 0 && dr >= dp)
+						m_model_errors << QStringLiteral("%1: Kolbenstange Ø %2 mm nicht kleiner als Kolben Ø %3 mm")
+											  .arg(who).arg(dr * 1000).arg(dp * 1000);
+					c->stroke = paramIn(f, QStringLiteral("xMax"), (f.m_stroke_mm > 0 ? f.m_stroke_mm : 100.0) / 1000.0, m, &m_model_errors, who, Range::Positive);
 					c->a_k = M_PI * dp * dp / 4;
 					c->a_r = c->a_k - M_PI * dr * dr / 4;
 					const QString kg = QStringLiteral("kg"), newton = QStringLiteral("N");
-					c->m = paramIn(f, QStringLiteral("m_cyl"), hyd ? 2.0 : 0.1, kg, &m_model_errors, who)
-						 + paramIn(f, QStringLiteral("m_ext"), 0.0, kg, &m_model_errors, who);
-					c->f_static = paramIn(f, QStringLiteral("F_stat"), 0.05 * c->a_k * 6e5, newton, &m_model_errors, who);
+					c->m = paramIn(f, QStringLiteral("m_cyl"), hyd ? 2.0 : 0.1, kg, &m_model_errors, who, Range::NonNegative)
+						 + paramIn(f, QStringLiteral("m_ext"), 0.0, kg, &m_model_errors, who, Range::NonNegative);
+					c->f_static = paramIn(f, QStringLiteral("F_stat"), 0.05 * c->a_k * 6e5, newton, &m_model_errors, who, Range::NonNegative);
 					c->f_slide = 0.7 * c->f_static;
 					c->f_spring = f.m_spring != FluidData::SpringSide::None ? 0.15 * c->a_k * 6e5 : 0.0;
 					c->f_load = paramIn(f, QStringLiteral("F_extern_const"), 0.0, newton, &m_model_errors, who);
-					c->x = paramIn(f, QStringLiteral("xStart"), 0.0, m, &m_model_errors, who);
+					c->x = paramIn(f, QStringLiteral("xStart"), 0.0, m, &m_model_errors, who, Range::NonNegative);
 					m_cylinders << c;
 					m_end_position.insert(c->label, QString());
 				} else if (f.m_kind == FluidData::Kind::Sensor && fn == QLatin1String("sensor.pressure_switch")) {
@@ -466,7 +506,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						if (node(t) >= 0) { s->node = node(t); break; }
 					const QString who = s->label.isEmpty() ? e->name() : s->label;
 					s->p_on = paramIn(f, QStringLiteral("p0"), 0.4e6, QStringLiteral("Pa"), &m_model_errors, who);
-					s->p_off = s->p_on - std::max(paramIn(f, QStringLiteral("p_hyst"), 0.05e6, QStringLiteral("Pa"), &m_model_errors, who), 1e3);
+					s->p_off = s->p_on - std::max(paramIn(f, QStringLiteral("p_hyst"), 0.05e6, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative), 1e3);
 					m_pressure_switches << s;
 				} else if (flow_qnn.contains(fn)) {
 					auto *fv = new FlowValve;
@@ -477,12 +517,13 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					fv->free_to = f.parameter(QStringLiteral("free_to"));
 					fv->hydraulic = hyd;
 					const QString who = label(e).isEmpty() ? e->name() : label(e);
-					fv->c = conductanceFromQnn(paramIn(f, QStringLiteral("qNN"), flow_qnn.value(fn), QStringLiteral("l/min"), &m_model_errors, who));
+					fv->c = conductanceFromQnn(paramIn(f, QStringLiteral("qNN"), flow_qnn.value(fn), QStringLiteral("l/min"), &m_model_errors, who, Range::Positive));
 					fv->c_free = conductanceFromQnn(150);
-					fv->rt = param(f, QStringLiteral("rT"), fn.contains(QLatin1String("flow_control")) ? 1.0 : 0.1);
-					fv->p0 = paramIn(f, QStringLiteral("p0"), 0.0, QStringLiteral("Pa"), &m_model_errors, who);
-					fv->dp_end = std::max(paramIn(f, QStringLiteral("dpEnd"), 0.05e6, QStringLiteral("Pa"), &m_model_errors, who), 0.1e5);
-					fv->t_delay = paramIn(f, QStringLiteral("t_delay"), 1.0, QStringLiteral("s"), &m_model_errors, who);
+					fv->rt = paramNative(f, QStringLiteral("rT"), fn.contains(QLatin1String("flow_control")) ? 1.0 : 0.1,
+										 QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+					fv->p0 = paramIn(f, QStringLiteral("p0"), 0.0, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+					fv->dp_end = std::max(paramIn(f, QStringLiteral("dpEnd"), 0.05e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
+					fv->t_delay = paramIn(f, QStringLiteral("t_delay"), 1.0, QStringLiteral("s"), &m_model_errors, who, Range::NonNegative);
 					m_flow_valves << fv;
 				}
 				continue;
@@ -914,11 +955,12 @@ void SimulationModel::step(double dt)
 			v->position = v->target;
 			v->switch_at = -1;
 		}
-		// while switching the spool moves: the paths of the old position close as those of the new
-		// one open (opening linear in time over the switching time; flow linear in the opening)
+		// while switching the spool moves like a first-order servo: the paths of the new position open
+		// as 1 - e^(-t/tau) with tau = switching time / 3 (95 % open when the switching time is over,
+		// then fully), those of the old one close alike; flow is linear in the opening
 		double opened = 1.0;
 		if (v->switch_at >= 0 && v->switch_at > v->switch_start)
-			opened = qBound(0.0, (m_time - v->switch_start) / (v->switch_at - v->switch_start), 1.0);
+			opened = qBound(0.0, 1.0 - std::exp(-3.0 * (m_time - v->switch_start) / (v->switch_at - v->switch_start)), 1.0);
 		auto flowThrough = [&](int pos, double share) {
 			if (share <= 0.0) return;
 			for (const auto &path : v->positions.at(pos)) {
@@ -1088,7 +1130,8 @@ void SimulationModel::step(double dt)
 
 void SimulationModel::runUntil(double time, double dt)
 {
-	while (m_time + dt <= time + 1e-12)
+	// a failed run does not advance the time: stop instead of looping
+	while (!m_failed && m_time + dt <= time + 1e-12)
 		step(dt);
 }
 

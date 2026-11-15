@@ -488,10 +488,11 @@ class Simulation:
                 if v.stellung != v.ziel:
                     self.meldungen.append((t, f"{v.b.label} schaltet in Stellung {v.ziel + 1}"))
                 v.stellung, v.umschalten_um = v.ziel, None
-            # Schieber bewegt sich: alte Wege schließen, neue öffnen (linear über die Schaltzeit), wie im C++-Kern
+            # Schieber wie ein Stellglied erster Ordnung: neue Wege öffnen mit 1 - e^(-t/tau), tau = Schaltzeit/3,
+            # alte schließen ebenso; wie im C++-Kern
             offen = 1.0
             if v.umschalten_um is not None and v.umschalten_um > v.umschalt_beginn:
-                offen = min(1.0, max(0.0, (t - v.umschalt_beginn) / (v.umschalten_um - v.umschalt_beginn)))
+                offen = min(1.0, max(0.0, 1.0 - math.exp(-3.0 * (t - v.umschalt_beginn) / (v.umschalten_um - v.umschalt_beginn))))
             if v.umschalten_um is not None and v.ziel != v.stellung:
                 anteile = [(v.stellung, 1.0 - offen), (v.ziel, offen)]
             else:

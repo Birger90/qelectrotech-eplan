@@ -28,7 +28,7 @@ Betätigung, Kennwerte) und der elektrischen Steuerung.
 | Wechselventil, Zweidruckventil | Ausgang 2 vom Eingang mit höherem (ODER) bzw. niedrigerem Druck (UND) |
 | Zeitverzögerungsventil | schaltet 1 → 2, wenn Steueranschluss 3 `t_delay` lang Druck hat; sonst entlüftet 2 |
 | Tank | drucklos |
-| Wegeventil | Schaltwege der Stellung; Luft nach ISO 6358 aus `qNN`, Öl mit Widerstand `rT` (Δp = rT·Q², um Δp = 0 stetig geglättet: Q ∝ Δp/(Δp² + 0,3 bar²)^¼); Schaltzeiten `onDelay`/`offDelay`: der Schieber bewegt sich in dieser Zeit, die Wege der alten Stellung schließen, die der neuen öffnen (linear); Feder in die Ruhestellung, ohne Feder bleibt die Stellung; Steuerdruck an 14/12 |
+| Wegeventil | Schaltwege der Stellung; Luft nach ISO 6358 aus `qNN`, Öl mit Widerstand `rT` (Δp = rT·Q², um Δp = 0 stetig geglättet: Q ∝ Δp/(Δp² + 0,3 bar²)^¼); Schaltzeiten `onDelay`/`offDelay`: der Schieber bewegt sich wie ein Stellglied erster Ordnung (Zeitkonstante = Schaltzeit/3, nach der Schaltzeit 95 % offen), die Wege der alten Stellung schließen, die der neuen öffnen; Feder in die Ruhestellung, ohne Feder bleibt die Stellung; Steuerdruck an 14/12 |
 | Rückschlag-, Drosselrückschlagventil | freie Richtung `free_from` → `free_to` (aus der Zeichnung); öffnet stetig ab dem Öffnungsdruck `p0`; entsperrbar über Steueranschluss |
 | Drossel, Absperrventil, Schalldämpfer, Schnellentlüftung | Leitwert aus `qNN` bzw. `rT` |
 | Druckbegrenzung, Druckregler | Einstelldruck `p0`, Öffnungsbereich `dpEnd`; Druckbegrenzung von Eingang 1 (P) in den Rücklauf 2 (T), ohne Rücklaufleitung ins Freie, öffnet nach dem Unterschied Eingang – Rücklauf |
@@ -142,7 +142,7 @@ Modelica-Referenzmodellen (Luft isotherm, R = 287,05 J/(kg K), T = 300 K, linear
 | AccumulatorCharge | p = 10 bar · (1 l/(1 l − Q·t))^1,4; außerdem Laden ab 1 bar über den Vorfülldruck | Fehler ≤ 0,1 Pa bzw. 1 Pa |
 | Hydraulik-CylinderCycle | Pumpe, 4/3-Ventil, Differentialzylinder: aus, halten, zurück | Weg −0,1…100,1 mm, vor 0,7 s ≥ 75 mm, Haltedrift < 2 mm, nach 1,75 s < 2 mm, Drücke > −0,98 bar und < 100 bar, Volumenbilanz; mit Referenzlauf: Aus-/Einfahrgeschwindigkeit ±3 %, Rückhubzeit ±5 % |
 | CylinderCycle | Ausfahren vor 0,4 s, Rückhub bis 1 s | Weg −2…62 mm, vorne ≥ 59 mm vor 0,4 s, nach 0,9 s < 1 mm; Hubzeiten ±1 ms bei halbem Zeitschritt; mit Ordner: Hubzeiten ±5 % gegen den OpenModelica-Lauf |
-| OpenModelica-Vergleich pneumatisch / hydraulisch | Weg und Kammerdrücke gegen die Referenzläufe | pneumatisch an jedem ms Weg ≤ 1 mm, Druck ≤ 0,1 bar; hydraulisch Geschwindigkeiten ±3 %, Kammerdrücke beim Ausfahren, Halten und Einfahren ±10 % bzw. 1 bar; ungültige oder fehlende Referenzdatei = FEHLER |
+| OpenModelica-Vergleich pneumatisch / hydraulisch | Weg und Kammerdrücke gegen die Referenzläufe | pneumatisch an jedem ms Weg ≤ 1 mm, Druck ≤ 0,1 bar; hydraulisch Geschwindigkeiten ±3 %, Kammerdrücke beim Ausfahren, Halten und Einfahren ±10 % bzw. 1 bar; ganze Kurven im Schlauch (±5 ms, Druck ±10 % bzw. 1 bar, Weg ±2 mm, beide Richtungen; nur 10 ms nach dem Aufschlag am Anschlag ausgenommen, weil die Referenz dort elastisch prellt); ungültige oder fehlende Referenzdatei = FEHLER |
 | Unterdruck im Öl | 10 cm³ aus 0,1 l abziehen und wieder zuführen | Bilanz je Schritt, Druck nie unter der Grenze, danach wieder Ausgangsdruck |
 | Ungültige Werte, Einheiten | NaN, Volumen 0, Speicherdaten; MPa/bar/cm³/1/min, unbekannte Einheit | NaN statt Mindestdruck; 99 und 100 MPa beide als MPa |
 | Projekte (Ende zu Ende, `referenz/plaene`) | Hydraulik, Blindstopfen, Druckbegrenzung, GRAFCET, Speicher/Druckschalter/Logikventile, ungültige Daten | durch dasselbe `SimulationModel` wie Fenster und CLI, jeweils gegen Handrechnung oder erwartete Folge |
@@ -160,7 +160,8 @@ verglichen, nicht jeder Punkt.
 - **Endschalter → Zylinder:** Funktionstext des Schalters „`-MM1 vorne`“ bzw. „`-MM1 hinten`“.
 - **Kennwerte** stehen als `<parameter>` im Symbol und lassen sich je Bauteil anpassen. Umgerechnet wird nach der
   Einheit (`unit="MPa"`, `bar`, `l`, `cm3`, `1/min` …), nie nach der Größe der Zahl; eine unbekannte oder unpassende
-  Einheit und unmögliche Werte (Hub, Masse, Fläche, Speichervolumen ≤ 0) sind Fehler: die Simulation startet dann
+  Einheit, unlesbare Zahlen und Werte außerhalb ihres Bereichs (Durchmesser, Hub, Masse, Zeiten, Volumen ≤ 0, Kolbenstange
+  nicht kleiner als Kolben; `rT` nur in bar.min2/l2, `k` ohne Einheit) sind Fehler: die Simulation startet dann
   nicht und nennt das Bauteil. Ein Rechenfehler (nicht endlicher Wert) bricht den Lauf mit Meldung ab;
   `--simulate` endet dann mit Rückgabewert 3 und `Model error:` auf der Fehlerausgabe.
 

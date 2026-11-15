@@ -3,6 +3,21 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.21.0 – 15.11.2026
+
+Nach dem Freigabetest des Stands fce93f6 (vier offene Punkte, alle bestätigt und behoben):
+
+- Ein ungültiges oder abgebrochenes Modell läuft nicht mehr endlos: `runUntil` hört beim Fehler auf, das
+  Simulationsfenster startet ein ungültiges Modell gar nicht und setzt einen abgebrochenen Lauf nicht fort.
+- Kennwerte mit festem Wertebereich (Durchmesser, Hub, Massen, Zeiten, Drücke, Volumen, Durchflüsse); Durchmesser
+  werden vor dem Quadrieren geprüft (vorher wurde −40 mm zu einer gültigen Fläche), Kolbenstange kleiner als Kolben.
+  `rT` nur in `bar.min2/l2`, der Exponent `k` nur ohne Einheit; unlesbare Werte sind Fehler statt stiller Vorgabe.
+- Wegeventile: der Schieber öffnet wie ein Stellglied erster Ordnung (Zeitkonstante = Schaltzeit / 3).
+- `--simulate-reference`: ganze Kurven im Schlauchvergleich (±5 ms, Druck ±10 % bzw. 1 bar, Weg ±2 mm, in beide
+  Richtungen) – eine einzelne Druckspitze in der Referenz fällt jetzt auf. Ausgenommen und mit Abweichung genannt
+  werden nur 10 ms nach dem Aufschlag am Anschlag (Referenz elastisch und prellend, unser Anschlag hart).
+  Sieben Varianten ungültiger Daten und `runUntil` auf ungültigem Modell als Projekttest.
+
 ## 1.20.0 – 14.11.2026
 
 Nach einer externen Prüfung des Stands 5be3d74 (sechs Befunde, alle bestätigt und behoben):

@@ -5,7 +5,7 @@ description: Pläne in QElectroTech (EPLAN-Fork) simulieren – Pneumatik, Hydra
 
 # Simulation in QElectroTech (EPLAN-Fork)
 
-Stand 14.11.2026, Fork 1.20.0. Anleitung für Anwender: `tools/simulation/README.md` (Modelltabelle, Konventionen,
+Stand 15.11.2026, Fork 1.21.0. Anleitung für Anwender: `tools/simulation/README.md` (Modelltabelle, Konventionen,
 Prüffälle). Hier steht, wie man damit arbeitet und was beim Bauen gelernt wurde. Neue Erkenntnisse unten unter
 „Gelernt“ nachtragen – sofort, nicht erst am Ende.
 
@@ -48,8 +48,9 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
 - Unter 0,11 bar abs reißt das Öl ab: **Hohlraum bilanziert** (`cavity`), beim Nachströmen zuerst gefüllt.
 - Nicht endliche Werte → NaN durchreichen, Lauf bricht ab (`failed()`), CLI Rückgabewert 3, `Model error:`.
 - Freie Anschlüsse: offen = Atmosphäre, `port_end="plug"` = dichtes eigenes Volumen, Schalldämpfer = Widerstand.
-- Wegeventil: Schieber bewegt sich über die Schaltzeit (lineare Überblendung der Stellungen).
-- Kennwerte über `paramIn` nach `unit` (`simulationunits.h`); unbekannte Einheit = Modellfehler.
+- Wegeventil: Schieber als Stellglied erster Ordnung, τ = Schaltzeit/3 (C++ und Python gleich).
+- Kennwerte über `paramIn` nach `unit` mit `Range` (Positive/NonNegative), `rT`/`k` über `paramNative`;
+  jeder Fehler landet in `modelErrors()`, der Lauf startet nicht. `runUntil` hört bei `failed()` auf.
 - Pumpe: volle Förderung bis 1 bar unter `pMax`, bei `pMax` null. Rückschlagventil öffnet stetig ab `p0`.
 - Zylinder: Kraftbilanz, Haft-/Gleitreibung, harte Endanschläge; Unterdruck im Öl wird gemeldet, nicht gerechnet.
 - SPS: ST-Teilmenge (BOOL/INT, IF/ELSIF, CASE, TON/TOF/CTU/CTD/R_TRIG/F_TRIG/SR/RS, R_EDGE/↑), alle Werte `double`.
@@ -103,6 +104,15 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
 - **Haltedrücke hängen an der Schieberbewegung**: sprunghaftes Schließen gab 6,3/8,8 statt 8,6/12,3 bar; mit
   Überblendung über die Schaltzeit 8,5/12,1 bar. Testparameter (30 ms = 3 τ) vorher aus der Physik festlegen.
 - Offener Fluidanschluss hat 0 bar Überdruck, nicht „nicht definiert“ (`pressureBar`).
+
+- **Mittelwerte decken Spitzen nicht ab**: zweite Prüfung 15.11.2026 schob eine Druckspitze ein, die Fenster-
+  mittel nicht sahen. Ganze Kurven im Schlauch vergleichen, in beide Richtungen. Der Schlauch fand dann echte
+  Unterschiede: 7 ms späterer Anschlag (linearer statt exponentieller Schieber → Schieber erster Ordnung) und
+  das Prellen des elastischen Referenzanschlags (bleibt als offen genannte Ausnahme von 10 ms).
+- **Prüfen vor Umrechnen**: Durchmesser vor dem Quadrieren, Einheit vor dem Wert. Jede Kennwert-Lesestelle mit
+  Bereich; keine stillen Vorgaben bei unlesbaren Werten.
+- **Fehlerzustand in jeder Schleife abfragen**: `step()` ohne Zeitfortschritt + `while (t < ziel)` = Endlosschleife.
+- Gegenproben des Prüfers (Manipulationen) im eigenen Prüfstand nachbilden, nicht nur seine Dateien einmal laufen lassen.
 
 ## Offen
 

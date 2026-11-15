@@ -144,6 +144,12 @@ SimulationDock::~SimulationDock()
 
 void SimulationDock::start()
 {
+	if (m_model && m_model->failed()) {
+		// a run that stopped on a computing fault cannot continue: only Stop and a new start
+		m_summary->setStyleSheet(QStringLiteral("color: #c00000"));
+		m_summary->setText(tr("Simulation stopped: %1").arg(m_model->failure()));
+		return;
+	}
 	if (!m_model) {
 		QETProject *project = m_editor->currentProject();
 		if (!project) {
@@ -156,6 +162,13 @@ void SimulationDock::start()
 		m_summary->setStyleSheet(problems.isEmpty() ? QStringLiteral("color: gray") : QStringLiteral("color: #c00000"));
 		m_summary->setText(problems.isEmpty() ? m_model->summary()
 			: m_model->summary() + QStringLiteral("\n") + problems.join(QStringLiteral("\n")));
+		if (m_model->failed()) {
+			// invalid plan data: show why and start nothing (no timer, no event filters)
+			m_summary->setText(tr("Simulation stopped: %1").arg(m_model->failure()));
+			m_model.reset();
+			m_project.clear();
+			return;
+		}
 		m_log->clear();
 		rebuildControls();
 		// push buttons and valves can also be operated by clicking their symbol

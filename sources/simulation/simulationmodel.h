@@ -128,6 +128,7 @@ class SimulationModel
 		struct Valve;
 		struct Cylinder;
 		struct Pump;
+		struct Motor;
 		struct FlowValve;
 		struct Contact;
 		struct Relay;
@@ -156,6 +157,7 @@ class SimulationModel
 		QList<Valve *> m_valves;
 		QList<Cylinder *> m_cylinders;
 		QList<Pump *> m_pumps;
+		QList<Motor *> m_motors;
 		QList<FlowValve *> m_flow_valves;
 		QList<Contact *> m_contacts;
 		QList<Relay *> m_relays;

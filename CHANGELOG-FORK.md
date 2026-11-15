@@ -3,6 +3,22 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.26.0 – 15.11.2026
+
+Simulations-Roadmap R08 (Pumpen und Hydromotoren):
+
+- Hydromotor mit Welle (`motor.fixed_motor`, `motor.variable_motor`, FluidSIM `actuator.rotary_motor`): Schluckvolumen,
+  Verstellgrad α (−1 … 1), Leckage A→B, Trägheit, viskose und geglättete trockene Reibung, Lastmoment;
+  q = α·D·ω/2π + C·Δp, τ = α·D·Δp/2π, J·dω/dt = τ − τ_Last − τ_Reibung (`SimPhysics::Shaft`, von Modell und
+  Prüfstand gemeinsam benutzt). Druckluftmotoren werden weiter abgewiesen.
+- Pumpen mit Verstellgrad α und Leckage P→T (`GL`); Verstellpumpe und FluidSIM-`Pump01` jetzt mit Modell.
+- Messgrößen `omega:`, `phi:`, `tau:`, `P:` (Motor) und `P:` (abgegebene Pumpenleistung).
+- Reproduzierbarkeit: das Modell wird in fester Reihenfolge der Bauteile aufgebaut (QElectroTech liefert die
+  Elemente eines Blatts nicht bei jedem Laden gleich); vertauschte gleichzeitige Eingaben ergeben eine bytegleiche CSV.
+- Neue Prüfung „Hydromotor (R08)“: 15 l/min → 1500 1/min, Druck = 2π·(Last + Reibung)/D, Lastsprung +100 bar bei
+  gleicher Drehzahl, Umkehr über B −1500 1/min, Leistungsbilanz Δp·q = Last + ΔEkin + Reibung + Leckage (Rest
+  0,028 J von 2780 J), Projekt: Motordrehzahl = Förderstrom/Schluckvolumen. 27 Prüfungen, alle bestanden.
+
 ## 1.25.0 – 15.11.2026
 
 Simulations-Roadmap R03 (Anfangszustand, Numerik, Ereignisse):

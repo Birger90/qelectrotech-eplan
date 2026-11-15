@@ -13,7 +13,8 @@ Projektlader) bestehen. Für reale Genauigkeitszusagen fehlen weiterhin unabhän
 | R03 Anfangszustand, Numerik, Ereignisse | **umgesetzt** (Fork 1.25.0): widersprüchliche Quellen und Mischnetze vor dem Lauf gemeldet, Schwingungswächter je Netz, stabile Ereignisreihenfolge, Kennwertbereiche dokumentiert | Prüfung „Netze, Stabilität, Ereignisse (R03)“ (Quellenwiderspruch, Luft/Öl, rT 1e-4 → Abbruch mit Netz, vertauschte gleichzeitige Eingaben identisch); Konvergenz GasCharge/HydraulicCharge/Endanschlag. Offen: adaptive oder implizite Integration für steife Netze (heute Diagnose statt Ergebnis) | K03, K04 (Diagnose), K05, Q04 |
 | R04 Vergleichsbestand | teilweise (OpenModelica pneumatisch/hydraulisch, 6 Projekte, 1136 FluidSIM-Beispiele als Rauchprüfung) | `--simulate-reference`, `fluidsim_batch.py` | K15, Q01–Q05 |
 | R05 Leitungen, Aufbereitung | teilweise: Aufbereitung als Durchgangswiderstand, Leitung/Kupplung ideal | Katalog | H06–H08, H25, P12 |
-| R06–R19 | offen | – | siehe Matrix |
+| R08 Pumpen und Hydromotoren | **umgesetzt** (Fork 1.26.0): Hydromotor mit Welle (konstant/verstellbar, Leckage, Reibung, Last), Pumpen mit Verstellgrad und Leckage, Wellen- und Pumpenleistung als Messgröße | Prüfung „Hydromotor (R08)“: Drehzahl, Moment, Lastsprung, Umkehr, Leistungsbilanz, Projekt. Offen: Verstellregler (Druck-/Leistungsregler), reversierbare Pumpe/Motor-Einheit im 4-Quadranten-Betrieb, Druckluftmotor | H02, H03 (Verstellgrad fest), H22; H04 offen |
+| R06, R07, R09–R19 | offen | – | siehe Matrix |
 
 Nicht unterstützte Funktionen stehen mit Grund im Katalog (`--simulate-catalog`, Rolle `unsupported`); ein Projekt
 mit ihnen startet nicht.

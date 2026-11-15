@@ -97,6 +97,27 @@ struct OscillationWatch {
 	}
 };
 
+	/**
+		hydraulic motor with shaft (roadmap R08, GLEICHUNGEN 5): displacement D [m³/rev], setting alpha
+		(-1 … 1), leakage cleak [m³/(s·Pa)] from inlet to outlet, inertia J [kg·m²], viscous friction b
+		[N·m·s/rad], dry friction tau_c [N·m] (smoothed over 0.1 rad/s), angle phi, speed omega.
+		  q   = alpha·D·omega/(2π) + cleak·dp        (dp = p_in - p_out, q from inlet to outlet)
+		  tau = alpha·D·dp/(2π)
+		  J·domega/dt = tau - tau_load - b·omega - tau_c·tanh(omega/0.1)
+	*/
+struct Shaft {
+	double D = 8e-6, alpha = 1.0, cleak = 0.0, J = 1e-3, b = 1e-3, tau_c = 0.0;
+	double omega = 0.0, phi = 0.0;
+	double flow(double dp) const { return alpha * D * omega / (2.0 * M_PI) + cleak * dp; }
+	double torque(double dp) const { return alpha * D * dp / (2.0 * M_PI); }
+	double friction() const { return b * omega + tau_c * std::tanh(omega / 0.1); }
+	void step(double dp, double tau_load, double dt)
+	{
+		omega += (torque(dp) - tau_load - friction()) / J * dt;
+		phi += omega * dt;
+	}
+};
+
 	/// gas side of a hydraulic accumulator: precharge @a p_pre (absolute) at gas volume @a v0, exponent @a n
 struct GasCharge { double p_pre, v0, n; };
 

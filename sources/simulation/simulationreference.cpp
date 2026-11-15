@@ -424,7 +424,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Projekt mit ungültigen Daten: Lauf startet nicht, Fehler mit Bauteil"),
 		QStringLiteral("Modellkatalog: ohne Rechenmodell abgewiesen, Grafikbaustein ignoriert"),
 		QStringLiteral("Messgrößen: Abgriff ohne Rückwirkung, Durchfluss bilanziert, Pumpe = Verdrängung · Drehzahl"),
-		QStringLiteral("Netze, Stabilität, Ereignisse (R03): Widersprüche und Instabilität gemeldet, gleichzeitige Eingaben reproduzierbar")};
+		QStringLiteral("Netze, Stabilität, Ereignisse (R03): Widersprüche und Instabilität gemeldet, gleichzeitige Eingaben reproduzierbar"),
+		QStringLiteral("Hydromotor (R08): Drehzahl, Moment, Lastsprung, Umkehr, Leistungsbilanz, Projekt")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -716,6 +717,102 @@ QList<Check> endToEnd(const QString &reference_dir)
 		else seen << QStringLiteral("gleichzeitige Eingaben in beiden Reihenfolgen gleich (%1 Werte)").arg(trace1.size());
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? QStringLiteral("erkannt: %1").arg(seen.join(QStringLiteral(", "))) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 10. hydraulic motor (R08) with the shaft model of the core (SimPhysics::Shaft), fed by an ideal flow
+		//     source into an oil volume; GLEICHUNGEN 5: D 10 cm³/U, 15 l/min -> 1500 1/min; 100 bar <-> 15.9155 N·m.
+		//     A viscous friction b damps the oil spring (else it rings forever); it is in the hand calculation.
+		Check c{names.at(9)};
+		QStringList wrong, seen;
+		auto run = [](double (*q_in)(double), double (*tau_load)(double), double cleak, double b, double tau_c,
+					  double t_end, double *dp_out, double *energy_error, double *e_in) {
+			SimPhysics::Shaft s;
+			s.D = 10e-6; s.alpha = 1.0; s.cleak = cleak; s.J = 1e-3; s.b = b; s.tau_c = tau_c;
+			double pa = 0.0, cav = 0.0;
+			const double dt = 1e-5, vol = 1e-4, bulk = 5e8;
+			double win = 0, wload = 0, wfric = 0, wleak = 0;
+			const double ek0 = 0.5 * s.J * s.omega * s.omega;
+			const long long n = std::llround(t_end / dt);
+			for (long long i = 0; i < n; ++i) {
+				const double t = i * dt;
+				const double dp = pa;                                   // B at the tank, 0 Pa gauge
+				const double q = s.flow(dp);
+				const double w0 = s.omega;
+				const double tl = tau_load(t);
+				const double fr = s.friction();
+				s.step(dp, tl, dt);
+				const double wm = 0.5 * (w0 + s.omega);
+				win += dp * q * dt;
+				wload += tl * wm * dt;
+				wfric += fr * wm * dt;
+				wleak += cleak * dp * dp * dt;
+				pa = SimPhysics::oilNode(pa, vol, 0.0, q_in(t) - q, bulk, dt, -0.9e5, cav);
+			}
+			*dp_out = pa;
+			const double dek = 0.5 * s.J * s.omega * s.omega - ek0;
+			// the flow is taken at the start of the step: the balance holds to the order of dt
+			*energy_error = std::abs(win - (wload + dek + wfric + wleak));
+			*e_in = win;
+			return s.omega;
+		};
+		const double D = 10e-6, b = 0.05, tau100 = D * 1e7 / (2 * M_PI), w_set = 2 * M_PI * 25.0;
+		double dp = 0, err = 0, ein = 0;
+		const double w1 = run([](double) { return 2.5e-4; }, [](double) { return 10e-6 * 1e7 / (2 * M_PI); }, 0, b, 0, 1.0, &dp, &err, &ein);
+		const double dp1 = 2 * M_PI * (tau100 + b * w_set) / D;
+		if (std::abs(w1 - w_set) > 0.005 * w_set || std::abs(dp - dp1) > 0.005 * dp1)
+			wrong << QStringLiteral("stationär %1 1/min bei %2 bar (soll 1500, %3)").arg(w1 / (2 * M_PI) * 60).arg(dp / 1e5).arg(dp1 / 1e5);
+		else seen << QStringLiteral("15 l/min → %1 1/min (soll 1500), %2 bar (soll %3: 100 bar für 15,9155 N·m + Reibung)")
+						 .arg(w1 / (2 * M_PI) * 60, 0, 'f', 1).arg(dp / 1e5, 0, 'f', 2).arg(dp1 / 1e5, 0, 'f', 2);
+		// load step: twice the torque from 0.5 s -> the pressure rises by 100 bar, the speed stays (flow fed)
+		const double w2 = run([](double) { return 2.5e-4; }, [](double t) { return (t < 0.5 ? 1.0 : 2.0) * 10e-6 * 1e7 / (2 * M_PI); },
+							  0, b, 0, 1.5, &dp, &err, &ein);
+		const double dp2 = dp1 + 1e7;
+		if (std::abs(w2 - w_set) > 0.005 * w_set || std::abs(dp - dp2) > 0.005 * dp2) wrong << QStringLiteral("Lastsprung %1 bar").arg(dp / 1e5);
+		else seen << QStringLiteral("Lastsprung: %1 bar (soll %2), Drehzahl bleibt").arg(dp / 1e5, 0, 'f', 2).arg(dp2 / 1e5, 0, 'f', 2);
+		// reversal: the supply changes to port B (A to the tank, as a reversing valve does): the shaft turns
+		// backwards. (Sucking the flow out of A instead only reaches the cavitation limit: no reversal.)
+		double w3 = 0.0;
+		{
+			SimPhysics::Shaft s;
+			s.D = D; s.J = 1e-3; s.b = b;
+			double pa = 0.0, pb = 0.0, ca = 0.0, cb = 0.0;
+			const double dt = 1e-5;
+			for (long long i = 0; i < 150000; ++i) {
+				const bool back = i >= 50000;
+				const double dpm = pa - pb, q = s.flow(dpm);
+				s.step(dpm, 0.0, dt);
+				pa = back ? 0.0 : SimPhysics::oilNode(pa, 1e-4, 0.0, 2.5e-4 - q, 5e8, dt, -0.9e5, ca);
+				pb = back ? SimPhysics::oilNode(pb, 1e-4, 0.0, 2.5e-4 + q, 5e8, dt, -0.9e5, cb) : 0.0;
+			}
+			w3 = s.omega;
+		}
+		if (std::abs(w3 + w_set) > 0.005 * w_set) wrong << QStringLiteral("Umkehr %1 1/min").arg(w3 / (2 * M_PI) * 60);
+		else seen << QStringLiteral("Umkehr (Zulauf B): %1 1/min").arg(w3 / (2 * M_PI) * 60, 0, 'f', 1);
+		// power balance with leakage, viscous and dry friction and a load
+		run([](double) { return 2.5e-4; }, [](double) { return 10.0; }, 1e-12, b, 0.2, 1.0, &dp, &err, &ein);
+		if (!(err <= 0.01 * ein)) wrong << QStringLiteral("Leistungsbilanz Rest %1 J von %2 J").arg(err).arg(ein);
+		else seen << QStringLiteral("Leistungsbilanz Δp·q = Last + ΔEkin + Reibung + Leckage, Rest %1 J von %2 J").arg(err, 0, 'g', 2).arg(ein, 0, 'f', 1);
+		// end to end: the cylinder of the hydraulic project as a motor; speed = pump flow / displacement
+		const QString file = functionVariant(path("hydraulik.qet"), QStringLiteral("actuator.cyl_conf"), QStringLiteral("motor.fixed_motor"),
+											 QStringLiteral("qet_sim_r08_motor.qet"));
+		double omega = std::nan(""), expect = std::nan("");
+		ProjectRun pr = runProject(file, 6.0, {{0.3, QStringLiteral("-SF1"), 0, true}}, 1.5, [&](SimulationModel &s) {
+			if (std::abs(s.time() - 1.4) < 5e-6) omega = s.signalValue(QStringLiteral("omega:-MM1"));
+		});
+		if (!pr.error.isEmpty()) wrong << QStringLiteral("Projekt: %1").arg(pr.error);
+		else {
+			for (Diagram *d : pr.project->diagrams())
+				for (Element *e : d->elements())
+					if (e->elementData().m_fluid.m_function == QLatin1String("supply.pump"))
+						expect = 2 * M_PI * symbolValue(e, QStringLiteral("displacement"), QStringLiteral("m3"))
+							   * symbolValue(e, QStringLiteral("rpm"), QStringLiteral("1/s")) / 8e-6;
+			if (!(std::abs(std::abs(omega) - expect) <= 0.02 * expect))
+				wrong << QStringLiteral("Projekt: ω %1 rad/s statt %2").arg(omega).arg(expect);
+			else seen << QStringLiteral("Projekt: %1 rad/s = Förderstrom/Schluckvolumen (%2)").arg(std::abs(omega), 0, 'f', 1).arg(expect, 0, 'f', 1);
+		}
+		QFile::remove(file);
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
 		out << c;
 	}
 	{   // 8. measurement contract (R01): reading does not change the run, flows balance over a part,

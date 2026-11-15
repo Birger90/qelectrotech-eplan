@@ -52,9 +52,13 @@ QList<Entry> build()
 		      "d_piston, d_rod, xMax, xStart [m]; m_cyl, m_ext [kg]; F_stat, F_extern_const [N]; F_ref [N]/v_ref [m/s]; stop_k [N/m], stop_c [N.s/m]",
 		      "Endanschläge hart oder elastisch (stop_k, stop_c: Feder mit einseitiger Dämpfung), Haft-/Gleitreibung, viskose Dämpfung, Feder als Konstantkraft; keine hydraulische Endlagendämpfung, keine Leckage",
 		      "CylinderCycle, Hydraulik-CylinderCycle, OpenModelica-Vergleich pneumatisch/hydraulisch, Endanschlag hydraulisch (R02), Projekt Hydraulik, Projekt Blindstopfen");
+	for (const char *f : {"motor.fixed_motor", "motor.variable_motor", "actuator.rotary_motor"})
+		e << physical(f, "hydraulic_motor", "hydraulic", "A (Zulauf), B (Ablauf)",
+			      "displacement [m3/U], alpha (-1 … 1), GLeak [m3/(s.Pa)], I bzw. J [kg.m2], f [N.m.s/rad], M_fric [N.m], M_load bzw. M_ext [N.m]",
+			      "Welle mit Trägheit, viskoser und geglätteter trockener Reibung, Leckage A→B; Druckluftmotoren nicht (abgewiesen)",
+			      "Hydromotor (R08)");
 	for (const char *f : {"actuator.gripper", "actuator.semi_rotary", "actuator.fluidic_muscle1", "actuator.fluidic_muscle3",
-			       "actuator.loading_unit_2", "actuator.motor_with_mid_exhaust", "actuator.rotary_motor",
-			       "actuator.semi_rotary_motor2", "motor.fixed_motor", "motor.variable_motor"})
+			       "actuator.loading_unit_2", "actuator.motor_with_mid_exhaust", "actuator.semi_rotary_motor2"})
 		e << other(f, Role::Unsupported, "", "Dreh-, Greifer-, Muskel- und Motorantriebe brauchen eigene Mechanik (Roadmap R08, R10, R12); kein Linearkolben als Ersatz");
 	// ---------------------------------------------------------- Wegeventile
 	for (const char *f : {"directional_valve.two_pins", "directional_valve.three_pins", "directional_valve.four_pins",
@@ -93,8 +97,12 @@ QList<Entry> build()
 	// ---------------------------------------------------------- Versorgung
 	e << physical("supply.air_supply", "pressure_source", "pneumatic", "alle", "pNom [Pa] (sonst Versorgungsdruck des Laufs)", "ideale Quelle ohne Liefergrenze", "CylinderCycle");
 	e << physical("supply.tank", "tank", "hydraulic", "alle", "", "drucklos", "Hydraulik-CylinderCycle");
+	for (const char *f : {"supply.variable_pump", "supply.pump01"})
+		e << physical(f, "fixed_displacement_pump", "hydraulic", "P, T",
+			      "displacement [m3], rpm [1/s], alpha (0 … 1), GL [m3/(s.Pa)], pMax [Pa]",
+			      "Verstellgrad als fester Kennwert (kein Stellregler), eingebaute Begrenzung, Leckage P→T", "Hydromotor (R08)");
 	e << physical("supply.pump", "fixed_displacement_pump", "both", "P, T (Hydraulik); alle (Pneumatik)",
-		      "Hydraulik: displacement [m3], rpm [1/s], pMax [Pa]; Pneumatik (Verdichter): pNom [Pa]",
+		      "Hydraulik: displacement [m3], rpm [1/s], alpha, GL [m3/(s.Pa)], pMax [Pa]; Pneumatik (Verdichter): pNom [Pa]",
 		      "Hydraulik: eingebaute Begrenzung (1 bar Band), keine Leckage, kein Antriebsmoment; Pneumatik: Verdichter als ideale Druckquelle",
 		      "PumpFill, Hydraulik-CylinderCycle, CylinderCycle");
 	e << physical("supply.accumulator", "accumulator", "both", "erster Anschluss", "V0 [m3], p0 [Pa], k", "Gasgesetz polytrop; Luft: Behälter", "AccumulatorCharge, Projekt Speicher");
@@ -103,7 +111,7 @@ QList<Entry> build()
 		e << physical(f, "passthrough", "both", "erste zwei Anschlüsse", "qNN [l/min] bzw. rT (Vorgabe 1000 l/min bzw. 0,01 bar.min2/l2)", PASS_LIMITS, "Katalog");
 	for (const char *f : {"connection.line", "connection.quick_coupling", "supply.manifold_c8", "supply.hose_line"})
 		e << other(f, Role::Ideal, "ideal_connection", "verlustfreie Verbindung; Kupplung immer gekuppelt, kein Rohrmodell (Roadmap R05)");
-	for (const char *f : {"supply.variable_pump", "supply.pump01", "supply.load_sensing_pump_unit", "supply.steering_unit_1",
+	for (const char *f : {"supply.load_sensing_pump_unit", "supply.steering_unit_1",
 			       "vacuum.vacuum_generator", "vacuum.vacuum_generator_05_h", "vacuum.vacuum_generator_05_l",
 			       "vacuum.suction_cup", "vacuum.vacuum_suction_cup", "vacuum.vacuum_efficiency_valve", "vacuum.vacuum_switch",
 			       "valve_group.control_block_for_two_hand_start", "valve_group.taa_01", "valve_group.tab_01",

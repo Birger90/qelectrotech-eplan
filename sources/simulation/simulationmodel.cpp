@@ -15,6 +15,7 @@
 	You should have received a copy of the GNU General Public License
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <algorithm>
 #include "simulationmodel.h"
 #include "simulationphysics.h"
 #include "simulationunits.h"
@@ -178,6 +179,17 @@ double timeFromText(const QString &text, double fallback = 1.0)
 
 } // namespace
 
+namespace {
+	/// the elements of a folio in a fixed order (by uuid): the scene does not give them in the same order on every
+	/// load, and the model must be built the same way every time, so that a run is reproducible (roadmap R03)
+QList<Element *> sortedElements(Diagram *d)
+{
+	QList<Element *> out = d->elements();
+	std::sort(out.begin(), out.end(), [](const Element *a, const Element *b) { return a->uuid() < b->uuid(); });
+	return out;
+}
+}
+
 // ------------------------------------------------------------------------- components
 struct SimulationModel::Valve {
 	Element *e = nullptr;
@@ -226,6 +238,16 @@ struct SimulationModel::Cylinder {
 struct SimulationModel::Pump {
 	Element *e = nullptr;
 	double q = 0, p_max = 0, band = 1e5;          // relief characteristic: full flow up to p_max - band
+	double alpha = 1.0, cleak = 0.0;              // setting of a variable pump, leakage P -> T (R08)
+	double last_q = 0.0, last_dp = 0.0;           // delivered flow and pressure rise of the last step
+};
+
+struct SimulationModel::Motor {
+	Element *e = nullptr;
+	QString label;
+	SimPhysics::Shaft shaft;
+	double tau_load = 0.0;                        // constant load torque against positive rotation
+	double last_dp = 0.0;
 };
 
 struct SimulationModel::FlowValve {
@@ -332,6 +354,7 @@ SimulationModel::~SimulationModel()
 	qDeleteAll(m_valves);
 	qDeleteAll(m_cylinders);
 	qDeleteAll(m_pumps);
+	qDeleteAll(m_motors);
 	qDeleteAll(m_flow_valves);
 	qDeleteAll(m_contacts);
 	qDeleteAll(m_relays);
@@ -362,7 +385,7 @@ void SimulationModel::buildNets(const QList<Diagram *> &diagrams)
 	};
 	QSet<Terminal *> connected;
 	for (Diagram *d : diagrams) {
-		for (Element *e : d->elements())
+		for (Element *e : sortedElements(d))
 			for (Terminal *t : e->terminals())
 				if (!parent.contains(t)) parent.insert(t, t);
 	}
@@ -372,7 +395,7 @@ void SimulationModel::buildNets(const QList<Diagram *> &diagrams)
 			connected << c->terminal1 << c->terminal2;
 		}
 		// folio reports join the nets on both pages
-		for (Element *e : d->elements()) {
+		for (Element *e : sortedElements(d)) {
 			if (!(e->linkType() & Element::AllReport)) continue;
 			for (Element *other : e->linkedElements())
 				if (!e->terminals().isEmpty() && !other->terminals().isEmpty()) {
@@ -383,7 +406,7 @@ void SimulationModel::buildNets(const QList<Diagram *> &diagrams)
 	}
 	// ideal connections (catalog role) and in-line measuring points join all their fluid ports
 	for (Diagram *d : diagrams)
-		for (Element *e : d->elements()) {
+		for (Element *e : sortedElements(d)) {
 			const SimulationCatalog::Entry *ce = SimulationCatalog::find(e->elementData().m_fluid.m_function);
 			if (!ce || (ce->role != SimulationCatalog::Role::Ideal && ce->role != SimulationCatalog::Role::Display)) continue;
 			Terminal *first = nullptr;
@@ -474,7 +497,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 		{QStringLiteral("logic.time_delay_valve"), 100}};
 
 	for (Diagram *d : diagrams) {
-		for (Element *e : d->elements()) {
+		for (Element *e : sortedElements(d)) {
 			const ElementData data = e->elementData();
 			const FluidData &f = data.m_fluid;
 			const QString fn = f.m_function;
@@ -518,7 +541,30 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					p->q = paramIn(f, QStringLiteral("displacement"), 8e-6, QStringLiteral("m3"), &m_model_errors, who, Range::NonNegative)
 						 * paramIn(f, QStringLiteral("rpm"), 1450.0 / 60.0, QStringLiteral("1/s"), &m_model_errors, who, Range::NonNegative);
 					p->p_max = P_ATM + paramIn(f, QStringLiteral("pMax"), 6e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive);
+					// R08: setting of a variable pump (0 … 1) and leakage from P to T
+					p->alpha = paramNative(f, QStringLiteral("alpha"), 1.0, QString(), &m_model_errors, who, Range::NonNegative);
+					if (p->alpha > 1.0) m_model_errors << QStringLiteral("%1: Verstellgrad alpha %2 größer als 1").arg(who).arg(p->alpha);
+					p->cleak = paramIn(f, QStringLiteral("GL"), 0.0, QStringLiteral("m3/(s.Pa)"), &m_model_errors, who, Range::NonNegative);
 					m_pumps << p;
+				} else if (model == QLatin1String("hydraulic_motor") && !hyd) {
+					m_model_errors << QStringLiteral("%1: Druckluftmotor hat kein Rechenmodell (nur Hydromotoren, Roadmap R12)").arg(part);
+				} else if (model == QLatin1String("hydraulic_motor")) {
+					auto *mo = new Motor;
+					mo->e = e;
+					mo->label = part;
+					const QString who = part;
+					auto &s = mo->shaft;
+					s.D = paramIn(f, QStringLiteral("displacement"), 8e-6, QStringLiteral("m3"), &m_model_errors, who, Range::Positive);
+					s.alpha = paramNative(f, QStringLiteral("alpha"), 1.0, QString(), &m_model_errors, who, Range::Any);
+					if (std::abs(s.alpha) > 1.0) m_model_errors << QStringLiteral("%1: Verstellgrad alpha %2 außerhalb -1 … 1").arg(who).arg(s.alpha);
+					s.cleak = paramIn(f, QStringLiteral("GLeak"), 0.0, QStringLiteral("m3/(s.Pa)"), &m_model_errors, who, Range::NonNegative);
+					s.J = paramIn(f, f.parameter(QStringLiteral("I")).isEmpty() ? QStringLiteral("J") : QStringLiteral("I"), 1e-3,
+								  QStringLiteral("kg.m2"), &m_model_errors, who, Range::Positive);
+					s.b = paramIn(f, QStringLiteral("f"), 1e-3, QStringLiteral("N.m.s/rad"), &m_model_errors, who, Range::NonNegative);
+					s.tau_c = paramIn(f, QStringLiteral("M_fric"), 0.0, QStringLiteral("N.m"), &m_model_errors, who, Range::NonNegative);
+					mo->tau_load = paramIn(f, f.parameter(QStringLiteral("M_ext")).isEmpty() ? QStringLiteral("M_load") : QStringLiteral("M_ext"),
+										   0.0, QStringLiteral("N.m"), &m_model_errors, who);
+					m_motors << mo;
 				} else if (model == QLatin1String("accumulator")) {
 					// a finite volume, not an ideal source: hydraulic accumulator with gas precharge,
 					// compressed air receiver with its volume
@@ -1202,12 +1248,26 @@ void SimulationModel::step(double dt)
 		const int kp = node(pu->e, QStringLiteral("P")), kt = node(pu->e, QStringLiteral("T"));
 		if (kp < 0) continue;
 		const double share = qBound(0.0, (pu->p_max - m_p.at(kp)) / pu->band, 1.0);
-		flow[kp] += pu->q * share;
-		if (kt >= 0) flow[kt] -= pu->q * share;
+		// R08: setting alpha and leakage back from P to T (q = alpha·D·n - Cleak·dp)
+		const double dp = m_p.at(kp) - p(kt);
+		const double q = pu->alpha * pu->q * share - pu->cleak * dp;
+		pu->last_q = q;
+		pu->last_dp = dp;
+		flow[kp] += q;
+		if (kt >= 0) flow[kt] -= q;
 		if (m_record_flows) {
-			m_port_flow[qMakePair(pu->e, kp)] -= pu->q * share;
-			if (kt >= 0) m_port_flow[qMakePair(pu->e, kt)] += pu->q * share;
+			m_port_flow[qMakePair(pu->e, kp)] -= q;
+			if (kt >= 0) m_port_flow[qMakePair(pu->e, kt)] += q;
 		}
+	}
+
+	// R08: hydraulic motors, flow from A to B turns the shaft forward
+	for (Motor *mo : m_motors) {
+		const int ka = node(mo->e, QStringLiteral("A")), kb = node(mo->e, QStringLiteral("B"));
+		const double dp = p(ka) - p(kb);
+		book(ka, kb, mo->shaft.flow(dp), mo->e);
+		mo->shaft.step(dp, mo->tau_load, dt);
+		mo->last_dp = dp;
 	}
 
 	for (Valve *v : m_valves) {
@@ -1526,6 +1586,21 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 		out << Signal{QStringLiteral("F:") + z->label, QStringLiteral("force"), QStringLiteral("N"),
 					  QStringLiteral("Druckkraft auf den Kolben, positiv: ausfahrend (ohne Reibung, Last, Feder)"), z->label, QString()};
 	}
+	for (const Motor *mo : m_motors) {
+		out << Signal{QStringLiteral("omega:") + mo->label, QStringLiteral("angular_velocity"), QStringLiteral("rad/s"),
+					  QStringLiteral("positiv: Durchfluss von A nach B"), mo->label, QString()};
+		out << Signal{QStringLiteral("phi:") + mo->label, QStringLiteral("angle"), QStringLiteral("rad"),
+					  QStringLiteral("0 beim Start"), mo->label, QString()};
+		out << Signal{QStringLiteral("tau:") + mo->label, QStringLiteral("torque"), QStringLiteral("N.m"),
+					  QStringLiteral("hydraulisches Moment alpha·D·Δp/2π, positiv: antreibend"), mo->label, QString()};
+		out << Signal{QStringLiteral("P:") + mo->label, QStringLiteral("power"), QStringLiteral("W"),
+					  QStringLiteral("Wellenleistung tau·omega"), mo->label, QString()};
+	}
+	for (const Pump *pu : m_pumps) {
+		const QString l = label(pu->e).isEmpty() ? pu->e->name() : label(pu->e);
+		out << Signal{QStringLiteral("P:") + l, QStringLiteral("power"), QStringLiteral("W"),
+					  QStringLiteral("hydraulisch abgegebene Leistung Δp·q"), l, QString()};
+	}
 	for (const Valve *v : m_valves)
 		out << Signal{QStringLiteral("pos:") + v->label, QStringLiteral("state"), QStringLiteral("1"),
 					  QStringLiteral("Stellung 1 … n (links nach rechts)"), v->label, QString()};
@@ -1545,6 +1620,22 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 				if (ok) *ok = true;
 				return kind == QLatin1String("x") ? z->x : kind == QLatin1String("v") ? z->v : m_cylinder_force.value(z->e);
 			}
+		return std::nan("");
+	}
+	if (kind == QLatin1String("omega") || kind == QLatin1String("phi") || kind == QLatin1String("tau") || kind == QLatin1String("P")) {
+		for (const Motor *mo : m_motors)
+			if (mo->label == rest) {
+				if (ok) *ok = true;
+				const double tau = mo->shaft.torque(mo->last_dp);
+				return kind == QLatin1String("omega") ? mo->shaft.omega : kind == QLatin1String("phi") ? mo->shaft.phi
+					 : kind == QLatin1String("tau") ? tau : tau * mo->shaft.omega;
+			}
+		if (kind == QLatin1String("P"))
+			for (const Pump *pu : m_pumps)
+				if ((label(pu->e).isEmpty() ? pu->e->name() : label(pu->e)) == rest) {
+					if (ok) *ok = true;
+					return pu->last_dp * pu->last_q;
+				}
 		return std::nan("");
 	}
 	if (kind == QLatin1String("pos")) {

@@ -21,13 +21,14 @@ Betätigung, Kennwerte) und der elektrischen Steuerung.
 | Leitungsnetz | Knoten mit Volumen; Luft isotherm (ideales Gas), Öl mit Kompressionsmodul. Freier Anschluss: offen = ins Freie, Blindstopfen (`port_end="plug"`) = verschlossen (eigenes, dichtes Volumen), Schalldämpfer = über dessen Widerstand ins Freie |
 | Unterdruck im Öl | unter 0,11 bar abs reißt das Öl ab: der fehlende Inhalt wird als Hohlraum bilanziert und beim Nachströmen zuerst wieder gefüllt (Meldung „Hohlraum“); Dampfdruck und Ausgasen werden nicht gerechnet |
 | Druckluftquelle | hält den Versorgungsdruck (Fenster: *Versorgungsdruck*); mit eigenem Nenndruck `pNom` (aus FluidSIM übernommen) diesen |
-| Hydraulikpumpe | Verdrängung × Drehzahl, eingebaute Druckbegrenzung: volle Förderung bis 1 bar unter `pMax`, bei `pMax` null |
+| Hydraulikpumpe | Verstellgrad `alpha` × Verdrängung × Drehzahl minus Leckage `GL`·Δp, eingebaute Druckbegrenzung: volle Förderung bis 1 bar unter `pMax`, bei `pMax` null |
 | Hydrospeicher (`supply.accumulator`, Öl) | Gasvolumen `V0`, Vorfülldruck `p0`, Polytropenexponent `k`; unter dem Vorfülldruck leer. Der Druck im Netz wird implizit aus der Volumenbilanz gelöst, die Ölmenge bleibt bei jedem Zeitschritt erhalten |
 | Druckluftbehälter (`supply.accumulator`, Luft) | Volumen `V0` im Netz, Anfangsdruck `p0`; ein endlicher Vorrat, keine Quelle |
 | Druckschalter (`sensor.pressure_switch`) | schaltet bei `p0` ein, `p_hyst` darunter aus; Kontakte mit Funktionstext „`-BP1`“, im GRAFCET `-BP1` |
 | Wechselventil, Zweidruckventil | Ausgang 2 vom Eingang mit höherem (ODER) bzw. niedrigerem Druck (UND) |
 | Zeitverzögerungsventil | schaltet 1 → 2, wenn Steueranschluss 3 `t_delay` lang Druck hat; sonst entlüftet 2 |
 | Tank | drucklos |
+| Hydromotor (`motor.fixed_motor`, `motor.variable_motor`) | Welle: q = α·D·ω/2π + C·Δp (A → B), τ = α·D·Δp/2π, J·dω/dt = τ − Lastmoment − f·ω − M_fric·tanh(ω/0,1); Kennwerte `displacement`, `alpha`, `GLeak`, `I`/`J`, `f`, `M_fric`, `M_load`/`M_ext`; Messgrößen `omega:`, `phi:`, `tau:`, `P:`. Druckluftmotoren: kein Modell |
 | Wegeventil | Schaltwege der Stellung; Luft nach ISO 6358 aus `qNN`, Öl mit Widerstand `rT` (Δp = rT·Q², um Δp = 0 stetig geglättet: Q ∝ Δp/(Δp² + 0,3 bar²)^¼); Schaltzeiten `onDelay`/`offDelay`: der Schieber bewegt sich wie ein Stellglied erster Ordnung (Zeitkonstante = Schaltzeit/3, nach der Schaltzeit 95 % offen), die Wege der alten Stellung schließen, die der neuen öffnen; Feder in die Ruhestellung, ohne Feder bleibt die Stellung; Steuerdruck an 14/12 |
 | Rückschlag-, Drosselrückschlagventil | freie Richtung `free_from` → `free_to` (aus der Zeichnung); öffnet stetig ab dem Öffnungsdruck `p0`; entsperrbar über Steueranschluss |
 | Drossel, Absperrventil, Schalldämpfer, Schnellentlüftung | Leitwert aus `qNN` bzw. `rT` |

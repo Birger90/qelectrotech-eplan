@@ -15,6 +15,7 @@
 	You should have received a copy of the GNU General Public License
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <algorithm>
 #include "grafcet.h"
 
 #include "plcprogram.h"
@@ -159,6 +160,17 @@ struct Grafcet::Action {
 	std::shared_ptr<PlcProgram> condition;
 };
 
+namespace {
+	/// the elements of a folio in a fixed order (by uuid): the scene does not give them in the same order on every
+	/// load, and the model must be built the same way every time, so that a run is reproducible (roadmap R03)
+QList<Element *> sortedElements(Diagram *d)
+{
+	QList<Element *> out = d->elements();
+	std::sort(out.begin(), out.end(), [](const Element *a, const Element *b) { return a->uuid() < b->uuid(); });
+	return out;
+}
+}
+
 bool Grafcet::isGrafcet(const Element *element)
 {
 	return element && kindOf(element) != Kind::None;
@@ -214,7 +226,7 @@ Grafcet::Grafcet(const QList<Diagram *> &diagrams, const std::function<int(Termi
 	QList<QPair<Element *, Kind>> elements;
 	QList<Terminal *> all;
 	for (Diagram *d : diagrams)
-		for (Element *e : d->elements()) {
+		for (Element *e : sortedElements(d)) {
 			const Kind k = kindOf(e);
 			if (k == Kind::None) continue;
 			elements << qMakePair(e, k);

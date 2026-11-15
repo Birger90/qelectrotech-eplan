@@ -28,8 +28,8 @@ from pathlib import Path
 P_ATM = 1.013e5          # Pa
 T = 293.15               # K
 R = 287.0                # J/(kg K)
-RHO_N = 1.185            # kg/m³ Normdichte (ANR: 20 °C, 1,013 bar)
-B_KRIT = 0.3             # kritisches Druckverhältnis
+RHO_N = 1.1845           # kg/m³ Normdichte im technischen Normzustand von FluidSIM (20 °C, 1 bar)
+B_KRIT = 0.4             # kritisches Druckverhältnis (FluidSIM: b = 0,4 für alle Komponenten)
 V_LEITUNG = 5e-6         # m³ je Netz (Leitung, Verschraubungen)
 V_TOT = 2e-6             # m³ Totvolumen je Zylinderkammer
 P_STEUER = 1.5e5         # Pa Überdruck, ab dem ein Steuerdruck schaltet

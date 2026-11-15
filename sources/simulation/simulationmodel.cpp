@@ -45,8 +45,10 @@ namespace {
 constexpr double P_ATM = 1.013e5;       // Pa
 constexpr double T_AIR = 293.15;        // K
 constexpr double R_AIR = 287.0;         // J/(kg K)
-constexpr double RHO_N = 1.185;         // kg/m³ (ANR)
-constexpr double B_CRIT = 0.3;          // critical pressure ratio
+// normal density of the normal litres in qNN, qn_ac, qns_max, qLeak: the "technical normal state" of the
+// FluidSIM flow model (20 °C, 100000 Pa, rho0 = 1.1845 kg/m³), where all these values come from (FORMELN.md P02, QS05)
+constexpr double RHO_N = 1.1845;        // kg/m³
+constexpr double B_CRIT = 0.4;          // critical pressure ratio, as FluidSIM assumes for all components (QS05)
 constexpr double V_LINE = 5e-6;         // m³ per pneumatic net
 constexpr double V_DEAD = 2e-6;         // m³ per cylinder chamber
 constexpr double P_PILOT = 1.5e5;       // Pa gauge that switches a pilot
@@ -57,6 +59,7 @@ constexpr double P_CAVITATION = P_ATM - 0.9e5;   // Pa abs: lowest oil pressure 
 constexpr double T_PULL_IN = 0.010;     // s relay
 constexpr double T_DROP_OUT = 0.008;    // s relay
 
+// ISO 6358 ellipse, b = B_CRIT (tools/simulation/FORMELN.md P02)
 double massFlow(double p1, double p2, double c)
 {
 	if (p1 < p2) return -massFlow(p2, p1, c);
@@ -67,6 +70,7 @@ double massFlow(double p1, double p2, double c)
 	return c * p1 * f * RHO_N;
 }
 
+// conductance from the normal nominal flow at 6 -> 5 bar (FORMELN.md P03)
 double conductanceFromQnn(double qnn_l_min)
 {
 	const double p1 = P_ATM + 6e5;
@@ -75,7 +79,7 @@ double conductanceFromQnn(double qnn_l_min)
 	return (qnn_l_min / 1000.0 / 60.0) / (p1 * f);
 }
 
-	/// conductance that passes @a q_l_min (normal litres per minute) from @a p1 to @a p2 (absolute)
+	/// conductance that passes @a q_l_min (normal litres per minute) from @a p1 to @a p2 (absolute) (FORMELN.md P04)
 double conductanceAt(double q_l_min, double p1, double p2)
 {
 	const double r = p2 / p1;
@@ -83,6 +87,7 @@ double conductanceAt(double q_l_min, double p1, double p2)
 	return (q_l_min / 1000.0 / 60.0) / (p1 * f);
 }
 
+// oil orifice from rT, dp = rT Q² (FORMELN.md H03)
 double volumeFlow(double p1, double p2, double rt)
 {
 	const double dp = p1 - p2;
@@ -690,7 +695,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					v->hydraulic = hyd;
 					m_valves << v;
 				} else if (model == QLatin1String("rotary_actuator")) {
-					// R10 semi-rotary drive: the rotary analogue of the cylinder. M_6bar is the torque at
+					// R10 semi-rotary drive (FORMELN.md M06): the rotary analogue of the cylinder. M_6bar is the torque at
 					// 6 bar, so the displacement per radian (= torque per pascal) is M_6bar / 6 bar on
 					// both sides; angle and stroke in rad, inertia I as mass, viscous friction f
 					auto *c = new Cylinder;
@@ -727,7 +732,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					const double qs = paramIn(f, QStringLiteral("qns_max"), 6.0, lmin, &m_model_errors, who, Range::Positive);
 					if (!(v->pu_min < 0) || v->pu_min <= -P_ATM)
 						m_model_errors << QStringLiteral("%1: Vakuum pu_min %2 kPa muss zwischen 0 und -101 kPa liegen").arg(who).arg(v->pu_min / 1e3);
-					v->c_drive = conductanceAt(qac, P_ATM + v->dp_opt, P_ATM);
+					v->c_drive = conductanceAt(qac, P_ATM + 6e5, P_ATM);   // FluidSIM: "Luftverbrauch bei 600 kPa" (QS05)
 					v->q_max = qs / 60000.0 * RHO_N;
 					m_ejectors << v;
 				} else if (model == QLatin1String("suction_cup")) {
@@ -1409,7 +1414,7 @@ void SimulationModel::step(double dt)
 			v->position = v->target;
 			v->switch_at = -1;
 		}
-		// while switching the spool moves like a first-order servo: the paths of the new position open
+		// while switching the spool moves like a first-order servo (FORMELN.md V01): the paths of the new position open
 		// as 1 - e^(-t/tau) with tau = switching time / 3 (95 % open when the switching time is over,
 		// then fully), those of the old one close alike; flow is linear in the opening
 		double opened = 1.0;
@@ -1512,7 +1517,7 @@ void SimulationModel::step(double dt)
 		}
 	}
 
-	for (const Ejector *v : std::as_const(m_ejectors)) {
+	for (const Ejector *v : std::as_const(m_ejectors)) {   // FORMELN.md U01, U02
 		const int k1 = node(v->e, QStringLiteral("1")), k2 = node(v->e, QStringLiteral("2"));
 		const double share = k1 >= 0 ? qBound(0.0, (p(k1) - P_ATM) / v->dp_opt, 1.0) : 0.0;
 		if (k1 >= 0) book(k1, -1, massFlow(p(k1), P_ATM, v->c_drive), v->e);
@@ -1568,7 +1573,7 @@ void SimulationModel::step(double dt)
 		else
 			m_p[k] = SimPhysics::gasNode(m_p.at(k), vol.at(k), dvdt.at(k), flow.at(k), R_AIR * T_AIR, dt);
 	}
-	// R03: a net swinging from step to step is numerically unstable: stop with a diagnosis
+	// R03: a net swinging from step to step is numerically unstable: stop with a diagnosis (FORMELN.md N02)
 	for (int k = 0; k < n && !m_failed; ++k) {
 		if (m_fixed.contains(k) || m_electric.contains(k) || k >= m_watch.size()) continue;
 		const double dp = m_p.at(k) - before.at(k);
@@ -1610,7 +1615,7 @@ void SimulationModel::step(double dt)
 				on ? QStringLiteral("schaltet ein") : QStringLiteral("schaltet aus")).arg(g / 1e5, 0, 'f', 2)};
 		}
 	}
-	// R10 suction cups: holding force against the weight with the safety factor
+	// R10 suction cups: holding force against the weight with the safety factor (FORMELN.md U03)
 	for (SuctionCup *s : m_cups) {
 		if (s->node < 0) continue;
 		s->force = s->object ? std::max(0.0, (P_ATM - m_p.at(s->node)) * s->area) : 0.0;

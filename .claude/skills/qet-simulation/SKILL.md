@@ -45,7 +45,7 @@ Expliziter Euler, dt = 10 µs, Netze aus den Leitungen (Union-Find, Folioverweis
 SPS und GRAFCET alle 10 ms. Gemeinsame Integrationsschritte in `sources/simulation/simulationphysics.h` – `step()`
 und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nur sich selbst.
 
-- Luft isotherm (R·T fest), Durchfluss ISO 6358 aus `qNN` (b = 0,3); Druckluftbehälter = Volumen, keine Quelle.
+- Luft isotherm (R·T fest), Durchfluss ISO 6358 aus `qNN` (b = 0,4 und ρ_N = 1,1845 kg/m³ wie FluidSIM; Belege in `tools/simulation/FORMELN.md`); Druckluftbehälter = Volumen, keine Quelle.
 - Öl: Kompressionsmodul 7e8 Pa, Netzvolumen 0,1 l; Widerstand `rT` als geglättete Wurzelkennlinie
   q = k·Δp/(Δp² + 0,3 bar²)^¼ (gleiche Kleinsignal-Steigung wie die frühere lineare Zone → gleich stabil).
 - Netze mit Hydrospeicher: Druck **implizit** aus der Volumenbilanz (Bisektion bis zum letzten Bit).

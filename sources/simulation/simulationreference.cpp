@@ -774,14 +774,14 @@ QList<Check> endToEnd(const QString &reference_dir)
 							   QString::fromLatin1(name));
 		};
 		// b) leaking contact: equilibrium of the linear suction characteristic and the leakage (qLeak
-		//    1.8 l/min at -0.6 bar through the ISO 6358 orifice, b = 0.3), solved by bisection
+		//    1.8 l/min at -0.6 bar through the ISO 6358 orifice, b = 0.4), solved by bisection
 		{
 			const QString file = cupVariant(QStringLiteral("<parameter name=\"qLeak\" unit=\"l/min\" value=\"1.8\"/>"), "qet_sim_r10_leck.qet");
 			QHash<QString, double> v;
 			ProjectRun pr = runProject(file, 6.0, grip, 1.5, sample(0.95, v, ids));
 			if (!pr.error.isEmpty()) wrong << QStringLiteral("Leckage: %1").arg(pr.error);
 			else {
-				const double patm = 101300.0, b = 0.3;
+				const double patm = 101300.0, b = 0.4;
 				auto iso = [b](double r) { return r <= b ? 1.0 : std::sqrt(std::max(0.0, 1.0 - std::pow((r - b) / (1.0 - b), 2))); };
 				const double pmin = pu * std::min(1.0, v.value(ids.at(1)) / 0.5e6);
 				auto excess = [&](double g) {   // suction minus leakage in l/min, g gauge

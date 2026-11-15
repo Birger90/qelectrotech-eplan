@@ -3,6 +3,19 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.27.1 – 15.11.2026
+
+Formelbelege (zweite Fassung des Roadmap-Pakets mit Quellenregister):
+
+- `tools/simulation/FORMELN.md` vollständig: jede Formel des Kerns mit Beleg und Fundstelle, Bezugszustände,
+  Herleitungen der eigenen Ableitungen, bekannte Abweichungen von FluidSIM, Befunde der Quellenprüfung, alle
+  verwendeten Primärquellen (Paket S01–S35, eigene QS01–QS12: ISO 6358-1 Amd 1, Festo, DIN 1343, FluidSIM-Hilfe,
+  SMC, Finder, MathWorks). Codestellen tragen die Register-ID.
+- Korrektur nach der FluidSIM-Hilfe (aus ihr stammen alle Kennwerte): kritisches Druckverhältnis b = 0,4 statt 0,3,
+  Normdichte 1,1845 kg/m³ (technischer Normzustand 20 °C, 1 bar), Luftverbrauch des Ejektors bei 600 kPa. Kern und
+  Python-Prototyp gleich geändert (Gegenprobe 0 Abweichungen); pneumatische Zeiten verschieben sich um wenige
+  Millisekunden (Blindstopfen 0,262 → 0,264 s, R10 bei 3,5 bar −0,555 → −0,557 bar). 28 Prüfungen, alle bestanden.
+
 ## 1.27.0 – 15.11.2026
 
 Simulations-Roadmap R10 (Vakuum, Schwenk- und Greiferantriebe):

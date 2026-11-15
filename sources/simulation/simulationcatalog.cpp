@@ -128,7 +128,7 @@ QList<Entry> build()
 	// ---------------------------------------------------------- Vakuum (R10)
 	for (const char *f : {"vacuum.vacuum_generator", "vacuum.vacuum_generator_05_h", "vacuum.vacuum_generator_05_l"})
 		e << physical(f, "vacuum_generator", "pneumatic", "1 (Versorgung), 2 (Vakuum)",
-			      "pu_min [Pa] bestes Vakuum, dp_max [Pa] optimaler Versorgungsdruck, qn_ac [l/min] Luftverbrauch, qns_max [l/min] Saugvolumenstrom",
+			      "pu_min [Pa] bestes Vakuum, dp_max [Pa] optimaler Versorgungsdruck, qn_ac [l/min] Luftverbrauch bei 600 kPa, qns_max [l/min] Saugvolumenstrom",
 			      "Ejektor mit linearer Saugkennlinie zwischen pu_min (kein Fluss) und Atmosphäre (qns_max), beide mit dem Versorgungsdruck bis dp_max skaliert; über dp_max kein Abfall des Vakuums",
 			      "Vakuum und Schwenk-/Greiferantriebe (R10)");
 	for (const char *f : {"vacuum.suction_cup", "vacuum.vacuum_suction_cup"})

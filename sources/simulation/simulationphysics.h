@@ -33,7 +33,7 @@ namespace SimPhysics {
 constexpr double NOT_A_NUMBER = std::numeric_limits<double>::quiet_NaN();
 
 	/**
-		isothermal gas volume: V dp/dt + p dV/dt = R T sum(m_flow).
+		isothermal gas volume: V dp/dt + p dV/dt = R T sum(m_flow) (tools/simulation/FORMELN.md P01).
 		A value that is not finite (or a volume <= 0) stays not finite, so the
 		caller sees the fault instead of a plausible floor pressure.
 	*/
@@ -46,7 +46,7 @@ inline double gasNode(double p, double volume, double dvdt, double m_flow, doubl
 }
 
 	/**
-		liquid volume with bulk modulus E: (V/E) dp/dt = sum(q) - dV/dt.
+		liquid volume with bulk modulus E: (V/E) dp/dt = sum(q) - dV/dt (FORMELN.md H01, H02).
 
 		Single phase only down to @a p_min (absolute). Oil that would have to
 		leave below it is not lost: it becomes the void @a cavity (m³) at
@@ -98,7 +98,7 @@ struct OscillationWatch {
 };
 
 	/**
-		hydraulic motor with shaft (roadmap R08, GLEICHUNGEN 5): displacement D [m³/rev], setting alpha
+		hydraulic motor with shaft (roadmap R08, FORMELN.md H06): displacement D [m³/rev], setting alpha
 		(-1 … 1), leakage cleak [m³/(s·Pa)] from inlet to outlet, inertia J [kg·m²], viscous friction b
 		[N·m·s/rad], dry friction tau_c [N·m] (smoothed over 0.1 rad/s), angle phi, speed omega.
 		  q   = alpha·D·omega/(2π) + cleak·dp        (dp = p_in - p_out, q from inlet to outlet)
@@ -178,7 +178,7 @@ double oilNodeWithAccumulators(double p, double volume, double dvdt, double q, d
 }
 
 	/**
-		orifice with the square-root law, smoothed near equal pressure so it
+		orifice with the square-root law (FORMELN.md H03), smoothed near equal pressure so it
 		is odd, passive and continuously differentiable:
 		q = k dp / (dp² + ps²)^(1/4), k = Cd A sqrt(2/rho); for |dp| >> ps q = k sqrt(dp)
 	*/
@@ -189,7 +189,7 @@ inline double orificeFlow(double dp, double k, double ps)
 
 
 	/**
-		contact force of an elastic end stop (roadmap R02): a spring stop_k with
+		contact force of an elastic end stop (roadmap R02, FORMELN.md M04): a spring stop_k with
 		one-sided damping stop_c beyond 0 and beyond the stroke, as
 		  x < 0:      F = -k·x - c·min(v, 0)
 		  x > stroke: F = -k·(x - stroke) - c·max(v, 0)

@@ -147,8 +147,8 @@ Herkunft, Beleg und Grenze jeder Formel stehen im [Formelregister](FORMELN.md).
 
 ## Vakuum, Schwenk- und Greiferantriebe (R10)
 
-- **Ejektor** (`vacuum.vacuum_generator`): Anschluss 1 Versorgung, 2 Vakuum. Luftverbrauch `qn_ac` beim optimalen
-  Versorgungsdruck `dp_max`; Anteil s = min(1, p₁/dp_max). Saugstrom q = q_max·(p₂ − p_atm − pu_min·s)/|pu_min|
+- **Ejektor** (`vacuum.vacuum_generator`): Anschluss 1 Versorgung, 2 Vakuum. Luftverbrauch `qn_ac` bei 600 kPa (wie
+  FluidSIM), optimaler Versorgungsdruck `dp_max`; Anteil s = min(1, p₁/dp_max). Saugstrom q = q_max·(p₂ − p_atm − pu_min·s)/|pu_min|
   (q_max aus `qns_max`): null beim besten Vakuum pu_min·s, q_max·s gegen die Atmosphäre; ohne Versorgung derselbe
   lineare Weg zurück an die Luft. Über `dp_max` kein Abfall des Vakuums (nicht modelliert). Abblasen über ein
   eigenes Ventil auf das Vakuumnetz wird als normaler Netzzufluss gerechnet; ein Abblasanschluss des Ejektors fehlt.

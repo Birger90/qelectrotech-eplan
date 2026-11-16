@@ -19,6 +19,7 @@
 #include <palettegraphicsview.h>
 #include <shownkinds.h>
 #include <lastusedstyle.h>
+#include <conductorcolorcodes.h>
 #include <qetproject.h>
 #include <QPropertyUndoCommand/qpropertyundocommand.h>
 #include <autoNum/numerotationcontextcommands.h>
@@ -118,6 +119,8 @@ Conductor::Conductor(Terminal *p1, Terminal* p2) :
 	has_to_save_profile(false),
 	must_highlight_(Conductor::None)
 {
+	m_terminal1_alive = p1;
+	m_terminal2_alive = p2;
 		//set Zvalue at 11 to be upper than the DiagramImageItem and element
 	setZValue(11);
 	m_previous_z_value = zValue();
@@ -168,6 +171,10 @@ Conductor::Conductor(Terminal *p1, Terminal* p2) :
 		ConductorProperties properties = dia->defaultConductorProperties;
 		if (LastUsedStyle::hasConductorColor())
 			properties.color = LastUsedStyle::conductorColor();
+			//A colour code from the toolbar also gives the colour text
+			//and, for green-yellow, the stripes
+		if (const auto *code = ConductorColorCodes::find(LastUsedStyle::conductorColorCode()))
+			ConductorColorCodes::apply(*code, properties);
 		setProperties(properties);
 	}
 }
@@ -180,8 +187,10 @@ Conductor::~Conductor()
 {
 	conductorGeometryChanged();
 	removeHandler();
-	terminal1->removeConductor(this);
-	terminal2->removeConductor(this);
+		//An undone step that is dropped deletes its symbols before the
+		//wires it added to them: their terminals may be gone already
+	if (m_terminal1_alive) terminal1->removeConductor(this);
+	if (m_terminal2_alive) terminal2->removeConductor(this);
 	deleteSegments();
 }
 

@@ -19,11 +19,12 @@
 #define DEVICENAVIGATORFILTERDIALOG_H
 
 #include <QDialog>
+#include <QList>
 #include <QString>
 #include <QStringList>
-#include <QList>
 
-namespace Ui {
+namespace Ui
+{
 	class DeviceNavigatorFilterDialog;
 }
 
@@ -31,73 +32,83 @@ namespace Ui {
  * @brief The DeviceNavigatorFilterScheme struct
  * Represents a user-configurable filter scheme for the Device Navigator.
  */
-struct DeviceNavigatorFilterScheme {
+struct DeviceNavigatorFilterScheme
+{
+	QString id;
 	QString name;
-	bool active = true;
+	bool	active = true;
 	QString bmkLetters;
 	QString bmkPattern;
-	bool showMasters = true;
-	bool showSlaves = true;
-	bool showTerminals = true;
-	bool showCables = true;
-	bool showReports = false;
-	bool showConductorDefs = false;
-	bool showThumbnails = true;
-	bool showOthers = true;
+	bool	showMasters		  = true;
+	bool	showSlaves		  = true;
+	bool	showTerminals	  = true;
+	bool	showCables		  = true;
+	bool	showReports		  = false;
+	bool	showConductorDefs = false;
+	bool	showThumbnails	  = true;
+	bool	showOthers		  = true;
 	int structureMode = 0; // 0 = All, 1 = With structure, 2 = Without structure
 	QString structurePattern;
 
-	bool matches(const QString &bmk,
-				 const QString &structure,
-				 bool isMaster,
-				 bool isSlave,
-				 bool isTerminal,
-				 bool isCable,
-				 bool isReport,
-				 bool isConductorDef,
-				 bool isThumbnail) const;
+	QString displayName() const;
+
+	bool matches(
+		const QString& bmk,
+		const QString& structure,
+		bool		   hasStructure,
+		bool		   isMaster,
+		bool		   isSlave,
+		bool		   isTerminal,
+		bool		   isCable,
+		bool		   isReport,
+		bool		   isConductorDef,
+		bool		   isThumbnail) const;
 
 	static QList<DeviceNavigatorFilterScheme> defaultSchemes();
 	static QList<DeviceNavigatorFilterScheme> loadSchemes();
-	static void saveSchemes(const QList<DeviceNavigatorFilterScheme> &schemes);
+	static void saveSchemes(const QList<DeviceNavigatorFilterScheme>& schemes);
 };
 
 /**
  * @brief The DeviceNavigatorFilterDialog class
- * EPLAN-style filter scheme configuration dialog for the Device Navigator.
+ * Filter scheme configuration dialog for the Device Navigator.
  */
 class DeviceNavigatorFilterDialog : public QDialog
 {
 	Q_OBJECT
 
-	public:
-		explicit DeviceNavigatorFilterDialog(QWidget *parent = nullptr);
-		~DeviceNavigatorFilterDialog() override;
+  public:
+	explicit DeviceNavigatorFilterDialog(QWidget* parent = nullptr);
+	~DeviceNavigatorFilterDialog() override;
 
-		void setSchemes(const QList<DeviceNavigatorFilterScheme> &schemes, int currentIndex = 0);
-		QList<DeviceNavigatorFilterScheme> schemes() const;
-		int currentSchemeIndex() const;
+	void setSchemes(
+		const QList<DeviceNavigatorFilterScheme>& schemes,
+		int										  currentIndex = 0);
+	QList<DeviceNavigatorFilterScheme> schemes() const;
+	int								   currentSchemeIndex() const;
 
-	private slots:
-		void onSchemeChanged(int index);
-		void onNewSchemeClicked();
-		void onDeleteSchemeClicked();
-		void onResetClicked();
-		void onApplyClicked();
-		void onPrefixCheckboxToggled();
+  public slots:
+	void accept() override;
 
-	private:
-		void loadSchemeToUi(const DeviceNavigatorFilterScheme &scheme);
-		DeviceNavigatorFilterScheme saveSchemeFromUi() const;
-		void updateBmkLettersFromCheckboxes();
-		void updateCheckboxesFromBmkLetters();
+  private slots:
+	void onSchemeChanged(int index);
+	void onNewSchemeClicked();
+	void onDeleteSchemeClicked();
+	void onResetClicked();
+	void onApplyClicked();
+	void onPrefixCheckboxToggled();
 
-	private:
-		Ui::DeviceNavigatorFilterDialog *ui = nullptr;
-		QList<DeviceNavigatorFilterScheme> m_schemes;
-		int m_current_index = 0;
-		bool m_updating_ui = false;
+  private:
+	void loadSchemeToUi(const DeviceNavigatorFilterScheme& scheme);
+	DeviceNavigatorFilterScheme saveSchemeFromUi() const;
+	void						updateBmkLettersFromCheckboxes();
+	void						updateCheckboxesFromBmkLetters();
+
+  private:
+	Ui::DeviceNavigatorFilterDialog*   ui = nullptr;
+	QList<DeviceNavigatorFilterScheme> m_schemes;
+	int								   m_current_index = 0;
+	bool							   m_updating_ui   = false;
 };
 
 #endif // DEVICENAVIGATORFILTERDIALOG_H
-

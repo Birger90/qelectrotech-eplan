@@ -56,13 +56,13 @@
      </property>
      <widget class="QWidget" name="tabBmk">
       <attribute name="title">
-       <string>Device Tag (BMK)</string>
+       <string>Device tag</string>
       </attribute>
       <layout class="QVBoxLayout" name="tabBmkLayout">
        <item>
         <widget class="QLabel" name="m_bmk_letters_label">
          <property name="text">
-          <string>BMK prefixes (comma-separated, e.g. K, Q, F, X, W):</string>
+          <string>Device tag prefixes (comma-separated, e.g. K, Q, F, X, W):</string>
          </property>
         </widget>
        </item>

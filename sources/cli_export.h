@@ -52,8 +52,11 @@ namespace CLIExport {
 		  qelectrotech --export-wiring  <project.qet> <output.csv>
 		  qelectrotech --export-nets    <project.qet> <output.json>
 		  qelectrotech --export-links   <project.qet> <output.csv>
+		  qelectrotech --check-device-types <project.qet> <output.csv>
+		  qelectrotech --export-device-types <project.qet> <output.csv>
+		  qelectrotech --export-device-types-brief <project.qet> <output.csv>
 		  qelectrotech --info           <project.qet> [output.json]
-		  qelectrotech --check-elements <element.elmt | directory>
+		  qelectrotech --check-elements <element.elmt | directory> [--grid]
 		  qelectrotech --import-eplan   <package.zip | folder | file.dxf> <collection_dir> [--category C] [--manufacturer M --type T] [--edz part.edz]
 		  qelectrotech --fetch-parts    <list.txt> [--collection DIR] [--raw-dir DIR] [--3d-dir DIR] [--links FILE] [--manufacturer SIE,RIT] [--limit N] [--dry-run] [--force] [--report FILE] [--json]
 		  qelectrotech --portal-status  [--json]
@@ -105,6 +108,10 @@ namespace CLIExport {
 		      EPLAN Data Portal DXF package, or a single DXF with
 		      --manufacturer and --type) into
 		      <collection_dir>/<manufacturer>/<category>/<type>/.
+		--grid: check-elements also warns about a symbol that does not line
+		      up with the folio grid: its insertion point on no connection
+		      point, its frame (hotspot, width, height) or a connection
+		      point off the grid of 10.
 		resave: load and rewrite the project XML (round-trip integrity).
 		--ignore-lock: resave and set-titleblock leave a file alone when a lock
 		      file beside it (.~<name>.lock, made by a QElectroTech that has
@@ -117,11 +124,12 @@ namespace CLIExport {
 		      the project it came from first, as CSV (RFC 4180, a header
 		      row) or, with --json, as a JSON array of objects. The views
 		      qet_folios, qet_devices, qet_wires, qet_links, qet_cables,
-		      qet_device_list, qet_terminals, qet_plc_io and qet_cable_cores
-		      keep their names and columns from one version to the next. A
-		      project that cannot be opened or queried is reported on stderr, the
-		      others still run, and the exit code is 1. A .qetdb is read
-		      itself, without opening the project: seconds for hundreds.
+		      qet_device_list, qet_terminals, qet_plc_io, qet_cable_cores and
+		      qet_locations keep their names and columns from one version to
+		      the next. A project that cannot be opened or queried is
+		      reported on stderr, the others still run, and the exit code
+		      is 1. A .qetdb is read itself, without opening the project:
+		      seconds for hundreds.
 		      E.g. --query "SELECT label, folio FROM qet_devices
 		      WHERE article = 'LC1D09'" *.qet
 		set-titleblock: stamp title-block fields onto every folio, then save.

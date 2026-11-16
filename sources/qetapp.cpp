@@ -1623,13 +1623,17 @@ QFont QETApp::indiTextsItemFont(qreal size)
 	@brief QETApp::cableTextsFont
 	@return the font the texts of a cable (designation, type,
 	installation, location, length) are written with when the cable
-	itself has been given no font of its own.
+	itself has been given no font of its own and the very text has no
+	default of its own either.
 
-	That is what the preferences offer on the "Textes" page, and -- when
-	nothing has been chosen there yet -- the font the drawing writes its
-	own texts with, a shade smaller: the way every cable has always been
-	drawn, so that opening the preferences changes nothing until he
-	picks something.
+	That is what the preferences offer on the "Textes" page for all of
+	them at once -- which is what an installation which picked one
+	before they were set apart still holds, and what every text which
+	has no default of its own falls back to -- and, when nothing has
+	been chosen there at all, the font the drawing writes its own texts
+	with, a shade smaller: the way every cable has always been drawn,
+	so that opening the preferences changes nothing until he picks
+	something.
 */
 QFont QETApp::cableTextsFont()
 {
@@ -1649,26 +1653,137 @@ QFont QETApp::cableTextsFont()
 }
 
 /**
+	@brief The settings key holding the default font of one named text
+	of a cable, an empty string when @p key names no text the
+	preferences may set apart from the others.
+
+	The names are spelled the very same way here as in the cables
+	themselves (see CablePart::fontOf), so that one name reads the
+	setting and asks the drawing for the font in one go.
+	@param key the name of a text of a cable
+	@return the key, or nothing when there is none to hold a font
+*/
+static QString cableTextFontKey(const QString &key)
+{
+	if (key == QLatin1String("cores")) {
+		return QStringLiteral("cable-management/cable-core-font");
+	}
+	if (key == QLatin1String("designation")
+		|| key == QLatin1String("type")
+		|| key == QLatin1String("installation")
+		|| key == QLatin1String("location")
+		|| key == QLatin1String("length"))
+	{
+		return QStringLiteral("cable-management/cable-text-font-") + key;
+	}
+	return QString();
+}
+
+/**
+	@brief QETApp::cableTextsFont
+	@param key the name of one text of a cable: "designation", "type",
+	"installation", "location", "length" or "cores"
+	@return the font that text is written with when neither the cable
+	itself nor the preferences give it a font of its own.
+
+	Each of the five has a default of its own since they were set
+	apart, so that a length may be written smaller than the designation
+	above it, and the colours of the cores have one of theirs as well
+	-- all of them drawn in one row beside the line, so never set
+	apart from each other. What he has left alone follows the font all
+	five share, which is what the preferences offered for them together
+	before -- so that an installation which had picked one keeps it --
+	and, when nothing has been picked at all, the font the drawing
+	writes its own texts with, a shade smaller.
+
+	Any other name than those six answers with the font they all
+	share: the reference to another folio has a default of its own set
+	under Cross-references rather than here.
+*/
+QFont QETApp::cableTextsFont(const QString &key)
+{
+	const QString setting = cableTextFontKey(key);
+	if (!setting.isEmpty())
+	{
+		const QSettings settings;
+		if (settings.contains(setting))
+		{
+			QFont font;
+			if (QETUtils::fontFromString(font, settings.value(setting).toString())) {
+				return font;
+			}
+		}
+	}
+	return cableTextsFont();
+}
+
+/**
+	@brief QETApp::hasCableTextFont
+	@param key the name of one text of a cable: "designation", "type",
+	"installation", "location", "length" or "cores"
+	@return true when the preferences hold a font of their own for
+	that very text, false when it follows the one all five share --
+	which is what the reset beside its font button has to know.
+*/
+bool QETApp::hasCableTextFont(const QString &key)
+{
+	const QString setting = cableTextFontKey(key);
+	if (setting.isEmpty()) return false;
+
+	const QSettings settings;
+	return settings.contains(setting);
+}
+
+/**
+	@brief QETApp::setCableTextFont
+	Keep what the preferences chose as the way one named text of a
+	cable is written, for the cables which say nothing about it
+	themselves.
+	@param key the name of that text: "designation", "type",
+	"installation", "location", "length" or "cores"; any other name is
+	ignored, since the preferences offer no default of its own for it
+	@param font what that text is to be written with from now on
+*/
+void QETApp::setCableTextFont(const QString &key, const QFont &font)
+{
+	const QString setting = cableTextFontKey(key);
+	if (setting.isEmpty()) return;
+
+	QSettings settings;
+	settings.setValue(setting, QETUtils::fontToString(font));
+}
+
+/**
+	@brief QETApp::clearCableTextFont
+	Take the default font of one named text of a cable away again, so
+	that it goes back to following the font all five share -- or, for
+	the colours of the cores, the very same one.
+	@param key the name of that text; any other name is ignored
+*/
+void QETApp::clearCableTextFont(const QString &key)
+{
+	const QString setting = cableTextFontKey(key);
+	if (setting.isEmpty()) return;
+
+	QSettings settings;
+	settings.remove(setting);
+}
+
+/**
 	@brief QETApp::cableCoreFont
 	@return the font the colour labels of the cores are written with
 	when the cable itself has been given no font of its own.
 
-	That is what the preferences offer on the "Textes" page; until he
-	picks something there, the colours follow the texts of the cable,
-	so one setting alone already resizes the whole label of a cable.
+	That is what the preferences offer on the "Textes" page, where the
+	row of colours has a button of its own beside the five texts; until
+	he picks something there, the colours follow the texts of the
+	cable, so one setting alone already resizes the whole label of a
+	cable. All the colours of one cable are read as one row, which is
+	why they are never set apart from each other.
 */
 QFont QETApp::cableCoreFont()
 {
-	QSettings settings;
-	if (settings.contains("cable-management/cable-core-font"))
-	{
-		QFont font;
-		if (QETUtils::fontFromString(
-				font, settings.value("cable-management/cable-core-font").toString())) {
-			return font;
-		}
-	}
-	return cableTextsFont();
+	return cableTextsFont(QStringLiteral("cores"));
 }
 
 /**
@@ -2409,6 +2524,21 @@ void QETApp::openTitleBlockTemplateFiles(const QStringList &files_list) {
 */
 void QETApp::configureQET()
 {
+	openConfigDialog(false);
+}
+
+/**
+	@brief QETApp::configureQETMaterialsList
+	Open the QElectroTech configuration dialog directly on the materials
+	list settings tab.
+*/
+void QETApp::configureQETMaterialsList()
+{
+	openConfigDialog(true);
+}
+
+void QETApp::openConfigDialog(bool focus_materials_list)
+{
 	// determine the parent widget to use for the dialog
 	// determine le widget parent a utiliser pour le dialogue
 	QWidget *parent_widget = qApp->activeWindow();
@@ -2421,7 +2551,8 @@ void QETApp::configureQET()
 	// holds raw pointers derived from the current project list.  Same class of
 	// bug as ProjectPropertiesDialog — see issue #527.
 	cd.setWindowModality(Qt::ApplicationModal);
-	cd.addPage(new GeneralConfigurationPage());
+	auto *general_page = new GeneralConfigurationPage();
+	cd.addPage(general_page);
 	cd.addPage(new NewDiagramPage());
 	cd.addPage(new ExportConfigPage());
 	cd.addPage(new PrintConfigPage());
@@ -2433,6 +2564,10 @@ void QETApp::configureQET()
 #ifdef QET_SPACEMOUSE_SUPPORT
 	cd.addPage(new SpaceMouseConfigPage());
 #endif
+
+	if (focus_materials_list) {
+		general_page->focusMaterialsListSettings();
+	}
 
 	// associates the dialog with a possible parent widget
 	// associe le dialogue a un eventuel widget parent
@@ -2860,7 +2995,7 @@ void QETApp::parseArguments()
 void QETApp::initSplashScreen()
 {
 	if (non_interactive_execution_) return;
-	m_splash_screen = new QSplashScreen(QPixmap(":/ico/splash.png"));
+	m_splash_screen = new QSplashScreen(QPixmap(":/ico/app/splash.png"));
 	m_splash_screen -> show();
 	setSplashScreenStep(tr("Loading...", "splash screen caption"));
 }

@@ -157,6 +157,9 @@ class Element : public QetGraphicsItem
 		 * @return
 		 */
 		DiagramContext kindInformations() const;
+			/// A symbol that only steers the drawing (kind information
+			/// drawing_aid="true"): drawn light grey, never printed
+		bool isDrawingAid() const;
 			/// This symbol's own copy of its kind information, whatever the store holds
 		DiagramContext ownKindInformations() const {return m_kind_informations;}
 			/// Where this symbol comes from and sits, from its own members,
@@ -231,6 +234,12 @@ class Element : public QetGraphicsItem
 		ReloadPictureResult reloadPicture(bool adopt_frame = false);
 		bool canChangeLocationTo(const ElementsLocation &location) const;
 		bool changeLocation(const ElementsLocation &location);
+		bool followMovedOrigin();
+			/// Whether updating the elements from the collections moves a
+			/// placed symbol whose insertion point moved, so that its
+			/// terminals stay where they are: off unless set
+		static bool updateFollowsMovedOrigin();
+		static void setUpdateFollowsMovedOrigin(bool follows);
 		virtual void setHighlighted(bool);
 		void showAsJumpTarget();
 		bool isShownAsJumpTarget() const { return m_jump_highlight > 0; }

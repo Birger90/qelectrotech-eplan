@@ -3,6 +3,26 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.29.0 – 16.11.2026
+
+Simulations-Roadmap R07/R09 (Stetig- und Lastventile) und Hauptrepo nachgezogen:
+
+- Hauptrepo (QElectroTech upstream) mit 181 Commits eingearbeitet; der Gerätenavigator kommt jetzt von Upstream
+  (Lazy Loading, Strukturkästen, Zustand beim Neuladen), Fork-Funktionen bleiben erhalten (`--check-elements --grid`
+  neben EPLAN-Import und Portalen, Symboltausch und verschobener Einfügepunkt).
+- 4/3-Wege-Stetigventile (FluidSIM `DirectionalValve43_01/_02`): Schieber als PT1 zum Sollwert ±10 V, getrennte
+  Überdeckung der P- und T-Kanten (auch Unterdeckung), Rechteck- oder Dreieckkerbe, Widerstand je voll offener Kante,
+  Leckage je Kante. Sollwert als Kennwert `u` oder Ereignis `--event "0.5 -QM1 sollwert 5"`; der analoge Signalpfad
+  (S, Y1/Y2) kommt mit R06. Messgrößen `u:` (Sollwert) und `s:` (Schieberweg).
+- Senkbremsventil (öffnet bei (p_P − p_T) + Flächenverhältnis·(p_X − p_T) ≥ p₀, Rückschlag T→P) und
+  Druckzuschaltventile 01/02 (öffnen P→A ab Steuerdruck an X).
+- Neue Prüfung „Stetig-, Senkbrems- und Zuschaltventile (R07/R09)“ mit den Plänen `stetig.qet` und `lastventil.qet`:
+  halb offen in beiden Richtungen 26,91 bar, Sättigung 6,73 bar, Überdeckung 25 % (zu bei 2 V, x = 1/3 bei 5 V),
+  Unterdeckung −20 %, Dreieckkerbe, Leckage 19,33 bar, Sprungantwort s(τ) = 0,6321, Senkbremsventil mit/ohne
+  Steuerdruck 11,22/42,52 bar, Zuschaltventil 34,38 bar – alles wie die Handrechnung. 30 Prüfungen, alle bestanden.
+  Formelregister V05–V08.
+- FluidSIM-Batch: 1051 von 1136 Beispielen starten (vorher 1020), in 285 bewegen sich Zylinder (vorher 269).
+
 ## 1.28.0 – 16.11.2026
 
 Simulations-Roadmap R05 (Leitungen, Kupplungen, Aufbereitung):

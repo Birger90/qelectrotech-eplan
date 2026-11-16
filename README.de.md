@@ -138,7 +138,8 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
   Modell verhindern den Start. `--signals/--measure` liefern Drücke, gerichtete Durchflüsse, Zylinderweg,
   -geschwindigkeit und -kraft, Motor- und Schwenkwinkel, Haltekraft von Saugern in SI-Einheiten. Gerechnet werden auch
   Hydromotoren, Vakuumerzeuger, Sauger, Vakuumschalter, Schwenkantriebe, Rohrleitungen mit Länge und Durchmesser,
-  Schnellkupplungen (gekuppelt/getrennt) und verstopfte Filter. Stand der Roadmap: [tools/simulation/ROADMAP_STAND.md](tools/simulation/ROADMAP_STAND.md).
+  Schnellkupplungen (gekuppelt/getrennt), verstopfte Filter, 4/3-Stetigventile (Sollwert per Kennwert oder
+  Ereignis), Senkbrems- und Druckzuschaltventile. Stand der Roadmap: [tools/simulation/ROADMAP_STAND.md](tools/simulation/ROADMAP_STAND.md).
   Anleitung: [tools/simulation/README.md](tools/simulation/README.md).
 - Datei > *FluidSIM-Schaltung importieren (.circ)*: FluidSIM-6-Schaltungen werden ein Projekt, das sofort simuliert –
   Bauteile, Leitungen, Spulen- und Relaisverknüpfungen, die Schaltwege jeder Ventilstellung, alle Kennwerte mit

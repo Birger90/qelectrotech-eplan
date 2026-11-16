@@ -75,10 +75,14 @@ QList<Entry> build()
 		e << physical(f, "directional_valve", "both", "1…5, P, A, B, T, X, Y; Steueranschlüsse 12/14", VALVE_PARAMS, VALVE_LIMITS,
 			      "CylinderCycle, Hydraulik-CylinderCycle, Projekt GRAFCET, Projekt Speicher");
 	e << other("directional_valve.part", Role::Graphic, "", "Zeichenbaustein (Betätigung, Stellung) ohne eigene Funktion");
-	for (const char *f : {"proportional.directional_valve43_01", "proportional.directional_valve43_02",
-			       "proportional.directional_valve63_with_hand_lever", "proportional.mobile_valve_block_ls",
+	for (const char *f : {"proportional.directional_valve43_01", "proportional.directional_valve43_02"})
+		e << physical(f, "proportional_valve", "hydraulic", "P, A, B, T (Sollwert S bzw. Y1/Y2 erst mit R06)",
+			      "u [V] Sollwert -10 … 10, tau [s], lap bzw. lapP/lapT [%] Überdeckung, notchType (1 Rechteck, 2 Dreieck), rT [bar.min2/l2] je Kante, GLeak [l/(min.bar)] je Kante",
+			      "Schieber PT1 ohne Hysterese und Strömungskraft; Kanten als Blenden mit Fläche ∝ x bzw. x²; Sollwert nur als Kennwert oder Ereignis (analoger Signalpfad Roadmap R06)",
+			      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	for (const char *f : {"proportional.directional_valve63_with_hand_lever", "proportional.mobile_valve_block_ls",
 			       "proportional.mpye"})
-		e << other(f, Role::Unsupported, "", "Stetigventile mit analogem Sollwert (Roadmap R07)");
+		e << other(f, Role::Unsupported, "", "Mobil-/LS-Ventilblöcke und pneumatisches Stetigventil (Roadmap R07, R13)");
 	// ---------------------------------------------------------- Strom-, Sperr-, Logikventile
 	e << physical("flow_control_valve.throttle_valve", "orifice", "both", "erste zwei Anschlüsse", "qNN [l/min] bzw. rT", "kein druckkompensierter Stromregler", "Orifice");
 	e << physical("shutoff_valve.shutoff_valve", "orifice", "both", "erste zwei Anschlüsse", "qNN bzw. rT", "Stellung fest (Öffnung über qNN/rT)", "Orifice");
@@ -96,13 +100,19 @@ QList<Entry> build()
 	// ---------------------------------------------------------- Druckventile
 	e << physical("pressure_valve.pressure_relief_valve01", "pressure_relief_valve", "both", "1/P → 2/T/3", "p0, dpEnd [Pa], rT/qNN", "direktgesteuert, ohne Dynamik", "Projekt Druckbegrenzung");
 	e << physical("pressure_valve.pressure_regulator", "pressure_regulator", "both", "1/P → 2/A, Entlüftung", "p0, dpEnd [Pa], qNN/rT", "ohne Dynamik und Pilotdrain", "");
-	for (const char *f : {"pressure_valve.counterbalance_valve", "pressure_valve.pilot_valves_joystick",
+	e << physical("pressure_valve.counterbalance_valve", "counterbalance_valve", "hydraulic", "P, T, X",
+		      "p0 [Pa] Öffnungsdruck, dpEnd [Pa], rT_cb bzw. rT, ratio Flächenverhältnis, rT_cv Rückschlagventil, GLeak [l/(min.bar)]",
+		      "öffnet P→T bei (pP − pT) + ratio·(pX − pT) ≥ p0, Rückschlag T→P frei; ohne Kolbendynamik", "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	for (const char *f : {"pressure_valve.pressure_sequence_valve01", "pressure_valve.pressure_sequence_valve02"})
+		e << physical(f, "sequence_valve", "hydraulic", "P, A, X (ohne X: Vorsteuerung aus P)",
+			      "p0 [Pa] Öffnungsdruck, dpEnd [Pa], rT", "öffnet P→A ab Steuerdruck p0, ohne Leckölanschluss und Dynamik",
+			      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	for (const char *f : {"pressure_valve.pilot_valves_joystick",
 			       "pressure_valve.pressure_compensator_closer01", "pressure_valve.pressure_compensator_closer02",
 			       "pressure_valve.pressure_compensator_downstream_1", "pressure_valve.pressure_compensator_opener_ls_1",
 			       "pressure_valve.pressure_compensator_upstream_1", "pressure_valve.pressure_compensator_upstream_2",
-			       "pressure_valve.pressure_sequence_valve", "pressure_valve.pressure_sequence_valve01",
-			       "pressure_valve.pressure_sequence_valve02", "pressure_valve.shock_and_anti_cavitation_valve"})
-		e << other(f, Role::Unsupported, "", "Last-, Folge- und Kompensatorventile (Roadmap R09, R13)");
+			       "pressure_valve.pressure_sequence_valve", "pressure_valve.shock_and_anti_cavitation_valve"})
+		e << other(f, Role::Unsupported, "", "Druckwaagen, Schock-/Nachsaugblock, pneumatisches Folgeventil (Roadmap R09, R13)");
 	// ---------------------------------------------------------- Versorgung
 	e << physical("supply.air_supply", "pressure_source", "pneumatic", "alle", "pNom [Pa] (sonst Versorgungsdruck des Laufs)", "ideale Quelle ohne Liefergrenze", "CylinderCycle");
 	e << physical("supply.tank", "tank", "hydraulic", "alle", "", "drucklos", "Hydraulik-CylinderCycle");

@@ -157,6 +157,21 @@ Zeitglieder/Zähler – siehe Roadmap (R07–R13).
 
 Herkunft, Beleg und Grenze jeder Formel stehen im [Formelregister](FORMELN.md).
 
+## Stetig-, Senkbrems- und Zuschaltventile (R07/R09)
+
+- **4/3-Stetigventil** (`proportional.directional_valve43_01/_02`): Anschlüsse P, A, B, T. Sollwert `u` in Volt
+  (−10 … 10) als Kennwert oder Ereignis `--event "0.5 -QM1 sollwert 5"`; der Schieber folgt als PT1 (`tau`, Vorgabe
+  4 ms beim Regelventil 02, 10 ms beim 01). Positiv öffnet P→A und B→T, negativ P→B und A→T. Überdeckung `lap`
+  bzw. `lapP`/`lapT` in % (negativ = Unterdeckung), Steuerkerbe `notchType` 1 Rechteck (linear) oder 2 Dreieck
+  (progressiv), `rT` je voll offener Kante, `GLeak` je Kante. Messgrößen `u:<Ventil>` [V], `s:<Ventil>` [−1 … 1].
+  Der analoge Eingang S bzw. die Proportionalmagnete Y1/Y2 werden erst mit R06 (analoge Signale) angeschlossen.
+- **Senkbremsventil** (`pressure_valve.counterbalance_valve`, P, T, X): öffnet P→T, wenn
+  (p_P − p_T) + `ratio`·(p_X − p_T) den Öffnungsdruck `p0` erreicht, voll offen nach `dpEnd`; Rückschlagventil T→P
+  (`rT_cv`), Leckage `GLeak`.
+- **Druckzuschaltventil** (`pressure_valve.pressure_sequence_valve01/02`, P, A, X): öffnet P→A ab Steuerdruck `p0`
+  an X (ohne X an P).
+- Weiter nicht gerechnet (Start abgewiesen): Druckwaagen, Schock-/Nachsaugblock, LS-/Mobilventilblöcke, MPYE.
+
 ## Vakuum, Schwenk- und Greiferantriebe (R10)
 
 - **Ejektor** (`vacuum.vacuum_generator`): Anschluss 1 Versorgung, 2 Vakuum. Luftverbrauch `qn_ac` bei 600 kPa (wie

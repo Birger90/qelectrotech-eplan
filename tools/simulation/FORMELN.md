@@ -1,6 +1,6 @@
 # Formelregister des Rechenkerns
 
-Stand Fork 1.28.0 (16.11.2026). Hier steht jede Beziehung, die `sources/simulation/` rechnet, mit Codestelle,
+Stand Fork 1.29.0 (16.11.2026). Hier steht jede Beziehung, die `sources/simulation/` rechnet, mit Codestelle,
 Herkunft, Beleg, Gültigkeitsgrenze und der Prüfung, die sie abdeckt. Jede Zeile hat mindestens einen Beleg; alle
 Belege stehen mit Fundstelle am Ende. F-Nummern verweisen auf das Quellenregister des externen Pakets
 „Claude_Simulation_Roadmap“ (`FORMELQUELLEN.md`, Stand 15.11.2026), S-Nummern auf dessen Primärquellen (hier mit
@@ -89,6 +89,15 @@ Codestellen: `phys` = `simulationphysics.h`, `model` = `simulationmodel.cpp`, `u
 | V03 | Wechselventil (ODER): der Eingang mit höherem Druck strömt nach 2; Zweidruckventil (UND): der mit niedrigerem | `model` FlowValve-Schritt | – | Projektdefinition der logischen Funktion; QS05 (Folien „Wechselventil“, „Zweidruckventil“); Vergleich QS12 | keine Zwischenstellung, kein Umschaltdruck | Projekt Speicher |
 | V04 | Steueranschluss schaltet ab p_gauge > 1,5 bar | `model` `P_PILOT` | – | Projektdefinition; Größenordnung QS10 (Steuerdruck je Typ 1,5 … 3 bar); FluidSIM-Symbole: F_spring/areaPilot = 20 N/1,4 cm² = 1,43 bar | keine Steuerflächen-Kraftbilanz | CylinderCycle |
 
+## Stetig-, Senkbrems- und Zuschaltventile (R07/R09)
+
+| ID | Beziehung | Codestelle | Paket | Herkunft, Belege | Grenze | Prüfung |
+|---|---|---|---|---|---|---|
+| V05 | Schieber s ∈ [−1, 1] folgt dem Sollwert u/10 V als PT1: s ← z + (s − z)·e^(−dt/τ), z = clamp(u/10, −1, 1); Kantenöffnung x = clamp((±s − ü)/(1 − ü), 0, 1) mit relativer Überdeckung ü (> 0 Überdeckung, < 0 Unterdeckung), getrennt für P- und T-Kanten | `phys` `pt1`, `edgeOpening`, `model` PropValve | F13, F17 | PT1 aus S22 (exakte Lösung für konstantes Ziel), Kantenmatrix und Überdeckung eigene Bauteilspezifikation nach QS05 („4/3-Wege-Proportionalventil“: ±10 V, Mittelstellung bei 0 V sperrt, Überdeckung relativ zum Schieberweg) | keine Hysterese, keine Strömungskraft, kein Lageregelkreis; τ = 4 ms (Regelventil, QS05: Stellzeit < 12 ms für 0–100 %) bzw. 10 ms sind Projektdefinitionen | Stetig-, Senkbrems- und Zuschaltventile (R07/R09) |
+| V06 | Kante als Blende (H03) mit Fläche a = x (Rechteckkerbe) bzw. a = x² (Dreieckkerbe), rT bezogen auf die voll offene Kante: Δp = rT·Q²/a²; Leckage je Kante q = G·Δp | `model` PropValve-Schritt | F11, F52 | Modellnäherung; QS05 (Rechteck linear, Dreieck progressiv; Widerstand je voll offener Kante, Leckage je Kante) | a = x² ist die einfachste progressive Form, nicht die gemessene Kerbengeometrie | R07/R09 |
+| V07 | Senkbremsventil: öffnet P→T mit Anteil clamp(((p_P − p_T) + ratio·(p_X − p_T) − p₀)/Δp_end, 0, 1); Rückschlag T→P frei (rT_cv); Leckage G·(p_P − p_T) | `model` FlowValve (counterbalance) | F16 | eigenes Referenzmodell (F16) mit Steuerflächenverhältnis; Kennwerte nach QS05 („Senkbremsventil“: Öffnungsdruck, Druckregelbereich, Flächenverhältnis, Rückschlagventil) | keine Kolbenmasse, keine Dämpfung (Schwingneigung realer Senkbremsventile fehlt) | R07/R09 |
+| V08 | Druckzuschaltventil: öffnet P→A mit Anteil clamp((p_X,gauge − p₀)/Δp_end, 0, 1); ohne X steuert P | `model` FlowValve (sequence 01/02) | F16 | eigenes Referenzmodell; Funktion nach QS05 („Druckzuschaltventil“: öffnet bei Solldruck an X) | kein Leckölanschluss, keine Dynamik | R07/R09 |
+
 ## Vakuum (R10)
 
 | ID | Beziehung | Codestelle | Paket | Herkunft, Belege | Grenze | Prüfung |
@@ -124,6 +133,11 @@ Codestellen: `phys` = `simulationphysics.h`, `model` = `simulationmodel.cpp`, `u
 - **L03:** Δp(q) ist für jedes Re streng steigend (laminar linear, turbulent ∝ λ·q², λ fällt langsamer als 1/q), also
   eindeutig umkehrbar. Weil λ ≥ 64/Re überall gilt, ist Δp(q) ≥ Δp_laminar(q) und damit q(Δp) ≤ Δp·π d⁴/(128 μ L):
   Startintervall der Bisektion.
+- **V05/V06:** Bei Unterdeckung ü < 0 sind in Mittelstellung beide P-Kanten mit x = −ü/(1 − ü) offen (−20 % → 1/6);
+  zwei gleiche Blenden parallel wirken wie eine mit doppelter Fläche, also Δp = rT·Q²/(2x)². Bei Überdeckung ü > 0
+  bleibt die Kante bis |s| = ü zu (Totzone), dann x = (|s| − ü)/(1 − ü).
+- **V07 (Prüffall):** Mit X am Pumpendruck ist der Antrieb (1 + ratio)·p; Gleichgewicht Anteil(p)·√(p/rT) = Q
+  (bar, l/min) per Bisektion.
 - **N05 (Leckgleichgewicht):** 6·(g − p_min)/\|p_min\| = 1,8·φ((P_ATM + g)/P_ATM)/φ((P_ATM − 0,6 bar)/P_ATM) in l/min,
   nach g gelöst (Bisektion, 100 Schritte). Die Normdichte kürzt sich heraus.
 
@@ -157,7 +171,7 @@ Codestellen: `phys` = `simulationphysics.h`, `model` = `simulationmodel.cpp`, `u
 
 V_LINE 5 cm³ je Luftnetz, V_HYD 0,1 l je Ölnetz, V_tot 2 cm³ je Zylinderkammer, E_OIL 7·10⁸ Pa, p_s = 0,3 bar,
 Pilotschwelle 1,5 bar, Haftkraft 5 % von A_K·6 bar, Gleitreibung 70 % der Haftkraft, Federkraft 15 % von A_K·6 bar,
-Haftmoment des Schwenkantriebs 2 % von M_6bar, Öldichte 870 kg/m³, Rauheit 15 µm, Verstopfungsfaktor Öl 1000,
+Haftmoment des Schwenkantriebs 2 % von M_6bar, Schieberzeitkonstante 4/10 ms, Öldichte 870 kg/m³, Rauheit 15 µm, Verstopfungsfaktor Öl 1000,
 Leitwert entlüftender Kupplungshälften wie Schalldämpfer, Pumpenband 1 bar, Saugervolumen 5 mm tief, offener Sauger 50 l/min bei
 0,1 bar, Leckagebezug −0,6 bar, Hysterese mindestens 1 kPa, Relaiszeiten 10/8 ms, Ventil-τ = Schaltzeit/3. Kennwerte
 aus FluidSIM-Bauteilen (qNN, rT, M_6bar, I, f, pu_min, qn_ac, qns_max, d, m, s …) sind Angaben der Beispielbauteile,

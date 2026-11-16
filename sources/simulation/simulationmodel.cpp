@@ -293,6 +293,18 @@ struct SimulationModel::Cylinder {
 };
 
 	/// line with geometry (R05): Darcy/Hagen-Poiseuille between two ports
+	/// proportional 4/3 valve (R07): spool s follows the setpoint u/10 V as a first-order lag
+struct SimulationModel::PropValve {
+	Element *e = nullptr;
+	QString label;
+	double u = 0.0, s = 0.0;               // setpoint [V], spool position (-1 … 1)
+	double tau = 0.01;                     // time constant of the spool [s]
+	double lap_p = 0.0, lap_t = 0.0;       // relative overlap of the P and the T edges
+	double rt = 1.0;                       // resistance of one fully open edge [bar.min2/l2]
+	double gleak = 0.0;                    // leakage of each edge [m3/(s.Pa)]
+	bool triangular = false;               // notch: triangular (area ∝ x²) or rectangular (∝ x)
+};
+
 struct SimulationModel::Pipe {
 	Element *e = nullptr;
 	QString a, b;                 // port names
@@ -345,6 +357,7 @@ struct SimulationModel::FlowValve {
 	bool hydraulic = false;
 	double c = 0, c_free = 0, rt = 0.1, rt_free = 0.05, p0 = 0, dp_end = 0.5e5;
 	double t_delay = 1.0, since = -1.0;         // time delay valve
+	double ratio = 3.0, gleak = 0.0;            // counterbalance valve: pilot area ratio, leakage P -> T (R09)
 
 	double flow(double pa, double pb, double share = 1.0, bool free = false) const {
 		if (share <= 0) return 0.0;
@@ -455,6 +468,7 @@ SimulationModel::~SimulationModel()
 	qDeleteAll(m_pressure_switches);
 	qDeleteAll(m_ejectors);
 	qDeleteAll(m_pipes);
+	qDeleteAll(m_prop_valves);
 	qDeleteAll(m_cups);
 }
 
@@ -590,7 +604,10 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 		{QStringLiteral("pressure_valve.pressure_relief_valve01"), 200},
 		{QStringLiteral("flow_control_valve.flow_divider"), 100},
 		{QStringLiteral("logic.shuttle_valve"), 150}, {QStringLiteral("logic.dual_pressure_valve"), 150},
-		{QStringLiteral("logic.time_delay_valve"), 100}};
+		{QStringLiteral("logic.time_delay_valve"), 100},
+		{QStringLiteral("pressure_valve.counterbalance_valve"), 200},
+		{QStringLiteral("pressure_valve.pressure_sequence_valve01"), 200},
+		{QStringLiteral("pressure_valve.pressure_sequence_valve02"), 200}};
 
 	for (Diagram *d : diagrams) {
 		for (Element *e : sortedElements(d)) {
@@ -665,6 +682,33 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						m_pipes << pi;
 						continue;
 					}
+				}
+				if (model == QLatin1String("proportional_valve")) {
+					// R07 (FORMELN.md V05, V06): FluidSIM 4/3 proportional valve; the analog input (S, Y1/Y2) comes
+					// with R06, until then the setpoint is the value u or a setpoint event
+					if (!hyd) {
+						m_model_errors << QStringLiteral("%1: Stetigventil nur hydraulisch gerechnet").arg(part);
+						continue;
+					}
+					auto *v = new PropValve;
+					v->e = e;
+					v->label = label(e);
+					v->u = paramIn(f, QStringLiteral("u"), 0.0, QStringLiteral("V"), &m_model_errors, part);
+					v->tau = paramIn(f, QStringLiteral("tau"), fn.endsWith(QLatin1String("43_02")) ? 0.004 : 0.01,
+									 QStringLiteral("s"), &m_model_errors, part, Range::NonNegative);
+					const double lap = paramNative(f, QStringLiteral("lap"), 0.0, QStringLiteral("%"), &m_model_errors, part, Range::Any) / 100.0;
+					v->lap_p = paramNative(f, QStringLiteral("lapP"), lap * 100.0, QStringLiteral("%"), &m_model_errors, part, Range::Any) / 100.0;
+					v->lap_t = paramNative(f, QStringLiteral("lapT"), lap * 100.0, QStringLiteral("%"), &m_model_errors, part, Range::Any) / 100.0;
+					if (!(v->lap_p > -1.0 && v->lap_p < 1.0 && v->lap_t > -1.0 && v->lap_t < 1.0))
+						m_model_errors << QStringLiteral("%1: Überdeckung muss zwischen -100 und 100 % liegen").arg(part);
+					v->rt = paramNative(f, QStringLiteral("rT"), 1.0, QStringLiteral("bar.min2/l2"), &m_model_errors, part, Range::Positive);
+					v->gleak = paramIn(f, QStringLiteral("GLeak"), 0.0, QStringLiteral("m3/(s.Pa)"), &m_model_errors, part, Range::NonNegative);
+					// FluidSIM notchType: 1 rectangular, 2 triangular (default of the 4/3 valve 01)
+					v->triangular = paramNative(f, QStringLiteral("notchType"), fn.endsWith(QLatin1String("43_02")) ? 1.0 : 2.0,
+												QString(), &m_model_errors, part, Range::Any) > 1.5;
+					v->s = qBound(-1.0, v->u / 10.0, 1.0);
+					m_prop_valves << v;
+					continue;
 				}
 				if (model == QLatin1String("tank")) {
 					for (Terminal *t : e->terminals())
@@ -920,6 +964,13 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					fv->p0 = paramIn(f, QStringLiteral("p0"), 0.0, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
 					fv->dp_end = std::max(paramIn(f, QStringLiteral("dpEnd"), 0.05e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
 					fv->t_delay = paramIn(f, QStringLiteral("t_delay"), 1.0, QStringLiteral("s"), &m_model_errors, who, Range::NonNegative);
+					if (fn == QLatin1String("pressure_valve.counterbalance_valve")) {
+						// R09 (FORMELN.md V07): FluidSIM names the resistances rT_cb (valve) and rT_cv (check valve)
+						fv->rt = paramNative(f, QStringLiteral("rT_cb"), fv->rt, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+						fv->rt_free = paramNative(f, QStringLiteral("rT_cv"), 0.1, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+						fv->ratio = paramNative(f, QStringLiteral("ratio"), 3.0, QString(), &m_model_errors, who, Range::NonNegative);
+						fv->gleak = paramIn(f, QStringLiteral("GLeak"), 0.0, QStringLiteral("m3/(s.Pa)"), &m_model_errors, who, Range::NonNegative);
+					}
 					m_flow_valves << fv;
 				}
 				continue;
@@ -1605,6 +1656,24 @@ void SimulationModel::step(double dt)
 				if (kn.value(port, -1) >= 0) { ret = kn.value(port); break; }
 			if (in >= 0)
 				book(in, ret, s->flow(p(in), p(ret), qBound(0.0, (p(in) - p(ret) - s->p0) / s->dp_end, 1.0)), s->e);
+		} else if (fn == QLatin1String("pressure_valve.counterbalance_valve")) {
+			// R09 (FORMELN.md V07): opens P -> T when (pP - pT) + ratio·(pX - pT) reaches p0, fully over dpEnd;
+			// the check valve lets T -> P pass freely, leakage P -> T
+			const int kp = kn.value(QStringLiteral("P"), -1), kt = kn.value(QStringLiteral("T"), -1);
+			const int kx = kn.value(QStringLiteral("X"), -1);
+			const double drive = (p(kp) - p(kt)) + s->ratio * (kx >= 0 ? p(kx) - p(kt) : 0.0);
+			const double share = qBound(0.0, (drive - s->p0) / s->dp_end, 1.0);
+			if (kp >= 0 || kt >= 0)
+				book(kp, kt, s->flow(p(kp), p(kt), share) + s->gleak * (p(kp) - p(kt)), s->e);
+			if (p(kt) > p(kp)) book(kt, kp, s->flow(p(kt), p(kp), 1.0, true), s->e);
+		} else if (fn == QLatin1String("pressure_valve.pressure_sequence_valve01")
+				   || fn == QLatin1String("pressure_valve.pressure_sequence_valve02")) {
+			// R09 (FORMELN.md V08): opens P -> A when the pilot X (gauge) reaches p0, fully over dpEnd;
+			// without a pilot line the inlet P is the pilot
+			const int kp = kn.value(QStringLiteral("P"), -1), ka = kn.value(QStringLiteral("A"), -1);
+			const int kx = kn.value(QStringLiteral("X"), -1);
+			const double pilot = (kx >= 0 ? p(kx) : p(kp)) - P_ATM;
+			if (kp >= 0 || ka >= 0) book(kp, ka, s->flow(p(kp), p(ka), qBound(0.0, (pilot - s->p0) / s->dp_end, 1.0)), s->e);
 		} else if (fn == QLatin1String("pressure_valve.pressure_regulator")) {
 			const int in = kn.value(QStringLiteral("1"), kn.value(QStringLiteral("P"), -1));
 			const int out = kn.value(QStringLiteral("2"), kn.value(QStringLiteral("A"), -1));
@@ -1615,6 +1684,22 @@ void SimulationModel::step(double dt)
 		}
 	}
 
+	for (PropValve *v : m_prop_valves) {   // FORMELN.md V05, V06
+		v->s = SimPhysics::pt1(v->s, qBound(-1.0, v->u / 10.0, 1.0), v->tau, dt);
+		const int kp = node(v->e, QStringLiteral("P")), ka = node(v->e, QStringLiteral("A"));
+		const int kb = node(v->e, QStringLiteral("B")), kt = node(v->e, QStringLiteral("T"));
+		auto edge = [&](int a, int b, double x) {
+			if (a < 0 && b < 0) return;
+			const double area = v->triangular ? x * x : x;
+			double q = v->gleak * (p(a) - p(b));
+			if (area > 1e-9) q += volumeFlow(p(a), p(b), v->rt / (area * area));
+			book(a, b, q, v->e);
+		};
+		edge(kp, ka, SimPhysics::edgeOpening(v->s, v->lap_p));
+		edge(kb, kt, SimPhysics::edgeOpening(v->s, v->lap_t));
+		edge(kp, kb, SimPhysics::edgeOpening(-v->s, v->lap_p));
+		edge(ka, kt, SimPhysics::edgeOpening(-v->s, v->lap_t));
+	}
 	for (const Pipe *pi : std::as_const(m_pipes)) {   // FORMELN.md L01–L03
 		const int ka = node(pi->e, pi->a), kb = node(pi->e, pi->b);
 		if (ka < 0 && kb < 0) continue;
@@ -1770,6 +1855,17 @@ void SimulationModel::pressButton(const QString &lbl, bool pressed)
 																		 : QStringLiteral("losgelassen"))};
 }
 
+bool SimulationModel::setSetpoint(const QString &lbl, double volts)
+{
+	for (PropValve *v : m_prop_valves)
+		if (v->label == lbl) {
+			if (v->u != volts) m_messages << Message{m_time, QStringLiteral("%1 Sollwert %2 V").arg(lbl).arg(volts, 0, 'g', 4)};
+			v->u = volts;
+			return true;
+		}
+	return false;
+}
+
 bool SimulationModel::actuateValve(const QString &lbl, bool left, bool on)
 {
 	for (Valve *v : m_valves)
@@ -1812,6 +1908,7 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 	for (const Valve *v : m_valves) fluid_parts << v->e;
 	for (const Pump *pu : m_pumps) fluid_parts << pu->e;
 	for (const FlowValve *s : m_flow_valves) fluid_parts << s->e;
+	for (const PropValve *v : m_prop_valves) fluid_parts << v->e;
 	for (const Pipe *pi : m_pipes) fluid_parts << pi->e;
 	for (const Ejector *v : m_ejectors) fluid_parts << v->e;
 	QSet<Element *> seen;
@@ -1836,6 +1933,12 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 							  QStringLiteral("into_part (positiv: in das Bauteil hinein)"), part, port};
 			}
 		}
+	}
+	for (const PropValve *v : m_prop_valves) {
+		out << Signal{QStringLiteral("u:") + v->label, QStringLiteral("voltage"), QStringLiteral("V"),
+					  QStringLiteral("Sollwert -10 … 10 V, positiv: P→A"), v->label, QString()};
+		out << Signal{QStringLiteral("s:") + v->label, QStringLiteral("state"), QStringLiteral("1"),
+					  QStringLiteral("Schieberweg -1 … 1, positiv: P→A, B→T"), v->label, QString()};
 	}
 	for (const SuctionCup *s : m_cups) {
 		out << Signal{QStringLiteral("Fhold:") + s->label, QStringLiteral("force"), QStringLiteral("N"),
@@ -1918,6 +2021,11 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 				if (ok) *ok = true;
 				return kind == QLatin1String("hold") ? (s->held ? 1.0 : 0.0) : s->force;
 			}
+		return std::nan("");
+	}
+	if (kind == QLatin1String("u") || kind == QLatin1String("s")) {
+		for (const PropValve *v : m_prop_valves)
+			if (v->label == rest) { if (ok) *ok = true; return kind == QLatin1String("u") ? v->u : v->s; }
 		return std::nan("");
 	}
 	if (kind == QLatin1String("pos")) {

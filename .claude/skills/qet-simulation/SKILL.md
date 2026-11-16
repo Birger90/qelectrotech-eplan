@@ -63,6 +63,10 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
   `buildNets` verbunden (Drehdurchführung je Kanal über die Anschlusshöhe: `e->mapFromScene(t->dockConductor())`,
   nicht `t->pos()`, das ist immer 0). Prüfpläne `rohr.qet` (Bauteil -HQ1 per `textVariant` austauschbar) und
   `kupplung_drehdurchfuehrung.qet`.
+- Stetigventile (R07): `PropValve`, Schieber per `SimPhysics::pt1`, Kanten per `edgeOpening`; Sollwert über
+  `setSetpoint` (CLI `sollwert`, Prüfstand `Input` kind 3 mit value). Senkbrems-/Zuschaltventil laufen als
+  `FlowValve`-Zweige. Prüfpläne `stetig.qet` (Ventil per `textVariant` zum Stetigventil) und `lastventil.qet`
+  (Anschlüsse per eindeutigem Terminal-Tag mit UUID umbenannt, nicht per erstem Treffer).
 - Vakuum (R10): Ejektor mit stetiger linearer Saugkennlinie, Sauger mit Haltekraft gegen s·m·g, Vakuumschalter =
   Druckschalter mit negativem p0. Prüfplan `referenz/plaene/vakuum.qet`; Varianten im Prüfstand per `textVariant`
   (Parameter in den eingebetteten `<fluid>`-Block schreiben, selbstschließendes Tag beachten).

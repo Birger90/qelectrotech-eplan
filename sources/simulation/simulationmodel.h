@@ -84,6 +84,8 @@ class SimulationModel
 
 		void pressButton(const QString &label, bool pressed);
 		bool actuateValve(const QString &label, bool left, bool on);
+			/// setpoint of a proportional valve in volts (-10 … 10, R07); false when there is none with @a label
+		bool setSetpoint(const QString &label, double volts);
 
 		QStringList buttons() const;
 		QStringList valves() const;
@@ -141,6 +143,7 @@ class SimulationModel
 		struct PressureSwitch;
 		struct Ejector;
 		struct Pipe;
+		struct PropValve;
 		struct SuctionCup;
 
 		int node(Terminal *t) const;
@@ -163,6 +166,7 @@ class SimulationModel
 		QList<Motor *> m_motors;
 		QList<Ejector *> m_ejectors;               // vacuum generators (R10)
 		QList<Pipe *> m_pipes;                     // lines with geometry (R05)
+		QList<PropValve *> m_prop_valves;          // proportional valves (R07)
 		QList<SuctionCup *> m_cups;                // suction cups (R10)
 		QList<FlowValve *> m_flow_valves;
 		QList<Contact *> m_contacts;

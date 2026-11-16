@@ -164,6 +164,9 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
   (Widerstand); eine Leitung mit `length` und `d_inner` rechnet als Rohr. Schnellkupplungen tragen `coupled`/`seal`
   (Sammlung: „…offen“ = getrennt; Schnellanschluss ohne, Schnellkupplung mit Rückschlagventil). Verstopfte Filter über
   `clogged`.
+- Stetig- und Lastventile (Fork 1.29.0, R07/R09): FluidSIM `DirectionalValve43_01/_02` rechnen mit `rT`, `lap`,
+  `notchType`, `GLeak`; der Sollwert kommt bis R06 aus dem Kennwert `u` oder einem Ereignis. `CounterbalanceValve`
+  und `PressureSequenceValve01/02` rechnen; Druckwaagen, Schock-/Nachsaugblock, MPYE und LS-Blöcke noch nicht.
 
 ## Offen
 

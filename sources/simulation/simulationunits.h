@@ -59,6 +59,7 @@ inline Unit unit(const QString &u)
 		{QStringLiteral("m/s"), {1.0, "velocity"}}, {QStringLiteral("mm/s"), {1e-3, "velocity"}},
 		{QStringLiteral("N.s/m"), {1.0, "damping"}},
 		{QStringLiteral("N/m"), {1.0, "stiffness"}}, {QStringLiteral("N/mm"), {1e3, "stiffness"}},
+		{QStringLiteral("V"), {1.0, "voltage"}}, {QStringLiteral("mV"), {1e-3, "voltage"}},
 		{QStringLiteral("kg/m3"), {1.0, "density"}}, {QStringLiteral("m2/s"), {1.0, "kinematic_viscosity"}},
 		{QStringLiteral("mm2/s"), {1e-6, "kinematic_viscosity"}}, {QStringLiteral("cSt"), {1e-6, "kinematic_viscosity"}},
 		{QStringLiteral("um"), {1e-6, "length"}}, {QStringLiteral("µm"), {1e-6, "length"}},

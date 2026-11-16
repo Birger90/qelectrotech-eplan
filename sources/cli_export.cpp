@@ -722,7 +722,7 @@ int simulateProject(QETProject &project, const QStringList &args)
 	double duration = 2.0, pressure = 6.0, png_at = -1.0, raster = 0.005;
 	QString csv_path, png_dir, measure, meta_path;
 	bool list_signals = false;
-	struct Event { double t; QString label; int side; bool on; };
+	struct Event { double t; QString label; int side; bool on; double value = 0.0; };   // side 2: setpoint (R07)
 	QList<Event> events;
 	static const QRegularExpression ev_re(QStringLiteral(
 		"^\\s*([\\d.]+)\\s+(.+?)\\s+(?:(links|rechts|left|right)\\s+)?(an|aus|on|off)\\s*$"));
@@ -739,6 +739,14 @@ int simulateProject(QETProject &project, const QStringList &args)
 		else if (a == QLatin1String("--meta")) { meta_path = v; ++i; }
 		else if (a == QLatin1String("--signals")) list_signals = true;
 		else if (a == QLatin1String("--event")) {
+			// R07: "0.5 -QM1 sollwert 5" sets the setpoint of a proportional valve (volts)
+			static const QRegularExpression sp_re(QStringLiteral("^\\s*([\\d.]+)\\s+(.+?)\\s+(?:sollwert|setpoint)\\s+(-?[\\d.]+)\\s*$"));
+			const auto sp = sp_re.match(v);
+			if (sp.hasMatch()) {
+				events << Event{sp.captured(1).toDouble(), sp.captured(2), 2, true, sp.captured(3).toDouble()};
+				++i;
+				continue;
+			}
 			const auto m = ev_re.match(v);
 			if (!m.hasMatch()) { err << "event not understood: " << v << "\n"; return 2; }
 			const QString s = m.captured(3);
@@ -828,7 +836,9 @@ int simulateProject(QETProject &project, const QStringList &args)
 	while (sim.time() <= duration + 1e-12) {
 		while (ei < events.size() && events.at(ei).t <= sim.time()) {
 			const Event &e = events.at(ei++);
-			if (e.side < 0) sim.pressButton(e.label, e.on);
+			if (e.side == 2) {
+				if (!sim.setSetpoint(e.label, e.value)) { err << "no proportional valve labelled " << e.label << "\n"; return 2; }
+			} else if (e.side < 0) sim.pressButton(e.label, e.on);
 			else if (!sim.actuateValve(e.label, e.side == 0, e.on)) {
 				err << "no valve labelled " << e.label << "\n";
 				return 2;

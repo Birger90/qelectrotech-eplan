@@ -161,6 +161,21 @@ struct PipeFlow {
 	}
 };
 
+	/// first-order lag, exact for a constant target over the step (tools/simulation/FORMELN.md V05)
+inline double pt1(double value, double target, double tau, double dt)
+{
+	return tau > 0.0 ? target + (value - target) * std::exp(-dt / tau) : target;
+}
+
+	/**
+		opening 0 … 1 of one control edge of a proportional spool at position s (-1 … 1) with the relative
+		overlap lap (> 0 overlap/dead band, < 0 underlap, FORMELN.md V05):  x = clamp((s - lap)/(1 - lap), 0, 1)
+	*/
+inline double edgeOpening(double s, double lap)
+{
+	return std::min(1.0, std::max(0.0, (s - lap) / (1.0 - lap)));
+}
+
 	/// gas side of a hydraulic accumulator: precharge @a p_pre (absolute) at gas volume @a v0, exponent @a n
 struct GasCharge { double p_pre, v0, n; };
 

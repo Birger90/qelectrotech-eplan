@@ -268,7 +268,7 @@ QList<Check> physicsLimits()
 
 	// ---- end to end: real projects through the same SimulationModel as window and CLI
 
-struct Input { double t; QString label; int kind; bool on; };   // kind 0 push button, 1 valve left, 2 valve right
+struct Input { double t; QString label; int kind; bool on; double value = 0.0; };   // kind 0 push button, 1 valve left, 2 valve right, 3 setpoint [V]
 
 struct ProjectRun {
 	std::unique_ptr<QETProject> project;
@@ -326,6 +326,7 @@ ProjectRun runProject(const QString &file, double supply_bar, QList<Input> input
 		while (next < input.size() && input.at(next).t <= r.sim->time() + 1e-12) {
 			const Input &in = input.at(next++);
 			if (in.kind == 0) r.sim->pressButton(in.label, in.on);
+			else if (in.kind == 3) r.sim->setSetpoint(in.label, in.value);
 			else r.sim->actuateValve(in.label, in.kind == 1, in.on);
 		}
 		r.sim->step(dt);
@@ -445,7 +446,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Netze, Stabilität, Ereignisse (R03): Widersprüche und Instabilität gemeldet, gleichzeitige Eingaben reproduzierbar"),
 		QStringLiteral("Hydromotor (R08): Drehzahl, Moment, Lastsprung, Umkehr, Leistungsbilanz, Projekt"),
 		QStringLiteral("Vakuum und Schwenk-/Greiferantriebe (R10): Saugen, Halten, Leckage, Last, Loslassen, Schwenkwinkel und -moment"),
-		QStringLiteral("Leitungen, Kupplungen, Aufbereitung (R05): Rohr laminar/turbulent, beide Richtungen, Widerstand, Kupplung, Filter verstopft, Drehdurchführung")};
+		QStringLiteral("Leitungen, Kupplungen, Aufbereitung (R05): Rohr laminar/turbulent, beide Richtungen, Widerstand, Kupplung, Filter verstopft, Drehdurchführung"),
+		QStringLiteral("Stetig-, Senkbrems- und Zuschaltventile (R07/R09): Kennlinie, Richtung, Sättigung, Überdeckung, Kerbe, Leckage, Sprungantwort, Steuerdruck")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1004,6 +1006,111 @@ QList<Check> endToEnd(const QString &reference_dir)
 							 .arg(v.value(ids[2]) / 1e5).arg(v.value(ids[3]) / 1e5);
 			else seen << QStringLiteral("Drehdurchführung: Kanal 1 %1 bar, Kanal 2 %2 bar; Schnellanschluss gekuppelt %3 bar, getrennt %4 bar")
 							 .arg(v.value(ids[0]) / 1e5, 0, 'f', 2).arg(v.value(ids[1]) / 1e5, 0, 'f', 2).arg(v.value(ids[2]) / 1e5, 0, 'f', 2).arg(v.value(ids[3]) / 1e5, 0, 'f', 2);
+		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 13. proportional, counterbalance and sequence valves (R07/R09, FORMELN.md V05–V08). Pump -GP1 with
+		//     11.6 l/min (pMax 60 bar) feeds -QM1; every other port goes to a tank, so the pump pressure is the
+		//     pressure drop the valve needs for the pump flow
+		Check c{names.at(12)};
+		QStringList wrong, seen;
+		auto near = [](double a, double b, double rel) { return std::isfinite(a) && std::abs(a - b) <= rel * std::abs(b); };
+		auto run = [&](const QString &file, QList<Input> in, double at, const QStringList &ids, double *q) {
+			QHash<QString, double> v;
+			ProjectRun pr = runProject(file, 6.0, in, at + 0.05, [&](SimulationModel &s) {
+				if (std::abs(s.time() - at) < 5e-6) for (const QString &id : ids) v.insert(id, s.signalValue(id));
+			});
+			*q = std::nan("");
+			if (pr.error.isEmpty())
+				for (Diagram *d : pr.project->diagrams())
+					for (Element *e : d->elements())
+						if (e->elementData().m_fluid.m_function == QLatin1String("supply.pump"))
+							*q = symbolValue(e, QStringLiteral("displacement"), QStringLiteral("m3")) * symbolValue(e, QStringLiteral("rpm"), QStringLiteral("1/s"));
+			if (!pr.error.isEmpty()) v.insert(QStringLiteral("error"), std::nan(""));
+			QFile::remove(file);
+			return v;
+		};
+		const QString valve = QStringLiteral("<fluid function=\"directional_valve.four_pins\" kind=\"valve\" prefix=\"QM\">");
+		auto prop = [&](const QString &params, const char *name) {
+			return textVariant(path("stetig.qet"), {{valve, QStringLiteral("<fluid function=\"proportional.directional_valve43_02\" kind=\"valve\" prefix=\"QM\">") + params}},
+							   QString::fromLatin1(name));
+		};
+		auto par = [](const char *n, double v, const char *unit = "") {
+			return QStringLiteral("<parameter name=\"%1\" unit=\"%2\" value=\"%3\"/>").arg(QString::fromLatin1(n), QString::fromLatin1(unit)).arg(v);
+		};
+		struct Case { const char *what; QString params; double volts; std::function<double(double)> expect; };
+		// expected pump pressure [Pa] from the pump flow q [m3/s]: an edge open by area a needs dp = rT·Q²/a² (Q in l/min)
+		auto edges = [](double rt, double area) { return [rt, area](double q) { return rt * std::pow(q * 60000 / area, 2) * 1e5; }; };
+		const QList<Case> cases{
+			{"P→A halb offen (5 V, Rechteck)", par("rT", 0.05, "bar.min2/l2") + par("lap", 0, "%"), 5.0, edges(0.05, 0.5)},
+			{"P→B halb offen (−5 V)", par("rT", 0.05, "bar.min2/l2") + par("lap", 0, "%"), -5.0, edges(0.05, 0.5)},
+			{"Sättigung (12 V = voll offen)", par("rT", 0.05, "bar.min2/l2") + par("lap", 0, "%"), 12.0, edges(0.05, 1.0)},
+			{"Überdeckung 25 %, 2 V: zu", par("rT", 0.02, "bar.min2/l2") + par("lap", 25, "%"), 2.0, [](double) { return 60e5; }},
+			{"Überdeckung 25 %, 5 V: x = 1/3", par("rT", 0.02, "bar.min2/l2") + par("lap", 25, "%"), 5.0, edges(0.02, 1.0 / 3)},
+			{"Unterdeckung −20 %, 0 V: beide Kanten 1/6", par("rT", 0.02, "bar.min2/l2") + par("lap", -20, "%"), 0.0, edges(0.02, 2.0 / 6)},
+			{"Dreieckkerbe, 5 V: Fläche x²", par("rT", 0.01, "bar.min2/l2") + par("lap", 0, "%") + par("notchType", 2), 5.0, edges(0.01, 0.25)},
+			{"Mittelstellung, Leckage 0,3 l/(min·bar) je Kante", par("rT", 0.05, "bar.min2/l2") + par("lap", 0, "%") + par("GLeak", 0.3, "l/(min.bar)"),
+			 0.0, [](double q) { return q * 60000 / (2 * 0.3) * 1e5; }},
+		};
+		int i = 0;
+		for (const Case &k : cases) {
+			double q = 0;
+			const QString file = prop(k.params, qPrintable(QStringLiteral("qet_sim_r07_%1.qet").arg(i++)));
+			const auto v = run(file, {{0.05, QStringLiteral("-QM1"), 3, true, k.volts}}, 0.9, {QStringLiteral("p:-GP1.P")}, &q);
+			const double pp = v.value(QStringLiteral("p:-GP1.P"), std::nan("")), want = k.expect(q);
+			const bool closed = want >= 59.9e5;
+			const bool ok = closed ? (pp > 59e5 && pp < 60.01e5) : near(pp, want, 0.01);
+			if (!ok) wrong << QStringLiteral("%1: %2 bar statt %3").arg(QString::fromUtf8(k.what)).arg(pp / 1e5).arg(want / 1e5);
+			else seen << QStringLiteral("%1: %2 bar (soll %3)").arg(QString::fromUtf8(k.what)).arg(pp / 1e5, 0, 'f', 2)
+							 .arg(closed ? QStringLiteral("59…60") : QString::number(want / 1e5, 'f', 2));
+		}
+		{   // step response: 0 -> 10 V at 0.5 s, tau 4 ms: s = 1 - e^-1 one time constant later
+			double q = 0;
+			const QString file = prop(par("rT", 0.05, "bar.min2/l2") + par("tau", 0.004, "s"), "qet_sim_r07_step.qet");
+			const auto v = run(file, {{0.5, QStringLiteral("-QM1"), 3, true, 10.0}}, 0.504, {QStringLiteral("s:-QM1"), QStringLiteral("u:-QM1")}, &q);
+			const double sv = v.value(QStringLiteral("s:-QM1"), std::nan("")), want = 1 - std::exp(-1.0);
+			if (!(std::abs(sv - want) < 2e-3) || v.value(QStringLiteral("u:-QM1")) != 10.0)
+				wrong << QStringLiteral("Sprungantwort: s = %1 statt %2").arg(sv).arg(want);
+			else seen << QStringLiteral("Sprungantwort PT1: s(τ) = %1 (soll %2)").arg(sv, 0, 'f', 4).arg(want, 0, 'f', 4);
+		}
+		// b) plan lastventil.qet: -QM1 with P and X on the pump line, the third port on the tank
+		const QString part = QStringLiteral("<fluid function=\"directional_valve.part\" kind=\"other\">");
+		const QString portA = QStringLiteral("<terminal medium=\"hydraulic\" name=\"A\" orientation=\"n\" type=\"Generic\" uuid=\"{c29ef07e-b0f4-461c-ab62-b783dc560216}\"");
+		const QString portT = QStringLiteral("<terminal medium=\"hydraulic\" name=\"T\" orientation=\"s\" type=\"Generic\" uuid=\"{b488c45e-d33f-4923-be1f-7b224e4bd3ba}\"");
+		auto load = [&](const QString &function, const QString &params, bool a_to_t, const char *name) {
+			QList<QPair<QString, QString>> pairs{{part, QStringLiteral("<fluid function=\"%1\" kind=\"other\">%2").arg(function, params)},
+												 {portT, QString(portT).replace(QStringLiteral("name=\"T\""), QStringLiteral("name=\"X\""))}};
+			if (a_to_t) pairs << qMakePair(portA, QString(portA).replace(QStringLiteral("name=\"A\""), QStringLiteral("name=\"T\"")));
+			return textVariant(path("lastventil.qet"), pairs, QString::fromLatin1(name));
+		};
+		// equilibrium of the pump flow and the opening valve, solved by bisection: share(p)·√(p/rT) = Q (bar, l/min)
+		auto solve = [](double q_lmin, double rt, std::function<double(double)> share) {
+			double lo = 0, hi = 60;
+			for (int n = 0; n < 200; ++n) { const double m = 0.5 * (lo + hi); (share(m) * std::sqrt(m / rt) > q_lmin ? hi : lo) = m; }
+			return 0.5 * (lo + hi) * 1e5;
+		};
+		struct Load { const char *what, *function; QString params; bool a_to_t; std::function<double(double)> share; double rt; };
+		const QList<Load> loads{
+			{"Senkbremsventil mit Steuerdruck (ratio 3)", "pressure_valve.counterbalance_valve",
+			 par("p0", 4, "MPa") + par("dpEnd", 1, "MPa") + par("rT_cb", 0.02, "bar.min2/l2") + par("ratio", 3), true,
+			 [](double pb) { return std::clamp((4 * pb - 40) / 10, 0.0, 1.0); }, 0.02},
+			{"Senkbremsventil ohne Steuerdruck (ratio 0)", "pressure_valve.counterbalance_valve",
+			 par("p0", 4, "MPa") + par("dpEnd", 1, "MPa") + par("rT_cb", 0.02, "bar.min2/l2") + par("ratio", 0), true,
+			 [](double pb) { return std::clamp((pb - 40) / 10, 0.0, 1.0); }, 0.02},
+			{"Druckzuschaltventil (X am Pumpendruck, p0 30 bar)", "pressure_valve.pressure_sequence_valve02",
+			 par("p0", 3, "MPa") + par("dpEnd", 0.7, "MPa") + par("rT", 0.1, "bar.min2/l2"), false,
+			 [](double pb) { return std::clamp((pb - 30) / 7, 0.0, 1.0); }, 0.1},
+		};
+		i = 0;
+		for (const Load &k : loads) {
+			double q = 0;
+			const QString file = load(QString::fromLatin1(k.function), k.params, k.a_to_t, qPrintable(QStringLiteral("qet_sim_r09_%1.qet").arg(i++)));
+			const auto v = file.isEmpty() ? QHash<QString, double>{{QStringLiteral("error"), 0}} : run(file, {}, 1.4, {QStringLiteral("p:-GP1.P")}, &q);
+			const double pp = v.value(QStringLiteral("p:-GP1.P"), std::nan("")), want = solve(q * 60000, k.rt, k.share);
+			if (!near(pp, want, 0.005)) wrong << QStringLiteral("%1: %2 bar statt %3").arg(QString::fromUtf8(k.what)).arg(pp / 1e5).arg(want / 1e5);
+			else seen << QStringLiteral("%1: %2 bar (soll %3)").arg(QString::fromUtf8(k.what)).arg(pp / 1e5, 0, 'f', 2).arg(want / 1e5, 0, 'f', 2);
 		}
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));

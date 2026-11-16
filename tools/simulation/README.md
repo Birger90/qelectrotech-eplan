@@ -139,6 +139,18 @@ steht, verhindert den Start mit Kennzeichen und Funktion – die Simulation err�
 Trockner, Kühler, Heizer und Anlaufventil laufen als Durchgangswiderstand (`passthrough`, ohne Wärme- oder
 Filterwirkung). Ein pneumatischer „pump“ ist ein Verdichter und damit ideale Druckquelle.
 
+## Leitungen, Kupplungen, Aufbereitung (R05)
+
+- **Leitung/Schlauch** (`connection.line`, `supply.hose_line`): ohne Kennwerte ideal (Anschlüsse ein Netz), mit `rT`
+  (bar·min²/l²) bzw. `qNN` (l/min) als Widerstand, mit `length` und `d_inner` als Rohr: Δp = 128·μ·L·q/(π·d⁴) bis
+  Re 2000, Darcy mit Haaland-Reibzahl ab Re 4000 (`roughness`, Vorgabe 15 µm), dazwischen stetig. Öl nach `nu`
+  (Vorgabe 22 mm²/s, HLP 22) und `rho` (870 kg/m³), Luft mit Dichte beim Mitteldruck. Keine Fluidträgheit.
+- **Drehdurchführung**: Anschlüsse auf gleicher Höhe im Symbol bilden je einen Kanal (1–4, 2–5, 3–6).
+- **Schnellkupplung** (`connection.quick_coupling`): `coupled` 1/0, `seal` 1 (selbstdichtend) oder 0 (offen,
+  entlüftet). Der Zustand gilt für den ganzen Lauf.
+- **Filter, Wartungseinheit, Öler …**: Durchgangswiderstand; `clogged` 1 mit `qNN_clogged` (Vorgabe 10 l/min) bzw.
+  `rT_clogged` (Vorgabe 1000·rT). Keine Filter-, Kühl- oder Heizwirkung.
+
 Nicht unterstützt (Start abgewiesen): Stetig-/Proportionalventile, Muskel-, Lade- und Druckluftmotorantriebe,
 Load-Sensing-Pumpen, Folge-, Senkbrems- und Kompensatorventile, Vakuum-Sparventil, Ventilgruppen und pneumatische
 Zeitglieder/Zähler – siehe Roadmap (R07–R13).

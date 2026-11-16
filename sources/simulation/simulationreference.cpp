@@ -444,7 +444,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Messgrößen: Abgriff ohne Rückwirkung, Durchfluss bilanziert, Pumpe = Verdrängung · Drehzahl"),
 		QStringLiteral("Netze, Stabilität, Ereignisse (R03): Widersprüche und Instabilität gemeldet, gleichzeitige Eingaben reproduzierbar"),
 		QStringLiteral("Hydromotor (R08): Drehzahl, Moment, Lastsprung, Umkehr, Leistungsbilanz, Projekt"),
-		QStringLiteral("Vakuum und Schwenk-/Greiferantriebe (R10): Saugen, Halten, Leckage, Last, Loslassen, Schwenkwinkel und -moment")};
+		QStringLiteral("Vakuum und Schwenk-/Greiferantriebe (R10): Saugen, Halten, Leckage, Last, Loslassen, Schwenkwinkel und -moment"),
+		QStringLiteral("Leitungen, Kupplungen, Aufbereitung (R05): Rohr laminar/turbulent, beide Richtungen, Widerstand, Kupplung, Filter verstopft, Drehdurchführung")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -884,6 +885,125 @@ QList<Check> endToEnd(const QString &reference_dir)
 			else if (!std::isfinite(pr.eventTime(QStringLiteral("-MM1 Endlage vorne")))) wrong << QStringLiteral("Greifer schließt nicht");
 			else seen << QStringLiteral("Greifer schließt (%1 s)").arg(pr.eventTime(QStringLiteral("-MM1 Endlage vorne")) - 0.2, 0, 'f', 3);
 			QFile::remove(file);
+		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 12. lines, couplings and treatment (R05, FORMELN.md L01–L05)
+		Check c{names.at(11)};
+		QStringList wrong, seen;
+		auto near = [](double a, double b, double rel) { return std::isfinite(a) && std::abs(a - b) <= rel * std::abs(b); };
+		// a) the pipe law against Hagen-Poiseuille and Darcy/Haaland written out here, both directions
+		{
+			SimPhysics::PipeFlow lam;
+			lam.L = 10; lam.d = 0.01; lam.rho = 870; lam.mu = 870 * 22e-6;
+			const double q1 = 1e-4, hp = 128 * lam.mu * lam.L * q1 / (M_PI * std::pow(lam.d, 4));
+			SimPhysics::PipeFlow tur = lam;
+			tur.L = 5; tur.d = 0.006; tur.mu = 870 * 5e-6;
+			const double q2 = 3e-4, v = q2 / (M_PI * tur.d * tur.d / 4), re = tur.rho * v * tur.d / tur.mu;
+			const double s = -1.8 * std::log10(std::pow(tur.eps / tur.d / 3.7, 1.11) + 6.9 / re);
+			const double darcy = (1 / (s * s)) * tur.L / tur.d * tur.rho * v * v / 2;
+			int bad = 0;
+			double worst = 0;
+			for (const SimPhysics::PipeFlow *pf : {&lam, &tur})
+				for (double q : {1e-6, 5e-5, 2e-4, 6e-4, 1.5e-3})
+					for (double sg : {1.0, -1.0}) {
+						const double dq = pf->flow(pf->dp(sg * q));
+						worst = std::max(worst, std::abs(dq - sg * q) / q);
+						if (pf->dp(sg * q) * sg * q < 0) ++bad;                    // passive: dp·q >= 0
+						if (std::abs(pf->dp(sg * q) + pf->dp(-sg * q)) > 1e-12 * std::abs(pf->dp(q))) ++bad;   // odd
+					}
+			// continuous at Re 2000 and 4000, rising everywhere
+			auto atRe = [&](double rr) { return rr * tur.mu * M_PI * tur.d / (4 * tur.rho); };
+			double jump = 0, prev = 0;
+			for (double rr : {2000.0, 4000.0})
+				jump = std::max(jump, std::abs(tur.dp(atRe(rr) * (1 + 1e-9)) - tur.dp(atRe(rr) * (1 - 1e-9))) / tur.dp(atRe(rr)));
+			for (int i = 1; i <= 400; ++i) {
+				const double d = tur.dp(atRe(12000.0 * i / 400));
+				if (!(d > prev)) ++bad;
+				prev = d;
+			}
+			if (!near(lam.dp(q1), hp, 1e-12) || !near(tur.dp(q2), darcy, 1e-12) || worst > 1e-9 || bad || jump > 1e-6)
+				wrong << QStringLiteral("Rohrgesetz: laminar %1/%2 Pa, turbulent %3/%4 Pa, Umkehrfehler %5, Verstöße %6, Sprung %7")
+							 .arg(lam.dp(q1)).arg(hp).arg(tur.dp(q2)).arg(darcy).arg(worst).arg(bad).arg(jump);
+			else seen << QStringLiteral("Rohr laminar = Hagen-Poiseuille, turbulent (Re %1) = Darcy/Haaland, Umkehr ≤ %2, "
+										"ungerade, passiv, stetig bei Re 2000/4000, steigend").arg(re, 0, 'f', 0).arg(worst, 0, 'g', 2);
+		}
+		// b) plan rohr.qet: pump -GP1 (11.6 l/min) -> part -HQ1 -> tank; the part becomes line, coupling or filter
+		const QString rohr = path("rohr.qet");
+		const QString filter = QStringLiteral("<fluid function=\"supply.filter\" kind=\"treatment\" prefix=\"HQ\"/>");
+		auto part = [&](const QString &function, const QString &params, const char *name) {
+			return textVariant(rohr, {{filter, QStringLiteral("<fluid function=\"%1\" kind=\"treatment\" prefix=\"HQ\">%2</fluid>").arg(function, params)}},
+							   QString::fromLatin1(name));
+		};
+		auto pumpPressure = [&](const QString &file, double *q) {
+			double pp = std::nan("");
+			ProjectRun pr = runProject(file, 6.0, {}, 2.0, [&](SimulationModel &s) {
+				if (std::abs(s.time() - 1.9) < 5e-6) pp = s.signalValue(QStringLiteral("p:-GP1.P"));
+			});
+			*q = std::nan("");
+			if (pr.error.isEmpty())
+				for (Diagram *d : pr.project->diagrams())
+					for (Element *e : d->elements())
+						if (e->elementData().m_fluid.m_function == QLatin1String("supply.pump"))
+							*q = symbolValue(e, QStringLiteral("displacement"), QStringLiteral("m3")) * symbolValue(e, QStringLiteral("rpm"), QStringLiteral("1/s"));
+			QFile::remove(file);
+			return pr.error.isEmpty() ? pp : std::nan("");
+		};
+		const double rho = 870, nu = 22e-6;
+		struct Case { const char *what, *function, *params, *file; std::function<double(double)> expect; double rel; };
+		const QList<Case> cases{
+			{"Rohr laminar (10 m, Ø 10 mm)", "connection.line",
+			 "<parameter name=\"length\" unit=\"m\" value=\"10\"/><parameter name=\"d_inner\" unit=\"mm\" value=\"10\"/>", "qet_sim_r05_lam.qet",
+			 [&](double q) { return 128 * rho * nu * 10 * q / (M_PI * std::pow(0.01, 4)); }, 0.01},
+			{"Rohr turbulent (5 m, Ø 6 mm, 5 mm²/s)", "connection.line",
+			 "<parameter name=\"length\" unit=\"m\" value=\"5\"/><parameter name=\"d_inner\" unit=\"mm\" value=\"6\"/><parameter name=\"nu\" unit=\"mm2/s\" value=\"5\"/>",
+			 "qet_sim_r05_tur.qet",
+			 [&](double q) {
+				 const double d = 0.006, v = q / (M_PI * d * d / 4), re = v * d / 5e-6;
+				 const double s = -1.8 * std::log10(std::pow(15e-6 / d / 3.7, 1.11) + 6.9 / re);
+				 return (1 / (s * s)) * 5 / d * rho * v * v / 2;
+			 }, 0.01},
+			{"Schlauch als Widerstand rT 0,12", "supply.hose_line", "<parameter name=\"rT\" value=\"0.12\"/>", "qet_sim_r05_rt.qet",
+			 [](double q) { return 0.12 * std::pow(q * 60000, 2) * 1e5; }, 0.01},
+			{"Kupplung gekuppelt (ideal)", "connection.quick_coupling", "<parameter name=\"coupled\" value=\"1\"/>", "qet_sim_r05_k1.qet",
+			 [](double) { return 0.0; }, 0.0},
+			{"Kupplung getrennt, selbstdichtend", "connection.quick_coupling",
+			 "<parameter name=\"coupled\" value=\"0\"/><parameter name=\"seal\" value=\"1\"/>", "qet_sim_r05_k0.qet",
+			 [](double) { return 60e5; }, 0.017},
+			{"Kupplung getrennt, offen (Öl tritt aus)", "connection.quick_coupling",
+			 "<parameter name=\"coupled\" value=\"0\"/><parameter name=\"seal\" value=\"0\"/>", "qet_sim_r05_kx.qet",
+			 [](double q) { return 0.05 * std::pow(q * 60000, 2) * 1e5; }, 0.01},
+			// clean filter: below 0.5 bar (rT·Q² = 0.135 bar; the orifice is smoothed below p_s = 0.3 bar, H03)
+			{"Filter sauber (rT 0,001)", "supply.filter", "<parameter name=\"rT\" value=\"0.001\"/>", "qet_sim_r05_f.qet",
+			 [](double q) { return 0.001 * std::pow(q * 60000, 2) * 1e5; }, 0.0},
+			{"Filter verstopft (rT_clogged 0,2)", "supply.filter",
+			 "<parameter name=\"rT\" value=\"0.001\"/><parameter name=\"clogged\" value=\"1\"/><parameter name=\"rT_clogged\" value=\"0.2\"/>",
+			 "qet_sim_r05_fz.qet", [](double q) { return 0.2 * std::pow(q * 60000, 2) * 1e5; }, 0.01},
+		};
+		for (const Case &k : cases) {
+			const QString file = part(QString::fromLatin1(k.function), QString::fromLatin1(k.params), k.file);
+			double q = 0;
+			const double pp = file.isEmpty() ? std::nan("") : pumpPressure(file, &q);
+			const double want = k.expect(q);
+			const bool ok = k.rel > 0 ? near(pp, want, k.rel) : std::isfinite(pp) && std::abs(pp) < 0.5e5;
+			if (!ok) wrong << QStringLiteral("%1: %2 bar statt %3").arg(QString::fromUtf8(k.what)).arg(pp / 1e5).arg(want / 1e5);
+			else seen << QStringLiteral("%1: %2 bar (soll %3)").arg(QString::fromUtf8(k.what)).arg(pp / 1e5, 0, 'f', 3).arg(want / 1e5, 0, 'f', 3);
+		}
+		// c) pneumatics: rotary joint keeps its channels apart; a coupled quick connect passes, an open one vents
+		{
+			QHash<QString, double> v;
+			const QStringList ids{QStringLiteral("p:-BP1.1"), QStringLiteral("p:-BP2.1"), QStringLiteral("p:-BP3.1"), QStringLiteral("p:-BP4.1")};
+			ProjectRun pr = runProject(path("kupplung_drehdurchfuehrung.qet"), 6.0, {}, 0.5, [&](SimulationModel &s) {
+				if (std::abs(s.time() - 0.45) < 5e-6) for (const QString &id : ids) v.insert(id, s.signalValue(id));
+			});
+			if (!pr.error.isEmpty()) wrong << QStringLiteral("Drehdurchführung/Kupplung: %1").arg(pr.error);
+			else if (!near(v.value(ids[0]), 6e5, 0.002) || !(std::abs(v.value(ids[1])) < 100) || !near(v.value(ids[2]), 6e5, 0.002) || !(std::abs(v.value(ids[3])) < 100))
+				wrong << QStringLiteral("Kanal 1 %1, Kanal 2 %2, gekuppelt %3, offen %4 bar").arg(v.value(ids[0]) / 1e5).arg(v.value(ids[1]) / 1e5)
+							 .arg(v.value(ids[2]) / 1e5).arg(v.value(ids[3]) / 1e5);
+			else seen << QStringLiteral("Drehdurchführung: Kanal 1 %1 bar, Kanal 2 %2 bar; Schnellanschluss gekuppelt %3 bar, getrennt %4 bar")
+							 .arg(v.value(ids[0]) / 1e5, 0, 'f', 2).arg(v.value(ids[1]) / 1e5, 0, 'f', 2).arg(v.value(ids[2]) / 1e5, 0, 'f', 2).arg(v.value(ids[3]) / 1e5, 0, 'f', 2);
 		}
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));

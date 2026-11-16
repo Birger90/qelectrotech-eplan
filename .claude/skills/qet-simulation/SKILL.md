@@ -59,6 +59,10 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
 - Zylinder: Kraftbilanz, Haft-/Gleitreibung, harte Endanschläge; Unterdruck im Öl wird gemeldet, nicht gerechnet.
 - Hydromotor (R08) über `SimPhysics::Shaft`; Schwenkantrieb (R10) ist ein `Cylinder` mit `rotary` (Winkel in rad,
   Flächen = M_6bar/6 bar, Masse = Trägheit, Wegmarken in Grad über `markPos()`).
+- Leitungen (R05): `lineMode` wählt ideal / Widerstand / Rohr nach den Kennwerten; ideale Leitungen werden in
+  `buildNets` verbunden (Drehdurchführung je Kanal über die Anschlusshöhe: `e->mapFromScene(t->dockConductor())`,
+  nicht `t->pos()`, das ist immer 0). Prüfpläne `rohr.qet` (Bauteil -HQ1 per `textVariant` austauschbar) und
+  `kupplung_drehdurchfuehrung.qet`.
 - Vakuum (R10): Ejektor mit stetiger linearer Saugkennlinie, Sauger mit Haltekraft gegen s·m·g, Vakuumschalter =
   Druckschalter mit negativem p0. Prüfplan `referenz/plaene/vakuum.qet`; Varianten im Prüfstand per `textVariant`
   (Parameter in den eingebetteten `<fluid>`-Block schreiben, selbstschließendes Tag beachten).

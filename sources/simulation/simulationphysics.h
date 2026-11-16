@@ -118,6 +118,49 @@ struct Shaft {
 	}
 };
 
+	/**
+		pipe with geometry (roadmap R05, tools/simulation/FORMELN.md L01–L03): length L, inner
+		diameter d, absolute roughness eps, density rho, dynamic viscosity mu.
+		  laminar (Re <= 2000):  dp = 128·mu·L·q/(π·d⁴)                (Hagen-Poiseuille)
+		  turbulent (Re >= 4000): dp = λ·L/d·rho·v²/2, 1/√λ = -1.8·log10((eps/d/3.7)^1.11 + 6.9/Re) (Haaland)
+		  in between λ linear in Re from 64/2000 to λ(4000), so dp(q) is continuous and monotonic.
+		dp(q) is odd; flow(dp) inverts it by bisection between 0 and the laminar flow (an upper bound,
+		since λ >= 64/Re everywhere).
+	*/
+struct PipeFlow {
+	double L = 1.0, d = 0.01, eps = 15e-6, rho = 870.0, mu = 0.019;
+	double area() const { return M_PI * d * d / 4.0; }
+	double reynolds(double q) const { return rho * std::abs(q) / area() * d / mu; }
+	double lambdaTurbulent(double re) const
+	{
+		const double s = -1.8 * std::log10(std::pow(eps / d / 3.7, 1.11) + 6.9 / re);
+		return 1.0 / (s * s);
+	}
+	double dp(double q) const
+	{
+		const double re = reynolds(q);
+		const double lam = 128.0 * mu * L / (M_PI * std::pow(d, 4));
+		if (re <= 2000.0) return lam * q;
+		const double lambda = re >= 4000.0 ? lambdaTurbulent(re)
+			: 64.0 / 2000.0 + (lambdaTurbulent(4000.0) - 64.0 / 2000.0) * (re - 2000.0) / 2000.0;
+		const double v = q / area();
+		return lambda * L / d * rho * v * std::abs(v) / 2.0;
+	}
+	double flow(double dp_) const
+	{
+		if (!(dp_ == dp_) || !(L > 0) || !(d > 0) || !(mu > 0) || !(rho > 0)) return NOT_A_NUMBER;
+		if (dp_ == 0.0) return 0.0;
+		const double s = dp_ > 0 ? 1.0 : -1.0, target = std::abs(dp_);
+		double lo = 0.0, hi = target * M_PI * std::pow(d, 4) / (128.0 * mu * L);
+		for (int i = 0; i < 200; ++i) {
+			const double m = 0.5 * (lo + hi);
+			if (m <= lo || m >= hi) break;
+			(dp(m) > target ? hi : lo) = m;
+		}
+		return s * 0.5 * (lo + hi);
+	}
+};
+
 	/// gas side of a hydraulic accumulator: precharge @a p_pre (absolute) at gas volume @a v0, exponent @a n
 struct GasCharge { double p_pre, v0, n; };
 

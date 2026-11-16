@@ -31,6 +31,7 @@
 #include "../qetgraphicsitem/element.h"
 #include "../qetgraphicsitem/terminal.h"
 
+#include <QMap>
 #include <QRegularExpression>
 #include <cmath>
 #include <functional>
@@ -77,6 +78,44 @@ double conductanceFromQnn(double qnn_l_min)
 	const double r = (p1 - 1e5) / p1;
 	const double f = std::sqrt(1.0 - std::pow((r - B_CRIT) / (1.0 - B_CRIT), 2));
 	return (qnn_l_min / 1000.0 / 60.0) / (p1 * f);
+}
+
+	/**
+		how a line, hose or coupling is computed (R05, FORMELN.md L04): Open = an uncoupled coupling
+		(no connection), Pipe = geometry given (length, d_inner), Resistance = rT or qNN given,
+		Ideal = nothing given (lossless, as FluidSIM treats plain connections)
+	*/
+enum class LineMode { Ideal, Resistance, Pipe, Open };
+
+LineMode lineMode(const FluidData &f)
+{
+	if (f.m_function == QLatin1String("connection.quick_coupling") && f.parameter(QStringLiteral("coupled")).trimmed() == QLatin1String("0"))
+		return LineMode::Open;
+	if (!f.parameter(QStringLiteral("length")).isEmpty() && !f.parameter(QStringLiteral("d_inner")).isEmpty())
+		return LineMode::Pipe;
+	if (!f.parameter(QStringLiteral("rT")).isEmpty() || !f.parameter(QStringLiteral("qNN")).isEmpty())
+		return LineMode::Resistance;
+	return LineMode::Ideal;
+}
+
+	/// fluid ports of @a e in pairs by their height in the symbol (rotary joint: 1-4, 2-5, 3-6); empty when
+	/// the ports do not form pairs (distributor: all one net)
+QList<QPair<Terminal *, Terminal *>> channelPairs(Element *e)
+{
+	QMap<int, QList<Terminal *>> rows;
+	int n = 0;
+	for (Terminal *t : e->terminals()) {
+		if (t->medium() != Fluid::Medium::Pneumatic && t->medium() != Fluid::Medium::Hydraulic) continue;
+		rows[qRound(e->mapFromScene(t->dockConductor()).y())] << t;   // height in the symbol, before rotation
+		++n;
+	}
+	QList<QPair<Terminal *, Terminal *>> out;
+	if (n <= 2) return out;
+	for (const auto &row : std::as_const(rows)) {
+		if (row.size() != 2) return {};
+		out << qMakePair(row.first(), row.last());
+	}
+	return out;
 }
 
 	/// conductance that passes @a q_l_min (normal litres per minute) from @a p1 to @a p2 (absolute) (FORMELN.md P04)
@@ -253,6 +292,14 @@ struct SimulationModel::Cylinder {
 	double markPos() const { return rotary ? x * 180.0 / M_PI / 1000.0 : x; }
 };
 
+	/// line with geometry (R05): Darcy/Hagen-Poiseuille between two ports
+struct SimulationModel::Pipe {
+	Element *e = nullptr;
+	QString a, b;                 // port names
+	SimPhysics::PipeFlow flow;
+	bool hydraulic = false;
+};
+
 	/// vacuum generator (ejector, R10): supply 1, vacuum port 2, exhaust to the air
 struct SimulationModel::Ejector {
 	Element *e = nullptr;
@@ -407,6 +454,7 @@ SimulationModel::~SimulationModel()
 	qDeleteAll(m_accumulators);
 	qDeleteAll(m_pressure_switches);
 	qDeleteAll(m_ejectors);
+	qDeleteAll(m_pipes);
 	qDeleteAll(m_cups);
 }
 
@@ -451,14 +499,19 @@ void SimulationModel::buildNets(const QList<Diagram *> &diagrams)
 	for (Diagram *d : diagrams)
 		for (Element *e : sortedElements(d)) {
 			const SimulationCatalog::Entry *ce = SimulationCatalog::find(e->elementData().m_fluid.m_function);
-			if (!ce || (ce->role != SimulationCatalog::Role::Ideal && ce->role != SimulationCatalog::Role::Display)) continue;
+			const bool line = ce && (ce->model == QLatin1String("line") || ce->model == QLatin1String("coupling"));
+			if (!ce || (ce->role != SimulationCatalog::Role::Ideal && ce->role != SimulationCatalog::Role::Display
+						&& !(line && lineMode(e->elementData().m_fluid) == LineMode::Ideal))) continue;
 			Terminal *first = nullptr;
 			bool any = false;
+			const auto pairs = line ? channelPairs(e) : QList<QPair<Terminal *, Terminal *>>();
 			for (Terminal *t : e->terminals()) {
 				if (t->medium() != Fluid::Medium::Pneumatic && t->medium() != Fluid::Medium::Hydraulic) continue;
 				any = any || connected.contains(t);
+				if (!pairs.isEmpty()) continue;
 				if (!first) first = t; else join(first, t);
 			}
+			for (const auto &pr : pairs) join(pr.first, pr.second);   // R05: rotary joint, one net per channel
 			if (any)
 				for (Terminal *t : e->terminals())
 					if (t->medium() == Fluid::Medium::Pneumatic || t->medium() == Fluid::Medium::Hydraulic) connected << t;
@@ -574,6 +627,45 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 				QString model = ce->model;
 				// a pneumatic "pump" is a compressor: an ideal pressure source (catalog entry supply.pump)
 				if (model == QLatin1String("fixed_displacement_pump") && !hyd) model = QStringLiteral("pressure_source");
+				if (model == QLatin1String("line") || model == QLatin1String("coupling")) {
+					// R05 (FORMELN.md L04): the mode follows the given values; ideal lines were joined in buildNets
+					const LineMode lm = lineMode(f);
+					if (lm == LineMode::Ideal) continue;
+					if (lm == LineMode::Open) {
+						// uncoupled: a self-sealing coupling (seal 1, default) closes both halves, else both vent
+						if (f.parameter(QStringLiteral("seal")).trimmed() == QLatin1String("0"))
+							for (Terminal *t : e->terminals())
+								if (node(t) >= 0) m_silenced << node(t);
+						continue;
+					}
+					if (lm == LineMode::Resistance) {
+						model = QStringLiteral("passthrough");
+					} else {
+						auto *pi = new Pipe;
+						pi->e = e;
+						pi->hydraulic = hyd;
+						QStringList ports;
+						for (Terminal *t : e->terminals())
+							if (t->medium() == Fluid::Medium::Pneumatic || t->medium() == Fluid::Medium::Hydraulic) ports << t->name();
+						pi->a = ports.value(0);
+						pi->b = ports.value(1);
+						const QString m = QStringLiteral("m");
+						pi->flow.L = paramIn(f, QStringLiteral("length"), 1.0, m, &m_model_errors, part, Range::Positive);
+						pi->flow.d = paramIn(f, QStringLiteral("d_inner"), 0.01, m, &m_model_errors, part, Range::Positive);
+						pi->flow.eps = paramIn(f, QStringLiteral("roughness"), 15e-6, m, &m_model_errors, part, Range::NonNegative);
+						// oil HLP 22 (FluidSIM reference oil): 22 mm²/s, 870 kg/m³; air 1.81e-5 Pa·s at 20 °C (FORMELN.md L01)
+						const double rho = paramIn(f, QStringLiteral("rho"), 870.0, QStringLiteral("kg/m3"), &m_model_errors, part, Range::Positive);
+						const double nu = paramIn(f, QStringLiteral("nu"), 22e-6, QStringLiteral("m2/s"), &m_model_errors, part, Range::Positive);
+						pi->flow.rho = hyd ? rho : 1.2;
+						pi->flow.mu = hyd ? rho * nu : 1.81e-5;
+						const int ka = node(e, pi->a), kb = node(e, pi->b);
+						const double volume = pi->flow.area() * pi->flow.L;   // the fluid in the line, half to each end
+						if (ka >= 0) m_extra_volume[ka] += volume / 2;
+						if (kb >= 0) m_extra_volume[kb] += volume / 2;
+						m_pipes << pi;
+						continue;
+					}
+				}
 				if (model == QLatin1String("tank")) {
 					for (Terminal *t : e->terminals())
 						if (node(t) >= 0) fixPressure(node(t), P_ATM, part);
@@ -819,6 +911,12 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					fv->c_free = conductanceFromQnn(150);
 					fv->rt = paramNative(f, QStringLiteral("rT"), pass ? 0.01 : fn.contains(QLatin1String("flow_control")) ? 1.0 : 0.1,
 										 QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+					// R05: a clogged filter or treatment part (FORMELN.md L05): FluidSIM fault model "Bauteil verstopft"
+					// with a given restricted normal flow (default 10 l/min); oil: rT_clogged (default 1000·rT)
+					if (pass && f.parameter(QStringLiteral("clogged")).trimmed() == QLatin1String("1")) {
+						fv->c = conductanceFromQnn(paramIn(f, QStringLiteral("qNN_clogged"), 10.0, QStringLiteral("l/min"), &m_model_errors, who, Range::Positive));
+						fv->rt = paramNative(f, QStringLiteral("rT_clogged"), 1000.0 * fv->rt, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+					}
 					fv->p0 = paramIn(f, QStringLiteral("p0"), 0.0, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
 					fv->dp_end = std::max(paramIn(f, QStringLiteral("dpEnd"), 0.05e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
 					fv->t_delay = paramIn(f, QStringLiteral("t_delay"), 1.0, QStringLiteral("s"), &m_model_errors, who, Range::NonNegative);
@@ -1517,6 +1615,17 @@ void SimulationModel::step(double dt)
 		}
 	}
 
+	for (const Pipe *pi : std::as_const(m_pipes)) {   // FORMELN.md L01–L03
+		const int ka = node(pi->e, pi->a), kb = node(pi->e, pi->b);
+		if (ka < 0 && kb < 0) continue;
+		if (pi->hydraulic) {
+			book(ka, kb, pi->flow.flow(p(ka) - p(kb)), pi->e);
+		} else {
+			SimPhysics::PipeFlow g = pi->flow;   // air: density at the mean pressure (isothermal)
+			g.rho = 0.5 * (p(ka) + p(kb)) / (R_AIR * T_AIR);
+			book(ka, kb, g.rho * g.flow(p(ka) - p(kb)), pi->e);
+		}
+	}
 	for (const Ejector *v : std::as_const(m_ejectors)) {   // FORMELN.md U01, U02
 		const int k1 = node(v->e, QStringLiteral("1")), k2 = node(v->e, QStringLiteral("2"));
 		const double share = k1 >= 0 ? qBound(0.0, (p(k1) - P_ATM) / v->dp_opt, 1.0) : 0.0;
@@ -1703,6 +1812,8 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 	for (const Valve *v : m_valves) fluid_parts << v->e;
 	for (const Pump *pu : m_pumps) fluid_parts << pu->e;
 	for (const FlowValve *s : m_flow_valves) fluid_parts << s->e;
+	for (const Pipe *pi : m_pipes) fluid_parts << pi->e;
+	for (const Ejector *v : m_ejectors) fluid_parts << v->e;
 	QSet<Element *> seen;
 	for (auto it = m_node_of.constBegin(); it != m_node_of.constEnd(); ++it) {
 		Element *e = it.key()->parentElement();

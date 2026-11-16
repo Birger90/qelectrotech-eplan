@@ -34,6 +34,8 @@
         <name lang="zh">快排阀（常开）</name>
     </names>
     <fluid kind="other" prefix="XM" function="connection.quick_coupling">
+        <parameter name="coupled" value="0"/>
+        <parameter name="seal" value="1"/>
     </fluid>
     <informations>Author: The QElectroTech team
 License: see http://qelectrotech.org/wiki/doc/elements_license</informations>

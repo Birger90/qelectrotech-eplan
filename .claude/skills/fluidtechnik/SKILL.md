@@ -160,6 +160,10 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
   Druckschalter mit negativem p0, `SemiRotaryMotor2` → Schwenkantrieb; dessen eingebaute Sensoren (label1–3,
   x11–x32 in Grad) werden Wegmarken „-MM1 89..91“ (±1°), ohne FluidSIM-Kennzeichnung bekommt er -MM n.
   `VacuumEfficiencyValve` (Sparventil) hat noch kein Modell.
+- Leitungen und Kupplungen (Fork 1.28.0, R05): FluidSIM `Hyd.Supply.HoseLine` kommt als `supply.hose_line` mit `rT`
+  (Widerstand); eine Leitung mit `length` und `d_inner` rechnet als Rohr. Schnellkupplungen tragen `coupled`/`seal`
+  (Sammlung: „…offen“ = getrennt; Schnellanschluss ohne, Schnellkupplung mit Rückschlagventil). Verstopfte Filter über
+  `clogged`.
 
 ## Offen
 

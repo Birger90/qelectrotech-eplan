@@ -117,9 +117,19 @@ QList<Entry> build()
 	e << physical("supply.accumulator", "accumulator", "both", "erster Anschluss", "V0 [m3], p0 [Pa], k", "Gasgesetz polytrop; Luft: Behälter", "AccumulatorCharge, Projekt Speicher");
 	for (const char *f : {"supply.filter", "supply.dryer", "supply.lubricator", "supply.water_separator", "supply.service_unit",
 			       "supply.cooler", "supply.heater", "supply.temperature_control", "supply.startup_valve"})
-		e << physical(f, "passthrough", "both", "erste zwei Anschlüsse", "qNN [l/min] bzw. rT (Vorgabe 1000 l/min bzw. 0,01 bar.min2/l2)", PASS_LIMITS, "Katalog");
-	for (const char *f : {"connection.line", "connection.quick_coupling", "supply.manifold_c8", "supply.hose_line"})
-		e << other(f, Role::Ideal, "ideal_connection", "verlustfreie Verbindung; Kupplung immer gekuppelt, kein Rohrmodell (Roadmap R05)");
+		e << physical(f, "passthrough", "both", "erste zwei Anschlüsse",
+			      "qNN [l/min] bzw. rT (Vorgabe 1000 l/min bzw. 0,01 bar.min2/l2); clogged 1 = verstopft mit qNN_clogged (Vorgabe 10 l/min) bzw. rT_clogged (Vorgabe 1000·rT)",
+			      PASS_LIMITS, "Leitungen, Kupplungen, Aufbereitung (R05)");
+	for (const char *f : {"connection.line", "supply.hose_line"})
+		e << physical(f, "line", "both", "zwei Anschlüsse; Drehdurchführung paarweise je Kanal (gleiche Höhe im Symbol)",
+			      "ohne Angaben ideal; rT [bar.min2/l2] bzw. qNN [l/min]: Widerstand; length, d_inner [m], roughness [m], nu [m2/s], rho [kg/m3]: Rohr",
+			      "Rohr: Hagen-Poiseuille/Darcy mit Haaland-Reibzahl, Übergang 2000–4000 linear, Volumen je zur Hälfte an die Enden; Luft isotherm mit Dichte beim Mitteldruck (nur bis etwa Mach 0,3); keine Fluidträgheit, keine Wärme",
+			      "Leitungen, Kupplungen, Aufbereitung (R05)");
+	e << physical("connection.quick_coupling", "coupling", "both", "alle Anschlüsse",
+		      "coupled (1 gekuppelt, 0 getrennt), seal (1 selbstdichtend, 0 offen), Verlust wie Leitung (rT, qNN oder Geometrie)",
+		      "Zustand fest für den Lauf; getrennt und selbstdichtend: beide Hälften zu; getrennt ohne Dichtung: beide Hälften entlüften",
+		      "Leitungen, Kupplungen, Aufbereitung (R05)");
+	e << other("supply.manifold_c8", Role::Ideal, "ideal_connection", "verlustfreier Verteiler");
 	for (const char *f : {"supply.load_sensing_pump_unit", "supply.steering_unit_1",
 			       "vacuum.vacuum_efficiency_valve",
 			       "valve_group.control_block_for_two_hand_start", "valve_group.taa_01", "valve_group.tab_01",

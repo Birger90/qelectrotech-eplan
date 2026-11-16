@@ -117,7 +117,8 @@
 >   Every part is simulated only through the versioned model catalog (`--simulate-catalog`); parts without a
 >   model stop the run before it starts. `--signals/--measure` give pressures, directed flows, cylinder travel,
 >   speed and force, motor and swivel angles and suction cup holding force with SI units. Hydraulic motors, vacuum
->   generators, suction cups, vacuum switches and semi-rotary drives are simulated too. Roadmap status: [tools/simulation/ROADMAP_STAND.md](tools/simulation/ROADMAP_STAND.md).
+>   generators, suction cups, vacuum switches, semi-rotary drives, pipes with length and bore, quick couplings
+>   (coupled/uncoupled) and clogged filters are simulated too. Roadmap status: [tools/simulation/ROADMAP_STAND.md](tools/simulation/ROADMAP_STAND.md).
 >   Guide: [tools/simulation/README.md](tools/simulation/README.md).
 > - File > *Import FluidSIM circuit (.circ)*: FluidSIM 6 circuits become a project that simulates at once -- parts,
 >   wires, coil and relay links, the flow paths of every valve position, all parameters with their units, the

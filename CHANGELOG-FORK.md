@@ -3,6 +3,27 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.28.0 – 16.11.2026
+
+Simulations-Roadmap R05 (Leitungen, Kupplungen, Aufbereitung):
+
+- Leitungen und Schläuche (`connection.line`, `supply.hose_line`) mit Modellwahl: ohne Angaben ideal (wie FluidSIM bei
+  einfachen Verbindungen), mit `rT`/`qNN` als Widerstand (FluidSIM-Schlauchleitung), mit `length` und `d_inner` als Rohr:
+  Hagen-Poiseuille laminar, Darcy mit Haaland-Reibzahl turbulent, Übergang 2000–4000 stetig, beide Richtungen, Volumen
+  der Leitung an den Enden; Öl HLP 22 (22 mm²/s, 870 kg/m³) oder `nu`/`rho`, Luft isotherm bei Mitteldruck.
+- Schnellkupplungen (`connection.quick_coupling`) mit Zustand `coupled` und `seal`: gekuppelt ideal oder mit Verlust,
+  getrennt selbstdichtend (beide Hälften zu) oder offen (beide Hälften entlüften). Die Symbole „Schnellanschluss/
+  Schnellkupplung offen“ der Sammlung sind jetzt getrennt; vorher verbanden sie fälschlich beide Hälften.
+- Drehdurchführung: Anschlüsse gleicher Höhe bilden je einen Kanal; vorher flossen alle Kanäle in ein Netz.
+- Verstopftes Bauteil der Aufbereitung (`clogged`, wie FluidSIM-Fehlermodell „Bauteil verstopft“): `qNN_clogged`
+  (Vorgabe 10 l/min) bzw. `rT_clogged`.
+- Messgröße `q:` jetzt auch an Leitungen und Vakuumerzeugern.
+- Neue Prüfung „Leitungen, Kupplungen, Aufbereitung (R05)“ mit den Plänen `rohr.qet` und
+  `kupplung_drehdurchfuehrung.qet`: Rohrgesetz gegen Hagen-Poiseuille und Darcy/Haaland (ungerade, passiv, stetig,
+  steigend), Rohr laminar 1,508 bar und turbulent 6,045 bar wie die Handrechnung, Schlauch rT 0,12 → 16,15 bar,
+  Kupplung gekuppelt/getrennt dicht/getrennt offen, Filter verstopft 26,91 bar, Drehdurchführung Kanal 2 drucklos.
+  29 Prüfungen, alle bestanden. Formelregister L01–L05 mit Belegen (Haaland 1983, ISO 3448, ISO 1219-1).
+
 ## 1.27.1 – 15.11.2026
 
 Formelbelege (zweite Fassung des Roadmap-Pakets mit Quellenregister):

@@ -1,6 +1,6 @@
 # Formelregister des Rechenkerns
 
-Stand Fork 1.27.1 (15.11.2026). Hier steht jede Beziehung, die `sources/simulation/` rechnet, mit Codestelle,
+Stand Fork 1.28.0 (16.11.2026). Hier steht jede Beziehung, die `sources/simulation/` rechnet, mit Codestelle,
 Herkunft, Beleg, Gültigkeitsgrenze und der Prüfung, die sie abdeckt. Jede Zeile hat mindestens einen Beleg; alle
 Belege stehen mit Fundstelle am Ende. F-Nummern verweisen auf das Quellenregister des externen Pakets
 „Claude_Simulation_Roadmap“ (`FORMELQUELLEN.md`, Stand 15.11.2026), S-Nummern auf dessen Primärquellen (hier mit
@@ -45,6 +45,16 @@ Codestellen: `phys` = `simulationphysics.h`, `model` = `simulationmodel.cpp`, `u
 | P04 | Leitwert für einen Durchfluss q bei p₁ → p₂: C = q/(p₁·φ(p₂/p₁)) | `model` `conductanceAt` | – | eigene Ableitung aus P02 | wie P02 | Vakuum (R10) |
 | P05 | Druckluftbehälter: zusätzliches Volumen, Anschlüsse über großen Leitwert verbunden | `model` (accumulator, Luft) | F04 | Modellnäherung; S04 | keine Wärme, kein Druckverlust im Behälter | Projekt Speicher |
 | P06 | Schalldämpfer, offene Anschlüsse: Leitwert gegen Atmosphäre (P02) | `model` `m_silencer_c` | F10 | Modellnäherung; QS05 (Schalldämpfer-qnN gegen p_amb, Ausnahme 1 in QS03) | Geräusch nicht | Projekt Blindstopfen |
+
+## Leitungen, Kupplungen, Aufbereitung (R05)
+
+| ID | Beziehung | Codestelle | Paket | Herkunft, Belege | Grenze | Prüfung |
+|---|---|---|---|---|---|---|
+| L01 | laminar (Re ≤ 2000): Δp = 128·μ·L·q/(π·d⁴), Re = ρ·v·d/μ, v = 4q/(πd²); Öl μ = ρ·ν mit ν = 22 mm²/s, ρ = 870 kg/m³; Luft μ = 1,81·10⁻⁵ Pa·s | `phys` `PipeFlow::dp`, `model` (line) | F24 | Literaturformel; S12 (Poiseuille, Viskositätstabelle); ν nach QS14 (VG 22) und QS05 (Bezugsöl HLP 22) | Newtonsches Fluid, ausgebildete Strömung im Kreisrohr; ρ 870 kg/m³ ist Projektdefinition | Leitungen, Kupplungen, Aufbereitung (R05) |
+| L02 | turbulent (Re ≥ 4000): Δp = λ·L/d·ρ·v·\|v\|/2, 1/√λ = −1,8·log₁₀((ε/d/3,7)^1,11 + 6,9/Re); 2000 < Re < 4000: λ linear in Re zwischen 64/2000 und λ(4000) | `phys` `PipeFlow::dp`, `lambdaTurbulent` | F25 | Literaturformel; S13 (Darcy-Weisbach, Übergangsbereich 2000/4000), QS13 (Haaland) | Haaland-Näherung (±2 % zu Colebrook laut QS13); ε = 15 µm ist Projektdefinition; keine Höhenänderung, keine Fluidträgheit | R05 |
+| L03 | Umkehrung q(Δp) durch Bisektion zwischen 0 und dem laminaren Fluss (obere Schranke, da λ ≥ 64/Re); ungerade in Δp; Luft: ṁ = ρ_m·q mit ρ_m = p_m/(R·T), p_m = (p₁ + p₂)/2; Leitungsvolumen π d²/4·L je zur Hälfte an die Enden | `phys` `PipeFlow::flow`, `model` Schritt | F02, F03, F18 | eigene Ableitung (unten); S03, S17 (Kompressibilität unter Mach 0,3 vernachlässigbar) | Luft nur bis etwa Mach 0,3, isotherm | R05 |
+| L04 | Modellwahl je Leitung: ohne Angaben ideal (Anschlüsse ein Netz), mit rT/qNN Widerstand (P02/H03), mit length und d_inner Rohr (L01–L03); Kupplung: coupled 0 = getrennt, seal 1 = beide Hälften dicht, seal 0 = beide Hälften entlüften (Schalldämpferleitwert); Drehdurchführung: Anschlüsse gleicher Höhe je ein Kanal | `model` `lineMode`, `channelPairs`, `buildNets` | F10, F13 | Projektdefinition; QS05 (Schlauchleitung mit hydraulischem Widerstand, einfache Verbindungen ohne Druckabfall); Symbolbedeutung QS15 | Kupplungszustand fest für den Lauf; Kanalzuordnung aus der Symbolgeometrie | R05 |
+| L05 | verstopftes Bauteil der Aufbereitung: clogged 1 → qNN_clogged (Vorgabe 10 l/min), Öl rT_clogged (Vorgabe 1000·rT) | `model` passthrough | F16 | Projektdefinition nach dem FluidSIM-Fehlermodell „Bauteil verstopft“ (QS05: eingeschränkter Normal-Nenndurchfluss, Vorgabe 10 l/min) | Faktor 1000 für Öl ist gewählt, nicht belegt; keine Differenzdruckanzeige | R05 |
 
 ## Hydraulik
 
@@ -111,6 +121,9 @@ Codestellen: `phys` = `simulationphysics.h`, `model` = `simulationmodel.cpp`, `u
 - **U02:** Lineare Gerade durch (p₂ = P_ATM + pu_min·s, ṁ = 0) und (p₂ = P_ATM, ṁ = ṁ_max·s). Ihre Steigung
   ṁ_max/\|pu_min\| hängt nicht von s ab; für s → 0 bleibt deshalb derselbe lineare Rückweg zur Luft (stetig, ohne
   Fallunterscheidung).
+- **L03:** Δp(q) ist für jedes Re streng steigend (laminar linear, turbulent ∝ λ·q², λ fällt langsamer als 1/q), also
+  eindeutig umkehrbar. Weil λ ≥ 64/Re überall gilt, ist Δp(q) ≥ Δp_laminar(q) und damit q(Δp) ≤ Δp·π d⁴/(128 μ L):
+  Startintervall der Bisektion.
 - **N05 (Leckgleichgewicht):** 6·(g − p_min)/\|p_min\| = 1,8·φ((P_ATM + g)/P_ATM)/φ((P_ATM − 0,6 bar)/P_ATM) in l/min,
   nach g gelöst (Bisektion, 100 Schritte). Die Normdichte kürzt sich heraus.
 
@@ -144,7 +157,8 @@ Codestellen: `phys` = `simulationphysics.h`, `model` = `simulationmodel.cpp`, `u
 
 V_LINE 5 cm³ je Luftnetz, V_HYD 0,1 l je Ölnetz, V_tot 2 cm³ je Zylinderkammer, E_OIL 7·10⁸ Pa, p_s = 0,3 bar,
 Pilotschwelle 1,5 bar, Haftkraft 5 % von A_K·6 bar, Gleitreibung 70 % der Haftkraft, Federkraft 15 % von A_K·6 bar,
-Haftmoment des Schwenkantriebs 2 % von M_6bar, Pumpenband 1 bar, Saugervolumen 5 mm tief, offener Sauger 50 l/min bei
+Haftmoment des Schwenkantriebs 2 % von M_6bar, Öldichte 870 kg/m³, Rauheit 15 µm, Verstopfungsfaktor Öl 1000,
+Leitwert entlüftender Kupplungshälften wie Schalldämpfer, Pumpenband 1 bar, Saugervolumen 5 mm tief, offener Sauger 50 l/min bei
 0,1 bar, Leckagebezug −0,6 bar, Hysterese mindestens 1 kPa, Relaiszeiten 10/8 ms, Ventil-τ = Schaltzeit/3. Kennwerte
 aus FluidSIM-Bauteilen (qNN, rT, M_6bar, I, f, pu_min, qn_ac, qns_max, d, m, s …) sind Angaben der Beispielbauteile,
 nicht von uns gemessen.
@@ -243,6 +257,14 @@ Zugriff am 15.11.2026, sofern nicht anders vermerkt.
   https://static6.arrow.com/aropdfconversion/6b3a67a5f9ae5019535b36a903d247ecb4925eaf/s40en.pdf
 - **QS12** – MathWorks: Shuttle Valve (IL) (https://www.mathworks.com/help/hydro/ref/shuttlevalveil.html): Vergleichsmodell
   „höherer Eingangsdruck auf den Ausgang“.
+
+- **QS13** – S. E. Haaland: Simple and Explicit Formulas for the Friction Factor in Turbulent Pipe Flow. Journal of
+  Fluids Engineering 105 (1983), Nr. 1, S. 89–90, doi:10.1115/1.3240948. Explizite Näherung der Colebrook-Gleichung.
+- **QS14** – ISO 3448:1992, Industrial liquid lubricants – ISO viscosity classification: VG 22 = 22 mm²/s bei 40 °C
+  (Bereich 19,8 … 24,2 mm²/s). Titel und Klasse nach Normtitel, Normtext hier nicht eingesehen.
+- **QS15** – ISO 1219-1:2012, Fluid power systems and components – Graphical symbols and circuit diagrams – Part 1:
+  Schnellkupplungen gekuppelt/getrennt, mit und ohne Rückschlagventil. Symboltabelle nicht am Normtext geprüft; die
+  Zuordnung „offen = getrennt“ folgt den Symbolnamen der Sammlung (`50101530` … `50101535`).
 
 Eine neue Formel bekommt hier ihre Zeile mit Codestelle, Herkunft, Beleg, Grenze und Prüfung, bevor sie freigegeben
 wird; eine neue Quelle bekommt eine QS-Nummer mit Fundstelle und Zugriffsdatum.

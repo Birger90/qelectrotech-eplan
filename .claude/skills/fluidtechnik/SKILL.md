@@ -265,6 +265,15 @@ TP102_02 (zwei Zylinder, Rollenventile, Zähler), TP601_14 (Elektrohydraulik mit
   60617-12 (&, ≥1, =1, 1 mit Negationskreis, TON/TOF/TP, RS, CTUD), Leitungen elektrisch – Medium `logic` verbindet
   im Fork nichts (`Fluid::canConnect`). (8) Texte mit „~“ verwirft der Symbolumwandler als FluidSIM-Übersetzungs-
   schlüssel; in der eigenen Ebene EIGEN sind sie erlaubt („3~“). Immer selbst als PNG prüfen, „0 Fehler“ reicht nicht.
+- Layout nach dem Import (17.11.2026, Birger: PE quer durch -P1/-P2, BMK auf Leitungen): Leitungen werden mit
+  `route: "avoid"` um die Symbole gelegt; danach setzt `beschriftungen_freistellen()` (fluidsim_plan.py) jede
+  Kennzeichnung, die auf einer Leitung, einem Bauteil oder einer anderen Kennzeichnung liegt, mit
+  `qet.placeElementTexts` an die erste freie der neun Stellen. Potentiale (L1…PE) liegen wie in FluidSIM (quer:
+  Stich waagerecht), Name 8 hoch; Maschinenkreis mittig unter der Reihe der Wicklungsanschlüsse, kein Anschluss im
+  Kreis. Messen mit `qet_layout_check` (`wires_through_symbols`, `labels_on_wires`, `overlaps`): Stichprobe von 16
+  Plänen vorher 76/41/28, nachher 0/5/1. Ursache der meisten „durch Symbole“: die Kennzeichnung zählte zur
+  Bauteilausdehnung (+30 px rechts), so überdeckten sich Nachbarkontakte; GRAFCET-Rücksprung ebenfalls mit avoid;
+  Schrittnummern im eigenen Symbol bleiben stehen.
 
 ## Offen
 

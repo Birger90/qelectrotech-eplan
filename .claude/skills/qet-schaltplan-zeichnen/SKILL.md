@@ -328,6 +328,10 @@ Die Zahl in Klammern ist der Beleg; so zeichnen, wenn der Hausstil oben nichts a
   M 3~/MS 3~/G; Messgerät: Kreis mit V/A/W/cos φ; Gleichrichter: Kasten mit Diagonale und ~/=; Logik: &, ≥1, 1 mit
   Negationskreis; Regler: PID/PT1/Σ), nie einen Kasten mit (abgeschnittenem) Namen. Mehrpolige Schalter als
   einzelne Pole mit gestrichelter Wirkverbindung (Leitungsschutz: Kreuz am festen Kontakt; Motorschutz: Auslöser „I>“).
+- **Nach jedem Zeichnen/Import `qet_layout_check` und Treffer zählen**: `wires_through_symbols`,
+  `labels_on_wires` und `overlaps` sollen 0 sein. Leitungen mit `route: "avoid"` anlegen; eine Kennzeichnung auf
+  einer Leitung mit `placeElementTexts(folio, [uuid], "right"|"left"|…)` an eine freie Stelle setzen, nicht das
+  Bauteil verschieben.
 - **Keine Simulationswerte im Plan**: angezeigte Messgrößen (P_out, I, U als Ergebnis) und Sollwerte 0 weglassen;
   nur Kennwerte (24 V, p = 6 bar, 47 kOhm) als Text am Bauteil.
 - **Endschalter** stehen im Steuerstromkreis als Schließer/Wechsler mit -BG-Kennzeichen; am Zylinder sind sie

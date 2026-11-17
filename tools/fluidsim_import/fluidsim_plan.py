@@ -24,8 +24,11 @@ Eine .circ ist gzip-gepacktes XML (Beschreibung: PLAN-PNEUMATIK.md, Abschnitt 1)
   fluidsim_grafcet.py;
 - ältere Dateien mit gepackten Koordinaten (Linien als Hex-Text), siehe fluidsim_symbole.entpacken.
 
-Nicht übernommen: Rahmen und Schriftfeld, Tabellen, Zustandsdiagramme, Stücklisten, Digitaltechnik (LOGO),
-Teil-GRAFCETs und Zwangssteuerungen. Artikeldaten (Hersteller, Bestellnummer) speichert FluidSIM nicht.
+Digitaltechnik (LOGO-Bausteine, Gatter, Flipflops) als Logikkästen nach IEC 60617-12 (&, ≥1, TON, RS …),
+Signalleitungen elektrisch; simulieren lässt sie sich (noch) nicht.
+
+Nicht übernommen: Rahmen und Schriftfeld, Tabellen, Zustandsdiagramme, Stücklisten, Teil-GRAFCETs und
+Zwangssteuerungen. Artikeldaten (Hersteller, Bestellnummer) speichert FluidSIM nicht.
 
     python fluidsim_plan.py SCHALTUNG.circ [WEITERE.circ …] AUSGABE.qet [--qet build/deploy/QElectroTech.exe]
     python fluidsim_plan.py ORDNER_MIT_CIRC AUSGABE.qet          # jede .circ ein Blatt, nach Namen sortiert
@@ -72,7 +75,8 @@ import fluidsim_grafcet  # noqa: E402
 import eigene_grafik  # noqa: E402
 
 FLUIDSIM = Path("C:/Program Files (x86)/Didactic/FluidSIM6")
-AUSLASSEN = ("Grafcet.", "Digital.")  # Objektarten, die keine Bauteile eines Fluid-/Elektroplans sind
+AUSLASSEN = ("Grafcet.",)  # Objektarten, die keine Bauteile sind (GRAFCET: fluidsim_grafcet.py)
+VERZWEIGUNG = ("Interface.MultiPin", "Digital.MultiPin")   # T-Verteiler: in QET kein Bauteil, nur Netz
 
 
 def lesen(pfad: Path):
@@ -172,8 +176,13 @@ def sichtbare_werte(objekt, textfelder):
         name, ref = a.get("name", ""), a.get("display-ref")
         if not name.startswith("^#") or not ref:
             continue
+        if "FTPVar" in (a.get("comment") or ""):
+            continue    # Simulationsgröße (P_out = 0 kW …), kein Kennwert des Plans
         tf = textfelder.get(ref)
         wert = (tf.get("value") if tf is not None else None) or a.get("value") or ""
+        zahlen = re.findall(r"\d+(?:[.,]\d+)?", wert)
+        if zahlen and all(float(z.replace(",", ".")) == 0 for z in zahlen):
+            continue    # Sollwert 0 (Regler auf null) sagt im Plan nichts
         if wert.strip() and tf is not None and tf.get("visible") != "false":
             out.append((wert.strip(), tf))
     return out
@@ -508,7 +517,7 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
         for o in alle:
             objekt = o.get("object-ref") or ""
             if o.tag == "component" and (not objekt or objekt in fs.ABSCHLUSS or objekt.startswith(AUSLASSEN)
-                                         or objekt.endswith("Interface.MultiPin") or objekt.startswith("Mech.")):
+                                         or objekt.endswith(VERZWEIGUNG) or objekt.startswith("Mech.")):
                 # Verzweigungen werden Leitungen am selben Netz, Wegmaßstäbe Wegmarken (siehe unten)
                 continue
             beschr = o.find("dki-data/description")
@@ -756,7 +765,7 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
         # mehrere Verzweigungen zusammenhängen, bilden ein Netz und werden der Reihe nach verbunden
         def ist_verzweigung(bezug):
             o = nach_id.get(bezug.partition(".")[0])
-            return o is not None and (o.get("object-ref") or "").endswith("Interface.MultiPin")
+            return o is not None and (o.get("object-ref") or "").endswith(VERZWEIGUNG)
 
         eltern = {}
 
@@ -788,6 +797,9 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
             if k not in nach_id:          # nicht die Verzweigung selbst
                 netze.setdefault(wurzel(k), []).append(k)
         for glieder in netze.values():
+            # Nur Anschlüsse übernommener Bauteile: Hilfspunkte ohne Bauteil (leere object-ref, Messpunkte)
+            # dürfen die Kette nicht unterbrechen, sonst fehlt z. B. die Leitung -F1 → -Q1
+            glieder = [g for g in glieder if all(anschluss_uuid(g))]
             glieder.sort(key=lambda bz: (round(lage(bz)[1]), lage(bz)[0]))
             paare += list(zip(glieder, glieder[1:]))
 
@@ -892,10 +904,10 @@ def main(argv=None):
             erg = qet_mcp.tool_edit(str(a.qet), str(leer), ops, str(ausgabe), elements_dir=str(sammlung),
                                     timeout=600)
         else:
-            # nichts Übernehmbares (z. B. nur Digitaltechnik): das leere Projekt mit seinen Blättern
+            # nichts Übernehmbares: das leere Projekt mit seinen Blättern
             Path(ausgabe).write_bytes(leer.read_bytes())
             erg = {"saved": True, "operations": []}
-            zahl["offen"].append("keine übernehmbaren Bauteile (Digitaltechnik/LOGO wird nicht übernommen)")
+            zahl["offen"].append("keine übernehmbaren Bauteile")
         fehler = [o for o in erg.get("operations", []) if not o.get("succeeded")]
         print(f"{ausgabe}: {len(circs)} Blatt/Blätter, {zahl['bauteile']} Bauteile, {zahl['leitungen']} Leitungen, "
               f"{zahl['verknuepfungen']} Verknüpfungen, {zahl['texte']} Werte als Text, "

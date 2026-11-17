@@ -204,6 +204,45 @@ class EigeneGrafik(unittest.TestCase):
         self.assertEqual(sum(1 for li in eigen.findall("line") if li.get("end-cap") == "arrow1"), 1)
         self.assertEqual(len(eigen.findall("circle")), 1)
 
+    def _eigen(self, objekt, anschluesse, klasse=""):
+        import eigene_grafik as eg
+        sym = ET.fromstring("<symbol><symbol-layer ident='default'>" + "".join(
+            f"<connector type='electric' ident='{i}' designation='{d}' cx='{x}' cy='{y}'/>"
+            for i, (d, x, y) in enumerate(anschluesse, 1)) + "</symbol-layer></symbol>")
+        neu = eg.ersetzen(sym, ET.fromstring(f"<component object-ref='{objekt}'/>"), klasse)
+        return next(e for e in neu if e.get("ident") == "EIGEN")
+
+    def test_motorschutzschalter_dreipolig_statt_spule(self):
+        # FluidSIM klassifiziert ihn als solenoid-coil; gezeichnet werden drei Pole mit Wirkverbindung
+        e = self._eigen("ET.Switch.MotorCircuitBreaker",
+                        [("1", -12, -36), ("2", -12, 36), ("3", 12, -36), ("4", 12, 36), ("5", 36, -36), ("6", 36, 36)],
+                        "solenoid-coil")
+        self.assertTrue(any(li.get("style") == "dash" for li in e.findall("line")))
+        self.assertEqual([t.text for t in e.findall("text")], ["I>"])
+
+    def test_drehstrommotor_kreis_mit_kennzeichen(self):
+        e = self._eigen("ET.Actuator.ThreePhaseSynchronousMotor2", [("", -6, -18), ("", 18, -18), ("", 6, 48)])
+        self.assertEqual(len(e.findall("circle")), 1)
+        self.assertEqual([t.text for t in e.findall("text")], ["MS", "3~"])
+
+    def test_unbekanntes_bauteil_ohne_namen(self):
+        e = self._eigen("ET.Controller.ControllerPID", [("", -24, 0), ("", 24, 0)])
+        self.assertEqual([t.text for t in e.findall("text")], ["PID"])
+        e = self._eigen("ET.Foo.SomethingUnknown", [("", -24, 0), ("", 24, 0)])
+        self.assertEqual(e.findall("text"), [])
+
+
+class Werte(unittest.TestCase):
+    def test_simulationsgroessen_und_nullwerte_nicht_im_plan(self):
+        tf = {"T1": ET.fromstring("<text-box value='P_out = 0 kW'/>"), "T2": ET.fromstring("<text-box value='0 V'/>"),
+              "T3": ET.fromstring("<text-box value='p0 = 6 bar'/>")}
+        o = ET.fromstring("<component><user-data>"
+                          "<attribute name='^#P_out' comment='~FTParam~FTPVar~FTPUnit' display-ref='T1'/>"
+                          "<attribute name='^#voltage_DC' comment='~FTParam~FTPUnit' display-ref='T2'/>"
+                          "<attribute name='^#p0' comment='~FTParam~FTPUnit' display-ref='T3'/>"
+                          "</user-data></component>")
+        self.assertEqual([w for w, _ in fp.sichtbare_werte(o, tf)], ["p0 = 6 bar"])
+
 
 if __name__ == "__main__":
     unittest.main()

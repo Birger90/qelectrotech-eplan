@@ -438,14 +438,18 @@ def ebene_lesen(z: Zeichner, ebene, anschluss_info, nur_grafik=False):
             z.bogen(p(zahl(e, "cx"), zahl(e, "cy")), zahl(e, "r") * abs(sy * t.sy), start, ende, e)
         elif e.tag == "text":
             inhalt = (e.text or "").strip()
-            if inhalt and not inhalt.startswith("?") and "~" not in inhalt:
+            # "~…" sind FluidSIM-Übersetzungsschlüssel; die eigene Grafik (EIGEN) darf "3~" schreiben
+            if inhalt and not inhalt.startswith("?") and ("~" not in inhalt or ebene.get("ident") == "EIGEN"):
                 z.text(p(zahl(e, "x1"), zahl(e, "y1")), inhalt, zahl(e, "height", 8))
         elif e.tag == "connector":
             if nur_grafik:
                 continue
             art = e.get("type")
-            if e.get("visible") == "false" or art not in ("pneumatic", "electric", "hydraulic"):
+            if e.get("visible") == "false" or art not in ("pneumatic", "electric", "hydraulic", "digital"):
                 continue
+            if art == "digital":
+                art = "electric"  # Digitaltechnik (LOGO, Gatter): Signalleitungen sind elektrisch ("logic" verbindet
+                                  # im Fork nichts, Fluid::canConnect)
             z.anschluesse.append({
                 "p": p(zahl(e, "cx"), zahl(e, "cy")),
                 "name": e.get("designation") or "",

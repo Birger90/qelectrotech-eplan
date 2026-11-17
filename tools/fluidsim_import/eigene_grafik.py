@@ -5,7 +5,9 @@ Stellung), die Schaltwege der Stellungen, die Ausdehnung des Bauteils, seine Kla
 rechts). Gezeichnet wird alles neu nach DIN ISO 1219-1 bzw. IEC 60617 aus einfachen Grundelementen: Ventilkästen
 mit Pfeilen und Sperren, Betätigungen (Magnet, Taster, Rolle, Vorsteuerung, Feder), Zylinder, Quellen, Tank,
 Messgeräte, Schaltkontakte, Spulen, Leuchten, Potentiale, Zweipole (Widerstand, Kondensator, Diode, LED,
-Sicherung, Gleichspannungsquelle), Bipolartransistor, Signalgenerator/Oszilloskop; jede andere Klasse als Kasten mit ihrem Namen. So enthält
+Sicherung, Gleichspannungsquelle), Bipolartransistor, Signalgenerator/Oszilloskop, mehrpolige Schutzschalter,
+Maschinen (M 3~, G …), Messgeräte, Gleichrichter, Trafo, Induktivität, Operationsverstärker, Potentiale L1…PE;
+jede andere Klasse als Kasten mit ihrem Kennzeichen nach IEC 60617 (PID, Σ, p …) oder leer, nie mit Namen. So enthält
 ein übernommenes Projekt keine Festo-Grafik, und jeder kann eine Schaltung übernehmen, auch ohne FluidSIM.
 
 ersetzen() gibt ein <symbol> im FluidSIM-Format zurück: dieselben Ebenen (Namen, Sichtbarkeit, Lage) mit nur ihren
@@ -77,7 +79,7 @@ def anschluesse(symbol):
         ox, oy = _z(eb, "ref-x"), _z(eb, "ref-y")
         sx, sy = _z(eb, "scale-x", 1.0), _z(eb, "scale-y", 1.0)
         for c in eb.iter("connector"):
-            if c.get("type") in ("pneumatic", "hydraulic", "electric"):
+            if c.get("type") in ("pneumatic", "hydraulic", "electric", "digital"):
                 out.append((eb, c, ox + sx * _z(c, "cx"), oy + sy * _z(c, "cy")))
     return out
 
@@ -266,7 +268,7 @@ def _messgeraet(s, anschl, u):
     s.kreis(cx, cy, r)
     s.linie(cx - r * 0.6, cy + r * 0.6, cx + r * 0.6, cy - r * 0.6, ende="arrow1")
     for _, _, ax, ay in anschl:
-        s.linie(ax, ay, cx, cy + r if ay > cy else cy - r)
+        _zuleitung(s, ax, ay, cx, cy, r)
 
 
 def _kasten_mit_name(s, anschl, u, name):
@@ -287,7 +289,8 @@ def _kasten_mit_name(s, anschl, u, name):
         y0, y1 = (y0 + y1) / 2 - 6, (y0 + y1) / 2 + 6
     s.kasten(x0, y0, x1 - x0, y1 - y0)
     if name:
-        s.text(x0 + 2, (y0 + y1) / 2 + 2, name[:16], 5)
+        h = max(min(7.0, (y1 - y0) * 0.5, (x1 - x0) / max(len(name), 1) * 1.6), 4.0)
+        s.text((x0 + x1) / 2 - len(name) * h * 0.28, (y0 + y1) / 2 + h * 0.4, name, h)
     _stummel(s, anschl, x0, y0, x1, y1)
 
 
@@ -341,6 +344,8 @@ def _lampe(s, anschl):
     s.linie(x - 4.2, m + 4.2, x + 4.2, m - 4.2)
     s.linie(x, pk[0][3], x, m - 6)
     s.linie(pk[-1][2], pk[-1][3], pk[-1][2], m + 6)
+    for a in pk[1:-1]:                  # z. B. PE einer Netzleuchte
+        _zuleitung(s, a[2], a[3], x, m, 6)
     return True
 
 
@@ -455,6 +460,352 @@ def _transistor(s, anschl, pnp):
     s.linie(kx, my + h * 1.6, kx, ey)
     r = max(abs(kx - bx), h * 1.8) * 0.95
     s.kreis((bx + kx) / 2, my, r)
+    return True
+
+
+
+# ------------------------------------------------------------------------- Elektrik: weitere IEC-Symbole
+def _el(anschl):
+    return [a for a in anschl if a[1].get("type") == "electric"]
+
+
+def _zuleitung(s, x, y, cx, cy, r):
+    """Anschlussleitung von (x, y) senkrecht bzw. waagerecht bis an einen Kreis um (cx, cy)."""
+    dx, dy = x - cx, y - cy
+    if (dx * dx + dy * dy) ** 0.5 <= r:
+        return
+    if abs(dx) < r * 0.95:
+        h = (r * r - dx * dx) ** 0.5
+        s.linie(x, y, x, cy + (h if dy > 0 else -h))
+    elif abs(dy) < r * 0.95:
+        h = (r * r - dy * dy) ** 0.5
+        s.linie(x, y, cx + (h if dx > 0 else -h), y)
+    else:                       # Ecke: erst senkrecht bis 0,7 r, dann waagerecht an den Kreis
+        yy = cy + (0.7 * r if dy > 0 else -0.7 * r)
+        h = (r * r - (yy - cy) ** 2) ** 0.5
+        s.linie(x, y, x, yy)
+        s.linie(x, yy, cx + (h if dx > 0 else -h), yy)
+
+
+def _kreis_mit_text(s, anschl, u, zeilen, faktor=0.75):
+    """Maschine oder Messgerät: Kreis mit Kennzeichen (M 3~, G, cos φ, Ω …), Zuleitungen an den Kreis."""
+    el = _el(anschl)
+    x0, y0, x1, y1 = u
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    r = max(min(x1 - x0, y1 - y0) / 2 * faktor, 7)
+    s.kreis(cx, cy, r)
+    h = min(r * 0.55, 9)
+    for i, z in enumerate(zeilen):
+        yy = cy + h * 0.4 + (i - (len(zeilen) - 1) / 2) * h * 1.15
+        s.text(cx - len(z) * h * 0.28, yy, z, h)
+    for _, _, ax, ay in el:
+        _zuleitung(s, ax, ay, cx, cy, r)
+    return True
+
+
+def _polig(s, anschl, objekt):
+    """Mehrpoliger Schalter (IEC 60617): je Pol ein Schließer zwischen 1-2, 3-4, 5-6; Pole über eine
+    gestrichelte Wirkverbindung gekoppelt; Leitungsschutzschalter mit Kreuz am festen Kontakt,
+    Motorschutzschalter zusätzlich mit Auslöser (Kasten auf der Wirkverbindung)."""
+    el = {a[1].get("designation") or a[1].get("ident"): a for a in _el(anschl)}
+    pole = []
+    for n in range(1, 12, 2):
+        a, b = el.get(str(n)), el.get(str(n + 1))
+        if a is not None and b is not None:
+            pole.append((a, b))
+    if not pole:
+        return False
+    mitten = []
+    for a, b in pole:
+        ax = Achse((a[2], a[3]), (b[2], b[3]))
+        L = min(7.0, ax.halb - 2)
+        s.linie(a[2], a[3], *ax.p(-L))
+        s.linie(*ax.p(L), b[2], b[3])
+        s.linie(*ax.p(L), *ax.p(-L - 1, -6))           # Schaltstück, offen
+        if "Breaker" in objekt or "Protection" in objekt:
+            s.linie(*ax.p(-L - 2.5, -2.5), *ax.p(-L + 2.5, 2.5))
+            s.linie(*ax.p(-L - 2.5, 2.5), *ax.p(-L + 2.5, -2.5))
+        mitten.append(ax.p(0, -3.5))
+    if len(mitten) > 1:
+        s.linie(*mitten[0], *mitten[-1], strich="dash")
+    if "MotorCircuitBreaker" in objekt or "MotorProtection" in objekt:
+        x, y = mitten[0]
+        s.linie(x, y, x - 14, y, strich="dash")
+        s.kasten(x - 24, y - 5, 10, 10)
+        s.text(x - 23.5, y + 2.5, "I>", 5)
+    return True
+
+
+def _umrichter(s, anschl, u, links, rechts):
+    """Gleichrichter/Netzteil/Umrichter: Kasten mit Diagonale, Stromart links oben und rechts unten."""
+    el = _el(anschl)
+    x0, y0, x1, y1 = u
+    xs = [a[2] for a in el]
+    if xs:
+        x0, x1 = min(xs) + 8, max(xs) - 8
+    if x1 - x0 < 16:
+        m = (x0 + x1) / 2
+        x0, x1 = m - 10, m + 10
+    s.kasten(x0, y0, x1 - x0, y1 - y0)
+    s.linie(x0, y1, x1, y0)
+    h = max(min(8.0, (y1 - y0) * 0.4), 5.0)
+    s.text(x0 + 1.5, y0 + h + 0.5, links, h)
+    s.text(x1 - h * 0.7 - 1.5, y1 - 1.5, rechts, h)
+    _stummel(s, el, x0, y0, x1, y1)
+    return True
+
+
+def _trafo(s, anschl, u):
+    el = _el(anschl)
+    x0, y0, x1, y1 = u
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    r = max(min(x1 - x0, y1 - y0) / 2 * 0.5, 6)
+    senkrecht = (y1 - y0) >= (x1 - x0)
+    k1 = (cx, cy - r * 0.6) if senkrecht else (cx - r * 0.6, cy)
+    k2 = (cx, cy + r * 0.6) if senkrecht else (cx + r * 0.6, cy)
+    s.kreis(*k1, r)
+    s.kreis(*k2, r)
+    for _, _, ax, ay in el:
+        k = k1 if (ay < cy if senkrecht else ax < cx) else k2
+        _zuleitung(s, ax, ay, k[0], k[1], r)
+    return True
+
+
+def _spule_l(s, anschl):
+    """Induktivität: vier Halbkreise zwischen p und n."""
+    el = _el(anschl)
+    if len(el) < 2:
+        return False
+    a, b = el[0], el[1]
+    ax = Achse((a[2], a[3]), (b[2], b[3]))
+    L = min(10.0, ax.halb - 1)
+    s.linie(a[2], a[3], *ax.p(-L))
+    s.linie(*ax.p(L), b[2], b[3])
+    pk = []
+    for i in range(4):
+        u0 = -L + i * L / 2
+        for j in range(9):
+            t = math.pi * j / 8
+            pk.append(ax.p(u0 + L / 4 - math.cos(t) * L / 4, -math.sin(t) * L / 4))
+    s.zug(pk)
+    return True
+
+
+def _diode_art(s, anschl, objekt):
+    """Z-Diode (geknickter Strich), Thyristor (Gate), Fotodiode (Pfeile hinein)."""
+    if not _zweipol(s, anschl, "ET.Semiconductor.Diode"):
+        return False
+    el = _el(anschl)
+    plus = next((a for a in el if a[1].get("designation") in ("p", "A")), el[0])
+    minus = next((a for a in el if a is not plus and a[1].get("designation") in ("n", "K")), el[1])
+    ax = Achse((plus[2], plus[3]), (minus[2], minus[3]))
+    L = min(4.0, ax.halb - 1)
+    if "ZDiode" in objekt:
+        s.linie(*ax.p(L, -4.5), *ax.p(L - 2, -4.5))
+        s.linie(*ax.p(L, 4.5), *ax.p(L + 2, 4.5))
+    elif "Thyristor" in objekt:
+        gate = [a for a in el if a is not plus and a is not minus]
+        if gate:
+            s.linie(gate[0][2], gate[0][3], *ax.p(L, 4.5))
+    elif "Photo" in objekt:
+        for u0 in (-1.5, 1.5):
+            s.linie(*ax.p(u0 + 4, -11), *ax.p(u0, -6), ende="arrow1")
+    return True
+
+
+def _verstaerker(s, anschl, u):
+    """Operationsverstärker (IEC 60617): Dreieck zum Ausgang, Eingänge + und −."""
+    el = _el(anschl)
+    if len(el) < 3:
+        return False
+    x0, y0, x1, y1 = u
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    aus = max(el, key=lambda a: a[2])
+    ein = [a for a in el if a[2] < cx - 2]
+    xa, xb = cx - 12, cx + 12
+    h = 14
+    s.zug([(xa, cy - h), (xa, cy + h), (xb, cy), (xa, cy - h)])
+    s.text(xa + 2, cy - h / 2 + 2, "−", 6)
+    s.text(xa + 2, cy + h / 2 + 2, "+", 6)
+    if abs(aus[3] - cy) < 1:
+        s.linie(aus[2], aus[3], xb, cy)
+    else:
+        s.zug([(aus[2], aus[3]), (xb + 3, aus[3]), (xb + 3, cy), (xb, cy)])
+    for a in ein:
+        yy = min(max(a[3], cy - h + 3), cy + h - 3)
+        s.zug([(a[2], a[3]), (xa - 3, a[3]), (xa - 3, yy), (xa, yy)])
+    for a in el:
+        if a is not aus and a not in ein:     # Versorgung oben/unten
+            s.linie(a[2], a[3], a[2], cy - h * 0.5 if a[3] < cy else cy + h * 0.5)
+    return True
+
+
+def _verteiler(s, anschl):
+    """Verteiler: alle Anschlüsse auf einen Verbindungspunkt."""
+    pk = [(a[2], a[3]) for a in anschl]
+    if not pk:
+        return False
+    cx = sum(p[0] for p in pk) / len(pk)
+    cy = sum(p[1] for p in pk) / len(pk)
+    for x, y in pk:
+        if abs(x - cx) > 1:
+            s.linie(x, y, x, cy)
+            s.linie(x, cy, cx, cy)
+        else:
+            s.linie(x, y, cx, cy)
+    s.kreis(cx, cy, 1.5, gefuellt=True)
+    return True
+
+
+def _klemmen(s, anschl):
+    el = _el(anschl)
+    for _, _, x, y in el:
+        s.kreis(x, y, 2.5)
+    return bool(el)
+
+
+# Kennzeichen nach IEC 60617 für Maschinen, Messgeräte und Funktionsblöcke (kein Textkasten mit Namen)
+MASCHINE = (("Synchronous", ["MS", "3~"]), ("SquirrelCage", ["M", "3~"]), ("ThreePhaseAlternator", ["G", "3~"]),
+            ("DC_Motor", ["M", "="]), ("DCMotor", ["M", "="]), ("UniversalMotor", ["M", "1~"]),
+            ("CapacitorMotor", ["M", "1~"]), ("EngineTestBench", ["G"]), ("LinearSolenoid", ["M"]),
+            ("Generator", ["G"]), ("Motor", ["M"]))
+MESSGERAET = (("Voltmeter", ["V"]), ("AmpereMeter", ["A"]), ("PowerFactorMeter", ["cos φ"]), ("WattMeter", ["W"]),
+              ("OhmMeter", ["Ω"]), ("Stopwatch", ["t"]),
+              ("FrequencyMeter", ["Hz"]), ("Tachometer", ["n"]))
+KENNZEICHEN = (("ControllerPID", "PID"), ("ControllerPT1", "PT1"), ("ControllerPT2", "PT2"),
+               ("ControllerGain", "K"), ("ControllerIntegrator", "∫"), ("ControllerDerivator", "d/dt"),
+               ("ControllerHysteresis", "Hyst"), ("ControllerS", "S"), ("Add3Amplifier", "Σ"),
+               ("DifferentialAmplifier", "Δ"), ("PropAmplifier", "▷"), ("GrafcetPLC", "SPS"), ("GrafcetIO", "SPS"),
+               ("DDEIn", "DDE"), ("DDEOut", "DDE"), ("SetPointGenerator", "w"), ("PulseWidthGenerator", "PWM"),
+               ("DC_DC_Transformer", "=/="), ("SignalConverter", "U/I"), ("PositionSensor", "s"),
+               ("PositionTransmitter", "s"), ("PressureSensor", "p"), ("FlowSensor", "Q"), ("Flowmeter", "Q"),
+               ("PressureSwitch", "p"), ("SafetyRelay", "PNOZ"), ("Injector", "Inj"), ("Heater", "+ϑ"),
+               ("Cooler", "−ϑ"), ("ConveyorModule", "M"), ("Timer", "t"), ("PneumaticCounter", "Z"))
+
+
+def kennzeichen(objekt):
+    teil = objekt.split(".")[-1]
+    return next((k for n, k in KENNZEICHEN if teil.startswith(n) or n in teil), "")
+
+
+def _elektrik(s, anschl, u, objekt, klasse):
+    """Zeichnet die übrigen Elektrikbauteile; @return False, wenn nichts passt."""
+    teil = objekt.split(".")[-1]
+    if objekt.startswith("ET.Source.") and teil in ("L1", "L2", "L3", "N", "PE"):
+        return _potential(s, anschl, teil)
+    if objekt.startswith("ET.Switch.") and re.search(r"CircuitBreaker|MotorProtection", teil):
+        return _polig(s, anschl, objekt)
+    for n, z in MASCHINE:
+        if n in teil:
+            return _kreis_mit_text(s, anschl, u, z)
+    for n, z in MESSGERAET:
+        if teil.startswith(n):
+            return _kreis_mit_text(s, anschl, u, z, 0.6)
+    if teil.startswith("AC_DC_Transformer"):
+        return _umrichter(s, anschl, u, "~", "=")
+    if teil == "Transformer":
+        return _trafo(s, anschl, u)
+    if teil.startswith("Inductor"):
+        return _spule_l(s, anschl)
+    if re.match(r"ZDiode|Thyristor|Photodiode", teil):
+        return _diode_art(s, anschl, objekt)
+    if teil.startswith("OpAmp"):
+        return _verstaerker(s, anschl, u)
+    if teil.startswith(("IndicatorLight", "BlinkingIndicator")):
+        return _lampe(s, anschl)
+    if objekt.startswith("ET.Misc.DistributorPlate") or teil in ("MultiPin", "ProtectiveContactSocket"):
+        return _klemmen(s, anschl)
+    return False
+
+
+def _anschluesse_erreichen(s, anschl, u):
+    """Jeder Anschluss muss an der Grafik hängen (sonst endet die Leitung im Leeren): fehlt an einem Anschluss
+    jede Linie, führt eine Stichleitung von ihm zur Mitte des Bauteils, bis an den nächsten gezeichneten Punkt."""
+    punkte = []
+    for e in s.ebene:
+        if e.tag == "line":
+            punkte += [(_z(e, "x1"), _z(e, "y1")), (_z(e, "x2"), _z(e, "y2"))]
+        elif e.tag == "polyline":
+            for pk in (e.get("points") or "").split():
+                a, b = pk.split(",")
+                punkte.append((float(a), float(b)))
+        elif e.tag == "rect":
+            x, y, b, h = _z(e, "x1"), _z(e, "y1"), _z(e, "width"), _z(e, "height")
+            punkte += [(x + b * i / 8, y) for i in range(9)] + [(x + b * i / 8, y + h) for i in range(9)]
+            punkte += [(x, y + h * i / 8) for i in range(9)] + [(x + b, y + h * i / 8) for i in range(9)]
+        elif e.tag == "circle":
+            cx, cy, r = _z(e, "cx"), _z(e, "cy"), _z(e, "r")
+            punkte += [(cx + r * math.cos(t / 8 * math.pi), cy + r * math.sin(t / 8 * math.pi)) for t in range(16)]
+    if not punkte:
+        return
+    x0, y0, x1, y1 = u
+    mx, my = (x0 + x1) / 2, (y0 + y1) / 2
+    for _, _, ax, ay in anschl:
+        if min(abs(px - ax) + abs(py - ay) for px, py in punkte) < 1.0:
+            continue
+        ziel = min(punkte, key=lambda q: (q[0] - ax) ** 2 + (q[1] - ay) ** 2)
+        if abs(ziel[0] - ax) < 1.0 or abs(ziel[1] - ay) < 1.0:
+            s.linie(ax, ay, *ziel)
+        elif abs(ax - mx) >= abs(ay - my):   # seitlicher Anschluss: erst waagerecht
+            s.linie(ax, ay, ziel[0], ay)
+            s.linie(ziel[0], ay, *ziel)
+        else:
+            s.linie(ax, ay, ax, ziel[1])
+            s.linie(ax, ziel[1], *ziel)
+
+
+
+# ------------------------------------------------------------------------- Digitaltechnik (IEC 60617-12)
+# Kennzeichen im Kasten; negiert = Negationskreis am Ausgang. LOGO-Bausteine mit den Namen nach IEC 61131-3.
+LOGIK = (("NAND", "&", True), ("NOR", "≥1", True), ("XOR", "=1", False), ("Xor", "=1", False),
+         ("AND", "&", False), ("And", "&", False), ("OR", "≥1", False), ("Or", "≥1", False),
+         ("Nand", "&", True), ("Nor", "≥1", True), ("Inverter", "1", True), ("Not", "1", True),
+         ("SchmittTriggerInverting", "1", True), ("SwitchOnOffDelay", "TONOF", False),
+         ("SwitchSaveOnDelay", "TONR", False), ("SwitchOnDelay", "TON", False), ("SwitchOffDelay", "TOF", False),
+         ("WipingRelay", "TP", False), ("SelfMaintainingRelay", "RS", False), ("ImpulseRelay", "T", False),
+         ("ImpulseGenerator", "G", False), ("ForAndBackCounter", "CTUD", False), ("TimeSwitch", "TS", False),
+         ("BufferD", "D", False), ("Lo", "0", False), ("Hi", "1", False), ("RS_Flipflop", "RS", False),
+         ("Synchronous_RS", "RS", False), ("D_Flipflop", "D", False), ("JK", "JK", False), ("T_Flipflop", "T", False),
+         ("Monoflop", "1⊓", False), ("CTR4", "CTR4", False), ("ShiftRegister", "SRG8", False),
+         ("HalfAdder", "Σ", False), ("FullAdder", "Σ", False), ("SevenSegment", "8", False),
+         ("HEX_switch", "HEX", False), ("IC06_74HC74", "D", False), ("IC06_74HC109", "JK", False),
+         ("Logobox", "SPS", False), ("Switch", "I", False), ("OutputQ", "Q", False))
+
+
+def _logik(s, anschl, u, objekt):
+    """Logikbaustein: Kasten mit Kennzeichen (&, ≥1, =1, 1, TON, RS …), Eingänge links, Ausgänge rechts,
+    Negationskreis vor dem Ausgang; Anschlüsse oben/unten (Versorgung, Takt) mit Stichleitung."""
+    teil = objekt.split(".")[-1]
+    zeichen, neg = next(((z, n) for name, z, n in LOGIK if teil.startswith(name)), ("", False))
+    if not anschl:
+        return False
+    x0, y0, x1, y1 = u
+    xs = [a[2] for a in anschl]
+    links = [a for a in anschl if a[2] <= min(xs) + 0.5 and a[2] < (x0 + x1) / 2]
+    rechts = [a for a in anschl if a[2] >= max(xs) - 0.5 and a[2] > (x0 + x1) / 2]
+    bx0 = (min(xs) + 6) if links else x0
+    bx1 = (max(xs) - 6 - (4 if neg else 0)) if rechts else x1
+    if bx1 - bx0 < 14:
+        m = (bx0 + bx1) / 2
+        bx0, bx1 = m - 7, m + 7
+    s.kasten(bx0, y0, bx1 - bx0, y1 - y0)
+    if zeichen:
+        h = max(min(8.0, (y1 - y0) * 0.45, (bx1 - bx0) / max(len(zeichen), 1) * 1.4), 4.0)
+        s.text((bx0 + bx1) / 2 - len(zeichen) * h * 0.3, y0 + h + 1.5, zeichen, h)
+    for a in anschl:
+        ax, ay = a[2], a[3]
+        if a in links:
+            s.linie(ax, ay, bx0, ay)
+        elif a in rechts:
+            if neg:
+                s.kreis(bx1 + 2, ay, 2)
+                s.linie(ax, ay, bx1 + 4, ay)
+            else:
+                s.linie(ax, ay, bx1, ay)
+        elif ay <= y0:
+            s.linie(ax, ay, ax, y0)
+        elif ay >= y1:
+            s.linie(ax, ay, ax, y1)
     return True
 
 
@@ -588,7 +939,11 @@ def ersetzen(symbol, komponente, klasse="", stellungen=None):
     u = umriss(symbol)
     s = Stift()
     gezeichnet = False
-    if "DirectionalValve" in objekt or "Valve.Directional" in objekt:
+    if objekt.startswith("Digital."):
+        gezeichnet = _logik(s, anschl, u, objekt)
+    elif objekt.startswith("ET.") and _elektrik(s, anschl, u, objekt, klasse):
+        gezeichnet = True
+    elif "DirectionalValve" in objekt or "Valve.Directional" in objekt:
         gezeichnet = _ventil(s, symbol, komponente, stellungen)
     elif "Actuator" in objekt and "CYL" in objekt.upper():
         fluid = [a for a in anschl if a[1].get("type") != "electric"]
@@ -600,7 +955,7 @@ def ersetzen(symbol, komponente, klasse="", stellungen=None):
     elif objekt.endswith("Supply.Tank"):
         _tank(s, anschl, u)
         gezeichnet = True
-    elif ".Sensor.Manometer" in objekt or objekt.endswith(("Voltmeter", "AmpereMeter")):
+    elif ".Sensor.Manometer" in objekt or objekt.endswith(("Voltmeter", "AmpereMeter")) or ".Sensor.Flowmeter" in objekt:
         _messgeraet(s, anschl, u)
         gezeichnet = True
     elif objekt.startswith(("ET.Source.Pot", "ET.Source.Ground")):
@@ -624,7 +979,11 @@ def ersetzen(symbol, komponente, klasse="", stellungen=None):
         gezeichnet = _transistor(s, anschl, objekt.split(".")[-1].startswith("PNP"))
     elif objekt.startswith("ET.") and objekt.split(".")[-1].startswith(KREISQUELLE):
         gezeichnet = _kreisquelle(s, anschl, u, objekt)
+    elif "Distributor" in objekt:
+        gezeichnet = _verteiler(s, anschl)
     if not gezeichnet:
-        _kasten_mit_name(s, anschl, u, kurzname(objekt))
+        # kein Textkasten mit (abgeschnittenem) Namen: Kasten mit Kennzeichen nach IEC 60617 oder leer
+        _kasten_mit_name(s, anschl, u, kennzeichen(objekt))
+    _anschluesse_erreichen(s, anschl, u)
     neu.append(s.ebene)
     return neu

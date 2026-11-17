@@ -349,14 +349,26 @@ def _lampe(s, anschl):
     return True
 
 
-def _potential(s, anschl, text):
+def _potential(s, anschl, text, u=None):
+    """Potential (24V, 0V, L1 … PE): Stich vom Anschluss weg ins Bauteil, Querstrich, Name lesbar groß.
+    Liegt das FluidSIM-Bauteil quer (Anschluss am Ende einer waagerechten Ausdehnung), zeigt auch der Stich
+    waagerecht – sonst ragen übereinander gestapelte Potentiale in die Leitungen der Nachbarn."""
     if not anschl:
         return False
     _, _, x, y = anschl[0]
-    yb = y - 8 if y >= 0 else y + 8
+    h = 8.0
+    if u is not None and (u[2] - u[0]) > (u[3] - u[1]) + 2 and abs(x - (u[0] + u[2]) / 2) > 2:
+        xb = x - 8 if x > (u[0] + u[2]) / 2 else x + 8
+        s.linie(x, y, xb, y)
+        s.linie(xb, y - 6, xb, y + 6)
+        breite = len(text) * h * 0.6
+        s.text(xb - 2 - breite if xb < x else xb + 2, y + h * 0.35, text, h)
+        return True
+    oben = y >= ((u[1] + u[3]) / 2 if u is not None else 0)
+    yb = y - 8 if oben else y + 8
     s.linie(x, y, x, yb)
     s.linie(x - 6, yb, x + 6, yb)
-    s.text(x + 8, yb + 2, text, 6)
+    s.text(x + 8, yb + (2 if oben else h), text, h)
     return True
 
 
@@ -493,6 +505,34 @@ def _kreis_mit_text(s, anschl, u, zeilen, faktor=0.75):
     x0, y0, x1, y1 = u
     cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
     r = max(min(x1 - x0, y1 - y0) / 2 * faktor, 7)
+    if el and min(((a[2] - cx) ** 2 + (a[3] - cy) ** 2) ** 0.5 for a in el) < r + 3:
+        # Anschlüsse lägen im Kreis (FluidSIM zeichnet sie teils innen): Mitte und Radius so suchen, dass
+        # alle Anschlüsse mindestens 4 Einheiten außerhalb liegen und der Kreis möglichst groß bleibt
+        best = (0.0, cx, cy)
+        for i in range(25):
+            for j in range(25):
+                px, py = x0 + (x1 - x0) * i / 24, y0 + (y1 - y0) * j / 24
+                rr = min(min(((a[2] - px) ** 2 + (a[3] - py) ** 2) ** 0.5 for a in el) - 4,
+                         px - x0, x1 - px, py - y0, y1 - py, r)
+                if rr > best[0]:
+                    best = (rr, px, py)
+        # lieber mittig unter/über den Anschlussreihen (Wicklungsanschlüsse oben, Erregung unten), damit jede
+        # Zuleitung senkrecht an den Kreis geht, wenn der Kreis dort nicht viel kleiner wird
+        zahl = {}
+        for a in el:
+            zahl[round(a[3])] = zahl.get(round(a[3]), 0) + 1
+        haupt = max(zahl, key=lambda y: (zahl[y], -abs(y - cy)))            # Reihe mit den meisten Anschlüssen
+        gegen = [y for y in zahl if zahl[y] >= 2 and (y - cy) * (haupt - cy) < 0]
+        oben = [a for a in el if round(a[3]) == haupt]
+        unten = [a for a in el if gegen and round(a[3]) == max(gegen, key=lambda y: abs(y - haupt))]
+        if len(oben) >= 2:
+            px = sorted(a[2] for a in oben)[len(oben) // 2]
+            py = (haupt + unten[0][3]) / 2 if unten else cy
+            rr = min(min(((a[2] - px) ** 2 + (a[3] - py) ** 2) ** 0.5 for a in el) - 4, r)
+            if rr >= 0.8 * best[0] and all(abs(a[2] - px) < rr for a in oben + unten):
+                best = (rr, px, py)
+        if best[0] >= 7:
+            r, cx, cy = best
     s.kreis(cx, cy, r)
     h = min(r * 0.55, 9)
     for i, z in enumerate(zeilen):
@@ -692,7 +732,7 @@ def _elektrik(s, anschl, u, objekt, klasse):
     """Zeichnet die übrigen Elektrikbauteile; @return False, wenn nichts passt."""
     teil = objekt.split(".")[-1]
     if objekt.startswith("ET.Source.") and teil in ("L1", "L2", "L3", "N", "PE"):
-        return _potential(s, anschl, teil)
+        return _potential(s, anschl, teil, u)
     if objekt.startswith("ET.Switch.") and re.search(r"CircuitBreaker|MotorProtection", teil):
         return _polig(s, anschl, objekt)
     for n, z in MASCHINE:
@@ -959,7 +999,7 @@ def ersetzen(symbol, komponente, klasse="", stellungen=None):
         _messgeraet(s, anschl, u)
         gezeichnet = True
     elif objekt.startswith(("ET.Source.Pot", "ET.Source.Ground")):
-        gezeichnet = _potential(s, anschl, "0V" if ("0V" in objekt or "Ground" in objekt) else "24V")
+        gezeichnet = _potential(s, anschl, "0V" if ("0V" in objekt or "Ground" in objekt) else "24V", u)
     elif klasse in ("make-contact", "break-contact", "changeover-contact", "contact-manual", "proximity-switch"):
         art = "break" if ("Break" in objekt or klasse == "break-contact") else "make"
         gezeichnet = _kontakt(s, anschl, art, klasse == "contact-manual")

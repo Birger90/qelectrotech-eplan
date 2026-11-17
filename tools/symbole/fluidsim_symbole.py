@@ -333,14 +333,14 @@ class Zeichner:
             # Rechts neben dem Symbol, oben: QET setzt den Querverweis einer Spule (Slave) unter die
             # Kennzeichnung, so überdeckt er das Symbol nicht
             lx, ly = max(xs) + 4, min(ys) - 2
-            xs.append(lx + 30)
             zeilen.insert(0, (
                 f'<dynamic_text x="{fmt(lx)}" y="{fmt(ly)}" z="3" text_width="-1" '
                 f'Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" '
                 f'keep_visual_rotation="false" text_from="ElementInfo" uuid="{{{kennung(self.saat, "kennzeichen")}}}" '
                 f'font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name>'
                 f'</dynamic_text>'))
-            ys.append(ly)
+            # Die Kennzeichnung zählt nicht zur Ausdehnung des Bauteils: sonst überdecken sich die Kästen
+            # nebeneinander stehender Kontakte, Leitungen „laufen durch“ sie und route avoid findet keinen Weg.
         x0 = math.floor(min(xs) / 10) * 10
         y0 = math.floor(min(ys) / 10) * 10
         x1 = math.ceil(max(xs) / 10) * 10

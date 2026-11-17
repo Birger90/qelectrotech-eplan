@@ -808,7 +808,8 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
             eb, tb = anschluss_uuid(b2)
             if ea and eb and ta and tb:
                 ops.append({"op": "add_conductor", "folio": blatt, "from": "$" + ea,
-                            "from_terminal": "{" + ta + "}", "to": "$" + eb, "to_terminal": "{" + tb + "}"})
+                            "from_terminal": "{" + ta + "}", "to": "$" + eb, "to_terminal": "{" + tb + "}",
+                            "route": "avoid"})   # um die Symbole herum, nicht hindurch
                 zahl["leitungen"] += 1
 
     # Verknüpfungen, auch über Blattgrenzen: zuerst über den Verweis im selben Blatt, sonst über die Kennzeichnung
@@ -847,6 +848,96 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
     zahl["handventile"] = sorted(set(handventile))
     zahl["ventile"] = sorted(set(ventile))
     return ops, zahl
+
+
+# Kennzeichnungen (Label) freistellen: liegt die Kennzeichnung eines Bauteils auf einer Leitung, auf einem anderen
+# Bauteil oder einer anderen Kennzeichnung, wird sie mit placeElementTexts an die erste freie der neun Stellen um
+# das Bauteil gesetzt (wie Bearbeiten > Symboltexte platzieren). Gleiche Geometrie wie qet_layout_check.
+BESCHRIFTUNG_JS = r"""
+var M = @MARKER@, versetzt = 0, bleibt = 0;
+var STELLEN = ['right', 'left', 'top-right', 'bottom-right', 'top-left', 'bottom-left', 'top', 'bottom'];
+function labelIndex(f, u) {
+  var t = qet.elementTexts(f, u);
+  for (var i = 0; i < t.length; i++)
+    if (qet.elementTextProperty(f, u, i, 'source') === 'info'
+        && qet.elementTextProperty(f, u, i, 'info') === 'label') return i;
+  return -1;
+}
+function box(f, u, i) {
+  var g = qet.elementTextGeometry(f, u, i);
+  return (g && g.right > g.left) ? g : null;
+}
+function schneidet(a, b) {
+  return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+}
+function segTrifft(p, q, g) {
+  var l = g.left + 1, t = g.top + 1, r = g.right - 1, b = g.bottom - 1;
+  if (Math.abs(p.y - q.y) < 1e-6) return t <= p.y && p.y <= b && Math.min(p.x, q.x) <= r && Math.max(p.x, q.x) >= l;
+  if (Math.abs(p.x - q.x) < 1e-6) return l <= p.x && p.x <= r && Math.min(p.y, q.y) <= b && Math.max(p.y, q.y) >= t;
+  return false;
+}
+for (var f = 0; f < qet.folioCount(); f++) {
+  var els = qet.elementUuids(f), geo = {}, lab = {};
+  for (var e = 0; e < els.length; e++) {
+    geo[els[e]] = qet.elementGeometry(f, els[e]);
+    lab[els[e]] = labelIndex(f, els[e]);
+  }
+  var wege = [], cu = qet.conductorUuids(f);
+  for (var c = 0; c < cu.length; c++) {
+    var p = qet.conductorPath(f, cu[c]);
+    if (p) for (var k = 0; k + 1 < p.length; k++) wege.push([p[k], p[k + 1]]);
+  }
+  function treffer(u, g) {
+    var n = 0;
+    for (var k = 0; k < wege.length; k++) if (segTrifft(wege[k][0], wege[k][1], g)) n++;
+    for (var e2 = 0; e2 < els.length; e2++) {
+      var v = els[e2];
+      if (v !== u && schneidet(g, geo[v])) n++;
+      if (v !== u && lab[v] >= 0) { var b2 = box(f, v, lab[v]); if (b2 && schneidet(g, b2)) n++; }
+    }
+    return n;
+  }
+  for (var e = 0; e < els.length; e++) {
+    var u = els[e], i = lab[u];
+    if (i < 0 || qet.elementTextProperty(f, u, i, 'shows') === 'false') continue;
+    var g = box(f, u, i), eg = geo[u];
+    if (!g || treffer(u, g) === 0) continue;
+    // Kennzeichnung im eigenen Symbol (Schrittnummer im GRAFCET-Schritt) gehört dorthin
+    if (g.left >= eg.left - 1 && g.right <= eg.right + 1 && g.top >= eg.top - 1 && g.bottom <= eg.bottom + 1) continue;
+    var best = null, bestN = treffer(u, g);
+    for (var s = 0; s < STELLEN.length; s++) {
+      if (!qet.placeElementTexts(f, [u], STELLEN[s])) continue;
+      var g2 = box(f, u, i), n2 = g2 ? treffer(u, g2) : 99;
+      if (n2 < bestN) { best = STELLEN[s]; bestN = n2; }
+      if (n2 === 0) break;
+    }
+    if (best !== null && best !== STELLEN[s]) qet.placeElementTexts(f, [u], best);
+    if (best !== null) versetzt++;
+    if (bestN > 0) bleibt++;
+  }
+}
+qet.log(M + JSON.stringify({kind: 'frei', versetzt: versetzt, bleibt: bleibt, save: qet.save(@AUSGABE@)}));
+"""
+
+
+def beschriftungen_freistellen(qet_mcp, binary, pfad: Path, sammlung: Path):
+    """Kennzeichnungen von Leitungen, Bauteilen und anderen Kennzeichnungen wegsetzen; speichert das Projekt."""
+    js = (BESCHRIFTUNG_JS.replace("@MARKER@", json.dumps(qet_mcp._MARKER))
+          .replace("@AUSGABE@", json.dumps(str(pfad))))
+    try:
+        r = qet_mcp._run_qet(str(binary), [str(pfad)], timeout=600, elements_dir=str(sammlung), script=js,
+                             tail=200_000)
+    except Exception as e:   # das Projekt ist schon gespeichert; ohne Freistellen bleibt es gültig
+        return {"fehler": str(e)[:300]}
+    for zeile in (r.get("stdout", "") + "\n" + r.get("stderr", "")).splitlines():
+        if qet_mcp._MARKER in zeile:
+            try:
+                d = json.loads(zeile.split(qet_mcp._MARKER, 1)[1])
+            except ValueError:
+                continue
+            if d.get("kind") == "frei":
+                return d
+    return {"fehler": "keine Rückmeldung"}
 
 
 def main(argv=None):
@@ -920,6 +1011,10 @@ def main(argv=None):
             print("  nicht übernommen:", x)
         if not erg.get("saved"):
             sys.exit("Projekt nicht gespeichert: " + json.dumps(erg, ensure_ascii=False)[:2000])
+        if ops:
+            frei = beschriftungen_freistellen(qet_mcp, a.qet, Path(ausgabe), sammlung)
+            zahl["beschriftungen"] = frei
+            print(f"  Kennzeichnungen: {frei.get('versetzt', 0)} versetzt, {frei.get('bleibt', 0)} ohne freien Platz")
         print(f"fertig: {ausgabe}")
         if a.bericht:
             a.bericht.write_text(json.dumps(dict(zahl, fehlops=len(fehler), fehler=fehler[:10]), ensure_ascii=False,

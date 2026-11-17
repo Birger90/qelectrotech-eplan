@@ -245,7 +245,8 @@ def umwandeln(blatt, objekte, verbindungen, sammlung, K, mitte):
             eid, art = platziert[g[0]]
             ops.append({"op": "add_conductor", "folio": blatt, "from": "$" + eid,
                         "from_terminal": "{" + anschl[art][ANSCHLUSS[g[1]]][0] + "}", "to": "$" + ziel_id,
-                        "to_terminal": "{" + ziel_anschluss + "}"})
+                        "to_terminal": "{" + ziel_anschluss + "}",
+                        "route": "avoid"})   # Rücksprung u. ä. um Schritte/Transitionen herum, nicht hindurch
             zahl["verbindungen"] += 1
 
         if bar is not None and (len(oben) > 1 or len(unten) > 1):

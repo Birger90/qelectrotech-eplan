@@ -298,3 +298,31 @@ Funktionsvorlage einfügen – mit Artikeldaten, Klemmen, Kabel und Verknüpfung
   action text are the labels (`set_label`).
 - QElectroTech does not draw the terminal stub in PDF/PNG: a symbol's graphics must reach each terminal, or a gap
   shows.
+
+## Steuerstromkreise – Muster aus den FluidSIM-Beispielen (gezählt 17.11.2026)
+
+Gezählt über 229 Schaltungen mit 24 V, 0 V und Spulen (Elektropneumatik, Elektrohydraulik, Elektrotechnik).
+Die Zahl in Klammern ist der Beleg; so zeichnen, wenn der Hausstil oben nichts anderes sagt.
+
+- **24 V oben, 0 V unten** (189 von 229; der Rest sind quer liegende Leiterdiagramme nach NEMA).
+- **Spulen unten, direkt an 0 V**: Relais- und Ventilspulen (1067 von 1072). Kontakte, Taster und Sensoren
+  darüber, zur 24-V-Schiene hin.
+- **Ein senkrechter Strompfad je Spule**, Abstand Median 96 FluidSIM-Einheiten ≈ 8 Raster. In QET mit
+  Kontaktspiegel unter der Spule **mindestens 10–12 Raster** lassen, sonst überlappen die Spiegel der
+  Nachbarpfade.
+- **Signalteil links, Leistungsteil rechts**: zuerst die Pfade mit Sensoren/Tastern und Relaisspulen, rechts
+  die Ventilspulen, geschaltet über Relaiskontakte (301 Ventilspulen hinter einem Relaiskontakt, 239 direkt
+  hinter Taster oder Sensor; 153 Schaltungen trennen so Signal- und Leistungsteil).
+- **Selbsthaltung** (31 Schaltungen): Ein-Taster -SF1 (Schließer 13/14) parallel zum Halteschließer der eigenen
+  Spule (-KF1 13/14), der Aus-Taster -SF2 (Öffner 11/12) in Reihe hinter der Parallelschaltung, darunter die
+  Spule -KF1 – Aus dominant. Ein zweiter Schließer der Spule (-KF1 23/24) schaltet im Nachbarpfad die
+  Ventilspule.
+- **Kontaktnummern** (erste Ziffer = Ordnungsnummer am Relais, zweite = Funktion):
+  Schließer 13/14, 23/24 (134); Öffner 11/12, 21/22 (66); Wechsler 11/12/14, 21/22/24 (273); Taster
+  13/14 oder 3/4 (336); Näherungsschalter dreiadrig 1 (+), 3 (0 V), 4 (Ausgang) (141); Endschalter als
+  Wechsler 1/2/4.
+- **Kennzeichnung**: Relais -KF (511 von ≈ 700), Ventilspule -MB (307), Taster -SF (310), Sensor/Endschalter
+  -BG (166), Leuchte -PF oder -E, Spannungsquelle -G. Die Ventilspule trägt in QET als Slave die Kennzeichnung
+  ihres Ventils (-QM1), die eigene (-MB1) bleibt in den Daten.
+- **Endschalter** stehen im Steuerstromkreis als Schließer/Wechsler mit -BG-Kennzeichen; am Zylinder sind sie
+  nur eine Wegmarke (siehe Skill `fluidtechnik`).

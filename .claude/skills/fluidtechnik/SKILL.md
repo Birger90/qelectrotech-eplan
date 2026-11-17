@@ -245,6 +245,14 @@ TP102_02 (zwei Zylinder, Rollenventile, Zähler), TP601_14 (Elektrohydraulik mit
   Simulation rechnet mit den Bauteilnamen, deshalb übernimmt der Import bei `*.Proportional.*` und `Flowmeter_2` die
   Anschlussnamen des Bauteils, nicht die Beschriftung (vorher fuhren gespiegelte Stetigventile verkehrt herum).
 
+- Import aller FluidSIM-Beispiele (17.11.2026, 1136 aus `circ` + 193 abweichende aus `circ_tp`): drei Fehler im
+  Importer behoben. (1) Jedes Blatt war A3 mit der Schaltung als Fleck oben links; jetzt beginnt sie bei 50 px und
+  das Papier ist das kleinste, auf das sie passt (`blatt_lage`, meist A4 quer). (2) 110 Dateien (TP1011C, TP1024,
+  TP1121) packen ihr Blatt in `section type="circuits"` → `<file>`: kamen leer an, `lesen()` nimmt jetzt das Blatt.
+  (3) Widerstand, Kondensator, Diode/LED, Sicherung, Gleichspannungsquelle, Bipolartransistor, Signalgenerator und
+  Oszilloskop waren Kästen mit winziger englischer Aufschrift; jetzt IEC-60617-Grafik in `eigene_grafik.py`.
+  Digitaltechnik (LOGO, 37 Dateien) bleibt leer (nicht übernommen), GRAFCET-Dateien haben nur GRAFCET-Elemente.
+
 ## Offen
 
 Ventil- und Zylinder-Editor (Symbol zur Laufzeit), Wegmaßstab, Stückliste mit Schläuchen,

@@ -151,5 +151,59 @@ class GrafcetGliederung(unittest.TestCase):
         self.assertEqual(offen, [])
 
 
+class Blatt(unittest.TestCase):
+    def test_kleine_schaltung_auf_a4_quer_oben_links(self):
+        # FluidSIM zeichnet klein mitten auf ein A4-Blatt: nach links oben schieben (Vielfaches von 10), A4 quer
+        alle = [ET.fromstring("<component x1='240' y1='300' width='60' height='36'/>"),
+                ET.fromstring("<component x1='240' y1='420' width='24' height='24'/>")]
+        ops = [{"x": 225.0, "y": 265.0}, {"x": 210.0, "y": 360.0}]
+        dx, dy, papier = fp.blatt_lage(alle, ops)
+        self.assertEqual((dx % 10, dy % 10), (0, 0))
+        self.assertEqual(min(240 * fp.fs.K, 210.0) + dx, 50.0)   # linker Rand des Kastens bei RAND
+        self.assertEqual(papier, "a4-landscape")
+
+    def test_grosse_schaltung_auf_groesserem_papier(self):
+        alle = [ET.fromstring("<component x1='0' y1='0' width='1500' height='900'/>")]
+        self.assertEqual(fp.blatt_lage(alle, [{"x": 0.0, "y": 0.0}])[2], "a3-landscape")
+
+
+class Lesen(unittest.TestCase):
+    def test_blatt_im_abschnitt_circuits(self):
+        # TP1011C, TP1024, TP1121: das Blatt steckt in section type="circuits" -> <file>
+        roh = ("<fluidtools2><section type='circuits' count='1'><file name='x.circ'>"
+               "<section type='circuit-objects'><component ident='O1'/></section></file></section></fluidtools2>")
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "x.circ"
+            p.write_text(roh, encoding="utf-8")
+            w = fp.lesen(p)
+        self.assertIsNotNone(fp.abschnitt(w, "circuit-objects"))
+
+
+class EigeneGrafik(unittest.TestCase):
+    def test_widerstand_ohne_aufschrift(self):
+        import eigene_grafik as eg
+        sym = ET.fromstring("<symbol><symbol-layer ident='default'>"
+                            "<connector type='electric' ident='1' designation='p' cx='-24' cy='0'/>"
+                            "<connector type='electric' ident='2' designation='n' cx='24' cy='0'/>"
+                            "</symbol-layer></symbol>")
+        neu = eg.ersetzen(sym, ET.fromstring("<component object-ref='ET.Basic.Resistor'/>"))
+        eigen = next(e for e in neu if e.get("ident") == "EIGEN")
+        self.assertEqual(eigen.findall("text"), [])          # kein Kasten mit Namen
+        self.assertEqual(len(eigen.findall("polyline")), 1)  # der Widerstandskörper
+
+    def test_npn_mit_pfeil_am_emitter(self):
+        import eigene_grafik as eg
+        sym = ET.fromstring("<symbol><symbol-layer ident='default'>"
+                            "<connector type='electric' ident='1' designation='B' cx='-21' cy='0'/>"
+                            "<connector type='electric' ident='2' designation='C' cx='21' cy='-18'/>"
+                            "<connector type='electric' ident='3' designation='E' cx='21' cy='18'/>"
+                            "</symbol-layer></symbol>")
+        neu = eg.ersetzen(sym, ET.fromstring("<component object-ref='ET.Semiconductor.NPN_BC140'/>"))
+        eigen = next(e for e in neu if e.get("ident") == "EIGEN")
+        self.assertEqual(sum(1 for li in eigen.findall("line") if li.get("end-cap") == "arrow1"), 1)
+        self.assertEqual(len(eigen.findall("circle")), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

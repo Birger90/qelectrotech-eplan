@@ -4,13 +4,15 @@ Aus der .circ werden nur Daten genommen: Lage und Namen der Anschlüsse, die Ebe
 Stellung), die Schaltwege der Stellungen, die Ausdehnung des Bauteils, seine Klasse und Kennwerte (Feder links/
 rechts). Gezeichnet wird alles neu nach DIN ISO 1219-1 bzw. IEC 60617 aus einfachen Grundelementen: Ventilkästen
 mit Pfeilen und Sperren, Betätigungen (Magnet, Taster, Rolle, Vorsteuerung, Feder), Zylinder, Quellen, Tank,
-Messgeräte, Schaltkontakte, Spulen, Leuchten, Potentiale; jede andere Klasse als Kasten mit ihrem Namen. So enthält
+Messgeräte, Schaltkontakte, Spulen, Leuchten, Potentiale, Zweipole (Widerstand, Kondensator, Diode, LED,
+Sicherung, Gleichspannungsquelle), Bipolartransistor, Signalgenerator/Oszilloskop; jede andere Klasse als Kasten mit ihrem Namen. So enthält
 ein übernommenes Projekt keine Festo-Grafik, und jeder kann eine Schaltung übernehmen, auch ohne FluidSIM.
 
 ersetzen() gibt ein <symbol> im FluidSIM-Format zurück: dieselben Ebenen (Namen, Sichtbarkeit, Lage) mit nur ihren
 Anschlüssen, dazu eine Ebene "EIGEN" mit der neuen Grafik. Der Umwandler (fluidsim_symbole.bauteil_umwandeln)
 zeichnet es wie jedes Symbol, mit Drehung, Spiegelung und den Anschluss-UUIDs der Schaltung.
 """
+import math
 import re
 import xml.etree.ElementTree as ET
 
@@ -353,6 +355,109 @@ def _potential(s, anschl, text):
     return True
 
 
+# ---------------------------------------------------------------------------------------------- Elektrik
+ZWEIPOL = ("Resistor", "Potentiometer", "Capacitor", "CapacitorPol", "Diode", "LED", "Fuse", "ConstantVoltage")
+KREISQUELLE = ("WaveformGenerator", "Oscilloscope")
+
+
+def _zweipol(s, anschl, objekt):
+    """Zweipol nach IEC 60617 zwischen den Anschlüssen p und n: Widerstand, Potentiometer, Kondensator,
+    Diode/LED, Sicherung, Gleichspannungsquelle; Zuleitungen bis an den Körper."""
+    el = [a for a in anschl if a[1].get("type") == "electric"]
+    if len(el) < 2:
+        return False
+    plus = next((a for a in el if a[1].get("designation") == "p"), el[0])
+    minus = next((a for a in el if a[1].get("designation") == "n" and a is not plus),
+                 next(a for a in el if a is not plus))
+    ax = Achse((plus[2], plus[3]), (minus[2], minus[3]))
+    teil = objekt.split(".")[-1]
+
+    def zu(u):
+        return ax.p(u)
+    if teil.startswith(("Capacitor", "ConstantVoltage")):
+        L = 1.5
+    elif teil.startswith(("Diode", "LED")):
+        L = min(4.0, ax.halb - 1)
+    else:
+        L = max(min(9.0, ax.halb - 2), 3.0)
+    s.linie(plus[2], plus[3], *zu(-L))
+    s.linie(*zu(L), minus[2], minus[3])
+    if teil.startswith(("Resistor", "Potentiometer", "Fuse")):
+        s.zug([ax.p(-L, -3.5), ax.p(L, -3.5), ax.p(L, 3.5), ax.p(-L, 3.5), ax.p(-L, -3.5)])
+        if teil.startswith("Fuse"):
+            s.linie(*ax.p(-L), *ax.p(L))
+        if teil.startswith("Potentiometer"):
+            schleifer = [a for a in el if a is not plus and a is not minus]
+            if schleifer:
+                w = schleifer[0]
+                ziel = min((ax.p(0, -3.5), ax.p(0, 3.5)), key=lambda q: (q[0] - w[2]) ** 2 + (q[1] - w[3]) ** 2)
+                s.linie(w[2], w[3], *ziel, ende="arrow1")
+    elif teil.startswith("Capacitor"):
+        for u in (-1.5, 1.5):
+            s.linie(*ax.p(u, -6), *ax.p(u, 6))
+        if teil == "CapacitorPol":
+            q = ax.p(-5, -7)
+            s.text(q[0] - 2, q[1] + 2, "+", 5)
+    elif teil.startswith("ConstantVoltage"):
+        s.linie(*ax.p(-1.5, -7), *ax.p(-1.5, 7))
+        s.linie(*ax.p(1.5, -3.5), *ax.p(1.5, 3.5))
+        q = ax.p(-5, -8)
+        s.text(q[0] - 2, q[1] + 2, "+", 5)
+    else:   # Diode, LED: Dreieck in Durchlassrichtung p -> n, Strich an der Kathode
+        s.zug([ax.p(-L, -4.5), ax.p(-L, 4.5), ax.p(L, 0), ax.p(-L, -4.5)])
+        s.linie(*ax.p(L, -4.5), *ax.p(L, 4.5))
+        if teil.startswith("LED"):
+            for u in (-1.5, 1.5):
+                a, b = ax.p(u, -6), ax.p(u + 4, -11)
+                s.linie(*a, *b, ende="arrow1")
+    return True
+
+
+def _kreisquelle(s, anschl, u, objekt):
+    """Signalgenerator bzw. Oszilloskop: Kreis mit Sinus (IEC 60617), Zuleitungen bis an den Kreis."""
+    el = [a for a in anschl if a[1].get("type") == "electric"]
+    if not el:
+        return False
+    x0, y0, x1, y1 = u
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    r = max(min(x1 - x0, y1 - y0) / 2 * 0.55, 6)
+    s.kreis(cx, cy, r)
+    s.zug([(cx - r * 0.6 + r * 1.2 * i / 12, cy - r * 0.35 * math.sin(i / 12 * 2 * 3.14159))
+           for i in range(13)])
+    for _, _, ax_, ay in el:
+        dx, dy = ax_ - cx, ay - cy
+        lang = (dx * dx + dy * dy) ** 0.5 or 1.0
+        if lang > r:
+            s.linie(ax_, ay, cx + dx / lang * r, cy + dy / lang * r)
+    return True
+
+
+def _transistor(s, anschl, pnp):
+    """Bipolartransistor (IEC 60617): Basisbalken, Kollektor und Emitter schräg, Pfeil am Emitter (NPN
+    heraus, PNP hinein), Kreis; Anschlüsse B, C, E."""
+    el = {a[1].get("designation"): a for a in anschl if a[1].get("type") == "electric"}
+    if not all(k in el for k in ("B", "C", "E")):
+        return False
+    b, c, e = el["B"], el["C"], el["E"]
+    bx = b[2] + (c[2] - b[2]) * 0.55
+    cy, ey = c[3], e[3]
+    my = (cy + ey) / 2
+    h = abs(ey - cy) * 0.22
+    s.linie(b[2], b[3], bx, b[3])
+    s.linie(bx, my - h, bx, my + h)
+    kx = c[2]
+    s.linie(bx, my - h * 0.5, kx, my - h * 1.6)
+    s.linie(kx, my - h * 1.6, kx, cy)
+    if pnp:
+        s.linie(kx, my + h * 1.6, bx, my + h * 0.5, ende="arrow1")
+    else:
+        s.linie(bx, my + h * 0.5, kx, my + h * 1.6, ende="arrow1")
+    s.linie(kx, my + h * 1.6, kx, ey)
+    r = max(abs(kx - bx), h * 1.8) * 0.95
+    s.kreis((bx + kx) / 2, my, r)
+    return True
+
+
 class Achse:
     """Örtliche Koordinaten längs der Verbindung zweier Anschlüsse: u längs (von a nach b), v quer."""
 
@@ -513,6 +618,12 @@ def ersetzen(symbol, komponente, klasse="", stellungen=None):
         gezeichnet = _druckventil(s, anschl, "Relief" not in objekt)
     elif "ShuttleValve" in objekt or "TwoPressureValve" in objekt:
         gezeichnet = _logikventil(s, anschl, "TwoPressure" in objekt)
+    elif objekt.startswith("ET.") and objekt.split(".")[-1].startswith(ZWEIPOL):
+        gezeichnet = _zweipol(s, anschl, objekt)
+    elif objekt.startswith("ET.Semiconductor.") and objekt.split(".")[-1].startswith(("NPN", "PNP")):
+        gezeichnet = _transistor(s, anschl, objekt.split(".")[-1].startswith("PNP"))
+    elif objekt.startswith("ET.") and objekt.split(".")[-1].startswith(KREISQUELLE):
+        gezeichnet = _kreisquelle(s, anschl, u, objekt)
     if not gezeichnet:
         _kasten_mit_name(s, anschl, u, kurzname(objekt))
     neu.append(s.ebene)

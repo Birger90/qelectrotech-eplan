@@ -79,7 +79,15 @@ def lesen(pfad: Path):
     roh = pfad.read_bytes()
     if roh[:2] == b"\x1f\x8b":
         roh = gzip.decompress(roh)
-    return fs.entpacken(ET.fromstring(roh))
+    wurzel = fs.entpacken(ET.fromstring(roh))
+    # Manche Dateien (TP1011C, TP1024, TP1121) packen ihr Blatt in einen Abschnitt "circuits" mit <file>; in allen
+    # Beispielen genau eines. Dessen Abschnitte sind die einer gewöhnlichen Schaltung.
+    sammel = next((s for s in wurzel.findall("section") if s.get("type") == "circuits"), None)
+    if sammel is not None and abschnitt(wurzel, "circuit-objects") is None:
+        blatt = sammel.find("file")
+        if blatt is not None:
+            return blatt
+    return wurzel
 
 
 def abschnitt(wurzel, art):
@@ -434,6 +442,33 @@ def wegmarken(alle, zylinder, schwenk=None):
     return out
 
 
+# Papier, kleinstes zuerst (QET-Vorlage: Rahmen 96 dpi, Kopfzeile/-spalte 20, Schriftfeld unten 50)
+PAPIER = (("a4-landscape", 297, 210), ("a4-portrait", 210, 297), ("a3-landscape", 420, 297),
+          ("a3-portrait", 297, 420), ("a2-landscape", 594, 420), ("a1-landscape", 841, 594),
+          ("a0-landscape", 1189, 841))
+RAND = 50.0          # Abstand der Schaltung vom Blattrand (mit Kopfzeile)
+SCHRIFTFELD = 52.0   # Höhe des Schriftfelds unten
+
+
+def blatt_lage(alle, hier_ops):
+    """(dx, dy, Papier): Verschiebung der Bauteile (Vielfaches von 10, damit gerade Leitungen gerade bleiben),
+    sodass die Schaltung bei RAND beginnt, und das kleinste Papier, auf das sie dann passt."""
+    kasten = [(fs.zahl(o, "x1") * fs.K, fs.zahl(o, "y1") * fs.K,
+               (fs.zahl(o, "x1") + fs.zahl(o, "width")) * fs.K, (fs.zahl(o, "y1") + fs.zahl(o, "height")) * fs.K)
+              for o in alle if fs.zahl(o, "width") > 0]
+    x0 = min([k[0] for k in kasten] + [op["x"] for op in hier_ops])
+    y0 = min([k[1] for k in kasten] + [op["y"] for op in hier_ops])
+    x1 = max([k[2] for k in kasten] + [op["x"] for op in hier_ops])
+    y1 = max([k[3] for k in kasten] + [op["y"] for op in hier_ops])
+    dx = 10.0 * round((RAND - x0) / 10.0)
+    dy = 10.0 * round((RAND - y0) / 10.0)
+    breite, hoehe = x1 + dx + RAND, y1 + dy + RAND + SCHRIFTFELD
+    for name, b, h in PAPIER:
+        if breite <= b / 25.4 * 96 and hoehe <= h / 25.4 * 96:
+            return dx, dy, name
+    return dx, dy, PAPIER[-1][0]
+
+
 def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
     """Bauteile in sammlung schreiben; @return die Operationen für qet_edit und eine Zusammenfassung."""
     ops = []
@@ -455,7 +490,8 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
         grafik = abschnitt(w, "symbol-graphics")
         if grafik is None:
             continue
-        ops.append({"op": "set_folio_border", "folio": blatt, "property": "preset", "value": "a3-landscape"})
+        rahmen = {"op": "set_folio_border", "folio": blatt, "property": "preset", "value": "a3-landscape"}
+        ops.append(rahmen)
         # leere Leitungsbeschriftungen nicht zeigen (sonst steht an jeder Leitung ein Strich)
         ops.append({"op": "set_conductor_default", "folio": blatt, "property": "displaytext", "value": "false"})
         symbole = {s.get("ident"): s for s in grafik.findall("symbol")}
@@ -698,13 +734,12 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
             zahl[k] += g_zahl[k]
         offen += [f"{circ.name}: {x}" for x in g_offen]
 
-        # Das ganze Blatt so verschieben, dass es im Rahmen beginnt: FluidSIM-Schaltungen liegen teils bei
-        # negativen Koordinaten oder höher als das QET-Blatt. Texte stehen relativ zum Bauteil und gehen mit.
+        # Das ganze Blatt so verschieben, dass es oben links im Rahmen beginnt, und das kleinste Papier wählen,
+        # auf das es passt: FluidSIM zeichnet die Beispiele klein in eine Ecke eines A4-Blatts (oder bei
+        # negativen Koordinaten), auf A3 wären sie ein Fleck in der Ecke. Texte stehen relativ zum Bauteil.
         hier_ops = [op for op in ops if op["op"] == "add_element" and op["folio"] == blatt]
         if hier_ops:
-            rand = 50.0
-            dx = max(0.0, rand - min(op["x"] for op in hier_ops))
-            dy = max(0.0, rand - min(op["y"] for op in hier_ops))
+            dx, dy, rahmen["value"] = blatt_lage(alle + list(textfelder.values()), hier_ops)
             for op in hier_ops:
                 op["x"] = round(op["x"] + dx, 1)
                 op["y"] = round(op["y"] + dy, 1)

@@ -1,6 +1,6 @@
 # Formelregister des Rechenkerns
 
-Stand Fork 1.29.0 (16.11.2026). Hier steht jede Beziehung, die `sources/simulation/` rechnet, mit Codestelle,
+Stand Fork 1.30.0 (17.11.2026). Hier steht jede Beziehung, die `sources/simulation/` rechnet, mit Codestelle,
 Herkunft, Beleg, Gültigkeitsgrenze und der Prüfung, die sie abdeckt. Jede Zeile hat mindestens einen Beleg; alle
 Belege stehen mit Fundstelle am Ende. F-Nummern verweisen auf das Quellenregister des externen Pakets
 „Claude_Simulation_Roadmap“ (`FORMELQUELLEN.md`, Stand 15.11.2026), S-Nummern auf dessen Primärquellen (hier mit
@@ -97,6 +97,28 @@ Codestellen: `phys` = `simulationphysics.h`, `model` = `simulationmodel.cpp`, `u
 | V06 | Kante als Blende (H03) mit Fläche a = x (Rechteckkerbe) bzw. a = x² (Dreieckkerbe), rT bezogen auf die voll offene Kante: Δp = rT·Q²/a²; Leckage je Kante q = G·Δp | `model` PropValve-Schritt | F11, F52 | Modellnäherung; QS05 (Rechteck linear, Dreieck progressiv; Widerstand je voll offener Kante, Leckage je Kante) | a = x² ist die einfachste progressive Form, nicht die gemessene Kerbengeometrie | R07/R09 |
 | V07 | Senkbremsventil: öffnet P→T mit Anteil clamp(((p_P − p_T) + ratio·(p_X − p_T) − p₀)/Δp_end, 0, 1); Rückschlag T→P frei (rT_cv); Leckage G·(p_P − p_T) | `model` FlowValve (counterbalance) | F16 | eigenes Referenzmodell (F16) mit Steuerflächenverhältnis; Kennwerte nach QS05 („Senkbremsventil“: Öffnungsdruck, Druckregelbereich, Flächenverhältnis, Rückschlagventil) | keine Kolbenmasse, keine Dämpfung (Schwingneigung realer Senkbremsventile fehlt) | R07/R09 |
 | V08 | Druckzuschaltventil: öffnet P→A mit Anteil clamp((p_X,gauge − p₀)/Δp_end, 0, 1); ohne X steuert P | `model` FlowValve (sequence 01/02) | F16 | eigenes Referenzmodell; Funktion nach QS05 („Druckzuschaltventil“: öffnet bei Solldruck an X) | kein Leckölanschluss, keine Dynamik | R07/R09 |
+| V09 | Proportional-Druckbegrenzungsventil: Öffnungsdruck p₀ = p_start + (p_end − p_start)·clamp(u/10 V, 0, 1); öffnet A→B mit Anteil clamp((p_A − p_B − p₀)/Δp_end, 0, 1), Blende rT/Anteil² (H03) | `model` FlowValve (prop. relief) | F16, F17 | eigenes Referenzmodell; Kennwerte nach QS05 („Proportional-Druckbegrenzungsventil“: Ansteuerung 0 … 10 V, min./max. Öffnungsdruck bei 0/10 V, Druckregelbereich, Widerstand der voll offenen Kante) | direktgesteuert, ohne Magnet- und Kolbendynamik; Vorsteuerung fehlt | Analoge Signale und Regler (R06) |
+
+## Analoge Signale und Regler (R06)
+
+Elektrische Teile mit reellen Werten (`sim_role` „analog“, Klasse in `sim_block`, Kennwerte in `sim_params`, Kopplung
+in `sim_link`; der FluidSIM-Import schreibt sie). Codestellen: `sig` = `simulationsignals.h`, `model` `analog`, `linkAnalog`.
+
+| ID | Beziehung | Codestelle | Paket | Herkunft, Belege | Grenze | Prüfung |
+|---|---|---|---|---|---|---|
+| A00 | Signalvertrag: Potential eines Netzes gegen 0 V = Analogausgang, sonst Potential der verbundenen Quelle (`sim_volt`, ohne Angabe 24/0 V), sonst 24 V an einem Plus-Netz, sonst 0. Bausteine sind stetig und laufen mit dem Modellschritt (keine eigene Abtastung); ausgewertet nach den Bausteinen, die ihre Eingänge treiben; eine reine algebraische Schleife liest dort den Wert des letzten Schritts. SPS und GRAFCET sehen die Analogwerte nicht (10-ms-Zyklus nur digital). Zwei Ausgänge auf einem Netz sind ein Modellfehler | `model` `volt`, `linkAnalog`, `analog` | F40, F41 | Projektdefinition; S02 (Potentialgleichheit an Verbindungen), S35 (sample/pre als Abgrenzung zur Abtastung) | keine Ströme, keine Lastrückwirkung: Ausgänge ideale Spannungsquellen, Eingänge hochohmig; kein Kirchhoff-Netz | Analoge Signale und Regler (R06) |
+| A01 | Sensorkennlinie y = U₀ + clamp((v − v₀)/(v₁ − v₀), 0, 1)·(U₁ − U₀) für Druck (Überdruck), Durchfluss (Richtung ignoriert: \|q\|, berücksichtigt: q) und Kolbenweg (v = x/Hub, Bereich 0 … 1) | `sig` `scale`, `model` `analog` | F41 | affine Kalibrierung F41; Bereichsgrenze und Kennwerte nach QS05 („Analog-Drucksensor“: nur Drücke im Bereich; „Analog-Durchflussmesser“: Flussrichtung ignorieren/berücksichtigen; „Wegmesssystem“: Spannung eingefahren/ausgefahren, mind. 13 V) | keine Sensordynamik, kein Rauschen; der Drucksensor prüft seine Versorgung nicht | R06 (Kalibrierung, Umkehr, Sättigung) |
+| A02 | Funktionsgenerator: y = clamp(Versatz + A·f(t), U_min, U_max), f = Rechteck (+1 in der ersten Halbperiode), sin(2π f t), Dreieck (Start 0, Scheitel bei T/4), konstant 0; Profil stückweise linear, mit „Schleife“ periodisch | `sig` `Waveform` | F41 | eigene Ableitung der Kodierung waveForm 1–5 (Herleitung unten); Signalformen und Bereiche nach QS05 („Funktionsgenerator“) | Profil ohne Amplitude und Versatz (Projektdefinition); Phase 0 bei t = 0 | R06 (Sinus, Rechteck, Dreieck, Konstant, Profil) |
+| A03 | Sollwertkarte: W1 … W8, Rampe R [s/V] (0 = Sprung): R1 steigend ab 0 V, R2 fallend bis 0 V, R3 fallend unter 0 V, R4 steigend bis 0 V, Wechsel der Rampe bei 0 V; Modus 1 nach Umschaltzeit weiter, 2 nach Erreichen weiter, 3 Auswahl W = I1 + 2·I2 + 4·I3 (Eingang ≥ 15 V) | `sig` `SetpointCard` | F41 | Verhalten nach QS05 („Sollwertkarte“: Rampen, drei Modi, Bittabelle, 15 V); Modusnummern 1–3 in der Reihenfolge der Hilfe (Annahme, gestützt auf TP701_03: Modus 1 mit Umschaltzeit) | Versorgung ≥ 20 V ist Projektdefinition; ohne Versorgung Ausgang 0 und Neustart | R06 (Rampen, Umschaltung) |
+| A04 | PID-Regler (Parallelform): e = W − X; τ_d·ż = X − z; u_raw = K_P·e + I − K_D·(X − z)/τ_d + Offset; u = clamp(u_raw, u_min, 10 V), u_min = −10 V oder 0; İ = K_I·e + (u − u_raw)/T_track; ohne K_I kein Integrator; ohne Versorgung ≥ vMin (21,6 V) Ausgang 0, I = 0, z neu (Reset) | `sig` `Pid`, `model` `linkAnalog` | F37, F17 | eigene Spezifikation der Paket-Variante F37 mit b = 1 und Ableitung des Messwerts (wd = 0 wie die LimPID-Vorgabe, S23); Parallelform aus den Einheiten K_I [1/s], K_D [ms] (Herleitung unten); Bereiche, Offset, Versorgung nach QS05 („PID-Regler“) | τ_d = T_d/10 (T_d = K_D/K_P, in Anlehnung an LimPID Nd = 10, S23) und T_track = 0,9·T_i (T_i = K_P/K_I, wie LimPID Ni = 0,9, S23) sind Projektdefinitionen; die innere Struktur des FluidSIM-Reglers ist nicht dokumentiert (Ableitung könnte auf e wirken); kein Hand-/Automatikbetrieb, keine stoßfreie Umschaltung | R06 (Sättigung, Anti-Windup, Reset, Abtastverfeinerung, beide Regelkreise) |
+| A05 | Zustandsregler: v = ẋ, a = v̇ je über ein Filter erster Ordnung τ_f; u = clamp(K·(K_x·(W − X) − K_v·v − K_a·a) + Offset) | `sig` `StateController` | F37, F17 | eigene Spezifikation; Größen und Einheiten nach QS05 („Zustandsregler“: Abweichungsverstärkung, Geschwindigkeitsdämpfung [ms], Beschleunigungsdämpfung [ms²], Gesamtverstärkung) | τ_f = 1 ms Projektdefinition; Gewichtung im FluidSIM-Regler nicht dokumentiert | Signalbaustein ohne eigenen Prüffall |
+| A06 | PT2-Glied T²·ÿ + 2·d·T·ẏ + y = K·u (halbimplizit, Teilschritte ≤ T/20), Ausgang im Bereich A08 | `sig` `Pt2` | F17 | Literaturform QS16 (k/((s/w)² + 2D·s/w + 1), T = 1/w); Kennwerte nach QS05 („PT2-Glied“) | – | R06 (y(T) = K·(1 − 2/e)) |
+| A07 | I-Glied ẏ = K_I·u, gespeicherter Wert begrenzt auf ±Bereich A08 | `sig` `Integrator` | F17 | Literatur/Projektdefinition; QS05 („I-Glied“: Integrierbeiwert, Bereich aus A1/A2) | – | Signalbaustein ohne eigenen Prüffall |
+| A08 | Ausgangsbereich der Bausteine mit A1/A2: beide ≥ U_min → ±η·min(\|U_A1\|, \|U_A2\|); nur einer angeschlossen → dessen Potential am Ausgang; sonst 0 | `sig` `supplyRange` | F17 | nach QS05 („I-Glied“, „PT2-Glied“, „Differenzverstärker“: betragsmäßig kleinster Wert, Wirkungsgrad, Mindestpotential, Durchreichen) | innere Widerstände R_In, R_Out nicht gerechnet | R06 (A1 15 V, A2 −10 V → ±9 V) |
+| A09 | Komparator: ein bei U ≥ U_soll + H/2, aus bei U < U_soll − H/2; ein: Ausgang S = Potential an SP, im Stromlaufplan wie ein Plus-Netz (Stand des letzten Schritts) | `sig` `comparator`, `model` `electrics` | F41 | nach QS05 („Komparator“: Einschaltwert Sollwert + ½ Hysterese, Ausschaltwert Sollwert − ½ Hysterese, Mindestspannung 13 V) | ein Schritt Verzug zur Elektrik | R06 (Hysterese) |
+| A10 | Proportional-Verstärker: Sollwert am Ventil u_V = ±10 V·(j + (1 − j)·min(\|U\|, 10 V)/10 V), 0 bei U = 0; 1 Kanal nur U > 0; 2 Kanäle A für U > 0, B für U < 0. Kopplung: Vorzeichen des Ventilanschlusses (Y2 und S positiv = P→A, Y1 negativ = P→B) mal Kanal (B negativ) | `sig` `amplifier`, `model` `linkAnalog` | F41 | nach QS05 („Proportional-Verstärker, 1/2 Kanäle“: 0 … 10 V bzw. ±10 V, Sprungstrom relativ zum Maximalstrom gegen Überdeckung, Versorgung 24 V); Vorzeichen aus Symbolzeichnung und Beispielschaltungen (Herleitung unten) | Strom, Spulenwiderstand und Magnetdynamik nicht gerechnet (FluidSIM passt den Strom ans Ventil an, der Kern bildet die Spannung direkt ab) | R06 (Sprungstrom, Kanäle) |
+| A11 | Proportional-Ventilmagnet, lagegeregelt: u_V = clamp(U_C, −10, 10 V) (positive Spannung an S → P→A, A10) bei Versorgung \|U_A − U_B\| ≥ 20 V, sonst 0 (Ventil in Mittelstellung) | `model` `analog` | F41 | nach QS05 („Proportional-Ventilmagnet, lagegeregelt“: Spannungssignal gibt die Schieberposition vor, Regel- und Verstärkerteil im Ventil) | wie A10; die Schieberdynamik ist V05 | R06 (Lageregelkreis, Reset) |
+| A12 | Durchflusssensor (hydraulischer Teil): Blende rT zwischen A und B (H03), ihr Durchfluss ist der Messwert von A01 | `model` FlowValve (flow sensor) | F11 | Modellnäherung; QS05 („Analog-Durchflussmesser“: hydraulischer Widerstand, Vorgabe 0,001 bar·min²/l²) | – | Signalbaustein ohne eigenen Prüffall |
 
 ## Vakuum (R10)
 
@@ -140,6 +162,28 @@ Codestellen: `phys` = `simulationphysics.h`, `model` = `simulationmodel.cpp`, `u
   (bar, l/min) per Bisektion.
 - **N05 (Leckgleichgewicht):** 6·(g − p_min)/\|p_min\| = 1,8·φ((P_ATM + g)/P_ATM)/φ((P_ATM − 0,6 bar)/P_ATM) in l/min,
   nach g gelöst (Bisektion, 100 Schritte). Die Normdichte kürzt sich heraus.
+- **A02 (Kodierung):** Die Hilfe nennt die Signaltypen in der Reihenfolge Rechteck, Sinus, Dreieck, Konstant, Profil
+  mit Standard „Sinus“; die Bibliothek `sym_fs.lib` hat waveForm = 2 als Vorgabe. Also zählt die Kodierung ab 1
+  (1 Rechteck … 5 Profil). Die PID-Bereichswahl (outputMode 0 = −10 … 10 V, 1 = 0 … 10 V) folgt ebenso der
+  Reihenfolge der Hilfe mit Vorgabe 0 = „−10 … 10 V“.
+- **A04 (Parallelform):** K_I hat die Einheit 1/s, K_D Millisekunden. Nur in der Parallelform u = K_P·e + K_I·∫e dt +
+  K_D·ė ergeben alle drei Glieder Volt (V·1/s·s = V, s·V/s = V); in der Reihenform K_P·(e + ∫e/T_i + T_d·ė) hätte
+  K_I die Einheit einer Zeit. Daher T_i = K_P/K_I und T_d = K_D/K_P für die Filter- und Nachführzeiten.
+- **A04 (Prüffall Abtastverfeinerung):** P-Regler an einem Integrator ẏ = 2·u: ẏ = 2·K_P·(r − y), also
+  y(t) = r·(1 − e^(−2 K_P t)). Der explizite Euler hat den globalen Fehler O(dt): Halbierung von dt halbiert den Fehler.
+- **A03 (Prüffall):** 0 → 2 V mit R1 = 0,25 s/V dauert 0,5 s (bei 0,25 s 1 V); nach 1 s von 2 V über R2 = 0,1 s/V
+  in 0,2 s auf 0 V, dann mit R3 = 0,05 s/V in 0,1 s auf −2 V (bei 1,3 s).
+- **A10/A11 (Vorzeichen):** In FluidSIM öffnet ein positiver Sollwert P→A. Belege: Im Symbol des 4/3-Ventils 01
+  liegt rechts der Kasten P→A, B→T (die Schieberebene `Slide` verschiebt um PIC_x·24); der rechte Magnet Y2 drückt den
+  Schieber nach links und bringt diesen Kasten vor die Anschlüsse. In allen Beispielen hängt Verstärkerausgang A
+  (positiver Sollwert) an Y2, der Zylinder startet eingefahren. Beim Regelventil 02 zeigt TP511_15 (PID: W Sollwert,
+  X Wegmesssystem, Y auf den lagegeregelten Magneten, A an der Kolbenseite), dass positive Spannung an S P→A öffnet;
+  die Hilfe („Regelung in der Hydraulik“) fährt den Zylinder mit dem Wegmesssystem direkt am Magneten ein, weil dort
+  Aggregat und Tank vertauscht sind. Gerechnet wird mit den Anschlussnamen des FluidSIM-Bauteils: gespiegelt beschriftet
+  FluidSIM die Anschlüsse um (der Anschluss A trägt dann den Text „B“, P den Text „T“), die Simulation nutzt die Namen.
+- **R06 (Druckregelkreis):** Mit PI-Anteil verschwindet die bleibende Regelabweichung: der Sensor (0 … 10 MPa →
+  0 … 10 V) meldet beim Sollwert 4 V genau 40 bar. Die Stellgröße stellt sich auf den Öffnungsdruck ein, bei dem
+  V09 die Pumpenförderung abführt (rund 2,8 V).
 
 ## Abweichungen von FluidSIM (bekannt, nicht nachgebildet)
 
@@ -150,6 +194,10 @@ Codestellen: `phys` = `simulationphysics.h`, `model` = `simulationmodel.cpp`, `u
   Abstoßen fehlen.
 - Pilotventile: FluidSIM rechnet eine Kraftbilanz aus Steuerfläche und Feder; der Kern schaltet ab 1,5 bar (V04).
 - Gaskonstante 287 statt 288 J/(kg·K) in den Kammern (0,35 %).
+- Analoge Elektrik (R06): FluidSIM rechnet Ströme und Widerstände der Karten (R, iOutMax, R_In, R_Out) und passt den
+  Magnetstrom ans Ventil an; der Kern führt nur Potentiale (A00, A10). Potentiometer, Oszilloskop, Strom- und
+  Widerstandsmesser haben kein Modell und bleiben ohne Wirkung; Spannungsquellen mit Wechselspannung (L1 … L3) gelten
+  als 24 V.
 
 ## Befunde der Quellenprüfung (15.11.2026)
 
@@ -176,6 +224,11 @@ Leitwert entlüftender Kupplungshälften wie Schalldämpfer, Pumpenband 1 bar, S
 0,1 bar, Leckagebezug −0,6 bar, Hysterese mindestens 1 kPa, Relaiszeiten 10/8 ms, Ventil-τ = Schaltzeit/3. Kennwerte
 aus FluidSIM-Bauteilen (qNN, rT, M_6bar, I, f, pu_min, qn_ac, qns_max, d, m, s …) sind Angaben der Beispielbauteile,
 nicht von uns gemessen.
+R06: Quellen ohne Potentialangabe 24 V bzw. 0 V, Versorgungsschwelle der Sollwertkarte 20 V, Ableitungsfilter τ_d =
+T_d/10 (ohne D-Anteil 1 ms), Nachführzeit 0,9·T_i (ohne I-Anteil 0,1 s), Ableitungsfilter des Zustandsreglers 1 ms,
+Profil des Funktionsgenerators ohne Amplitude/Versatz. Die übrigen Schwellen (15 V Sollwertkarte, 13 V Komparator und
+Wegmesssystem, 20 V Verstärker und Ventilmagnet, 21,6 V Regler, 1,5 V und η = 0,9 der TP-1013-Glieder) sind
+FluidSIM-Vorgaben (QS05), nicht von uns gemessen.
 
 ## Primärquellen des Pakets (hier verwendet)
 
@@ -279,6 +332,14 @@ Zugriff am 15.11.2026, sofern nicht anders vermerkt.
 - **QS15** – ISO 1219-1:2012, Fluid power systems and components – Graphical symbols and circuit diagrams – Part 1:
   Schnellkupplungen gekuppelt/getrennt, mit und ohne Rückschlagventil. Symboltabelle nicht am Normtext geprüft; die
   Zuordnung „offen = getrennt“ folgt den Symbolnamen der Sammlung (`50101530` … `50101535`).
+- **QS16** – Modelica Standard Library 4.0.0, Blocks.Continuous.SecondOrder
+  (https://doc.modelica.org/Modelica%204.0.0/Resources/helpWSM/Modelica/Modelica.Blocks.Continuous.SecondOrder.html):
+  y/u = k/((s/w)² + 2·D·(s/w) + 1), Parameter k, w, D. Zugriff 17.11.2026.
+- **S23** (Paket) – MSL 4.0.0, Blocks.Continuous.LimPID
+  (https://doc.modelica.org/Modelica%204.0.0/Resources/helpWSM/Modelica/Modelica.Blocks.Continuous.LimPID.html):
+  Nd = 10 („je größer Nd, desto idealer das D-Glied“), Ni = 0,9 („Ni·Ti ist die Zeitkonstante der
+  Anti-Windup-Kompensation“), wd = 0 (Sollwertgewicht im D-Anteil). Die Filterformel T_d/Nd steht nicht auf der Seite.
+  Zugriff 17.11.2026.
 
 Eine neue Formel bekommt hier ihre Zeile mit Codestelle, Herkunft, Beleg, Grenze und Prüfung, bevor sie freigegeben
 wird; eine neue Quelle bekommt eine QS-Nummer mit Fundstelle und Zugriffsdatum.

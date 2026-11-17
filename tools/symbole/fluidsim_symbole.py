@@ -40,6 +40,13 @@ PFEIL_BREITE = 2.0           # halbe Breite der Pfeilspitze
 SPERR_BREITE = 3.0           # halbe Breite des Sperrstrichs (ortho)
 STRICHART = {"dash": "dashed", "dot": "dotted", "dashdot": "dashdotted"}
 ABSCHLUSS = {"Pneu.Supply.Silencer": "silencer", "Pneu.Supply.BlindPlug": "plug"}
+# Analoge Signalbausteine (Simulation R06): Rolle „analog“, Anschlüsse heißen wie am FluidSIM-Bauteil (SP, SN, W, X, Y …)
+ANALOG = ("ET.Source.WaveformGenerator", "ET.Source.WaveformGenerator02", "ET.Source.SetPointGenerator",
+          "ET.Controller.ControllerPID", "ET.Controller.ControllerS", "ET.Controller.ControllerPT2",
+          "ET.Controller.ControllerIntegrator", "ET.Controller.DifferentialAmplifier", "ET.Controller.ComparatorCard",
+          "ET.Controller.PropAmplifier1Ch", "ET.Controller.PropAmplifier2Ch", "ET.Relay.ValveContSolenoid",
+          "ET.Sensor.PressureSensorHyd", "ET.Sensor.PressureSensorPneu", "ET.Sensor.FlowSensorHyd",
+          "ET.Sensor.PositionSensor", "ET.Sensor.Voltmeter")
 
 
 def zahl(e, name, vorgabe=0.0):
@@ -653,9 +660,16 @@ def bauteil_umwandeln(symbole, haupt, umgebung, verbindungen, namen, quelle_name
     # Anschlüsse aber („A“, „B“ am Zylinder, „I0“, „Q0“ an der SPS): diesen Namen bekommt der Anschluss für die
     # Simulation, gezeigt wird weiter nichts
     eigene = {anschluss_schluessel(haupt, c.get("ident")): c.get("ident") for c in haupt.findall("connector")}
+    # Analogbausteine (R06): die Simulation spricht die Anschlüsse mit dem Namen am Bauteil an (SP, SN, Y …),
+    # das Symbol beschriftet sie teils anders („1“, „2“, „3“)
+    # ebenso Stetigventile und Analogsensoren: gespiegelt beschriftet FluidSIM sie um (A heißt dort „B“, P „T“)
+    analog = ((haupt.get("object-ref") or "") in ANALOG
+              or (haupt.get("object-ref") or "").startswith(("Hyd.Proportional.", "Pneu.Proportional.", "Hyd.Sensor.Flowmeter_2")))
     for a in z.anschluesse:
         a["anzeige"] = a["name"]
-        if not a["name"]:
+        if analog and eigene.get(a["schluessel"]):
+            a["name"] = eigene[a["schluessel"]]
+        elif not a["name"]:
             a["name"] = eigene.get(a["schluessel"], "")
     for a, name in zip(z.anschluesse, eindeutig([a["name"] for a in z.anschluesse])):
         a["richtung"] = z.richtung(a["p"])

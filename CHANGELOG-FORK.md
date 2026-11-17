@@ -3,6 +3,35 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.30.0 – 17.11.2026
+
+Simulations-Roadmap R06 (analoge Signale und Regler):
+
+- Signalvertrag: jedes elektrische Netz hat ein Potential gegen 0 V (Analogausgang, sonst Potential der Quelle,
+  `sim_volt`, ohne Angabe 24/0 V). Die Bausteine rechnen stetig im Modellschritt, jeder nach denen, die seine Eingänge
+  treiben; SPS und GRAFCET lesen die Analogwerte nicht. Zwei Ausgänge auf einem Netz sind ein Modellfehler.
+- Neue Bausteine (`sources/simulation/simulationsignals.h`): Funktionsgenerator (Rechteck, Sinus, Dreieck, Konstant,
+  Profil), Sollwertkarte (W1 … W8, Rampen R1 … R4, drei Modi), PID-Regler (Parallelform, Messwertableitung mit Filter,
+  Anti-Windup durch Rückführung, Bereich ±10 V oder 0 … 10 V, Reset ohne Versorgung), Zustandsregler, PT2-Glied,
+  I-Glied, Differenzverstärker (Bereich aus A1/A2), Komparator mit Hysterese, Proportional-Verstärker 1/2 Kanäle mit
+  Sprungstrom, lagegeregelter Proportional-Ventilmagnet, Analog-Druck-, Durchfluss- und Wegsensor, Voltmeter.
+- 4/3-Stetigventile bekommen ihren Sollwert jetzt aus dem gekoppelten Magneten oder Verstärker; neu gerechnet werden
+  das Proportional-Druckbegrenzungsventil (Öffnungsdruck 0 … 10 V) und der hydraulische Teil des Durchflusssensors.
+- FluidSIM-Import: Analogbausteine mit Rolle, Klasse, allen Kennwerten und Kopplung (Ventil-S/Y1/Y2 ↔ Magnet bzw.
+  Verstärker, Zylinder ↔ Wegmesssystem, elektrischer ↔ fluidischer Sensorteil), Potentiale der Spannungsquellen,
+  Anschlüsse mit dem FluidSIM-Namen. Das Proportional-Druckbegrenzungsventil war vorher ein normales DBV mit falschen
+  Anschlussnamen und damit ohne Wirkung. Gespiegelte Stetigventile hatten seit R07 vertauschte Anschlüsse A/B und P/T
+  (FluidSIM beschriftet gespiegelte Symbole um); jetzt gelten die Bauteilnamen. Vorzeichen wie FluidSIM: ein positiver
+  Sollwert öffnet P→A (Y2 bzw. S), Y1 öffnet P→B. Der Durchflussmesser `sensor.flowmeter_2` misst jetzt (Blende rT 0,001).
+- Neue Prüfung „Analoge Signale und Regler (R06)“: Kalibrierung, Umkehr, Sättigung, Anti-Windup (sofort aus der
+  Begrenzung, ohne 18,9 s), Reset, Abtastverfeinerung (Fehler 0,00135 → 0,00068, Ordnung 1), Sollwertkarte,
+  Signalformen, PT2, Komparator, Verstärker; Pläne `druckregelung.qet` (PI-Regler hält 40,00 bar, Stellgröße 2,84 V)
+  und `lageregelung.qet` (P-Regler fährt auf 120,0 mm ohne Überschwingen; ohne Versorgung steht der Zylinder).
+  31 Prüfungen, alle bestanden. Formelregister A00–A12 und V09.
+- FluidSIM-Batch: 1051 von 1136 Beispielen starten (wie 1.29.0), in 286 bewegen sich Zylinder (vorher 285). Die
+  Lageregelkreise aus TP511 regeln jetzt wirklich (TP511_15 folgt dem Sollwert 8 V/2 V auf 160/40 mm), die
+  Verstärkerbeispiele aus TP701/TP702 steuern ihr Stetigventil über Sollwertkarte und Verstärker.
+
 ## 1.29.0 – 16.11.2026
 
 Simulations-Roadmap R07/R09 (Stetig- und Lastventile) und Hauptrepo nachgezogen:

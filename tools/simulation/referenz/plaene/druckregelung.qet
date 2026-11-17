@@ -1,0 +1,685 @@
+<project title="Druckregelkreis (R06)" uuid="{054a5db5-f4cc-5ddf-8b44-ba4dc5c4ed5b}" version="0.200.1">
+    <properties/>
+    <usage enabled="true" time_spent="0"/>
+    <symbol_texts upright="true"/>
+    <newdiagrams>
+        <border cols="17" colsize="60" displaycols="true" displayrows="true" rows="8" rowsize="80"/>
+        <inset author="" auto_page_num="" date="null" displayAt="bottom" filename="" folio="" indexrev="" locmach="" plant="" title="" version=""/>
+        <conductors bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <report label="%f-%l%c"/>
+        <xrefs>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="cable" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="coil" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="commutator" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="plc" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="protection" xrefpos="AlignBottom"/>
+        </xrefs>
+        <conductors_autonums auto_break_conductors="false" current_autonum="" freeze_new_conductors="false"/>
+        <folio_autonums/>
+        <element_autonums current_autonum="" freeze_new_elements="false"/>
+        <guides/>
+    </newdiagrams>
+    <diagram author="" auto_page_num="" cols="17" colsize="60" date="null" displayAt="bottom" displaycols="true" displayrows="true" filename="" folio="" freezeNewConductor="false" freezeNewElement="false" height="660" indexrev="" locmach="" order="1" plant="" rows="8" rowsize="80" title="" uuid="{e17db5a4-5185-4619-bcbb-809c79b11431}" version="0.200.1-dev">
+        <defaultconductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <elements>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="BP" type="embed://import/90_signal/drucksensor_hyd.elmt" uuid="{c3b44c58-2751-4c74-9b1c-d0e979f0b3e1}" x="150" y="330" z="10">
+                <terminals>
+                    <terminal id="0" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-BP1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{697f150c-31f8-4ad2-baba-cbbfeaba9324}" x="32" y="-30">
+                        <text>-BP1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GP" type="embed://import/30_hydraulic/61_pumps/pompe_debit_fixe.elmt" uuid="{3a80593e-181e-4209-b420-24c1efb182aa}" x="150" y="500" z="10">
+                <terminals>
+                    <terminal id="1" orientation="0" x="0" y="-20"/>
+                    <terminal id="2" orientation="3" x="-20" y="0"/>
+                    <terminal id="3" orientation="2" x="0" y="20"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-GP1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{87a232e2-9a2f-4e95-9143-b52c735d3a9d}" x="24" y="-25.67">
+                        <text>-GP1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="CM" type="embed://import/30_hydraulic/21_tanks/bache_a_l_air_libre.elmt" uuid="{04126660-4f9d-4d3c-a19d-d42e69c1303c}" x="150" y="620" z="10">
+                <terminals>
+                    <terminal id="4" orientation="0" x="0" y="-6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-CM2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{0b4e30f9-0862-4718-b374-a5eb16a1b9d5}" x="15" y="-2.5">
+                        <text>-CM2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="QN" type="embed://import/90_signal/prop_dbv.elmt" uuid="{01168ac5-3dff-40d5-89ce-8219dd57a0cc}" x="350" y="380" z="10">
+                <terminals>
+                    <terminal id="5" orientation="2" x="-10" y="26"/>
+                    <terminal id="6" orientation="2" x="10" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-QN1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{eb3c7731-0218-439d-a942-abea4368352f}" x="32" y="-30">
+                        <text>-QN1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="CM" type="embed://import/30_hydraulic/21_tanks/bache_a_l_air_libre.elmt" uuid="{70de9acd-0157-41c8-bdc4-2f1a7035e2e0}" x="420" y="520" z="10">
+                <terminals>
+                    <terminal id="7" orientation="0" x="0" y="-6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-CM1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{1baae333-1644-4de0-b295-629a13f2e4ec}" x="15" y="-2.5">
+                        <text>-CM1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/funktionsgenerator.elmt" uuid="{d0d63a7b-6d27-460b-99f4-458d624f5bea}" x="600" y="150" z="10">
+                <terminals>
+                    <terminal id="8" orientation="1" x="36" y="0"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-GF1</elementInformation>
+                    <elementInformation name="sim_block" show="1">Source.WaveformGenerator02</elementInformation>
+                    <elementInformation name="sim_params" show="1">waveForm=4;frequency=1 Hz;amplitude=0 V;yOffset=4 V</elementInformation>
+                    <elementInformation name="sim_role" show="1">analog</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{49aee9b7-590c-463a-85bc-e72eb1f5ca3d}" x="32" y="-30">
+                        <text>-GF1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/quelle_24v.elmt" uuid="{5276b8d2-6d0f-4ec7-8810-17eba4e754d6}" x="600" y="280" z="10">
+                <terminals>
+                    <terminal id="9" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="sim_role" show="1">supply+</elementInformation>
+                    <elementInformation name="sim_volt" show="1">24</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{68f143cd-f5c8-4523-a6e0-6f254796fcdd}" x="32" y="-30">
+                        <text></text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/drucksensor_el.elmt" uuid="{e7168f1f-3eae-4fb7-9864-b303a717c4e1}" x="600" y="350" z="10">
+                <terminals>
+                    <terminal id="10" orientation="0" x="0" y="-26"/>
+                    <terminal id="11" orientation="1" x="36" y="0"/>
+                    <terminal id="12" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-BP1</elementInformation>
+                    <elementInformation name="sim_block" show="1">Sensor.PressureSensorHyd</elementInformation>
+                    <elementInformation name="sim_link" show="1">P=-BP1</elementInformation>
+                    <elementInformation name="sim_role" show="1">analog</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{09475f8d-27ef-4a82-8d16-24291155573f}" x="32" y="-30">
+                        <text>-BP1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/quelle_0v.elmt" uuid="{35ba30cb-1c54-4522-882b-c3ecf1c6b11b}" x="600" y="420" z="10">
+                <terminals>
+                    <terminal id="13" orientation="0" x="0" y="-26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="sim_role" show="1">supply-</elementInformation>
+                    <elementInformation name="sim_volt" show="1">0</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{42b6984b-0604-4852-8944-a4224f984461}" x="32" y="-30">
+                        <text></text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/quelle_24v.elmt" uuid="{4bd948c7-11bb-44c8-afca-1ef2ab4ede0c}" x="800" y="180" z="10">
+                <terminals>
+                    <terminal id="14" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="sim_role" show="1">supply+</elementInformation>
+                    <elementInformation name="sim_volt" show="1">24</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{994c7d1b-6dd9-41c6-9c64-eafa7fbdd325}" x="32" y="-30">
+                        <text></text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/pid_regler.elmt" uuid="{802da4a1-c08d-4fc2-a778-ab078000034f}" x="800" y="250" z="10">
+                <terminals>
+                    <terminal id="15" orientation="0" x="0" y="-26"/>
+                    <terminal id="16" orientation="3" x="-36" y="-10"/>
+                    <terminal id="17" orientation="1" x="36" y="0"/>
+                    <terminal id="18" orientation="3" x="-36" y="10"/>
+                    <terminal id="19" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-KF1</elementInformation>
+                    <elementInformation name="sim_block" show="1">Controller.ControllerPID</elementInformation>
+                    <elementInformation name="sim_params" show="1">outputMode=1;KP=1;KI=5 1/s;KD=0 ms;yOffset=0 V;vMin=21.6 V</elementInformation>
+                    <elementInformation name="sim_role" show="1">analog</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{0ee97ef3-4af2-49da-a848-e235b04da4a3}" x="32" y="-30">
+                        <text>-KF1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/quelle_0v.elmt" uuid="{94906fe1-b339-46cf-a53f-06b3c4728536}" x="800" y="320" z="10">
+                <terminals>
+                    <terminal id="20" orientation="0" x="0" y="-26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="sim_role" show="1">supply-</elementInformation>
+                    <elementInformation name="sim_volt" show="1">0</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{c56a4d90-36b6-4f6d-bbb9-14101a23a4ba}" x="32" y="-30">
+                        <text></text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/quelle_24v.elmt" uuid="{42865021-d493-43da-a319-c6dd2e76e730}" x="1000" y="180" z="10">
+                <terminals>
+                    <terminal id="21" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="sim_role" show="1">supply+</elementInformation>
+                    <elementInformation name="sim_volt" show="1">24</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{d1713b45-48fc-400c-8975-9499db805b53}" x="32" y="-30">
+                        <text></text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/verstaerker_1k.elmt" uuid="{9b9b3cba-3de5-4d9b-827a-d8c3dafc3de9}" x="1000" y="250" z="10">
+                <terminals>
+                    <terminal id="22" orientation="0" x="0" y="-26"/>
+                    <terminal id="23" orientation="3" x="-36" y="0"/>
+                    <terminal id="24" orientation="1" x="36" y="0"/>
+                    <terminal id="25" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-KF2</elementInformation>
+                    <elementInformation name="sim_block" show="1">Controller.PropAmplifier1Ch</elementInformation>
+                    <elementInformation name="sim_link" show="1">A=-QN1/S</elementInformation>
+                    <elementInformation name="sim_params" show="1">iOutMax=1 A;jumpCurrentRel=0 %;vMin=20 V</elementInformation>
+                    <elementInformation name="sim_role" show="1">analog</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{19f0fd30-a72e-45c2-9b63-5d7d96d2781e}" x="32" y="-30">
+                        <text>-KF2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/quelle_0v.elmt" uuid="{302d0822-bce2-4725-984d-4fc3ec770c4e}" x="1000" y="320" z="10">
+                <terminals>
+                    <terminal id="26" orientation="0" x="0" y="-26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="sim_role" show="1">supply-</elementInformation>
+                    <elementInformation name="sim_volt" show="1">0</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{8da435f9-cb30-4a9f-921c-cad71ba8c0b9}" x="32" y="-30">
+                        <text></text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+        </elements>
+        <conductors>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{c3b44c58-2751-4c74-9b1c-d0e979f0b3e1}" element1_label="-BP1" element1_name="Analog-Drucksensor, hydraulischer Teil (Prüfsymbol)" element2="{3a80593e-181e-4209-b420-24c1efb182aa}" element2_label="-GP1" element2_name="Fixed Displacement hydraulic pump" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{959acc09-8d42-59b3-8aa0-cc9dbfbde916}" terminal2="{b31ade34-5793-4ce2-898a-5900631aa6d4}" terminalname1="P" terminalname2="P" text_color="#000000" type="multi" uuid="{833d68ab-8a6e-417f-b038-7b938ab4cb33}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{3a80593e-181e-4209-b420-24c1efb182aa}" element1_label="-GP1" element1_name="Fixed Displacement hydraulic pump" element2="{04126660-4f9d-4d3c-a19d-d42e69c1303c}" element2_label="-CM2" element2_name="Pipings under level" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{5a114086-7948-4d66-ad56-859d4ea42cbf}" terminal2="{1a7d7aea-53a4-42e0-bded-b81825b13808}" terminalname1="T" terminalname2="P" text_color="#000000" type="multi" uuid="{1510bc89-c957-4cb4-a0eb-0a7054a81560}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{3a80593e-181e-4209-b420-24c1efb182aa}" element1_label="-GP1" element1_name="Fixed Displacement hydraulic pump" element2="{01168ac5-3dff-40d5-89ce-8219dd57a0cc}" element2_label="-QN1" element2_name="Proportional-Druckbegrenzungsventil (Prüfsymbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{b31ade34-5793-4ce2-898a-5900631aa6d4}" terminal2="{b92d0491-c4e5-5ecb-a02a-55e289adedec}" terminalname1="P" terminalname2="A" text_color="#000000" type="multi" uuid="{1a8cae25-b4cd-4940-baec-d07407b35164}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{01168ac5-3dff-40d5-89ce-8219dd57a0cc}" element1_label="-QN1" element1_name="Proportional-Druckbegrenzungsventil (Prüfsymbol)" element2="{70de9acd-0157-41c8-bdc4-2f1a7035e2e0}" element2_label="-CM1" element2_name="Pipings under level" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{4575bc02-2b6d-508f-ad85-c12ed0c686b0}" terminal2="{1a7d7aea-53a4-42e0-bded-b81825b13808}" terminalname1="B" terminalname2="P" text_color="#000000" type="multi" uuid="{2f0b7775-0328-453d-b027-8c7b150a8356}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{d0d63a7b-6d27-460b-99f4-458d624f5bea}" element1_label="-GF1" element1_name="Funktionsgenerator (Prüfsymbol)" element2="{802da4a1-c08d-4fc2-a778-ab078000034f}" element2_label="-KF1" element2_name="PID-Regler (Prüfsymbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{6e62c569-e64f-5b4f-bd09-f2d70214f23a}" terminal2="{9ac12b29-00a3-50d4-a918-a157560f4e79}" terminalname1="S" terminalname2="W" text_color="#000000" type="multi" uuid="{750e26f9-cad6-4d10-9c37-a18075e585ad}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{5276b8d2-6d0f-4ec7-8810-17eba4e754d6}" element1_label="" element1_name="Spannungsquelle 24 V (Prüfsymbol)" element2="{e7168f1f-3eae-4fb7-9864-b303a717c4e1}" element2_label="-BP1" element2_name="Analog-Drucksensor, elektrischer Teil (Prüfsymbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{eb59607a-04e8-55cd-97c4-01b80061813b}" terminal2="{3d91b9bb-22a7-5f5c-bc6a-70a261c4fb19}" terminalname1="A" terminalname2="SP" text_color="#000000" type="multi" uuid="{b2cc5558-beee-46ed-8655-54f099279259}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{e7168f1f-3eae-4fb7-9864-b303a717c4e1}" element1_label="-BP1" element1_name="Analog-Drucksensor, elektrischer Teil (Prüfsymbol)" element2="{35ba30cb-1c54-4522-882b-c3ecf1c6b11b}" element2_label="" element2_name="Spannungsquelle 0 V (Prüfsymbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{a3b3002a-c98c-574a-aecb-efaeb35bcad5}" terminal2="{6b635733-0eed-5109-b076-59248cce05fa}" terminalname1="SN" terminalname2="A" text_color="#000000" type="multi" uuid="{c2ce5fe6-cb8e-49f4-906b-f1a23606ca15}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{e7168f1f-3eae-4fb7-9864-b303a717c4e1}" element1_label="-BP1" element1_name="Analog-Drucksensor, elektrischer Teil (Prüfsymbol)" element2="{802da4a1-c08d-4fc2-a778-ab078000034f}" element2_label="-KF1" element2_name="PID-Regler (Prüfsymbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{f004f5a4-93e0-5b64-a0b4-e0e6564aa564}" terminal2="{d72040fc-8662-5489-b0ff-6aa85eaacfd0}" terminalname1="Y" terminalname2="X" text_color="#000000" type="multi" uuid="{0efb5239-c15a-4277-a629-3834bafab8af}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{4bd948c7-11bb-44c8-afca-1ef2ab4ede0c}" element1_label="" element1_name="Spannungsquelle 24 V (Prüfsymbol)" element2="{802da4a1-c08d-4fc2-a778-ab078000034f}" element2_label="-KF1" element2_name="PID-Regler (Prüfsymbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{eb59607a-04e8-55cd-97c4-01b80061813b}" terminal2="{0ee82922-ca62-5aa9-ada0-436e0c014fbf}" terminalname1="A" terminalname2="SP" text_color="#000000" type="multi" uuid="{06a503fb-089f-4ef2-9ed1-68f5c8bac875}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{802da4a1-c08d-4fc2-a778-ab078000034f}" element1_label="-KF1" element1_name="PID-Regler (Prüfsymbol)" element2="{94906fe1-b339-46cf-a53f-06b3c4728536}" element2_label="" element2_name="Spannungsquelle 0 V (Prüfsymbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{e222829e-69d7-5212-a7c2-6664ebcf7147}" terminal2="{6b635733-0eed-5109-b076-59248cce05fa}" terminalname1="SN" terminalname2="A" text_color="#000000" type="multi" uuid="{f6d7c3f0-01ff-4681-b73e-d6363ce6fa28}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{802da4a1-c08d-4fc2-a778-ab078000034f}" element1_label="-KF1" element1_name="PID-Regler (Prüfsymbol)" element2="{9b9b3cba-3de5-4d9b-827a-d8c3dafc3de9}" element2_label="-KF2" element2_name="Proportional-Verstärker 1 Kanal (Prüfsymbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{22b9f811-f938-5c29-822f-3853840df62f}" terminal2="{f6922749-4073-5ac5-bfef-c16c119753db}" terminalname1="Y" terminalname2="U" text_color="#000000" type="multi" uuid="{eded1115-121a-4fa9-a36d-bec61ef63f28}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{42865021-d493-43da-a319-c6dd2e76e730}" element1_label="" element1_name="Spannungsquelle 24 V (Prüfsymbol)" element2="{9b9b3cba-3de5-4d9b-827a-d8c3dafc3de9}" element2_label="-KF2" element2_name="Proportional-Verstärker 1 Kanal (Prüfsymbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{eb59607a-04e8-55cd-97c4-01b80061813b}" terminal2="{f419b16f-a2d1-5504-a4a0-faf288fa3045}" terminalname1="A" terminalname2="SP" text_color="#000000" type="multi" uuid="{4c7c49b2-272a-4e23-a23b-5576cb478c71}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{9b9b3cba-3de5-4d9b-827a-d8c3dafc3de9}" element1_label="-KF2" element1_name="Proportional-Verstärker 1 Kanal (Prüfsymbol)" element2="{302d0822-bce2-4725-984d-4fc3ec770c4e}" element2_label="" element2_name="Spannungsquelle 0 V (Prüfsymbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{500ba74e-56dd-52ef-9a2e-cf74fded34f9}" terminal2="{6b635733-0eed-5109-b076-59248cce05fa}" terminalname1="SN" terminalname2="A" text_color="#000000" type="multi" uuid="{21fbffbf-3b4c-40fc-bb56-2a0ed287a700}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+        </conductors>
+    </diagram>
+    <collection>
+        <category name="import">
+            <names>
+                <name lang="ca">Elements importats</name>
+                <name lang="cs">Zavedené prvky</name>
+                <name lang="da">Importerede elementer</name>
+                <name lang="de">Importierte Elemente</name>
+                <name lang="el">Εισηγμένα στοιχεία</name>
+                <name lang="en">Imported elements</name>
+                <name lang="es">Elementos importados</name>
+                <name lang="fr">Éléments importés</name>
+                <name lang="hr">Uvezeni elementi</name>
+                <name lang="it">Elementi importati</name>
+                <name lang="ja">インバートされた要素</name>
+                <name lang="ko">전기 심볼 요소</name>
+                <name lang="ko_KR">전기 심볼 요소</name>
+                <name lang="lv">Importētie elementi</name>
+                <name lang="nl">Elementen geïmporteerd</name>
+                <name lang="nl_BE">Elementen geïmporteerd</name>
+                <name lang="pl">Elementy importowane</name>
+                <name lang="pt">Elementos importados</name>
+                <name lang="pt_BR">Elementos importados</name>
+                <name lang="ro">Elemente importate</name>
+                <name lang="ru">Импортированные элементы</name>
+                <name lang="sk">Importované prvky</name>
+                <name lang="sl">Uvoženi elementi</name>
+                <name lang="sv">Importerade element</name>
+                <name lang="tr">İthal öğeler</name>
+                <name lang="uk">Імпортовані елементи</name>
+                <name lang="zh">导入元件</name>
+            </names>
+        <category name="30_hydraulic">
+                <category name="61_pumps">
+                    <element name="pompe_debit_fixe.elmt">
+                        <definition height="70" hotspot_x="34" hotspot_y="34" link_type="simple" type="element" version="0.100.0" width="60">
+                            <uuid uuid="{c4c35a46-2dc2-679e-500c-278e48ce4f4e}"/>
+                            <names>
+                                <name lang="ar">مضخّة بتدفق ثابت</name>
+                                <name lang="ca">Bomba hidràulica de desplaçament fix</name>
+                                <name lang="cs">Vodní čerpadlo se stálým výkonem</name>
+                                <name lang="da">Hydraulikpumpe med fast slagvolumen</name>
+                                <name lang="de">Hydraulikpumpe mit fester Verdrängung</name>
+                                <name lang="el">Υδραυλική αντλία σταθερής μετατόπισης</name>
+                                <name lang="en">Fixed Displacement hydraulic pump</name>
+                                <name lang="es">Bomba hidráulica de desplazamiento fijo</name>
+                                <name lang="fi">Kiinteätilavuuksinen hydraulipumppu</name>
+                                <name lang="fr">Pompe debit fixe</name>
+                                <name lang="hr">Hidraulička pumpa fiksnog pomaka</name>
+                                <name lang="hu">Állandó térfogatáramú hidraulikus szivattyú</name>
+                                <name lang="it">Pompa a portata fissa</name>
+                                <name lang="ja">固定容量油圧ポンプ</name>
+                                <name lang="ko">정용량 유압 펌프</name>
+                                <name lang="mn">Тогтмол шилжилттэй гидравлик насос</name>
+                                <name lang="nb">Hydraulisk pumpe med fast slagvolum</name>
+                                <name lang="nl">Pomp vast</name>
+                                <name lang="nl_BE">Hydraulische pomp met vaste opbrengst</name>
+                                <name lang="pl">Pompa o stałej wydajności i jednym kierunku tłoczenia</name>
+                                <name lang="pt">Bomba hidráulica de cilindrada fixa</name>
+                                <name lang="pt_BR">Bomba hidraulica de deslocamento fixo</name>
+                                <name lang="ro">Pompă hidraulică cu deplasare fixă</name>
+                                <name lang="ru">Гидравлический насос постоянной производительности</name>
+                                <name lang="sk">Hydraulické čerpadlo s pevným zdvihovým objemom</name>
+                                <name lang="sl">Hidravlična črpalka s fiksno iztisnino</name>
+                                <name lang="sr">Хидраулична пумпа фиксне запремине</name>
+                                <name lang="sv">Hydraulpump med fast deplacement</name>
+                                <name lang="tr">Sabit deplasmanlı hidrolik pompa</name>
+                                <name lang="uk">Гідравлічний насос фіксованої продуктивності</name>
+                                <name lang="zh">定量泵</name>
+                            </names>
+                            <fluid function="supply.pump" kind="source" prefix="GP">
+                                <parameter name="displacement" unit="cm3" value="8"/>
+                                <parameter name="rpm" unit="1/min" value="1450"/>
+                                <parameter name="pMax" unit="MPa" value="6"/>
+                            </fluid>
+                            <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                            <description>
+                                <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{9ff5b6eb-b60a-4bca-be46-ab51730b62ff}" x="24" y="-25.67" z="1">
+                                    <text/>
+                                    <info_name>label</info_name>
+                                </dynamic_text>
+                                <ellipse antialias="true" height="40" style="line-style:normal;line-weight:normal;filling:none;color:black" width="40" x="-20" y="-20"/>
+                                <polygon antialias="true" style="line-style:normal;line-weight:normal;filling:black;color:black" x1="0.24" x2="-2.25" x3="2.25" x4="4.16" x5="4.16" y1="-19.93" y2="-15" y3="-15" y4="-19.58" y5="-19.46"/>
+                                <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="20" y2="24.5"/>
+                                <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20.4" y2="-24.5"/>
+                                <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20.5" x2="-24.5" y1="0" y2="0"/>
+                                <terminal medium="hydraulic" name="P" orientation="n" type="Generic" uuid="{b31ade34-5793-4ce2-898a-5900631aa6d4}" x="0" y="-24"/>
+                                <terminal medium="hydraulic" name="T" orientation="s" type="Generic" uuid="{5a114086-7948-4d66-ad56-859d4ea42cbf}" x="0" y="24"/>
+                                <terminal medium="hydraulic" name="L" orientation="w" type="Generic" uuid="{d9d04591-bdb6-4154-90ef-2674ec497353}" x="-24" y="0"/>
+                            </description>
+                        </definition>
+                    </element>
+                </category>
+                <category name="21_tanks">
+                    <element name="bache_a_l_air_libre.elmt">
+                        <definition height="40" hotspot_x="20" hotspot_y="21" link_type="simple" type="element" version="0.100.0" width="40">
+                            <uuid uuid="{1dc29989-614c-13b7-3cde-7c44d91de71a}"/>
+                            <names>
+                                <name lang="ar">حاوية في الهواء الطلق</name>
+                                <name lang="ca">Conductes sota nivell</name>
+                                <name lang="cs">Otevřená nádrž</name>
+                                <name lang="da">Rørføring under niveau</name>
+                                <name lang="de">Leitungen unterhalb des Flüssigkeitsspiegels</name>
+                                <name lang="el">Σωληνώσεις κάτω από τη στάθμη</name>
+                                <name lang="en">Pipings under level</name>
+                                <name lang="es">Tuberia debajo de nivel</name>
+                                <name lang="fi">Putkistot tason alapuolella</name>
+                                <name lang="fr">Bâche à l'air libre</name>
+                                <name lang="hr">Cjevovodi ispod razine</name>
+                                <name lang="hu">Szint alatti csővezetékek</name>
+                                <name lang="it">Tubazioni sotto livello</name>
+                                <name lang="ja">液面下の配管</name>
+                                <name lang="ko">레벨 아래 배관</name>
+                                <name lang="mn">Түвшний доорх хоолой</name>
+                                <name lang="nb">Rørføring under nivå</name>
+                                <name lang="nl">Onder niveau</name>
+                                <name lang="nl_BE">Leidingen onder niveau</name>
+                                <name lang="pl">Zbiornik otwarty</name>
+                                <name lang="pt">Tubagens sob o nível</name>
+                                <name lang="pt_BR">Tubulações abaixo do nível</name>
+                                <name lang="ro">Conducte sub nivel</name>
+                                <name lang="ru">Трубопроводы под уровнем</name>
+                                <name lang="sk">Potrubie pod hladinou</name>
+                                <name lang="sl">Cevovodi pod nivojem</name>
+                                <name lang="sr">Цевоводи испод нивоа</name>
+                                <name lang="sv">Rörledningar under nivå</name>
+                                <name lang="tr">Seviye altı boru tesisatı</name>
+                                <name lang="uk">Трубопроводи під рівнем</name>
+                                <name lang="zh">开放式油箱</name>
+                            </names>
+                            <fluid function="supply.tank" kind="source" prefix="CM">
+                                <parameter name="V0" unit="l" value="10"/>
+                            </fluid>
+                            <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                            <description>
+                                <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="10" y2="-10"/>
+                                <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="13.92" x2="13.92" y1="13.37" y2="0.08"/>
+                                <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-13.76" x2="13.92" y1="13.45" y2="13.37"/>
+                                <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-13.76" x2="-13.76" y1="0.08" y2="13.45"/>
+                                <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{3b764a17-fab6-41db-8727-14dd0064a525}" x="15" y="-2.5" z="5">
+                                    <text/>
+                                    <info_name>label</info_name>
+                                </dynamic_text>
+                                <terminal medium="hydraulic" name="P" orientation="n" type="Generic" uuid="{1a7d7aea-53a4-42e0-bded-b81825b13808}" x="0" y="-10"/>
+                            </description>
+                        </definition>
+                    </element>
+                </category>
+            </category>
+            <category name="90_signal">
+                <element name="prop_dbv.elmt">
+                    <definition height="80" hotspot_x="50" hotspot_y="40" link_type="simple" type="element" version="0.100.0" width="100">
+                        <uuid uuid="{c7d2d779-3748-5d78-b905-1481c9316114}"/>
+                        <names>
+                            <name lang="de">Proportional-Druckbegrenzungsventil (Prüfsymbol)</name>
+                            <name lang="en">Proportional-Druckbegrenzungsventil (Prüfsymbol)</name>
+                        </names>
+                        <fluid function="proportional.pressure_relief_valve" kind="other" prefix="QN">
+                            <parameter name="p_start" unit="MPa" value="0"/>
+                            <parameter name="p_end" unit="MPa" value="10"/>
+                            <parameter name="dpEnd" unit="MPa" value="2"/>
+                            <parameter name="rT" unit="bar.min2/l2" value="0.1"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R06 (Kasten mit benannten Anschlüssen)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="60" x="-30" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="DBV~" x="-26" y="3"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{efc6b130-5e3a-5951-9769-844fe36c19e5}" x="32" y="-30" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-10.0" x2="-10.0" y1="20" y2="30"/>
+                            <terminal medium="hydraulic" name="A" orientation="s" type="Generic" uuid="{b92d0491-c4e5-5ecb-a02a-55e289adedec}" x="-10.0" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="10.0" x2="10.0" y1="20" y2="30"/>
+                            <terminal medium="hydraulic" name="B" orientation="s" type="Generic" uuid="{4575bc02-2b6d-508f-ad85-c12ed0c686b0}" x="10.0" y="30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="drucksensor_hyd.elmt">
+                    <definition height="80" hotspot_x="50" hotspot_y="40" link_type="simple" type="element" version="0.100.0" width="100">
+                        <uuid uuid="{3f39622f-6449-5138-b0be-9d37640e2f5b}"/>
+                        <names>
+                            <name lang="de">Analog-Drucksensor, hydraulischer Teil (Prüfsymbol)</name>
+                            <name lang="en">Analog-Drucksensor, hydraulischer Teil (Prüfsymbol)</name>
+                        </names>
+                        <fluid function="proportional.pressure_sensor" kind="sensor" prefix="BP">
+                            <parameter name="p_start" unit="MPa" value="0"/>
+                            <parameter name="p_end" unit="MPa" value="10"/>
+                            <parameter name="U_start" unit="V" value="0"/>
+                            <parameter name="U_end" unit="V" value="10"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R06 (Kasten mit benannten Anschlüssen)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="60" x="-30" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="p" x="-26" y="3"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{3a8fcea7-a028-58c5-8980-0c813013ef4e}" x="32" y="-30" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0.0" x2="0.0" y1="20" y2="30"/>
+                            <terminal medium="hydraulic" name="P" orientation="s" type="Generic" uuid="{959acc09-8d42-59b3-8aa0-cc9dbfbde916}" x="0.0" y="30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="funktionsgenerator.elmt">
+                    <definition height="80" hotspot_x="50" hotspot_y="40" link_type="simple" type="element" version="0.100.0" width="100">
+                        <uuid uuid="{062abe5d-a0a1-53cf-95de-b3deaa58585f}"/>
+                        <names>
+                            <name lang="de">Funktionsgenerator (Prüfsymbol)</name>
+                            <name lang="en">Funktionsgenerator (Prüfsymbol)</name>
+                        </names>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R06 (Kasten mit benannten Anschlüssen)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="60" x="-30" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="G~" x="-26" y="3"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{35be0ea0-cd32-54c8-b186-1a3ee886c353}" x="32" y="-30" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="30" x2="40" y1="0.0" y2="0.0"/>
+                            <terminal name="S" orientation="e" type="Generic" uuid="{6e62c569-e64f-5b4f-bd09-f2d70214f23a}" x="40" y="0.0"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="drucksensor_el.elmt">
+                    <definition height="80" hotspot_x="50" hotspot_y="40" link_type="simple" type="element" version="0.100.0" width="100">
+                        <uuid uuid="{464062c2-b697-5532-a2ca-21fc0448f747}"/>
+                        <names>
+                            <name lang="de">Analog-Drucksensor, elektrischer Teil (Prüfsymbol)</name>
+                            <name lang="en">Analog-Drucksensor, elektrischer Teil (Prüfsymbol)</name>
+                        </names>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R06 (Kasten mit benannten Anschlüssen)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="60" x="-30" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="p/U" x="-26" y="3"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{e24ef6fb-bd93-58e9-91cf-b2ca87e12ccc}" x="32" y="-30" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="30" x2="40" y1="0.0" y2="0.0"/>
+                            <terminal name="Y" orientation="e" type="Generic" uuid="{f004f5a4-93e0-5b64-a0b4-e0e6564aa564}" x="40" y="0.0"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0.0" x2="0.0" y1="-20" y2="-30"/>
+                            <terminal name="SP" orientation="n" type="Generic" uuid="{3d91b9bb-22a7-5f5c-bc6a-70a261c4fb19}" x="0.0" y="-30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0.0" x2="0.0" y1="20" y2="30"/>
+                            <terminal name="SN" orientation="s" type="Generic" uuid="{a3b3002a-c98c-574a-aecb-efaeb35bcad5}" x="0.0" y="30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="pid_regler.elmt">
+                    <definition height="80" hotspot_x="50" hotspot_y="40" link_type="simple" type="element" version="0.100.0" width="100">
+                        <uuid uuid="{3a9c87df-7ab0-5d0d-ba3f-0c3f4e76f403}"/>
+                        <names>
+                            <name lang="de">PID-Regler (Prüfsymbol)</name>
+                            <name lang="en">PID-Regler (Prüfsymbol)</name>
+                        </names>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R06 (Kasten mit benannten Anschlüssen)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="60" x="-30" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="PID" x="-26" y="3"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{947fd265-f2e5-547a-8509-a6110c0add27}" x="32" y="-30" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-30" x2="-40" y1="-10.0" y2="-10.0"/>
+                            <terminal name="W" orientation="w" type="Generic" uuid="{9ac12b29-00a3-50d4-a918-a157560f4e79}" x="-40" y="-10.0"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-30" x2="-40" y1="10.0" y2="10.0"/>
+                            <terminal name="X" orientation="w" type="Generic" uuid="{d72040fc-8662-5489-b0ff-6aa85eaacfd0}" x="-40" y="10.0"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="30" x2="40" y1="0.0" y2="0.0"/>
+                            <terminal name="Y" orientation="e" type="Generic" uuid="{22b9f811-f938-5c29-822f-3853840df62f}" x="40" y="0.0"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0.0" x2="0.0" y1="-20" y2="-30"/>
+                            <terminal name="SP" orientation="n" type="Generic" uuid="{0ee82922-ca62-5aa9-ada0-436e0c014fbf}" x="0.0" y="-30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0.0" x2="0.0" y1="20" y2="30"/>
+                            <terminal name="SN" orientation="s" type="Generic" uuid="{e222829e-69d7-5212-a7c2-6664ebcf7147}" x="0.0" y="30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="verstaerker_1k.elmt">
+                    <definition height="80" hotspot_x="50" hotspot_y="40" link_type="simple" type="element" version="0.100.0" width="100">
+                        <uuid uuid="{bd90c344-66b0-5391-a796-03520358557e}"/>
+                        <names>
+                            <name lang="de">Proportional-Verstärker 1 Kanal (Prüfsymbol)</name>
+                            <name lang="en">Proportional-Verstärker 1 Kanal (Prüfsymbol)</name>
+                        </names>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R06 (Kasten mit benannten Anschlüssen)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="60" x="-30" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="AMP" x="-26" y="3"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{f72fade5-0d55-50d5-8a4e-59f61a96f56f}" x="32" y="-30" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-30" x2="-40" y1="0.0" y2="0.0"/>
+                            <terminal name="U" orientation="w" type="Generic" uuid="{f6922749-4073-5ac5-bfef-c16c119753db}" x="-40" y="0.0"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="30" x2="40" y1="0.0" y2="0.0"/>
+                            <terminal name="A" orientation="e" type="Generic" uuid="{6fe8c483-6fbe-5ed7-9e4a-69fe9a32ad35}" x="40" y="0.0"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0.0" x2="0.0" y1="-20" y2="-30"/>
+                            <terminal name="SP" orientation="n" type="Generic" uuid="{f419b16f-a2d1-5504-a4a0-faf288fa3045}" x="0.0" y="-30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0.0" x2="0.0" y1="20" y2="30"/>
+                            <terminal name="SN" orientation="s" type="Generic" uuid="{500ba74e-56dd-52ef-9a2e-cf74fded34f9}" x="0.0" y="30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="quelle_24v.elmt">
+                    <definition height="80" hotspot_x="50" hotspot_y="40" link_type="simple" type="element" version="0.100.0" width="100">
+                        <uuid uuid="{eb97fcda-6f30-5878-8f6d-6907d79bbd17}"/>
+                        <names>
+                            <name lang="de">Spannungsquelle 24 V (Prüfsymbol)</name>
+                            <name lang="en">Spannungsquelle 24 V (Prüfsymbol)</name>
+                        </names>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R06 (Kasten mit benannten Anschlüssen)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="60" x="-30" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="+24V" x="-26" y="3"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{cd7b3967-05a1-5b0a-9c1d-472ac44c3d39}" x="32" y="-30" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0.0" x2="0.0" y1="20" y2="30"/>
+                            <terminal name="A" orientation="s" type="Generic" uuid="{eb59607a-04e8-55cd-97c4-01b80061813b}" x="0.0" y="30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="quelle_0v.elmt">
+                    <definition height="80" hotspot_x="50" hotspot_y="40" link_type="simple" type="element" version="0.100.0" width="100">
+                        <uuid uuid="{b61aa5c2-9a15-5a20-bce5-675fb9658b9b}"/>
+                        <names>
+                            <name lang="de">Spannungsquelle 0 V (Prüfsymbol)</name>
+                            <name lang="en">Spannungsquelle 0 V (Prüfsymbol)</name>
+                        </names>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R06 (Kasten mit benannten Anschlüssen)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="60" x="-30" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="0V" x="-26" y="3"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{faa4c0e4-07db-56fe-9901-e96b8b0ccedd}" x="32" y="-30" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0.0" x2="0.0" y1="-20" y2="-30"/>
+                            <terminal name="A" orientation="n" type="Generic" uuid="{6b635733-0eed-5109-b076-59248cce05fa}" x="0.0" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+            </category>
+        </category>
+    </collection>
+</project>

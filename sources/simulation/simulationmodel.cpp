@@ -18,6 +18,7 @@
 #include <algorithm>
 #include "simulationmodel.h"
 #include "simulationphysics.h"
+#include "simulationsignals.h"
 #include "simulationunits.h"
 #include "grafcet.h"
 #include "simulationcatalog.h"
@@ -136,6 +137,11 @@ double volumeFlow(double p1, double p2, double rt)
 }
 
 QString label(Element *e) { return e->elementInformations()[QStringLiteral("label")].toString(); }
+	/// R06: parts whose flow A → B is measured (an orifice rT): analog flow sensor and the FluidSIM flowmeter with output
+bool isFlowSensor(const QString &fn)
+{
+	return fn == QLatin1String("proportional.flow_sensor") || fn == QLatin1String("sensor.flowmeter_2");
+}
 QString info(Element *e, const char *key) { return e->elementInformations()[QLatin1String(key)].toString(); }
 
 	/**
@@ -358,6 +364,8 @@ struct SimulationModel::FlowValve {
 	double c = 0, c_free = 0, rt = 0.1, rt_free = 0.05, p0 = 0, dp_end = 0.5e5;
 	double t_delay = 1.0, since = -1.0;         // time delay valve
 	double ratio = 3.0, gleak = 0.0;            // counterbalance valve: pilot area ratio, leakage P -> T (R09)
+	double u = 0.0, p_lo = 0.0, p_hi = 0.0;     // proportional relief valve: setpoint [V], opening at 0 and 10 V (R06)
+	double last_q = 0.0;                        // flow sensor: flow A -> B of the last step [m3/s] (R06)
 
 	double flow(double pa, double pb, double share = 1.0, bool free = false) const {
 		if (share <= 0) return 0.0;
@@ -443,6 +451,44 @@ struct SimulationModel::Plc {
 	std::shared_ptr<PlcProgram> program;
 };
 
+	/// analog signal block (R06, FORMELN.md A01–A10): a FluidSIM electric part with real valued ports
+struct SimulationModel::Analog {
+	Element *e = nullptr;
+	QString label, block;             // block: FluidSIM class without "ET.", e.g. "Controller.ControllerPID"
+	QHash<QString, int> port;         // port name (upper case) -> net
+	QHash<QString, QPair<double, QString>> par;   // FluidSIM characteristic values with their unit
+	QList<QPair<QString, QString>> links;          // own port -> "-QM1/Y1", "-MM1", "-BP1"
+	QStringList inputs, outputs;      // ports it reads / drives
+	double out = 0.0;                 // output voltage
+	double vmin = 0.0;                // least supply voltage
+	bool on = false;                  // comparator
+	SimSignals::Waveform wave;
+	SimSignals::SetpointCard card;
+	SimSignals::Pid pid;
+	SimSignals::StateController sc;
+	SimSignals::Pt2 pt2;
+	SimSignals::Integrator integ;
+	double efficiency = 0.9, jump = 0.0;
+	bool two_channel = false;
+	// linked parts (linkAnalog)
+	QList<QPair<PropValve *, double>> valves;      // valve and sign: connector (Y2: -1) times channel (B: -1)
+	QList<FlowValve *> reliefs;
+	Cylinder *cylinder = nullptr;
+	int sensor_node = -1;
+	FlowValve *flow_sensor = nullptr;
+	double s0 = 0, s1 = 1, u0 = 0, u1 = 10;        // sensor characteristic (SI)
+	bool signed_flow = false;
+
+	double value(const QString &name, double fallback, const QString &to = QString()) const {
+		const auto it = par.constFind(name);
+		if (it == par.constEnd() || !std::isfinite(it->first)) return fallback;
+		if (to.isEmpty() || it->second.isEmpty()) return it->first;
+		const double v = SimUnits::convert(it->first, it->second, to);
+		return std::isfinite(v) ? v : fallback;
+	}
+	bool has(const QString &p) const { return port.value(p, -1) >= 0; }
+};
+
 // ------------------------------------------------------------------------- construction
 SimulationModel::SimulationModel(const QList<Diagram *> &diagrams, double supply_bar)
 {
@@ -470,6 +516,7 @@ SimulationModel::~SimulationModel()
 	qDeleteAll(m_pipes);
 	qDeleteAll(m_prop_valves);
 	qDeleteAll(m_cups);
+	qDeleteAll(m_analog);
 }
 
 void SimulationModel::buildNets(const QList<Diagram *> &diagrams)
@@ -607,7 +654,9 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 		{QStringLiteral("logic.time_delay_valve"), 100},
 		{QStringLiteral("pressure_valve.counterbalance_valve"), 200},
 		{QStringLiteral("pressure_valve.pressure_sequence_valve01"), 200},
-		{QStringLiteral("pressure_valve.pressure_sequence_valve02"), 200}};
+		{QStringLiteral("pressure_valve.pressure_sequence_valve02"), 200},
+		{QStringLiteral("proportional.pressure_relief_valve"), 200}, {QStringLiteral("proportional.flow_sensor"), 1000},
+		{QStringLiteral("sensor.flowmeter_2"), 1000}};
 
 	for (Diagram *d : diagrams) {
 		for (Element *e : sortedElements(d)) {
@@ -684,8 +733,8 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					}
 				}
 				if (model == QLatin1String("proportional_valve")) {
-					// R07 (FORMELN.md V05, V06): FluidSIM 4/3 proportional valve; the analog input (S, Y1/Y2) comes
-					// with R06, until then the setpoint is the value u or a setpoint event
+					// R07 (FORMELN.md V05, V06): FluidSIM 4/3 proportional valve; a linked solenoid or amplifier (R06,
+					// linkAnalog) sets u every step, else the setpoint is the value u or a setpoint event
 					if (!hyd) {
 						m_model_errors << QStringLiteral("%1: Stetigventil nur hydraulisch gerechnet").arg(part);
 						continue;
@@ -964,6 +1013,15 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					fv->p0 = paramIn(f, QStringLiteral("p0"), 0.0, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
 					fv->dp_end = std::max(paramIn(f, QStringLiteral("dpEnd"), 0.05e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
 					fv->t_delay = paramIn(f, QStringLiteral("t_delay"), 1.0, QStringLiteral("s"), &m_model_errors, who, Range::NonNegative);
+					if (fn == QLatin1String("proportional.pressure_relief_valve")) {
+						// R06 (FORMELN.md V09): opening pressure p_start at 0 V … p_end at 10 V, FluidSIM default 0 … 10 MPa
+						fv->p_lo = paramIn(f, QStringLiteral("p_start"), 0.0, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+						fv->p_hi = paramIn(f, QStringLiteral("p_end"), 10e6, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+						fv->dp_end = std::max(paramIn(f, QStringLiteral("dpEnd"), 2e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
+						fv->u = paramIn(f, QStringLiteral("u"), 0.0, QStringLiteral("V"), &m_model_errors, who);
+					}
+					if (isFlowSensor(fn))
+						fv->rt = paramNative(f, QStringLiteral("rT"), 0.001, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
 					if (fn == QLatin1String("pressure_valve.counterbalance_valve")) {
 						// R09 (FORMELN.md V07): FluidSIM names the resistances rT_cb (valve) and rT_cv (check valve)
 						fv->rt = paramNative(f, QStringLiteral("rT_cb"), fv->rt, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
@@ -994,6 +1052,10 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 				if (role == QLatin1String("supply+") || role == QLatin1String("supply-")) {
 					QList<int> all;
 					for (int k : n) if (k >= 0) all << k;
+					// R06: the potential of the supply (FluidSIM "pot"), default 24 V and 0 V
+					bool ok = false;
+					const double v = info(e, "sim_volt").replace(QLatin1Char(','), QLatin1Char('.')).toDouble(&ok);
+					for (int k : all) m_source_volt.insert(k, ok ? v : (role == QLatin1String("supply+") ? 24.0 : 0.0));
 					if (role == QLatin1String("supply+")) m_sources << qMakePair(all, QList<int>{});
 					else m_sources << qMakePair(QList<int>{}, all);
 				} else if (role == QLatin1String("voltage")) {
@@ -1021,6 +1083,37 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					const QString s = info(e, "valve_side");
 					c->side = s == QLatin1String("left") ? 0 : s == QLatin1String("right") ? 1 : -1;
 					m_coils << c;
+				} else if (role == QLatin1String("analog")) {
+					// R06: analog block; ports by name, characteristic values "KP=1;KI=0 1/s", links "A=-QM1/Y1"
+					auto *a = new Analog;
+					a->e = e;
+					a->label = label(e).isEmpty() ? e->name() : label(e);
+					a->block = info(e, "sim_block").trimmed();
+					for (Terminal *t : e->terminals())
+						if (node(t) >= 0) a->port.insert(t->name().trimmed().toUpper(), node(t));
+					for (const QString &item : info(e, "sim_params").split(QLatin1Char(';'), Qt::SkipEmptyParts)) {
+						const int eq = static_cast<int>(item.indexOf(QLatin1Char('=')));
+						if (eq <= 0) continue;
+						const QString key = item.left(eq).trimmed(), rest = item.mid(eq + 1).trimmed();
+						if (rest.startsWith(QLatin1Char('{'))) {   // a list ("{0,10}"): kept as text
+							a->par.insert(key, qMakePair(std::nan(""), rest));
+							continue;
+						}
+						const QStringList vu = rest.split(QLatin1Char(' '), Qt::SkipEmptyParts);
+						const QString num = vu.value(0);
+						bool ok = false;
+						double v = QString(num).replace(QLatin1Char(','), QLatin1Char('.')).toDouble(&ok);
+						if (!ok) v = num.compare(QLatin1String("true"), Qt::CaseInsensitive) == 0 ? 1.0
+								   : num.compare(QLatin1String("false"), Qt::CaseInsensitive) == 0 ? 0.0 : std::nan("");
+						if (!std::isfinite(v))
+							m_model_errors << QStringLiteral("%1: Kennwert %2 = „%3“ ist keine Zahl").arg(a->label, key, num);
+						a->par.insert(key, qMakePair(v, vu.mid(1).join(QLatin1Char(' '))));
+					}
+					for (const QString &item : info(e, "sim_link").split(QLatin1Char(';'), Qt::SkipEmptyParts)) {
+						const int eq = static_cast<int>(item.indexOf(QLatin1Char('=')));
+						if (eq > 0) a->links << qMakePair(item.left(eq).trimmed().toUpper(), item.mid(eq + 1).trimmed());
+					}
+					m_analog << a;
 				} else if (role == QLatin1String("grafcet_io")) {
 					auto *io = new GrafcetIo;
 					io->e = e;
@@ -1258,6 +1351,11 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 		m_failed = true;
 		m_failure = m_model_errors.join(QStringLiteral("; "));
 	}
+	linkAnalog(diagrams);
+	if (!m_model_errors.isEmpty() && !m_failed) {
+		m_failed = true;
+		m_failure = m_model_errors.join(QStringLiteral("; "));
+	}
 	m_grafcet = std::make_unique<Grafcet>(diagrams, [this](Terminal *t) { return node(t); });
 	if (m_grafcet->isEmpty()) m_grafcet.reset();
 	else m_program_errors << m_grafcet->errors();
@@ -1322,6 +1420,18 @@ void SimulationModel::electrics()
 	for (const auto &s : m_sources) {
 		for (int x : s.first) if (x >= 0) plus << root(x);
 		for (int x : s.second) if (x >= 0) minus << root(x);
+	}
+	// R06: a comparator that is on puts its supply onto its output S (state of the last step)
+	for (const Analog *a : std::as_const(m_analog))
+		if (a->on && a->has(QStringLiteral("S"))) plus << root(a->port.value(QStringLiteral("S")));
+	{
+		QHash<int, double> pot;
+		for (auto it = m_source_volt.constBegin(); it != m_source_volt.constEnd(); ++it) pot.insert(root(it.key()), it.value());
+		m_net_volt.clear();
+		for (int x : m_electric) {
+			const int r = root(x);
+			m_net_volt.insert(x, pot.contains(r) ? pot.value(r) : plus.contains(r) ? 24.0 : 0.0);
+		}
 	}
 	for (const GrafcetIo *io : std::as_const(m_grafcet_io))
 		for (int i = 0; i < io->outputs.size(); ++i)
@@ -1461,6 +1571,288 @@ void SimulationModel::electrics()
 	}
 }
 
+
+// ------------------------------------------------------------------------- analog signals (R06)
+double SimulationModel::volt(int k) const
+{
+	if (k < 0) return 0.0;
+	const auto it = m_volt.constFind(k);
+	if (it != m_volt.constEnd()) return it.value();
+	return m_net_volt.value(k, 0.0);
+}
+
+void SimulationModel::linkAnalog(const QList<Diagram *> &diagrams)
+{
+	if (m_analog.isEmpty()) return;
+	static const QStringList blocks{
+		QStringLiteral("Source.WaveformGenerator"), QStringLiteral("Source.WaveformGenerator02"),
+		QStringLiteral("Source.SetPointGenerator"), QStringLiteral("Controller.ControllerPID"),
+		QStringLiteral("Controller.ControllerS"), QStringLiteral("Controller.ControllerPT2"),
+		QStringLiteral("Controller.ControllerIntegrator"), QStringLiteral("Controller.DifferentialAmplifier"),
+		QStringLiteral("Controller.ComparatorCard"), QStringLiteral("Controller.PropAmplifier1Ch"),
+		QStringLiteral("Controller.PropAmplifier2Ch"), QStringLiteral("Relay.ValveContSolenoid"),
+		QStringLiteral("Sensor.PressureSensorHyd"), QStringLiteral("Sensor.PressureSensorPneu"),
+		QStringLiteral("Sensor.FlowSensorHyd"), QStringLiteral("Sensor.PositionSensor"), QStringLiteral("Sensor.Voltmeter")};
+	// fluid parts the sensors read, by label
+	QHash<QString, Element *> fluid_by_label;
+	for (Diagram *d : diagrams)
+		for (Element *e : sortedElements(d))
+			if (!e->elementData().m_fluid.isNull() && !label(e).isEmpty()) fluid_by_label.insert(label(e), e);
+	const QString V = QStringLiteral("V"), s = QStringLiteral("s");
+	for (Analog *a : std::as_const(m_analog)) {
+		const QString &b = a->block;
+		if (!blocks.contains(b)) {
+			m_model_errors << QStringLiteral("%1: Signalbaustein „%2“ hat kein Rechenmodell").arg(a->label, b.isEmpty() ? QStringLiteral("(keiner)") : b);
+			continue;
+		}
+		auto link = [&](const QString &p) {
+			for (const auto &l : std::as_const(a->links)) if (l.first == p) return l.second;
+			return QString();
+		};
+		const bool unipolar = a->value(QStringLiteral("outputMode"), 0.0) > 0.5;   // FluidSIM: 0 → ±10 V, 1 → 0 … 10 V
+		if (b.startsWith(QLatin1String("Source.WaveformGenerator"))) {
+			auto &w = a->wave;
+			w.form = qRound(a->value(QStringLiteral("waveForm"), 2.0));
+			w.frequency = a->value(QStringLiteral("frequency"), 1.0, QStringLiteral("Hz"));
+			w.amplitude = a->value(QStringLiteral("amplitude"), 5.0, V);
+			w.offset = a->value(QStringLiteral("yOffset"), 0.0, V);
+			w.vmin = a->value(QStringLiteral("vMin"), -30.0, V);
+			w.vmax = a->value(QStringLiteral("vMax"), 30.0, V);
+			w.repeat = a->value(QStringLiteral("repeat"), 0.0) > 0.5;
+			const auto list = [&](const char *n) {
+				QList<double> out;
+				QString t = a->par.value(QLatin1String(n)).second;
+				t.remove(QLatin1Char('{')).remove(QLatin1Char('}'));
+				for (const QString &x : t.split(QLatin1Char(','), Qt::SkipEmptyParts)) out << x.trimmed().toDouble();
+				return out;
+			};
+			const QList<double> px = list("profile_x"), py = list("profile_y");
+			for (int i = 0; i < std::min(px.size(), py.size()); ++i) w.profile.emplace_back(px.at(i), py.at(i));
+			a->outputs << (a->has(QStringLiteral("S")) ? QStringLiteral("S") : QStringLiteral("P"));
+			if (a->has(QStringLiteral("N"))) a->inputs << QStringLiteral("N");
+		} else if (b == QLatin1String("Source.SetPointGenerator")) {
+			auto &c = a->card;
+			c.mode = qRound(a->value(QStringLiteral("mode"), 1.0));
+			c.count = qRound(a->value(QStringLiteral("numOfSetPoints"), 1.0));
+			for (int i = 0; i < 8; ++i) c.w[i] = a->value(QStringLiteral("W%1").arg(i + 1), 0.0, V);
+			for (int i = 0; i < 4; ++i) c.ramp[i] = a->value(QStringLiteral("R%1").arg(i + 1), 0.0);
+			c.t_switch = a->value(QStringLiteral("switchingTime"), 1.0, s);
+			a->vmin = a->value(QStringLiteral("vMin"), 20.0, V);
+			a->inputs << QStringLiteral("I1") << QStringLiteral("I2") << QStringLiteral("I3");
+			a->outputs << QStringLiteral("Q");
+		} else if (b == QLatin1String("Controller.ControllerPID")) {
+			auto &c = a->pid;
+			c.kp = a->value(QStringLiteral("KP"), 1.0);
+			c.ki = a->value(QStringLiteral("KI"), 0.0, QStringLiteral("1/s"));
+			c.kd = a->value(QStringLiteral("KD"), 0.0, s);
+			c.offset = a->value(QStringLiteral("yOffset"), 0.0, V);
+			c.umin = unipolar ? 0.0 : -10.0;
+			c.umax = 10.0;
+			// FORMELN.md A04: derivative filter Td/10, tracking time 0.9·Ti (Modelica LimPID Nd = 10, Ni = 0.9)
+			c.tau_d = c.kp > 0 && c.kd > 0 ? std::max(c.kd / c.kp / 10.0, 1e-4) : 1e-3;
+			c.t_track = c.ki > 0 ? std::max(0.9 * (c.kp > 0 ? c.kp / c.ki : 1.0 / c.ki), 1e-4) : 0.1;
+			a->vmin = a->value(QStringLiteral("vMin"), 21.6, V);
+			a->inputs << QStringLiteral("W") << QStringLiteral("X");
+			a->outputs << QStringLiteral("Y");
+		} else if (b == QLatin1String("Controller.ControllerS")) {
+			auto &c = a->sc;
+			c.kx = a->value(QStringLiteral("Kx"), 1.0);
+			c.kv = a->value(QStringLiteral("Kv"), 0.0, s);
+			c.ka = a->value(QStringLiteral("Ka"), 0.0, QStringLiteral("s2"));
+			c.gain = a->value(QStringLiteral("gain"), 1.0);
+			c.offset = a->value(QStringLiteral("yOffset"), 0.0, V);
+			c.umin = unipolar ? 0.0 : -10.0;
+			a->vmin = a->value(QStringLiteral("vMin"), 21.6, V);
+			a->inputs << QStringLiteral("W") << QStringLiteral("X");
+			a->outputs << QStringLiteral("Y");
+		} else if (b == QLatin1String("Controller.ControllerPT2") || b == QLatin1String("Controller.ControllerIntegrator")
+				   || b == QLatin1String("Controller.DifferentialAmplifier")) {
+			a->pt2.t = std::max(a->value(QStringLiteral("T"), 0.01, s), 1e-5);
+			a->pt2.k = a->value(QStringLiteral("K"), 1.0);
+			a->pt2.d = std::max(a->value(QStringLiteral("d"), 1.0), 1e-5);
+			a->integ.ki = a->value(QStringLiteral("Ki"), 100.0, QStringLiteral("1/s"));
+			a->efficiency = a->value(QStringLiteral("Efficiency"), 0.9);
+			a->vmin = a->value(QStringLiteral("vMinSupplyA1"), 1.5, V);
+			a->inputs << QStringLiteral("U") << QStringLiteral("A1") << QStringLiteral("A2");
+			if (b.endsWith(QLatin1String("DifferentialAmplifier"))) a->inputs << QStringLiteral("X");
+			a->outputs << QStringLiteral("Y");
+		} else if (b == QLatin1String("Controller.ComparatorCard")) {
+			a->vmin = a->value(QStringLiteral("vMin"), 13.0, V);
+			a->inputs << QStringLiteral("U");
+			a->outputs << QStringLiteral("S");
+		} else if (b.startsWith(QLatin1String("Controller.PropAmplifier")) || b == QLatin1String("Relay.ValveContSolenoid")) {
+			const bool coil = b == QLatin1String("Relay.ValveContSolenoid");
+			a->two_channel = b.endsWith(QLatin1String("2Ch"));
+			a->jump = a->value(QStringLiteral("jumpCurrentRel"), 0.0) / 100.0;
+			a->vmin = a->value(QStringLiteral("vMin"), 20.0, V);
+			a->inputs << (coil ? QStringLiteral("C") : QStringLiteral("U"));
+			// links "A=-QM1/Y1" (amplifier outputs) or "C=-QM1/S" (solenoid): the valve and its connector
+			for (const auto &l : std::as_const(a->links)) {
+				const QString target = l.second.section(QLatin1Char('/'), 0, 0), conn = l.second.section(QLatin1Char('/'), 1).toUpper();
+				// sign of the spool (s > 0: P→A, FORMELN.md A10): in FluidSIM a positive setpoint opens P→A. The
+				// right solenoid Y2 of the 4/3 valve 01 pushes the spool left and brings the box P→A, B→T, Y1 the
+				// crossed one; a positive voltage at S (valve 02) opens P→A. A two channel amplifier drives A for
+				// positive and B for negative inputs, so B wired to Y1 gives the same sign as A wired to Y2
+				const double sign = (conn == QLatin1String("Y1") ? -1.0 : 1.0) * (a->two_channel && l.first == QLatin1String("B") ? -1.0 : 1.0);
+				bool found = false;
+				for (PropValve *v : std::as_const(m_prop_valves))
+					if (v->label == target) {
+						bool seen = false;
+						for (const auto &pv : std::as_const(a->valves)) seen = seen || pv.first == v;
+						if (!seen) a->valves << qMakePair(v, sign);
+						found = true;
+					}
+				for (FlowValve *fv : std::as_const(m_flow_valves))
+					if (fv->function == QLatin1String("proportional.pressure_relief_valve") && label(fv->e) == target) {
+						if (!a->reliefs.contains(fv)) a->reliefs << fv;
+						found = true;
+					}
+				// a part with that label but without a model (MPYE …) is already reported by the catalog
+				if (!found && !fluid_by_label.contains(target))
+					m_model_errors << QStringLiteral("%1: gekoppeltes Stetigventil „%2“ nicht gefunden").arg(a->label, target);
+			}
+		} else if (b.startsWith(QLatin1String("Sensor.PressureSensor")) || b == QLatin1String("Sensor.FlowSensorHyd")) {
+			const bool flow = b == QLatin1String("Sensor.FlowSensorHyd");
+			QString target = link(QStringLiteral("P"));
+			if (target.isEmpty()) target = a->label;
+			Element *fe = fluid_by_label.value(target);
+			const FluidData f = fe ? fe->elementData().m_fluid : FluidData();
+			if (!fe || !(flow ? isFlowSensor(f.m_function) : f.m_function.startsWith(QLatin1String("proportional.pressure_sensor")))) {
+				m_model_errors << QStringLiteral("%1: hydraulischer bzw. pneumatischer Teil „%2“ des Sensors fehlt").arg(a->label, target);
+				continue;
+			}
+			const QString who = a->label;
+			if (flow) {
+				for (FlowValve *fv : std::as_const(m_flow_valves)) if (fv->e == fe) a->flow_sensor = fv;
+				a->s0 = paramIn(f, QStringLiteral("q_start"), 0.0, QStringLiteral("m3/s"), &m_model_errors, who);
+				a->s1 = paramIn(f, QStringLiteral("q_end"), 10.0 / 60000.0, QStringLiteral("m3/s"), &m_model_errors, who);
+				a->signed_flow = paramNative(f, QStringLiteral("mode"), 1.0, QString(), &m_model_errors, who, Range::Any) > 1.5;
+			} else {
+				for (Terminal *t : fe->terminals())
+					if (isFluid(t) && node(t) >= 0) { a->sensor_node = node(t); break; }
+				const bool pneu = b.endsWith(QLatin1String("Pneu"));
+				a->s0 = paramIn(f, QStringLiteral("p_start"), 0.0, QStringLiteral("Pa"), &m_model_errors, who);
+				a->s1 = paramIn(f, QStringLiteral("p_end"), pneu ? 1e6 : 10e6, QStringLiteral("Pa"), &m_model_errors, who);
+			}
+			a->u0 = paramIn(f, QStringLiteral("U_start"), 0.0, V, &m_model_errors, who);
+			a->u1 = paramIn(f, QStringLiteral("U_end"), 10.0, V, &m_model_errors, who);
+			a->outputs << QStringLiteral("Y");
+		} else if (b == QLatin1String("Sensor.PositionSensor")) {
+			const QString target = link(QStringLiteral("X"));
+			for (Cylinder *z : std::as_const(m_cylinders)) if (z->label == target) a->cylinder = z;
+			if (!a->cylinder) {
+				m_model_errors << QStringLiteral("%1: Zylinder „%2“ des Wegmesssystems nicht gefunden").arg(a->label, target);
+				continue;
+			}
+			a->u0 = a->value(QStringLiteral("U_start"), 0.0, V);
+			a->u1 = a->value(QStringLiteral("U_end"), 10.0, V);
+			a->vmin = a->value(QStringLiteral("vMinAB"), 13.0, V);
+			a->outputs << QStringLiteral("S");
+		} else if (b == QLatin1String("Sensor.Voltmeter")) {
+			a->inputs << QStringLiteral("P") << QStringLiteral("N");
+		}
+	}
+	// two outputs on one net contradict each other
+	QHash<int, QString> driver;
+	for (const Analog *a : std::as_const(m_analog))
+		for (const QString &o : a->outputs) {
+			const int k = a->port.value(o, -1);
+			if (k < 0) continue;
+			if (driver.contains(k))
+				m_model_errors << QStringLiteral("Netz an %1: zwei Analogausgänge treiben dasselbe Netz (%2 und %3)")
+									  .arg(netName(k), driver.value(k), a->label);
+			driver.insert(k, a->label);
+		}
+	// order of evaluation (FORMELN.md A00): a block after the blocks that drive its inputs; in a pure
+	// algebraic loop the first block of the plan reads the value of the last step
+	QList<Analog *> todo = m_analog, done;
+	QSet<int> ready;
+	while (!todo.isEmpty()) {
+		int pick = -1;
+		for (int i = 0; i < todo.size() && pick < 0; ++i) {
+			bool free = true;
+			for (const QString &in : std::as_const(todo.at(i)->inputs)) {
+				const int k = todo.at(i)->port.value(in, -1);
+				if (k >= 0 && driver.contains(k) && !ready.contains(k)) free = false;
+			}
+			if (free) pick = i;
+		}
+		if (pick < 0) pick = 0;
+		Analog *a = todo.takeAt(pick);
+		for (const QString &o : std::as_const(a->outputs)) ready << a->port.value(o, -1);
+		done << a;
+	}
+	m_analog = done;
+}
+
+void SimulationModel::analog(double dt)
+{
+	if (m_analog.isEmpty()) return;
+	for (Analog *a : m_analog) {
+		const QString &b = a->block;
+		auto V = [&](const char *p) { return volt(a->port.value(QLatin1String(p), -1)); };
+		auto has = [&](const char *p) { return a->has(QLatin1String(p)); };
+		const double supply = std::abs(V("SP") - V("SN"));
+		const bool powered = supply >= a->vmin - 1e-9;
+		double y = 0.0;
+		if (b.startsWith(QLatin1String("Source.WaveformGenerator"))) {
+			y = a->wave.value(m_time) + (has("N") ? V("N") : 0.0);
+		} else if (b == QLatin1String("Source.SetPointGenerator")) {
+			if (!powered) a->card.reset();
+			else y = a->card.step(m_time, dt, (V("I1") >= 15.0 ? 1 : 0) + (V("I2") >= 15.0 ? 2 : 0) + (V("I3") >= 15.0 ? 4 : 0));
+		} else if (b == QLatin1String("Controller.ControllerPID")) {
+			// without its supply the controller has no output and starts again from zero (reset)
+			if (!powered) a->pid.reset();
+			else y = a->pid.step(V("W"), V("X"), dt);
+		} else if (b == QLatin1String("Controller.ControllerS")) {
+			if (!powered) a->sc.reset();
+			else y = a->sc.step(V("W"), V("X"), dt);
+		} else if (b == QLatin1String("Controller.ControllerPT2") || b == QLatin1String("Controller.ControllerIntegrator")
+				   || b == QLatin1String("Controller.DifferentialAmplifier")) {
+			const SimSignals::SupplyRange r = SimSignals::supplyRange(has("A1"), V("A1"), has("A2"), V("A2"), a->efficiency, a->vmin);
+			if (r.pass) y = r.pass_value;
+			else if (r.limit > 0) {
+				if (b.endsWith(QLatin1String("PT2"))) y = std::clamp(a->pt2.step(V("U"), dt), -r.limit, r.limit);
+				else if (b.endsWith(QLatin1String("Integrator"))) y = a->integ.step(V("U"), dt, r.limit);
+				else y = std::clamp(V("U") - V("X"), -r.limit, r.limit);
+			} else {
+				a->pt2.y = a->pt2.yd = 0.0;
+				a->integ.y = 0.0;
+			}
+		} else if (b == QLatin1String("Controller.ComparatorCard")) {
+			const bool on = powered && SimSignals::comparator(a->on, V("U"), a->value(QStringLiteral("vSet"), 5.0, QStringLiteral("V")),
+															   a->value(QStringLiteral("hyst"), 0.0, QStringLiteral("V")));
+			if (on != a->on)
+				m_messages << Message{m_time, QStringLiteral("Komparator %1 %2 bei %3 V").arg(a->label,
+					on ? QStringLiteral("schaltet ein") : QStringLiteral("schaltet aus")).arg(V("U"), 0, 'f', 2)};
+			a->on = on;
+			y = on ? V("SP") : 0.0;
+		} else if (b.startsWith(QLatin1String("Controller.PropAmplifier")) || b == QLatin1String("Relay.ValveContSolenoid")) {
+			const bool coil = b == QLatin1String("Relay.ValveContSolenoid");
+			const double supply_ab = coil ? std::abs(V("A") - V("B")) : supply;
+			if (supply_ab >= a->vmin - 1e-9)
+				y = coil ? std::clamp(V("C"), -10.0, 10.0) : SimSignals::amplifier(V("U"), a->jump, a->two_channel);
+			for (const auto &pv : std::as_const(a->valves)) pv.first->u = y * pv.second;
+			for (FlowValve *fv : std::as_const(a->reliefs)) fv->u = y;
+		} else if (b.startsWith(QLatin1String("Sensor.PressureSensor"))) {
+			if (a->sensor_node >= 0) y = SimSignals::scale(m_p.at(a->sensor_node) - P_ATM, a->s0, a->s1, a->u0, a->u1);
+		} else if (b == QLatin1String("Sensor.FlowSensorHyd")) {
+			const double q = a->flow_sensor ? a->flow_sensor->last_q : 0.0;
+			y = SimSignals::scale(a->signed_flow ? q : std::abs(q), a->s0, a->s1, a->u0, a->u1);
+		} else if (b == QLatin1String("Sensor.PositionSensor")) {
+			if (a->cylinder && std::abs(V("A") - V("B")) >= a->vmin - 1e-9)
+				y = a->u0 + (a->u1 - a->u0) * a->cylinder->x / a->cylinder->stroke;
+		} else if (b == QLatin1String("Sensor.Voltmeter")) {
+			y = V("P") - V("N");
+		}
+		a->out = y;
+		for (const QString &o : std::as_const(a->outputs)) {
+			const int k = a->port.value(o, -1);
+			if (k >= 0) m_volt.insert(k, y);
+		}
+	}
+}
+
 // ------------------------------------------------------------------------- step
 void SimulationModel::fail(const QString &why)
 {
@@ -1509,6 +1901,7 @@ void SimulationModel::step(double dt)
 	};
 
 	electrics();
+	analog(dt);
 
 	for (Pump *pu : m_pumps) {
 		const int kp = node(pu->e, QStringLiteral("P")), kt = node(pu->e, QStringLiteral("T"));
@@ -1656,6 +2049,17 @@ void SimulationModel::step(double dt)
 				if (kn.value(port, -1) >= 0) { ret = kn.value(port); break; }
 			if (in >= 0)
 				book(in, ret, s->flow(p(in), p(ret), qBound(0.0, (p(in) - p(ret) - s->p0) / s->dp_end, 1.0)), s->e);
+		} else if (fn == QLatin1String("proportional.pressure_relief_valve")) {
+			// R06 (FORMELN.md V09): A (P) inlet, B (T) return; opening pressure from the setpoint 0 … 10 V
+			const int a = kn.value(QStringLiteral("A"), kn.value(QStringLiteral("P"), -1));
+			const int b = kn.value(QStringLiteral("B"), kn.value(QStringLiteral("T"), -1));
+			const double p0 = s->p_lo + (s->p_hi - s->p_lo) * qBound(0.0, s->u / 10.0, 1.0);
+			if (a >= 0) book(a, b, s->flow(p(a), p(b), qBound(0.0, (p(a) - p(b) - p0) / s->dp_end, 1.0)), s->e);
+		} else if (isFlowSensor(fn)) {
+			// R06: orifice rT between A and B, its flow is the measured value
+			const int a = kn.value(QStringLiteral("A"), -1), b = kn.value(QStringLiteral("B"), -1);
+			s->last_q = (a >= 0 || b >= 0) ? s->flow(p(a), p(b)) : 0.0;
+			book(a, b, s->last_q, s->e);
 		} else if (fn == QLatin1String("pressure_valve.counterbalance_valve")) {
 			// R09 (FORMELN.md V07): opens P -> T when (pP - pT) + ratio·(pX - pT) reaches p0, fully over dpEnd;
 			// the check valve lets T -> P pass freely, leakage P -> T
@@ -1857,6 +2261,12 @@ void SimulationModel::pressButton(const QString &lbl, bool pressed)
 
 bool SimulationModel::setSetpoint(const QString &lbl, double volts)
 {
+	for (FlowValve *s : m_flow_valves)
+		if (s->function == QLatin1String("proportional.pressure_relief_valve") && label(s->e) == lbl) {
+			if (s->u != volts) m_messages << Message{m_time, QStringLiteral("%1 Sollwert %2 V").arg(lbl).arg(volts, 0, 'g', 4)};
+			s->u = volts;
+			return true;
+		}
 	for (PropValve *v : m_prop_valves)
 		if (v->label == lbl) {
 			if (v->u != volts) m_messages << Message{m_time, QStringLiteral("%1 Sollwert %2 V").arg(lbl).arg(volts, 0, 'g', 4)};
@@ -1940,6 +2350,18 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 		out << Signal{QStringLiteral("s:") + v->label, QStringLiteral("state"), QStringLiteral("1"),
 					  QStringLiteral("Schieberweg -1 … 1, positiv: P→A, B→T"), v->label, QString()};
 	}
+	for (const Analog *a : m_analog)
+		out << Signal{QStringLiteral("u:") + a->label, QStringLiteral("voltage"), QStringLiteral("V"),
+					  a->block.endsWith(QLatin1String("Voltmeter")) ? QStringLiteral("Anzeige p - n")
+					  : QStringLiteral("Ausgang %1 gegen 0 V").arg(a->outputs.value(0, QStringLiteral("–"))), a->label, QString()};
+	for (const Analog *a : m_analog)
+		if (a->block.endsWith(QLatin1String("ControllerPID")) || a->block.endsWith(QLatin1String("ControllerS")))
+			out << Signal{QStringLiteral("e:") + a->label, QStringLiteral("voltage"), QStringLiteral("V"),
+						  QStringLiteral("Regelabweichung W - X"), a->label, QString()};
+	for (const FlowValve *s : m_flow_valves)
+		if (isFlowSensor(s->function) && !label(s->e).isEmpty())
+			out << Signal{QStringLiteral("qs:") + label(s->e), QStringLiteral("volume_flow"), QStringLiteral("m3/s"),
+						  QStringLiteral("Durchfluss A → B des Durchflusssensors"), label(s->e), QString()};
 	for (const SuctionCup *s : m_cups) {
 		out << Signal{QStringLiteral("Fhold:") + s->label, QStringLiteral("force"), QStringLiteral("N"),
 					  QStringLiteral("Haltekraft (p_atm - p)·A, 0 ohne Werkstück"), s->label, QString()};
@@ -2026,6 +2448,19 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 	if (kind == QLatin1String("u") || kind == QLatin1String("s")) {
 		for (const PropValve *v : m_prop_valves)
 			if (v->label == rest) { if (ok) *ok = true; return kind == QLatin1String("u") ? v->u : v->s; }
+		if (kind == QLatin1String("u"))
+			for (const Analog *a : m_analog)
+				if (a->label == rest) { if (ok) *ok = true; return a->out; }
+		return std::nan("");
+	}
+	if (kind == QLatin1String("e")) {
+		for (const Analog *a : m_analog)
+			if (a->label == rest) { if (ok) *ok = true; return a->block.endsWith(QLatin1String("ControllerS")) ? a->sc.e : a->pid.e; }
+		return std::nan("");
+	}
+	if (kind == QLatin1String("qs")) {
+		for (const FlowValve *s : m_flow_valves)
+			if (isFlowSensor(s->function) && label(s->e) == rest) { if (ok) *ok = true; return s->last_q; }
 		return std::nan("");
 	}
 	if (kind == QLatin1String("pos")) {
@@ -2135,6 +2570,8 @@ QList<QPair<Element *, QString>> SimulationModel::elementStates() const
 		out << qMakePair(ch->e, ch->value ? QStringLiteral("%1 = 1").arg(ch->names.value(0)) : QString());
 	for (PressureSwitch *s : m_pressure_switches)
 		out << qMakePair(s->e, s->on ? QStringLiteral("%1: ein").arg(s->label) : QString());
+	for (Analog *a : m_analog)
+		out << qMakePair(a->e, QStringLiteral("%1: %2 V").arg(a->label).arg(a->out, 0, 'f', 2));
 	for (Accumulator *a : m_accumulators)
 		out << qMakePair(a->e, QStringLiteral("%1: %2 bar").arg(a->label)
 			.arg((m_p.value(a->node, P_ATM) - P_ATM) / 1e5, 0, 'f', 1));

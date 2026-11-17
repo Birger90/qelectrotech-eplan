@@ -63,6 +63,8 @@ inline Unit unit(const QString &u)
 		{QStringLiteral("kg/m3"), {1.0, "density"}}, {QStringLiteral("m2/s"), {1.0, "kinematic_viscosity"}},
 		{QStringLiteral("mm2/s"), {1e-6, "kinematic_viscosity"}}, {QStringLiteral("cSt"), {1e-6, "kinematic_viscosity"}},
 		{QStringLiteral("um"), {1e-6, "length"}}, {QStringLiteral("µm"), {1e-6, "length"}},
+		{QStringLiteral("Hz"), {1.0, "rate"}}, {QStringLiteral("s2"), {1.0, "time2"}},
+		{QStringLiteral("ms2"), {1e-6, "time2"}},
 	};
 	return units.value(u.trimmed(), Unit{std::nan(""), ""});
 }

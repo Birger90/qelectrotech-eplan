@@ -67,6 +67,12 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
   `setSetpoint` (CLI `sollwert`, Prüfstand `Input` kind 3 mit value). Senkbrems-/Zuschaltventil laufen als
   `FlowValve`-Zweige. Prüfpläne `stetig.qet` (Ventil per `textVariant` zum Stetigventil) und `lastventil.qet`
   (Anschlüsse per eindeutigem Terminal-Tag mit UUID umbenannt, nicht per erstem Treffer).
+- Analoge Signale (R06): Bausteine in `simulationsignals.h` (reine Funktionen, testbar ohne Plan), im Modell
+  `Analog` mit `linkAnalog` (Kennwerte, Kopplung, Auswertereihenfolge) und `analog(dt)` direkt nach `electrics()`;
+  Potential je Netz über `volt()` (Analogausgang > `sim_volt` der Quelle > 24 V an Plus). Formel-IDs A00–A12 und V09
+  (nicht S…, das sind Paketquellen). Prüfpläne `druckregelung.qet`, `lageregelung.qet` aus eigenen Prüfsymbolen
+  (Testsammlung `90_signal`, Erzeuger `erzeuge_r06.py` im Scratchpad-Muster); Reset-Variante per `textVariant`
+  auf `vMin=21.6 V` → `vMin=30 V`.
 - Vakuum (R10): Ejektor mit stetiger linearer Saugkennlinie, Sauger mit Haltekraft gegen s·m·g, Vakuumschalter =
   Druckschalter mit negativem p0. Prüfplan `referenz/plaene/vakuum.qet`; Varianten im Prüfstand per `textVariant`
   (Parameter in den eingebetteten `<fluid>`-Block schreiben, selbstschließendes Tag beachten).

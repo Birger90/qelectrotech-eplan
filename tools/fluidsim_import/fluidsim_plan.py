@@ -246,6 +246,7 @@ UMBAU = [
 
 # FluidSIM-Bauteilklasse -> Funktion, unter der der Simulationskern das Bauteil rechnet
 ALIAS = [
+    ("Proportional.PressureReliefValve", "proportional.pressure_relief_valve"),   # R06, vor dem Druckbegrenzungsventil
     ("ThrottleCheckValve", "flow_control_valve.one_way_flow_control_valve"),
     ("CheckValvePilotToOpen", "shutoff_valve.check_valve"),
     ("CheckValve", "shutoff_valve.check_valve"),
@@ -368,6 +369,8 @@ def magnete(symbol, objekt):
 
 def elektro_rolle(objekt, typ, o):
     """Rolle eines elektrischen Bauteils für die Simulation (Elementinformation sim_role), oder ""."""
+    if objekt in fs.ANALOG:
+        return "analog"
     if objekt.startswith(("ET.Source.Pot24V", "ET.Source.L1", "ET.Source.L2", "ET.Source.L3")):
         return "supply+"
     if objekt.startswith(("ET.Source.Pot0V", "ET.Source.Ground")) or objekt == "ET.Source.N":
@@ -519,10 +522,14 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
                           if c.get("type") == "mechanical-label" and c.get("designation")), "")
             if not label and art and art.group(1) == "valve" and marke:
                 label = marke
-            if not label and (art or schwenkt or rolle.startswith(("button", "switch"))):
+            stetig = objekt.startswith("Hyd.Proportional.") and "Valve" in objekt
+            if not label and (art or schwenkt or stetig or rolle == "analog" or rolle.startswith(("button", "switch"))):
                 # Die Simulation bedient Ventile und Taster und meldet Zylinder über ihre Kennzeichnung: ohne
-                # eine aus FluidSIM bekommen sie die nächste freie nach DIN EN 81346-2 (-QM1, -MM1, -SF1 …)
-                vorsilbe = "-MM" if schwenkt else "-SF" if not art else "-QM" if art.group(1) == "valve" else "-MM"
+                # eine aus FluidSIM bekommen sie die nächste freie nach DIN EN 81346-2 (-QM1, -MM1, -SF1 …);
+                # Analogbausteine (R06): Quellen -GF, Sensoren -BG, Regler und Verstärker -KF
+                vorsilbe = ("-QM" if stetig else "-GF" if objekt.startswith("ET.Source.") else "-BG" if objekt.startswith("ET.Sensor.")
+                            else "-KF" if rolle == "analog" else "-MM" if schwenkt else "-SF" if not art
+                            else "-QM" if art.group(1) == "valve" else "-MM")
                 k = 1
                 while f"{vorsilbe}{k}" in vergeben:
                     k += 1
@@ -541,6 +548,19 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
             if rolle:
                 ops.append({"op": "set_info", "folio": blatt, "element": el, "key": "sim_role", "value": rolle})
                 zahl["rollen"] += 1
+            if rolle in ("supply+", "supply-"):
+                # R06: das Potential der Quelle, damit Analogbausteine Spannungen lesen (±15 V an A1/A2 …)
+                pot = ("24" if objekt.startswith("ET.Source.Pot24V") else "0" if objekt.startswith(("ET.Source.Pot0V", "ET.Source.Ground"))
+                       else fluidsim_grafcet.werte(o).get("pot") if objekt == "ET.Source.Pot" else None)
+                if pot not in (None, ""):
+                    ops.append({"op": "set_info", "folio": blatt, "element": el, "key": "sim_volt", "value": pot})
+            if rolle == "analog":
+                # R06: FluidSIM-Klasse und alle Kennwerte mit Einheit („KP=1;KI=0 1/s;KD=0 ms“)
+                kw = [f"{e.get('ident')}={e.get('value')}" + (f" {e.get('unit')}" if e.get("unit") else "")
+                      for e in o if e.tag in ("const", "parameter") and e.get("ident") and e.get("ident") != "picture"
+                      and e.get("value") not in (None, "") and ";" not in e.get("value")]
+                ops.append({"op": "set_info", "folio": blatt, "element": el, "key": "sim_block", "value": objekt[3:]})
+                ops.append({"op": "set_info", "folio": blatt, "element": el, "key": "sim_params", "value": ";".join(kw)})
             if rolle == "grafcet_io":
                 # Ein- und Ausgänge mit den Namen, die der GRAFCET verwendet (LabelIn0 = -KF1 …)
                 ww = fluidsim_grafcet.werte(o)
@@ -599,6 +619,77 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
                             "value": "limit_nc" if klasse == "break-contact" else "limit"})
                 ops.append({"op": "set_info", "folio": blatt, "element": el, "key": "function", "value": marken[label]})
                 zahl["rollen"] += 1
+
+        # R06: Kopplungen der Analogbausteine als sim_link, über die Kennzeichnungen, die die Teile hier tragen:
+        # Ventilmagnet „C=-QM1/S“, Verstärker „A=-QM1/Y1;B=-QM1/Y2“, Sensor „P=-BP1“, Wegmesssystem „X=-MM1“
+        def kz(ident):
+            b = hier.get(ident)
+            return b["label"] if b else ""
+
+        def ziel(c):
+            z = c.find("link-props/target")
+            return z if z is not None and z.get("comp-ref") else None
+
+        def verstaerker_ausgang(amp, spule):
+            """Ausgang A/B des Verstärkers, dessen Marke die Spule `spule` (-MB1) nennt, oder ""."""
+            ausgaenge = [c for c in amp.findall("connector") if c.get("ident") in ("A", "B")]
+            # zuerst der eindeutige Verweis am Verstärker („-QM1.-MB1“), dann die Beschriftung seiner Marke
+            for c in ausgaenge:
+                z = c.find("link-props/target")
+                if z is not None and z.get("value", "").split(".")[-1] == spule:
+                    return c.get("ident")
+            sym = symbole.get(amp.get("symbol-ref"))
+            for c in ausgaenge:
+                nr = (c.get("con-ref") or "").rpartition(".")[2]
+                if sym is not None and any(s.get("ident") == nr and s.get("designation") == spule
+                                           for s in sym.iter("connector") if s.get("type") == "electric-label"):
+                    return c.get("ident")
+            return ""
+
+        kopplung = {}
+        verstaerker_fest = set()   # (Verstärker, Ausgang) aus dem Verweis am Verstärker
+        # zwei Durchläufe: erst die Verweise an den Verstärkern, dann die an den Ventilen
+        reihenfolge = sorted(alle, key=lambda o: 0 if (o.get("object-ref") or "").startswith("ET.Controller.PropAmplifier") else 1)
+        for o in reihenfolge:
+            ref, ident = o.get("object-ref") or "", o.get("ident")
+            if ident not in hier:
+                continue
+            for c in o.findall("connector"):
+                z = ziel(c)
+                partner = nach_id.get(z.get("comp-ref")) if z is not None else None
+                if partner is None or partner.get("ident") not in hier:
+                    continue
+                pref, spule = partner.get("object-ref") or "", z.get("value", "").split(".")[-1]
+                if "Proportional." in ref and pref == "ET.Relay.ValveContSolenoid":
+                    kopplung.setdefault(partner.get("ident"), {})["C"] = f"{kz(ident)}/{c.get('ident')}"
+                elif "Proportional." in ref and pref.startswith("ET.Controller.PropAmplifier"):
+                    # ohne Verweis wie in allen FluidSIM-Beispielen: Ausgang A an Y2, B an Y1 (FORMELN.md A10)
+                    aus = verstaerker_ausgang(partner, spule) or ("A" if c.get("ident") == "Y2" else "B")
+                    if (partner.get("ident"), aus) not in verstaerker_fest:
+                        kopplung.setdefault(partner.get("ident"), {})[aus] = f"{kz(ident)}/{c.get('ident')}"
+                elif ref.startswith("ET.Controller.PropAmplifier") and "Proportional." in pref:
+                    vc = next((x.get("ident") for x in partner.findall("connector")
+                               if ziel(x) is not None and ziel(x).get("value", "").split(".")[-1] == spule), None)
+                    vc = vc or ("S" if any(x.get("ident") == "S" for x in partner.findall("connector"))
+                                else "Y1" if c.get("ident") == "B" else "Y2")
+                    # der Verweis am Verstärker selbst gilt vor dem am Ventil
+                    kopplung.setdefault(ident, {})[c.get("ident")] = f"{kz(partner.get('ident'))}/{vc}"
+                    verstaerker_fest.add((ident, c.get("ident")))
+                elif ref.startswith("ET.Sensor.") and ref in fs.ANALOG and kz(partner.get("ident")):
+                    kopplung.setdefault(ident, {})["P"] = kz(partner.get("ident"))
+        for o in alle:
+            # Wegmesssystem: der Zylinder nennt es in pos_label
+            if o.get("object-ref") != "ET.Sensor.PositionSensor" or o.get("ident") not in hier:
+                continue
+            k = o.find("dki-data/designation")
+            name = k.get("value", "") if k is not None else ""
+            for z in alle:
+                if name and z.get("ident") in hier and fluidsim_grafcet.werte(z).get("pos_label", "").strip() == name:
+                    kopplung.setdefault(o.get("ident"), {})["X"] = kz(z.get("ident"))
+        for ident, k in kopplung.items():
+            ops.append({"op": "set_info", "folio": blatt, "element": "$" + hier[ident]["id"], "key": "sim_link",
+                        "value": ";".join(f"{a}={b}" for a, b in sorted(k.items()))})
+            zahl["rollen"] += 1
 
         # GRAFCET dieses Blatts
         g_ops, g_zahl, g_offen = fluidsim_grafcet.umwandeln(blatt, alle, verbindungen, sammlung, fs.K, fs.mitte)

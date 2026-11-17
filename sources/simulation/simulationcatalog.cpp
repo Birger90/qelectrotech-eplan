@@ -76,9 +76,9 @@ QList<Entry> build()
 			      "CylinderCycle, Hydraulik-CylinderCycle, Projekt GRAFCET, Projekt Speicher");
 	e << other("directional_valve.part", Role::Graphic, "", "Zeichenbaustein (Betätigung, Stellung) ohne eigene Funktion");
 	for (const char *f : {"proportional.directional_valve43_01", "proportional.directional_valve43_02"})
-		e << physical(f, "proportional_valve", "hydraulic", "P, A, B, T (Sollwert S bzw. Y1/Y2 erst mit R06)",
+		e << physical(f, "proportional_valve", "hydraulic", "P, A, B, T; Sollwert über gekoppelten Magneten (S) oder Verstärker (Y1/Y2, R06)",
 			      "u [V] Sollwert -10 … 10, tau [s], lap bzw. lapP/lapT [%] Überdeckung, notchType (1 Rechteck, 2 Dreieck), rT [bar.min2/l2] je Kante, GLeak [l/(min.bar)] je Kante",
-			      "Schieber PT1 ohne Hysterese und Strömungskraft; Kanten als Blenden mit Fläche ∝ x bzw. x²; Sollwert nur als Kennwert oder Ereignis (analoger Signalpfad Roadmap R06)",
+			      "Schieber PT1 ohne Hysterese und Strömungskraft; Kanten als Blenden mit Fläche ∝ x bzw. x²; Sollwert aus dem Signalpfad (R06: positiver Sollwert, Y2 bzw. S → P→A; Y1 → P→B), sonst Kennwert u oder Ereignis",
 			      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
 	for (const char *f : {"proportional.directional_valve63_with_hand_lever", "proportional.mobile_valve_block_ls",
 			       "proportional.mpye"})
@@ -162,9 +162,38 @@ QList<Entry> build()
 	e << physical("sensor.pressure_switch", "pressure_switch", "both", "erster Anschluss", "p0, p_hyst [Pa]", "ohne Schaltzeit", "Projekt Speicher");
 	for (const char *f : {"sensor.manometer", "measure.indicator", "sensor.pressure_sensor", "sensor.pressure_sensor1_a1_d",
 			       "sensor.pressure_sensor1_a2_d", "sensor.pressure_sensor2_d", "proportional.pressure_sensor",
-			       "proportional.pressure_sensor02", "sensor.flowmeter", "sensor.flowmeter_2", "sensor.flowmeter03",
-			       "sensor.flow_sensor1_a2_d", "proportional.flow_sensor"})
-		e << other(f, Role::Display, "measuring_point", "Messstelle ohne Rückwirkung (Durchflussmesser verbinden ihre Anschlüsse); Ausgangssignal nicht gerechnet (Roadmap R06)");
+			       "proportional.pressure_sensor02", "sensor.flowmeter", "sensor.flowmeter03",
+			       "sensor.flow_sensor1_a2_d"})
+		e << other(f, Role::Display, "measuring_point", "Messstelle ohne Rückwirkung (Durchflussmesser verbinden ihre Anschlüsse); "
+				   "das Spannungssignal liefert der elektrische Teil (proportional.pressure_sensor/-02: p_start, p_end, U_start, U_end, R06)");
+	for (const char *f : {"proportional.flow_sensor", "sensor.flowmeter_2"})
+		e << physical(f, "flow_sensor", "hydraulic", "A → B",
+		      "rT [bar.min2/l2] (Standard 0,001), mode (1 Richtung ignorieren, 2 berücksichtigen), q_start, q_end [l/min], U_start, U_end [V]",
+		      "Blende rT zwischen A und B, gemessen wird ihr Durchfluss; Spannung über den elektrischen Teil (R06)",
+		      "Analoge Signale und Regler (R06)");
+	e << physical("proportional.pressure_relief_valve", "prop_relief_valve", "hydraulic", "A (P) → B (T), Sollwert über Verstärker",
+		      "p_start, p_end [Pa] Öffnungsdruck bei 0 und 10 V, dpEnd [Pa] Druckregelbereich, rT [bar.min2/l2], u [V] ohne Verstärker",
+		      "direktgesteuert, Öffnungsdruck linear im Sollwert 0 … 10 V, ohne Magnet- und Kolbendynamik",
+		      "Analoge Signale und Regler (R06)");
+	// ---------------------------------------------------------- analoge Signalbausteine (R06): elektrische Teile,
+	// sim_role "analog" mit sim_block (FluidSIM-Klasse), sim_params, sim_link; kein <fluid>-Block
+	for (const auto &b : std::initializer_list<std::pair<const char *, const char *>>{
+			 {"signal.waveform_generator", "Funktionsgenerator (A02): Rechteck, Sinus, Dreieck, Konstant, Profil; Ausgang S bzw. p"},
+			 {"signal.set_point_generator", "Sollwertkarte (A03): W1 … W8, Rampen R1 … R4, Modus Zeit/Weiterschalten/extern I1 … I3; Ausgang Q"},
+			 {"signal.controller_pid", "PID-Regler (A04): W, X → Y, KP, KI, KD, Offset, Bereich ±10 V oder 0 … 10 V, Anti-Windup"},
+			 {"signal.controller_s", "Zustandsregler (A05): W, X → Y aus Abweichung, Geschwindigkeit, Beschleunigung"},
+			 {"signal.controller_pt2", "PT2-Glied (A06): u → y, Bereich aus A1/A2 (A08)"},
+			 {"signal.controller_integrator", "I-Glied (A07): u → y, Bereich aus A1/A2 (A08)"},
+			 {"signal.differential_amplifier", "Differenzverstärker: y = u - x, Bereich aus A1/A2 (A08)"},
+			 {"signal.comparator_card", "Komparator (A09): U → S mit Hysterese, S schaltet die Versorgung"},
+			 {"signal.prop_amplifier", "Proportional-Verstärker 1/2 Kanäle (A10): U → gekoppeltes Stetigventil, Sprungstrom"},
+			 {"signal.valve_cont_solenoid", "Proportional-Ventilmagnet, lagegeregelt: Spannung an C → Sollwert des Ventils"},
+			 {"signal.pressure_sensor", "Analog-Drucksensor, elektrischer Teil (A01): Druck des Fluidteils gleicher Kennzeichnung → Y"},
+			 {"signal.flow_sensor", "Analog-Durchflusssensor, elektrischer Teil (A01): Durchfluss des Fluidteils → Y"},
+			 {"signal.position_sensor", "Wegmesssystem (A01): Kolbenweg des Zylinders mit pos_label → S"},
+			 {"signal.voltmeter", "Voltmeter: Anzeige p - n"}})
+		e << physical(b.first, "analog_block", "electric", "siehe Baustein", "siehe tools/simulation/README.md, Abschnitt R06",
+			      b.second, "Analoge Signale und Regler (R06)");
 	return e;
 }
 }

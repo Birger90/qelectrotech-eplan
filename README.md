@@ -118,8 +118,10 @@
 >   model stop the run before it starts. `--signals/--measure` give pressures, directed flows, cylinder travel,
 >   speed and force, motor and swivel angles and suction cup holding force with SI units. Hydraulic motors, vacuum
 >   generators, suction cups, vacuum switches, semi-rotary drives, pipes with length and bore, quick couplings
->   (coupled/uncoupled), clogged filters, 4/3 proportional valves (setpoint as a value or an event),
->   counterbalance and sequence valves are simulated too. Roadmap status: [tools/simulation/ROADMAP_STAND.md](tools/simulation/ROADMAP_STAND.md).
+>   (coupled/uncoupled), clogged filters, 4/3 proportional valves, counterbalance and sequence valves, and analog
+>   signals and controllers (function generator, setpoint card, PID and state controller, PT2, integrator,
+>   comparator, proportional amplifiers, position controlled proportional solenoids, pressure, flow and position
+>   sensors, proportional relief valve) with closed pressure and position loops are simulated too. Roadmap status: [tools/simulation/ROADMAP_STAND.md](tools/simulation/ROADMAP_STAND.md).
 >   Guide: [tools/simulation/README.md](tools/simulation/README.md).
 > - File > *Import FluidSIM circuit (.circ)*: FluidSIM 6 circuits become a project that simulates at once -- parts,
 >   wires, coil and relay links, the flow paths of every valve position, all parameters with their units, the

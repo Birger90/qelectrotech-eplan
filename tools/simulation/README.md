@@ -164,13 +164,53 @@ Herkunft, Beleg und Grenze jeder Formel stehen im [Formelregister](FORMELN.md).
   4 ms beim Regelventil 02, 10 ms beim 01). Positiv öffnet P→A und B→T, negativ P→B und A→T. Überdeckung `lap`
   bzw. `lapP`/`lapT` in % (negativ = Unterdeckung), Steuerkerbe `notchType` 1 Rechteck (linear) oder 2 Dreieck
   (progressiv), `rT` je voll offener Kante, `GLeak` je Kante. Messgrößen `u:<Ventil>` [V], `s:<Ventil>` [−1 … 1].
-  Der analoge Eingang S bzw. die Proportionalmagnete Y1/Y2 werden erst mit R06 (analoge Signale) angeschlossen.
+  Mit einem gekoppelten lagegeregelten Magneten oder Verstärker (R06) kommt der Sollwert aus dem Signalpfad.
 - **Senkbremsventil** (`pressure_valve.counterbalance_valve`, P, T, X): öffnet P→T, wenn
   (p_P − p_T) + `ratio`·(p_X − p_T) den Öffnungsdruck `p0` erreicht, voll offen nach `dpEnd`; Rückschlagventil T→P
   (`rT_cv`), Leckage `GLeak`.
 - **Druckzuschaltventil** (`pressure_valve.pressure_sequence_valve01/02`, P, A, X): öffnet P→A ab Steuerdruck `p0`
   an X (ohne X an P).
 - Weiter nicht gerechnet (Start abgewiesen): Druckwaagen, Schock-/Nachsaugblock, LS-/Mobilventilblöcke, MPYE.
+
+## Analoge Signale und Regler (R06)
+
+Elektrische Teile mit reellen Werten. Sie tragen die Bauteilinformationen `sim_role` = `analog`, `sim_block`
+(FluidSIM-Klasse ohne „ET.“), `sim_params` (Kennwerte mit Einheit, z. B. `KP=1;KI=5 1/s;KD=0 ms`) und `sim_link`
+(Kopplung); der FluidSIM-Import schreibt alle vier. Anschlüsse heißen wie am FluidSIM-Bauteil.
+
+- **Signalvertrag:** Jedes elektrische Netz hat ein Potential gegen 0 V: ein Analogausgang, sonst das Potential der
+  Quelle (`sim_volt` an `supply+`/`supply-`, ohne Angabe 24 V bzw. 0 V). Die Bausteine rechnen stetig im Modellschritt
+  (10 µs), ein Baustein nach denen, die seine Eingänge treiben. SPS und GRAFCET lesen die Analogwerte nicht (ihr
+  10-ms-Zyklus sieht nur digitale Eingänge). Zwei Ausgänge auf einem Netz sind ein Modellfehler. Ströme,
+  Widerstände und Lastrückwirkung werden nicht gerechnet.
+- **Quellen:** Funktionsgenerator (`Source.WaveformGenerator02`, Ausgang S; `waveForm` 1 Rechteck, 2 Sinus,
+  3 Dreieck, 4 Konstant = `yOffset`, 5 Profil), Sollwertkarte (`Source.SetPointGenerator`, Q; W1 … W8, Rampen
+  R1 … R4 in s/V, Modus 1 Umschaltzeit, 2 Weiterschalten, 3 Auswahl über I1 … I3 ≥ 15 V).
+- **Regler:** PID (`Controller.ControllerPID`: W, X → Y, `KP`, `KI` [1/s], `KD` [ms], `yOffset`, `outputMode`
+  0 = ±10 V, 1 = 0 … 10 V; Anti-Windup; ohne Versorgung ≥ 21,6 V Ausgang 0 und Neustart), Zustandsregler
+  (`ControllerS`), PT2-Glied, I-Glied, Differenzverstärker (Bereich aus den Potentialen an A1/A2), Komparator
+  (U → S mit Hysterese; S schaltet die Versorgung, z. B. auf ein Relais).
+- **Stellglieder:** Proportional-Verstärker 1/2 Kanäle (U → gekoppeltes Ventil, Sprungstrom `jumpCurrentRel`),
+  lagegeregelter Proportional-Ventilmagnet (`Relay.ValveContSolenoid`: Spannung an C ist der Ventilsollwert).
+  Kopplung `sim_link`: Verstärker `A=-QM1/Y2;B=-QM1/Y1` bzw. `A=-QN1/S`, Magnet `C=-QM1/S`. Vorzeichen wie in FluidSIM:
+  ein positiver Sollwert öffnet P→A (Y2 bzw. positive Spannung an S), Y1 öffnet P→B (der Ventilsollwert `u:` zählt positiv für P→A). Gekoppelt werden
+  4/3-Stetigventile und das Proportional-Druckbegrenzungsventil (`proportional.pressure_relief_valve`, A → B,
+  Öffnungsdruck `p_start` bei 0 V bis `p_end` bei 10 V, `dpEnd`, `rT`).
+- **Sensoren:** Analog-Drucksensor (elektrischer Teil `Sensor.PressureSensorHyd/Pneu`, Y; liest den Fluidteil
+  `proportional.pressure_sensor` gleicher Kennzeichnung bzw. `sim_link P=-BP1` mit `p_start`, `p_end`, `U_start`,
+  `U_end`), Durchflusssensor (`Sensor.FlowSensorHyd` mit `proportional.flow_sensor`: Blende `rT`, `mode` 1 Betrag,
+  2 mit Richtung), Wegmesssystem (`Sensor.PositionSensor`, S; `sim_link X=-MM1`, `U_start`/`U_end` für ein- und
+  ausgefahren), Voltmeter (Anzeige p − n).
+- **Messgrößen:** `u:<Baustein>` Ausgangsspannung [V], `e:<Regler>` Regelabweichung [V], `qs:<Durchflusssensor>`
+  Durchfluss [m³/s]; die Ventile weiter `u:` und `s:`.
+- **Anschlussnamen:** Stetigventile, Analogsensoren und Analogbausteine heißen beim Import wie am FluidSIM-Bauteil;
+  bei gespiegelten Symbolen weicht die Beschriftung davon ab (A trägt „B“, P trägt „T“). Der Durchflussmesser
+  `sensor.flowmeter_2` ist jetzt eine messende Blende (rT 0,001) statt einer bloßen Verbindung.
+- **Prüfpläne:** `druckregelung.qet` (PI-Regler hält 40 bar über das Proportional-Druckbegrenzungsventil),
+  `lageregelung.qet` (P-Regler fährt den Zylinder über Wegmesssystem und 4/3-Regelventil auf 120 mm). Die
+  Prüfsymbole darin sind eigene Kästen mit benannten Anschlüssen.
+- Nicht gerechnet: Potentiometer, Oszilloskop, Strom- und Widerstandsmesser (ohne Wirkung), MPYE und
+  Proportional-Verstellpumpe, analoge SPS-Ein-/Ausgänge.
 
 ## Vakuum, Schwenk- und Greiferantriebe (R10)
 

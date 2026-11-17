@@ -21,6 +21,7 @@
 #include "plcprogram.h"
 #include "simulationcatalog.h"
 #include "simulationmodel.h"
+#include "simulationsignals.h"
 #include "simulationphysics.h"
 #include "simulationunits.h"
 #include "../diagram.h"
@@ -447,7 +448,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Hydromotor (R08): Drehzahl, Moment, Lastsprung, Umkehr, Leistungsbilanz, Projekt"),
 		QStringLiteral("Vakuum und Schwenk-/Greiferantriebe (R10): Saugen, Halten, Leckage, Last, Loslassen, Schwenkwinkel und -moment"),
 		QStringLiteral("Leitungen, Kupplungen, Aufbereitung (R05): Rohr laminar/turbulent, beide Richtungen, Widerstand, Kupplung, Filter verstopft, Drehdurchführung"),
-		QStringLiteral("Stetig-, Senkbrems- und Zuschaltventile (R07/R09): Kennlinie, Richtung, Sättigung, Überdeckung, Kerbe, Leckage, Sprungantwort, Steuerdruck")};
+		QStringLiteral("Stetig-, Senkbrems- und Zuschaltventile (R07/R09): Kennlinie, Richtung, Sättigung, Überdeckung, Kerbe, Leckage, Sprungantwort, Steuerdruck"),
+		QStringLiteral("Analoge Signale und Regler (R06): Kalibrierung, Umkehr, Sättigung, Anti-Windup, Reset, Abtastverfeinerung, Druck- und Lageregelkreis")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1111,6 +1113,142 @@ QList<Check> endToEnd(const QString &reference_dir)
 			const double pp = v.value(QStringLiteral("p:-GP1.P"), std::nan("")), want = solve(q * 60000, k.rt, k.share);
 			if (!near(pp, want, 0.005)) wrong << QStringLiteral("%1: %2 bar statt %3").arg(QString::fromUtf8(k.what)).arg(pp / 1e5).arg(want / 1e5);
 			else seen << QStringLiteral("%1: %2 bar (soll %3)").arg(QString::fromUtf8(k.what)).arg(pp / 1e5, 0, 'f', 2).arg(want / 1e5, 0, 'f', 2);
+		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 14. analog signals and controllers (R06, FORMELN.md A01–A10, V09): the blocks against closed solutions,
+		//     then a pressure loop (PI, proportional relief valve) and a position loop (P, 4/3 valve, position sensor)
+		Check c{names.at(13)};
+		QStringList wrong, seen;
+		auto expect = [&](const QString &what, double got, double want, double tol) {
+			if (!(std::isfinite(got) && std::abs(got - want) <= tol)) wrong << QStringLiteral("%1: %2 statt %3").arg(what).arg(got).arg(want);
+			else seen << QStringLiteral("%1 %2").arg(what).arg(got, 0, 'g', 5);
+		};
+		using namespace SimSignals;
+		// A01 sensor characteristic: calibration, reversed signal, saturation outside the range
+		expect(QStringLiteral("Kalibrierung 4 MPa →"), scale(4e6, 0, 10e6, 0, 10), 4.0, 1e-12);
+		expect(QStringLiteral("Umkehr 2,5 MPa →"), scale(2.5e6, 0, 10e6, 10, 0), 7.5, 1e-12);
+		expect(QStringLiteral("Sättigung 12 MPa →"), scale(12e6, 0, 10e6, 0, 10), 10.0, 1e-12);
+		{   // A04 saturation and the unipolar range
+			Pid a; a.kp = 2;
+			expect(QStringLiteral("PID begrenzt e = 8 V, KP 2 →"), a.step(8, 0, 1e-4), 10.0, 1e-12);
+			Pid b; b.umin = 0;
+			expect(QStringLiteral("PID 0 … 10 V bei e = -5 →"), b.step(0, 5, 1e-4), 0.0, 1e-12);
+		}
+		{   // A04 anti-windup: 2 s saturated (r = 10, y = 0), then y = 11; time until the output leaves the limit
+			auto unwind = [](double t_track) {
+				Pid a; a.kp = 1; a.ki = 10; a.t_track = t_track;
+				const double dt = 1e-4;
+				for (int i = 0; i < 20000; ++i) a.step(10, 0, dt);
+				for (int i = 0; i < 400000; ++i) if (a.step(10, 11, dt) < 10.0 - 1e-9) return i * dt;
+				return 40.0;
+			};
+			const double aw = unwind(0.09), no = unwind(1e12);
+			if (!(aw < 0.2 && no > 5.0)) wrong << QStringLiteral("Anti-Windup: %1 s, ohne %2 s").arg(aw).arg(no);
+			else seen << QStringLiteral("Anti-Windup: aus der Begrenzung nach %1 s (ohne: %2 s)").arg(aw, 0, 'f', 4).arg(no, 0, 'f', 1);
+			Pid a; a.kp = 1; a.ki = 10;
+			for (int i = 0; i < 1000; ++i) a.step(5, 0, 1e-3);
+			a.reset();
+			expect(QStringLiteral("Reset: erster Wert KP·e ="), a.step(1, 0, 1e-3), 1.0, 1e-12);
+		}
+		{   // A04 sampling refinement: P control of an integrator y' = 2·u, r = 5: y(1 s) = 5·(1 - e^-2)
+			auto run = [](double dt) {
+				Pid a; a.kp = 1;
+				double y = 0;
+				const int n = qRound(1.0 / dt);
+				for (int i = 0; i < n; ++i) y += dt * 2.0 * a.step(5, y, dt);
+				return y;
+			};
+			const double exact = 5 * (1 - std::exp(-2.0)), e1 = std::abs(run(1e-3) - exact), e2 = std::abs(run(5e-4) - exact);
+			if (!(e2 < e1 && e1 / e2 > 1.8 && e1 / e2 < 2.2 && e2 / exact < 1e-3))
+				wrong << QStringLiteral("Abtastverfeinerung: Fehler %1 bei 1 ms, %2 bei 0,5 ms").arg(e1).arg(e2);
+			else seen << QStringLiteral("Abtastverfeinerung: Fehler %1 → %2 (Ordnung 1)").arg(e1, 0, 'g', 3).arg(e2, 0, 'g', 3);
+		}
+		{   // A03 setpoint card: W1 = 2 V (R1 0.25 s/V), after 1 s W2 = -4 V (R2 0.1, R3 0.05 s/V)
+			SetpointCard k; k.count = 2; k.w[0] = 2; k.w[1] = -4; k.ramp[0] = 0.25; k.ramp[1] = 0.1; k.ramp[2] = 0.05; k.t_switch = 1.0;
+			QHash<int, double> at;
+			const double dt = 1e-4;
+			for (int i = 0; i <= 15000; ++i) {
+				const double y = k.step(i * dt, dt, 0);
+				if (i == 2500 || i == 9000 || i == 13000 || i == 15000) at.insert(i, y);
+			}
+			expect(QStringLiteral("Sollwertkarte t 0,25 s"), at.value(2500), 1.0, 2e-3);
+			expect(QStringLiteral("t 0,9 s"), at.value(9000), 2.0, 1e-9);
+			expect(QStringLiteral("t 1,3 s"), at.value(13000), -2.0, 4e-3);
+			expect(QStringLiteral("t 1,5 s"), at.value(15000), -4.0, 1e-9);
+		}
+		{   // A02 function generator
+			Waveform w; w.frequency = 2; w.amplitude = 5;
+			expect(QStringLiteral("Sinus t T/4"), w.value(0.125), 5.0, 1e-9);
+			w.form = 1; expect(QStringLiteral("Rechteck t 0,3 s"), w.value(0.3), -5.0, 1e-12);
+			w.form = 3; expect(QStringLiteral("Dreieck t T/4"), w.value(0.125), 5.0, 1e-9);
+			w.form = 4; w.offset = 2.5; expect(QStringLiteral("Konstant"), w.value(0.7), 2.5, 1e-12);
+			w.form = 5; w.profile = {{0.0, 0.0}, {1.0, 10.0}}; expect(QStringLiteral("Profil t 0,5 s"), w.value(0.5), 5.0, 1e-9);
+		}
+		{   // A06 PT2, critically damped (d = 1): y(T) = K·(1 - 2/e)
+			Pt2 g; g.t = 0.1; g.k = 2; g.d = 1;
+			double y = 0;
+			for (int i = 0; i < 10000; ++i) y = g.step(1.0, 1e-5);
+			expect(QStringLiteral("PT2 y(T)"), y, 2 * (1 - 2 / std::exp(1.0)), 2e-4);
+		}
+		{   // A09 comparator 5 V ± 0.5 V, A10 amplifier jump current, A08 output range
+			bool on = comparator(false, 5.4, 5, 1);
+			const bool early = on;
+			on = comparator(on, 5.5, 5, 1);
+			const bool held = comparator(on, 4.6, 5, 1), off = comparator(on, 4.4, 5, 1);
+			if (!(!early && on && held && !off)) wrong << QStringLiteral("Komparator-Hysterese falsch");
+			else seen << QStringLiteral("Komparator aus 5,4 V, ein 5,5 V, hält 4,6 V, aus 4,4 V");
+			expect(QStringLiteral("Verstärker 0,1 V, Sprung 10 % →"), amplifier(0.1, 0.1, false), 1.09, 1e-12);
+			expect(QStringLiteral("2 Kanäle -3 V →"), amplifier(-3, 0, true), -3.0, 1e-12);
+			expect(QStringLiteral("1 Kanal -3 V →"), amplifier(-3, 0, false), 0.0, 1e-12);
+			expect(QStringLiteral("Bereich A1 15 V, A2 -10 V →"), supplyRange(true, 15, true, -10, 0.9, 1.5).limit, 9.0, 1e-12);
+		}
+		// plans: the loops close through the hydraulics
+		auto sample = [&](const QString &file, double until, const QStringList &ids, QHash<QString, double> *peak) {
+			QHash<QString, double> v;
+			ProjectRun pr = runProject(file, 6.0, {}, until + 1e-4, [&](SimulationModel &s) {
+				for (const QString &id : ids) {
+					const double x = s.signalValue(id);
+					if (peak && std::isfinite(x)) (*peak)[id] = std::max(peak->value(id, -1e300), x);
+					if (std::abs(s.time() - until) < 5e-6) v.insert(id, x);
+				}
+			});
+			if (!pr.error.isEmpty()) wrong << QStringLiteral("%1: %2").arg(QFileInfo(file).fileName(), pr.error);
+			return v;
+		};
+		{
+			const auto v = sample(path("druckregelung.qet"), 4.0, {QStringLiteral("p:-GP1.P"), QStringLiteral("u:-KF1")}, nullptr);
+			if (!v.isEmpty()) {
+				expect(QStringLiteral("Druckregelkreis PI, Sollwert 4 V: p(4 s) [bar]"), v.value(QStringLiteral("p:-GP1.P")) / 1e5, 40.0, 0.1);
+				const double u = v.value(QStringLiteral("u:-KF1"));
+				if (!(u > 0 && u < 10)) wrong << QStringLiteral("Druckregelkreis: Stellgröße %1 V in der Begrenzung").arg(u);
+				else seen << QStringLiteral("Stellgröße %1 V").arg(u, 0, 'f', 3);
+			}
+		}
+		{
+			QHash<QString, double> peak;
+			const auto v = sample(path("lageregelung.qet"), 2.0, {QStringLiteral("x:-MM1")}, &peak);
+			if (!v.isEmpty()) {
+				expect(QStringLiteral("Lageregelkreis P, Sollwert 6 V: x(2 s) [mm]"), v.value(QStringLiteral("x:-MM1")) * 1000, 120.0, 0.5);
+				const double over = peak.value(QStringLiteral("x:-MM1")) * 1000 - 120.0;
+				if (!(over < 2.0)) wrong << QStringLiteral("Lageregelkreis: Überschwingen %1 mm").arg(over);
+				else seen << QStringLiteral("Überschwingen %1 mm").arg(std::max(over, 0.0), 0, 'f', 3);
+			}
+			// without enough supply (vMin 30 V > 24 V) the controller has no output: the cylinder stays
+			const QString file = textVariant(path("lageregelung.qet"), {{QStringLiteral("vMin=21.6 V"), QStringLiteral("vMin=30 V")}},
+											 QStringLiteral("qet_sim_r06_reset.qet"));
+			if (file.isEmpty()) wrong << QStringLiteral("Variante ohne Versorgung nicht erzeugt");
+			else {
+				const auto w = sample(file, 1.0, {QStringLiteral("x:-MM1"), QStringLiteral("u:-KF1")}, nullptr);
+				QFile::remove(file);
+				if (!w.isEmpty()) {
+					if (!(w.value(QStringLiteral("x:-MM1")) < 5e-4 && w.value(QStringLiteral("u:-KF1")) == 0.0))
+						wrong << QStringLiteral("ohne Versorgung: x %1 mm, Y %2 V").arg(w.value(QStringLiteral("x:-MM1")) * 1000).arg(w.value(QStringLiteral("u:-KF1")));
+					else seen << QStringLiteral("ohne Versorgung (vMin 30 V): Y 0 V, Zylinder steht");
+				}
+			}
 		}
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));

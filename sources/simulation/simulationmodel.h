@@ -145,12 +145,17 @@ class SimulationModel
 		struct Pipe;
 		struct PropValve;
 		struct SuctionCup;
+		struct Analog;
 
 		int node(Terminal *t) const;
 		int node(Element *e, const QString &port) const;
 		void buildNets(const QList<Diagram *> &diagrams);
 		void buildComponents(const QList<Diagram *> &diagrams, double supply_bar);
 		void electrics();
+		void analog(double dt);
+		void linkAnalog(const QList<Diagram *> &diagrams);
+			/// potential of an electric net [V]: an analog output, else the supply it is connected to
+		double volt(int net) const;
 		void fail(const QString &why);
 		QString netName(int net) const;
 		bool contactClosed(const Contact &c) const;
@@ -168,6 +173,10 @@ class SimulationModel
 		QList<Pipe *> m_pipes;                     // lines with geometry (R05)
 		QList<PropValve *> m_prop_valves;          // proportional valves (R07)
 		QList<SuctionCup *> m_cups;                // suction cups (R10)
+		QList<Analog *> m_analog;                  // analog signal blocks in their order of evaluation (R06)
+		QHash<int, double> m_volt;                 // nets driven by an analog output [V]
+		QHash<int, double> m_source_volt;          // supply terminals with a given potential [V]
+		QHash<int, double> m_net_volt;             // potential of the electric nets from the supplies [V]
 		QList<FlowValve *> m_flow_valves;
 		QList<Contact *> m_contacts;
 		QList<Relay *> m_relays;

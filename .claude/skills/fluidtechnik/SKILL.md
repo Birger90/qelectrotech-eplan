@@ -165,8 +165,21 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
   (Sammlung: „…offen“ = getrennt; Schnellanschluss ohne, Schnellkupplung mit Rückschlagventil). Verstopfte Filter über
   `clogged`.
 - Stetig- und Lastventile (Fork 1.29.0, R07/R09): FluidSIM `DirectionalValve43_01/_02` rechnen mit `rT`, `lap`,
-  `notchType`, `GLeak`; der Sollwert kommt bis R06 aus dem Kennwert `u` oder einem Ereignis. `CounterbalanceValve`
-  und `PressureSequenceValve01/02` rechnen; Druckwaagen, Schock-/Nachsaugblock, MPYE und LS-Blöcke noch nicht.
+  `notchType`, `GLeak`; der Sollwert kommt aus dem gekoppelten Magneten/Verstärker (R06), sonst aus `u` oder einem
+  Ereignis. `CounterbalanceValve` und `PressureSequenceValve01/02` rechnen; Druckwaagen, Schock-/Nachsaugblock, MPYE
+  und LS-Blöcke noch nicht.
+- Analoge Signale (Fork 1.30.0, R06): der Import gibt den ET-Analogbausteinen `sim_role` = `analog`, `sim_block`
+  (Klasse ohne „ET.“), `sim_params` (alle Kennwerte mit Einheit) und `sim_link`; Anschlüsse heißen wie am Bauteil
+  (SP, SN, W, X, Y), nicht wie die Symbolbeschriftung („1“, „2“, „3“). Kopplungen aus FluidSIM: Ventil-S ↔
+  `ValveContSolenoid` (Spannung an C), Ventil-Y1/Y2 ↔ Verstärkerausgang A/B über die Spulenmarke (-MB1), Zylinder
+  `pos_label` = Wegmesssystem, elektrischer und fluidischer Drucksensor gleiche Kennzeichnung. Quellen bekommen
+  `sim_volt` (Pot24V 24, Pot0V/Ground 0, Pot = `pot`). `Hyd.Proportional.PressureReliefValve` ist
+  `proportional.pressure_relief_valve` (vorher fälschlich das normale DBV mit A/B, also ohne Wirkung).
+  Analogbausteine ohne Kennzeichnung bekommen -GF/-BG/-KF, Stetigventile -QM.
+  Vorzeichen wie FluidSIM: positiver Sollwert = P→A (Y2, positive Spannung an S), Y1 = P→B; in allen
+  Beispielen hängt Verstärkerausgang A an Y2, TP511_15 (PID-Lageregelung) bestätigt S. Gespiegelte FluidSIM-Symbole beschriften A/B und P/T vertauscht – die
+  Simulation rechnet mit den Bauteilnamen, deshalb übernimmt der Import bei `*.Proportional.*` und `Flowmeter_2` die
+  Anschlussnamen des Bauteils, nicht die Beschriftung (vorher fuhren gespiegelte Stetigventile verkehrt herum).
 
 ## Offen
 

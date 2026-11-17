@@ -251,7 +251,20 @@ TP102_02 (zwei Zylinder, Rollenventile, Zähler), TP601_14 (Elektrohydraulik mit
   TP1121) packen ihr Blatt in `section type="circuits"` → `<file>`: kamen leer an, `lesen()` nimmt jetzt das Blatt.
   (3) Widerstand, Kondensator, Diode/LED, Sicherung, Gleichspannungsquelle, Bipolartransistor, Signalgenerator und
   Oszilloskop waren Kästen mit winziger englischer Aufschrift; jetzt IEC-60617-Grafik in `eigene_grafik.py`.
-  Digitaltechnik (LOGO, 37 Dateien) bleibt leer (nicht übernommen), GRAFCET-Dateien haben nur GRAFCET-Elemente.
+  GRAFCET-Dateien haben nur GRAFCET-Elemente.
+- Elektro-Nachbesserung (17.11.2026, Birger: Elektroplan „sieht komisch aus“, TP1410_AC3P_05): (4) Netze über
+  T-Verteiler rissen, wenn ein Hilfspunkt ohne Bauteil (leere object-ref) im Netz lag – -F1 hing nicht an -Q1, N lose;
+  jetzt werden nur Anschlüsse übernommener Bauteile der Reihe nach verbunden. (5) 166 Bauarten waren Textkästen mit
+  abgeschnittenem englischem Namen; jetzt IEC-Grafik: mehrpolige Leitungs-/Motorschutzschalter (der Motorschutz-
+  schalter ist in FluidSIM als solenoid-coil klassifiziert!), Maschinen (Kreis M 3~, MS 3~, M =, G), Messgeräte (V, A,
+  W, cos φ, Ω), Gleichrichter (Kasten mit Diagonale ~/=), Trafo, Induktivität, OpAmp, Z-Diode, Thyristor,
+  Potentiale L1/L2/L3/N/PE, Verteiler; der Rest als Kasten mit IEC-Kennzeichen (PID, Σ, p, Q …) oder leer, **nie mit
+  Namen**. Jeder Anschluss bekommt eine Stichleitung an die Grafik (`_anschluesse_erreichen`). (6) Simulationsgrößen
+  (`comment` mit `FTPVar`, z. B. „P_out = 0 kW“) und Sollwerte 0 („0 V“) kommen nicht mehr als Text in den Plan.
+  (7) Digitaltechnik (LOGO, Gatter, Flipflops; Anschlusstyp `digital`) wird übernommen: Logikkästen nach IEC
+  60617-12 (&, ≥1, =1, 1 mit Negationskreis, TON/TOF/TP, RS, CTUD), Leitungen elektrisch – Medium `logic` verbindet
+  im Fork nichts (`Fluid::canConnect`). (8) Texte mit „~“ verwirft der Symbolumwandler als FluidSIM-Übersetzungs-
+  schlüssel; in der eigenen Ebene EIGEN sind sie erlaubt („3~“). Immer selbst als PNG prüfen, „0 Fehler“ reicht nicht.
 
 ## Offen
 

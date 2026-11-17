@@ -324,5 +324,11 @@ Die Zahl in Klammern ist der Beleg; so zeichnen, wenn der Hausstil oben nichts a
 - **Kennzeichnung**: Relais -KF (511 von ≈ 700), Ventilspule -MB (307), Taster -SF (310), Sensor/Endschalter
   -BG (166), Leuchte -PF oder -E, Spannungsquelle -G. Die Ventilspule trägt in QET als Slave die Kennzeichnung
   ihres Ventils (-QM1), die eigene (-MB1) bleibt in den Daten.
+- **Nie Textkasten**: Ein Bauteil ohne passendes Symbol bekommt sein IEC-60617-Kennzeichen (Maschine: Kreis mit
+  M 3~/MS 3~/G; Messgerät: Kreis mit V/A/W/cos φ; Gleichrichter: Kasten mit Diagonale und ~/=; Logik: &, ≥1, 1 mit
+  Negationskreis; Regler: PID/PT1/Σ), nie einen Kasten mit (abgeschnittenem) Namen. Mehrpolige Schalter als
+  einzelne Pole mit gestrichelter Wirkverbindung (Leitungsschutz: Kreuz am festen Kontakt; Motorschutz: Auslöser „I>“).
+- **Keine Simulationswerte im Plan**: angezeigte Messgrößen (P_out, I, U als Ergebnis) und Sollwerte 0 weglassen;
+  nur Kennwerte (24 V, p = 6 bar, 47 kOhm) als Text am Bauteil.
 - **Endschalter** stehen im Steuerstromkreis als Schließer/Wechsler mit -BG-Kennzeichen; am Zylinder sind sie
   nur eine Wegmarke (siehe Skill `fluidtechnik`).

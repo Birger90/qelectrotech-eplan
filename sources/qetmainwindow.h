@@ -69,6 +69,8 @@ class QETMainWindow : public QMainWindow {
 	QAction *upgrade_M;                      ///< Launch browser on QElectroTech MAC_OS_X builds
 	QAction *donate_;                        ///< Launch browser to donate link
 	QAction *about_qt_;                      ///< launch the "About Qt" dialog
+	QAction *report_action_;                 ///< Report a bug or a wish (fork, company distribution)
+	QAction *update_action_;                 ///< Look for an update in the distribution folder (fork)
 	QAction *diagnostics_action_;            ///< Open the diagnostics report dialog (discussion #644, step 5)
 	QAction *connect_ai_;                    ///< Show how to connect an AI assistant (MCP server)
 	QMenu *settings_menu_;                   ///< Settings menu

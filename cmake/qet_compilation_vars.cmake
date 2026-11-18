@@ -376,6 +376,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/qetstyle.h
   ${QET_DIR}/sources/qetinformation.cpp
   ${QET_DIR}/sources/qetinformation.h
+  ${QET_DIR}/sources/distribution/companydistribution.cpp
+  ${QET_DIR}/sources/distribution/companydistribution.h
   ${QET_DIR}/sources/qetmainwindow.cpp
   ${QET_DIR}/sources/qetmainwindow.h
   ${QET_DIR}/sources/qetmessagebox.cpp

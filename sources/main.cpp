@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "cli_export.h"
+#include "distribution/companydistribution.h"
 #ifdef QET_HAS_SCRIPTING
 #include "scripting/qetscripting.h"
 #endif
@@ -42,6 +43,7 @@
 #include <QFileInfo>
 #include <QSettings>
 #include <QStyleFactory>
+#include <QTimer>
 #include <QtConcurrentRun>
 
 #include <cstdio>
@@ -341,6 +343,10 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
+	// Fork: company distribution (shared SharePoint folder): the company collection is its folder
+	// "Bauteile" -- set before QETApp loads the collections
+	CompanyDistribution::applyCompanyCollection();
+
 	QETApp qetapp;
 	QETApp::instance()->installEventFilter(&qetapp);
 #ifdef Q_OS_MACOS
@@ -375,6 +381,9 @@ int main(int argc, char **argv)
 	// (and no accurate baseline) before this line.
 	EventLoopWatchdog watchdog;
 	watchdog.start();
+
+	// Fork: hand in offline reports and look for an update once the window is up
+	QTimer::singleShot(3000, &qetapp, []() { CompanyDistribution::startupTasks(); });
 
 	return app.exec();
 }

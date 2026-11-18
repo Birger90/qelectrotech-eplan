@@ -28593,4 +28593,139 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
         <translation>Was:</translation>
     </message>
 </context>
+<context>
+    <name>ReportDialog</name>
+    <message>
+        <source>Report a bug or a wish</source>
+        <translation>Fehler oder Wunsch melden</translation>
+    </message>
+    <message>
+        <source>Describe what happened or what you wish for. The report goes to the developers together with the program version; nothing is sent to the internet.</source>
+        <translation>Beschreibe, was passiert ist oder was du dir wünschst. Die Meldung geht mit der Programmversion an die Entwickler; ins Internet wird nichts geschickt.</translation>
+    </message>
+    <message>
+        <source>Bug</source>
+        <translation>Fehler</translation>
+    </message>
+    <message>
+        <source>Wish / new feature</source>
+        <translation>Wunsch / neue Funktion</translation>
+    </message>
+    <message>
+        <source>Kind</source>
+        <translation>Art</translation>
+    </message>
+    <message>
+        <source>in a few words</source>
+        <translation>in wenigen Worten</translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <translation>Titel</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <source>What did you do, what did you expect, what happened instead? Which project or sheet?</source>
+        <translation>Was hast du gemacht, was hast du erwartet, was ist stattdessen passiert? Welches Projekt, welches Blatt?</translation>
+    </message>
+    <message>
+        <source>Attach a screenshot of the window</source>
+        <translation>Bildschirmfoto des Fensters anhängen</translation>
+    </message>
+    <message>
+        <source>Attach the diagnostic report (latest log entries)</source>
+        <translation>Diagnosebericht anhängen (letzte Protokolleinträge)</translation>
+    </message>
+    <message>
+        <source>Send</source>
+        <translation>Senden</translation>
+    </message>
+    <message>
+        <source>Please enter a title or a description.</source>
+        <translation>Bitte einen Titel oder eine Beschreibung eingeben.</translation>
+    </message>
+    <message>
+        <source>The folder %1 could not be created.</source>
+        <translation>Der Ordner %1 konnte nicht angelegt werden.</translation>
+    </message>
+    <message>
+        <source>The report could not be written.</source>
+        <translation>Die Meldung konnte nicht geschrieben werden.</translation>
+    </message>
+    <message>
+        <source>Thank you, the report has been saved.</source>
+        <translation>Danke, die Meldung ist gespeichert.</translation>
+    </message>
+    <message>
+        <source>Thank you. The distribution folder is not available; the report is kept on this computer and handed in at the next start.</source>
+        <translation>Danke. Der Verteilordner ist gerade nicht erreichbar; die Meldung bleibt auf diesem Rechner und wird beim nächsten Start nachgereicht.</translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <source>Updates</source>
+        <translation>Updates</translation>
+    </message>
+    <message>
+        <source>No distribution folder found. Synchronise the SharePoint library "QET-Fork" with OneDrive or name its folder in the environment variable QET_DISTRIBUTION_DIR.</source>
+        <translation>Kein Verteilordner gefunden. Bitte die SharePoint-Bibliothek „QET-Fork“ mit OneDrive synchronisieren oder ihren Ordner in der Umgebungsvariablen QET_DISTRIBUTION_DIR angeben.</translation>
+    </message>
+    <message>
+        <source>This version (%1) is up to date.</source>
+        <translation>Diese Version (%1) ist aktuell.</translation>
+    </message>
+    <message>
+        <source>Update available</source>
+        <translation>Update verfügbar</translation>
+    </message>
+    <message>
+        <source>Version %1 is available (installed: %2).</source>
+        <translation>Version %1 ist verfügbar (installiert: %2).</translation>
+    </message>
+    <message>
+        <source>Install now</source>
+        <translation>Jetzt installieren</translation>
+    </message>
+    <message>
+        <source>Skip this version</source>
+        <translation>Diese Version überspringen</translation>
+    </message>
+    <message>
+        <source>Later</source>
+        <translation>Später</translation>
+    </message>
+    <message>
+        <source>Update</source>
+        <translation>Update</translation>
+    </message>
+    <message>
+        <source>The installer %1 could not be started.</source>
+        <translation>Das Installierskript %1 ließ sich nicht starten.</translation>
+    </message>
+</context>
+<context>
+    <name>QETMainWindow</name>
+    <message>
+        <source>Report a bug or a wish...</source>
+        <translation>Fehler oder Wunsch melden...</translation>
+    </message>
+    <message>
+        <source>Writes a bug report or a wish for the developers into the company distribution folder</source>
+        <comment>status bar tip</comment>
+        <translation>Schreibt eine Fehlermeldung oder einen Wunsch für die Entwickler in den Verteilordner der Firma</translation>
+    </message>
+    <message>
+        <source>Check for updates...</source>
+        <translation>Nach Updates suchen...</translation>
+    </message>
+    <message>
+        <source>Looks for a newer version in the company distribution folder</source>
+        <comment>status bar tip</comment>
+        <translation>Sucht im Verteilordner der Firma nach einer neueren Version</translation>
+    </message>
+</context>
 </TS>

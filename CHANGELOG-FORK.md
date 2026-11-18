@@ -3,6 +3,20 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## Unveröffentlicht – Weitergabe in der Firma
+
+- Verteilordner (SharePoint-Bibliothek „QET-Fork“, per OneDrive synchronisiert) für Kollegen ohne Git: das
+  Programm findet ihn selbst (Einstellung, `QET_DISTRIBUTION_DIR` oder OneDrive-Ordner mit `version.json`).
+- Update-Prüfung beim Start und unter Hilfe > *Nach Updates suchen...*: neuere Version installieren (schließt
+  QElectroTech mit Rückfrage, installiert, startet neu), später oder überspringen.
+- Hilfe > *Fehler oder Wunsch melden...*: Art, Titel, Text, Bildschirmfoto und Diagnosebericht als Ordner in
+  `Meldungen\`; ohne Verbindung lokal und beim nächsten Start nachgereicht.
+- Firmensammlung aus `Bauteile\` des Verteilordners (bleibt dauerhaft auf dem Rechner); eine selbst gewählte
+  Firmensammlung bleibt eingestellt.
+- `tools/verteilung/`: `Installieren.cmd`/`.ps1` (ohne Adminrechte nach `%LOCALAPPDATA%\QET-Fork`, vorige
+  Version bleibt als `Programm.alt`, Verknüpfungen), `veroeffentlichen.ps1` (Programmpaket, Bauteile,
+  `version.json`), Anleitung `tools/verteilung/README.md`.
+
 ## 1.30.0 – 17.11.2026
 
 Simulations-Roadmap R06 (analoge Signale und Regler):

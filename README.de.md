@@ -143,6 +143,9 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
   Proportional-Verstärker, lagegeregelte Proportionalmagnete, Druck-, Durchfluss- und Wegsensoren,
   Proportional-Druckbegrenzungsventil) – geschlossene Druck- und Lageregelkreise. Stand der Roadmap: [tools/simulation/ROADMAP_STAND.md](tools/simulation/ROADMAP_STAND.md).
   Anleitung: [tools/simulation/README.md](tools/simulation/README.md).
+- Weitergabe in der Firma ohne Git: über eine SharePoint-Bibliothek, die OneDrive spiegelt – Installation per
+  Doppelklick, Update-Prüfung beim Start, Hilfe > *Fehler oder Wunsch melden...*, Firmen-Bauteile aus dem
+  Verteilordner. Anleitung: [tools/verteilung/README.md](tools/verteilung/README.md).
 - Datei > *FluidSIM-Schaltung importieren (.circ)*: FluidSIM-6-Schaltungen werden ein Projekt, das sofort simuliert –
   Bauteile, Leitungen, Spulen- und Relaisverknüpfungen, die Schaltwege jeder Ventilstellung, alle Kennwerte mit
   Einheit, die elektrischen Rollen (Versorgung, Taster, Endschalter aus dem Wegmaßstab, Ventilmagnete) und die

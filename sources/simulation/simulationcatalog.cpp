@@ -102,8 +102,16 @@ QList<Entry> build()
 		      "xStep [%] Auslenkung (−100 … 100), rT_P1_T1, rT_P2_AB, rT_T2_AB, rT_CV [bar.min2/l2], GLeak [l/(min.bar)], T_2 [s]",
 		      "Umlauf P1→T1 mit Öffnung 1 − |x|, Arbeitskanten mit |x| (Blenden rT/Anteil²), Rückschlagventil in Reihe; Schieber PT1, Auslenkung fest für den Lauf",
 		      "Mobilhydraulik (R13)");
-	for (const char *f : {"proportional.mobile_valve_block_ls", "proportional.mpye"})
-		e << other(f, Role::Unsupported, "", "Mobil-/LS-Ventilblöcke und pneumatisches Stetigventil (Roadmap R07, R13)");
+	e << physical("proportional.mobile_valve_block_ls", "ls_valve_block", "hydraulic",
+		      "P, T, LS; je Scheibe g: A g, B g, Vorsteuerung C g (X g.1) → P→A, D g (X g.2) → P→B",
+		      "rT_PAB, rT_TAB, rT_pc, rT_SV [bar.min2/l2]; pS_min, pS_max [Pa] Vorsteuerbereich; p0_pc, dpEnd_pc [Pa] Druckwaage; xStepLeft/xStepRight [%] Handhebel",
+		      "Schieberweg aus dem Vorsteuerdruck (bzw. Handhebel), Druckwaage quasistatisch in Reihe zur Messkante, geschlossene Mitte, Wechselventile melden den höchsten Lastdruck an LS; ohne Schieberdynamik, F_manual nicht ausgewertet",
+		      "Mobilhydraulik LS (R13)");
+	e << physical("proportional.priority_valve_ls", "priority_valve_ls", "hydraulic", "P, CF (bevorzugt), EF (Überschuss), LS",
+		      "p0 [Pa] Federvorspannung, dpEnd [Pa], rT_CF, rT_EF [bar.min2/l2]",
+		      "Kolben quasistatisch aus p_CF − p_LS gegen die Feder; Dämpfungsdrosseln rT_L, rT_R (dynamisch) nicht gerechnet",
+		      "Mobilhydraulik LS (R13)");
+	e << other("proportional.mpye", Role::Unsupported, "", "pneumatisches Stetigventil (Roadmap R07)");
 	// ---------------------------------------------------------- Strom-, Sperr-, Logikventile
 	e << physical("flow_control_valve.throttle_valve", "orifice", "both", "erste zwei Anschlüsse", "qNN [l/min] bzw. rT", "kein druckkompensierter Stromregler", "Orifice");
 	e << physical("shutoff_valve.shutoff_valve", "orifice", "both", "erste zwei Anschlüsse", "qNN bzw. rT", "Stellung fest (Öffnung über qNN/rT)", "Orifice");

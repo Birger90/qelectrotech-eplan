@@ -266,7 +266,12 @@ Elektrische Teile mit reellen Werten. Sie tragen die Bauteilinformationen `sim_r
   `dpEnd_prv`, `rT_prv`, `rT_cv` ineinander. Formel M14.
 - **Membranspeicher mit Sicherheitsblock** (`supply.accumulator` mit `p0_accu`; P, T): Kugelhahn `x` (2 offen), Druckbegrenzung
   `p0_prv` zum Tank. Formel H12.
-- Prüfplan `lenkung.qet`. Noch nicht gerechnet: LS-Steuerblock mit Druckwaagen, Prioritätsventil LS.
+- Prüfplan `lenkung.qet`.
+- **LS-Steuerblock** (`proportional.mobile_valve_block_ls`, Fork 1.37.0; P, T, LS, je Scheibe A g, B g, Vorsteuerung C g, D g):
+  Vorsteuerdruck zwischen `pS_min` und `pS_max` (C → P→A, D → P→B) oder Handhebel `xStepLeft`/`xStepRight`, Druckwaage `p0_pc`,
+  `dpEnd_pc`, `rT_pc`, Kanten `rT_PAB`, `rT_TAB`, Wechselventil `rT_SV`. Formel V17.
+- **Prioritätsventil LS** (`proportional.priority_valve_ls`; P, CF, EF, LS): `p0`, `dpEnd`, `rT_CF`, `rT_EF`. Formel V18.
+- Prüfplan `lsblock.qet`.
 
 ## Vakuum, Schwenk- und Greiferantriebe (R10)
 

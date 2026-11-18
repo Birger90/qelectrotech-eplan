@@ -377,6 +377,25 @@ struct SimulationModel::Steering {
 	double a = 0, rt = 0.1, d = 32e-6, phi = 0, last_q = 0;
 };
 
+/// R13 (FORMELN.md V17): FluidSIM load sensing control block, two sections; each a proportional directional valve
+/// (pilot C (X g.1) / D (X g.2) between pS_min and pS_max, or the hand lever xStep) behind an upstream pressure
+/// compensator (p0_pc over dpEnd_pc, rT_pc), shuttle valves feed the highest load pressure to LS
+struct SimulationModel::LsBlock {
+	Element *e = nullptr;
+	QString label;
+	double rt_m = 0.1, rt_t = 0.21, ps_min = 2e5, ps_max = 15e5, p0 = 10.5, dp = 0.5, rt_pc = 0.2, rt_sv = 0.08;   // p0, dp in bar
+	double man[2] = {0, 0};
+	double x[2] = {0, 0};
+};
+
+/// R13 (FORMELN.md V18): FluidSIM priority valve LS: the spool feeds CF first, s = clamp(1 − (p_CF − p_LS − p0)/dpEnd),
+/// P -> CF with rT_CF/s², the rest P -> EF with rT_EF/(1 − s)²
+struct SimulationModel::PriorityValve {
+	Element *e = nullptr;
+	QString label;
+	double p0 = 8e5, dp = 2.4e5, rt_cf = 0.9, rt_ef = 0.9;
+};
+
 /// R13 (FORMELN.md H11): FluidSIM pilot valve joystick 2x2: per group the lever deflection a (−1 … 1) sets the pilot
 /// pressure |a|·pMax at X g.1 (a > 0) or X g.2 (a < 0) as a pressure reducing valve from P (relief to T); the other
 /// port of the group and both ports at rest are open to T
@@ -604,6 +623,8 @@ SimulationModel::~SimulationModel()
 	qDeleteAll(m_valves63);
 	qDeleteAll(m_steerings);
 	qDeleteAll(m_joysticks);
+	qDeleteAll(m_ls_blocks);
+	qDeleteAll(m_priority_valves);
 	qDeleteAll(m_cups);
 	qDeleteAll(m_analog);
 }
@@ -844,7 +865,8 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					}
 				}
 				if (model == QLatin1String("ls_pump_unit") || model == QLatin1String("mobile_valve63")
-					|| model == QLatin1String("steering_unit") || model == QLatin1String("pilot_joystick")) {
+					|| model == QLatin1String("steering_unit") || model == QLatin1String("pilot_joystick")
+					|| model == QLatin1String("ls_valve_block") || model == QLatin1String("priority_valve_ls")) {
 					if (!hyd) {
 						m_model_errors << QStringLiteral("%1: nur hydraulisch gerechnet").arg(part);
 						continue;
@@ -868,6 +890,37 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						s->rt = rtIn("rT", 0.1);
 						s->d = paramIn(f, QStringLiteral("displacement"), 32e-6, QStringLiteral("m3"), &m_model_errors, part, Range::Positive);
 						m_steerings << s;
+						continue;
+					}
+					if (model == QLatin1String("ls_valve_block")) {
+						auto *b = new LsBlock;
+						b->e = e;
+						b->label = part;
+						b->rt_m = rtIn("rT_PAB", 0.1);
+						b->rt_t = rtIn("rT_TAB", 0.21);
+						b->ps_min = paramIn(f, QStringLiteral("pS_min"), 2e5, pa, &m_model_errors, part, Range::NonNegative);
+						b->ps_max = paramIn(f, QStringLiteral("pS_max"), 15e5, pa, &m_model_errors, part, Range::Positive);
+						if (!(b->ps_max > b->ps_min))
+							m_model_errors << QStringLiteral("%1: pS_max muss größer als pS_min sein").arg(part);
+						b->p0 = paramIn(f, QStringLiteral("p0_pc"), 10.5e5, pa, &m_model_errors, part, Range::NonNegative) / 1e5;
+						b->dp = std::max(paramIn(f, QStringLiteral("dpEnd_pc"), 0.5e5, pa, &m_model_errors, part, Range::Positive) / 1e5, 0.01);
+						b->rt_pc = rtIn("rT_pc", 0.2);
+						b->rt_sv = rtIn("rT_SV", 0.08);
+						const QString pc = QStringLiteral("%");
+						b->man[0] = std::clamp(paramNative(f, QStringLiteral("xStepLeft"), 0.0, pc, &m_model_errors, part, Range::Any) / 100.0, -1.0, 1.0);
+						b->man[1] = std::clamp(paramNative(f, QStringLiteral("xStepRight"), 0.0, pc, &m_model_errors, part, Range::Any) / 100.0, -1.0, 1.0);
+						m_ls_blocks << b;
+						continue;
+					}
+					if (model == QLatin1String("priority_valve_ls")) {
+						auto *v = new PriorityValve;
+						v->e = e;
+						v->label = part;
+						v->p0 = paramIn(f, QStringLiteral("p0"), 8e5, pa, &m_model_errors, part, Range::NonNegative);
+						v->dp = std::max(paramIn(f, QStringLiteral("dpEnd"), 2.4e5, pa, &m_model_errors, part, Range::Positive), 0.01e5);
+						v->rt_cf = rtIn("rT_CF", 0.9);
+						v->rt_ef = rtIn("rT_EF", 0.9);
+						m_priority_valves << v;
 						continue;
 					}
 					if (model == QLatin1String("pilot_joystick")) {
@@ -2385,6 +2438,51 @@ void SimulationModel::step(double dt)
 			s->phi += (s->a > 0 ? 1.0 : -1.0) * s->last_q / s->d * 2.0 * M_PI * dt;
 		}
 	}
+	// R13 load sensing control block (FORMELN.md V17)
+	for (LsBlock *b : m_ls_blocks) {
+		const int kp = node(b->e, QStringLiteral("P")), kt = node(b->e, QStringLiteral("T")), kls = node(b->e, QStringLiteral("LS"));
+		int kload = -2;
+		for (int g = 0; g < 2; ++g) {
+			const QString n = QString::number(g + 1);
+			// FluidSIM names the pilot ports C g / D g (symbol text "C (X g.1)", "D (X g.2)")
+			auto either = [&](const QString &x, const QString &y) { const int k = node(b->e, x); return k >= 0 ? k : node(b->e, y); };
+			const int kc = either(QStringLiteral("C") + n, QStringLiteral("C (X%1.1)").arg(n));
+			const int kd = either(QStringLiteral("D") + n, QStringLiteral("D (X%1.2)").arg(n));
+			const int ka = node(b->e, QStringLiteral("A") + n), kb = node(b->e, QStringLiteral("B") + n);
+			auto stroke = [&](int k) { return std::clamp((p(k) - P_ATM - b->ps_min) / (b->ps_max - b->ps_min), 0.0, 1.0); };
+			const double x = std::abs(b->man[g]) > 1e-9 ? b->man[g] : stroke(kc) - stroke(kd);
+			b->x[g] = x;
+			const double a = std::abs(x);
+			if (a < 1e-6) continue;
+			const int kin = x > 0 ? ka : kb, kout = x > 0 ? kb : ka;
+			if (kload == -2 || p(kin) > p(kload)) kload = kin;
+			const double dp = (p(kp) - p(kin)) / 1e5;   // bar
+			if (dp > 0 && (kp >= 0 || kin >= 0)) {
+				// compensator and metering edge in series: q from Δp = q²·(rT_pc/s(q)² + rT/x²), s = clamp(1 − (q²·rT/x² − p0)/dpEnd)
+				const double rm = b->rt_m / (a * a);
+				auto total = [&](double q) {
+					const double s = std::clamp(1.0 - (q * q * rm - b->p0) / b->dp, 1e-3, 1.0);
+					return q * q * (b->rt_pc / (s * s) + rm);
+				};
+				double lo = 0.0, hi = std::sqrt(dp / rm);
+				for (int i = 0; i < 60; ++i) { const double mid = 0.5 * (lo + hi); (total(mid) > dp ? hi : lo) = mid; }
+				const double q = 0.5 * (lo + hi);
+				if (q > 1e-9) book(kp, kin, volumeFlow(p(kp), p(kin), dp / (q * q)), b->e);
+			}
+			if (kout >= 0 || kt >= 0) book(kout, kt, volumeFlow(p(kout), p(kt), b->rt_t / (a * a)), b->e);
+		}
+		// shuttle valves: the highest load pressure reaches LS, nothing flows back from LS into a work port
+		if (kload != -2 && (kload >= 0 || kls >= 0) && p(kload) > p(kls))
+			book(kload, kls, volumeFlow(p(kload), p(kls), b->rt_sv), b->e);
+	}
+	// R13 priority valve LS (FORMELN.md V18)
+	for (PriorityValve *v : m_priority_valves) {
+		const int kp = node(v->e, QStringLiteral("P")), kcf = node(v->e, QStringLiteral("CF"));
+		const int kef = node(v->e, QStringLiteral("EF")), kls = node(v->e, QStringLiteral("LS"));
+		const double s = std::clamp(1.0 - (p(kcf) - p(kls) - v->p0) / v->dp, 0.0, 1.0);
+		if (s > 1e-6 && (kp >= 0 || kcf >= 0)) book(kp, kcf, volumeFlow(p(kp), p(kcf), v->rt_cf / (s * s)), v->e);
+		if (1.0 - s > 1e-6 && (kp >= 0 || kef >= 0)) book(kp, kef, volumeFlow(p(kp), p(kef), v->rt_ef / ((1.0 - s) * (1.0 - s))), v->e);
+	}
 	// R13 pilot valve joystick (FORMELN.md H11): pressure reducing valves P -> X, relief X -> T
 	for (Joystick *j : m_joysticks) {
 		const int kp = node(j->e, QStringLiteral("P")), kt = node(j->e, QStringLiteral("T"));
@@ -2922,6 +3020,8 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 	for (const Valve63 *v : m_valves63) fluid_parts << v->e;
 	for (const Steering *s : m_steerings) fluid_parts << s->e;
 	for (const Joystick *j : m_joysticks) fluid_parts << j->e;
+	for (const LsBlock *b : m_ls_blocks) fluid_parts << b->e;
+	for (const PriorityValve *v : m_priority_valves) fluid_parts << v->e;
 	for (const Pipe *pi : m_pipes) fluid_parts << pi->e;
 	for (const Ejector *v : m_ejectors) fluid_parts << v->e;
 	QSet<Element *> seen;

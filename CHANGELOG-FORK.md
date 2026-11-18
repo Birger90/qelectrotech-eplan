@@ -3,6 +3,18 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.37.0 – 18.11.2026
+
+Simulations-Roadmap R13 (mobile Hydraulik) abgeschlossen:
+
+- Load-Sensing-Steuerblock (FluidSIM `MobileValveBlockLS`, zwei Scheiben): Schieberweg aus dem Vorsteuerdruck C/D zwischen
+  pS_min und pS_max (oder Handhebel), vorgeschaltete Druckwaage je Scheibe hält den Strom lastunabhängig, Wechselventile melden
+  den höchsten Lastdruck an LS. Formel V17.
+- Prioritätsventil LS: CF wird bevorzugt versorgt, der Rest geht nach EF. Formel V18.
+- Neue Prüfung „LS-Steuerblock und Prioritätsventil (R13)“ mit `lsblock.qet`: gleicher Strom bei 52,6 und 33,4 bar Pumpendruck
+  im Band der Druckwaage, LS = Lastdruck, Rückhub, Prioritätsventil gegen die Handrechnung.
+- FluidSIM-Beispiele: 1100 von 1136 rechnen (vorher 1095), alle 27 TP800-Übungen; keine Schaltung verschlechtert.
+
 ## 1.36.0 – 18.11.2026
 
 Simulations-Roadmap R13 (mobile Hydraulik), zweiter Teil:

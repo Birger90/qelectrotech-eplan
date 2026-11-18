@@ -498,7 +498,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Druckluftmotoren (R12): Leerlaufdrehzahl nach Druck, Nennpunkt aus den Nennwerten, beide Drehrichtungen"),
 		QStringLiteral("Mehrstellungszylinder (R12): Zwischenstellung, Endlage, Halt im Rückhub, gemeinsamer Rückhub"),
 		QStringLiteral("Mobilhydraulik (R13): LS-Bereitschaftsdruck, LS-Regelung lastunabhängig, Druckbegrenzung, 6/3-Handhebelventil, Belastungseinheit"),
-		QStringLiteral("Lenkung und Sperrventile (R13): Lenkventil voll, halb, neutral, rechts; Vorsteuergerät; Sperrblock entsperrt, gesperrt, Durchfluss; Belastungseinheit 1; Speicher mit Sicherheitsblock")};
+		QStringLiteral("Lenkung und Sperrventile (R13): Lenkventil voll, halb, neutral, rechts; Vorsteuergerät; Sperrblock entsperrt, gesperrt, Durchfluss; Belastungseinheit 1; Speicher mit Sicherheitsblock"),
+		QStringLiteral("LS-Steuerblock und Prioritätsventil (R13): Druckwaage hält den Strom lastunabhängig, Lastmeldung, Rückhub; Prioritätsventil teilt CF/EF")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1466,6 +1467,87 @@ QList<Check> endToEnd(const QString &reference_dir)
 				else seen << QStringLiteral("%1: %2 N (soll %3)").arg(QString::fromUtf8(k.what)).arg(got, 0, 'f', 1).arg(want, 0, 'f', 1);
 			}
 		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 20. LS control block and priority valve (R13, FORMELN.md V17, V18), plan lsblock.qet: the fixed pump P2 of -GZ1
+		//     (relief 50 bar, variant 30 bar) feeds the block -QM1 and the joystick -KH1 (left +30 %: pilot 4.5 bar, stroke
+		//     (4.5 − 2)/13); section 1 drives the load unit -MM1; -GZ2 feeds the priority valve -QV1, CF over -RZ1 (rT 1)
+		//     to the air, EF and LS open; retracting (−30 %) with the relief at 200 bar over a 1 m stroke
+		Check c{names.at(19)};
+		QStringList wrong, seen;
+		const double qf = 910 * 4.5055e-3, glf = 0.003333;
+		const double ak = M_PI * 0.016 * 0.016 / 4, ar = ak - M_PI * 0.01 * 0.01 / 4;
+		auto bisect = [](auto fn, double lo, double hi) {
+			for (int i = 0; i < 200; ++i) { const double mid = 0.5 * (lo + hi); (fn(lo) * fn(mid) <= 0 ? hi : lo) = mid; }
+			return 0.5 * (lo + hi);
+		};
+		auto h03 = [](double d, double rt) { return d / (std::sqrt(rt) * std::pow(d * d + 0.09, 0.25)); };
+		const double x = (4.5 - 2.0) / 13.0;
+		const double q_lo = x * std::sqrt(10.5 / 0.1), q_hi = x * std::sqrt(11.0 / 0.1);   // compensator band
+		struct Sample { double v = std::nan(""), pa = std::nan(""), pls = std::nan(""), pp = std::nan(""), pcf = std::nan(""), pp2 = std::nan(""); };
+		auto sig = [](SimulationModel &m, const char *id) { return m.signalValue(QString::fromUtf8(id)); };
+		auto run = [&](const QString &file, double t_v) {
+			Sample s;
+			ProjectRun pr = runProject(file, 0.0, {}, 2.9001, [&](SimulationModel &m) {
+				if (std::abs(m.time() - t_v) < 5e-6) {
+					s.v = sig(m, "v:-MM1");
+					s.pa = sig(m, "p:-MM1.A1.1") / 1e5;
+					s.pls = sig(m, "p:-QM1.LS") / 1e5;
+					s.pp = sig(m, "p:-GZ1.P2") / 1e5;
+				}
+				if (std::abs(m.time() - 2.9) < 5e-6) {
+					s.pcf = sig(m, "p:-QV1.CF") / 1e5;
+					s.pp2 = sig(m, "p:-GZ2.P2") / 1e5;
+				}
+			});
+			if (!pr.error.isEmpty()) wrong << QStringLiteral("%1: %2").arg(QFileInfo(file).fileName(), pr.error);
+			return s;
+		};
+		auto variant = [&](const QList<QPair<QString, QString>> &subst, const char *name, double t_v) {
+			const QString f = textVariant(path("lsblock.qet"), subst, QString::fromUtf8(name));
+			const Sample s = f.isEmpty() ? Sample{} : run(f, t_v);
+			if (!f.isEmpty()) QFile::remove(f);
+			return s;
+		};
+		const Sample a = run(path("lsblock.qet"), 0.3);
+		const Sample lo = variant({{QStringLiteral("<parameter name=\"p0_prvFixed\" unit=\"MPa\" value=\"5\"/>"),
+									QStringLiteral("<parameter name=\"p0_prvFixed\" unit=\"MPa\" value=\"3\"/>")}}, "qet_sim_r13_ls30.qet", 0.3);
+		const Sample back = variant({{QStringLiteral("<parameter name=\"adjustmentLeft\" unit=\"%\" value=\"30\"/>"),
+									  QStringLiteral("<parameter name=\"adjustmentLeft\" unit=\"%\" value=\"-30\"/>")},
+									 {QStringLiteral("<parameter name=\"xStart\" unit=\"mm\" value=\"0\"/>"),
+									  QStringLiteral("<parameter name=\"xStart\" unit=\"mm\" value=\"1000\"/>")},
+									 {QStringLiteral("<parameter name=\"xMax\" unit=\"mm\" value=\"200\"/>"),
+									  QStringLiteral("<parameter name=\"xMax\" unit=\"mm\" value=\"1000\"/>")},
+									 // the return pressure builds up in the net volumes (V_HYD 0.1 l each): 1 m stroke, sampled at 1.5 s;
+									 // retracting, the piston side returns 1.64 × the flow over rT_TAB/x²: about 100 bar on the rod
+									 // side, so the compensator needs the relief at 200 bar to keep regulating
+									 {QStringLiteral("<parameter name=\"p0_prvFixed\" unit=\"MPa\" value=\"5\"/>"),
+									  QStringLiteral("<parameter name=\"p0_prvFixed\" unit=\"MPa\" value=\"20\"/>")}}, "qet_sim_r13_lsback.qet", 1.5);
+		auto inBand = [&](double q) { return std::isfinite(q) && q >= q_lo * 0.999 && q <= q_hi * 1.001; };
+		const double q1 = a.v * ak * 60000.0, q2 = lo.v * ak * 60000.0, q3 = -back.v * ar * 60000.0;
+		if (!inBand(q1) || !inBand(q2) || !(std::abs(q1 - q2) <= 0.01 * q1) || !(a.pp - lo.pp > 15.0))
+			wrong << QStringLiteral("Druckwaage: %1 l/min bei %2 bar, %3 l/min bei %4 bar, Band %5 … %6").arg(q1).arg(a.pp).arg(q2).arg(lo.pp).arg(q_lo).arg(q_hi);
+		else seen << QStringLiteral("Scheibe 1 bei 30 %: %1 l/min (Pumpe %2 bar) und %3 l/min (Pumpe %4 bar), Band der Druckwaage %5 … %6")
+						 .arg(q1, 0, 'f', 3).arg(a.pp, 0, 'f', 1).arg(q2, 0, 'f', 3).arg(lo.pp, 0, 'f', 1).arg(q_lo, 0, 'f', 3).arg(q_hi, 0, 'f', 3);
+		if (!(std::abs(a.pls - a.pa) <= 0.1)) wrong << QStringLiteral("Lastmeldung: LS %1 bar, A1 %2 bar").arg(a.pls).arg(a.pa);
+		else seen << QStringLiteral("LS %1 bar = Lastdruck A1 %2 bar").arg(a.pls, 0, 'f', 2).arg(a.pa, 0, 'f', 2);
+		if (!inBand(q3)) wrong << QStringLiteral("Rückhub: %1 l/min außerhalb %2 … %3 (Pumpe %4 bar)").arg(q3).arg(q_lo).arg(q_hi).arg(back.pp);
+		else seen << QStringLiteral("−30 %: %1 m/s, %2 l/min in die Stangenseite (Pumpe %3 bar)").arg(back.v, 0, 'f', 4).arg(q3, 0, 'f', 3).arg(back.pp, 0, 'f', 1);
+		// priority valve: CF over rT 1 to the air, EF open; unknowns p_CF and p_P (H03 orifices)
+		double want_p = std::nan("");
+		const double want_cf = bisect([&](double pcf) {
+			const double s = std::clamp(1.0 - (pcf - 8.0) / 2.4, 1e-6, 1.0 - 1e-6);
+			const double q3c = h03(pcf, 1.0);
+			const double pp = bisect([&](double pb) { return h03(pb - pcf, 0.9 / (s * s)) - q3c; }, pcf, pcf + 500.0);
+			want_p = pp;
+			return q3c + h03(pp, 0.9 / ((1 - s) * (1 - s))) - (qf - glf * pp);
+		}, 0.0, 10.4);
+		if (!(std::abs(a.pcf - want_cf) <= 0.05) || !(std::abs(a.pp2 - want_p) <= 0.1))
+			wrong << QStringLiteral("Prioritätsventil: CF %1 bar statt %2, P %3 statt %4").arg(a.pcf).arg(want_cf).arg(a.pp2).arg(want_p);
+		else seen << QStringLiteral("Prioritätsventil: CF %1 bar (soll %2), %3 l/min bevorzugt, P %4 bar (soll %5)")
+						 .arg(a.pcf, 0, 'f', 2).arg(want_cf, 0, 'f', 2).arg(h03(a.pcf, 1.0), 0, 'f', 3).arg(a.pp2, 0, 'f', 2).arg(want_p, 0, 'f', 2);
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
 		out << c;

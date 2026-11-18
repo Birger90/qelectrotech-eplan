@@ -170,6 +170,10 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
   Druckwaagen (`PressureCompensator*`, außer Closer03), der `ShockAndAntiCavitationValve` (A1 = A2, B1 = B2 durchgehend)
   und das pneumatische `PressureSequenceValve` (1, 2, 12); MPYE und LS-Blöcke noch nicht. Der Import nimmt bei diesen
   Ventilen die Bauteil-Anschlussnamen (B, A, XS, X bzw. P, A, X bzw. X, T, P).
+- Zylinder (Fork 1.32.0, R11): FluidSIM-`CYL_CONF` rechnet mit Einbauwinkel `alpha` (Gewicht m·g·sin α), äußerer
+  Masse `m_ext` samt Reibung `mu_B_ext`/`mu_M_ext`, hydraulisch `F_B`/`F_M`/`F_V` als Kolbenreibung (pneumatisch
+  weiter `F_stat`, `F_ref`/`v_ref`), Feder `spring_left`/`spring_right` mit `p_spring_min`/`p_spring_max` (bezogen auf
+  die Kolbenfläche) und Kraftprofil `F_var_ex`/`F_var_re` = {x mm, F N, …} bei `use_F_const` False.
 - Analoge Signale (Fork 1.30.0, R06): der Import gibt den ET-Analogbausteinen `sim_role` = `analog`, `sim_block`
   (Klasse ohne „ET.“), `sim_params` (alle Kennwerte mit Einheit) und `sim_link`; Anschlüsse heißen wie am Bauteil
   (SP, SN, W, X, Y), nicht wie die Symbolbeschriftung („1“, „2“, „3“). Kopplungen aus FluidSIM: Ventil-S ↔

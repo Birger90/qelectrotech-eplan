@@ -39,6 +39,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QDirIterator>
+#include <QDomDocument>
 #include <QFileInfo>
 #include <QFile>
 #include <QHash>
@@ -407,6 +408,49 @@ QString textVariant(const QString &file, const QList<QPair<QString, QString>> &p
 }
 
 	/// every fluid function of the element collection in @a dir: {function: number of symbols}
+	/// R11: path matrix, rest position and actuation of every valve symbol of a collection; @return problems
+QStringList valveAudit(const QString &dir, int *valves, QHash<QString, int> *kinds)
+{
+	QStringList bad;
+	QDirIterator it(dir, {QStringLiteral("*.elmt")}, QDir::Files, QDirIterator::Subdirectories);
+	while (it.hasNext()) {
+		const QString file = it.next();
+		QFile f(file);
+		if (!f.open(QIODevice::ReadOnly)) continue;
+		QDomDocument doc;
+		if (!doc.setContent(&f)) continue;
+		const QDomElement root = doc.documentElement();
+		const FluidData d = FluidData::fromElementDefinition(root);
+		if (d.m_kind != FluidData::Kind::Valve) continue;
+		++*valves;
+		QSet<QString> ports;
+		const QDomNodeList ts = root.elementsByTagName(QStringLiteral("terminal"));
+		for (int i = 0; i < ts.size(); ++i) {
+			const QDomElement te = ts.at(i).toElement();
+			const QString medium = te.attribute(QStringLiteral("medium"));
+			if (medium == QLatin1String("pneumatic") || medium == QLatin1String("hydraulic")) ports << te.attribute(QStringLiteral("name")).trimmed();
+		}
+		const QString who = QFileInfo(file).fileName();
+		const int n = static_cast<int>(d.m_positions.size());
+		if (n < 2) { bad << QStringLiteral("%1: %2 Stellung(en)").arg(who).arg(n); continue; }
+		if (d.m_initial_position < 1 || d.m_initial_position > n) bad << QStringLiteral("%1: Ruhestellung %2 von %3").arg(who).arg(d.m_initial_position).arg(n);
+		for (int k = 0; k < n; ++k)
+			for (const FluidData::Path &pa : d.m_positions.at(k).paths) {
+				if (!ports.contains(pa.from) || (!pa.to.isEmpty() && !ports.contains(pa.to)))
+					bad << QStringLiteral("%1: Stellung %2, Weg %3→%4 ohne Anschluss").arg(who).arg(k + 1).arg(pa.from, pa.to.isEmpty() ? QStringLiteral("zu") : pa.to);
+				else if (pa.from == pa.to) bad << QStringLiteral("%1: Stellung %2, Weg %3 auf sich selbst").arg(who).arg(k + 1).arg(pa.from);
+			}
+		if (d.m_left.isNull() && d.m_right.isNull()) bad << QStringLiteral("%1: keine Betätigung").arg(who);
+		for (const FluidData::Actuation &a : {d.m_left, d.m_right}) {
+			for (const QString &ty : a.types) (*kinds)[ty] += 1;
+			if (a.spring) (*kinds)[QStringLiteral("Feder")] += 1;
+			if (a.pilot) (*kinds)[QStringLiteral("Vorsteuerung")] += 1;
+			if (a.air_spring) (*kinds)[QStringLiteral("Luftfeder")] += 1;
+		}
+	}
+	return bad;
+}
+
 QHash<QString, int> collectionFunctions(const QString &dir)
 {
 	QHash<QString, int> out;
@@ -449,7 +493,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Vakuum und Schwenk-/Greiferantriebe (R10): Saugen, Halten, Leckage, Last, Loslassen, Schwenkwinkel und -moment"),
 		QStringLiteral("Leitungen, Kupplungen, Aufbereitung (R05): Rohr laminar/turbulent, beide Richtungen, Widerstand, Kupplung, Filter verstopft, Drehdurchführung"),
 		QStringLiteral("Stetig-, Senkbrems- und Zuschaltventile (R07/R09): Kennlinie, Richtung, Sättigung, Überdeckung, Kerbe, Leckage, Sprungantwort, Steuerdruck, Druckwaagen, Schockblock, Folgeventil"),
-		QStringLiteral("Analoge Signale und Regler (R06): Kalibrierung, Umkehr, Sättigung, Anti-Windup, Reset, Abtastverfeinerung, Druck- und Lageregelkreis")};
+		QStringLiteral("Analoge Signale und Regler (R06): Kalibrierung, Umkehr, Sättigung, Anti-Windup, Reset, Abtastverfeinerung, Druck- und Lageregelkreis"),
+		QStringLiteral("Standardventile und Zylinderkräfte (R11): Pfadmatrizen der Sammlung, gleichzeitige Betätigung, Vorrang, Gewicht, Kraftprofil, Feder, Reibung")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1311,6 +1356,110 @@ QList<Check> endToEnd(const QString &reference_dir)
 						wrong << QStringLiteral("ohne Versorgung: x %1 mm, Y %2 V").arg(w.value(QStringLiteral("x:-MM1")) * 1000).arg(w.value(QStringLiteral("u:-KF1")));
 					else seen << QStringLiteral("ohne Versorgung (vMin 30 V): Y 0 V, Zylinder steht");
 				}
+			}
+		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 15. standard valves and cylinder forces (R11, FORMELN.md M08–M10, V14): every valve symbol of the
+		//     collection, simultaneous actuation with and without a dominant side, the FluidSIM cylinder forces
+		Check c{names.at(14)};
+		QStringList wrong, seen;
+		{
+			QString where;
+			QStringList bad;
+			int valves = 0;
+			QHash<QString, int> kinds;
+			const QDir app(QCoreApplication::applicationDirPath());
+			for (const QString &d : {app.filePath(QStringLiteral("elements")), app.filePath(QStringLiteral("../share/qelectrotech/elements")),
+									 QETApp::commonElementsDir()}) {
+				if (valves > 0 || !QFileInfo(d).isDir()) continue;
+				bad = valveAudit(d, &valves, &kinds);
+				where = QDir::toNativeSeparators(d);
+			}
+			if (valves == 0) wrong << QStringLiteral("keine Ventilsymbole gefunden");
+			else if (!bad.isEmpty()) wrong << QStringLiteral("%1 von %2 Ventilsymbolen fehlerhaft: %3").arg(bad.size()).arg(valves).arg(bad.mid(0, 8).join(QStringLiteral("; ")));
+			else {
+				QStringList k;
+				for (auto it = kinds.constBegin(); it != kinds.constEnd(); ++it) k << QStringLiteral("%1 %2").arg(it.key()).arg(it.value());
+				k.sort();
+				seen << QStringLiteral("%1 Ventilsymbole: Wege, Ruhestellung, Betätigung stimmig (%2)").arg(valves).arg(k.join(QStringLiteral(", ")));
+			}
+		}
+		{   // simultaneous actuation of -QM1 (2 positions, rest 2): left 0.1 s, right too from 0.2 s, left off at 0.3 s
+			auto positions = [&](const QString &file) {
+				QList<double> at;
+				ProjectRun pr = runProject(file, 6.0, {{0.1, QStringLiteral("-QM1"), 1, true}, {0.2, QStringLiteral("-QM1"), 2, true},
+													   {0.3, QStringLiteral("-QM1"), 1, false}}, 0.4001, [&](SimulationModel &s) {
+					for (const double t : {0.15, 0.25, 0.35})
+						if (std::abs(s.time() - t) < 5e-6) at << s.signalValue(QStringLiteral("pos:-QM1"));
+				});
+				if (!pr.error.isEmpty()) wrong << QStringLiteral("%1: %2").arg(QFileInfo(file).fileName(), pr.error);
+				return at;
+			};
+			auto list = [](const QList<double> &l) {
+				QStringList s;
+				for (double x : l) s << QString::number(x);
+				return s.join(QLatin1Char(' '));
+			};
+			const QList<double> plain = positions(path("stetig.qet"));
+			const QString dom = textVariant(path("stetig.qet"), {{QStringLiteral("<fluid function=\"directional_valve.four_pins\" kind=\"valve\" prefix=\"QM\">"),
+																QStringLiteral("<fluid dominant=\"right\" function=\"directional_valve.four_pins\" kind=\"valve\" prefix=\"QM\">")}},
+										  QStringLiteral("qet_sim_r11_vorrang.qet"));
+			const QList<double> right = dom.isEmpty() ? QList<double>() : positions(dom);
+			if (!dom.isEmpty()) QFile::remove(dom);
+			if (plain != QList<double>{1, 1, 2} || right != QList<double>{1, 2, 2})
+				wrong << QStringLiteral("gleichzeitige Betätigung: ohne Vorrang %1, Vorrang rechts %2 (soll 1 1 2 / 1 2 2)").arg(list(plain), list(right));
+			else seen << QStringLiteral("gleichzeitig links + rechts: Stellung bleibt (1 1 2), mit Vorrang rechts 1 2 2");
+		}
+		{   // cylinder forces in hydraulik.qet: extending at the constant pump flow, the piston force difference
+			// ΔpA·A_K - ΔpB·A_R at x = 100 mm to the plain plan is the added force (FORMELN.md M08–M10)
+			struct Sample { double pa = std::nan(""), pb = std::nan(""), v = std::nan(""); };
+			auto sample = [&](const QString &file) {
+				Sample s0;
+				bool done = false;
+				ProjectRun pr = runProject(file, 6.0, {{0.1, QStringLiteral("-SF1"), 0, true}}, 2.0, [&](SimulationModel &s) {
+					if (!done && s.signalValue(QStringLiteral("x:-MM1")) >= 0.1) {
+						done = true;
+						s0 = Sample{s.signalValue(QStringLiteral("p:-MM1.A")), s.signalValue(QStringLiteral("p:-MM1.B")), s.signalValue(QStringLiteral("v:-MM1"))};
+					}
+				});
+				if (!pr.error.isEmpty()) wrong << QStringLiteral("%1: %2").arg(QFileInfo(file).fileName(), pr.error);
+				return s0;
+			};
+			const double ak = M_PI * 0.04 * 0.04 / 4, ar = ak - M_PI * 0.02 * 0.02 / 4;
+			const Sample base = sample(path("hydraulik.qet"));
+			const QString cyl = QStringLiteral("<fluid function=\"actuator.cyl_conf\" kind=\"cylinder\" prefix=\"MM\">");
+			const QString mext = QStringLiteral("<parameter name=\"m_ext\" unit=\"kg\" value=\"0\"/>");
+			auto par = [](const char *n, const char *v, const char *u = "") {
+				return QStringLiteral("<parameter name=\"%1\" unit=\"%2\" value=\"%3\"/>").arg(QLatin1String(n), QLatin1String(u), QLatin1String(v));
+			};
+			struct Case { const char *what; QList<QPair<QString, QString>> edit; std::function<double(const Sample &)> force; };
+			const double g = 9.81, m_cyl = 2.0;   // the symbol gives no m_cyl: hydraulic default 2 kg (FORMELN.md Vorgaben)
+			const double slide0 = 0.7 * 0.05 * ak * 6e5;   // default sliding friction, viscous default 20 N.s/m
+			const QList<Case> cases{
+				{"Gewicht 100 kg senkrecht (alpha 90°)", {{mext, par("m_ext", "100", "kg")}, {cyl, cyl + par("alpha", "90", "deg")}},
+				 [&](const Sample &) { return (m_cyl + 100) * g; }},
+				{"Kraftprofil 500 → 2500 N über den Hub (bei 100 mm 1500 N)", {{cyl, cyl + par("use_F_const", "False") + par("F_var_ex", "{0,500,200,2500}")}},
+				 [](const Sample &) { return 1500.0; }},
+				{"Feder rechts 4 … 10 bar (bei 100 mm 7 bar · A_K)", {{cyl, cyl + par("spring_right", "True") + par("p_spring_min", "4", "bar") + par("p_spring_max", "10", "bar")}},
+				 [&](const Sample &) { return 7e5 * ak; }},
+				{"Kolbenreibung F_B 300, F_M 200 N, F_V 1000 N·s/m", {{cyl, cyl + par("F_B", "300", "N") + par("F_M", "200", "N") + par("F_V", "1000", "N.s/m")}},
+				 [&](const Sample &s) { return (200 - slide0) + (1000 - 20) * s.v; }},
+				{"Gleitreibung der Last µ 0,2 bei 100 kg waagerecht", {{mext, par("m_ext", "100", "kg")}, {cyl, cyl + par("mu_M_ext", "0.2") + par("mu_B_ext", "0.25")}},
+				 [&](const Sample &) { return 0.2 * 100 * g; }},
+			};
+			int i = 0;
+			for (const Case &k : cases) {
+				const QString file = textVariant(path("hydraulik.qet"), k.edit, QStringLiteral("qet_sim_r11_%1.qet").arg(i++));
+				if (file.isEmpty()) { wrong << QStringLiteral("%1: Variante nicht erzeugt").arg(QString::fromUtf8(k.what)); continue; }
+				const Sample s = sample(file);
+				QFile::remove(file);
+				const double got = (s.pa - base.pa) * ak - (s.pb - base.pb) * ar, want = k.force(s);
+				if (!(std::isfinite(got) && std::abs(got - want) <= 0.02 * std::abs(want) + 2.0 && std::abs(s.v - base.v) < 0.02 * base.v))
+					wrong << QStringLiteral("%1: %2 N statt %3 N (v %4 / %5 m/s)").arg(QString::fromUtf8(k.what)).arg(got).arg(want).arg(s.v).arg(base.v);
+				else seen << QStringLiteral("%1: %2 N (soll %3)").arg(QString::fromUtf8(k.what)).arg(got, 0, 'f', 1).arg(want, 0, 'f', 1);
 			}
 		}
 		c.passed = wrong.isEmpty();

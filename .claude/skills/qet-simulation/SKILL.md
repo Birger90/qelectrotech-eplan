@@ -57,6 +57,10 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
   jeder Fehler landet in `modelErrors()`, der Lauf startet nicht. `runUntil` hört bei `failed()` auf.
 - Pumpe: volle Förderung bis 1 bar unter `pMax`, bei `pMax` null. Rückschlagventil öffnet stetig ab `p0`.
 - Zylinder: Kraftbilanz, Haft-/Gleitreibung, harte Endanschläge; Unterdruck im Öl wird gemeldet, nicht gerechnet.
+  R11: alles, was dem Ausfahren entgegenwirkt (Last/Kraftprofil, Feder, Gewicht), liefert `Cylinder::opposing()`;
+  FluidSIM-Kennwerte alpha, m_ext, mu_B_ext/mu_M_ext, F_B/F_M/F_V, spring_left/right, p_spring_min/max, F_var_ex/re.
+  Prüfung per Kraftdifferenz ΔpA·A_K − ΔpB·A_R bei x = 100 mm gegen den Grundfall (`hydraulik.qet`, textVariant).
+  `valveAudit` prüft Wege/Ruhestellung/Betätigung aller Ventilsymbole; Vorrang `dominant` in `Valve::wanted`.
 - Hydromotor (R08) über `SimPhysics::Shaft`; Schwenkantrieb (R10) ist ein `Cylinder` mit `rotary` (Winkel in rad,
   Flächen = M_6bar/6 bar, Masse = Trägheit, Wegmarken in Grad über `markPos()`).
 - Leitungen (R05): `lineMode` wählt ideal / Widerstand / Rohr nach den Kennwerten; ideale Leitungen werden in

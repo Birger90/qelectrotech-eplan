@@ -264,6 +264,7 @@ struct SimulationModel::Valve {
 	// Each press switches between the rest position and the actuated one and the valve stays there.
 	int toggle_side = -1;
 	bool latched = false;
+	int dominant = -1;          // R11: side that wins when both are actuated (FluidSIM/QET "dominant"), -1: none, the valve stays
 	// roller lever / plunger: actuated by a cylinder inside a stroke range (FluidSIM distance rule)
 	QString trigger_cylinder;
 	double trigger_lo = 0, trigger_hi = -1;
@@ -279,7 +280,7 @@ struct SimulationModel::Valve {
 		const bool l = actuated[0] || forced[0], r = actuated[1] || forced[1];
 		if (l && !r) return 0;
 		if (r && !l) return static_cast<int>(positions.size()) - 1;
-		if (l && r) return position;
+		if (l && r) return dominant == 0 ? 0 : dominant == 1 ? last() : position;
 		const bool spring = side[0].spring || side[1].spring || side[0].air_spring || side[1].air_spring;
 		return spring ? rest : position;
 	}
@@ -291,6 +292,29 @@ struct SimulationModel::Cylinder {
 	double a_k = 0, a_r = 0, stroke = 0.1, m = 0.1, f_static = 0, f_slide = 0, damping = 20;
 	double stop_k = 0, stop_c = 0;   // elastic end stop (R02); 0: hard stop
 	double f_spring = 0, f_load = 0, x = 0, v = 0;
+	// R11 (FORMELN.md M08–M10): weight m·g·sin(alpha) against extending, spring characteristic, force profile
+	double weight = 0;                          // N, against extending
+	int spring_dir = 0;                         // characteristic: +1 pushes out (left), -1 pushes back (right), 0 constant f_spring
+	double spring_f0 = 0, spring_f1 = 0;        // spring force at x = 0 and at the stroke [N]
+	QVector<QPair<double, double>> load_ex, load_re;   // force profile (x [m], F [N]) extending / retracting, against extending
+	static double profileAt(const QVector<QPair<double, double>> &pts, double x) {
+		if (pts.isEmpty()) return 0.0;
+		if (x <= pts.first().first) return pts.first().second;
+		for (int i = 1; i < pts.size(); ++i)
+			if (x <= pts.at(i).first) {
+				const auto &a = pts.at(i - 1), &b = pts.at(i);
+				return b.first > a.first ? a.second + (b.second - a.second) * (x - a.first) / (b.first - a.first) : b.second;
+			}
+		return pts.last().second;
+	}
+		/// all forces in the direction against extending except friction: load (constant or profile), spring, weight
+	double opposing() const {
+		const auto &pts = v >= 0 ? load_ex : load_re;
+		const double load = pts.isEmpty() ? f_load : profileAt(pts, x);
+		double spring = f_spring;
+		if (spring_dir != 0) spring = -spring_dir * (spring_f0 + (spring_f1 - spring_f0) * std::clamp(x / stroke, 0.0, 1.0));
+		return load + spring + weight;
+	}
 	// R10 semi-rotary drive: x, stroke in rad, v in rad/s, a_k = a_r displacement per radian [m³/rad]
 	// (= torque per pascal), m the moment of inertia [kg·m²], forces are torques [N·m]
 	bool rotary = false;
@@ -865,6 +889,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						= qBound(0, f.m_initial_position - 1, static_cast<int>(f.m_positions.size()) - 1);
 					v->side[0] = f.m_left;
 					v->side[1] = f.m_right;
+					v->dominant = f.m_dominant == QLatin1String("left") ? 0 : f.m_dominant == QLatin1String("right") ? 1 : -1;
 					{
 						const auto handOnly = [](const FluidData::Actuation &a) {
 							return a.types == QStringList{QStringLiteral("manual")} && !a.spring && !a.air_spring && !a.pilot;
@@ -992,6 +1017,53 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						const double fr = paramIn(f, QStringLiteral("F_ref"), 0.0, newton, &m_model_errors, who, Range::NonNegative);
 						const double vr = paramIn(f, QStringLiteral("v_ref"), 1.0, QStringLiteral("m/s"), &m_model_errors, who, Range::Positive);
 						if (fr > 0 && vr > 0) c->damping = fr / vr;
+					}
+					// R11 (FORMELN.md M08–M10): the FluidSIM cylinder model. Weight m·g·sin(alpha) against extending; friction
+					// of the external mass mu·m_ext·g·|cos(alpha)|; hydraulic piston friction F_B (breakaway), F_M (Coulomb),
+					// F_V (viscous); spring pressure p_spring_min at x = 0 … p_spring_max at the stroke on the piston area;
+					// force profile F_var_ex/F_var_re {x [mm], F [N], …} instead of the constant force (use_F_const False)
+					{
+						const auto yes = [&](const char *n) { return f.parameter(QLatin1String(n)).trimmed().compare(QLatin1String("true"), Qt::CaseInsensitive) == 0; };
+						const double alpha = paramIn(f, QStringLiteral("alpha"), 0.0, QStringLiteral("rad"), &m_model_errors, who);
+						const double g = 9.81;
+						const double m_ext = paramIn(f, QStringLiteral("m_ext"), 0.0, kg, &m_model_errors, who, Range::NonNegative);
+						c->weight = c->m * g * std::sin(alpha);
+						if (!f.parameter(QStringLiteral("F_B")).isEmpty()) {
+							c->f_static = paramIn(f, QStringLiteral("F_B"), c->f_static, newton, &m_model_errors, who, Range::NonNegative);
+							c->f_slide = paramIn(f, QStringLiteral("F_M"), 0.7 * c->f_static, newton, &m_model_errors, who, Range::NonNegative);
+							c->damping = paramIn(f, QStringLiteral("F_V"), c->damping, QStringLiteral("N.s/m"), &m_model_errors, who, Range::NonNegative);
+						}
+						const double normal = m_ext * g * std::abs(std::cos(alpha));
+						c->f_static += paramNative(f, QStringLiteral("mu_B_ext"), 0.0, QString(), &m_model_errors, who, Range::NonNegative) * normal;
+						c->f_slide += paramNative(f, QStringLiteral("mu_M_ext"), 0.0, QString(), &m_model_errors, who, Range::NonNegative) * normal;
+						c->f_static = std::max(c->f_static, c->f_slide);
+						if (!f.parameter(QStringLiteral("spring_left")).isEmpty() || !f.parameter(QStringLiteral("spring_right")).isEmpty()) {
+							c->f_spring = 0.0;
+							c->spring_dir = yes("spring_left") ? 1 : yes("spring_right") ? -1 : 0;
+							c->spring_f0 = c->a_k * paramIn(f, QStringLiteral("p_spring_min"), 0.4e5, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+							c->spring_f1 = c->a_k * paramIn(f, QStringLiteral("p_spring_max"), 1e5, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+						}
+						if (f.parameter(QStringLiteral("use_F_const")).trimmed().compare(QLatin1String("false"), Qt::CaseInsensitive) == 0) {
+							auto profile = [&](const char *n, QVector<QPair<double, double>> *out) {
+								QString s = f.parameter(QLatin1String(n));
+								s.remove(QLatin1Char('{')).remove(QLatin1Char('}'));
+								const QStringList v = s.split(QLatin1Char(','), Qt::SkipEmptyParts);
+								for (int i = 0; i + 1 < v.size(); i += 2) {
+									bool ok1 = false, ok2 = false;
+									const double x = v.at(i).trimmed().toDouble(&ok1) / 1000.0, F = v.at(i + 1).trimmed().toDouble(&ok2);
+									if (!ok1 || !ok2) {
+										m_model_errors << QStringLiteral("%1: Kraftprofil %2 „%3“ ist keine Zahlenliste").arg(who, QLatin1String(n), f.parameter(QLatin1String(n)));
+										out->clear();
+										return;
+									}
+									*out << qMakePair(x, F);
+								}
+								std::sort(out->begin(), out->end(), [](const QPair<double, double> &a, const QPair<double, double> &b) { return a.first < b.first; });
+							};
+							profile("F_var_ex", &c->load_ex);
+							profile("F_var_re", &c->load_re);
+							if (c->load_re.isEmpty()) c->load_re = c->load_ex;
+						}
 					}
 					// R10 gripper: substitute model, a single-acting cylinder with return spring; the jaw
 					// force is the piston force (signal F:)
@@ -2219,7 +2291,7 @@ void SimulationModel::step(double dt)
 
 	for (Cylinder *z : m_cylinders) {
 		const int ka = node(z->e, QStringLiteral("A")), kb = node(z->e, QStringLiteral("B"));
-		const double f = (p(ka) - P_ATM) * z->a_k - (p(kb) - P_ATM) * z->a_r - z->f_load - z->f_spring;
+		const double f = (p(ka) - P_ATM) * z->a_k - (p(kb) - P_ATM) * z->a_r - z->opposing();
 		if (m_record_flows) m_cylinder_force.insert(z->e, (p(ka) - P_ATM) * z->a_k - (p(kb) - P_ATM) * z->a_r);
 		SimPhysics::pistonStep(*z, f, dt);
 		if (ka >= 0) { vol[ka] += V_DEAD + z->a_k * z->x; dvdt[ka] += z->a_k * z->v; }

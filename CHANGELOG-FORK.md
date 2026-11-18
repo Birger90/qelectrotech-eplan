@@ -3,6 +3,26 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.32.0 – 18.11.2026
+
+Simulations-Roadmap R11 (Standardventile und Zylinderkräfte):
+
+- Zylinder nach dem FluidSIM-Kräftegleichgewicht: Einbauwinkel (Gewicht m·g·sin α gegen das Ausfahren), äußere Masse
+  mit Haft- und Gleitreibung (µ·m·g·|cos α|), hydraulische Kolbenreibung aus Losbrechkraft, Coulomb'scher und viskoser
+  Reibung, Federkennlinie aus dem Federdruck bei x = 0 und x_max, Kraftprofil über den Kolbenweg getrennt für Aus- und
+  Einfahren. Zylinder ohne diese Kennwerte rechnen wie bisher.
+- Gleichzeitige Betätigung beider Ventilseiten: der im Symbol festgelegte Vorrang (`dominant`) gewinnt, ohne Vorrang
+  bleibt der Schieber stehen (vorher wurde der Vorrang nicht ausgewertet).
+- Neue Prüfung „Standardventile und Zylinderkräfte (R11)“: alle 172 Ventilsymbole der Sammlung (Wege nur zwischen
+  vorhandenen Anschlüssen, gültige Ruhestellung, Betätigung vorhanden), Stellungsfolge bei gleichzeitiger Betätigung
+  mit und ohne Vorrang, und als Kraftdifferenz beim Ausfahren gegen die Handrechnung: Gewicht 1000,6 N, Kraftprofil
+  1500,0 N, Feder 879,6 N, Kolbenreibung 324,4 N, Gleitreibung der Last 196,2 N. 32 Prüfungen, alle bestanden.
+  Formelregister M08–M10, V14.
+- FluidSIM-Batch: 1064 von 1136 Beispielen starten (wie 1.31.0), in 291 bewegen sich Zylinder (vorher 298). Die
+  Verschiebung kommt von der FluidSIM-Kolbenreibung: In 16 Übungen (z. B. TP501_07 mit offenem Umgehungs-Absperrventil,
+  0,47 bar am Kolben) reicht die Kraft nicht mehr für die Losbrechkraft von 21 N, wie in FluidSIM; vorher genügten die
+  zu kleinen Vorgabewerte (6 N). Neu bewegen sich 9 Übungen mit hängender Last oder Gewicht (z. B. TP501_16, α = 270°).
+
 ## 1.31.0 – 18.11.2026
 
 Simulations-Roadmap R09 vervollständigt (Regel- und Lastventile):

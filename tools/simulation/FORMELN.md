@@ -1,6 +1,6 @@
 # Formelregister des Rechenkerns
 
-Stand Fork 1.30.0 (17.11.2026). Hier steht jede Beziehung, die `sources/simulation/` rechnet, mit Codestelle,
+Stand Fork 1.31.0 (18.11.2026). Hier steht jede Beziehung, die `sources/simulation/` rechnet, mit Codestelle,
 Herkunft, Beleg, Gültigkeitsgrenze und der Prüfung, die sie abdeckt. Jede Zeile hat mindestens einen Beleg; alle
 Belege stehen mit Fundstelle am Ende. F-Nummern verweisen auf das Quellenregister des externen Pakets
 „Claude_Simulation_Roadmap“ (`FORMELQUELLEN.md`, Stand 15.11.2026), S-Nummern auf dessen Primärquellen (hier mit
@@ -98,6 +98,10 @@ Codestellen: `phys` = `simulationphysics.h`, `model` = `simulationmodel.cpp`, `u
 | V07 | Senkbremsventil: öffnet P→T mit Anteil clamp(((p_P − p_T) + ratio·(p_X − p_T) − p₀)/Δp_end, 0, 1); Rückschlag T→P frei (rT_cv); Leckage G·(p_P − p_T) | `model` FlowValve (counterbalance) | F16 | eigenes Referenzmodell (F16) mit Steuerflächenverhältnis; Kennwerte nach QS05 („Senkbremsventil“: Öffnungsdruck, Druckregelbereich, Flächenverhältnis, Rückschlagventil) | keine Kolbenmasse, keine Dämpfung (Schwingneigung realer Senkbremsventile fehlt) | R07/R09 |
 | V08 | Druckzuschaltventil: öffnet P→A mit Anteil clamp((p_X,gauge − p₀)/Δp_end, 0, 1); ohne X steuert P | `model` FlowValve (sequence 01/02) | F16 | eigenes Referenzmodell; Funktion nach QS05 („Druckzuschaltventil“: öffnet bei Solldruck an X) | kein Leckölanschluss, keine Dynamik | R07/R09 |
 | V09 | Proportional-Druckbegrenzungsventil: Öffnungsdruck p₀ = p_start + (p_end − p_start)·clamp(u/10 V, 0, 1); öffnet A→B mit Anteil clamp((p_A − p_B − p₀)/Δp_end, 0, 1), Blende rT/Anteil² (H03) | `model` FlowValve (prop. relief) | F16, F17 | eigenes Referenzmodell; Kennwerte nach QS05 („Proportional-Druckbegrenzungsventil“: Ansteuerung 0 … 10 V, min./max. Öffnungsdruck bei 0/10 V, Druckregelbereich, Widerstand der voll offenen Kante) | direktgesteuert, ohne Magnet- und Kolbendynamik; Vorsteuerung fehlt | Analoge Signale und Regler (R06) |
+| V10 | Druckwaage Schließer/Öffner (zwei Anschlüsse im Hauptstrom, Steuerdifferenz d): Schließer Anteil clamp(1 − (d − p₀)/Δp_end, 0, 1), Öffner clamp((d − p₀)/Δp_end, 0, 1); Hauptstrom als Blende rT/Anteil² (Öl, H03) bzw. ISO-6358-Leitwert·Anteil (Luft, P02). d: Schließer/Öffner 01/02 p_X − p_XS (Strom B ↔ A), vorgeschaltet p_A − p_X (Schließer, P → A), nachgeschaltet p_P − p_X (Öffner, P → A), Open Center LS p_P − p_X (Öffner, P → T) | `model` FlowValve (pressure compensator) | F16 | eigenes Referenzmodell nach QS05 („Druckwaage (Schließer)/(Öffner)“: schließt bzw. öffnet, wenn die Druckdifferenz den Solldruck überschreitet; „vorgeschaltet“: hält p_A − p_X konstant; „Open Center Load Sensing“: öffnet P → T ab p₀ über p_X); Lage des Regelbereichs (Schließer erst ab p₀ schließend) Projektdefinition | keine Kolbenmasse und Dämpfung, keine Strömungskraft; nachgeschaltete Druckwaage: Wirkrichtung aus der LS-Funktion abgeleitet (Hilfe nennt nur die Verwendung) | Stetig-, Senkbrems- und Zuschaltventile (R07/R09) |
+| V11 | Druckwaage als Regler (Prüffälle): mit einer Drossel zwischen A und X bzw. mit X an A stellt sich d im Band [p₀, p₀ + Δp_end] ein, solange die Pumpe mehr fördert, als die Drossel bei p₀ abführt | `ref` | F16, F50 | eigene Ableitung aus V10 (Herleitung unten) | Lage im Band hängt vom Pumpendruck ab | R07/R09 |
+| V12 | Schock- und Nachsaugblock: A1 = A2 und B1 = B2 je ein Netz; A und B öffnen nach T mit Anteil clamp((p − p_T − p₀)/Δp_end, 0, 1), Blende rT_prv/Anteil²; fällt p unter p_T, speist das Rückschlagventil T → A bzw. B (rT_cv) | `model` FlowValve (shock), `buildNets` | F16, F11 | eigenes Referenzmodell nach QS05 („Schock- und Nachsaugblock“: begrenzt den Druck von A oder B gegenüber T; Öffnungsdruck, Druckregelbereich und Widerstand je Gruppe); Nachsaugfunktion aus dem Namen und den Rückschlagwiderständen der Bibliothek (rT_cv) | keine Dynamik der Druckbegrenzer (Schockspitzen nur über die Netzsteifigkeit) | R07/R09 |
+| V13 | Pneumatisches Folgeventil: 1 → 2 mit Anteil clamp((p₁₂,gauge − p₀)/0,1 bar, 0, 1), ISO-6358-Leitwert aus qNN (P02/P03); geschlossen ist 2 abgesperrt | `model` FlowValve (pneumatic sequence) | F16 | nach QS05 („Druckschaltventil (Folgeventil)“: übersteigt der Druck an 12 den Einstellwert, öffnet der Durchfluss von 1 nach 2); Übergangsbreite 0,1 bar Projektdefinition | keine Rückstellhysterese, keine Entlüftung von 2 | R07/R09 |
 
 ## Analoge Signale und Regler (R06)
 
@@ -181,6 +185,12 @@ in `sim_link`; der FluidSIM-Import schreibt sie). Codestellen: `sig` = `simulati
   die Hilfe („Regelung in der Hydraulik“) fährt den Zylinder mit dem Wegmesssystem direkt am Magneten ein, weil dort
   Aggregat und Tank vertauscht sind. Gerechnet wird mit den Anschlussnamen des FluidSIM-Bauteils: gespiegelt beschriftet
   FluidSIM die Anschlüsse um (der Anschluss A trägt dann den Text „B“, P den Text „T“), die Simulation nutzt die Namen.
+- **V11 (Druckwaage als Regler):** Schließer mit X an A: solange d = p_A − p_XS < p₀, ist das Ventil voll offen und die
+  Pumpe (11,6 l/min) drückt mehr durch, als die Drossel rT = 1 bei p₀ abführt (√(10 bar/1) = 3,2 l/min); p_A steigt
+  also über p₀. Ab p₀ + Δp_end ist es zu und p_A fällt über die Drossel. Dazwischen liegt das einzige Gleichgewicht,
+  also p_A ∈ [p₀, p₀ + Δp_end]. Für die vorgeschaltete Druckwaage gilt dasselbe mit d = p_A − p_X über der Drossel.
+- **V12 (Prüffall Nachsaugen):** Die Pumpe -GP5 saugt q aus dem Netz B, nachfließen kann nur T → B über rT_cv; im
+  Gleichgewicht ist q = orificeFlow(p_T − p_B) (H03 mit p_s = 0,3 bar), nach p_B per Bisektion gelöst.
 - **R06 (Druckregelkreis):** Mit PI-Anteil verschwindet die bleibende Regelabweichung: der Sensor (0 … 10 MPa →
   0 … 10 V) meldet beim Sollwert 4 V genau 40 bar. Die Stellgröße stellt sich auf den Öffnungsdruck ein, bei dem
   V09 die Pumpenförderung abführt (rund 2,8 V).
@@ -229,6 +239,8 @@ T_d/10 (ohne D-Anteil 1 ms), Nachführzeit 0,9·T_i (ohne I-Anteil 0,1 s), Ablei
 Profil des Funktionsgenerators ohne Amplitude/Versatz. Die übrigen Schwellen (15 V Sollwertkarte, 13 V Komparator und
 Wegmesssystem, 20 V Verstärker und Ventilmagnet, 21,6 V Regler, 1,5 V und η = 0,9 der TP-1013-Glieder) sind
 FluidSIM-Vorgaben (QS05), nicht von uns gemessen.
+R09: Druckwaagen-Schließer schließt erst ab p₀ (Band darüber), Übergangsbreite des pneumatischen Folgeventils
+0,1 bar, Normal-Nenndurchfluss pneumatischer Druckwaagen ohne Angabe 300 l/min (FluidSIM-Vorgabe der Bibliothek).
 
 ## Primärquellen des Pakets (hier verwendet)
 

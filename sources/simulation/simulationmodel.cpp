@@ -366,6 +366,7 @@ struct SimulationModel::FlowValve {
 	double ratio = 3.0, gleak = 0.0;            // counterbalance valve: pilot area ratio, leakage P -> T (R09)
 	double u = 0.0, p_lo = 0.0, p_hi = 0.0;     // proportional relief valve: setpoint [V], opening at 0 and 10 V (R06)
 	double last_q = 0.0;                        // flow sensor: flow A -> B of the last step [m3/s] (R06)
+	double p0_b = 0.0, dp_end_b = 0.5e5, rt_b = 0.1;   // shock valve: relief of side B (R09)
 
 	double flow(double pa, double pb, double share = 1.0, bool free = false) const {
 		if (share <= 0) return 0.0;
@@ -577,6 +578,21 @@ void SimulationModel::buildNets(const QList<Diagram *> &diagrams)
 				for (Terminal *t : e->terminals())
 					if (t->medium() == Fluid::Medium::Pneumatic || t->medium() == Fluid::Medium::Hydraulic) connected << t;
 		}
+	// R09: the shock and anti-cavitation block sits in the work lines: A1 = A2 and B1 = B2 are one net each
+	for (Diagram *d : diagrams)
+		for (Element *e : sortedElements(d)) {
+			if (e->elementData().m_fluid.m_function != QLatin1String("pressure_valve.shock_and_anti_cavitation_valve")) continue;
+			for (const auto &pr : {qMakePair(QStringLiteral("A1"), QStringLiteral("A2")), qMakePair(QStringLiteral("B1"), QStringLiteral("B2"))}) {
+				Terminal *a = nullptr, *b = nullptr;
+				for (Terminal *t : e->terminals()) {
+					if (t->name().trimmed() == pr.first) a = t;
+					if (t->name().trimmed() == pr.second) b = t;
+				}
+				if (!a || !b) continue;
+				join(a, b);
+				if (connected.contains(a) || connected.contains(b)) connected << a << b;
+			}
+		}
 	QHash<Terminal *, int> index;
 	for (auto it = parent.constBegin(); it != parent.constEnd(); ++it) {
 		Terminal *t = it.key();
@@ -656,7 +672,13 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 		{QStringLiteral("pressure_valve.pressure_sequence_valve01"), 200},
 		{QStringLiteral("pressure_valve.pressure_sequence_valve02"), 200},
 		{QStringLiteral("proportional.pressure_relief_valve"), 200}, {QStringLiteral("proportional.flow_sensor"), 1000},
-		{QStringLiteral("sensor.flowmeter_2"), 1000}};
+		{QStringLiteral("sensor.flowmeter_2"), 1000},
+		{QStringLiteral("pressure_valve.pressure_compensator_closer01"), 300}, {QStringLiteral("pressure_valve.pressure_compensator_closer02"), 300},
+		{QStringLiteral("pressure_valve.pressure_compensator_opener01"), 300}, {QStringLiteral("pressure_valve.pressure_compensator_opener02"), 300},
+		{QStringLiteral("pressure_valve.pressure_compensator_upstream_1"), 300}, {QStringLiteral("pressure_valve.pressure_compensator_upstream_2"), 300},
+		{QStringLiteral("pressure_valve.pressure_compensator_downstream_1"), 300}, {QStringLiteral("pressure_valve.pressure_compensator_downstream_2"), 300},
+		{QStringLiteral("pressure_valve.pressure_compensator_opener_ls_1"), 300}, {QStringLiteral("pressure_valve.pressure_compensator_opener_ls_2"), 300},
+		{QStringLiteral("pressure_valve.shock_and_anti_cavitation_valve"), 300}, {QStringLiteral("pressure_valve.pressure_sequence_valve"), 100}};
 
 	for (Diagram *d : diagrams) {
 		for (Element *e : sortedElements(d)) {
@@ -1013,6 +1035,21 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					fv->p0 = paramIn(f, QStringLiteral("p0"), 0.0, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
 					fv->dp_end = std::max(paramIn(f, QStringLiteral("dpEnd"), 0.05e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
 					fv->t_delay = paramIn(f, QStringLiteral("t_delay"), 1.0, QStringLiteral("s"), &m_model_errors, who, Range::NonNegative);
+					if (fn == QLatin1String("pressure_valve.pressure_sequence_valve")) {
+						// R09 (FORMELN.md V13): FluidSIM pneumatic sequence valve, switching pressure p0 at 12 (default 3 bar)
+						fv->p0 = paramIn(f, QStringLiteral("p0"), 3e5, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+						fv->dp_end = std::max(paramIn(f, QStringLiteral("dpEnd"), 0.1e5, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
+					}
+					if (fn == QLatin1String("pressure_valve.shock_and_anti_cavitation_valve")) {
+						// R09 (FORMELN.md V12): two reliefs A → T and B → T, check valves T → A and T → B (FluidSIM defaults)
+						fv->p0 = paramIn(f, QStringLiteral("p0_prvA"), 3e6, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+						fv->dp_end = std::max(paramIn(f, QStringLiteral("dpEndA"), 3.8e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
+						fv->rt = paramNative(f, QStringLiteral("rT_prvA"), 0.08, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+						fv->p0_b = paramIn(f, QStringLiteral("p0_prvB"), 3e6, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+						fv->dp_end_b = std::max(paramIn(f, QStringLiteral("dpEndB"), 3.8e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
+						fv->rt_b = paramNative(f, QStringLiteral("rT_prvB"), 0.08, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+						fv->rt_free = paramNative(f, QStringLiteral("rT_cv"), 0.06, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+					}
 					if (fn == QLatin1String("proportional.pressure_relief_valve")) {
 						// R06 (FORMELN.md V09): opening pressure p_start at 0 V … p_end at 10 V, FluidSIM default 0 … 10 MPa
 						fv->p_lo = paramIn(f, QStringLiteral("p_start"), 0.0, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
@@ -2078,6 +2115,55 @@ void SimulationModel::step(double dt)
 			const int kx = kn.value(QStringLiteral("X"), -1);
 			const double pilot = (kx >= 0 ? p(kx) : p(kp)) - P_ATM;
 			if (kp >= 0 || ka >= 0) book(kp, ka, s->flow(p(kp), p(ka), qBound(0.0, (pilot - s->p0) / s->dp_end, 1.0)), s->e);
+		} else if (fn.startsWith(QLatin1String("pressure_valve.pressure_compensator_"))) {
+			// R09 (FORMELN.md V10, V11): pressure compensator = resistance whose share follows a pressure difference d;
+			// a closer is fully open up to d = p0 and closed at p0 + dpEnd, an opener closed up to p0, open at p0 + dpEnd
+			auto port = [&](const char *a, const char *b = nullptr) {
+				const int k = kn.value(QLatin1String(a), -1);
+				return k >= 0 || !b ? k : kn.value(QLatin1String(b), -1);
+			};
+			const QString kind = fn.mid(static_cast<int>(qstrlen("pressure_valve.pressure_compensator_")));
+			int in = -1, out = -1;
+			double d = 0;
+			bool closer = false;
+			if (kind.startsWith(QLatin1String("closer")) || kind.startsWith(QLatin1String("opener0"))) {
+				in = port("B", "1"); out = port("A", "2");
+				d = p(port("X", "3")) - p(port("XS", "4"));
+				closer = kind.startsWith(QLatin1String("closer"));
+			} else if (kind.startsWith(QLatin1String("upstream"))) {
+				in = port("P"); out = port("A");
+				d = p(out) - p(port("X"));
+				closer = true;
+			} else if (kind.startsWith(QLatin1String("downstream"))) {
+				in = port("P"); out = port("A");
+				d = p(in) - p(port("X"));
+			} else {   // opener_ls: P -> T
+				in = port("P"); out = port("T");
+				d = p(in) - p(port("X"));
+			}
+			const double share = closer ? qBound(0.0, 1.0 - (d - s->p0) / s->dp_end, 1.0) : qBound(0.0, (d - s->p0) / s->dp_end, 1.0);
+			if (in >= 0 || out >= 0) book(in, out, s->flow(p(in), p(out), share), s->e);
+		} else if (fn == QLatin1String("pressure_valve.shock_and_anti_cavitation_valve")) {
+			// R09 (FORMELN.md V12): A (= A1 = A2) and B relieve to T above their opening pressure, T feeds A or B
+			// through a check valve when the work line falls below the tank pressure (anti-cavitation)
+			const int ka = kn.value(QStringLiteral("A1"), kn.value(QStringLiteral("A2"), -1));
+			const int kb = kn.value(QStringLiteral("B1"), kn.value(QStringLiteral("B2"), -1));
+			const int kt = kn.value(QStringLiteral("T"), -1);
+			auto relief = [&](int k, double p0, double band, double rt) {
+				if (k < 0) return;
+				const double share = qBound(0.0, (p(k) - p(kt) - p0) / band, 1.0);
+				if (share > 0) book(k, kt, volumeFlow(p(k), p(kt), rt / std::pow(std::max(share, 1e-3), 2)), s->e);
+				if (p(kt) > p(k)) book(kt, k, volumeFlow(p(kt), p(k), s->rt_free), s->e);
+			};
+			relief(ka, s->p0, s->dp_end, s->rt);
+			relief(kb, s->p0_b, s->dp_end_b, s->rt_b);
+		} else if (fn == QLatin1String("pressure_valve.pressure_sequence_valve")) {
+			// R09 (FORMELN.md V13): pneumatic sequence valve opens 1 -> 2 when the pilot 12 (gauge) reaches p0
+			const int k1 = kn.value(QStringLiteral("1"), kn.value(QStringLiteral("C1"), -1));
+			const int k2 = kn.value(QStringLiteral("2"), kn.value(QStringLiteral("C2"), -1));
+			const int k12 = kn.value(QStringLiteral("12"), kn.value(QStringLiteral("C12"), -1));
+			const double share = k12 >= 0 ? qBound(0.0, (p(k12) - P_ATM - s->p0) / s->dp_end, 1.0) : 0.0;
+			if (k1 >= 0 || k2 >= 0) book(k1, k2, s->flow(p(k1), p(k2), share), s->e);
 		} else if (fn == QLatin1String("pressure_valve.pressure_regulator")) {
 			const int in = kn.value(QStringLiteral("1"), kn.value(QStringLiteral("P"), -1));
 			const int out = kn.value(QStringLiteral("2"), kn.value(QStringLiteral("A"), -1));

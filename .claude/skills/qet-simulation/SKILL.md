@@ -64,8 +64,9 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
   nicht `t->pos()`, das ist immer 0). Prüfpläne `rohr.qet` (Bauteil -HQ1 per `textVariant` austauschbar) und
   `kupplung_drehdurchfuehrung.qet`.
 - Stetigventile (R07): `PropValve`, Schieber per `SimPhysics::pt1`, Kanten per `edgeOpening`; Sollwert über
-  `setSetpoint` (CLI `sollwert`, Prüfstand `Input` kind 3 mit value). Senkbrems-/Zuschaltventil laufen als
-  `FlowValve`-Zweige. Prüfpläne `stetig.qet` (Ventil per `textVariant` zum Stetigventil) und `lastventil.qet`
+  `setSetpoint` (CLI `sollwert`, Prüfstand `Input` kind 3 mit value). Senkbrems-/Zuschaltventil, Druckwaagen (gemeinsamer Zweig
+  `pressure_compensator_*`, Schließer/Öffner über die Steuerdifferenz), Schockblock (A1 = A2 in `buildNets`) und
+  pneumatisches Folgeventil laufen als `FlowValve`-Zweige; Prüfpläne `druckwaagen.qet`, `folgeventil.qet`. Prüfpläne `stetig.qet` (Ventil per `textVariant` zum Stetigventil) und `lastventil.qet`
   (Anschlüsse per eindeutigem Terminal-Tag mit UUID umbenannt, nicht per erstem Treffer).
 - Analoge Signale (R06): Bausteine in `simulationsignals.h` (reine Funktionen, testbar ohne Plan), im Modell
   `Analog` mit `linkAnalog` (Kennwerte, Kopplung, Auswertereihenfolge) und `analog(dt)` direkt nach `electrics()`;

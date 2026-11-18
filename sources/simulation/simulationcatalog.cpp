@@ -107,12 +107,36 @@ QList<Entry> build()
 		e << physical(f, "sequence_valve", "hydraulic", "P, A, X (ohne X: Vorsteuerung aus P)",
 			      "p0 [Pa] Öffnungsdruck, dpEnd [Pa], rT", "öffnet P→A ab Steuerdruck p0, ohne Leckölanschluss und Dynamik",
 			      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
-	for (const char *f : {"pressure_valve.pilot_valves_joystick",
-			       "pressure_valve.pressure_compensator_closer01", "pressure_valve.pressure_compensator_closer02",
-			       "pressure_valve.pressure_compensator_downstream_1", "pressure_valve.pressure_compensator_opener_ls_1",
-			       "pressure_valve.pressure_compensator_upstream_1", "pressure_valve.pressure_compensator_upstream_2",
-			       "pressure_valve.pressure_sequence_valve", "pressure_valve.shock_and_anti_cavitation_valve"})
-		e << other(f, Role::Unsupported, "", "Druckwaagen, Schock-/Nachsaugblock, pneumatisches Folgeventil (Roadmap R09, R13)");
+	// R09 (FORMELN.md V10–V13): Druckwaagen als druckabhängige Widerstände, Schock-/Nachsaugblock, pneumatisches Folgeventil
+	for (const char *f : {"pressure_valve.pressure_compensator_closer01", "pressure_valve.pressure_compensator_closer02"})
+		e << physical(f, "pressure_compensator", "both", "A ↔ B, Steuerung X − XS",
+			      "p0 [Pa] Solldruck, dpEnd [Pa] Druckregelbereich, rT (Öl) bzw. qNN (Luft)",
+			      "Schließer: voll offen bis p_X − p_XS = p0, zu bei p0 + dpEnd; ohne Kolbendynamik", "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	for (const char *f : {"pressure_valve.pressure_compensator_opener01", "pressure_valve.pressure_compensator_opener02"})
+		e << physical(f, "pressure_compensator", "both", "A ↔ B, Steuerung X − XS",
+			      "p0 [Pa] Solldruck, dpEnd [Pa] Druckregelbereich, rT (Öl) bzw. qNN (Luft)",
+			      "Öffner: zu bis p_X − p_XS = p0, voll offen bei p0 + dpEnd; ohne Kolbendynamik", "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	for (const char *f : {"pressure_valve.pressure_compensator_upstream_1", "pressure_valve.pressure_compensator_upstream_2"})
+		e << physical(f, "pressure_compensator", "hydraulic", "P → A, Steuerung A − X",
+			      "p0 [Pa] Regeldifferenz, dpEnd [Pa], rT", "vorgeschaltete Druckwaage (Schließer): hält p_A − p_X bei p0; ohne Dynamik",
+			      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	for (const char *f : {"pressure_valve.pressure_compensator_downstream_1", "pressure_valve.pressure_compensator_downstream_2"})
+		e << physical(f, "pressure_compensator", "hydraulic", "P → A, Steuerung P − X",
+			      "p0 [Pa], dpEnd [Pa], rT", "nachgeschaltete Druckwaage (Öffner): öffnet, wenn p_P den Lastmeldedruck X um p0 übersteigt; ohne Dynamik",
+			      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	for (const char *f : {"pressure_valve.pressure_compensator_opener_ls_1", "pressure_valve.pressure_compensator_opener_ls_2"})
+		e << physical(f, "pressure_compensator", "hydraulic", "P → T, Steuerung P − X",
+			      "p0 [Pa] Öffnungsdruck, dpEnd [Pa], rT", "Open-Center-LS-Druckwaage: öffnet P→T bei p_P ≥ p_X + p0; ohne Dynamik",
+			      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	e << physical("pressure_valve.shock_and_anti_cavitation_valve", "shock_valve", "hydraulic", "A1 = A2, B1 = B2 (durchgehend), T",
+		      "p0_prvA/p0_prvB [Pa], dpEndA/dpEndB [Pa], rT_prvA/rT_prvB, rT_cv [bar.min2/l2]",
+		      "begrenzt A und B gegen T wie ein Druckbegrenzungsventil, saugt über Rückschlagventile von T nach; ohne Dynamik",
+		      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	e << physical("pressure_valve.pressure_sequence_valve", "sequence_valve", "pneumatic", "1 → 2, Steuerung 12",
+		      "p0 [Pa] Schaltdruck an 12, qNN [l/min]", "öffnet 1→2 ab p12 ≥ p0 (Übergang 0,1 bar), sonst 2 abgesperrt; ohne Rückstellhysterese",
+		      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	for (const char *f : {"pressure_valve.pilot_valves_joystick", "pressure_valve.pressure_compensator_closer03"})
+		e << other(f, Role::Unsupported, "", "Vorsteuergeber Joystick, Druckwaage ohne Kennwerte (closer03) (Roadmap R13)");
 	// ---------------------------------------------------------- Versorgung
 	e << physical("supply.air_supply", "pressure_source", "pneumatic", "alle", "pNom [Pa] (sonst Versorgungsdruck des Laufs)", "ideale Quelle ohne Liefergrenze", "CylinderCycle");
 	e << physical("supply.tank", "tank", "hydraulic", "alle", "", "drucklos", "Hydraulik-CylinderCycle");

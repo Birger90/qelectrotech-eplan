@@ -448,7 +448,7 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Hydromotor (R08): Drehzahl, Moment, Lastsprung, Umkehr, Leistungsbilanz, Projekt"),
 		QStringLiteral("Vakuum und Schwenk-/Greiferantriebe (R10): Saugen, Halten, Leckage, Last, Loslassen, Schwenkwinkel und -moment"),
 		QStringLiteral("Leitungen, Kupplungen, Aufbereitung (R05): Rohr laminar/turbulent, beide Richtungen, Widerstand, Kupplung, Filter verstopft, Drehdurchführung"),
-		QStringLiteral("Stetig-, Senkbrems- und Zuschaltventile (R07/R09): Kennlinie, Richtung, Sättigung, Überdeckung, Kerbe, Leckage, Sprungantwort, Steuerdruck"),
+		QStringLiteral("Stetig-, Senkbrems- und Zuschaltventile (R07/R09): Kennlinie, Richtung, Sättigung, Überdeckung, Kerbe, Leckage, Sprungantwort, Steuerdruck, Druckwaagen, Schockblock, Folgeventil"),
 		QStringLiteral("Analoge Signale und Regler (R06): Kalibrierung, Umkehr, Sättigung, Anti-Windup, Reset, Abtastverfeinerung, Druck- und Lageregelkreis")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
@@ -1113,6 +1113,69 @@ QList<Check> endToEnd(const QString &reference_dir)
 			const double pp = v.value(QStringLiteral("p:-GP1.P"), std::nan("")), want = solve(q * 60000, k.rt, k.share);
 			if (!near(pp, want, 0.005)) wrong << QStringLiteral("%1: %2 bar statt %3").arg(QString::fromUtf8(k.what)).arg(pp / 1e5).arg(want / 1e5);
 			else seen << QStringLiteral("%1: %2 bar (soll %3)").arg(QString::fromUtf8(k.what)).arg(pp / 1e5, 0, 'f', 2).arg(want / 1e5, 0, 'f', 2);
+		}
+		{   // c) R09 rest (FORMELN.md V10–V13), plan druckwaagen.qet: four oil circuits, each with its own pump 11.6 l/min
+			QHash<QString, double> v;
+			const QStringList ids{QStringLiteral("p:-GP1.P"), QStringLiteral("p:-QN2.A"), QStringLiteral("p:-QN2.X"), QStringLiteral("p:-GP2.P"),
+								  QStringLiteral("p:-QN3.A"), QStringLiteral("p:-GP3.P"), QStringLiteral("p:-GP4.P"), QStringLiteral("p:-QN4.B1")};
+			ProjectRun pr = runProject(path("druckwaagen.qet"), 6.0, {}, 1.5001, [&](SimulationModel &s) {
+				if (std::abs(s.time() - 1.5) < 5e-6) for (const QString &id : ids) v.insert(id, s.signalValue(id));
+			});
+			double q = 0;
+			if (pr.error.isEmpty())
+				for (Diagram *d : pr.project->diagrams())
+					for (Element *e : d->elements())
+						if (e->elementData().m_fluid.m_function == QLatin1String("supply.pump"))
+							q = symbolValue(e, QStringLiteral("displacement"), QStringLiteral("m3")) * symbolValue(e, QStringLiteral("rpm"), QStringLiteral("1/s"));
+			if (!pr.error.isEmpty()) wrong << QStringLiteral("druckwaagen.qet: %1").arg(pr.error);
+			else {
+				const double ql = q * 60000;
+				auto bar = [&](const char *id) { return v.value(QLatin1String(id), std::nan("")) / 1e5; };
+				// opener LS (p0 20 bar, dpEnd 5 bar, rT 0.05): relief P -> T with X at the tank
+				const double ls = solve(ql, 0.05, [](double pb) { return std::clamp((pb - 20) / 5, 0.0, 1.0); }) / 1e5;
+				if (!near(bar("p:-GP1.P"), ls, 0.005)) wrong << QStringLiteral("LS-Druckwaage: %1 bar statt %2").arg(bar("p:-GP1.P")).arg(ls);
+				else seen << QStringLiteral("LS-Druckwaage: %1 bar (soll %2)").arg(bar("p:-GP1.P"), 0, 'f', 2).arg(ls, 0, 'f', 2);
+				// upstream compensator (p0 4 bar, band 1.5 bar) before a throttle rT 1: holds pA - pX in its band
+				const double dA = bar("p:-QN2.A") - bar("p:-QN2.X");
+				if (!(dA >= 4.0 - 1e-6 && dA <= 5.5 && bar("p:-GP2.P") > bar("p:-QN2.A") + 10))
+					wrong << QStringLiteral("vorgeschaltete Druckwaage: pA − pX %1 bar, Pumpe %2 bar").arg(dA).arg(bar("p:-GP2.P"));
+				else seen << QStringLiteral("vorgeschaltete Druckwaage: pA − pX %1 bar (Band 4 … 5,5), Drossel %2 l/min").arg(dA, 0, 'f', 2).arg(std::sqrt(dA), 0, 'f', 2);
+				// closer as pressure regulator (p0 10 bar, band 2 bar, X at A): pA in its band
+				const double pa = bar("p:-QN3.A");
+				if (!(pa >= 10.0 - 1e-6 && pa <= 12.0 && bar("p:-GP3.P") > pa + 10))
+					wrong << QStringLiteral("Schließer als Druckregler: pA %1 bar, Pumpe %2 bar").arg(pa).arg(bar("p:-GP3.P"));
+				else seen << QStringLiteral("Schließer als Druckregler: pA %1 bar (Band 10 … 12)").arg(pa, 0, 'f', 2);
+				// shock block: relief A -> T (30 bar, band 38 bar, rT 0.08) and anti-cavitation T -> B (rT_cv 0.005)
+				const double sh = solve(ql, 0.08, [](double pb) { return std::clamp((pb - 30) / 38, 0.0, 1.0); }) / 1e5;
+				if (!near(bar("p:-GP4.P"), sh, 0.005)) wrong << QStringLiteral("Schockventil A: %1 bar statt %2").arg(bar("p:-GP4.P")).arg(sh);
+				else seen << QStringLiteral("Schockventil A: %1 bar (soll %2)").arg(bar("p:-GP4.P"), 0, 'f', 2).arg(sh, 0, 'f', 2);
+				// the check valve passes the suction flow q of -GP5: dp with orificeFlow(dp) = q (H03 incl. smoothing)
+				const double k = 1.0 / (60000.0 * std::sqrt(1e5 * 0.005));
+				double lo = 0, hi = 5e5;
+				for (int n = 0; n < 200; ++n) { const double m = 0.5 * (lo + hi); (SimPhysics::orificeFlow(m, k, 0.3e5) > q ? hi : lo) = m; }
+				const double cav = -0.5 * (lo + hi) / 1e5;
+				if (!(std::abs(bar("p:-QN4.B1") - cav) < 0.01)) wrong << QStringLiteral("Nachsaugen B: %1 bar statt %2").arg(bar("p:-QN4.B1")).arg(cav);
+				else seen << QStringLiteral("Nachsaugen B: %1 bar (soll %2)").arg(bar("p:-QN4.B1"), 0, 'f', 3).arg(cav, 0, 'f', 3);
+			}
+			// pneumatic sequence valve: 12 at the supply (6 bar) opens 1 -> 2, the receiver (1 l, precharge 4 bar) fills within 3 s;
+			// with a switching pressure of 7 bar it stays closed
+			auto receiver = [&](const QString &file) {
+				double x = std::nan("");
+				ProjectRun pf = runProject(file, 6.0, {}, 3.0001, [&](SimulationModel &s) {
+					if (std::abs(s.time() - 3.0) < 5e-6) x = s.signalValue(QStringLiteral("p:-CM1.1")) / 1e5;
+				});
+				if (!pf.error.isEmpty()) wrong << QStringLiteral("%1: %2").arg(QFileInfo(file).fileName(), pf.error);
+				return x;
+			};
+			const double open = receiver(path("folgeventil.qet"));
+			const QString hold = textVariant(path("folgeventil.qet"), {{QStringLiteral("<parameter name=\"p0\" unit=\"bar\" value=\"3\"/>"),
+																	   QStringLiteral("<parameter name=\"p0\" unit=\"bar\" value=\"7\"/>")}},
+											 QStringLiteral("qet_sim_r09_folge.qet"));
+			const double closed = hold.isEmpty() ? std::nan("") : receiver(hold);
+			if (!hold.isEmpty()) QFile::remove(hold);
+			if (!(std::abs(open - 6.0) < 0.05 && std::abs(closed - 4.0) < 0.01))
+				wrong << QStringLiteral("Folgeventil: Behälter %1 bar (soll 6), mit 7 bar Schaltdruck %2 bar (soll 4)").arg(open).arg(closed);
+			else seen << QStringLiteral("Folgeventil 3 bar: Behälter %1 bar, Schaltdruck 7 bar: %2 bar (bleibt zu)").arg(open, 0, 'f', 2).arg(closed, 0, 'f', 2);
 		}
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));

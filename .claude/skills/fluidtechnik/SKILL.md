@@ -166,8 +166,10 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
   `clogged`.
 - Stetig- und Lastventile (Fork 1.29.0, R07/R09): FluidSIM `DirectionalValve43_01/_02` rechnen mit `rT`, `lap`,
   `notchType`, `GLeak`; der Sollwert kommt aus dem gekoppelten Magneten/Verstärker (R06), sonst aus `u` oder einem
-  Ereignis. `CounterbalanceValve` und `PressureSequenceValve01/02` rechnen; Druckwaagen, Schock-/Nachsaugblock, MPYE
-  und LS-Blöcke noch nicht.
+  Ereignis. `CounterbalanceValve` und `PressureSequenceValve01/02` rechnen, seit 1.31.0 auch alle
+  Druckwaagen (`PressureCompensator*`, außer Closer03), der `ShockAndAntiCavitationValve` (A1 = A2, B1 = B2 durchgehend)
+  und das pneumatische `PressureSequenceValve` (1, 2, 12); MPYE und LS-Blöcke noch nicht. Der Import nimmt bei diesen
+  Ventilen die Bauteil-Anschlussnamen (B, A, XS, X bzw. P, A, X bzw. X, T, P).
 - Analoge Signale (Fork 1.30.0, R06): der Import gibt den ET-Analogbausteinen `sim_role` = `analog`, `sim_block`
   (Klasse ohne „ET.“), `sim_params` (alle Kennwerte mit Einheit) und `sim_link`; Anschlüsse heißen wie am Bauteil
   (SP, SN, W, X, Y), nicht wie die Symbolbeschriftung („1“, „2“, „3“). Kopplungen aus FluidSIM: Ventil-S ↔

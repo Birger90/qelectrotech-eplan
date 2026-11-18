@@ -170,7 +170,20 @@ Herkunft, Beleg und Grenze jeder Formel stehen im [Formelregister](FORMELN.md).
   (`rT_cv`), Leckage `GLeak`.
 - **Druckzuschaltventil** (`pressure_valve.pressure_sequence_valve01/02`, P, A, X): öffnet P→A ab Steuerdruck `p0`
   an X (ohne X an P).
-- Weiter nicht gerechnet (Start abgewiesen): Druckwaagen, Schock-/Nachsaugblock, LS-/Mobilventilblöcke, MPYE.
+- **Druckwaagen** (R09, `pressure_valve.pressure_compensator_*`): druckabhängiger Widerstand im Hauptstrom (`rT` Öl,
+  `qNN` Luft), Solldruck `p0`, Regelbereich `dpEnd`. Schließer 01/02 (Strom B ↔ A, Steuerung X − XS; mit X an A ein
+  Druckregler) schließen ab p0 und sind bei p0 + dpEnd zu, Öffner 01/02 öffnen ab p0. Vorgeschaltet (P → A) hält
+  p_A − p_X, nachgeschaltet (P → A) öffnet, wenn p_P den Lastmeldedruck X um p0 übersteigt, Open Center LS öffnet
+  P → T ab p_X + p0.
+- **Schock- und Nachsaugblock** (`pressure_valve.shock_and_anti_cavitation_valve`): A1 = A2 und B1 = B2 sind
+  durchgehend; A und B werden gegen T begrenzt (`p0_prvA/B`, `dpEndA/B`, `rT_prvA/B`), fällt A oder B unter den
+  Tankdruck, saugt das Rückschlagventil (`rT_cv`) nach.
+- **Pneumatisches Folgeventil** (`pressure_valve.pressure_sequence_valve`, 1, 2, 12): öffnet 1 → 2, sobald der Druck an
+  12 den Schaltdruck `p0` erreicht (Übergang 0,1 bar); geschlossen ist 2 abgesperrt.
+- Prüfpläne `druckwaagen.qet` (LS-Druckwaage, vorgeschaltete Druckwaage vor einer Drossel, Schließer als Druckregler,
+  Schockblock mit Begrenzung und Nachsaugen) und `folgeventil.qet`.
+- Weiter nicht gerechnet (Start abgewiesen): LS-/Mobilventilblöcke, MPYE, Druckwaage `closer03` (ohne Kennwerte),
+  Vorsteuergeber Joystick.
 
 ## Analoge Signale und Regler (R06)
 

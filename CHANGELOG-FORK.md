@@ -3,6 +3,26 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.31.0 – 18.11.2026
+
+Simulations-Roadmap R09 vervollständigt (Regel- und Lastventile):
+
+- Druckwaagen (FluidSIM `PressureCompensator*`, Öl und Luft): Schließer und Öffner 01/02 (Hauptstrom B ↔ A, Steuerung
+  X − XS; mit X an A ein Druckregler), vorgeschaltete Druckwaage (hält p_A − p_X), nachgeschaltete Druckwaage (öffnet
+  ab p_X + p0) und Open-Center-LS-Druckwaage (P → T ab p_X + p0); Solldruck, Regelbereich, Widerstand aus FluidSIM.
+- Schock- und Nachsaugblock: A1/A2 und B1/B2 durchgehend, Druckbegrenzung von A und B gegen T, Nachsaugen über die
+  Rückschlagventile.
+- Pneumatisches Folgeventil (1 → 2 ab Schaltdruck an 12).
+- FluidSIM-Import: diese Ventile übernehmen die Anschlussnamen des Bauteils (gespiegelte Symbole sind umbeschriftet).
+- Prüfung „Stetig-, Senkbrems- und Zuschaltventile (R07/R09)“ erweitert um die Pläne `druckwaagen.qet` und
+  `folgeventil.qet`: LS-Druckwaage 22,72 bar und Schockventil 48,00 bar wie das Gleichgewicht der
+  Handrechnung, vorgeschaltete Druckwaage hält 5,38 bar über der Drossel (Band 4 … 5,5), Schließer als Druckregler
+  11,69 bar (Band 10 … 12), Nachsaugen −0,728 bar wie der Druckabfall des Rückschlagventils, Folgeventil schaltet bei
+  3 bar durch und bleibt bei 7 bar zu. 31 Prüfungen, alle bestanden. Formelregister V10–V13.
+- FluidSIM-Batch: 1064 von 1136 Beispielen starten (vorher 1051), in 298 bewegen sich Zylinder (vorher 286): alle
+  Folgeventil-Übungen aus TP101, TP701_10 mit Druckwaage, die Druckwaagen-Shows; in TP800 bleiben nur LS-Pumpe,
+  Lenkung und 6/3-Handhebelventil ohne Modell (Roadmap R13).
+
 ## 1.30.0 – 17.11.2026
 
 Simulations-Roadmap R06 (analoge Signale und Regler):

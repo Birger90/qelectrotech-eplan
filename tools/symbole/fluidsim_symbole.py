@@ -664,7 +664,9 @@ def bauteil_umwandeln(symbole, haupt, umgebung, verbindungen, namen, quelle_name
     # das Symbol beschriftet sie teils anders („1“, „2“, „3“)
     # ebenso Stetigventile und Analogsensoren: gespiegelt beschriftet FluidSIM sie um (A heißt dort „B“, P „T“)
     analog = ((haupt.get("object-ref") or "") in ANALOG
-              or (haupt.get("object-ref") or "").startswith(("Hyd.Proportional.", "Pneu.Proportional.", "Hyd.Sensor.Flowmeter_2")))
+              or (haupt.get("object-ref") or "").startswith(("Hyd.Proportional.", "Pneu.Proportional.", "Hyd.Sensor.Flowmeter_2",
+                                                         "Hyd.PressureValve.PressureCompensator", "Pneu.PressureValve.PressureCompensator",
+                                                         "Hyd.PressureValve.ShockAndAntiCavitation")))
     for a in z.anschluesse:
         a["anzeige"] = a["name"]
         if analog and eigene.get(a["schluessel"]):

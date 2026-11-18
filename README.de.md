@@ -138,7 +138,8 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
   Modell verhindern den Start. `--signals/--measure` liefern Drücke, gerichtete Durchflüsse, Zylinderweg,
   -geschwindigkeit und -kraft, Motor- und Schwenkwinkel, Haltekraft von Saugern in SI-Einheiten. Gerechnet werden auch
   Hydromotoren, Vakuumerzeuger, Sauger, Vakuumschalter, Schwenkantriebe, Rohrleitungen mit Länge und Durchmesser,
-  Schnellkupplungen (gekuppelt/getrennt), verstopfte Filter, 4/3-Stetigventile, Senkbrems- und Druckzuschaltventile,
+  Schnellkupplungen (gekuppelt/getrennt), verstopfte Filter, 4/3-Stetigventile, Senkbrems- und Druckzuschaltventile, Druckwaagen, Schock-/Nachsaugblock,
+  pneumatisches Folgeventil,
   analoge Signale und Regler (Funktionsgenerator, Sollwertkarte, PID- und Zustandsregler, PT2, I-Glied, Komparator,
   Proportional-Verstärker, lagegeregelte Proportionalmagnete, Druck-, Durchfluss- und Wegsensoren,
   Proportional-Druckbegrenzungsventil) – geschlossene Druck- und Lageregelkreise. Stand der Roadmap: [tools/simulation/ROADMAP_STAND.md](tools/simulation/ROADMAP_STAND.md).

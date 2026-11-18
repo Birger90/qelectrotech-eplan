@@ -81,6 +81,10 @@ QList<Entry> build()
 		      "d_piston, d_rod, xMax, xStart [m]; m [kg]; alpha; F_B, F_M [N], F_V [N.s/m] wie Zylinder (R11)",
 		      "zwei gegenüberliegende Zylinder auf einer Stange und einer Masse; Reibung nach R11, keine Endlagendämpfung; v_M (Stribeck) nicht gerechnet",
 		      "Mobilhydraulik (R13)");
+	e << physical("actuator.loading_unit_1", "linear_cylinder", "hydraulic", "A1.1, A1.2 (Zylinder 1 Kolben-/Stangenseite), A2.1, A2.2 (Zylinder 2 Stangen-/Kolbenseite)",
+		      "wie Belastungseinheit 2; Druckbegrenzung zwischen den Stangenseiten p0_prv, dpEnd_prv [Pa], rT_prv, Rückschlagventil rT_cv [bar.min2/l2]",
+		      "wie Belastungseinheit 2; Stangenräume A1.2 und A2.1 entlasten sich über Druckbegrenzungs- und Rückschlagventil in Reihe ineinander (Zwischenknoten nicht eigens gerechnet)",
+		      "Mobilhydraulik (R13)");
 	for (const char *f : {"actuator.fluidic_muscle1", "actuator.fluidic_muscle3"})
 		e << other(f, Role::Unsupported, "", "Muskel (Kraftkennlinie aus dem Herstellerdatenblatt nötig)");
 	// ---------------------------------------------------------- Wegeventile
@@ -111,7 +115,12 @@ QList<Entry> build()
 	e << physical("logic.dual_pressure_valve", "dual_pressure_valve", "pneumatic", "Eingänge, Ausgang 2", "qNN", "", "Projekt Speicher");
 	e << physical("logic.time_delay_valve", "time_delay_valve", "pneumatic", "1, 2, Steuerung 3", "t_delay [s], qNN", "Verzögerung als feste Zeit, kein Speichervolumen", "");
 	e << physical("shutoff_valve.quick_exhaust_valve", "quick_exhaust_valve", "pneumatic", "1, 2", "qNN", "", "");
-	for (const char *f : {"shutoff_valve.double_non_return_valve02", "shutoff_valve.pneumatic_counter",
+	for (const char *f : {"shutoff_valve.double_non_return_valve01", "shutoff_valve.double_non_return_valve02"})
+		e << physical(f, "double_check_valve", "hydraulic", "A1 → A2, B1 → B2 (frei), A2 → A1 entsperrt über B1, B2 → B1 über A1",
+			      "rT [bar.min2/l2], ratio Flächenverhältnis des Entsperrkolbens, p0 [Pa] Federvorspannung (02), dpEnd [Pa] Öffnungsbereich (Vorgabe 0,5 bar)",
+			      "entsperrt bei ratio·(p_Steuer − p_ein) ≥ (p_aus − p_ein) + p0, voll offen über dpEnd; ohne Kolbendynamik und Leckage",
+			      "Mobilhydraulik (R13)");
+	for (const char *f : {"shutoff_valve.pneumatic_counter",
 			       "shutoff_valve.timer1", "shutoff_valve.timer2", "shutoff_valve.three_way_valve"})
 		e << other(f, Role::Unsupported, "", "kein eigenes Modell");
 	// ---------------------------------------------------------- Druckventile
@@ -152,8 +161,11 @@ QList<Entry> build()
 	e << physical("pressure_valve.pressure_sequence_valve", "sequence_valve", "pneumatic", "1 → 2, Steuerung 12",
 		      "p0 [Pa] Schaltdruck an 12, qNN [l/min]", "öffnet 1→2 ab p12 ≥ p0 (Übergang 0,1 bar), sonst 2 abgesperrt; ohne Rückstellhysterese",
 		      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
-	for (const char *f : {"pressure_valve.pilot_valves_joystick", "pressure_valve.pressure_compensator_closer03"})
-		e << other(f, Role::Unsupported, "", "Vorsteuergeber Joystick, Druckwaage ohne Kennwerte (closer03) (Roadmap R13)");
+	e << physical("pressure_valve.pilot_valves_joystick", "pilot_joystick", "hydraulic", "P, T, X1.1, X1.2 (linke Gruppe), X2.1, X2.2 (rechte Gruppe)",
+		      "adjustmentLeft/adjustmentRight [%] (−100 … 100), pMax [Pa]; Projektwerte rT 0,1 bar.min2/l2, dpEnd 0,5 bar",
+		      "je Gruppe ein Druckminderventil P → X mit |Auslenkung|·pMax (+: X g.1, −: X g.2), Rest zu T; Auslenkung fest für den Lauf, ohne Dynamik",
+		      "Mobilhydraulik (R13)");
+	e << other("pressure_valve.pressure_compensator_closer03", Role::Unsupported, "", "Druckwaage ohne Kennwerte (closer03) (Roadmap R13)");
 	// ---------------------------------------------------------- Versorgung
 	e << physical("supply.air_supply", "pressure_source", "pneumatic", "alle", "pNom [Pa] (sonst Versorgungsdruck des Laufs)", "ideale Quelle ohne Liefergrenze", "CylinderCycle");
 	e << physical("supply.tank", "tank", "hydraulic", "alle", "", "drucklos", "Hydraulik-CylinderCycle");
@@ -161,11 +173,14 @@ QList<Entry> build()
 		e << physical(f, "fixed_displacement_pump", "hydraulic", "P, T",
 			      "displacement [m3], rpm [1/s], alpha (0 … 1), GL [m3/(s.Pa)], pMax [Pa]",
 			      "Verstellgrad als fester Kennwert (kein Stellregler), eingebaute Begrenzung, Leckage P→T", "Hydromotor (R08)");
-	e << physical("supply.pump", "fixed_displacement_pump", "both", "P, T (Hydraulik); alle (Pneumatik)",
+	e << physical("supply.pump", "fixed_displacement_pump", "both", "P, T (Hydraulik; vereinfachtes FluidSIM-Aggregat nur P2, FluidSIM Pump01 A Druck, B Saugen); alle (Pneumatik)",
 		      "Hydraulik: displacement [m3], rpm [1/s], alpha, GL [m3/(s.Pa)], pMax [Pa]; Pneumatik (Verdichter): pNom [Pa]",
 		      "Hydraulik: eingebaute Begrenzung (1 bar Band), keine Leckage, kein Antriebsmoment; Pneumatik: Verdichter als ideale Druckquelle",
 		      "PumpFill, Hydraulik-CylinderCycle, CylinderCycle");
-	e << physical("supply.accumulator", "accumulator", "both", "erster Anschluss", "V0 [m3], p0 [Pa], k", "Gasgesetz polytrop; Luft: Behälter", "AccumulatorCharge, Projekt Speicher");
+	e << physical("supply.accumulator", "accumulator", "both", "erster Anschluss; Speicher mit Sicherheitsblock: P, T",
+		      "V0 [m3], p0 [Pa], k; mit Sicherheitsblock p0_accu [Pa] Vorfülldruck, p0_prv [Pa] Druckbegrenzung, x (2 offen, 1 abgesperrt, 0 entleert)",
+		      "Gasgesetz polytrop; Luft: Behälter; Sicherheitsblock: Druckbegrenzung zum Tank mit Band und Widerstand des FluidSIM-Druckbegrenzungsventils (3,8 MPa, 0,17), Kugelhahn fest für den Lauf",
+		      "AccumulatorCharge, Projekt Speicher, Lenkung und Sperrventile (R13)");
 	for (const char *f : {"supply.filter", "supply.dryer", "supply.lubricator", "supply.water_separator", "supply.service_unit",
 			       "supply.cooler", "supply.heater", "supply.temperature_control", "supply.startup_valve"})
 		e << physical(f, "passthrough", "both", "erste zwei Anschlüsse",
@@ -185,11 +200,15 @@ QList<Entry> build()
 		      "rpm, displacementVP/FP [cm3], p0 [MPa] Federvorspannung (Regeldruckdifferenz), dpEnd [bar] Regelbereich, T_PT1 [s], p0_prvLS/p0_prvFixed, dpEnd_prv* [bar], rT_prv*, rT_LS, GL_VP/GL_FP [l/(min.bar)]",
 		      "LS-Regler proportional mit PT1 (kein Schwenkwinkelmodell), je Pumpe Druckbegrenzung als stetige Blende und Leckage zum Tank, LS-Leitung über rT_LS entlastet; Drehzahl fest",
 		      "Mobilhydraulik (R13)");
-	for (const char *f : {"supply.steering_unit_1",
-			       "vacuum.vacuum_efficiency_valve",
+	for (const char *f : {"supply.steering_unit_1", "supply.steering_unit_2"})
+		e << physical(f, "steering_unit", "hydraulic", "P, T, L, R, E (Neutralumlauf)",
+			      "M_user [N.m] Handmoment (+: links), M_userMax [N.m], rT [bar.min2/l2], displacement [m3] Dosierpumpe",
+			      "Drehventil öffnet mit M_user/M_userMax (Kanten rT/Anteil²), Neutral P → E; Lenkradwinkel aus dem Dosierstrom; Moment fest für den Lauf, revolutionMax und xStep nicht ausgewertet",
+			      "Mobilhydraulik (R13)");
+	for (const char *f : {"vacuum.vacuum_efficiency_valve",
 			       "valve_group.control_block_for_two_hand_start", "valve_group.taa_01", "valve_group.tab_01",
 			       "valve_group.timer3", "valve_group.timer4", "other.misc"})
-		e << other(f, Role::Unsupported, "", "kein Modell (Load-Sensing, Lenkung, Vakuum-Sparventil, Ventilgruppen); keine Überdruckquelle als Ersatz");
+		e << other(f, Role::Unsupported, "", "kein Modell (Vakuum-Sparventil, Ventilgruppen); keine Überdruckquelle als Ersatz");
 	// ---------------------------------------------------------- Vakuum (R10)
 	for (const char *f : {"vacuum.vacuum_generator", "vacuum.vacuum_generator_05_h", "vacuum.vacuum_generator_05_l"})
 		e << physical(f, "vacuum_generator", "pneumatic", "1 (Versorgung), 2 (Vakuum)",

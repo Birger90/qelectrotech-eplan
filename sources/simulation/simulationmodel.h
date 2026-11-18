@@ -148,6 +148,8 @@ class SimulationModel
 		struct Analog;
 		struct LsUnit;
 		struct Valve63;
+		struct Steering;
+		struct Joystick;
 
 		int node(Terminal *t) const;
 		int node(Element *e, const QString &port) const;
@@ -177,6 +179,8 @@ class SimulationModel
 		QList<PropValve *> m_prop_valves;          // proportional valves (R07)
 		QList<LsUnit *> m_ls_units;                // R13 load sensing power units
 		QList<Valve63 *> m_valves63;               // R13 6/3 hand lever valves
+		QList<Steering *> m_steerings;             // R13 steering units (Orbitrol)
+		QList<Joystick *> m_joysticks;             // R13 pilot valve joysticks
 		QList<SuctionCup *> m_cups;                // suction cups (R10)
 		QList<Analog *> m_analog;                  // analog signal blocks in their order of evaluation (R06)
 		QHash<int, double> m_volt;                 // nets driven by an analog output [V]

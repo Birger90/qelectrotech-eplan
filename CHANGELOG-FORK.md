@@ -3,6 +3,26 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.36.0 – 18.11.2026
+
+Simulations-Roadmap R13 (mobile Hydraulik), zweiter Teil:
+
+- Lenkventil (Orbitrol, FluidSIM `SteeringUnit_1/2`): Drehventil öffnet mit dem Handmoment, neutral P → E, links P → L /
+  R → T, rechts überkreuzt; die Dosierpumpe dreht das Lenkrad (Signal `phi:`). Formel H10.
+- Vorsteuergerät 2×2 (Joystick): je Gruppe ein Druckminderventil mit |Auslenkung|·pMax am Steueranschluss. Formel H11.
+- Entsperrbares Doppelrückschlagventil (Sperrblock, Ausführungen 01 und 02): frei ab der Federvorspannung, Entsperren über
+  das Flächenverhältnis des Steuerkolbens. Formel V16.
+- Belastungseinheit 1 mit Querentlastung der Stangenräume über Druckbegrenzungs- und Rückschlagventil. Formel M14.
+- Membranspeicher mit Sicherheitsblock: Vorfülldruck `p0_accu`, Kugelhahn `x`, Druckbegrenzung zum Tank. Formel H12.
+- Behoben: Das vereinfachte FluidSIM-Antriebsaggregat (ein Anschluss P2) und die FluidSIM-Pumpe `Pump01` (A/B) lieferten
+  keinen Strom, weil die Pumpe nur die Anschlüsse P und T kannte; betroffen waren 11 TP800-Übungen und 5 weitere Beispiele.
+- Drucksignale an Anschlüssen mit Punkt im Namen (`p:-MM1.A1.2`, `p:-KH1.X1.1`) lassen sich jetzt abfragen.
+- Neue Prüfung „Lenkung und Sperrventile (R13)“ mit `lenkung.qet` (sieben Kreise, vier Varianten).
+- FluidSIM-Beispiele: 1095 von 1136 rechnen (vorher 1088), 22 von 27 TP800-Übungen; bewegte Zylinder 296 (vorher 291),
+  keine Schaltung verschlechtert. Die Lenkübungen stehen, weil FluidSIM sie mit Handmoment 0 speichert (gelenkt wird dort
+  im Lauf).
+- Noch abgewiesen: LS-Steuerblock (`MobileValveBlockLS`), Prioritätsventil LS.
+
 ## 1.35.0 – 18.11.2026
 
 Simulations-Roadmap R13 (mobile Hydraulik), erster Teil:

@@ -181,6 +181,7 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
   fährt drei Stellungen an: 0, `xMax2` (Standard halber Gesamthub), `xMax`. Druckübersetzer (`PressureIntensifier01`)
   bleibt abgewiesen: FluidSIM nennt keine Kennwerte, nur Datenblattgrößen – nicht schätzen.
 - Mobilhydraulik (Fork 1.35.0, R13): `LoadSensingPumpUnit` (P1 LS-Verstellpumpe, P2 Konstantpumpe, LS-Anschluss; T/L/LA dürfen offen bleiben), 6/3-Handhebelventil (`xStep` ±100 %, + öffnet P2 → B) und `LoadingUnit_2` rechnen; Lenkventil, LS-Steuerblock, Vorsteuergerät noch nicht.
+- Lenkung und Sperrventile (Fork 1.36.0, R13): Lenkventil `SteeringUnit_1/2` (M_user + links), Vorsteuergerät (+ regelt X g.1), entsperrbares Doppelrückschlagventil (A1 → A2, B1 → B2 frei; A1/B1 sind die Ventilseite), Belastungseinheit 1, Membranspeicher mit Sicherheitsblock (x = 2 offen) rechnen; das vereinfachte Antriebsaggregat (P2) liefert jetzt seinen Strom. Noch nicht: LS-Steuerblock, Prioritätsventil.
 - Analoge Signale (Fork 1.30.0, R06): der Import gibt den ET-Analogbausteinen `sim_role` = `analog`, `sim_block`
   (Klasse ohne „ET.“), `sim_params` (alle Kennwerte mit Einheit) und `sim_link`; Anschlüsse heißen wie am Bauteil
   (SP, SN, W, X, Y), nicht wie die Symbolbeschriftung („1“, „2“, „3“). Kopplungen aus FluidSIM: Ventil-S ↔

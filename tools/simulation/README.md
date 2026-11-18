@@ -254,7 +254,19 @@ Elektrische Teile mit reellen Werten. Sie tragen die Bauteilinformationen `sim_r
   Formel V15.
 - **Belastungseinheit** (`actuator.loading_unit_2`, A1.1, A1.2, A2.1, A2.2): zwei gegenüberliegende Zylinder, Masse `m`,
   Reibung `F_B`/`F_M`/`F_V`, Einbauwinkel `alpha`. Formel M13.
-- Prüfplan `mobilhydraulik.qet`. Noch nicht gerechnet: Lenkventil (Orbitrol), LS-Steuerblock, Vorsteuergerät, Belastungseinheit 1.
+- Prüfplan `mobilhydraulik.qet`.
+- **Lenkventil** (`supply.steering_unit_1/2`, Fork 1.36.0; P, T, L, R, E): Handmoment `M_user` (+ links) gegen `M_userMax`
+  öffnet das Drehventil (Kanten `rT`/Anteil²), neutral P → E; Lenkradwinkel `phi:` aus dem Dosierstrom und `displacement`.
+  Formel H10.
+- **Vorsteuergerät** (`pressure_valve.pilot_valves_joystick`; P, T, X1.1, X1.2, X2.1, X2.2): `adjustmentLeft`/`adjustmentRight`
+  in %, + regelt X g.1, − X g.2 auf |Auslenkung|·`pMax`. Formel H11.
+- **Sperrblock** (`shutoff_valve.double_non_return_valve01/02`; A1 → A2, B1 → B2): `p0` Feder, `ratio` Entsperrkolben, `rT`.
+  Formel V16.
+- **Belastungseinheit 1** (`actuator.loading_unit_1`): wie Belastungseinheit 2, Stangenräume entlasten sich über `p0_prv`,
+  `dpEnd_prv`, `rT_prv`, `rT_cv` ineinander. Formel M14.
+- **Membranspeicher mit Sicherheitsblock** (`supply.accumulator` mit `p0_accu`; P, T): Kugelhahn `x` (2 offen), Druckbegrenzung
+  `p0_prv` zum Tank. Formel H12.
+- Prüfplan `lenkung.qet`. Noch nicht gerechnet: LS-Steuerblock mit Druckwaagen, Prioritätsventil LS.
 
 ## Vakuum, Schwenk- und Greiferantriebe (R10)
 

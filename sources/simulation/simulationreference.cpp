@@ -497,7 +497,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Standardventile und Zylinderkräfte (R11): Pfadmatrizen der Sammlung, gleichzeitige Betätigung, Vorrang, Gewicht, Kraftprofil, Feder, Reibung"),
 		QStringLiteral("Druckluftmotoren (R12): Leerlaufdrehzahl nach Druck, Nennpunkt aus den Nennwerten, beide Drehrichtungen"),
 		QStringLiteral("Mehrstellungszylinder (R12): Zwischenstellung, Endlage, Halt im Rückhub, gemeinsamer Rückhub"),
-		QStringLiteral("Mobilhydraulik (R13): LS-Bereitschaftsdruck, LS-Regelung lastunabhängig, Druckbegrenzung, 6/3-Handhebelventil, Belastungseinheit")};
+		QStringLiteral("Mobilhydraulik (R13): LS-Bereitschaftsdruck, LS-Regelung lastunabhängig, Druckbegrenzung, 6/3-Handhebelventil, Belastungseinheit"),
+		QStringLiteral("Lenkung und Sperrventile (R13): Lenkventil voll, halb, neutral, rechts; Vorsteuergerät; Sperrblock entsperrt, gesperrt, Durchfluss; Belastungseinheit 1; Speicher mit Sicherheitsblock")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1465,6 +1466,136 @@ QList<Check> endToEnd(const QString &reference_dir)
 				else seen << QStringLiteral("%1: %2 N (soll %3)").arg(QString::fromUtf8(k.what)).arg(got, 0, 'f', 1).arg(want, 0, 'f', 1);
 			}
 		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 19. steering and check valves (R13, FORMELN.md H10, H11, V16, M14), plan lenkung.qet: six circuits, each fed by
+		//     the fixed pump P2 of an LS power unit (q = 910 1/min · 4.5055 cm³ − GL·p, relief 50 bar over 35 bar):
+		//     -QZ1 steering unit on the load unit -MM1 (variants M_user 10, 5, 0, −10 N.m), -KH1 joystick left +50 %,
+		//     right −100 % (pMax 15 bar) on sealed X ports, -RM1 unlocked (A2 and pilot B1 fed, A1 open), -RM2 locked
+		//     (A2 fed, B1 sealed), -RM3 free flow A1 -> A2 (spring 2 bar), -MM2 load unit 1 with A1.2 sealed: its oil leaves
+		//     over the cross relief (p0_prv 30 bar, dpEnd_prv 35.3 bar, rT_prv 0.09 + rT_cv 0.07) into the open A2.1;
+		//     -CM1 accumulator with safety block (V0 0.05 l, precharge 10 bar, relief 30 bar over 38 bar, rT 0.17), shut
+		//     (x = 1) in the neutral variant
+		Check c{names.at(18)};
+		QStringList wrong, seen;
+		const double qf = 910 * 4.5055e-3, glf = 0.003333;   // l/min, l/(min.bar)
+		const double ak = M_PI * 0.016 * 0.016 / 4, ar = ak - M_PI * 0.01 * 0.01 / 4;
+		auto bisect = [](auto fn, double lo, double hi) {
+			for (int i = 0; i < 200; ++i) { const double mid = 0.5 * (lo + hi); (fn(lo) * fn(mid) <= 0 ? hi : lo) = mid; }
+			return 0.5 * (lo + hi);
+		};
+		// orifice as the model computes it (FORMELN.md H03, smoothed below p_s = 0.3 bar): q = Δp/(√rT·(Δp² + p_s²)^¼)
+		auto h03 = [](double d, double rt) { return d / (std::sqrt(rt) * std::pow(d * d + 0.09, 0.25)); };
+		auto orifice = [&](double p0, double rt) {   // p − p0 over the orifice passes q = qf − glf·p
+			return bisect([&](double pb) { return h03(pb - p0, rt) - (qf - glf * pb); }, p0, p0 + 50.0);
+		};
+		const double relief = bisect([&](double pb) { return qf - glf * pb - (pb - 50) / 35 * std::sqrt(pb / 0.08); }, 50.0, 85.0);
+		struct Sample {
+			double v = std::nan(""), pp = std::nan(""), x3 = std::nan(""), phi = std::nan(""), x = std::nan("");
+			double x11 = std::nan(""), x12 = std::nan(""), x21 = std::nan(""), x22 = std::nan("");
+			double p3 = std::nan(""), p4 = std::nan(""), p5 = std::nan(""), v6 = std::nan(""), p6 = std::nan(""), d6 = std::nan("");
+			double p7a = std::nan(""), p7 = std::nan("");
+		};
+		auto sig = [](SimulationModel &m, const char *id) { return m.signalValue(QString::fromUtf8(id)); };
+		auto run = [&](const QString &file, double t_v) {
+			Sample s;
+			ProjectRun pr = runProject(file, 0.0, {}, 2.9001, [&](SimulationModel &m) {
+				if (std::abs(m.time() - t_v) < 5e-6) {
+					s.v = sig(m, "v:-MM1");
+					s.pp = sig(m, "p:-GZ1.P2") / 1e5;
+					s.x3 = sig(m, "x:-MM1");
+					s.phi = sig(m, "phi:-QZ1");
+					s.v6 = sig(m, "v:-MM2");
+					s.p6 = sig(m, "p:-GZ6.P2") / 1e5;
+					s.d6 = sig(m, "p:-MM2.A1.2") / 1e5;
+				}
+				if (std::abs(m.time() - 0.2) < 5e-6) s.p7a = sig(m, "p:-GZ7.P2") / 1e5;
+				if (std::abs(m.time() - 2.9) < 5e-6) {
+					s.x = sig(m, "x:-MM1");
+					s.x11 = sig(m, "p:-KH1.X1.1") / 1e5;
+					s.x12 = sig(m, "p:-KH1.X1.2") / 1e5;
+					s.x21 = sig(m, "p:-KH1.X2.1") / 1e5;
+					s.x22 = sig(m, "p:-KH1.X2.2") / 1e5;
+					s.p3 = sig(m, "p:-GZ3.P2") / 1e5;
+					s.p4 = sig(m, "p:-GZ4.P2") / 1e5;
+					s.p5 = sig(m, "p:-GZ5.P2") / 1e5;
+					s.p7 = sig(m, "p:-GZ7.P2") / 1e5;
+				}
+			});
+			if (!pr.error.isEmpty()) wrong << QStringLiteral("%1: %2").arg(QFileInfo(file).fileName(), pr.error);
+			return s;
+		};
+		auto variant = [&](const QList<QPair<QString, QString>> &subst, const char *name, double t_v) {
+			const QString f = textVariant(path("lenkung.qet"), subst, QString::fromUtf8(name));
+			const Sample s = f.isEmpty() ? Sample{} : run(f, t_v);
+			if (!f.isEmpty()) QFile::remove(f);
+			return s;
+		};
+		const QString mu = QStringLiteral("<parameter name=\"M_user\" unit=\"N.m\" value=\"%1\"/>");
+		const QString x0 = QStringLiteral("<parameter name=\"xStart\" unit=\"mm\" value=\"%1\"/>");
+		const Sample a = run(path("lenkung.qet"), 0.3);
+		const Sample h = variant({{mu.arg(10), mu.arg(5)}}, "qet_sim_r13_halb.qet", 0.3);
+		const Sample n = variant({{mu.arg(10), mu.arg(0)}, {QStringLiteral("<parameter name=\"x\" value=\"2\"/>"), QStringLiteral("<parameter name=\"x\" value=\"1\"/>")}},
+								 "qet_sim_r13_neutral.qet", 0.3);
+		const Sample r = variant({{mu.arg(10), mu.arg(-10)}, {x0.arg(0), x0.arg(200)}}, "qet_sim_r13_rechts.qet", 0.15);
+		auto near = [](double got, double want, double tol) { return std::isfinite(got) && std::abs(got - want) <= tol; };
+		// steering unit fully deflected: all the pump flow to L, the wheel turns by the metered volume
+		const double v_full = (qf - glf * a.pp) / 60000.0 / ak, phi_want = 2 * M_PI * ak * a.x3 / 32e-6;
+		if (!near(a.v, v_full, 0.01 * v_full) || !near(a.x, 0.2, 0.5e-3) || !near(a.phi, phi_want, 0.01 * phi_want))
+			wrong << QStringLiteral("Lenkventil voll: v %1 m/s statt %2, Lenkrad %3 statt %4 rad, x %5 mm").arg(a.v).arg(v_full).arg(a.phi).arg(phi_want).arg(a.x * 1000);
+		else seen << QStringLiteral("Lenkventil links voll: %1 m/s (soll q/A_k %2), Lenkrad %3 U (soll V/D %4)")
+						 .arg(a.v, 0, 'f', 4).arg(v_full, 0, 'f', 4).arg(a.phi / (2 * M_PI), 0, 'f', 3).arg(phi_want / (2 * M_PI), 0, 'f', 3);
+		// half: the neutral path P -> E (rT/0.5²) and the metering path share the pump flow
+		const double q_e = h03(std::max(h.pp, 0.0), 0.1 / 0.25), q_l = h.v * ak * 60000.0;
+		const double balance = qf - glf * h.pp - q_e - q_l;
+		if (!std::isfinite(balance) || std::abs(balance) > 0.01 * qf || !(q_l > 0.1 && q_e > 0.1))
+			wrong << QStringLiteral("Lenkventil halb: Bilanz %1 l/min (E %2, L %3, p %4 bar)").arg(balance).arg(q_e).arg(q_l).arg(h.pp);
+		else seen << QStringLiteral("halb: E %1 + L %2 l/min = Pumpe %3").arg(q_e, 0, 'f', 3).arg(q_l, 0, 'f', 3).arg(qf - glf * h.pp, 0, 'f', 3);
+		const double p_neutral = orifice(0.0, 0.1);
+		if (!near(n.pp, p_neutral, 0.01) || !near(n.x, 0.0, 0.5e-3))
+			wrong << QStringLiteral("Lenkventil neutral: p %1 bar statt %2, x %3 mm").arg(n.pp).arg(p_neutral).arg(n.x * 1000);
+		else seen << QStringLiteral("neutral P → E: %1 bar (soll Blende H03 %2), Zylinder steht").arg(n.pp, 0, 'f', 3).arg(p_neutral, 0, 'f', 3);
+		const double v_right = -(qf - glf * r.pp) / 60000.0 / ar;
+		if (!near(r.v, v_right, 0.01 * std::abs(v_right)) || !near(r.x, 0.0, 0.5e-3))
+			wrong << QStringLiteral("Lenkventil rechts: v %1 m/s statt %2, x %3 mm").arg(r.v).arg(v_right).arg(r.x * 1000);
+		else seen << QStringLiteral("rechts voll: %1 m/s (soll −q/A_r %2)").arg(r.v, 0, 'f', 4).arg(v_right, 0, 'f', 4);
+		// joystick: pressure reducing valves on dead ends
+		if (!near(a.x11, 7.5, 0.05) || !near(a.x12, 0.0, 0.05) || !near(a.x21, 0.0, 0.05) || !near(a.x22, 15.0, 0.05))
+			wrong << QStringLiteral("Vorsteuergerät: X1.1 %1, X1.2 %2, X2.1 %3, X2.2 %4 bar statt 7,5/0/0/15").arg(a.x11).arg(a.x12).arg(a.x21).arg(a.x22);
+		else seen << QStringLiteral("Vorsteuergerät X1.1 %1 bar (soll 7,5), X2.2 %2 bar (soll 15), übrige %3/%4 bar")
+						 .arg(a.x11, 0, 'f', 3).arg(a.x22, 0, 'f', 3).arg(a.x12, 0, 'f', 3).arg(a.x21, 0, 'f', 3);
+		// pilot operated double check valve
+		const double p_unlock = orifice(0.0, 0.093), p_free = orifice(2.0, 0.093);
+		if (!near(a.p3, p_unlock, 0.01)) wrong << QStringLiteral("Sperrblock entsperrt: %1 bar statt %2").arg(a.p3).arg(p_unlock);
+		else seen << QStringLiteral("Sperrblock entsperrt A2 → A1: %1 bar (soll Blende H03 %2)").arg(a.p3, 0, 'f', 3).arg(p_unlock, 0, 'f', 3);
+		if (!near(a.p4, relief, 0.05)) wrong << QStringLiteral("Sperrblock gesperrt: %1 bar statt Druckbegrenzung %2").arg(a.p4).arg(relief);
+		else seen << QStringLiteral("gesperrt: %1 bar (Druckbegrenzung %2)").arg(a.p4, 0, 'f', 2).arg(relief, 0, 'f', 2);
+		if (!near(a.p5, p_free, 0.01)) wrong << QStringLiteral("Sperrblock Durchfluss: %1 bar statt %2").arg(a.p5).arg(p_free);
+		else seen << QStringLiteral("Durchfluss A1 → A2: %1 bar (soll p0 + Blende H03 %2)").arg(a.p5, 0, 'f', 3).arg(p_free, 0, 'f', 3);
+		// load unit 1: the rod chamber oil A_r·v crosses the relief valve and the check valve in series
+		const double v6 = (qf - glf * a.p6) / 60000.0 / ak, qx = ar * a.v6 * 60000.0;
+		const double d6 = bisect([&](double d) {
+			const double s = std::clamp((d - 30.0) / 35.3, 1e-9, 1.0);
+			return std::sqrt(d / (0.09 / (s * s) + 0.07)) - qx;
+		}, 30.0, 65.3);
+		if (!near(a.v6, v6, 0.01 * v6) || !near(a.d6, d6, 0.1))
+			wrong << QStringLiteral("Belastungseinheit 1: v %1 m/s statt %2, Stangenraum %3 bar statt %4").arg(a.v6).arg(v6).arg(a.d6).arg(d6);
+		else seen << QStringLiteral("Belastungseinheit 1: %1 m/s (soll q/A_k %2), Stangenraum %3 bar (soll %4)")
+						 .arg(a.v6, 0, 'f', 4).arg(v6, 0, 'f', 4).arg(a.d6, 0, 'f', 2).arg(d6, 0, 'f', 2);
+		// accumulator with safety block: charging dV/dt = q(p), p = p_pre·(V0/(V0 − V))^1.4; then the relief valve
+		const double pre = 11.0, v0 = 0.05;   // bar absolute, l
+		auto gas = [&](double v) { return pre * std::pow(v0 / (v0 - v), 1.4) - 1.0; };
+		double vol = 0.0;
+		for (int i = 0; i < 20000; ++i) vol += (qf - glf * gas(vol)) / 60.0 * (0.2 / 20000);
+		const double p7a = gas(vol);
+		const double p7 = bisect([&](double pb) { return qf - glf * pb - std::clamp((pb - 30.0) / 38.0, 0.0, 1.0) * std::sqrt(pb / 0.17); }, 30.0, 68.0);
+		if (!near(a.p7a, p7a, 0.01 * p7a) || !near(a.p7, p7, 0.05) || !near(n.p7, relief, 0.05))
+			wrong << QStringLiteral("Speicher mit Sicherheitsblock: Laden %1 bar statt %2, Begrenzung %3 statt %4, abgesperrt %5 statt %6")
+						 .arg(a.p7a).arg(p7a).arg(a.p7).arg(p7).arg(n.p7).arg(relief);
+		else seen << QStringLiteral("Speicher: nach 0,2 s %1 bar (soll Gasgesetz %2), Sicherheitsventil %3 bar (soll %4), abgesperrt %5 bar")
+						 .arg(a.p7a, 0, 'f', 2).arg(p7a, 0, 'f', 2).arg(a.p7, 0, 'f', 2).arg(p7, 0, 'f', 2).arg(n.p7, 0, 'f', 2);
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
 		out << c;

@@ -3,6 +3,25 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.35.0 – 18.11.2026
+
+Simulations-Roadmap R13 (mobile Hydraulik), erster Teil:
+
+- Hydraulikaggregat mit LS-Verstell- und Konstantpumpe (FluidSIM `LoadSensingPumpUnit`, P1, P2, LS): der LS-Regler hält
+  die Druckdifferenz P1 − LS auf der Federvorspannung (11,7 bar, Regelbereich 0,8 bar, PT1 20 ms), Bereitschaftsdruck bei
+  geschlossenem P1, Druckbegrenzung je Pumpe, Leckage, LS-Leitung über rT_LS entlastet.
+- 6/3-Wege-Proportional-Handhebelventil (Open Center): Umlauf P1 → T1 in der Mitte, Auslenkung ±100 % öffnet P2 → B / A → T2
+  bzw. P2 → A / B → T2, Zulauf über das Lasthalte-Rückschlagventil, Schieber mit Zeitkonstante.
+- Belastungseinheit (`LoadingUnit_2`): zwei gegenüberliegende Zylinder auf einer Stange mit FluidSIM-Reibung.
+- Neue Prüfung „Mobilhydraulik (R13)“ mit `mobilhydraulik.qet`: Bereitschaftsdruck 12,44 bar, Druckbegrenzung der
+  Konstantpumpe, LS-Regelung bei doppeltem Lastwiderstand mit gleichem Volumenstrom, Belastungseinheit über das
+  Handhebelventil aus- und einfahrend mit q/A. Formelregister H08, V15, M13.
+- Durchflussmesser mit Schluckvolumen (FluidSIM `Flowmeter_2`) rechnet jetzt als Hydromotor mit Reibung und Leckage
+  (Δp = (2π/D)²·f·q, Formel H09) statt als fast widerstandslose Blende; die Blende machte LS-Kreise numerisch instabil.
+- Noch abgewiesen: Lenkventil (Orbitrol), LS-Steuerblock, Vorsteuergerät (Joystick), Belastungseinheit 1 mit Druckbegrenzung.
+- FluidSIM-Batch: 1088 von 1136 Beispielen starten (vorher 1071), davon 16 der 27 TP800-Übungen (Mobilhydraulik);
+  keine Schaltung verschlechtert, bewegte Zylinder unverändert 291.
+
 ## 1.34.0 – 18.11.2026
 
 Simulations-Roadmap R12 (Sonderantriebe), zweiter Teil: Mehrstellungszylinder.

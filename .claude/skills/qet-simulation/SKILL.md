@@ -83,6 +83,7 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
 - Mehrstellungszylinder (R12, 1.34.0): normaler `Cylinder` mit `multi` = true, Schritt in `multiStep` (zwei Kolben,
   in Kontakt ein Körper, sonst getrennt, Stoß plastisch); Anschlüsse C1/C2/C3, Messgröße `x1:`; Prüfplan
   `mehrstellungszylinder.qet` mit drei Prüfsymbolen (Startlagen 0/0, 200/0, 200/100).
+- Mobilhydraulik (R13, 1.35.0): `LsUnit` (LS-Aggregat, Pumpen als Quellen in P1/P2, Rücklauf/Leckage nach außen, LS-Regler als PT1), `Valve63` (6/3-Handhebelventil, Kanten rT/Anteil²), Belastungseinheit als `Cylinder` mit `loading` (vier Kammern). Prüfplan `mobilhydraulik.qet`, Varianten per textVariant auf Lastdrossel rT 1.0 → 2.0 und xStep/xStart.
 - Vakuum (R10): Ejektor mit stetiger linearer Saugkennlinie, Sauger mit Haltekraft gegen s·m·g, Vakuumschalter =
   Druckschalter mit negativem p0. Prüfplan `referenz/plaene/vakuum.qet`; Varianten im Prüfstand per `textVariant`
   (Parameter in den eingebetteten `<fluid>`-Block schreiben, selbstschließendes Tag beachten).

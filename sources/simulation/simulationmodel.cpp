@@ -323,6 +323,9 @@ struct SimulationModel::Cylinder {
 	// piston, C3 is its rod side. x1, v1 the rear piston; it has the same mass and friction as this piston
 	bool multi = false;
 	double x1 = 0, v1 = 0, stroke1 = 0, a_rod = 0;
+	// R13 load unit (FluidSIM Hyd.Actuator.LoadingUnit_2, FORMELN.md M13): two opposed cylinders on one rod, ports
+	// A1.1 (piston side 1), A1.2 (rod side 1), A2.1 (rod side 2), A2.2 (piston side 2); x positive towards cylinder 2
+	bool loading = false;
 	/// position compared with a marker "-MM1 lo..hi": metres, for a rotary drive degrees / 1000
 	double markPos() const { return rotary ? x * 180.0 / M_PI / 1000.0 : x; }
 };
@@ -338,6 +341,27 @@ struct SimulationModel::PropValve {
 	double rt = 1.0;                       // resistance of one fully open edge [bar.min2/l2]
 	double gleak = 0.0;                    // leakage of each edge [m3/(s.Pa)]
 	bool triangular = false;               // notch: triangular (area ∝ x²) or rectangular (∝ x)
+};
+
+/// R13 (FORMELN.md H08): FluidSIM power unit with a load sensing variable pump (P1) and a fixed pump (P2) on one
+/// motor; the LS controller keeps p_P1 - p_LS at the spring setting p0 (displacement share 1 - (dp - p0)/dpEnd as a
+/// PT1 with T_PT1), each pump has its relief valve and its leakage to the tank, the LS line drains through rT_LS
+struct SimulationModel::LsUnit {
+	Element *e = nullptr;
+	QString label;
+	double q_vp = 0, q_fp = 0, gl_vp = 0, gl_fp = 0;          // geometric flows [m3/s], leakages [m3/(s.Pa)]
+	double margin = 11.7e5, band = 0.8e5, tau = 0.02, alpha = 1.0;
+	double p0_vp = 50e5, dp_vp = 35e5, rt_vp = 0.08, p0_fp = 50e5, dp_fp = 35e5, rt_fp = 0.08, rt_drain = 2400;
+	double last_q1 = 0, last_q2 = 0;
+};
+
+/// R13 (FORMELN.md V15): FluidSIM 6/3 proportional hand lever valve (open centre): neutral P1 -> T1, deflected
+/// x > 0 P2 -> B and A -> T2, x < 0 P2 -> A and B -> T2; P2 through the load holding check valve
+struct SimulationModel::Valve63 {
+	Element *e = nullptr;
+	QString label;
+	double x = 0, x_set = 0, tau = 0.1;
+	double rt_n = 0.045, rt_p = 0.051, rt_t = 0.0362, rt_cv = 0.01, gleak = 0;
 };
 
 struct SimulationModel::Pipe {
@@ -395,6 +419,7 @@ struct SimulationModel::FlowValve {
 	double c = 0, c_free = 0, rt = 0.1, rt_free = 0.05, p0 = 0, dp_end = 0.5e5;
 	double t_delay = 1.0, since = -1.0;         // time delay valve
 	double ratio = 3.0, gleak = 0.0;            // counterbalance valve: pilot area ratio, leakage P -> T (R09)
+	double gmeter = 0.0;                        // R13 flowmeter as a hydraulic motor: conductance D²/(4π²·f) [m³/(s·Pa)]
 	double u = 0.0, p_lo = 0.0, p_hi = 0.0;     // proportional relief valve: setpoint [V], opening at 0 and 10 V (R06)
 	double last_q = 0.0;                        // flow sensor: flow A -> B of the last step [m3/s] (R06)
 	double p0_b = 0.0, dp_end_b = 0.5e5, rt_b = 0.1;   // shock valve: relief of side B (R09)
@@ -547,6 +572,8 @@ SimulationModel::~SimulationModel()
 	qDeleteAll(m_ejectors);
 	qDeleteAll(m_pipes);
 	qDeleteAll(m_prop_valves);
+	qDeleteAll(m_ls_units);
+	qDeleteAll(m_valves63);
 	qDeleteAll(m_cups);
 	qDeleteAll(m_analog);
 }
@@ -784,6 +811,55 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						m_pipes << pi;
 						continue;
 					}
+				}
+				if (model == QLatin1String("ls_pump_unit") || model == QLatin1String("mobile_valve63")) {
+					if (!hyd) {
+						m_model_errors << QStringLiteral("%1: nur hydraulisch gerechnet").arg(part);
+						continue;
+					}
+					const QString pa = QStringLiteral("Pa"), barU = QStringLiteral("bar"), rtU = QStringLiteral("bar.min2/l2");
+					// FluidSIM writes some pressure bands without a unit: they are bar (dpEnd_prv is 3.5 MPa = 35 bar elsewhere)
+					auto barIn = [&](const char *n, double fallback_bar) {
+						return 1e5 * paramNative(f, QLatin1String(n), fallback_bar, barU, &m_model_errors, part, Range::NonNegative);
+					};
+					auto rtIn = [&](const char *n, double fallback) {
+						return paramNative(f, QLatin1String(n), fallback, rtU, &m_model_errors, part, Range::Positive);
+					};
+					if (model == QLatin1String("ls_pump_unit")) {
+						auto *u = new LsUnit;
+						u->e = e;
+						u->label = label(e);
+						const double n = paramIn(f, QStringLiteral("rpm"), 910.0 / 60.0, QStringLiteral("1/s"), &m_model_errors, part, Range::NonNegative);
+						u->q_vp = n * paramIn(f, QStringLiteral("displacementVP"), 5.6044e-6, QStringLiteral("m3"), &m_model_errors, part, Range::NonNegative);
+						u->q_fp = n * paramIn(f, QStringLiteral("displacementFP"), 4.5055e-6, QStringLiteral("m3"), &m_model_errors, part, Range::NonNegative);
+						u->gl_vp = paramIn(f, QStringLiteral("GL_VP"), 0.028333 / 60000.0 / 1e5, QStringLiteral("m3/(s.Pa)"), &m_model_errors, part, Range::NonNegative);
+						u->gl_fp = paramIn(f, QStringLiteral("GL_FP"), 0.003333 / 60000.0 / 1e5, QStringLiteral("m3/(s.Pa)"), &m_model_errors, part, Range::NonNegative);
+						u->margin = paramIn(f, QStringLiteral("p0"), 11.7e5, pa, &m_model_errors, part, Range::NonNegative);
+						u->band = std::max(barIn("dpEnd", 0.8), 0.01e5);
+						u->tau = paramIn(f, QStringLiteral("T_PT1"), 0.02, QStringLiteral("s"), &m_model_errors, part, Range::NonNegative);
+						u->p0_vp = paramIn(f, QStringLiteral("p0_prvLS"), 50e5, pa, &m_model_errors, part, Range::NonNegative);
+						u->dp_vp = std::max(barIn("dpEnd_prvLS", 35.0), 0.1e5);
+						u->rt_vp = rtIn("rT_prvLS", 0.08);
+						u->p0_fp = paramIn(f, QStringLiteral("p0_prvFixed"), 50e5, pa, &m_model_errors, part, Range::NonNegative);
+						u->dp_fp = std::max(barIn("dpEnd_prvFixed", 35.0), 0.1e5);
+						u->rt_fp = rtIn("rT_prvFixed", 0.08);
+						u->rt_drain = rtIn("rT_LS", 2400.0);
+						m_ls_units << u;
+					} else {
+						auto *v = new Valve63;
+						v->e = e;
+						v->label = label(e);
+						v->x_set = std::clamp(paramNative(f, QStringLiteral("xStep"), 0.0, QStringLiteral("%"), &m_model_errors, part, Range::Any) / 100.0, -1.0, 1.0);
+						v->x = v->x_set;
+						v->tau = paramIn(f, QStringLiteral("T_2"), 0.1, QStringLiteral("s"), &m_model_errors, part, Range::NonNegative);
+						v->rt_n = rtIn("rT_P1_T1", 0.045);
+						v->rt_p = rtIn("rT_P2_AB", 0.051);
+						v->rt_t = rtIn("rT_T2_AB", 0.0362);
+						v->rt_cv = rtIn("rT_CV", 0.01);
+						v->gleak = paramIn(f, QStringLiteral("GLeak"), 0.0, QStringLiteral("m3/(s.Pa)"), &m_model_errors, part, Range::NonNegative);
+						m_valves63 << v;
+					}
+					continue;
 				}
 				if (model == QLatin1String("proportional_valve")) {
 					// R07 (FORMELN.md V05, V06): FluidSIM 4/3 proportional valve; a linked solenoid or amplifier (R06,
@@ -1039,6 +1115,11 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					const QString kg = QStringLiteral("kg"), newton = QStringLiteral("N");
 					c->m = paramIn(f, QStringLiteral("m_cyl"), hyd ? 2.0 : 0.1, kg, &m_model_errors, who, Range::NonNegative)
 						 + paramIn(f, QStringLiteral("m_ext"), 0.0, kg, &m_model_errors, who, Range::NonNegative);
+					// R13 load unit: FluidSIM names the moved mass m (default 0.6 kg)
+					if (fn == QLatin1String("actuator.loading_unit_2")) {
+						c->loading = true;
+						c->m = paramIn(f, QStringLiteral("m"), 0.6, kg, &m_model_errors, who, Range::Positive);
+					}
 					c->f_static = paramIn(f, QStringLiteral("F_stat"), 0.05 * c->a_k * 6e5, newton, &m_model_errors, who, Range::NonNegative);
 					c->f_slide = 0.7 * c->f_static;
 					c->f_spring = f.m_spring != FluidData::SpringSide::None ? 0.15 * c->a_k * 6e5 : 0.0;
@@ -1180,6 +1261,14 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					}
 					if (isFlowSensor(fn))
 						fv->rt = paramNative(f, QStringLiteral("rT"), 0.001, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+					// R13 (FORMELN.md H09): FluidSIM flowmeter (sensor.flowmeter_2) is a hydraulic motor with a speed meter;
+					// quasi-static (inertia I not taken) the motor passes q = D²/(4π²·f)·Δp, the leakage GLeak bypasses it
+					if (fn == QLatin1String("sensor.flowmeter_2") && !f.parameter(QStringLiteral("displacement")).isEmpty()) {
+						const double d = paramIn(f, QStringLiteral("displacement"), 8.2e-6, QStringLiteral("m3"), &m_model_errors, who, Range::Positive);
+						const double fr = paramIn(f, QStringLiteral("f"), 0.0108, QStringLiteral("N.m.s/rad"), &m_model_errors, who, Range::Positive);
+						fv->gmeter = d * d / (4 * M_PI * M_PI * fr);
+						fv->gleak = paramIn(f, QStringLiteral("GLeak"), 0.0, QStringLiteral("m3/(s.Pa)"), &m_model_errors, who, Range::NonNegative);
+					}
 					if (fn == QLatin1String("pressure_valve.counterbalance_valve")) {
 						// R09 (FORMELN.md V07): FluidSIM names the resistances rT_cb (valve) and rT_cv (check valve)
 						fv->rt = paramNative(f, QStringLiteral("rT_cb"), fv->rt, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
@@ -2128,6 +2217,51 @@ void SimulationModel::step(double dt)
 		}
 	}
 
+	// R13 load sensing power unit (FORMELN.md H08): returns and leakage go to the tank (outside the nets)
+	for (LsUnit *u : m_ls_units) {
+		const int k1 = node(u->e, QStringLiteral("P1")), k2 = node(u->e, QStringLiteral("P2")), kl = node(u->e, QStringLiteral("LS"));
+		const double d = p(k1) - (kl >= 0 ? p(kl) : P_ATM);
+		const double set = std::clamp(1.0 - (d - u->margin) / u->band, 0.0, 1.0);
+		u->alpha += u->tau > 0 ? (set - u->alpha) * std::min(1.0, dt / u->tau) : set - u->alpha;
+		auto relief = [&](int k, double p0, double band, double rt) {
+			const double s = std::clamp((p(k) - P_ATM - p0) / band, 0.0, 1.0);
+			return s > 0 ? volumeFlow(p(k), P_ATM, rt / (s * s)) : 0.0;
+		};
+		if (k1 >= 0) {
+			const double q = u->alpha * u->q_vp - u->gl_vp * (p(k1) - P_ATM);
+			u->last_q1 = q;
+			book(-1, k1, q, u->e);
+			book(k1, -1, relief(k1, u->p0_vp, u->dp_vp, u->rt_vp), u->e);
+		}
+		if (k2 >= 0) {
+			const double q = u->q_fp - u->gl_fp * (p(k2) - P_ATM);
+			u->last_q2 = q;
+			book(-1, k2, q, u->e);
+			book(k2, -1, relief(k2, u->p0_fp, u->dp_fp, u->rt_fp), u->e);
+		}
+		if (kl >= 0) book(kl, -1, volumeFlow(p(kl), P_ATM, u->rt_drain), u->e);
+	}
+	// R13 6/3 hand lever valve (FORMELN.md V15): orifices rT/share^2, spool PT1 towards the lever deflection
+	for (Valve63 *v : m_valves63) {
+		v->x += v->tau > 0 ? (v->x_set - v->x) * std::min(1.0, dt / v->tau) : v->x_set - v->x;
+		const int kp1 = node(v->e, QStringLiteral("P1")), kt1 = node(v->e, QStringLiteral("T1"));
+		const int kp2 = node(v->e, QStringLiteral("P2")), kt2 = node(v->e, QStringLiteral("T2"));
+		const int ka = node(v->e, QStringLiteral("A")), kb = node(v->e, QStringLiteral("B"));
+		const double s = std::abs(v->x), open = 1.0 - s;
+		if (open > 1e-6 && (kp1 >= 0 || kt1 >= 0)) book(kp1, kt1, volumeFlow(p(kp1), p(kt1), v->rt_n / (open * open)), v->e);
+		const int kin = v->x > 0 ? kb : ka, kout = v->x > 0 ? ka : kb;
+		if (s > 1e-6) {
+			// supply P2 -> check valve -> metering edge: series orifices, their rT add; nothing flows back to P2
+			if ((kp2 >= 0 || kin >= 0) && p(kp2) > p(kin))
+				book(kp2, kin, volumeFlow(p(kp2), p(kin), v->rt_cv + v->rt_p / (s * s)), v->e);
+			if (kout >= 0 || kt2 >= 0) book(kout, kt2, volumeFlow(p(kout), p(kt2), v->rt_t / (s * s)), v->e);
+		}
+		if (v->gleak > 0) {
+			if (ka >= 0 || kt2 >= 0) book(ka, kt2, v->gleak * (p(ka) - p(kt2)), v->e);
+			if (kb >= 0 || kt2 >= 0) book(kb, kt2, v->gleak * (p(kb) - p(kt2)), v->e);
+		}
+	}
+
 	// R08: hydraulic motors, flow from A to B turns the shaft forward
 	for (Motor *mo : m_motors) {
 		const int ka = node(mo->e, QStringLiteral("A")), kb = node(mo->e, QStringLiteral("B"));
@@ -2276,8 +2410,13 @@ void SimulationModel::step(double dt)
 		} else if (isFlowSensor(fn)) {
 			// R06: orifice rT between A and B, its flow is the measured value
 			const int a = kn.value(QStringLiteral("A"), -1), b = kn.value(QStringLiteral("B"), -1);
-			s->last_q = (a >= 0 || b >= 0) ? s->flow(p(a), p(b)) : 0.0;
-			book(a, b, s->last_q, s->e);
+			if (s->gmeter > 0) {   // R13 (FORMELN.md H09): motor flow is the measured value, leakage passes beside it
+				s->last_q = s->gmeter * (p(a) - p(b));
+				book(a, b, s->last_q + s->gleak * (p(a) - p(b)), s->e);
+			} else {
+				s->last_q = (a >= 0 || b >= 0) ? s->flow(p(a), p(b)) : 0.0;
+				book(a, b, s->last_q, s->e);
+			}
 		} else if (fn == QLatin1String("pressure_valve.counterbalance_valve")) {
 			// R09 (FORMELN.md V07): opens P -> T when (pP - pT) + ratio·(pX - pT) reaches p0, fully over dpEnd;
 			// the check valve lets T -> P pass freely, leakage P -> T
@@ -2400,6 +2539,25 @@ void SimulationModel::step(double dt)
 
 	for (Cylinder *z : m_cylinders) {
 		if (z->multi) { multiStep(z, dt, vol, dvdt); continue; }
+		if (z->loading) {
+			const int k11 = node(z->e, QStringLiteral("A1.1")), k12 = node(z->e, QStringLiteral("A1.2"));
+			const int k21 = node(z->e, QStringLiteral("A2.1")), k22 = node(z->e, QStringLiteral("A2.2"));
+			auto g = [&](int k) { return k >= 0 ? p(k) - P_ATM : 0.0; };
+			const double fp = g(k11) * z->a_k - g(k12) * z->a_r + g(k21) * z->a_r - g(k22) * z->a_k;
+			if (m_record_flows) m_cylinder_force.insert(z->e, fp);
+			SimPhysics::pistonStep(*z, fp - z->opposing(), dt);
+			if (k11 >= 0) { vol[k11] += V_DEAD + z->a_k * z->x; dvdt[k11] += z->a_k * z->v; }
+			if (k12 >= 0) { vol[k12] += V_DEAD + z->a_r * (z->stroke - z->x); dvdt[k12] -= z->a_r * z->v; }
+			if (k21 >= 0) { vol[k21] += V_DEAD + z->a_r * z->x; dvdt[k21] += z->a_r * z->v; }
+			if (k22 >= 0) { vol[k22] += V_DEAD + z->a_k * (z->stroke - z->x); dvdt[k22] -= z->a_k * z->v; }
+			const QString end = z->x <= 0.0005 ? QStringLiteral("hinten")
+				: (z->x >= z->stroke - 0.0005 ? QStringLiteral("vorne") : QString());
+			if (end != m_end_position.value(z->label)) {
+				m_end_position.insert(z->label, end);
+				if (!end.isEmpty()) m_messages << Message{m_time, QStringLiteral("%1 Endlage %2").arg(z->label, end)};
+			}
+			continue;
+		}
 		const int ka = node(z->e, QStringLiteral("A")), kb = node(z->e, QStringLiteral("B"));
 		const double f = (p(ka) - P_ATM) * z->a_k - (p(kb) - P_ATM) * z->a_r - z->opposing();
 		if (m_record_flows) m_cylinder_force.insert(z->e, (p(ka) - P_ATM) * z->a_k - (p(kb) - P_ATM) * z->a_r);
@@ -2587,6 +2745,8 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 	for (const Pump *pu : m_pumps) fluid_parts << pu->e;
 	for (const FlowValve *s : m_flow_valves) fluid_parts << s->e;
 	for (const PropValve *v : m_prop_valves) fluid_parts << v->e;
+	for (const LsUnit *u : m_ls_units) fluid_parts << u->e;
+	for (const Valve63 *v : m_valves63) fluid_parts << v->e;
 	for (const Pipe *pi : m_pipes) fluid_parts << pi->e;
 	for (const Ejector *v : m_ejectors) fluid_parts << v->e;
 	QSet<Element *> seen;

@@ -77,8 +77,12 @@ QList<Entry> build()
 		      "p_N [Pa], rpm_N [1/min], M_N [N.m], n0_nN, I [kg.m2], M_ext [N.m], torqueType (1 bremsend, 2 antreibend)",
 		      "lineare Momentenkennlinie aus den Nennwerten, Moment ∝ Druckdifferenz, Luftverbrauch ρ·D·ω/2π zum Auspuff; ohne Leckage und Anlaufverhalten der Lamellen",
 		      "Druckluftmotoren (R12)");
-	for (const char *f : {"actuator.fluidic_muscle1", "actuator.fluidic_muscle3", "actuator.loading_unit_2"})
-		e << other(f, Role::Unsupported, "", "Muskel (Kraftkennlinie aus dem Herstellerdatenblatt nötig) und Belastungseinheit (gekoppelte Zylinder, Roadmap R12/R13)");
+	e << physical("actuator.loading_unit_2", "linear_cylinder", "hydraulic", "A1.1, A1.2 (Zylinder 1 Kolben-/Stangenseite), A2.1, A2.2 (Zylinder 2 Stangen-/Kolbenseite)",
+		      "d_piston, d_rod, xMax, xStart [m]; m [kg]; alpha; F_B, F_M [N], F_V [N.s/m] wie Zylinder (R11)",
+		      "zwei gegenüberliegende Zylinder auf einer Stange und einer Masse; Reibung nach R11, keine Endlagendämpfung; v_M (Stribeck) nicht gerechnet",
+		      "Mobilhydraulik (R13)");
+	for (const char *f : {"actuator.fluidic_muscle1", "actuator.fluidic_muscle3"})
+		e << other(f, Role::Unsupported, "", "Muskel (Kraftkennlinie aus dem Herstellerdatenblatt nötig)");
 	// ---------------------------------------------------------- Wegeventile
 	for (const char *f : {"directional_valve.two_pins", "directional_valve.three_pins", "directional_valve.four_pins",
 			       "directional_valve.five_pins"})
@@ -90,8 +94,11 @@ QList<Entry> build()
 			      "u [V] Sollwert -10 … 10, tau [s], lap bzw. lapP/lapT [%] Überdeckung, notchType (1 Rechteck, 2 Dreieck), rT [bar.min2/l2] je Kante, GLeak [l/(min.bar)] je Kante",
 			      "Schieber PT1 ohne Hysterese und Strömungskraft; Kanten als Blenden mit Fläche ∝ x bzw. x²; Sollwert aus dem Signalpfad (R06: positiver Sollwert, Y2 bzw. S → P→A; Y1 → P→B), sonst Kennwert u oder Ereignis",
 			      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
-	for (const char *f : {"proportional.directional_valve63_with_hand_lever", "proportional.mobile_valve_block_ls",
-			       "proportional.mpye"})
+	e << physical("proportional.directional_valve63_with_hand_lever", "mobile_valve63", "hydraulic", "P1, T1 (Umlauf), P2 (über Rückschlagventil), T2, A, B",
+		      "xStep [%] Auslenkung (−100 … 100), rT_P1_T1, rT_P2_AB, rT_T2_AB, rT_CV [bar.min2/l2], GLeak [l/(min.bar)], T_2 [s]",
+		      "Umlauf P1→T1 mit Öffnung 1 − |x|, Arbeitskanten mit |x| (Blenden rT/Anteil²), Rückschlagventil in Reihe; Schieber PT1, Auslenkung fest für den Lauf",
+		      "Mobilhydraulik (R13)");
+	for (const char *f : {"proportional.mobile_valve_block_ls", "proportional.mpye"})
 		e << other(f, Role::Unsupported, "", "Mobil-/LS-Ventilblöcke und pneumatisches Stetigventil (Roadmap R07, R13)");
 	// ---------------------------------------------------------- Strom-, Sperr-, Logikventile
 	e << physical("flow_control_valve.throttle_valve", "orifice", "both", "erste zwei Anschlüsse", "qNN [l/min] bzw. rT", "kein druckkompensierter Stromregler", "Orifice");
@@ -174,7 +181,11 @@ QList<Entry> build()
 		      "Zustand fest für den Lauf; getrennt und selbstdichtend: beide Hälften zu; getrennt ohne Dichtung: beide Hälften entlüften",
 		      "Leitungen, Kupplungen, Aufbereitung (R05)");
 	e << other("supply.manifold_c8", Role::Ideal, "ideal_connection", "verlustfreier Verteiler");
-	for (const char *f : {"supply.load_sensing_pump_unit", "supply.steering_unit_1",
+	e << physical("supply.load_sensing_pump_unit", "ls_pump_unit", "hydraulic", "P1 (LS-Verstellpumpe), P2 (Konstantpumpe), LS; T, L, LA zum Tank",
+		      "rpm, displacementVP/FP [cm3], p0 [MPa] Federvorspannung (Regeldruckdifferenz), dpEnd [bar] Regelbereich, T_PT1 [s], p0_prvLS/p0_prvFixed, dpEnd_prv* [bar], rT_prv*, rT_LS, GL_VP/GL_FP [l/(min.bar)]",
+		      "LS-Regler proportional mit PT1 (kein Schwenkwinkelmodell), je Pumpe Druckbegrenzung als stetige Blende und Leckage zum Tank, LS-Leitung über rT_LS entlastet; Drehzahl fest",
+		      "Mobilhydraulik (R13)");
+	for (const char *f : {"supply.steering_unit_1",
 			       "vacuum.vacuum_efficiency_valve",
 			       "valve_group.control_block_for_two_hand_start", "valve_group.taa_01", "valve_group.tab_01",
 			       "valve_group.timer3", "valve_group.timer4", "other.misc"})
@@ -203,7 +214,7 @@ QList<Entry> build()
 	for (const char *f : {"proportional.flow_sensor", "sensor.flowmeter_2"})
 		e << physical(f, "flow_sensor", "hydraulic", "A → B",
 		      "rT [bar.min2/l2] (Standard 0,001), mode (1 Richtung ignorieren, 2 berücksichtigen), q_start, q_end [l/min], U_start, U_end [V]",
-		      "Blende rT zwischen A und B, gemessen wird ihr Durchfluss; Spannung über den elektrischen Teil (R06)",
+		      "Blende rT zwischen A und B, gemessen wird ihr Durchfluss; Durchflussmesser mit Schluckvolumen (displacement, f, GLeak) als Hydromotor ohne Trägheit (R13, H09); Spannung über den elektrischen Teil (R06)",
 		      "Analoge Signale und Regler (R06)");
 	e << physical("proportional.pressure_relief_valve", "prop_relief_valve", "hydraulic", "A (P) → B (T), Sollwert über Verstärker",
 		      "p_start, p_end [Pa] Öffnungsdruck bei 0 und 10 V, dpEnd [Pa] Druckregelbereich, rT [bar.min2/l2], u [V] ohne Verstärker",

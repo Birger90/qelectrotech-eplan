@@ -243,6 +243,19 @@ Elektrische Teile mit reellen Werten. Sie tragen die Bauteilinformationen `sim_r
 - Nicht gerechnet: Muskeln (Kennlinie nur aus dem Datenblatt), Belastungseinheit (R13), Druckübersetzer (FluidSIM gibt
   keine Kennwerte, nur Datenblattgrößen). Tandem- und Teleskopzylinder gibt es in FluidSIM nicht als Bauteil.
 
+## Mobilhydraulik (R13, Fork 1.35.0)
+
+- **LS-Aggregat** (`supply.load_sensing_pump_unit`, P1 Verstellpumpe, P2 Konstantpumpe, LS): Verdrängung `displacementVP`/
+  `displacementFP` · `rpm`; LS-Regler α = 1 − (p_P1 − p_LS − `p0`)/`dpEnd` als PT1 (`T_PT1`), Druckbegrenzung je Pumpe
+  (`p0_prvLS`/`p0_prvFixed`, Band `dpEnd_prv*` in bar, `rT_prv*`), Leckage `GL_VP`/`GL_FP`, LS-Entlastung `rT_LS`. Tank-,
+  Leck- und Lüftungsanschlüsse (T, L, LA) dürfen offen bleiben. Formel H08.
+- **6/3-Handhebelventil** (`proportional.directional_valve63_with_hand_lever`): `xStep` in % (+: P2 → B, A → T2; −: P2 → A,
+  B → T2; 0: Umlauf P1 → T1), Widerstände `rT_P1_T1`, `rT_P2_AB`, `rT_T2_AB`, Rückschlagventil `rT_CV`, Schieber `T_2`.
+  Formel V15.
+- **Belastungseinheit** (`actuator.loading_unit_2`, A1.1, A1.2, A2.1, A2.2): zwei gegenüberliegende Zylinder, Masse `m`,
+  Reibung `F_B`/`F_M`/`F_V`, Einbauwinkel `alpha`. Formel M13.
+- Prüfplan `mobilhydraulik.qet`. Noch nicht gerechnet: Lenkventil (Orbitrol), LS-Steuerblock, Vorsteuergerät, Belastungseinheit 1.
+
 ## Vakuum, Schwenk- und Greiferantriebe (R10)
 
 - **Ejektor** (`vacuum.vacuum_generator`): Anschluss 1 Versorgung, 2 Vakuum. Luftverbrauch `qn_ac` bei 600 kPa (wie

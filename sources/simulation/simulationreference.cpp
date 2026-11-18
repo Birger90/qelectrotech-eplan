@@ -496,7 +496,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Analoge Signale und Regler (R06): Kalibrierung, Umkehr, Sättigung, Anti-Windup, Reset, Abtastverfeinerung, Druck- und Lageregelkreis"),
 		QStringLiteral("Standardventile und Zylinderkräfte (R11): Pfadmatrizen der Sammlung, gleichzeitige Betätigung, Vorrang, Gewicht, Kraftprofil, Feder, Reibung"),
 		QStringLiteral("Druckluftmotoren (R12): Leerlaufdrehzahl nach Druck, Nennpunkt aus den Nennwerten, beide Drehrichtungen"),
-		QStringLiteral("Mehrstellungszylinder (R12): Zwischenstellung, Endlage, Halt im Rückhub, gemeinsamer Rückhub")};
+		QStringLiteral("Mehrstellungszylinder (R12): Zwischenstellung, Endlage, Halt im Rückhub, gemeinsamer Rückhub"),
+		QStringLiteral("Mobilhydraulik (R13): LS-Bereitschaftsdruck, LS-Regelung lastunabhängig, Druckbegrenzung, 6/3-Handhebelventil, Belastungseinheit")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1464,6 +1465,90 @@ QList<Check> endToEnd(const QString &reference_dir)
 				else seen << QStringLiteral("%1: %2 N (soll %3)").arg(QString::fromUtf8(k.what)).arg(got, 0, 'f', 1).arg(want, 0, 'f', 1);
 			}
 		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 18. mobile hydraulics (R13, FORMELN.md H08, V15, M13), plan mobilhydraulik.qet (FluidSIM defaults of the
+		//     power unit: n 910 1/min, VP 5.6044 cm³, FP 4.5055 cm³, p0 11.7 bar, dpEnd 0.8 bar, relief 50 bar / 35 bar):
+		//     -GZ1 P1 closed: standby p = (p0 + dpEnd)/(1 + dpEnd·GL/q); -GZ2 P2 closed: q_FP − GL·p = (p − 50)/35·√(p/0.08);
+		//     -GZ2 P1 → -RZ1 (rT 1) → load node (LS) → -RZ2 (rT 1, variant 2) → tank: Δp over -RZ1 = p0 + dpEnd·(1 − α),
+		//     the flow does not depend on the load; -GZ1 P2 → -QM1 (+100 %, variant −100 %) → load unit -MM1 at q/A
+		Check c{names.at(17)};
+		QStringList wrong, seen;
+		const double qv = 910 * 5.6044e-3, qf = 910 * 4.5055e-3, glv = 0.028333, glf = 0.003333;   // l/min, l/(min.bar)
+		const double m0 = 11.7, band = 0.8;
+		auto bisect = [](auto fn, double lo, double hi) {
+			for (int i = 0; i < 200; ++i) { const double mid = 0.5 * (lo + hi); (fn(lo) * fn(mid) <= 0 ? hi : lo) = mid; }
+			return 0.5 * (lo + hi);
+		};
+		const double standby = (m0 + band) / (1 + band * glv / qv);
+		const double relief = bisect([&](double pb) { return qf - glf * pb - (pb - 50) / 35 * std::sqrt(pb / 0.08); }, 50.0, 85.0);
+		auto loadPressure = [](double rt2, double q) {
+			double px = rt2 * q * q;
+			for (int i = 0; i < 50; ++i) px = rt2 * std::pow(q - std::sqrt(px / 2400), 2);
+			return px;
+		};
+		auto lsWant = [&](double rt2, double *dp_out, double *px_out) {
+			const double alpha = bisect([&](double a) {
+				const double dp = m0 + band * (1 - a), q = std::sqrt(dp);
+				return a * qv - glv * (loadPressure(rt2, q) + dp) - q;
+			}, 0.0, 1.0);
+			*dp_out = m0 + band * (1 - alpha);
+			*px_out = loadPressure(rt2, std::sqrt(*dp_out));
+		};
+		struct Sample { double v = std::nan(""), pp2 = std::nan(""), x = std::nan(""), p1a = std::nan(""), p2b = std::nan(""), p1b = std::nan(""), pls = std::nan(""); };
+		auto run = [&](const QString &file, double t_v) {
+			Sample s;
+			ProjectRun pr = runProject(file, 0.0, {}, 2.9001, [&](SimulationModel &m) {
+				if (std::abs(m.time() - t_v) < 5e-6) { s.v = m.signalValue(QStringLiteral("v:-MM1")); s.pp2 = m.signalValue(QStringLiteral("p:-GZ1.P2")) / 1e5; }
+				if (std::abs(m.time() - 2.9) < 5e-6) {
+					s.x = m.signalValue(QStringLiteral("x:-MM1"));
+					s.p1a = m.signalValue(QStringLiteral("p:-GZ1.P1")) / 1e5;
+					s.p2b = m.signalValue(QStringLiteral("p:-GZ2.P2")) / 1e5;
+					s.p1b = m.signalValue(QStringLiteral("p:-GZ2.P1")) / 1e5;
+					s.pls = m.signalValue(QStringLiteral("p:-GZ2.LS")) / 1e5;
+				}
+			});
+			if (!pr.error.isEmpty()) wrong << QStringLiteral("%1: %2").arg(QFileInfo(file).fileName(), pr.error);
+			return s;
+		};
+		const Sample a = run(path("mobilhydraulik.qet"), 0.3);
+		const QString load2 = textVariant(path("mobilhydraulik.qet"), {{QStringLiteral("<parameter name=\"rT\" unit=\"bar.min2/l2\" value=\"1.0\"/>"),
+																	   QStringLiteral("<parameter name=\"rT\" unit=\"bar.min2/l2\" value=\"2.0\"/>")}},
+										  QStringLiteral("qet_sim_r13_last.qet"));
+		const Sample b = load2.isEmpty() ? Sample{} : run(load2, 0.3);
+		if (!load2.isEmpty()) QFile::remove(load2);
+		const QString back = textVariant(path("mobilhydraulik.qet"), {{QStringLiteral("<parameter name=\"xStep\" unit=\"%\" value=\"100\"/>"),
+																	  QStringLiteral("<parameter name=\"xStep\" unit=\"%\" value=\"-100\"/>")},
+																	 {QStringLiteral("<parameter name=\"xStart\" unit=\"mm\" value=\"0\"/>"),
+																	  QStringLiteral("<parameter name=\"xStart\" unit=\"mm\" value=\"200\"/>")}},
+										 QStringLiteral("qet_sim_r13_zurueck.qet"));
+		const Sample r = back.isEmpty() ? Sample{} : run(back, 0.15);
+		if (!back.isEmpty()) QFile::remove(back);
+		auto near = [](double got, double want, double tol) { return std::isfinite(got) && std::abs(got - want) <= tol; };
+		if (!near(a.p1a, standby, 0.05)) wrong << QStringLiteral("Bereitschaftsdruck %1 bar statt %2").arg(a.p1a).arg(standby);
+		else seen << QStringLiteral("Bereitschaft %1 bar (soll %2)").arg(a.p1a, 0, 'f', 3).arg(standby, 0, 'f', 3);
+		if (!near(a.p2b, relief, 0.05)) wrong << QStringLiteral("Druckbegrenzung %1 bar statt %2").arg(a.p2b).arg(relief);
+		else seen << QStringLiteral("Druckbegrenzung %1 bar (soll %2)").arg(a.p2b, 0, 'f', 2).arg(relief, 0, 'f', 2);
+		const Sample *ls[2] = {&a, &b};
+		for (int i = 0; i < 2; ++i) {
+			const double rt2 = i == 0 ? 1.0 : 2.0;
+			double dp = 0, px = 0;
+			lsWant(rt2, &dp, &px);
+			const double got = ls[i]->p1b - ls[i]->pls;
+			if (!near(got, dp, 0.05) || !near(ls[i]->pls, px, 0.1))
+				wrong << QStringLiteral("LS-Regelung rT %1: Δp %2 / Last %3 bar statt %4 / %5").arg(rt2).arg(got).arg(ls[i]->pls).arg(dp).arg(px);
+			else seen << QStringLiteral("LS Last %1 bar: Δp %2 bar (soll %3), %4 l/min").arg(ls[i]->pls, 0, 'f', 2).arg(got, 0, 'f', 3).arg(dp, 0, 'f', 3).arg(std::sqrt(got), 0, 'f', 3);
+		}
+		const double ak = M_PI * 0.016 * 0.016 / 4, ar = ak - M_PI * 0.01 * 0.01 / 4;
+		const double v_out = (qf - glf * a.pp2) / 60000.0 / ak, v_in = -(qf - glf * r.pp2) / 60000.0 / ar;
+		if (!near(a.v, v_out, 0.01 * std::abs(v_out)) || !near(a.x, 0.2, 0.5e-3))
+			wrong << QStringLiteral("Ausfahren: v %1 m/s statt %2, x %3 mm").arg(a.v).arg(v_out).arg(a.x * 1000);
+		else seen << QStringLiteral("Ausfahren +100 %: %1 m/s (soll q/A_k %2), Endlage 200 mm").arg(a.v, 0, 'f', 4).arg(v_out, 0, 'f', 4);
+		if (!near(r.v, v_in, 0.01 * std::abs(v_in)) || !near(r.x, 0.0, 0.5e-3))
+			wrong << QStringLiteral("Einfahren: v %1 m/s statt %2, x %3 mm").arg(r.v).arg(v_in).arg(r.x * 1000);
+		else seen << QStringLiteral("−100 %: %1 m/s (soll −q/A_r %2), Endlage 0").arg(r.v, 0, 'f', 4).arg(v_in, 0, 'f', 4);
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
 		out << c;

@@ -139,7 +139,7 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
   -geschwindigkeit und -kraft, Motor- und Schwenkwinkel, Haltekraft von Saugern in SI-Einheiten. Gerechnet werden auch
   Hydromotoren, Vakuumerzeuger, Sauger, Vakuumschalter, Schwenkantriebe, Rohrleitungen mit Länge und Durchmesser,
   Schnellkupplungen (gekuppelt/getrennt), verstopfte Filter, 4/3-Stetigventile, Senkbrems- und Druckzuschaltventile, Druckwaagen, Schock-/Nachsaugblock,
-  pneumatisches Folgeventil, Zylinder mit Einbauwinkel, Kraftprofil, Federkennlinie und FluidSIM-Reibung, Druckluftmotoren, Mehrstellungszylinder,
+  pneumatisches Folgeventil, Zylinder mit Einbauwinkel, Kraftprofil, Federkennlinie und FluidSIM-Reibung, Druckluftmotoren, Mehrstellungszylinder, LS-Aggregate, 6/3-Handhebelventile, Belastungseinheiten,
   analoge Signale und Regler (Funktionsgenerator, Sollwertkarte, PID- und Zustandsregler, PT2, I-Glied, Komparator,
   Proportional-Verstärker, lagegeregelte Proportionalmagnete, Druck-, Durchfluss- und Wegsensoren,
   Proportional-Druckbegrenzungsventil) – geschlossene Druck- und Lageregelkreise. Stand der Roadmap: [tools/simulation/ROADMAP_STAND.md](tools/simulation/ROADMAP_STAND.md).

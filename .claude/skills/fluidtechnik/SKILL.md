@@ -180,6 +180,7 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
 - Mehrstellungszylinder (Fork 1.34.0, R12): `MultiPositionCylinder` (C1 hinterer Kolben, C2 vorderer, C3 Stangenseite)
   fährt drei Stellungen an: 0, `xMax2` (Standard halber Gesamthub), `xMax`. Druckübersetzer (`PressureIntensifier01`)
   bleibt abgewiesen: FluidSIM nennt keine Kennwerte, nur Datenblattgrößen – nicht schätzen.
+- Mobilhydraulik (Fork 1.35.0, R13): `LoadSensingPumpUnit` (P1 LS-Verstellpumpe, P2 Konstantpumpe, LS-Anschluss; T/L/LA dürfen offen bleiben), 6/3-Handhebelventil (`xStep` ±100 %, + öffnet P2 → B) und `LoadingUnit_2` rechnen; Lenkventil, LS-Steuerblock, Vorsteuergerät noch nicht.
 - Analoge Signale (Fork 1.30.0, R06): der Import gibt den ET-Analogbausteinen `sim_role` = `analog`, `sim_block`
   (Klasse ohne „ET.“), `sim_params` (alle Kennwerte mit Einheit) und `sim_link`; Anschlüsse heißen wie am Bauteil
   (SP, SN, W, X, Y), nicht wie die Symbolbeschriftung („1“, „2“, „3“). Kopplungen aus FluidSIM: Ventil-S ↔

@@ -9,20 +9,25 @@ verbunden über <connect> wie Leitungen. Übernommen wird:
 - jede Aktion: kontinuierlich (actionType 0), bedingt (1), speichernd bei Aktivierung (2),
   bei Deaktivierung (3), beim Auslösen (4, angenähert als bei Aktivierung), bei Ereignis (5);
   Zuweisungen als „A := 1“; aneinandergehängte Aktionen gehören zum Schritt der ersten;
-- die Verbindungen; Doppellinien werden zur Parallelverzweigung bzw. Synchronisation.
-
-Nicht übernommen: Einschließende Schritte/Teil-GRAFCETs (SubGrafcet), Zwangssteuerungen (actionType 6),
-Makroschritte. Sie stehen im Bericht.
+- die Verbindungen; Doppellinien werden zur Parallelverzweigung bzw. Synchronisation;
+- Gliederung (Fork 1.38.0, Roadmap R14): Teil-GRAFCET-Rahmen (Grafcet.SubGrafcet „12“) → Elementinformation
+  sim_grafcet = G12 an jedem Schritt im Rahmen (kleinster umgebender Rahmen); einschließende Schritte
+  (flags enclosing, enclosedSubs „3 2 1“) → Symbol „Einschließender Schritt“ mit sim_encloses = G3 G2 G1;
+  Aktivierungsverbindung (alink) → sim_activation = 1; Makroschritt (macro) → Symbol „Makro Schritt“ mit
+  Kennzeichen M<Name>, Makroeingang/-ausgang (mentry/mexit) → E<Name>/S<Name>; zwangssteuernde Befehle
+  (actionType 6) → kontinuierliche Aktion „G12{8, 9, 11}“, „G12{*}“, „G12{}“, „G12{INIT}“.
 """
 import re
 
 G = "20_logic/2020_flow_chart/202020_grafcet/"
 DATEI = {
     "anfang": G + "20202000_step.elmt", "schritt": G + "20202001_step.elmt",
+    "einschl": G + "20202002_step.elmt", "makro": G + "20202003_step.elmt",
     "transition": G + "20202060_transition.elmt",
     "0": G + "20202020_action.elmt", "1": G + "20202021_action.elmt", "2": G + "20202022_action.elmt",
     "3": G + "20202023_action.elmt", "4": G + "20202022_action.elmt", "5": G + "20202024_action.elmt",
     "parallel": G + "20202070_parallel_branch.elmt", "sync": G + "20202071_synchronization.elmt",
+    "sprung": G + "20202090_jump.elmt",
 }
 # FluidSIM-Anschluss -> Anschluss des QET-Symbols
 ANSCHLUSS = {"GC_S_in": "in", "GC_S_out": "out", "GC_S_A": "action", "GC_T_in": "in", "GC_T_out": "out"}
@@ -76,24 +81,81 @@ def umwandeln(blatt, objekte, verbindungen, sammlung, K, mitte):
         platziert[o.get("ident")] = (oid, art)
         return oid
 
+    # Teil-GRAFCET-Rahmen: (Fläche, Name, x1, y1, x2, y2) in FluidSIM-Koordinaten
+    rahmen = []
+    for o in gc.values():
+        if o.get("object-ref") == "Grafcet.SubGrafcet":
+            try:
+                x1, y1 = float(o.get("x1", 0)), float(o.get("y1", 0))
+                x2, y2 = x1 + float(o.get("width", 0)), y1 + float(o.get("height", 0))
+            except ValueError:
+                continue
+            rahmen.append(((x2 - x1) * (y2 - y1), werte(o).get("name", "").strip(), x1, y1, x2, y2))
+    rahmen.sort()
+
+    def teilgrafcet(o):
+        x1, y1 = float(o.get("x1", 0)), float(o.get("y1", 0))
+        cx, cy = x1 + float(o.get("width", 0)) / 2, y1 + float(o.get("height", 0)) / 2
+        for _, name, a, b, c, d in rahmen:
+            if name and a <= cx <= c and b <= cy <= d:
+                return "G" + name
+        return ""
+
     for ident, o in gc.items():
         art = o.get("object-ref")
         w = werte(o)
         mx, my = mitte(o)
         if art == "Grafcet.Step":
-            flags = w.get("flags", "")
-            if flags not in ("", "initial"):
-                offen.append(f"Schritt {w.get('name')}: {flags} (wie ein einfacher Schritt übernommen)")
-            neu(o, "anfang" if flags == "initial" else "schritt", mx * K, my * K, w.get("name", ""))
+            flags = set(w.get("flags", "").split())
+            name = w.get("name", "")
+            if "macro" in flags:
+                symbol, label = "makro", "M" + name
+            elif "enclosing" in flags:
+                symbol, label = "einschl", name
+            else:
+                symbol = "anfang" if "initial" in flags else "schritt"
+                label = ("E" if "mentry" in flags else "S" if "mexit" in flags else "") + name
+            unbekannt = flags - {"initial", "alink", "enclosing", "macro", "mentry", "mexit"}
+            if unbekannt:
+                offen.append(f"Schritt {name}: {' '.join(sorted(unbekannt))} (wie ein einfacher Schritt übernommen)")
+            oid = neu(o, symbol, mx * K, my * K, label)
+            infos = {}
+            if symbol == "einschl":
+                infos["sim_encloses"] = " ".join("G" + n for n in w.get("enclosedSubs", "").split())
+                if "initial" in flags:
+                    infos["sim_initial"] = "1"
+            if "alink" in flags and "initial" not in flags:
+                infos["sim_activation"] = "1"
+            if teilgrafcet(o):
+                infos["sim_grafcet"] = teilgrafcet(o)
+            for k, v in infos.items():
+                if v:
+                    ops.append({"op": "set_info", "folio": blatt, "element": "$" + oid, "key": k, "value": v})
             zahl["schritte"] += 1
         elif art == "Grafcet.Transition":
             oid = neu(o, "transition", mx * K, my * K, bedingung(w.get("condition")) or "1")
             if w.get("cond-descr"):
                 ops.append({"op": "set_info", "folio": blatt, "element": "$" + oid, "key": "comment",
                             "value": w["cond-descr"]})
+            ziel = (w.get("target-info") or "").strip()
+            if ziel:
+                # Sprung (FluidSIM target-info): Sprungsymbol unter der Transition, Anschluss auf Anschluss
+                sprung = {"ident": o.get("ident") + "_sprung"}
+                sid = neu(type("O", (), {"get": lambda self, k, d=None: sprung.get(k, d)})(), "sprung",
+                          mx * K, my * K + 30, ziel)
+                t_aus = anschl["transition"]["out"][0]
+                ops.append({"op": "add_conductor", "folio": blatt, "from": "$" + oid, "from_terminal": "{" + t_aus + "}",
+                            "to": "$" + sid, "to_terminal": "{" + anschl["sprung"][next(iter(anschl["sprung"]))][0] + "}"})
+                zahl["verbindungen"] += 1
             zahl["transitionen"] += 1
         elif art == "Grafcet.Action":
             typ = w.get("actionType", "0")
+            if typ == "6":
+                # zwangssteuernder Befehl: G12{8, 9, 11}, G12{*}, G12{}, G12{INIT}
+                text = "G%s{%s}" % (w.get("sub-grafcet", "").strip(), w.get("steps", "").strip())
+                neu(o, "0", float(o.get("x1", 0)) * K, my * K, text)
+                zahl["aktionen"] += 1
+                continue
             if typ not in DATEI:
                 offen.append(f"Aktion Typ {typ} ({w.get('var')}, {w.get('steps')}) nicht übernommen")
                 continue
@@ -116,7 +178,7 @@ def umwandeln(blatt, objekte, verbindungen, sammlung, K, mitte):
                 ops.append({"op": "set_info", "folio": blatt, "element": "$" + oid, "key": "comment",
                             "value": w["alloc-descr"]})
             zahl["aktionen"] += 1
-        elif art in ("Grafcet.MultiPin", "Grafcet.SyncRule"):
+        elif art in ("Grafcet.MultiPin", "Grafcet.SyncRule", "Grafcet.SubGrafcet"):
             pass
         else:
             offen.append(f"{art} nicht übernommen")

@@ -114,6 +114,18 @@ ihre Bedingung erfüllt ist. Alle schaltbaren Transitionen schalten gleichzeitig
 Deaktivieren), das wiederholt sich bis zur stabilen Situation. Kontinuierliche Aktionen wirken nur in der stabilen
 Situation, speichernde auch auf flüchtigen Schritten. ODER-Verzweigungen sind einfache Leitungsabzweige.
 
+Gliederung (R14, Fork 1.38.0; Schreibweise wie FluidSIM):
+
+| Mittel | Eintrag | Wirkung |
+|---|---|---|
+| Teil-GRAFCET | Elementinformation `sim_grafcet` = `G5` an einem Schritt jeder Kette | gleich benannte Ketten bilden G5; ohne Namen: globaler GRAFCET |
+| Schrittnamen | `X3` im eigenen Teil-GRAFCET, `G5.X3` von außen, `XG5` (G5 hat einen aktiven Schritt) | gleiche Nummern in verschiedenen Teil-GRAFCETs sind erlaubt |
+| Einschließender Schritt | Symbol „Einschließender Schritt“, `sim_encloses` = `G2 G3` (ohne Angabe `G<Nummer>`) | aktiviert die Aktivierungsschritte (Anfangsschritt-Symbol oder `sim_activation` = 1), deaktiviert beim Verlassen alles darin |
+| Makroschritt | Symbol „Makro Schritt“, Kennzeichen `M3`; Expansion mit Schritten `E3` … `S3` | Transition nach M3 erst mit aktivem S3 |
+| Zwangssteuerung | kontinuierliche Aktion `G5{8, 9}`, `G5{}`, `G5{*}`, `G5{INIT}` | G5 in dieser Situation, entwickelt sich nicht, solange der Schritt aktiv ist |
+
+Prüfplan `grafcet_r14.qet`.
+
 Namen in Bedingungen und Aktionen:
 
 - **SPS-Variablen** wie im SPS-Programm (`DI0`, Symbole, Merker); so läuft das GRAFCET „in der SPS“ und schaltet

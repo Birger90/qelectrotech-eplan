@@ -3,6 +3,23 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.38.0 – 18.11.2026
+
+Simulations-Roadmap R14 (GRAFCET-Struktur nach IEC 60848, Schreibweise wie FluidSIM):
+
+- Teil-GRAFCETs: Ketten mit derselben Elementinformation `sim_grafcet` (G1, G12 …) bilden einen Teil-GRAFCET, die übrigen den
+  globalen GRAFCET. Schrittnummern dürfen sich zwischen Teil-GRAFCETs wiederholen (Instanzen); `X3` meint den eigenen Schritt,
+  `G5.X3` den eines anderen, `XG5` ist 1, solange G5 einen aktiven Schritt hat. Formel N06.
+- Einschließender Schritt (`sim_encloses` = „G2 G3“): aktiviert die Aktivierungsschritte der eingeschlossenen Teil-GRAFCETs und
+  deaktiviert sie beim Verlassen. Formel N07.
+- Makroschritt `M3` mit Expansion `E3` … `S3`. Formel N08.
+- Zwangssteuernde Befehle `G5{8, 9}`, `G5{}`, `G5{*}`, `G5{INIT}` als kontinuierliche Aktion. Formel N09.
+- FluidSIM-Import übernimmt Teil-GRAFCET-Rahmen, einschließende Schritte, Aktivierungsverbindungen, Makroschritte,
+  zwangssteuernde Befehle und Sprungziele von Transitionen; die Beispiele Grafcet11, 12, 14, 15, 17 laufen jetzt ohne
+  Programmfehler.
+- Neue Prüfung „GRAFCET-Struktur (R14)“ mit `grafcet_r14.qet`.
+- FluidSIM-Beispiele: 1100 von 1136 ohne Modellfehler, 1131 ohne Programmfehler (vorher 1126); keine Schaltung verschlechtert.
+
 ## 1.37.0 – 18.11.2026
 
 Simulations-Roadmap R13 (mobile Hydraulik) abgeschlossen:

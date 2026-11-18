@@ -499,7 +499,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Mehrstellungszylinder (R12): Zwischenstellung, Endlage, Halt im Rückhub, gemeinsamer Rückhub"),
 		QStringLiteral("Mobilhydraulik (R13): LS-Bereitschaftsdruck, LS-Regelung lastunabhängig, Druckbegrenzung, 6/3-Handhebelventil, Belastungseinheit"),
 		QStringLiteral("Lenkung und Sperrventile (R13): Lenkventil voll, halb, neutral, rechts; Vorsteuergerät; Sperrblock entsperrt, gesperrt, Durchfluss; Belastungseinheit 1; Speicher mit Sicherheitsblock"),
-		QStringLiteral("LS-Steuerblock und Prioritätsventil (R13): Druckwaage hält den Strom lastunabhängig, Lastmeldung, Rückhub; Prioritätsventil teilt CF/EF")};
+		QStringLiteral("LS-Steuerblock und Prioritätsventil (R13): Druckwaage hält den Strom lastunabhängig, Lastmeldung, Rückhub; Prioritätsventil teilt CF/EF"),
+		QStringLiteral("GRAFCET-Struktur (R14): einschließender Schritt, Makroschritt, Zwangssteuerung, Instanzen, Analogwert")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1470,6 +1471,55 @@ QList<Check> endToEnd(const QString &reference_dir)
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
 		out << c;
+	}
+	{   // 21. GRAFCET structuring (R14, FORMELN.md D01–D05), plan grafcet_r14.qet; cycle 10 ms:
+		//     G1: 0 → (0.1 s) enclosing 1 (G2: 21 ⇄ 22 every 0.1 s) → (0.55 s) macro M3 (E3 → 0.2 s → S3) → step 4 forces
+		//     G5{52} for 0.3 s → 5 → (N ≥ 1.5) → 6; G5: 50 ⇄ 51 every 0.1 s, 52 → 50; G6: 1 ⇄ 4 every 0.25 s (step numbers
+		//     of G1 again), N := N + 0.5 on activating G6 step 4
+		ProjectRun r = runProject(path("grafcet_r14.qet"), 6.0, {}, 1.3);
+		if (!r.error.isEmpty()) out << failedRun(names.at(20), r);
+		else {
+			Check c{names.at(20)};
+			QStringList wrong, seen;
+			auto times = [&](const QString &step) {
+				QList<double> out;
+				for (const auto &e : r.events)
+					if (e.second == QStringLiteral("GRAFCET Schritt %1 aktiv").arg(step)) out << e.first;
+				return out;
+			};
+			auto expect = [&](const QString &step, const QList<double> &want, const char *what) {
+				const QList<double> got = times(step);
+				bool ok = got.size() == want.size();
+				for (int i = 0; ok && i < got.size(); ++i) ok = std::abs(got.at(i) - want.at(i)) <= 0.011;
+				QStringList g;
+				for (double x : got) g << QString::number(x, 'f', 2);
+				if (!ok) wrong << QStringLiteral("%1: Schritt %2 bei %3 s").arg(QString::fromUtf8(what), step, g.join(QLatin1Char('/')));
+				return ok;
+			};
+			bool all = true;
+			all &= expect(QStringLiteral("22"), {0.2, 0.4, 0.6}, "eingeschlossen");
+			all &= expect(QStringLiteral("21"), {0.1, 0.3, 0.5}, "Aktivierungsschritt");
+			all &= expect(QStringLiteral("M3"), {0.65}, "Makroschritt");
+			all &= expect(QStringLiteral("E3"), {0.65}, "Eingangsschritt");
+			all &= expect(QStringLiteral("S3"), {0.85}, "Ausgangsschritt");
+			all &= expect(QStringLiteral("G1.4"), {0.85}, "nach dem Makroschritt");
+			all &= expect(QStringLiteral("51"), {0.1, 0.3, 0.5, 0.7, 1.25}, "G5 frei, nach dem Zwang weiter");
+			all &= expect(QStringLiteral("52"), {0.85}, "G5 gezwungen");
+			all &= expect(QStringLiteral("50"), {0.0, 0.2, 0.4, 0.6, 0.8, 1.15}, "G5 nach dem Zwang");
+			all &= expect(QStringLiteral("G6.4"), {0.25, 0.75, 1.25}, "Instanz G6");
+			all &= expect(QStringLiteral("6"), {1.25}, "Analogwert N");
+			const double n = r.sim->plcValue(QStringLiteral("N"));
+			if (!(std::abs(n - 1.5) < 1e-9)) { all = false; wrong << QStringLiteral("N %1 statt 1.5").arg(n); }
+			const double forced = r.eventTime(QStringLiteral("GRAFCET G5 erzwungen: G5{52}"));
+			if (!(std::abs(forced - 0.85) <= 0.011)) { all = false; wrong << QStringLiteral("Zwangssteuerung bei %1 s statt 0,85").arg(forced); }
+			if (!r.sim->programErrors().isEmpty()) { all = false; wrong << r.sim->programErrors(); }
+			c.passed = all;
+			c.detail = all ? QStringLiteral("G2 läuft nur in Schritt 1 (21/22 bis 0,6 s, aus bei 0,65 s); M3 → E3 0,65 s → S3 0,85 s → 4; "
+											"G5{52} von 0,85 bis 1,15 s, dann 50; G6 mit eigenen Schritten 1/4 (0,25/0,75/1,25 s); "
+											"N = 1,5 → Schritt 6 bei 1,25 s")
+						   : wrong.join(QStringLiteral("; "));
+			out << c;
+		}
 	}
 	{   // 20. LS control block and priority valve (R13, FORMELN.md V17, V18), plan lsblock.qet: the fixed pump P2 of -GZ1
 		//     (relief 50 bar, variant 30 bar) feeds the block -QM1 and the joystick -KH1 (left +30 %: pilot 4.5 bar, stroke

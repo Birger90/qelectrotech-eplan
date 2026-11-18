@@ -52,6 +52,19 @@ class Terminal;
 	-QM1/12 actuate a valve), conditional (condition above the box), stored
 	on activation, on deactivation, on event (Structured Text statements such
 	as "Z := Z + 1").
+
+	R14 (IEC 60848 structuring, FluidSIM notation): the chains whose steps carry
+	the same element information sim_grafcet (G1, G12 …) form one partial
+	grafcet, the chains without it the global grafcet. An enclosing step encloses the partial grafcets named in
+	sim_encloses (default G<its number>); their initial-step symbols are the
+	activation steps. A macro step M<n> runs its expansion E<n> … S<n>; its
+	transition fires only with S<n> active. A continuous action "G5{8}",
+	"G5{}", "G5{*}" or "G5{INIT}" forces the partial grafcet G5 while its step
+	is active; the forced grafcet does not evolve. A step number used in more
+	than one partial grafcet is a variable per partial grafcet (G5_X3), inside
+	G5 the receptivities still write X3, elsewhere G5.X3 (FluidSIM notation);
+	XG5 is 1 while a step of G5 is active. Information sim_initial = 1 makes
+	a step initial, sim_activation = 1 an activation step.
 */
 class Grafcet
 {
@@ -79,12 +92,16 @@ class Grafcet
 		struct Step;
 		struct Transition;
 		struct Action;
+		struct Partial;
 		void activate(Step *s, double time, QHash<QString, double> &vars, QStringList *messages);
 		void deactivate(Step *s, double time, QHash<QString, double> &vars);
+		bool force(double time, QHash<QString, double> &vars, QStringList *messages);
+		QString localized(const QString &structured, int part) const;
 
 		QList<Step *> m_steps;
 		QList<Transition *> m_transitions;
 		QList<Action *> m_actions;
+		QList<Partial *> m_parts;        // R14 partial grafcets
 		QStringList m_continuous;        // variables written by continuous actions
 		QStringList m_errors;
 		bool m_started = false;

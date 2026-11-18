@@ -157,6 +157,7 @@ class SimulationModel
 			/// potential of an electric net [V]: an analog output, else the supply it is connected to
 		double volt(int net) const;
 		void fail(const QString &why);
+		void multiStep(Cylinder *z, double dt, QVector<double> &vol, QVector<double> &dvdt);
 		QString netName(int net) const;
 		bool contactClosed(const Contact &c) const;
 

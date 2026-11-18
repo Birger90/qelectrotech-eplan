@@ -80,6 +80,9 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
   auf `vMin=21.6 V` → `vMin=30 V`.
 - Druckluftmotoren (R12): `Motor` mit `air` = true, gleiche `SimPhysics::Shaft`; Massenstrom ρ·D·|ω|/2π vom höheren
   Anschluss zu EX; Prüfplan `druckluftmotor.qet`, Nennpunkt per textVariant auf M_ext.
+- Mehrstellungszylinder (R12, 1.34.0): normaler `Cylinder` mit `multi` = true, Schritt in `multiStep` (zwei Kolben,
+  in Kontakt ein Körper, sonst getrennt, Stoß plastisch); Anschlüsse C1/C2/C3, Messgröße `x1:`; Prüfplan
+  `mehrstellungszylinder.qet` mit drei Prüfsymbolen (Startlagen 0/0, 200/0, 200/100).
 - Vakuum (R10): Ejektor mit stetiger linearer Saugkennlinie, Sauger mit Haltekraft gegen s·m·g, Vakuumschalter =
   Druckschalter mit negativem p0. Prüfplan `referenz/plaene/vakuum.qet`; Varianten im Prüfstand per `textVariant`
   (Parameter in den eingebetteten `<fluid>`-Block schreiben, selbstschließendes Tag beachten).

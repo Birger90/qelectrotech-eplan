@@ -318,6 +318,11 @@ struct SimulationModel::Cylinder {
 	// R10 semi-rotary drive: x, stroke in rad, v in rad/s, a_k = a_r displacement per radian [m³/rad]
 	// (= torque per pascal), m the moment of inertia [kg·m²], forces are torques [N·m]
 	bool rotary = false;
+	// R12 multi-position cylinder (FluidSIM Pneu.Actuator.MultiPositionCylinder, FORMELN.md M12): a second piston
+	// behind this one (chamber C1, stroke stroke1) pushes it with its rod through the partition; C2 drives this
+	// piston, C3 is its rod side. x1, v1 the rear piston; it has the same mass and friction as this piston
+	bool multi = false;
+	double x1 = 0, v1 = 0, stroke1 = 0, a_rod = 0;
 	/// position compared with a marker "-MM1 lo..hi": metres, for a rotary drive degrees / 1000
 	double markPos() const { return rotary ? x * 180.0 / M_PI / 1000.0 : x; }
 };
@@ -1099,6 +1104,19 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					// R10 gripper: substitute model, a single-acting cylinder with return spring; the jaw
 					// force is the piston force (signal F:)
 					if (fn == QLatin1String("actuator.gripper") && c->f_spring <= 0) c->f_spring = 0.15 * c->a_k * 6e5;
+					// R12 multi-position cylinder: rear cylinder with the shorter stroke xMax2 (FluidSIM: half the
+					// total stroke), "Zwischenstellung" xStart1 its start; the front piston never stands behind it
+					if (fn == QLatin1String("actuator.multi_position_cylinder")) {
+						c->multi = true;
+						c->a_rod = M_PI * dr * dr / 4;
+						c->stroke1 = paramIn(f, QStringLiteral("xMax2"), c->stroke / 2, m, &m_model_errors, who, Range::Positive);
+						if (std::isfinite(c->stroke1) && c->stroke1 >= c->stroke)
+							m_model_errors << QStringLiteral("%1: Zwischenhub xMax2 %2 mm nicht kleiner als Gesamthub %3 mm")
+												  .arg(who).arg(c->stroke1 * 1000).arg(c->stroke * 1000);
+						c->x1 = std::clamp(paramIn(f, QStringLiteral("xStart1"), 0.0, m, &m_model_errors, who, Range::NonNegative), 0.0, c->stroke1);
+						c->x = std::clamp(std::max(c->x, c->x1), 0.0, c->stroke);
+						c->f_load = paramIn(f, QStringLiteral("F_Extern"), c->f_load, newton, &m_model_errors, who);
+					}
 					m_cylinders << c;
 					m_end_position.insert(c->label, QString());
 				} else if (model == QLatin1String("pressure_switch")) {
@@ -2019,6 +2037,56 @@ double SimulationModel::cavity(Terminal *t) const
 	return m_cavity.value(node(t), 0.0);
 }
 
+/// R12 multi-position cylinder (FORMELN.md M12): the rear piston (C1, x1) pushes the front piston (C2, C3, x) with
+/// its rod. In contact both move as one body (mass, friction and damping added, the rear stroke stroke1 as limit)
+/// unless one of them alone would run away from the other; apart each moves alone, a collision is plastic.
+/// C2 acts on the front piston face and on the end of the rear rod in the partition
+void SimulationModel::multiStep(Cylinder *z, double dt, QVector<double> &vol, QVector<double> &dvdt)
+{
+	auto p = [&](int k) { return k >= 0 ? m_p.at(k) : P_ATM; };
+	const int k1 = node(z->e, QStringLiteral("C1")), k2 = node(z->e, QStringLiteral("C2")), k3 = node(z->e, QStringLiteral("C3"));
+	const double g1 = k1 >= 0 ? p(k1) - P_ATM : 0.0, g2 = k2 >= 0 ? p(k2) - P_ATM : 0.0, g3 = k3 >= 0 ? p(k3) - P_ATM : 0.0;
+	const double f1 = g1 * z->a_k - g2 * z->a_rod;
+	const double f2 = g2 * z->a_k - g3 * z->a_r - z->opposing();
+	if (m_record_flows) m_cylinder_force.insert(z->e, g2 * z->a_k - g3 * z->a_r);
+	Cylinder front = *z, rear = *z;
+	front.load_ex.clear(); front.load_re.clear();
+	rear.x = z->x1; rear.v = z->v1; rear.stroke = z->stroke1;
+	SimPhysics::pistonStep(front, f2, dt);
+	SimPhysics::pistonStep(rear, f1, dt);
+	const bool contact = z->x - z->x1 <= 1e-9;
+	bool together = false;
+	if (contact) {
+		Cylinder both = *z;
+		both.load_ex.clear(); both.load_re.clear();
+		both.m = 2 * z->m; both.f_static = 2 * z->f_static; both.f_slide = 2 * z->f_slide; both.damping = 2 * z->damping;
+		both.stroke = z->stroke1;
+		SimPhysics::pistonStep(both, f1 + f2, dt);
+		// apart only if the front piston alone runs ahead or the rear one alone falls back
+		together = !(front.x > both.x + 1e-12 || rear.x < both.x - 1e-12);
+		if (together) { z->x = z->x1 = both.x; z->v = z->v1 = both.v; }
+	}
+	if (!together) {
+		z->x = front.x; z->v = front.v; z->x1 = rear.x; z->v1 = rear.v;
+		if (z->x < z->x1) {     // collision: plastic impact of two equal masses
+			const double xc = std::clamp(0.5 * (z->x + z->x1), 0.0, z->stroke1), vc = 0.5 * (z->v + z->v1);
+			z->x = z->x1 = xc; z->v = z->v1 = vc;
+		}
+	}
+	if (k1 >= 0) { vol[k1] += V_DEAD + z->a_k * z->x1; dvdt[k1] += z->a_k * z->v1; }
+	if (k2 >= 0) { vol[k2] += V_DEAD + z->a_k * z->x - z->a_rod * z->x1; dvdt[k2] += z->a_k * z->v - z->a_rod * z->v1; }
+	if (k3 >= 0) { vol[k3] += V_DEAD + z->a_r * (z->stroke - z->x); dvdt[k3] -= z->a_r * z->v; }
+	const QString end = z->x <= 0.0005 ? QStringLiteral("hinten")
+		: z->x >= z->stroke - 0.0005 ? QStringLiteral("vorne")
+		: std::abs(z->x - z->stroke1) <= 0.0005 && std::abs(z->v) < 1e-4 ? QStringLiteral("Zwischenstellung") : QString();
+	if (end != m_end_position.value(z->label)) {
+		m_end_position.insert(z->label, end);
+		if (!end.isEmpty())
+			m_messages << Message{m_time, end == QLatin1String("Zwischenstellung") ? QStringLiteral("%1 Zwischenstellung").arg(z->label)
+															 : QStringLiteral("%1 Endlage %2").arg(z->label, end)};
+	}
+}
+
 void SimulationModel::step(double dt)
 {
 	if (m_failed) return;
@@ -2331,6 +2399,7 @@ void SimulationModel::step(double dt)
 	}
 
 	for (Cylinder *z : m_cylinders) {
+		if (z->multi) { multiStep(z, dt, vol, dvdt); continue; }
 		const int ka = node(z->e, QStringLiteral("A")), kb = node(z->e, QStringLiteral("B"));
 		const double f = (p(ka) - P_ATM) * z->a_k - (p(kb) - P_ATM) * z->a_r - z->opposing();
 		if (m_record_flows) m_cylinder_force.insert(z->e, (p(ka) - P_ATM) * z->a_k - (p(kb) - P_ATM) * z->a_r);
@@ -2583,6 +2652,9 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 					  QStringLiteral("positiv: ausfahrend"), z->label, QString()};
 		out << Signal{QStringLiteral("F:") + z->label, QStringLiteral("force"), QStringLiteral("N"),
 					  QStringLiteral("Druckkraft auf den Kolben, positiv: ausfahrend (ohne Reibung, Last, Feder)"), z->label, QString()};
+		if (z->multi)
+			out << Signal{QStringLiteral("x1:") + z->label, QStringLiteral("position"), QStringLiteral("m"),
+						  QStringLiteral("hinterer Kolben des Mehrstellungszylinders, 0 = eingefahren"), z->label, QString()};
 	}
 	for (const Motor *mo : m_motors) {
 		out << Signal{QStringLiteral("omega:") + mo->label, QStringLiteral("angular_velocity"), QStringLiteral("rad/s"),
@@ -2611,6 +2683,14 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 	const int colon = static_cast<int>(id.indexOf(QLatin1Char(':')));
 	if (colon <= 0) return std::nan("");
 	const QString kind = id.left(colon), rest = id.mid(colon + 1);
+	if (kind == QLatin1String("x1")) {
+		for (const Cylinder *z : m_cylinders)
+			if (z->label == rest && z->multi) {
+				if (ok) *ok = true;
+				return z->x1;
+			}
+		return std::nan("");
+	}
 	if (kind == QLatin1String("x") || kind == QLatin1String("v") || kind == QLatin1String("F")) {
 		for (const Cylinder *z : m_cylinders)
 			if (z->label == rest) {

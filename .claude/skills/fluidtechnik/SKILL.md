@@ -177,6 +177,9 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
 - Druckluftmotoren (Fork 1.33.0, R12): `MotorWithMidExhaust` rechnet aus `p_N`, `rpm_N`, `M_N`, `n0_nN` (lineare
   Kennlinie, Nennpunkt exakt), `Pneu.Actuator.RotaryMotor` aus `displacement`, `f`, `I`; Muskeln und Belastungseinheit
   noch nicht (Muskelkennlinie nur aus dem Festo-Datenblatt, nicht schätzen).
+- Mehrstellungszylinder (Fork 1.34.0, R12): `MultiPositionCylinder` (C1 hinterer Kolben, C2 vorderer, C3 Stangenseite)
+  fährt drei Stellungen an: 0, `xMax2` (Standard halber Gesamthub), `xMax`. Druckübersetzer (`PressureIntensifier01`)
+  bleibt abgewiesen: FluidSIM nennt keine Kennwerte, nur Datenblattgrößen – nicht schätzen.
 - Analoge Signale (Fork 1.30.0, R06): der Import gibt den ET-Analogbausteinen `sim_role` = `analog`, `sim_block`
   (Klasse ohne „ET.“), `sim_params` (alle Kennwerte mit Einheit) und `sim_link`; Anschlüsse heißen wie am Bauteil
   (SP, SN, W, X, Y), nicht wie die Symbolbeschriftung („1“, „2“, „3“). Kopplungen aus FluidSIM: Ventil-S ↔

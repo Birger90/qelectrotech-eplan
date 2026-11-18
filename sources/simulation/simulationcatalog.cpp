@@ -66,6 +66,13 @@ QList<Entry> build()
 		      "d_piston, xMax [m], m_cyl [kg], F_stat [N] wie Zylinder",
 		      "Ersatzmodell: einfachwirkender Zylinder mit Rückstellfeder, Greifkraft = Kolbenkraft (F:); keine Backenkinematik, kein Werkstückanschlag",
 		      "Vakuum und Schwenk-/Greiferantriebe (R10)");
+	e << physical("actuator.multi_position_cylinder", "linear_cylinder", "pneumatic", "C1 (hinterer Kolben), C2 (vorderer Kolben), C3 (Stangenseite)",
+		      "d_piston, d_rod, xMax (Gesamthub), xMax2 (Zwischenhub, Standard xMax/2), xStart, xStart1 [m]; F_Extern [N]; Masse und Reibung wie Zylinder",
+		      "zwei Kolben gleichen Durchmessers hintereinander, der hintere schiebt den vorderen mit seiner Stange (Kontakt einseitig, Stoß plastisch); "
+		      "C2 wirkt auch auf das Stangenende des hinteren Kolbens; Stangenraum des hinteren Kolbens entlüftet; beide Kolben gleiche Masse und Reibung",
+		      "Mehrstellungszylinder (R12)");
+	e << other("actuator.pressure_intensifier01", Role::Unsupported, "",
+		   "Druckübersetzer: FluidSIM nennt nur die Datenblattgrößen (Übersetzung r, p_max IN, q_max IN/H, G_leak) ohne Standardwerte und ohne Innenschaltung – Kennwerte aus dem Herstellerdatenblatt nötig");
 	e << physical("actuator.motor_with_mid_exhaust", "air_motor", "pneumatic", "A, B (Zulauf je Drehrichtung), EX Mittelauspuff",
 		      "p_N [Pa], rpm_N [1/min], M_N [N.m], n0_nN, I [kg.m2], M_ext [N.m], torqueType (1 bremsend, 2 antreibend)",
 		      "lineare Momentenkennlinie aus den Nennwerten, Moment ∝ Druckdifferenz, Luftverbrauch ρ·D·ω/2π zum Auspuff; ohne Leckage und Anlaufverhalten der Lamellen",

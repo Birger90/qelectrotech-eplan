@@ -3,6 +3,21 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.34.0 – 18.11.2026
+
+Simulations-Roadmap R12 (Sonderantriebe), zweiter Teil: Mehrstellungszylinder.
+
+- Mehrstellungszylinder (FluidSIM `MultiPositionCylinder`, Anschlüsse C1, C2, C3): zwei Kolben gleichen Durchmessers
+  hintereinander, der hintere schiebt den vorderen mit seiner Stange bis zur Zwischenstellung (`xMax2`, Standard halber
+  Gesamthub). Kontakt einseitig, Stoß plastisch, C2 wirkt auch auf das Stangenende des hinteren Kolbens; Startlagen
+  `xStart`/`xStart1`, externe Kraft `F_Extern`. Neue Messgröße `x1:` (hinterer Kolben), Meldung „Zwischenstellung“.
+- Neue Prüfung „Mehrstellungszylinder (R12)“ mit `mehrstellungszylinder.qet`: C1 → Zwischenstellung (C3 mit Blindstopfen als
+  Luftpolster; ohne Gegendruck läuft der vordere Kolben mit seinem Schwung darüber hinaus), C2 → vorne,
+  C1 + C3 → Halt im Rückhub in der Zwischenstellung, C3 → beide zurück. Formelregister M12.
+- Druckübersetzer bleibt abgewiesen, jetzt mit Grund: FluidSIM nennt nur die Datenblattgrößen (r, p_max, q_max, G_leak)
+  ohne Standardwerte und ohne Innenschaltung. Tandem- und Teleskopzylinder sind in FluidSIM keine Bauteile.
+- FluidSIM-Batch: kein Beispiel verwendet Mehrstellungszylinder oder Druckübersetzer; Ergebnis unverändert.
+
 ## 1.33.0 – 18.11.2026
 
 Simulations-Roadmap R12 (Sonderantriebe), erster Teil: Druckluftmotoren.

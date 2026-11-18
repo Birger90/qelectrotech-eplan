@@ -495,7 +495,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Stetig-, Senkbrems- und Zuschaltventile (R07/R09): Kennlinie, Richtung, Sättigung, Überdeckung, Kerbe, Leckage, Sprungantwort, Steuerdruck, Druckwaagen, Schockblock, Folgeventil"),
 		QStringLiteral("Analoge Signale und Regler (R06): Kalibrierung, Umkehr, Sättigung, Anti-Windup, Reset, Abtastverfeinerung, Druck- und Lageregelkreis"),
 		QStringLiteral("Standardventile und Zylinderkräfte (R11): Pfadmatrizen der Sammlung, gleichzeitige Betätigung, Vorrang, Gewicht, Kraftprofil, Feder, Reibung"),
-		QStringLiteral("Druckluftmotoren (R12): Leerlaufdrehzahl nach Druck, Nennpunkt aus den Nennwerten, beide Drehrichtungen")};
+		QStringLiteral("Druckluftmotoren (R12): Leerlaufdrehzahl nach Druck, Nennpunkt aus den Nennwerten, beide Drehrichtungen"),
+		QStringLiteral("Mehrstellungszylinder (R12): Zwischenstellung, Endlage, Halt im Rückhub, gemeinsamer Rückhub")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1465,6 +1466,32 @@ QList<Check> endToEnd(const QString &reference_dir)
 		}
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 17. multi-position cylinder (R12, FORMELN.md M12), plan mehrstellungszylinder.qet, 6 bar, 3 s, xMax 200, xMax2 100 mm:
+		//     -MM1 C1 → both at 100; -MM2 C2 → front 200, rear 0; -MM3 C1+C3 from the front → held at 100 (C1 force
+		//     p·A_k beats C3 p·A_r); -MM4 C3 from 200/100 → both back to 0
+		Check c{names.at(16)};
+		QStringList wrong, seen;
+		QHash<QString, QPair<double, double>> pos;
+		const QStringList cyl{QStringLiteral("-MM1"), QStringLiteral("-MM2"), QStringLiteral("-MM3"), QStringLiteral("-MM4")};
+		ProjectRun pr = runProject(path("mehrstellungszylinder.qet"), 6.0, {}, 3.0001, [&](SimulationModel &s) {
+			if (std::abs(s.time() - 3.0) < 5e-6)
+				for (const QString &z : cyl)
+					pos.insert(z, {s.signalValue(QStringLiteral("x:") + z), s.signalValue(QStringLiteral("x1:") + z)});
+		});
+		if (!pr.error.isEmpty()) wrong << pr.error;
+		const QHash<QString, QPair<double, double>> want{{cyl.at(0), {0.1, 0.1}}, {cyl.at(1), {0.2, 0.0}},
+														 {cyl.at(2), {0.1, 0.1}}, {cyl.at(3), {0.0, 0.0}}};
+		for (const QString &z : cyl) {
+			const auto g = pos.value(z, {std::nan(""), std::nan("")}), w = want.value(z);
+			const QString s = QStringLiteral("%1 %2/%3 mm").arg(z).arg(g.first * 1000, 0, 'f', 1).arg(g.second * 1000, 0, 'f', 1);
+			if (!(std::abs(g.first - w.first) <= 0.5e-3 && std::abs(g.second - w.second) <= 0.5e-3))
+				wrong << s + QStringLiteral(" statt %1/%2").arg(w.first * 1000).arg(w.second * 1000);
+			else seen << s;
+		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? QStringLiteral("vorn/hinten: ") + seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
 		out << c;
 	}
 	{   // 16. compressed air motors (R12, FORMELN.md M11), plan druckluftmotor.qet: -MA1 fed at A, -MA2 at B.

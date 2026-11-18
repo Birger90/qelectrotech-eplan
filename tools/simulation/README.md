@@ -234,8 +234,14 @@ Elektrische Teile mit reellen Werten. Sie tragen die Bauteilinformationen `sim_r
   Drehzahl). Messgrößen wie beim Hydromotor: `omega:`, `phi:`, `tau:`, `P:`.
 - **Druckluftmotor** (`actuator.rotary_motor` pneumatisch): Schluckvolumen `displacement` je Umdrehung, viskose
   Reibung `f`, Trägheit `I`; Luft von A nach B.
-- Prüfplan `druckluftmotor.qet` (eigenes Prüfsymbol, Motor rechts- und linksherum). Nicht gerechnet: Muskeln,
-  Belastungseinheit, Tandem-/Teleskopzylinder, Druckübersetzer.
+- Prüfplan `druckluftmotor.qet` (eigenes Prüfsymbol, Motor rechts- und linksherum).
+- **Mehrstellungszylinder** (`actuator.multi_position_cylinder`, C1, C2, C3; Fork 1.34.0): zwei Kolben gleichen
+  Durchmessers hintereinander. Der hintere (C1, Hub `xMax2`, Standard `xMax`/2) schiebt den vorderen mit seiner Stange in
+  die Zwischenstellung, C2 fährt den vorderen allein bis `xMax`, C3 ist seine Stangenseite. Kontakt einseitig, Stoß
+  plastisch; Startlagen `xStart`, `xStart1`; Messgrößen `x:` (vorderer Kolben) und `x1:` (hinterer). Prüfplan
+  `mehrstellungszylinder.qet` (Formel M12).
+- Nicht gerechnet: Muskeln (Kennlinie nur aus dem Datenblatt), Belastungseinheit (R13), Druckübersetzer (FluidSIM gibt
+  keine Kennwerte, nur Datenblattgrößen). Tandem- und Teleskopzylinder gibt es in FluidSIM nicht als Bauteil.
 
 ## Vakuum, Schwenk- und Greiferantriebe (R10)
 

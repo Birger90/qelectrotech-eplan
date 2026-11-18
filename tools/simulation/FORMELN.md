@@ -1,6 +1,6 @@
 # Formelregister des Rechenkerns
 
-Stand Fork 1.32.0 (18.11.2026). Hier steht jede Beziehung, die `sources/simulation/` rechnet, mit Codestelle,
+Stand Fork 1.33.0 (18.11.2026). Hier steht jede Beziehung, die `sources/simulation/` rechnet, mit Codestelle,
 Herkunft, Beleg, Gültigkeitsgrenze und der Prüfung, die sie abdeckt. Jede Zeile hat mindestens einen Beleg; alle
 Belege stehen mit Fundstelle am Ende. F-Nummern verweisen auf das Quellenregister des externen Pakets
 „Claude_Simulation_Roadmap“ (`FORMELQUELLEN.md`, Stand 15.11.2026), S-Nummern auf dessen Primärquellen (hier mit
@@ -82,6 +82,7 @@ Codestellen: `phys` = `simulationphysics.h`, `model` = `simulationmodel.cpp`, `u
 | M08 | Gewichtskraft F_W = m·g·sin α gegen das Ausfahren (m = m_cyl + m_ext, α Einbauwinkel, g = 9,81 m/s²) | `model` Cylinder `weight`, `opposing` | F06 | Literaturformel nach QS05 („Die dem Ausfahren entgegenwirkende Gewichtskraft“: F_W = m·g·sin α); S06 (Masse) | Drehen des Symbols ändert α nicht (wie FluidSIM) | Standardventile und Zylinderkräfte (R11) |
 | M09 | Reibung nach FluidSIM: hydraulische Kolbenreibung F_B (Losbrechkraft), F_M (Coulomb), F_V (viskos, N·s/m) statt der Vorgaben aus M02/M03; äußere Masse zusätzlich Haftreibung µ_B·m_ext·g·\|cos α\| und Gleitreibung µ_C·m_ext·g·\|cos α\|; Haftgrenze ≥ Gleitreibung | `model` Cylinder | F07, F08 | nach QS05 („Geschwindigkeitsabhängige Reibung“: Haftreibung, Newton'sche und Coulomb'sche Gleitreibung des Kolbens und der externen Masse, F_B = µ_B·m·g·cos α, F_C = µ_C·m·g·cos α; „Konfigurierbarer Zylinder“: Losbrechkraft, Coulomb'sche Reibkraft, viskose Reibung); Reibungsfamilie S07 | Stribeck-Übergang (tv, tf, v_M) nicht nachgebildet: Sprung von Haft- auf Gleitreibung; pneumatische Zylinder weiter M02/M03 (F_stat, F_ref/v_ref) | R11 |
 | M10 | Federkennlinie F_S(x) = A_K·(p_min + (p_max − p_min)·x/x_max) (Federdruck bei x = 0 und bei x_max, `spring_right` gegen das Ausfahren, `spring_left` in Ausfahrrichtung); Kraftprofil F_E(x) stückweise linear aus F_var_ex (Ausfahren, v ≥ 0) bzw. F_var_re (Einfahren), Punkte {x [mm], F [N], …}, außerhalb der Endwert, gegen das Ausfahren | `model` Cylinder `opposing`, `profileAt` | F06, F41 | nach QS05 („Konfigurierbarer Zylinder“: Federdruck bei x = 0 und x = x_max; „Kraftprofil“: Stützpunkte über die Kolbenstellung, getrennt für Aus- und Einfahren; „Die vom Anwender vorgegebene Kraft“: wirkt dem Ausfahren entgegen) | Federdruck auf die Kolbenfläche bezogen und Einheit N der Profilkraft sind Annahmen (die Hilfe nennt sie nicht); ohne spring_left/right bleibt die Vorgabe 15 % von A_K·6 bar | R11 |
+| M11 | Druckluftmotor als Welle (M06/H-Motor-Familie): τ = D_θ·(p_A − p_B) − b·ω − τ_Last, J·dω/dt = τ; mit Nennwerten (p_N, n_N, M_N, k = n₀/n_N): Stillstandsmoment M_S = M_N·k/(k − 1), D_θ = M_S/p_N, b = M_S/(k·2π·n_N), also n = n_N bei p_N und M = M_N, n₀ = k·n_N im Leerlauf; Luftverbrauch ṁ = ρ(p_Zulauf)·D_θ·\|ω\| vom höheren der Anschlüsse A/B zum Mittelauspuff EX; bremsendes Fremdmoment als trockene Reibung (torqueType 1), antreibendes als Lastmoment (2) | `model` Motor (`air`), `phys` `Shaft` | F09, F10 | eigene Ableitung aus der linearen Kennlinie (Herleitung unten); Nennwerte und Parameter nach QS05 („Druckluftmotor mit Mittelauspuff“: Nenndruck, Nenndrehzahl, Nennmoment, n₀:n_N, Trägheitsmoment, Fremdmoment bremsend/antreibend); Wellengleichung S29 | Kennlinie linear und Moment proportional zum Druck (reale Lamellenmotoren weichen ab); keine Leckage, kein Anlaufmoment der Lamellen; ohne Nennwerte (Pneu.RotaryMotor) gelten displacement, f, I | Druckluftmotoren (R12) |
 
 ## Ventile
 
@@ -195,6 +196,10 @@ in `sim_link`; der FluidSIM-Import schreibt sie). Codestellen: `sig` = `simulati
   also p_A ∈ [p₀, p₀ + Δp_end]. Für die vorgeschaltete Druckwaage gilt dasselbe mit d = p_A − p_X über der Drossel.
 - **V12 (Prüffall Nachsaugen):** Die Pumpe -GP5 saugt q aus dem Netz B, nachfließen kann nur T → B über rT_cv; im
   Gleichgewicht ist q = orificeFlow(p_T − p_B) (H03 mit p_s = 0,3 bar), nach p_B per Bisektion gelöst.
+- **M11 (Nennpunkt):** Lineare Kennlinie M(n) = M_S·(1 − n/n₀) mit n₀ = k·n_N. Aus M(n_N) = M_N folgt
+  M_S = M_N·k/(k − 1); als Welle ist M_S = D_θ·p_N (Stillstand) und M_S = b·ω₀ (Leerlauf), daraus D_θ und b. Bei
+  anderem Druck p skaliert das Stillstandsmoment mit p und die Leerlaufdrehzahl ω₀·p/p_N (Prüffall: 6 bar doppelt so
+  schnell wie 3 bar; Nennpunkt 3 bar mit 0,62 N·m bremsend genau 975 1/min).
 - **R06 (Druckregelkreis):** Mit PI-Anteil verschwindet die bleibende Regelabweichung: der Sensor (0 … 10 MPa →
   0 … 10 V) meldet beim Sollwert 4 V genau 40 bar. Die Stellgröße stellt sich auf den Öffnungsdruck ein, bei dem
   V09 die Pumpenförderung abführt (rund 2,8 V).

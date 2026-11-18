@@ -78,6 +78,8 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
   (nicht S…, das sind Paketquellen). Prüfpläne `druckregelung.qet`, `lageregelung.qet` aus eigenen Prüfsymbolen
   (Testsammlung `90_signal`, Erzeuger `erzeuge_r06.py` im Scratchpad-Muster); Reset-Variante per `textVariant`
   auf `vMin=21.6 V` → `vMin=30 V`.
+- Druckluftmotoren (R12): `Motor` mit `air` = true, gleiche `SimPhysics::Shaft`; Massenstrom ρ·D·|ω|/2π vom höheren
+  Anschluss zu EX; Prüfplan `druckluftmotor.qet`, Nennpunkt per textVariant auf M_ext.
 - Vakuum (R10): Ejektor mit stetiger linearer Saugkennlinie, Sauger mit Haltekraft gegen s·m·g, Vakuumschalter =
   Druckschalter mit negativem p0. Prüfplan `referenz/plaene/vakuum.qet`; Varianten im Prüfstand per `textVariant`
   (Parameter in den eingebetteten `<fluid>`-Block schreiben, selbstschließendes Tag beachten).

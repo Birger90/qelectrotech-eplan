@@ -174,6 +174,9 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
   Masse `m_ext` samt Reibung `mu_B_ext`/`mu_M_ext`, hydraulisch `F_B`/`F_M`/`F_V` als Kolbenreibung (pneumatisch
   weiter `F_stat`, `F_ref`/`v_ref`), Feder `spring_left`/`spring_right` mit `p_spring_min`/`p_spring_max` (bezogen auf
   die Kolbenfläche) und Kraftprofil `F_var_ex`/`F_var_re` = {x mm, F N, …} bei `use_F_const` False.
+- Druckluftmotoren (Fork 1.33.0, R12): `MotorWithMidExhaust` rechnet aus `p_N`, `rpm_N`, `M_N`, `n0_nN` (lineare
+  Kennlinie, Nennpunkt exakt), `Pneu.Actuator.RotaryMotor` aus `displacement`, `f`, `I`; Muskeln und Belastungseinheit
+  noch nicht (Muskelkennlinie nur aus dem Festo-Datenblatt, nicht schätzen).
 - Analoge Signale (Fork 1.30.0, R06): der Import gibt den ET-Analogbausteinen `sim_role` = `analog`, `sim_block`
   (Klasse ohne „ET.“), `sim_params` (alle Kennwerte mit Einheit) und `sim_link`; Anschlüsse heißen wie am Bauteil
   (SP, SN, W, X, Y), nicht wie die Symbolbeschriftung („1“, „2“, „3“). Kopplungen aus FluidSIM: Ventil-S ↔

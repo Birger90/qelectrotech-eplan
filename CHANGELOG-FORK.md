@@ -3,6 +3,20 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.33.0 – 18.11.2026
+
+Simulations-Roadmap R12 (Sonderantriebe), erster Teil: Druckluftmotoren.
+
+- Druckluftmotor mit Mittelauspuff (FluidSIM `MotorWithMidExhaust`): lineare Momentenkennlinie aus Nenndruck,
+  Nenndrehzahl, Nennmoment und n₀/n_N, Moment proportional zur Druckdifferenz, Luftverbrauch zum Auspuff, Fremdmoment
+  bremsend oder antreibend; einfacher Druckluftmotor aus Schluckvolumen, Reibung und Trägheit (vorher abgewiesen).
+- Neue Prüfung „Druckluftmotoren (R12)“ mit `druckluftmotor.qet`: Leerlauf bei 6 bar doppelt so schnell wie bei 3 bar,
+  Nennpunkt 3 bar mit 0,62 N·m bremsend genau 975 1/min, rechts- wie linksherum. Formelregister M11.
+- Muskeln und Belastungseinheit bleiben abgewiesen: die Muskelkennlinie braucht Herstellerdaten (DMSP), die
+  Belastungseinheit gekoppelte Zylinder (R13).
+- FluidSIM-Batch: 1071 von 1136 Beispielen starten (vorher 1064): sieben Übungen aus TP101/TP201 mit Druckluftmotor;
+  bewegte Zylinder unverändert 291.
+
 ## 1.32.0 – 18.11.2026
 
 Simulations-Roadmap R11 (Standardventile und Zylinderkräfte):

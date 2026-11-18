@@ -377,6 +377,8 @@ struct SimulationModel::Motor {
 	SimPhysics::Shaft shaft;
 	double tau_load = 0.0;                        // constant load torque against positive rotation
 	double last_dp = 0.0;
+	bool air = false;                             // R12: compressed air motor (mass flow from the inlet)
+	QString exhaust;                              // mid exhaust port (EX), empty: the air leaves at the other port
 };
 
 struct SimulationModel::FlowValve {
@@ -820,8 +822,37 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					if (p->alpha > 1.0) m_model_errors << QStringLiteral("%1: Verstellgrad alpha %2 größer als 1").arg(who).arg(p->alpha);
 					p->cleak = paramIn(f, QStringLiteral("GL"), 0.0, QStringLiteral("m3/(s.Pa)"), &m_model_errors, who, Range::NonNegative);
 					m_pumps << p;
-				} else if (model == QLatin1String("hydraulic_motor") && !hyd) {
-					m_model_errors << QStringLiteral("%1: Druckluftmotor hat kein Rechenmodell (nur Hydromotoren, Roadmap R12)").arg(part);
+				} else if ((model == QLatin1String("hydraulic_motor") && !hyd) || model == QLatin1String("air_motor")) {
+					// R12 (FORMELN.md M11): compressed air motor as a shaft (M01/M06 family). With FluidSIM rated values
+					// (p_N, rpm_N, M_N, n0_nN = k) a linear characteristic: stall torque M_N·k/(k − 1), no-load speed
+					// k·n_N at p_N; displacement per radian = stall torque / p_N, viscous friction = stall torque / ω₀
+					auto *mo = new Motor;
+					mo->e = e;
+					mo->label = part;
+					mo->air = true;
+					const QString who = part;
+					auto &s = mo->shaft;
+					s.alpha = 1.0;
+					if (fn == QLatin1String("actuator.motor_with_mid_exhaust")) {
+						const double pn = paramIn(f, QStringLiteral("p_N"), 0.3e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive);
+						const double nn = paramIn(f, QStringLiteral("rpm_N"), 975.0 / 60.0, QStringLiteral("1/s"), &m_model_errors, who, Range::Positive);
+						const double mn = paramIn(f, QStringLiteral("M_N"), 0.62, QStringLiteral("N.m"), &m_model_errors, who, Range::Positive);
+						const double k = paramNative(f, QStringLiteral("n0_nN"), 2.0, QString(), &m_model_errors, who, Range::Positive);
+						if (!(k > 1.0)) m_model_errors << QStringLiteral("%1: n0_nN %2 muss größer als 1 sein").arg(who).arg(k);
+						const double stall = mn * k / std::max(k - 1.0, 1e-3);
+						s.D = 2.0 * M_PI * stall / pn;
+						s.b = stall / (k * 2.0 * M_PI * nn);
+						mo->exhaust = QStringLiteral("EX");
+					} else {
+						s.D = paramIn(f, QStringLiteral("displacement"), 1e-4, QStringLiteral("m3"), &m_model_errors, who, Range::Positive);
+						s.b = paramIn(f, QStringLiteral("f"), 3.0, QStringLiteral("N.m.s/rad"), &m_model_errors, who, Range::NonNegative);
+					}
+					s.J = paramIn(f, QStringLiteral("I"), 2e-3, QStringLiteral("kg.m2"), &m_model_errors, who, Range::Positive);
+					const double mext = paramIn(f, QStringLiteral("M_ext"), 0.0, QStringLiteral("N.m"), &m_model_errors, who);
+					// FluidSIM torqueType 1: braking (against the rotation, like dry friction), 2: driving
+					if (paramNative(f, QStringLiteral("torqueType"), 1.0, QString(), &m_model_errors, who, Range::Any) > 1.5) mo->tau_load = -mext;
+					else s.tau_c = std::abs(mext);
+					m_motors << mo;
 				} else if (model == QLatin1String("hydraulic_motor")) {
 					auto *mo = new Motor;
 					mo->e = e;
@@ -2033,6 +2064,16 @@ void SimulationModel::step(double dt)
 	for (Motor *mo : m_motors) {
 		const int ka = node(mo->e, QStringLiteral("A")), kb = node(mo->e, QStringLiteral("B"));
 		const double dp = p(ka) - p(kb);
+		if (mo->air) {
+			// R12 (FORMELN.md M11): air from the port with the higher pressure, mass flow = inlet density ·
+			// displacement · speed, out through the mid exhaust (open or silenced) or the other port
+			const int in = p(ka) >= p(kb) ? ka : kb;
+			const int out = mo->exhaust.isEmpty() ? (in == ka ? kb : ka) : node(mo->e, mo->exhaust);
+			if (in >= 0) book(in, out, p(in) / (R_AIR * T_AIR) * mo->shaft.D * std::abs(mo->shaft.omega) / (2.0 * M_PI), mo->e);
+			mo->shaft.step(dp, mo->tau_load, dt);
+			mo->last_dp = dp;
+			continue;
+		}
 		book(ka, kb, mo->shaft.flow(dp), mo->e);
 		mo->shaft.step(dp, mo->tau_load, dt);
 		mo->last_dp = dp;

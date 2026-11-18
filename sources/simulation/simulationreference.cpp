@@ -494,7 +494,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Leitungen, Kupplungen, Aufbereitung (R05): Rohr laminar/turbulent, beide Richtungen, Widerstand, Kupplung, Filter verstopft, Drehdurchführung"),
 		QStringLiteral("Stetig-, Senkbrems- und Zuschaltventile (R07/R09): Kennlinie, Richtung, Sättigung, Überdeckung, Kerbe, Leckage, Sprungantwort, Steuerdruck, Druckwaagen, Schockblock, Folgeventil"),
 		QStringLiteral("Analoge Signale und Regler (R06): Kalibrierung, Umkehr, Sättigung, Anti-Windup, Reset, Abtastverfeinerung, Druck- und Lageregelkreis"),
-		QStringLiteral("Standardventile und Zylinderkräfte (R11): Pfadmatrizen der Sammlung, gleichzeitige Betätigung, Vorrang, Gewicht, Kraftprofil, Feder, Reibung")};
+		QStringLiteral("Standardventile und Zylinderkräfte (R11): Pfadmatrizen der Sammlung, gleichzeitige Betätigung, Vorrang, Gewicht, Kraftprofil, Feder, Reibung"),
+		QStringLiteral("Druckluftmotoren (R12): Leerlaufdrehzahl nach Druck, Nennpunkt aus den Nennwerten, beide Drehrichtungen")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1462,6 +1463,36 @@ QList<Check> endToEnd(const QString &reference_dir)
 				else seen << QStringLiteral("%1: %2 N (soll %3)").arg(QString::fromUtf8(k.what)).arg(got, 0, 'f', 1).arg(want, 0, 'f', 1);
 			}
 		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 16. compressed air motors (R12, FORMELN.md M11), plan druckluftmotor.qet: -MA1 fed at A, -MA2 at B.
+		//     Linear characteristic from p_N 3 bar, n_N 975 1/min, M_N 0.62 N·m, n0/nN 2: ω₀ = 2·n_N·2π at p_N
+		Check c{names.at(15)};
+		QStringList wrong, seen;
+		auto speeds = [&](const QString &file, double bar) {
+			QPair<double, double> w{std::nan(""), std::nan("")};
+			ProjectRun pr = runProject(file, bar, {}, 3.0001, [&](SimulationModel &s) {
+				if (std::abs(s.time() - 3.0) < 5e-6) w = {s.signalValue(QStringLiteral("omega:-MA1")), s.signalValue(QStringLiteral("omega:-MA2"))};
+			});
+			if (!pr.error.isEmpty()) wrong << QStringLiteral("%1: %2").arg(QFileInfo(file).fileName(), pr.error);
+			return w;
+		};
+		const double w0 = 2 * 975.0 / 60.0 * 2 * M_PI;
+		const auto free6 = speeds(path("druckluftmotor.qet"), 6.0);
+		const QString braked = textVariant(path("druckluftmotor.qet"), {{QStringLiteral("<parameter name=\"M_ext\" unit=\"N.m\" value=\"0\"/>"),
+																	   QStringLiteral("<parameter name=\"M_ext\" unit=\"N.m\" value=\"0.62\"/>")}},
+										   QStringLiteral("qet_sim_r12_nenn.qet"));
+		const auto rated = braked.isEmpty() ? qMakePair(std::nan(""), std::nan("")) : speeds(braked, 3.0);
+		if (!braked.isEmpty()) QFile::remove(braked);
+		auto ok = [](double got, double want) { return std::isfinite(got) && std::abs(got - want) <= 0.005 * std::abs(want); };
+		if (!(ok(free6.first, 2 * w0) && ok(free6.second, -2 * w0)))
+			wrong << QStringLiteral("Leerlauf 6 bar: %1 / %2 rad/s statt ±%3").arg(free6.first).arg(free6.second).arg(2 * w0);
+		else seen << QStringLiteral("Leerlauf 6 bar: %1 / %2 rad/s (soll ±%3, doppelt so schnell wie bei 3 bar)").arg(free6.first, 0, 'f', 1).arg(free6.second, 0, 'f', 1).arg(2 * w0, 0, 'f', 1);
+		if (!(ok(rated.first, w0 / 2) && ok(rated.second, -w0 / 2)))
+			wrong << QStringLiteral("Nennpunkt 3 bar, 0,62 N·m: %1 / %2 rad/s statt ±%3").arg(rated.first).arg(rated.second).arg(w0 / 2);
+		else seen << QStringLiteral("Nennpunkt 3 bar, 0,62 N·m bremsend: %1 1/min (soll 975), links %2 1/min").arg(rated.first * 60 / (2 * M_PI), 0, 'f', 1).arg(rated.second * 60 / (2 * M_PI), 0, 'f', 1);
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
 		out << c;

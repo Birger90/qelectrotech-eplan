@@ -225,6 +225,18 @@ Elektrische Teile mit reellen Werten. Sie tragen die Bauteilinformationen `sim_r
 - Nicht gerechnet: Potentiometer, Oszilloskop, Strom- und Widerstandsmesser (ohne Wirkung), MPYE und
   Proportional-Verstellpumpe, analoge SPS-Ein-/Ausgänge.
 
+## Druckluftmotoren (R12)
+
+- **Druckluftmotor mit Mittelauspuff** (`actuator.motor_with_mid_exhaust`, A, B, EX): aus den FluidSIM-Nennwerten
+  `p_N`, `rpm_N`, `M_N`, `n0_nN` eine lineare Momentenkennlinie (Stillstandsmoment M_N·k/(k − 1), Leerlauf k·n_N bei
+  p_N), Moment proportional zur Druckdifferenz A − B, Trägheit `I`, Fremdmoment `M_ext` bremsend (`torqueType` 1) oder
+  antreibend (2). Die Luft strömt vom höheren der Anschlüsse A/B zum Auspuff EX (Verbrauch Dichte · Schluckvolumen ·
+  Drehzahl). Messgrößen wie beim Hydromotor: `omega:`, `phi:`, `tau:`, `P:`.
+- **Druckluftmotor** (`actuator.rotary_motor` pneumatisch): Schluckvolumen `displacement` je Umdrehung, viskose
+  Reibung `f`, Trägheit `I`; Luft von A nach B.
+- Prüfplan `druckluftmotor.qet` (eigenes Prüfsymbol, Motor rechts- und linksherum). Nicht gerechnet: Muskeln,
+  Belastungseinheit, Tandem-/Teleskopzylinder, Druckübersetzer.
+
 ## Vakuum, Schwenk- und Greiferantriebe (R10)
 
 - **Ejektor** (`vacuum.vacuum_generator`): Anschluss 1 Versorgung, 2 Vakuum. Luftverbrauch `qn_ac` bei 600 kPa (wie

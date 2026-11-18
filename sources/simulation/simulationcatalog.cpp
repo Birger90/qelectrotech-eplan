@@ -55,7 +55,7 @@ QList<Entry> build()
 	for (const char *f : {"motor.fixed_motor", "motor.variable_motor", "actuator.rotary_motor"})
 		e << physical(f, "hydraulic_motor", "hydraulic", "A (Zulauf), B (Ablauf)",
 			      "displacement [m3/U], alpha (-1 … 1), GLeak [m3/(s.Pa)], I bzw. J [kg.m2], f [N.m.s/rad], M_fric [N.m], M_load bzw. M_ext [N.m]",
-			      "Welle mit Trägheit, viskoser und geglätteter trockener Reibung, Leckage A→B; Druckluftmotoren nicht (abgewiesen)",
+			      "Welle mit Trägheit, viskoser und geglätteter trockener Reibung, Leckage A→B; als Druckluftmotor (R12): Luftverbrauch ρ·D·ω/2π, ohne Leckage",
 			      "Hydromotor (R08)");
 	for (const char *f : {"actuator.semi_rotary", "actuator.semi_rotary_motor2"})
 		e << physical(f, "rotary_actuator", "both", "A, B",
@@ -66,9 +66,12 @@ QList<Entry> build()
 		      "d_piston, xMax [m], m_cyl [kg], F_stat [N] wie Zylinder",
 		      "Ersatzmodell: einfachwirkender Zylinder mit Rückstellfeder, Greifkraft = Kolbenkraft (F:); keine Backenkinematik, kein Werkstückanschlag",
 		      "Vakuum und Schwenk-/Greiferantriebe (R10)");
-	for (const char *f : {"actuator.fluidic_muscle1", "actuator.fluidic_muscle3",
-			       "actuator.loading_unit_2", "actuator.motor_with_mid_exhaust"})
-		e << other(f, Role::Unsupported, "", "Muskel-, Lade- und Druckluftmotorantriebe brauchen eigene Mechanik (Roadmap R12); kein Linearkolben als Ersatz");
+	e << physical("actuator.motor_with_mid_exhaust", "air_motor", "pneumatic", "A, B (Zulauf je Drehrichtung), EX Mittelauspuff",
+		      "p_N [Pa], rpm_N [1/min], M_N [N.m], n0_nN, I [kg.m2], M_ext [N.m], torqueType (1 bremsend, 2 antreibend)",
+		      "lineare Momentenkennlinie aus den Nennwerten, Moment ∝ Druckdifferenz, Luftverbrauch ρ·D·ω/2π zum Auspuff; ohne Leckage und Anlaufverhalten der Lamellen",
+		      "Druckluftmotoren (R12)");
+	for (const char *f : {"actuator.fluidic_muscle1", "actuator.fluidic_muscle3", "actuator.loading_unit_2"})
+		e << other(f, Role::Unsupported, "", "Muskel (Kraftkennlinie aus dem Herstellerdatenblatt nötig) und Belastungseinheit (gekoppelte Zylinder, Roadmap R12/R13)");
 	// ---------------------------------------------------------- Wegeventile
 	for (const char *f : {"directional_valve.two_pins", "directional_valve.three_pins", "directional_valve.four_pins",
 			       "directional_valve.five_pins"})

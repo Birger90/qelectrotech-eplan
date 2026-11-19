@@ -21,6 +21,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <initializer_list>
+#include <utility>
 
 namespace {
 // thermal voltage kT/q at 20 °C (293.15 K, the reference temperature of the simulation)
@@ -56,6 +58,12 @@ QString AnalogCircuit::check() const
 			return QStringLiteral("%1: Spule braucht R > 0 und L ≥ 0 (sim_coil)").arg(p.label);
 		if (p.kind == Kind::Switch && (!(p.ron > 0) || !(p.roff > p.ron)))
 			return QStringLiteral("%1: Kontaktwiderstände ungültig (Ron > 0, Roff > Ron)").arg(p.label);
+		if (p.kind == Kind::Transistor && (!(p.is > 0) || !(p.n > 0) || !(p.bf > 0) || !(p.br > 0)))
+			return QStringLiteral("%1: Transistor braucht Is, n, BF und BR größer als 0").arg(p.label);
+		if (p.kind == Kind::OpAmp && (!(p.gain > 0) || !(p.rin > 0) || !(p.rout > 0) || !(p.vmax > p.vmin)))
+			return QStringLiteral("%1: Operationsverstärker braucht A, Rin, Rout > 0 und Vmax > Vmin").arg(p.label);
+		if ((p.kind == Kind::Transistor || p.kind == Kind::OpAmp) && (p.a < 0 || p.b < 0 || p.c < 0))
+			return QStringLiteral("%1: alle drei Anschlüsse müssen angeschlossen sein").arg(p.label);
 		if (p.kind == Kind::Diode && (!(p.is > 0) || !(p.n > 0)))
 			return QStringLiteral("%1: Is und n müssen größer als 0 sein").arg(p.label);
 		if (p.kind != Kind::Ground && p.a < 0 && p.b < 0)
@@ -77,7 +85,7 @@ void AnalogCircuit::build()
 	int n = 0;
 	for (const Part &p : m_parts) {
 		if (p.kind == Kind::Ground) continue;
-		for (int net : {p.a, p.b})
+		for (int net : {p.a, p.b, p.c})
 			if (net >= 0 && !grounds.contains(net) && !m_index.contains(net)) m_index.insert(net, n++);
 	}
 	for (int g : grounds) m_index.insert(g, -1);
@@ -131,6 +139,19 @@ bool AnalogCircuit::step(double t, double dt)
 			if (ia >= 0) rhs[ia] += j;
 			if (ib >= 0) rhs[ib] -= j;
 		};
+		// a nonlinear device: current j0 leaves @a node into the device at the present iterate, its derivatives
+		// dJ/dv per net; stamped as the Newton linearisation J ≈ j0 + Σ g·(v − v0)
+		auto device = [&](int node, double j0, std::initializer_list<std::pair<int, double>> d) {
+			const int in = idx(node);
+			if (in < 0) return;
+			double lin = j0;
+			for (const auto &nd : d) {
+				const int k = idx(nd.first);
+				if (k >= 0) at(in, k) += nd.second;
+				lin -= nd.second * volt(x, nd.first);
+			}
+			rhs[in] -= lin;
+		};
 		for (int k = 0; k < nodes; ++k) at(k, k) += G_MIN;
 		int vs = nodes;
 		bool nonlinear = false;
@@ -174,6 +195,30 @@ bool AnalogCircuit::step(double t, double dt)
 					const double i0 = p.is * (e - 1.0);
 					conductance(p.a, p.b, g);
 					inject(p.a, p.b, -(i0 - g * v0));
+					break;
+				}
+				case Kind::Transistor: {    // Ebers-Moll transport model (E09), NPN or PNP by sign
+					nonlinear = true;
+					const double s = p.sign, nv = p.n * V_T;
+					const double vb = volt(x, p.b), vc = volt(x, p.a), ve = volt(x, p.c);
+					const double ef = std::exp(std::min(s * (vb - ve), 40.0 * nv) / nv);
+					const double er = std::exp(std::min(s * (vb - vc), 40.0 * nv) / nv);
+					const double i_f = p.is * (ef - 1.0), i_r = p.is * (er - 1.0);
+					const double gf = p.is / nv * ef + G_MIN, gr = p.is / nv * er + G_MIN, k = 1.0 + 1.0 / p.br;
+					const double jc = s * (i_f - k * i_r), jb = s * (i_f / p.bf + i_r / p.br);
+					device(p.a, jc, {{p.b, gf - k * gr}, {p.c, -gf}, {p.a, k * gr}});
+					device(p.b, jb, {{p.b, gf / p.bf + gr / p.br}, {p.c, -gf / p.bf}, {p.a, -gr / p.br}});
+					device(p.c, -jc - jb, {{p.b, -(gf - k * gr) - (gf / p.bf + gr / p.br)}, {p.c, gf + gf / p.bf},
+										   {p.a, -k * gr + gr / p.br}});
+					break;
+				}
+				case Kind::OpAmp: {         // open-loop gain A with tanh output limit, Rin, Rout (E10)
+					nonlinear = true;
+					conductance(p.a, p.b, 1.0 / p.rin);
+					const double vh = (p.vmax - p.vmin) / 2, vm = (p.vmax + p.vmin) / 2;
+					const double th = std::tanh(p.gain * (volt(x, p.a) - volt(x, p.b)) / vh);
+					const double e = vm + vh * th, g = p.gain * (1.0 - th * th);
+					device(p.c, (volt(x, p.c) - e) / p.rout, {{p.c, 1.0 / p.rout}, {p.a, -g / p.rout}, {p.b, g / p.rout}});
 					break;
 				}
 				case Kind::Ground: break;
@@ -226,6 +271,24 @@ bool AnalogCircuit::step(double t, double dt)
 	int vs = nodes;
 	for (Part &p : m_parts) {
 		const double v = volt(x, p.a) - volt(x, p.b);
+		if (p.kind == Kind::Transistor) {
+			const double s = p.sign, nv = p.n * V_T;
+			const double vb = volt(x, p.b), vc = volt(x, p.a), ve = volt(x, p.c);
+			const double i_f = p.is * (std::exp(std::min(s * (vb - ve), 40.0 * nv) / nv) - 1.0);
+			const double i_r = p.is * (std::exp(std::min(s * (vb - vc), 40.0 * nv) / nv) - 1.0);
+			p.v = vc - ve;
+			p.i = s * (i_f - (1.0 + 1.0 / p.br) * i_r);
+			p.i2 = s * (i_f / p.bf + i_r / p.br);
+			continue;
+		}
+		if (p.kind == Kind::OpAmp) {
+			const double vh = (p.vmax - p.vmin) / 2, vm = (p.vmax + p.vmin) / 2;
+			const double e = vm + vh * std::tanh(p.gain * (volt(x, p.a) - volt(x, p.b)) / vh);
+			p.v = volt(x, p.c);
+			p.i = (e - p.v) / p.rout;
+			p.i2 = (volt(x, p.a) - volt(x, p.b)) / p.rin;
+			continue;
+		}
 		switch (p.kind) {
 			case Kind::Resistor: p.i = v / p.value; break;
 			case Kind::Capacitor: p.i = p.value / dt * (v - p.v); break;

@@ -3,6 +3,19 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.43.0 – 19.11.2026
+
+Simulations-Roadmap R17 (analoge Elektrik), Stufe 3: Transistor und Operationsverstärker:
+
+- Bipolartransistor im Kirchhoff-Stromkreis: `sim_block` QN (NPN) bzw. QP (PNP), Anschlüsse C, B, E, Ebers-Moll mit
+  `sim_params` „Is=1e-14;n=1;BF=100;BR=1“ (Vorgaben sind Projektfestlegungen, Datenblattwerte eintragen). Messgrößen
+  `u:` = U_CE, `i:` = I_C, neu `ib:` = I_B.
+- Operationsverstärker: `sim_block` OP, Anschlüsse +, −, OUT, `sim_params` „A=1e5;Rin=1M;Rout=1;Vmax=15;Vmin=-15“
+  (Leerlaufverstärkung mit weicher Begrenzung). `u:` = Ausgangsspannung.
+- Formeln E09, E10; neue Prüfung „Halbleiter (R17, Stufe 3)“ mit `halbleiter.qet`: NPN aktiv und gesättigt, PNP,
+  invertierender Verstärker linear und in der Begrenzung, jeweils gegen eine unabhängige Lösung der Bauteilgleichungen.
+- Offen in R17: Stufe 4 (Schutzorgane), 5 (Motoren).
+
 ## 1.42.0 – 19.11.2026
 
 Simulations-Roadmap R17 (analoge Elektrik), Stufe 2: Kopplung an die Schaltlogik:

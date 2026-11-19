@@ -17,6 +17,8 @@
 */
 #include "simulationreference.h"
 
+#include <array>
+
 #include "grafcet.h"
 #include <QElapsedTimer>
 #include "plcprogram.h"
@@ -525,7 +527,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Fehlerszenarien (R15): Taster, Spule mit Reparatur, klemmender Kolben, Rückschlagventil, Verstopfung, Leckage, Wiederholbarkeit"),
 		QStringLiteral("Simulationsmodi (R16): bis zur nächsten Änderung, Einzelschritt, Teilprojekt (Blatt), Leistung"),
 		QStringLiteral("Analoge Elektrik (R17, Stufe 1): RC, RL, RLC, Einweggleichrichter, Spannungsteiler, Leistungsbilanz"),
-		QStringLiteral("Kopplung Stromkreis (R17, Stufe 2): Taster und Relaisspule mit R, L und Freilaufdiode, Relaiskontakt, SPS-Analogeingang und -ausgang")};
+		QStringLiteral("Kopplung Stromkreis (R17, Stufe 2): Taster und Relaisspule mit R, L und Freilaufdiode, Relaiskontakt, SPS-Analogeingang und -ausgang"),
+		QStringLiteral("Halbleiter (R17, Stufe 3): NPN aktiv und gesättigt, PNP, invertierender Operationsverstärker linear und begrenzt")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1607,6 +1610,66 @@ QList<Check> endToEnd(const QString &reference_dir)
 			wrong << QStringLiteral("SPS-Analog: Eingang %1 (soll %2), Ausgang %3 / %4 V (soll %5)").arg(ai).arg(raw).arg(ua2).arg(ur5).arg(u4);
 		else seen << QStringLiteral("SPS-Analogeingang %1 (soll 27648·%2 V/10 V = %3, Rin belastet den Teiler), Ausgang %4 V an R5")
 						 .arg(ai, 0, 'f', 2).arg(u4, 0, 'f', 5).arg(raw, 0, 'f', 2).arg(ur5, 0, 'f', 5);
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 26. semiconductors (R17 stage 3, FORMELN.md E09, E10), plan halbleiter.qet: NPN with Rc 1 kΩ on 10 V, base over
+		//     470 kΩ (active) or 10 kΩ (saturated) from 5 V; PNP emitter on 10 V, base 470 kΩ and collector 1 kΩ to ground;
+		//     inverting amplifier Ri 1 kΩ, Rf 10 kΩ, load 10 kΩ with 0.5 V (linear) and 2 V (limited). Expected values from
+		//     the device equations solved by bisection, independent of the nodal solver
+		Check c{names.at(25)};
+		QStringList wrong, seen;
+		ProjectRun r = runProject(path("halbleiter.qet"), 6.0, {}, 0.001);
+		if (!r.error.isEmpty()) wrong << r.error;
+		else {
+			auto sig = [&](const QString &id) { return r.sim->signalValue(id); };
+			const double vt = 1.380649e-23 * 293.15 / 1.602176634e-19, is = 1e-14, bf = 100, br = 1, k = 1 + 1 / br;
+			auto ic = [&](double vbe, double vce) { return is * (std::exp(vbe / vt) - 1) - k * is * (std::exp((vbe - vce) / vt) - 1); };
+			auto ib = [&](double vbe, double vce) { return is * (std::exp(vbe / vt) - 1) / bf + is * (std::exp((vbe - vce) / vt) - 1) / br; };
+			// returns {Ic, Ib, Uce} for base supply vbb over rb and collector supply vcc over rc (magnitudes, PNP mirrored)
+			auto bjt = [&](double vbb, double rb, double vcc, double rc) {
+				auto vceOf = [&](double vbe) {
+					double lo = -0.5, hi = vcc;
+					for (int i = 0; i < 200; ++i) { const double m = 0.5 * (lo + hi); ((vcc - m) / rc - ic(vbe, m) > 0 ? lo : hi) = m; }
+					return 0.5 * (lo + hi);
+				};
+				double lo = 0.0, hi = 1.0;
+				for (int i = 0; i < 200; ++i) { const double m = 0.5 * (lo + hi); ((vbb - m) / rb - ib(m, vceOf(m)) > 0 ? lo : hi) = m; }
+				const double vbe = 0.5 * (lo + hi), vce = vceOf(vbe);
+				return std::array<double, 3>{ic(vbe, vce), ib(vbe, vce), vce};
+			};
+			auto rel = [](double got, double want, double tol) { return std::isfinite(got) && std::abs(got - want) <= tol * std::abs(want); };
+			const struct { const char *label, *name; double vbb, rb, sign; } cases[] = {
+				{"-Q1", "NPN aktiv", 5.0, 470e3, 1.0}, {"-Q2", "NPN gesättigt", 5.0, 10e3, 1.0}, {"-Q3", "PNP aktiv", 10.0, 470e3, -1.0}};
+			for (const auto &cs : cases) {
+				const auto want = bjt(cs.vbb, cs.rb, 10.0, 1000.0);
+				const QString l = QString::fromLatin1(cs.label);
+				const double gi = cs.sign * sig(QStringLiteral("i:") + l), gb = cs.sign * sig(QStringLiteral("ib:") + l), gu = cs.sign * sig(QStringLiteral("u:") + l);
+				if (!rel(gi, want[0], 1e-6) || !rel(gb, want[1], 1e-6) || !rel(gu, want[2], 1e-6))
+					wrong << QStringLiteral("%1: I_C %2 A, I_B %3 A, U_CE %4 V statt %5 / %6 / %7").arg(QString::fromUtf8(cs.name))
+								 .arg(gi).arg(gb).arg(gu).arg(want[0]).arg(want[1]).arg(want[2]);
+				else seen << QStringLiteral("%1: I_C %2 mA, I_B %3 µA (B = %4), U_CE %5 V (soll %6 mA / %7 µA / %8 V)")
+								 .arg(QString::fromUtf8(cs.name)).arg(gi * 1e3, 0, 'f', 5).arg(gb * 1e6, 0, 'f', 4).arg(gi / gb, 0, 'f', 2)
+								 .arg(gu, 0, 'f', 5).arg(want[0] * 1e3, 0, 'f', 5).arg(want[1] * 1e6, 0, 'f', 4).arg(want[2], 0, 'f', 5);
+			}
+			// op-amp: E = Vh·tanh(A·(v+ − v−)/Vh), output over Rout, Rin between the inputs; bisection on v−
+			const double A = 1e5, rin = 1e6, rout = 1.0, vh = 15.0, ri = 1e3, rf = 10e3, rl = 10e3;
+			auto opamp = [&](double vi) {
+				auto vo = [&](double vn) { const double e = vh * std::tanh(A * (0.0 - vn) / vh);
+					return (e / rout + vn / rf) / (1 / rout + 1 / rf + 1 / rl); };
+				double lo = -2.0, hi = 2.0;
+				for (int i = 0; i < 200; ++i) { const double m = 0.5 * (lo + hi);
+					((vi - m) / ri + (vo(m) - m) / rf - m / rin > 0 ? lo : hi) = m; }
+				return vo(0.5 * (lo + hi));
+			};
+			const double vo4 = sig(QStringLiteral("u:-N4")), vo5 = sig(QStringLiteral("u:-N5"));
+			const double w4 = opamp(0.5), w5 = opamp(2.0);
+			if (!rel(vo4, w4, 1e-6) || !rel(vo5, w5, 1e-6) || !(vo5 > -15.0))
+				wrong << QStringLiteral("OPV: %1 / %2 V statt %3 / %4").arg(vo4).arg(vo5).arg(w4).arg(w5);
+			else seen << QStringLiteral("OPV invertierend 0,5 V: %1 V (soll %2, ideal −5), 2 V: %3 V (soll %4, Grenze −15)")
+							 .arg(vo4, 0, 'f', 6).arg(w4, 0, 'f', 6).arg(vo5, 0, 'f', 4).arg(w5, 0, 'f', 4);
+		}
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
 		out << c;

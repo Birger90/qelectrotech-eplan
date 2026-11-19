@@ -29,13 +29,15 @@
 	implicit Euler method: resistors, capacitors and inductors (companion models), DC and sine voltage and current
 	sources, diodes (Shockley, Newton iteration with a limited voltage step) and ground. Nodes are the electric nets
 	of the simulation; the reference is every net with a ground part.
+	R17 stage 3 (E09, E10): bipolar transistors (Ebers-Moll transport model) and operational amplifiers (open-loop
+	gain with smooth output limit, input and output resistance).
 	R17 stage 2 (E06–E08): switches (a contact of the switching logic, R_on or R_off) and coils (R and L in series;
 	whether the relay or valve solenoid picks up is decided from the coil current in SimulationModel).
 */
 class AnalogCircuit
 {
 	public:
-		enum class Kind { Resistor, Capacitor, Inductor, VoltageSource, CurrentSource, Diode, Ground, Switch, Coil };
+		enum class Kind { Resistor, Capacitor, Inductor, VoltageSource, CurrentSource, Diode, Ground, Switch, Coil, Transistor, OpAmp };
 		struct Part {
 			Kind kind = Kind::Resistor;
 			QString label;
@@ -47,6 +49,13 @@ class AnalogCircuit
 			double ron = 0.01, roff = 1e9;      // switch: closed and open resistance [Ohm] (project definition E06)
 			bool closed = false;                // switch state, set by the switching logic before each step
 			double v = 0.0, i = 0.0;            // voltage a − b and current a → b of the last step
+			// R17 stage 3 (E09, E10): transistor a = collector, b = base, c = emitter (v = U_CE, i = I_C, i2 = I_B);
+			// op-amp a = +, b = −, c = output (v = output voltage to ground, i = output current into the net)
+			int c = -1;
+			double sign = 1.0;                  // transistor: +1 NPN, −1 PNP
+			double bf = 100.0, br = 1.0;        // transistor: forward and reverse current gain (Ebers-Moll)
+			double gain = 1e5, rin = 1e6, rout = 1.0, vmax = 15.0, vmin = -15.0;   // op-amp
+			double i2 = 0.0;
 		};
 
 		int add(const Part &p);             // index of the part

@@ -116,6 +116,15 @@ Leistung, Quellen negativ).
 
 Kontakte heißen im Stromkreis „-K1/14“ (Anschluss der Schaltseite) bzw. „-K1/Schließer“; `plc:Messwert` liest die Variable.
 Die Schaltlogik sieht den Spulenstrom des vorigen Rechenschritts (10 µs bei der Referenz).
+
+**Stufe 3 (Fork 1.43.0): Halbleiter** (Formeln E09, E10, Prüfplan `halbleiter.qet`):
+
+| sim_block | Bauteil | Anschlüsse | sim_params (Vorgabe = Projektfestlegung) | Messgrößen |
+|---|---|---|---|---|
+| `QN`, `QP` | NPN-, PNP-Transistor (Ebers-Moll) | C, B, E | `Is=1e-12;n=1;BF=100;BR=1` | `u:` U_CE, `i:` I_C, `ib:` I_B |
+| `OP` | Operationsverstärker | +, −, OUT | `A=1e5;Rin=1M;Rout=1;Vmax=15;Vmin=-15` | `u:` Ausgang gegen Masse, `i:` Ausgangsstrom, `ib:` Eingangsstrom |
+
+Ohne Frequenzgang, Anstiegsrate, Early-Effekt und Kapazitäten; die Begrenzung des OPV ist ein Kennwert, keine Versorgung.
 Prüfplan `analog.qet`.
 
 ## Simulationsmodi und Leistung (R16, Fork 1.40.0)

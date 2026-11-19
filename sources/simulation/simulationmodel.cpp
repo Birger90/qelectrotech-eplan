@@ -1549,9 +1549,11 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						{QStringLiteral("L"), AnalogCircuit::Kind::Inductor}, {QStringLiteral("V"), AnalogCircuit::Kind::VoltageSource},
 						{QStringLiteral("I"), AnalogCircuit::Kind::CurrentSource}, {QStringLiteral("D"), AnalogCircuit::Kind::Diode},
 						{QStringLiteral("GND"), AnalogCircuit::Kind::Ground},
-						{QStringLiteral("AI"), AnalogCircuit::Kind::Resistor}, {QStringLiteral("AQ"), AnalogCircuit::Kind::VoltageSource}};
+						{QStringLiteral("AI"), AnalogCircuit::Kind::Resistor}, {QStringLiteral("AQ"), AnalogCircuit::Kind::VoltageSource},
+						{QStringLiteral("Q"), AnalogCircuit::Kind::Transistor}, {QStringLiteral("QN"), AnalogCircuit::Kind::Transistor},
+						{QStringLiteral("QP"), AnalogCircuit::Kind::Transistor}, {QStringLiteral("OP"), AnalogCircuit::Kind::OpAmp}};
 					if (!kinds.contains(blk)) {
-						m_model_errors << QStringLiteral("%1: sim_block „%2“ unbekannt (R, C, L, V, I, D, GND, AI, AQ)").arg(pt.label, blk);
+						m_model_errors << QStringLiteral("%1: sim_block „%2“ unbekannt (R, C, L, V, I, D, GND, AI, AQ, QN, QP, OP)").arg(pt.label, blk);
 						continue;
 					}
 					QHash<QString, double> io_par;    // AI/AQ (E08): Rin, Umin, Umax, raw
@@ -1581,8 +1583,22 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						else if (key.compare(QLatin1String("phase"), Qt::CaseInsensitive) == 0) pt.phase = v;
 						else if (key.compare(QLatin1String("Is"), Qt::CaseInsensitive) == 0) pt.is = v;
 						else if (key == QLatin1String("n") || key == QLatin1String("N")) pt.n = v;
-						else if (blk == QLatin1String("AI") || blk == QLatin1String("AQ")) io_par.insert(key.toLower(), v);
+						else if (blk == QLatin1String("AI") || blk == QLatin1String("AQ") || pt.kind == AnalogCircuit::Kind::Transistor
+								 || pt.kind == AnalogCircuit::Kind::OpAmp) io_par.insert(key.toLower(), v);
 						else pt.value = v;     // R, C, L, V, I
+					}
+					if (pt.kind == AnalogCircuit::Kind::Transistor) {
+						// R17 stage 3 (E09): Ebers-Moll; Is and n as for the diode, BF, BR; QP is a PNP transistor
+						pt.sign = blk == QLatin1String("QP") ? -1.0 : 1.0;
+						pt.bf = io_par.value(QStringLiteral("bf"), pt.bf);
+						pt.br = io_par.value(QStringLiteral("br"), pt.br);
+					} else if (pt.kind == AnalogCircuit::Kind::OpAmp) {
+						// R17 stage 3 (E10): open-loop gain A, Rin, Rout, output limits Vmax/Vmin
+						pt.gain = io_par.value(QStringLiteral("a"), pt.gain);
+						pt.rin = io_par.value(QStringLiteral("rin"), pt.rin);
+						pt.rout = io_par.value(QStringLiteral("rout"), pt.rout);
+						pt.vmax = io_par.value(QStringLiteral("vmax"), pt.vmax);
+						pt.vmin = io_par.value(QStringLiteral("vmin"), pt.vmin);
 					}
 					CircuitIo io;
 					if (blk == QLatin1String("AI") || blk == QLatin1String("AQ")) {
@@ -1613,6 +1629,22 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					});
 					pt.a = ts.value(0) ? node(ts.value(0)) : -1;
 					pt.b = ts.size() > 1 ? node(ts.value(1)) : -1;
+					if (pt.kind == AnalogCircuit::Kind::Transistor || pt.kind == AnalogCircuit::Kind::OpAmp) {
+						// three terminals by name: C, B, E or +, −, output (OUT, A, Q, O)
+						pt.a = pt.b = pt.c = -1;
+						for (Terminal *t : e->terminals()) {
+							const QString tn = t->name().trimmed().toUpper();
+							int *slot = nullptr;
+							if (pt.kind == AnalogCircuit::Kind::Transistor)
+								slot = tn == QLatin1String("C") ? &pt.a : tn == QLatin1String("B") ? &pt.b : tn == QLatin1String("E") ? &pt.c : nullptr;
+							else
+								slot = tn == QLatin1String("+") || tn == QLatin1String("IN+") ? &pt.a
+									 : tn == QLatin1String("-") || tn == QString(QChar(0x2212)) || tn == QLatin1String("IN-") ? &pt.b
+									 : tn == QLatin1String("OUT") || tn == QLatin1String("A") || tn == QLatin1String("Q") || tn == QLatin1String("O") ? &pt.c
+									 : nullptr;
+							if (slot) *slot = node(t);
+						}
+					}
 					io.part = m_circuit.add(pt);
 					if (!io.names.isEmpty()) m_circuit_io << io;
 				} else if (role == QLatin1String("grafcet_io")) {
@@ -3509,6 +3541,11 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 			return kind == QLatin1String("u") ? cp->v : kind == QLatin1String("i") ? cp->i : cp->v * cp->i;
 		}
 		if (kind != QLatin1String("u")) return std::nan("");
+	}
+	if (kind == QLatin1String("ib")) {      // R17 stage 3: base current of a transistor, input current of an op-amp
+		const AnalogCircuit::Part *cp = m_circuit.part(rest);
+		if (ok) *ok = cp != nullptr;
+		return cp ? cp->i2 : std::nan("");
 	}
 	if (kind == QLatin1String("plc")) {     // a PLC variable (R17 stage 2: analog values of AI/AQ)
 		const QString nm = PlcProgram::normalized(rest);

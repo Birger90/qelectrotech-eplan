@@ -129,7 +129,9 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
   Hydrospeicher mit Gasgesetz), Zylinder mit Kraftbilanz und Reibung, elektrische Steuerung (Taster, End- und
   Druckschalter, Relais, Zeitrelais, Zähler, Spulen), SPS-Programme in Strukturiertem Text (Teil von IEC 61131-3 mit
   Schrittketten) und GRAFCET nach IEC 60848 mit den GRAFCET-Symbolen (im Raster neu gezeichnet, `bauteile/grafcet`),
-  mit Teil-GRAFCETs, einschließenden Schritten, Makroschritten und Zwangssteuerung.
+  mit Teil-GRAFCETs, einschließenden Schritten, Makroschritten und Zwangssteuerung. Fehler wie in FluidSIM (Kolben klemmt,
+  Spule unterbrochen, Leckage, verstopft, Rückschlagventil gesperrt/offen, Schalter schaltet nicht/immer) stehen am Bauteil
+  (`sim_fault`) und werden per Ereignis repariert.
   Leitungen unter Druck werden blau bzw. rot, stromführende Drähte rot, aktive Schritte bekommen eine Marke; Taster und
   Ventile bedient man im Fenster oder per Klick auf das Symbol; eine Liste zeigt die SPS- und GRAFCET-Variablen.
 - Ohne Oberfläche: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv weg.csv --png ordner`.

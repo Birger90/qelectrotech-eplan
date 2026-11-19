@@ -90,6 +90,24 @@ Programme aller SPS-Baugruppen eines Projekts teilen sich die Variablen. Das Sim
 während des Laufs in der Liste *SPS-Variablen* (Ein- und Ausgänge, Merker, Schritt, Bausteinausgänge);
 `--simulate` gibt am Ende die Werte aus.
 
+## Fehlerszenarien (R15, Fork 1.39.0)
+
+Ein Defekt steht als Elementinformation `sim_fault` am Bauteil, Schreibweise „`<Fehler> [Wert] [ab t] [bis t]`“, mehrere durch
+`;` getrennt (Fehlermodelle wie in FluidSIM, Formel K16):
+
+| Fehler | Bauteil | Wirkung |
+|---|---|---|
+| `kolben_klemmt` | Wegeventil | behält seine Stellung |
+| `spule_unterbrochen` | Ventil- oder Relaisspule | ohne Wirkung |
+| `interne_leckage 0.5` | Teil mit zwei Fluidanschlüssen (Zylinder …) | Öl G·Δp in l/(min·bar), Luft Normalstrom in l/min, zwischen den ersten beiden Anschlüssen |
+| `verstopft 0.2` | Drossel, Filter, Ventil mit Widerstand | Strom × Restanteil (ohne Wert 1 %) |
+| `immer_gesperrt`, `immer_geoeffnet` | Rückschlag-, Drosselrückschlagventil | sperrt immer bzw. ist in beide Richtungen offen |
+| `schaltet_nicht`, `schaltet_immer` | Taster, Grenztaster, Druckschalter | Kontakt nie bzw. immer betätigt |
+
+`ab 0.5 bis 2` begrenzt den Fehler zeitlich; das Ereignis `1.0 -QM1 reparieren` (`--event`, MCP `qet_simulate`) hebt alle
+Fehler des Bauteils auf. Meldungen „Fehler -QM1: kolben_klemmt“, „Fehler -QM1 aufgehoben“, „-QM1 repariert“; Messgröße
+`fault:-QM1` (1 wirksam). Prüfplan `fehler.qet`.
+
 ## GRAFCET (IEC 60848)
 
 Ein GRAFCET wird mit den GRAFCET-Symbolen der Standardsammlung gezeichnet (*Logik → Ablaufplan → GRAFCET*; die Fork

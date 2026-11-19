@@ -406,6 +406,17 @@ struct SimulationModel::Joystick {
 	double pmax = 15e5, band = 0.5e5, rt = 0.1;
 };
 
+/// R15 (FORMELN.md K16): a defect of a part, FluidSIM fault models, from the element information sim_fault
+/// ("kolben_klemmt ab 0.5 bis 2"); active inside its time window until it is repaired
+struct SimulationModel::Fault {
+	Element *e = nullptr;
+	QString label, text;
+	FaultKind kind = FaultKind::Stuck;
+	double from = 0.0, to = std::numeric_limits<double>::infinity(), value = std::nan("");
+	bool repaired = false, was_active = false;
+	bool active(double t) const { return !repaired && t >= from - 1e-12 && t < to - 1e-12; }
+};
+
 struct SimulationModel::Pipe {
 	Element *e = nullptr;
 	QString a, b;                 // port names
@@ -466,11 +477,12 @@ struct SimulationModel::FlowValve {
 	double u = 0.0, p_lo = 0.0, p_hi = 0.0;     // proportional relief valve: setpoint [V], opening at 0 and 10 V (R06)
 	double last_q = 0.0;                        // flow sensor: flow A -> B of the last step [m3/s] (R06)
 	double p0_b = 0.0, dp_end_b = 0.5e5, rt_b = 0.1;   // shock valve: relief of side B (R09)
+	double clog = 1.0;                          // R15 fault "Bauteil verstopft": remaining share of the flow
 
 	double flow(double pa, double pb, double share = 1.0, bool free = false) const {
 		if (share <= 0) return 0.0;
-		if (hydraulic) return volumeFlow(pa, pb, (free ? rt_free : rt) / std::pow(std::max(share, 1e-3), 2));
-		return massFlow(pa, pb, (free ? c_free : c) * share);
+		if (hydraulic) return clog * volumeFlow(pa, pb, (free ? rt_free : rt) / std::pow(std::max(share, 1e-3), 2));
+		return clog * massFlow(pa, pb, (free ? c_free : c) * share);
 	}
 };
 
@@ -622,6 +634,7 @@ SimulationModel::~SimulationModel()
 	qDeleteAll(m_ls_units);
 	qDeleteAll(m_valves63);
 	qDeleteAll(m_steerings);
+	qDeleteAll(m_faults);
 	qDeleteAll(m_joysticks);
 	qDeleteAll(m_ls_blocks);
 	qDeleteAll(m_priority_valves);
@@ -1762,10 +1775,131 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 		m_failed = true;
 		m_failure = m_model_errors.join(QStringLiteral("; "));
 	}
+	buildFaults(diagrams);
 	m_grafcet = std::make_unique<Grafcet>(diagrams, [this](Terminal *t) { return node(t); });
 	if (m_grafcet->isEmpty()) m_grafcet.reset();
 	else m_program_errors << m_grafcet->errors();
 	electrics();
+}
+
+// ------------------------------------------------------------------------- faults (R15)
+void SimulationModel::buildFaults(const QList<Diagram *> &diagrams)
+{
+	// FluidSIM fault models (QS05 „Fehlermodelle und Fehlerkonfigurationen“), written as element information
+	// sim_fault: "<Fehler> [Wert] [ab t] [bis t]", several separated by ";"
+	static const QList<QPair<QStringList, FaultKind>> names {
+		{{QStringLiteral("kolben_klemmt"), QStringLiteral("schieber_klemmt")}, FaultKind::Stuck},
+		{{QStringLiteral("spule_unterbrochen"), QStringLiteral("relaisspule_unterbrochen")}, FaultKind::CoilOpen},
+		{{QStringLiteral("interne_leckage"), QStringLiteral("leckage")}, FaultKind::Leak},
+		{{QStringLiteral("bauteil_verstopft"), QStringLiteral("verstopft")}, FaultKind::Clogged},
+		{{QStringLiteral("rueckschlagventil_immer_gesperrt"), QStringLiteral("immer_gesperrt")}, FaultKind::CheckClosed},
+		{{QStringLiteral("rueckschlagventil_immer_geoeffnet"), QStringLiteral("immer_geoeffnet")}, FaultKind::CheckOpen},
+		{{QStringLiteral("bauteil_schaltet_nicht"), QStringLiteral("schaltet_nicht")}, FaultKind::Never},
+		{{QStringLiteral("bauteil_schaltet_immer"), QStringLiteral("schaltet_immer")}, FaultKind::Always}};
+	for (Diagram *d : diagrams)
+		for (Element *e : sortedElements(d)) {
+			const QString spec = info(e, "sim_fault").trimmed();
+			if (spec.isEmpty()) continue;
+			const QString who = label(e).isEmpty() ? e->name() : label(e);
+			for (const QString &one : spec.split(QLatin1Char(';'), Qt::SkipEmptyParts)) {
+				QString s = one.trimmed().toLower();
+				s.replace(QStringLiteral("ä"), QStringLiteral("ae")).replace(QStringLiteral("ö"), QStringLiteral("oe"))
+				 .replace(QStringLiteral("ü"), QStringLiteral("ue")).replace(QStringLiteral("ß"), QStringLiteral("ss"));
+				const QStringList tok = s.split(QRegularExpression(QStringLiteral("\\s+")), Qt::SkipEmptyParts);
+				auto *f = new Fault;
+				f->e = e;
+				f->label = who;
+				f->text = one.trimmed();
+				QStringList words;
+				bool ok = true;
+				for (int i = 0; i < tok.size(); ++i) {
+					const QString &w = tok.at(i);
+					bool num = false;
+					const double v = QString(w).replace(QLatin1Char(','), QLatin1Char('.')).toDouble(&num);
+					if ((w == QLatin1String("ab") || w == QLatin1String("from") || w == QLatin1String("bis") || w == QLatin1String("until"))
+						&& i + 1 < tok.size()) {
+						bool tn = false;
+						const double tv = QString(tok.at(i + 1)).remove(QLatin1Char('s')).replace(QLatin1Char(','), QLatin1Char('.')).toDouble(&tn);
+						if (!tn) ok = false;
+						(w == QLatin1String("ab") || w == QLatin1String("from") ? f->from : f->to) = tv;
+						++i;
+					} else if (num) {
+						f->value = v;
+					} else {
+						words << w;
+					}
+				}
+				const QString key = words.join(QLatin1Char('_'));
+				bool found = false;
+				for (const auto &n : names)
+					if (n.first.contains(key)) { f->kind = n.second; found = true; }
+				if (!found || !ok) {
+					m_model_errors << QStringLiteral("%1: Fehler „%2“ nicht verstanden (kolben_klemmt, spule_unterbrochen, interne_leckage, "
+													 "verstopft, immer_gesperrt, immer_geoeffnet, schaltet_nicht, schaltet_immer; ab/bis in s)")
+										  .arg(who, one.trimmed());
+					delete f;
+					continue;
+				}
+				// the fault must fit the part
+				bool fits = false;
+				switch (f->kind) {
+					case FaultKind::Stuck:
+						for (const Valve *v : std::as_const(m_valves)) fits = fits || v->e == e;
+						break;
+					case FaultKind::CoilOpen:
+						for (const Coil *c : std::as_const(m_coils)) fits = fits || c->e == e;
+						for (const Relay *r : std::as_const(m_relays)) fits = fits || r->e == e;
+						break;
+					case FaultKind::Leak: {
+						// two fluid ports, at least one connected (an open port is the atmosphere)
+						int ports = 0, connected = 0;
+						for (Terminal *x : e->terminals())
+							if (isFluid(x)) { ++ports; connected += node(x) >= 0 ? 1 : 0; }
+						fits = ports >= 2 && connected >= 1;
+						break;
+					}
+					case FaultKind::Clogged:
+						for (const FlowValve *v : std::as_const(m_flow_valves)) fits = fits || v->e == e;
+						break;
+					case FaultKind::CheckClosed:
+					case FaultKind::CheckOpen:
+						for (const FlowValve *v : std::as_const(m_flow_valves))
+							fits = fits || (v->e == e && (v->function == QLatin1String("shutoff_valve.check_valve")
+														  || v->function == QLatin1String("flow_control_valve.one_way_flow_control_valve")));
+						break;
+					case FaultKind::Never:
+					case FaultKind::Always:
+						for (const Contact *c : std::as_const(m_contacts)) fits = fits || c->e == e;
+						for (const PressureSwitch *p : std::as_const(m_pressure_switches)) fits = fits || p->e == e;
+						break;
+				}
+				if (!fits) {
+					m_model_errors << QStringLiteral("%1: Fehler „%2“ passt nicht zu diesem Bauteil").arg(who, one.trimmed());
+					delete f;
+					continue;
+				}
+				m_faults << f;
+			}
+		}
+}
+
+const SimulationModel::Fault *SimulationModel::fault(const Element *e, FaultKind kind) const
+{
+	for (const Fault *f : m_faults)
+		if (f->e == e && f->kind == kind && f->active(m_time)) return f;
+	return nullptr;
+}
+
+bool SimulationModel::repair(const QString &lbl)
+{
+	bool any = false;
+	for (Fault *f : m_faults)
+		if (f->label == lbl && !f->repaired) {
+			f->repaired = true;
+			any = true;
+		}
+	if (any) m_messages << Message{m_time, QStringLiteral("%1 repariert").arg(lbl)};
+	return any;
 }
 
 // ------------------------------------------------------------------------- electrics
@@ -1788,7 +1922,8 @@ bool SimulationModel::contactClosed(const Contact &c) const
 		}
 		if (parts.size() == 1)          // function text "-BP1": contact of that pressure switch
 			for (const PressureSwitch *s : m_pressure_switches)
-				if (s->label == parts.at(0)) actuated = s->on;
+				if (s->label == parts.at(0))
+					actuated = fault(s->e, FaultKind::Never) ? false : (fault(s->e, FaultKind::Always) ? true : s->on);
 	} else if (c.kind == QLatin1String("counter")) {
 		for (const Counter *z : m_counters)
 			if (!z->reset_coil && z->label == c.trigger) actuated = z->count >= z->preset;
@@ -1802,6 +1937,9 @@ bool SimulationModel::contactClosed(const Contact &c) const
 		else
 			actuated = r->on;
 	}
+	// R15: a switch that never or always switches
+	if (fault(c.e, FaultKind::Never)) actuated = false;
+	if (fault(c.e, FaultKind::Always)) actuated = true;
 	return actuated != c.nc;
 }
 
@@ -1885,6 +2023,7 @@ void SimulationModel::electrics()
 			for (const Coil *c : std::as_const(m_coils)) {
 				if (!c->valve || c->label.isEmpty()) continue;
 				if (m_plc_vars.value(Grafcet::labelVariable(c->label), 0.0) == 0.0) continue;
+				if (fault(c->e, FaultKind::CoilOpen)) continue;
 				Valve *v = c->valve;
 				const int single = v->side[1].types.contains(QLatin1String("solenoid"))
 								   && !v->side[0].types.contains(QLatin1String("solenoid")) ? 1 : 0;
@@ -1914,7 +2053,7 @@ void SimulationModel::electrics()
 									|| (minus.contains(root(a)) && plus.contains(root(b))));
 	};
 	for (Relay *r : m_relays) {
-		const bool want = powered(r->n1, r->n2);
+		const bool want = powered(r->n1, r->n2) && !fault(r->e, FaultKind::CoilOpen);
 		if (want != r->target) {
 			r->target = want;
 			r->switch_at = m_time + (want ? T_PULL_IN : T_DROP_OUT);
@@ -1949,7 +2088,7 @@ void SimulationModel::electrics()
 		z->last = on;
 	}
 	for (Coil *c : m_coils) {
-		const bool on = powered(c->n1, c->n2);
+		const bool on = powered(c->n1, c->n2) && !fault(c->e, FaultKind::CoilOpen);
 		if (c->known && on != c->on)
 			m_messages << Message{m_time, QStringLiteral("Spule %1 %2").arg(c->label,
 				on ? QStringLiteral("an") : QStringLiteral("aus"))};
@@ -2511,6 +2650,28 @@ void SimulationModel::step(double dt)
 		if (s > 0) book(a->node, a->node_t, volumeFlow(p(a->node), p(a->node_t), a->prv_rt / (s * s)), a->e);
 	}
 
+	// R15 "Interne Leckage" between the first two fluid ports of the part: oil G·Δp (default 0.1 l/(min·bar)),
+	// air through the conductance of a normal flow qNN (default 10 l/min)
+	for (Fault *f : m_faults) {
+		const bool on = f->active(m_time);
+		if (on != f->was_active) {
+			m_messages << Message{m_time, on ? QStringLiteral("Fehler %1: %2").arg(f->label, f->text)
+											 : QStringLiteral("Fehler %1 aufgehoben").arg(f->label)};
+			f->was_active = on;
+		}
+		if (!on || f->kind != FaultKind::Leak) continue;
+		QList<int> ks;     // the first two fluid ports; -1 is an open port (atmosphere)
+		for (Terminal *x : f->e->terminals())
+			if (isFluid(x) && ks.size() < 2) ks << node(x);
+		if (ks.size() < 2 || (ks.at(0) < 0 && ks.at(1) < 0) || ks.at(0) == ks.at(1)) continue;
+		if (m_hydraulic.contains(ks.at(0) >= 0 ? ks.at(0) : ks.at(1))) {
+			const double g = (std::isfinite(f->value) ? f->value : 0.1) / 60000.0 / 1e5;
+			book(ks.at(0), ks.at(1), g * (p(ks.at(0)) - p(ks.at(1))), f->e);
+		} else {
+			book(ks.at(0), ks.at(1), massFlow(p(ks.at(0)), p(ks.at(1)), conductanceFromQnn(std::isfinite(f->value) ? f->value : 10.0)), f->e);
+		}
+	}
+
 	// R08: hydraulic motors, flow from A to B turns the shaft forward
 	for (Motor *mo : m_motors) {
 		const int ka = node(mo->e, QStringLiteral("A")), kb = node(mo->e, QStringLiteral("B"));
@@ -2545,7 +2706,8 @@ void SimulationModel::step(double dt)
 				if (k >= 0) v->actuated[s] = m_p.at(k) - P_ATM > P_PILOT;
 			}
 		}
-		const int want = v->wanted();
+		// R15 "Kolben klemmt": the spool keeps its position
+		const int want = fault(v->e, FaultKind::Stuck) ? v->target : v->wanted();
 		if (want != v->target) {
 			v->target = want;
 			v->switch_start = m_time;
@@ -2583,6 +2745,9 @@ void SimulationModel::step(double dt)
 		QHash<QString, int> kn;
 		for (const QString &port : s->ports) kn.insert(port, node(s->e, port));
 		const QString &fn = s->function;
+		// R15 "Bauteil verstopft": the remaining share of the flow (FORMELN.md K16, default 1 %)
+		const Fault *clog = fault(s->e, FaultKind::Clogged);
+		s->clog = clog ? (std::isfinite(clog->value) ? std::clamp(clog->value, 0.0, 1.0) : 0.01) : 1.0;
 		if (fn == QLatin1String("supply.silencer")) {
 			for (int k : kn) book(k, -1, s->flow(p(k), P_ATM), s->e);
 		} else if (fn == QLatin1String("flow_control_valve.throttle_valve")
@@ -2595,6 +2760,15 @@ void SimulationModel::step(double dt)
 				   || fn == QLatin1String("flow_control_valve.one_way_flow_control_valve")) {
 			if (!kn.contains(s->free_from) || !kn.contains(s->free_to)) continue;
 			const int a = kn.value(s->free_from), b = kn.value(s->free_to);
+			// R15: check valve always closed (no flow at all) or always open (free both ways)
+			if (fault(s->e, FaultKind::CheckClosed)) {
+				if (fn == QLatin1String("flow_control_valve.one_way_flow_control_valve")) book(a, b, s->flow(p(a), p(b)), s->e);
+				continue;
+			}
+			if (fault(s->e, FaultKind::CheckOpen)) {
+				book(a, b, s->flow(p(a), p(b), 1.0, true), s->e);
+				continue;
+			}
 			if (fn == QLatin1String("flow_control_valve.one_way_flow_control_valve"))
 				book(a, b, s->flow(p(a), p(b)), s->e);
 			bool unlocked = false;
@@ -3101,6 +3275,9 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 		out << Signal{QStringLiteral("P:") + mo->label, QStringLiteral("power"), QStringLiteral("W"),
 					  QStringLiteral("Wellenleistung tau·omega"), mo->label, QString()};
 	}
+	for (const Fault *f : m_faults)
+		out << Signal{QStringLiteral("fault:") + f->label, QStringLiteral("state"), QStringLiteral("1"),
+					  QStringLiteral("Fehler „%1“ wirksam (1) oder nicht (0)").arg(f->text), f->label, QString()};
 	for (const Steering *s : m_steerings)
 		out << Signal{QStringLiteral("phi:") + s->label, QStringLiteral("angle"), QStringLiteral("rad"),
 					  QStringLiteral("Lenkradwinkel aus der Dosierpumpe, 0 beim Start"), s->label, QString()};
@@ -3121,6 +3298,13 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 	const int colon = static_cast<int>(id.indexOf(QLatin1Char(':')));
 	if (colon <= 0) return std::nan("");
 	const QString kind = id.left(colon), rest = id.mid(colon + 1);
+	if (kind == QLatin1String("fault")) {
+		bool any = false, on = false;
+		for (const Fault *f : m_faults)
+			if (f->label == rest) { any = true; on = on || f->active(m_time); }
+		if (ok) *ok = any;
+		return any ? (on ? 1.0 : 0.0) : std::nan("");
+	}
 	if (kind == QLatin1String("x1")) {
 		for (const Cylinder *z : m_cylinders)
 			if (z->label == rest && z->multi) {

@@ -83,6 +83,8 @@ class SimulationModel
 		double time() const { return m_time; }
 
 		void pressButton(const QString &label, bool pressed);
+			/// R15: repairs every fault of the part (FluidSIM repair mode); false: no fault there
+		bool repair(const QString &label);
 		bool actuateValve(const QString &label, bool left, bool on);
 			/// setpoint of a proportional valve in volts (-10 … 10, R07); false when there is none with @a label
 		bool setSetpoint(const QString &label, double volts);
@@ -149,6 +151,10 @@ class SimulationModel
 		struct LsUnit;
 		struct Valve63;
 		struct Steering;
+		struct Fault;
+		enum class FaultKind { Stuck, CoilOpen, Leak, Clogged, CheckClosed, CheckOpen, Never, Always };
+		void buildFaults(const QList<Diagram *> &diagrams);
+		const Fault *fault(const Element *e, FaultKind kind) const;
 		struct Joystick;
 		struct LsBlock;
 		struct PriorityValve;
@@ -182,6 +188,7 @@ class SimulationModel
 		QList<LsUnit *> m_ls_units;                // R13 load sensing power units
 		QList<Valve63 *> m_valves63;               // R13 6/3 hand lever valves
 		QList<Steering *> m_steerings;             // R13 steering units (Orbitrol)
+		QList<Fault *> m_faults;                   // R15 defects (sim_fault)
 		QList<Joystick *> m_joysticks;             // R13 pilot valve joysticks
 		QList<LsBlock *> m_ls_blocks;              // R13 load sensing control blocks
 		QList<PriorityValve *> m_priority_valves;  // R13 priority valves LS

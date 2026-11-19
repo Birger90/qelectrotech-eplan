@@ -181,6 +181,7 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
   fährt drei Stellungen an: 0, `xMax2` (Standard halber Gesamthub), `xMax`. Druckübersetzer (`PressureIntensifier01`)
   bleibt abgewiesen: FluidSIM nennt keine Kennwerte, nur Datenblattgrößen – nicht schätzen.
 - Mobilhydraulik (Fork 1.35.0, R13): `LoadSensingPumpUnit` (P1 LS-Verstellpumpe, P2 Konstantpumpe, LS-Anschluss; T/L/LA dürfen offen bleiben), 6/3-Handhebelventil (`xStep` ±100 %, + öffnet P2 → B) und `LoadingUnit_2` rechnen; Lenkventil, LS-Steuerblock, Vorsteuergerät noch nicht.
+- Fehlerszenarien (Fork 1.39.0, R15): Fehler wie FluidSIM über die Elementinformation `sim_fault` (z. B. „kolben_klemmt ab 1“, „interne_leckage 0.5“), Reparatur mit dem Ereignis „1.5 -QM1 reparieren“.
 - GRAFCET aus FluidSIM (Fork 1.38.0): Teil-GRAFCET-Rahmen → `sim_grafcet`, einschließende Schritte → `sim_encloses`, alink → `sim_activation`, Makro/Eingang/Ausgang → M/E/S, zwangssteuernde Befehle → Aktion `G12{…}`, Sprungziel einer Transition → Sprung.
 - LS-Steuerblock und Prioritätsventil LS (Fork 1.37.0, R13) rechnen; Vorsteuerung C (X g.1) → P→A, D (X g.2) → P→B.
 - Lenkung und Sperrventile (Fork 1.36.0, R13): Lenkventil `SteeringUnit_1/2` (M_user + links), Vorsteuergerät (+ regelt X g.1), entsperrbares Doppelrückschlagventil (A1 → A2, B1 → B2 frei; A1/B1 sind die Ventilseite), Belastungseinheit 1, Membranspeicher mit Sicherheitsblock (x = 2 offen) rechnen; das vereinfachte Antriebsaggregat (P2) liefert jetzt seinen Strom. Noch nicht: LS-Steuerblock, Prioritätsventil.

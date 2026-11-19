@@ -741,6 +741,14 @@ int simulateProject(QETProject &project, const QStringList &args)
 		else if (a == QLatin1String("--event")) {
 			// R07: "0.5 -QM1 sollwert 5" sets the setpoint of a proportional valve (volts)
 			static const QRegularExpression sp_re(QStringLiteral("^\\s*([\\d.]+)\\s+(.+?)\\s+(?:sollwert|setpoint)\\s+(-?[\\d.]+)\\s*$"));
+			// R15: "1.2 -QM1 reparieren" repairs the faults of a part
+			static const QRegularExpression rep_re(QStringLiteral("^\\s*([\\d.]+)\\s+(.+?)\\s+(?:reparieren|repair)\\s*$"));
+			const auto rep = rep_re.match(v);
+			if (rep.hasMatch()) {
+				events << Event{rep.captured(1).toDouble(), rep.captured(2), 3, true};
+				++i;
+				continue;
+			}
 			const auto sp = sp_re.match(v);
 			if (sp.hasMatch()) {
 				events << Event{sp.captured(1).toDouble(), sp.captured(2), 2, true, sp.captured(3).toDouble()};
@@ -838,6 +846,8 @@ int simulateProject(QETProject &project, const QStringList &args)
 			const Event &e = events.at(ei++);
 			if (e.side == 2) {
 				if (!sim.setSetpoint(e.label, e.value)) { err << "no proportional valve labelled " << e.label << "\n"; return 2; }
+			} else if (e.side == 3) {
+				if (!sim.repair(e.label)) { err << "no fault at " << e.label << "\n"; return 2; }
 			} else if (e.side < 0) sim.pressButton(e.label, e.on);
 			else if (!sim.actuateValve(e.label, e.side == 0, e.on)) {
 				err << "no valve labelled " << e.label << "\n";
@@ -883,7 +893,7 @@ int simulateProject(QETProject &project, const QStringList &args)
 		meta.insert(QStringLiteral("integrator"), QStringLiteral("explicit Euler; oil nets with accumulator implicit (bisection)"));
 		QJsonArray evs;
 		for (const auto &e : events)
-			evs.append(QStringLiteral("%1 %2 %3%4").arg(e.t).arg(e.label)
+			evs.append(e.side == 3 ? QStringLiteral("%1 %2 reparieren").arg(e.t).arg(e.label) : QStringLiteral("%1 %2 %3%4").arg(e.t).arg(e.label)
 					   .arg(e.side < 0 ? QString() : (e.side == 0 ? QStringLiteral("links ") : QStringLiteral("rechts ")))
 					   .arg(e.on ? QStringLiteral("an") : QStringLiteral("aus")));
 		meta.insert(QStringLiteral("events"), evs);

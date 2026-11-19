@@ -3,6 +3,22 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.39.0 – 19.11.2026
+
+Simulations-Roadmap R15 (Fehlerszenarien und Reparatur, Fehlermodelle wie FluidSIM):
+
+- Elementinformation `sim_fault` am Bauteil: `kolben_klemmt`, `spule_unterbrochen`, `interne_leckage [l/(min·bar) bzw. l/min]`,
+  `verstopft [Restanteil]`, `immer_gesperrt`, `immer_geoeffnet`, `schaltet_nicht`, `schaltet_immer`, jeweils mit `ab t` und
+  `bis t` (Sekunden); mehrere durch „;“ getrennt. Unpassende Fehler (etwa „Kolben klemmt“ an einem Zylinder) halten den Lauf mit
+  Meldung an. Formel K16.
+- Reparatur: Ereignis `1.0 -QM1 reparieren` (Kommandozeile, MCP `qet_simulate`) hebt die Fehler des Bauteils auf; Meldungen
+  „Fehler -QM1: …“, „Fehler -QM1 aufgehoben“, „-QM1 repariert“; Messgröße `fault:-QM1`.
+- Neue Prüfung „Fehlerszenarien (R15)“ mit `fehler.qet` und Varianten von `hydraulik.qet`: Taster ohne Wirkung, Spule bis zur
+  Reparatur unterbrochen (0,7 s später vorne), klemmender Kolben bis 1,2 s (0,9 s später), gleicher Verlauf bei Wiederholung,
+  Rückschlagventil gesperrt (Pumpe auf Druckbegrenzung) und offen (rückwärts durchströmt), Drossel auf 80 % verstopft,
+  Leckage am Kolben vorbei aus der Strombilanz.
+- FluidSIM-Beispiele unverändert (1100 ohne Modellfehler, 1131 ohne Programmfehler, 296 bewegte Zylinder).
+
 ## 1.38.0 – 18.11.2026
 
 Simulations-Roadmap R14 (GRAFCET-Struktur nach IEC 60848, Schreibweise wie FluidSIM):

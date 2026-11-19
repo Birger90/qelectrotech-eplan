@@ -270,7 +270,7 @@ QList<Check> physicsLimits()
 
 	// ---- end to end: real projects through the same SimulationModel as window and CLI
 
-struct Input { double t; QString label; int kind; bool on; double value = 0.0; };   // kind 0 push button, 1 valve left, 2 valve right, 3 setpoint [V]
+struct Input { double t; QString label; int kind; bool on; double value = 0.0; };   // kind 0 push button, 1 valve left, 2 valve right, 3 setpoint [V], 4 repair (R15)
 
 struct ProjectRun {
 	std::unique_ptr<QETProject> project;
@@ -329,6 +329,7 @@ ProjectRun runProject(const QString &file, double supply_bar, QList<Input> input
 			const Input &in = input.at(next++);
 			if (in.kind == 0) r.sim->pressButton(in.label, in.on);
 			else if (in.kind == 3) r.sim->setSetpoint(in.label, in.value);
+			else if (in.kind == 4) r.sim->repair(in.label);
 			else r.sim->actuateValve(in.label, in.kind == 1, in.on);
 		}
 		r.sim->step(dt);
@@ -390,6 +391,25 @@ QString functionVariant(const QString &file, const QString &from, const QString 
 }
 
 	/// copy of @a file with every pair (old text, new text) replaced once; empty when one is missing
+	/// R15: a copy of @a file where the first element of the symbol type @a type_part carries the fault @a fault
+QString withFault(const QString &file, const QString &type_part, const QString &fault, const QString &name)
+{
+	QFile f(file);
+	if (!f.open(QIODevice::ReadOnly)) return QString();
+	QString text = QString::fromUtf8(f.readAll());
+	const int at = static_cast<int>(text.indexOf(type_part));
+	if (at < 0) return QString();
+	const QString tag = QStringLiteral("<elementInformations>");
+	const int info = static_cast<int>(text.indexOf(tag, at));
+	if (info < 0) return QString();
+	text.insert(info + tag.size(), QStringLiteral("<elementInformation name=\"sim_fault\" show=\"0\">%1</elementInformation>").arg(fault));
+	const QString out = QDir(QDir::tempPath()).filePath(name);
+	QFile o(out);
+	if (!o.open(QIODevice::WriteOnly)) return QString();
+	o.write(text.toUtf8());
+	return out;
+}
+
 QString textVariant(const QString &file, const QList<QPair<QString, QString>> &pairs, const QString &name)
 {
 	QFile f(file);
@@ -500,7 +520,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Mobilhydraulik (R13): LS-Bereitschaftsdruck, LS-Regelung lastunabhängig, Druckbegrenzung, 6/3-Handhebelventil, Belastungseinheit"),
 		QStringLiteral("Lenkung und Sperrventile (R13): Lenkventil voll, halb, neutral, rechts; Vorsteuergerät; Sperrblock entsperrt, gesperrt, Durchfluss; Belastungseinheit 1; Speicher mit Sicherheitsblock"),
 		QStringLiteral("LS-Steuerblock und Prioritätsventil (R13): Druckwaage hält den Strom lastunabhängig, Lastmeldung, Rückhub; Prioritätsventil teilt CF/EF"),
-		QStringLiteral("GRAFCET-Struktur (R14): einschließender Schritt, Makroschritt, Zwangssteuerung, Instanzen, Analogwert")};
+		QStringLiteral("GRAFCET-Struktur (R14): einschließender Schritt, Makroschritt, Zwangssteuerung, Instanzen, Analogwert"),
+		QStringLiteral("Fehlerszenarien (R15): Taster, Spule mit Reparatur, klemmender Kolben, Rückschlagventil, Verstopfung, Leckage, Wiederholbarkeit")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1468,6 +1489,89 @@ QList<Check> endToEnd(const QString &reference_dir)
 				else seen << QStringLiteral("%1: %2 N (soll %3)").arg(QString::fromUtf8(k.what)).arg(got, 0, 'f', 1).arg(want, 0, 'f', 1);
 			}
 		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 22. faults (R15, FORMELN.md K16): hydraulik.qet (-SF1 at 0.3 s extends -MM1) with a fault set on one part, and
+		//     fehler.qet: -RM1 check valve always closed (pump to its relief), -RM2 always open (fed backwards, free
+		//     resistance 0.05), -RZ3 throttle clogged to 80 %, -MM4 load unit with an internal leak 0.5 l/(min.bar) A1.1 → A1.2
+		Check c{names.at(21)};
+		QStringList wrong, seen;
+		const QString hyd = path("hydraulik.qet");
+		const QList<Input> press{{0.3, QStringLiteral("-SF1"), 0, true}};
+		auto ends = [](const ProjectRun &r) { return r.eventTime(QStringLiteral("Endlage vorne"), 0.0); };
+		auto events = [](const ProjectRun &r) {
+			QStringList s;
+			for (const auto &e : r.events) s << QStringLiteral("%1 %2").arg(e.first, 0, 'f', 5).arg(e.second);
+			return s.join(QLatin1Char('|'));
+		};
+		auto variant = [&](const char *type, const char *fault, const char *name, const QList<Input> &in) {
+			const QString f = withFault(hyd, QString::fromUtf8(type), QString::fromUtf8(fault), QString::fromUtf8(name));
+			ProjectRun r = f.isEmpty() ? ProjectRun{} : runProject(f, 6.0, in, 3.5);
+			if (f.isEmpty()) r.error = QStringLiteral("Variante %1 nicht erzeugt").arg(QString::fromUtf8(name));
+			if (!f.isEmpty()) QFile::remove(f);
+			return r;
+		};
+		ProjectRun base = runProject(hyd, 6.0, press, 3.5);
+		ProjectRun never = variant("poussoir.elmt", "schaltet_nicht", "qet_sim_r15_taster.qet", press);
+		QList<Input> fix = press;
+		fix << Input{1.0, QStringLiteral("-QM1"), 4, true};
+		ProjectRun coil = variant("electrovanne.elmt", "spule_unterbrochen", "qet_sim_r15_spule.qet", fix);
+		ProjectRun coil2 = variant("electrovanne.elmt", "spule_unterbrochen", "qet_sim_r15_spule2.qet", fix);
+		ProjectRun stuck = variant("distributeur_4-2.elmt", "kolben_klemmt bis 1.2", "qet_sim_r15_kolben.qet", press);
+		for (const ProjectRun *r : {&base, &never, &coil, &coil2, &stuck})
+			if (!r->error.isEmpty()) wrong << r->error;
+		const double t0 = ends(base);
+		if (wrong.isEmpty()) {
+			if (std::isfinite(ends(never)) || !std::isfinite(never.eventTime(QStringLiteral("Fehler -SF1: schaltet_nicht"), 0.0)))
+				wrong << QStringLiteral("Taster schaltet nicht: Zylinder fährt trotzdem (%1 s)").arg(ends(never));
+			else seen << QStringLiteral("Taster schaltet nicht: Zylinder bleibt hinten (ohne Fehler vorne bei %1 s)").arg(t0, 0, 'f', 3);
+			const double dc = ends(coil) - t0, ds = ends(stuck) - t0;
+			if (!(std::abs(dc - 0.7) <= 0.011) || !std::isfinite(coil.eventTime(QStringLiteral("-QM1 repariert"), 0.0)))
+				wrong << QStringLiteral("Spule unterbrochen bis zur Reparatur bei 1 s: vorne %1 s später statt 0,7").arg(dc);
+			else seen << QStringLiteral("Spule unterbrochen, repariert bei 1,0 s: %1 s später vorne (soll 0,7)").arg(dc, 0, 'f', 3);
+			if (!(std::abs(ds - 0.9) <= 0.011) || !std::isfinite(stuck.eventTime(QStringLiteral("Fehler -QM1 aufgehoben"), 0.0)))
+				wrong << QStringLiteral("Kolben klemmt bis 1,2 s: vorne %1 s später statt 0,9").arg(ds);
+			else seen << QStringLiteral("Kolben klemmt bis 1,2 s: %1 s später (soll 0,9)").arg(ds, 0, 'f', 3);
+			if (events(coil) != events(coil2))
+				wrong << QStringLiteral("derselbe Fehler gibt einen anderen Verlauf");
+			else seen << QStringLiteral("Wiederholung gleich (%1 Ereignisse)").arg(coil.events.size());
+		}
+		// fluid faults
+		const double qf = 910 * 4.5055e-3, glf = 0.003333;
+		const double ak = M_PI * 0.016 * 0.016 / 4;
+		auto bisect = [](auto fn, double lo, double hi) {
+			for (int i = 0; i < 200; ++i) { const double mid = 0.5 * (lo + hi); (fn(lo) * fn(mid) <= 0 ? hi : lo) = mid; }
+			return 0.5 * (lo + hi);
+		};
+		auto h03 = [](double d, double rt) { return d / (std::sqrt(rt) * std::pow(d * d + 0.09, 0.25)); };
+		const double relief = bisect([&](double pb) { return qf - glf * pb - (pb - 50) / 35 * std::sqrt(pb / 0.08); }, 50.0, 85.0);
+		const double p_open = bisect([&](double pb) { return h03(pb, 0.05) - (qf - glf * pb); }, 0.0, 50.0);
+		const double p_clog = bisect([&](double pb) { return 0.8 * h03(pb, 1.0) - (qf - glf * pb); }, 0.0, 50.0);
+		double p1 = std::nan(""), p2 = std::nan(""), p3 = std::nan(""), p4 = std::nan(""), v4 = std::nan("");
+		ProjectRun f = runProject(path("fehler.qet"), 0.0, {}, 2.9001, [&](SimulationModel &m) {
+			if (std::abs(m.time() - 0.3) < 5e-6) { v4 = m.signalValue(QStringLiteral("v:-MM4")); p4 = m.signalValue(QStringLiteral("p:-GZ4.P2")) / 1e5; }
+			if (std::abs(m.time() - 2.9) < 5e-6) {
+				p1 = m.signalValue(QStringLiteral("p:-GZ1.P2")) / 1e5;
+				p2 = m.signalValue(QStringLiteral("p:-GZ2.P2")) / 1e5;
+				p3 = m.signalValue(QStringLiteral("p:-GZ3.P2")) / 1e5;
+			}
+		});
+		if (!f.error.isEmpty()) wrong << f.error;
+		auto near = [](double got, double want, double tol) { return std::isfinite(got) && std::abs(got - want) <= tol; };
+		if (!near(p1, relief, 0.05)) wrong << QStringLiteral("Rückschlagventil gesperrt: %1 bar statt %2").arg(p1).arg(relief);
+		else seen << QStringLiteral("Rückschlagventil immer gesperrt: Pumpe auf %1 bar (Druckbegrenzung %2)").arg(p1, 0, 'f', 2).arg(relief, 0, 'f', 2);
+		if (!near(p2, p_open, 0.01)) wrong << QStringLiteral("Rückschlagventil offen: %1 bar statt %2").arg(p2).arg(p_open);
+		else seen << QStringLiteral("immer geöffnet, rückwärts: %1 bar (soll %2)").arg(p2, 0, 'f', 3).arg(p_open, 0, 'f', 3);
+		if (!near(p3, p_clog, 0.05)) wrong << QStringLiteral("Drossel verstopft: %1 bar statt %2").arg(p3).arg(p_clog);
+		else seen << QStringLiteral("Drossel verstopft auf 80 %: %1 bar (soll %2, frei %3)").arg(p3, 0, 'f', 2).arg(p_clog, 0, 'f', 2)
+						 .arg(bisect([&](double pb) { return h03(pb, 1.0) - (qf - glf * pb); }, 0.0, 50.0), 0, 'f', 2);
+		const double balance = qf - glf * p4 - 0.5 * p4 - v4 * ak * 60000.0;
+		if (!std::isfinite(balance) || std::abs(balance) > 0.01 * qf)
+			wrong << QStringLiteral("Leckage: Bilanz %1 l/min (p %2 bar, v %3 m/s)").arg(balance).arg(p4).arg(v4);
+		else seen << QStringLiteral("Leckage 0,5 l/(min·bar) bei %1 bar: %2 l/min am Kolben vorbei, v %3 m/s")
+						 .arg(p4, 0, 'f', 2).arg(0.5 * p4, 0, 'f', 3).arg(v4, 0, 'f', 4);
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
 		out << c;

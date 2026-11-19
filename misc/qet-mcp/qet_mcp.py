@@ -5593,7 +5593,7 @@ TOOLS = [
                 "project": {"type": "string"},
                 "events": {"type": "array", "items": {"type": "string"},
                            "description": "\"0.2 -SF1 an\", \"0.4 -SF1 aus\" (push button), "
-                                          "\"0.5 -QM1 links an\" (valve by hand)"},
+                                          "\"0.5 -QM1 links an\" (valve by hand), \"1.0 -QM1 reparieren\" (repairs the fault set in the element information sim_fault, R15)"},
                 "duration": {"type": "number", "default": 2.0, "description": "simulated seconds"},
                 "pressure": {"type": "number", "description": "air supply in bar (default 6)"},
                 "csv": {"type": "string", "description": "write the strokes and pressures over time to this file"},

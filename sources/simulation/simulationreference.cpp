@@ -528,7 +528,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Simulationsmodi (R16): bis zur nächsten Änderung, Einzelschritt, Teilprojekt (Blatt), Leistung"),
 		QStringLiteral("Analoge Elektrik (R17, Stufe 1): RC, RL, RLC, Einweggleichrichter, Spannungsteiler, Leistungsbilanz"),
 		QStringLiteral("Kopplung Stromkreis (R17, Stufe 2): Taster und Relaisspule mit R, L und Freilaufdiode, Relaiskontakt, SPS-Analogeingang und -ausgang"),
-		QStringLiteral("Halbleiter (R17, Stufe 3): NPN aktiv und gesättigt, PNP, invertierender Operationsverstärker linear und begrenzt")};
+		QStringLiteral("Halbleiter (R17, Stufe 3): NPN aktiv und gesättigt, PNP, invertierender Operationsverstärker linear und begrenzt"),
+		QStringLiteral("Schutzorgane (R17, Stufe 4): Leitungsschutzschalter B/C an den Prüfpunkten der IEC 60898-1, Motorschutz Klasse 10, Sicherung mit Zurücksetzen")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1669,6 +1670,68 @@ QList<Check> endToEnd(const QString &reference_dir)
 				wrong << QStringLiteral("OPV: %1 / %2 V statt %3 / %4").arg(vo4).arg(vo5).arg(w4).arg(w5);
 			else seen << QStringLiteral("OPV invertierend 0,5 V: %1 V (soll %2, ideal −5), 2 V: %3 V (soll %4, Grenze −15)")
 							 .arg(vo4, 0, 'f', 6).arg(w4, 0, 'f', 6).arg(vo5, 0, 'f', 4).arg(w5, 0, 'f', 4);
+		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 27. protective devices (R17 stage 4, FORMELN.md E11), plan schutz.qet: 10 V over the device on a load, In = 1 A.
+		//     Thermal trip time from dW/dt = i² − W/τ: t = −τ·ln(1 − W_th/(i²·τ)); IEC 60898-1 points for the C breaker
+		//     (1.13·In no trip, 2.55·In within 1…60 s, 12·In magnetic), B breaker at 4·In thermal (below 5·In),
+		//     motor protection class 10 at 7.2·Ir within 4…10 s, fuse I2t 100 A²s at 10 A, replaced at 2 s and blowing again.
+		//     dt 1 ms over 300 s
+		Check c{names.at(26)};
+		QStringList wrong, seen;
+		QETProject proj(path("schutz.qet"));
+		if (proj.state() != QETProject::Ok) wrong << QStringLiteral("schutz.qet lässt sich nicht öffnen");
+		else {
+			SimulationModel m(proj.diagrams(), 6.0);
+			if (m.failed()) wrong << QStringLiteral("Modell: %1").arg(m.failure());
+			QHash<QString, QList<double>> trips;
+			QHash<QString, QString> how;
+			const double dt = 1e-3;
+			bool reset = false;
+			while (!m.failed() && m.time() < 300.0 - 1e-9) {
+				if (!reset && m.time() >= 2.0 - 1e-9) { m.repair(QStringLiteral("-F7")); reset = true; }
+				m.step(dt);
+				for (const auto &msg : m.takeMessages()) {
+					static const QRegularExpression re(QStringLiteral("^\\S+ (-\\S+) löst aus \\((\\S+),"));
+					const auto mt = re.match(msg.text);
+					if (mt.hasMatch()) { trips[mt.captured(1)] << msg.time; how[mt.captured(1)] = mt.captured(2); }
+				}
+			}
+			if (m.failed()) wrong << QStringLiteral("Abbruch: %1").arg(m.failure());
+			auto thermal = [](double i, double kf, double tau) { const double x = kf * kf / (i * i); return x >= 1 ? INFINITY : -tau * std::log(1.0 - x); };
+			auto fits = [&](const QString &l, double want) {
+				const double got = trips.value(l).value(0, std::nan(""));
+				return std::isfinite(got) && got - want >= -1e-9 && got - want <= dt + 1e-9;
+			};
+			const double tq2 = thermal(2.55, 1.45, 60), tq3 = thermal(1.5, 1.45, 60), tq5 = thermal(4.0, 1.45, 60), tq6 = thermal(7.2, 1.125, 280);
+			const double tauf = 100.0 / (1.6 * 1.6), tf = -tauf * std::log(1.0 - 100.0 / (100.0 * tauf));
+			if (!trips.value(QStringLiteral("-Q1")).isEmpty())
+				wrong << QStringLiteral("C 1,13·In löst aus bei %1 s").arg(trips.value(QStringLiteral("-Q1")).first());
+			else seen << QStringLiteral("C 1,13·In: keine Auslösung in 300 s");
+			if (!fits(QStringLiteral("-Q2"), tq2) || !(tq2 > 1 && tq2 < 60))
+				wrong << QStringLiteral("C 2,55·In: %1 s statt %2").arg(trips.value(QStringLiteral("-Q2")).value(0, -1)).arg(tq2);
+			else seen << QStringLiteral("C 2,55·In thermisch bei %1 s (soll %2, IEC 1…60 s)").arg(trips.value(QStringLiteral("-Q2")).first(), 0, 'f', 3).arg(tq2, 0, 'f', 3);
+			if (!fits(QStringLiteral("-Q3"), tq3)) wrong << QStringLiteral("C 1,5·In: %1 s statt %2").arg(trips.value(QStringLiteral("-Q3")).value(0, -1)).arg(tq3);
+			else seen << QStringLiteral("C 1,5·In bei %1 s (soll %2, IEC < 1 h)").arg(trips.value(QStringLiteral("-Q3")).first(), 0, 'f', 3).arg(tq3, 0, 'f', 3);
+			if (!fits(QStringLiteral("-Q4"), 0.0) || how.value(QStringLiteral("-Q4")) != QLatin1String("magnetisch"))
+				wrong << QStringLiteral("C 12·In: %1 s (%2) statt sofort magnetisch").arg(trips.value(QStringLiteral("-Q4")).value(0, -1)).arg(how.value(QStringLiteral("-Q4")));
+			else seen << QStringLiteral("C 12·In magnetisch bei %1 s").arg(trips.value(QStringLiteral("-Q4")).first(), 0, 'f', 3);
+			if (!fits(QStringLiteral("-Q5"), tq5) || how.value(QStringLiteral("-Q5")) != QLatin1String("thermisch"))
+				wrong << QStringLiteral("B 4·In: %1 s (%2) statt %3 thermisch").arg(trips.value(QStringLiteral("-Q5")).value(0, -1)).arg(how.value(QStringLiteral("-Q5"))).arg(tq5);
+			else seen << QStringLiteral("B 4·In thermisch bei %1 s (soll %2, unter der Magnetgrenze 5·In)").arg(trips.value(QStringLiteral("-Q5")).first(), 0, 'f', 3).arg(tq5, 0, 'f', 3);
+			if (!fits(QStringLiteral("-Q6"), tq6) || !(tq6 > 4 && tq6 < 10))
+				wrong << QStringLiteral("Motorschutz 7,2·Ir: %1 s statt %2").arg(trips.value(QStringLiteral("-Q6")).value(0, -1)).arg(tq6);
+			else seen << QStringLiteral("Motorschutz 7,2·Ir bei %1 s (soll %2, Klasse 10: 4…10 s)").arg(trips.value(QStringLiteral("-Q6")).first(), 0, 'f', 3).arg(tq6, 0, 'f', 3);
+			const QList<double> fz = trips.value(QStringLiteral("-F7"));
+			if (fz.size() != 2 || !fits(QStringLiteral("-F7"), tf) || !(fz.at(1) - 2.0 - tf >= -1e-9 && fz.at(1) - 2.0 - tf <= dt + 1e-9))
+				wrong << QStringLiteral("Sicherung: %1 Auslösungen, erste %2 s, soll %3 s und nach dem Tausch bei 2 s wieder").arg(fz.size()).arg(fz.value(0, -1)).arg(tf);
+			else seen << QStringLiteral("Sicherung 10 A bei %1 s (soll %2, ≈ I²t/i² = 1 s), nach dem Tausch bei 2 s wieder bei %3 s")
+							 .arg(fz.at(0), 0, 'f', 3).arg(tf, 0, 'f', 4).arg(fz.at(1), 0, 'f', 3);
+			const double ir = m.signalValue(QStringLiteral("i:-R2"));
+			if (!(std::abs(ir) < 1e-6)) wrong << QStringLiteral("nach der Auslösung fließen noch %1 A").arg(ir);
 		}
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));

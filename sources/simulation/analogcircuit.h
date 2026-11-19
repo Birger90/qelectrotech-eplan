@@ -21,6 +21,7 @@
 #include <QHash>
 #include <QList>
 #include <QString>
+#include <QStringList>
 #include <QVector>
 
 /**
@@ -37,7 +38,7 @@
 class AnalogCircuit
 {
 	public:
-		enum class Kind { Resistor, Capacitor, Inductor, VoltageSource, CurrentSource, Diode, Ground, Switch, Coil, Transistor, OpAmp };
+		enum class Kind { Resistor, Capacitor, Inductor, VoltageSource, CurrentSource, Diode, Ground, Switch, Coil, Transistor, OpAmp, Protection };
 		struct Part {
 			Kind kind = Kind::Resistor;
 			QString label;
@@ -56,11 +57,18 @@ class AnalogCircuit
 			double bf = 100.0, br = 1.0;        // transistor: forward and reverse current gain (Ebers-Moll)
 			double gain = 1e5, rin = 1e6, rout = 1.0, vmax = 15.0, vmin = -15.0;   // op-amp
 			double i2 = 0.0;
+			// R17 stage 4 (E11): fuse or circuit breaker between a and b; closed resistance r, open roff
+			double inom = 1.0, kf = 1.6, tau = 1.0, im = 0.0;   // rated current, thermal factor, time constant, magnetic multiple
+			double wth = 0.0, w = 0.0;          // thermal limit and state [A²s]
+			bool tripped = false;
+			QString trip_kind;                  // "Sicherung", "Leitungsschutzschalter" … for the message
 		};
 
 		int add(const Part &p);             // index of the part
 		void setClosed(int index, bool closed);
 		void setSource(int index, double value);
+		bool reset(const QString &label);   // a tripped protective device closes again (new fuse, breaker switched on)
+		QStringList takeTrips();            // messages of devices that tripped since the last call
 		bool isEmpty() const { return m_parts.isEmpty(); }
 		int partCount() const { return static_cast<int>(m_parts.size()); }
 		QString check() const;              // empty or the reason why the circuit cannot be solved
@@ -78,6 +86,7 @@ class AnalogCircuit
 		QVector<double> m_x;                // node voltages, then source currents
 		bool m_built = false;
 		QString m_failure;
+		QStringList m_trips;
 		void build();
 };
 

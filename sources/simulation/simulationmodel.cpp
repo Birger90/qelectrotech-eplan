@@ -1551,9 +1551,13 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						{QStringLiteral("GND"), AnalogCircuit::Kind::Ground},
 						{QStringLiteral("AI"), AnalogCircuit::Kind::Resistor}, {QStringLiteral("AQ"), AnalogCircuit::Kind::VoltageSource},
 						{QStringLiteral("Q"), AnalogCircuit::Kind::Transistor}, {QStringLiteral("QN"), AnalogCircuit::Kind::Transistor},
-						{QStringLiteral("QP"), AnalogCircuit::Kind::Transistor}, {QStringLiteral("OP"), AnalogCircuit::Kind::OpAmp}};
+						{QStringLiteral("QP"), AnalogCircuit::Kind::Transistor}, {QStringLiteral("OP"), AnalogCircuit::Kind::OpAmp},
+						{QStringLiteral("F"), AnalogCircuit::Kind::Protection}, {QStringLiteral("MCB_B"), AnalogCircuit::Kind::Protection},
+						{QStringLiteral("MCB_C"), AnalogCircuit::Kind::Protection}, {QStringLiteral("MCB_D"), AnalogCircuit::Kind::Protection},
+						{QStringLiteral("MPCB"), AnalogCircuit::Kind::Protection}};
 					if (!kinds.contains(blk)) {
-						m_model_errors << QStringLiteral("%1: sim_block „%2“ unbekannt (R, C, L, V, I, D, GND, AI, AQ, QN, QP, OP)").arg(pt.label, blk);
+						m_model_errors << QStringLiteral("%1: sim_block „%2“ unbekannt (R, C, L, V, I, D, GND, AI, AQ, QN, QP, OP, F, MCB_B, "
+														 "MCB_C, MCB_D, MPCB)").arg(pt.label, blk);
 						continue;
 					}
 					QHash<QString, double> io_par;    // AI/AQ (E08): Rin, Umin, Umax, raw
@@ -1584,7 +1588,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						else if (key.compare(QLatin1String("Is"), Qt::CaseInsensitive) == 0) pt.is = v;
 						else if (key == QLatin1String("n") || key == QLatin1String("N")) pt.n = v;
 						else if (blk == QLatin1String("AI") || blk == QLatin1String("AQ") || pt.kind == AnalogCircuit::Kind::Transistor
-								 || pt.kind == AnalogCircuit::Kind::OpAmp) io_par.insert(key.toLower(), v);
+								 || pt.kind == AnalogCircuit::Kind::OpAmp || pt.kind == AnalogCircuit::Kind::Protection) io_par.insert(key.toLower(), v);
 						else pt.value = v;     // R, C, L, V, I
 					}
 					if (pt.kind == AnalogCircuit::Kind::Transistor) {
@@ -1592,6 +1596,35 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						pt.sign = blk == QLatin1String("QP") ? -1.0 : 1.0;
 						pt.bf = io_par.value(QStringLiteral("bf"), pt.bf);
 						pt.br = io_par.value(QStringLiteral("br"), pt.br);
+					} else if (pt.kind == AnalogCircuit::Kind::Protection) {
+						// R17 stage 4 (E11): F fuse (I2t melting integral from the datasheet, fusing factor kf, gG 1.6 per
+						// IEC 60269); MCB_B/C/D circuit breaker (IEC 60898-1: conventional tripping 1.45·In, magnetic
+						// release at the upper limit 5/10/20·In); MPCB motor protection class 10 (IEC 60947-4-1: between
+						// 1.05 and 1.2·Ir, 7.2·Ir in 4…10 s; magnetic 13·Ir). τ and Im are project definitions, datasheet
+						// values go into sim_params "In=…;R=…;I2t=…;kf=…;tau=…;Im=…"
+						pt.inom = io_par.value(QStringLiteral("in"), 0.0);
+						pt.r = io_par.value(QStringLiteral("r"), 0.01);
+						pt.roff = 1e9;
+						const bool fuse = blk == QLatin1String("F");
+						pt.trip_kind = fuse ? QStringLiteral("Sicherung") : blk == QLatin1String("MPCB") ? QStringLiteral("Motorschutzschalter")
+									 : QStringLiteral("Leitungsschutzschalter");
+						const double kf_def = fuse ? 1.6 : blk == QLatin1String("MPCB") ? 1.125 : 1.45;
+						const double im_def = fuse ? 0.0 : blk == QLatin1String("MCB_B") ? 5.0 : blk == QLatin1String("MCB_C") ? 10.0
+											: blk == QLatin1String("MCB_D") ? 20.0 : 13.0;
+						pt.kf = io_par.value(QStringLiteral("kf"), kf_def);
+						pt.im = io_par.value(QStringLiteral("im"), im_def);
+						if (fuse) {
+							const double i2t = io_par.value(QStringLiteral("i2t"), 0.0);
+							if (!(i2t > 0))
+								m_model_errors << QStringLiteral("%1: Sicherung braucht das Schmelzintegral I2t (Datenblatt)").arg(pt.label);
+							pt.wth = i2t;
+							pt.tau = pt.inom > 0 ? i2t / (pt.kf * pt.inom * pt.kf * pt.inom) : 0.0;
+						} else {
+							pt.tau = io_par.value(QStringLiteral("tau"), blk == QLatin1String("MPCB") ? 280.0 : 60.0);
+							pt.wth = pt.kf * pt.inom * pt.kf * pt.inom * pt.tau;
+						}
+						if (!(pt.inom > 0))
+							m_model_errors << QStringLiteral("%1: Schutzorgan braucht den Bemessungsstrom In").arg(pt.label);
 					} else if (pt.kind == AnalogCircuit::Kind::OpAmp) {
 						// R17 stage 3 (E10): open-loop gain A, Rin, Rout, output limits Vmax/Vmin
 						pt.gain = io_par.value(QStringLiteral("a"), pt.gain);
@@ -2015,6 +2048,11 @@ bool SimulationModel::repair(const QString &lbl)
 			any = true;
 		}
 	if (any) m_messages << Message{m_time, QStringLiteral("%1 repariert").arg(lbl)};
+	// R17 stage 4: a tripped fuse is replaced, a tripped breaker switched on again
+	if (m_circuit.reset(lbl)) {
+		m_messages << Message{m_time, QStringLiteral("%1 zurückgesetzt").arg(lbl)};
+		any = true;
+	}
 	return any;
 }
 
@@ -3307,7 +3345,8 @@ void SimulationModel::step(double dt)
 			m_circuit.setSource(io.part, io.raw > 0 ? io.umin + x / io.raw * (io.umax - io.umin) : x);
 		}
 		if (!m_circuit.step(m_time + dt, dt)) fail(QStringLiteral("Stromkreis: %1").arg(m_circuit.failure()));
-		else
+		for (const QString &text : m_circuit.takeTrips()) m_messages << Message{m_time + dt, text};
+		if (!m_failed)
 			for (const CircuitIo &io : std::as_const(m_circuit_io)) {
 				if (io.output) continue;
 				const double u = m_circuit.parts().at(io.part).v;
@@ -3541,6 +3580,12 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 			return kind == QLatin1String("u") ? cp->v : kind == QLatin1String("i") ? cp->i : cp->v * cp->i;
 		}
 		if (kind != QLatin1String("u")) return std::nan("");
+	}
+	if (kind == QLatin1String("trip") || kind == QLatin1String("w")) {   // R17 stage 4: tripped (1/0), thermal state [A²s]
+		const AnalogCircuit::Part *cp = m_circuit.part(rest);
+		const bool prot = cp && cp->kind == AnalogCircuit::Kind::Protection;
+		if (ok) *ok = prot;
+		return !prot ? std::nan("") : kind == QLatin1String("w") ? cp->w : (cp->tripped ? 1.0 : 0.0);
 	}
 	if (kind == QLatin1String("ib")) {      // R17 stage 3: base current of a transistor, input current of an op-amp
 		const AnalogCircuit::Part *cp = m_circuit.part(rest);

@@ -47,6 +47,25 @@ void AnalogCircuit::setSource(int index, double value)
 	if (index >= 0 && index < m_parts.size()) m_parts[index].value = value;
 }
 
+bool AnalogCircuit::reset(const QString &label)
+{
+	bool any = false;
+	for (Part &p : m_parts)
+		if (p.kind == Kind::Protection && p.label == label && p.tripped) {
+			p.tripped = false;
+			p.w = 0.0;
+			any = true;
+		}
+	return any;
+}
+
+QStringList AnalogCircuit::takeTrips()
+{
+	QStringList out;
+	out.swap(m_trips);
+	return out;
+}
+
 QString AnalogCircuit::check() const
 {
 	bool ground = false;
@@ -64,6 +83,8 @@ QString AnalogCircuit::check() const
 			return QStringLiteral("%1: Operationsverstärker braucht A, Rin, Rout > 0 und Vmax > Vmin").arg(p.label);
 		if ((p.kind == Kind::Transistor || p.kind == Kind::OpAmp) && (p.a < 0 || p.b < 0 || p.c < 0))
 			return QStringLiteral("%1: alle drei Anschlüsse müssen angeschlossen sein").arg(p.label);
+		if (p.kind == Kind::Protection && (!(p.inom > 0) || !(p.r > 0) || !(p.tau > 0) || !(p.wth > 0) || !(p.im >= 0)))
+			return QStringLiteral("%1: Schutzorgan braucht In, R, Zeitkonstante und Auslösegrenze größer als 0").arg(p.label);
 		if (p.kind == Kind::Diode && (!(p.is > 0) || !(p.n > 0)))
 			return QStringLiteral("%1: Is und n müssen größer als 0 sein").arg(p.label);
 		if (p.kind != Kind::Ground && p.a < 0 && p.b < 0)
@@ -180,6 +201,7 @@ bool AnalogCircuit::step(double t, double dt)
 				}
 				case Kind::CurrentSource: inject(p.a, p.b, sourceValue(p, t)); break;
 				case Kind::Switch: conductance(p.a, p.b, 1.0 / (p.closed ? p.ron : p.roff)); break;
+				case Kind::Protection: conductance(p.a, p.b, 1.0 / (p.tripped ? p.roff : p.r)); break;
 				case Kind::Coil: {          // R and L in series: v = R·i + L/dt·(i − i_prev)
 					const double g = 1.0 / (p.r + p.value / dt);
 					conductance(p.a, p.b, g);
@@ -296,6 +318,21 @@ bool AnalogCircuit::step(double t, double dt)
 			case Kind::VoltageSource: p.i = x.at(vs++); break;
 			case Kind::CurrentSource: p.i = -sourceValue(p, t); break;
 			case Kind::Switch: p.i = v / (p.closed ? p.ron : p.roff); break;
+			case Kind::Protection: {
+				// E11: thermal state dW/dt = i² − W/τ, solved exactly for the current of this step; trips at W ≥ W_th
+				// (thermal) or |i| ≥ Im·In (magnetic, im > 0); open from the next step on
+				p.i = v / (p.tripped ? p.roff : p.r);
+				if (p.tripped) break;
+				const double e = std::exp(-dt / p.tau);
+				p.w = p.w * e + p.i * p.i * p.tau * (1.0 - e);
+				const bool magnetic = p.im > 0 && std::abs(p.i) >= p.im * p.inom;
+				if (magnetic || p.w >= p.wth) {
+					p.tripped = true;
+					m_trips << QStringLiteral("%1 %2 löst aus (%3, %4 A)").arg(p.trip_kind, p.label,
+						magnetic ? QStringLiteral("magnetisch") : QStringLiteral("thermisch")).arg(std::abs(p.i), 0, 'f', 3);
+				}
+				break;
+			}
 			case Kind::Coil: { const double g = 1.0 / (p.r + p.value / dt); p.i = g * v + g * p.value / dt * p.i; break; }
 			case Kind::Diode: p.i = p.is * (std::exp(std::min(v, 40.0 * p.n * V_T) / (p.n * V_T)) - 1.0); break;
 			case Kind::Ground: p.i = 0.0; break;

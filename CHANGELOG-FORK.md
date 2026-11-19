@@ -3,6 +3,19 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.44.0 – 19.11.2026
+
+Simulations-Roadmap R17 (analoge Elektrik), Stufe 4: Schutzorgane:
+
+- Sicherung (`sim_block` F, `sim_params` „In=…;I2t=…“ mit dem Schmelzintegral aus dem Datenblatt), Leitungsschutzschalter
+  MCB_B, MCB_C, MCB_D (IEC 60898-1) und Motorschutzschalter MPCB (Klasse 10, IEC 60947-4-1) im Kirchhoff-Stromkreis:
+  thermisches Gedächtnis mit einer Zeitkonstante und magnetische Schnellauslösung; Kennwerte `tau`, `kf`, `Im`, `R`
+  überschreibbar. Meldung „Leitungsschutzschalter -Q1 löst aus (thermisch, … A)“, Signale `trip:` und `w:`.
+- Zurücksetzen (neue Sicherung, Schalter wieder ein) mit dem bestehenden Ereignis „-F1 reparieren“.
+- Formel E11; neue Prüfung „Schutzorgane (R17, Stufe 4)“ mit `schutz.qet` an den Normprüfpunkten (1,13 / 1,45 / 2,55·In,
+  Magnetgrenzen, Klasse 10 bei 7,2·Ir) und Sicherungstausch.
+- Offen in R17: Stufe 5 (Motoren).
+
 ## 1.43.0 – 19.11.2026
 
 Simulations-Roadmap R17 (analoge Elektrik), Stufe 3: Transistor und Operationsverstärker:

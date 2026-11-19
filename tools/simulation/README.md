@@ -125,6 +125,17 @@ Die Schaltlogik sieht den Spulenstrom des vorigen Rechenschritts (10 µs bei der
 | `OP` | Operationsverstärker | +, −, OUT | `A=1e5;Rin=1M;Rout=1;Vmax=15;Vmin=-15` | `u:` Ausgang gegen Masse, `i:` Ausgangsstrom, `ib:` Eingangsstrom |
 
 Ohne Frequenzgang, Anstiegsrate, Early-Effekt und Kapazitäten; die Begrenzung des OPV ist ein Kennwert, keine Versorgung.
+
+**Stufe 4 (Fork 1.44.0): Schutzorgane** (Formel E11, Prüfplan `schutz.qet`):
+
+| sim_block | Bauteil | Vorgaben (Projektfestlegung im Normband) | Pflicht |
+|---|---|---|---|
+| `F` | Sicherung gG | kf = 1,6, τ = I²t/(kf·In)² | `In`, `I2t` (Schmelzintegral, Datenblatt) |
+| `MCB_B`, `MCB_C`, `MCB_D` | Leitungsschutzschalter | kf = 1,45, τ = 60 s, Im = 5 / 10 / 20 | `In` |
+| `MPCB` | Motorschutzschalter Klasse 10 | kf = 1,125, τ = 280 s, Im = 13 | `In` (Einstellstrom Ir) |
+
+Alle mit `R` (Vorgabe 10 mΩ), überschreibbar `kf`, `tau`, `Im`. Ausgelöst: 1 GΩ, Meldung „… löst aus (thermisch|magnetisch, … A)“;
+`trip:-F1` (1/0), `w:-F1` (thermischer Zustand A²s). Zurücksetzen mit dem Ereignis „-F1 reparieren“.
 Prüfplan `analog.qet`.
 
 ## Simulationsmodi und Leistung (R16, Fork 1.40.0)

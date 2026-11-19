@@ -524,7 +524,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("GRAFCET-Struktur (R14): einschließender Schritt, Makroschritt, Zwangssteuerung, Instanzen, Analogwert"),
 		QStringLiteral("Fehlerszenarien (R15): Taster, Spule mit Reparatur, klemmender Kolben, Rückschlagventil, Verstopfung, Leckage, Wiederholbarkeit"),
 		QStringLiteral("Simulationsmodi (R16): bis zur nächsten Änderung, Einzelschritt, Teilprojekt (Blatt), Leistung"),
-		QStringLiteral("Analoge Elektrik (R17, Stufe 1): RC, RL, RLC, Einweggleichrichter, Spannungsteiler, Leistungsbilanz")};
+		QStringLiteral("Analoge Elektrik (R17, Stufe 1): RC, RL, RLC, Einweggleichrichter, Spannungsteiler, Leistungsbilanz"),
+		QStringLiteral("Kopplung Stromkreis (R17, Stufe 2): Taster und Relaisspule mit R, L und Freilaufdiode, Relaiskontakt, SPS-Analogeingang und -ausgang")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1548,6 +1549,64 @@ QList<Check> endToEnd(const QString &reference_dir)
 		if (!near(ur6, 8.0, 1e-6) || !near(pbal, 0.0, 1e-9))
 			wrong << QStringLiteral("Teiler: %1 V statt 8, Leistungsbilanz %2 W").arg(ur6).arg(pbal);
 		else seen << QStringLiteral("Spannungsteiler %1 V (soll 8), Leistungsbilanz Quelle + Widerstände %2 W").arg(ur6, 0, 'f', 6).arg(pbal, 0, 'g', 3);
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 25. coupling of the analog circuit (R17 stage 2, FORMELN.md E06–E08), plan kopplung.qet: 24 V, push button -S1
+		//     (switch R_on 10 mΩ) on relay coil -K1 (R 240 Ω, L 2.4 H, pick-up 0.8·Un/R, drop-out 0.1·Un/R) with freewheeling
+		//     diode -D1; the make contact of -K1 switches 10 V onto R2 1 kΩ; divider 1 kΩ/1 kΩ with AI -A1 (Rin 100 kΩ,
+		//     0…10 V ↔ 0…27648) and AQ -A2 driven by the same variable onto R5 1 kΩ. Button pressed 0.1…0.3 s
+		Check c{names.at(24)};
+		QStringList wrong, seen;
+		double ir2_before = std::nan(""), ir2_on = std::nan(""), ik1 = std::nan(""), ir2_after = std::nan("");
+		double ai = std::nan(""), ua2 = std::nan(""), ur5 = std::nan("");
+		auto sig = [](SimulationModel &m, const char *id) { return m.signalValue(QString::fromUtf8(id)); };
+		ProjectRun r = runProject(path("kopplung.qet"), 6.0, {{0.1, QStringLiteral("-S1"), 0, true}, {0.3, QStringLiteral("-S1"), 0, false}},
+								  0.4001, [&](SimulationModel &m) {
+			const double tm = m.time();
+			if (std::abs(tm - 0.09) < 5e-6) ir2_before = sig(m, "i:-R2");
+			if (std::abs(tm - 0.29) < 5e-6) {
+				ir2_on = sig(m, "i:-R2");
+				ik1 = sig(m, "i:-K1");
+				ai = sig(m, "plc:Messwert");
+				ua2 = sig(m, "u:-A2");
+				ur5 = sig(m, "u:-R5");
+			}
+			if (std::abs(tm - 0.39) < 5e-6) ir2_after = sig(m, "i:-R2");
+		});
+		if (!r.error.isEmpty()) wrong << r.error;
+		auto near = [](double got, double want, double tol) { return std::isfinite(got) && std::abs(got - want) <= tol; };
+		const double R = 240.0, L = 2.4, un = 24.0, ron = 0.01, i_on = 0.8 * un / R, i_off = 0.1 * un / R;
+		const double tau = L / (R + ron), i_end = un / (R + ron);
+		const double t_pick = 0.1 - tau * std::log(1.0 - i_on / i_end) + 0.010;     // + pull-in time of the relay
+		// drop-out: the coil current decays through the diode, L·di/dt = −(R·i + n·V_T·ln(1 + i/Is)); RK4, 0.1 µs steps
+		const double vt = 1.380649e-23 * 293.15 / 1.602176634e-19;
+		auto didt = [&](double i) { return -(R * i + vt * std::log1p(i / 1e-12)) / L; };
+		double i = i_end, tt = 0.0;
+		const double h = 1e-7;
+		while (i > i_off && tt < 0.1) {
+			const double k1 = didt(i), k2 = didt(i + h / 2 * k1), k3 = didt(i + h / 2 * k2), k4 = didt(i + h * k3);
+			i += h / 6 * (k1 + 2 * k2 + 2 * k3 + k4);
+			tt += h;
+		}
+		const double t_drop = 0.3 + tt + 0.008;                                      // + drop-out time of the relay
+		const double on_at = r.eventTime(QStringLiteral("Relais -K1 zieht an")), off_at = r.eventTime(QStringLiteral("Relais -K1 fällt ab"));
+		if (!near(on_at, t_pick, 5e-5) || !near(off_at, t_drop, 5e-5))
+			wrong << QStringLiteral("Relais: zieht an bei %1 s (soll %2), fällt ab bei %3 s (soll %4)").arg(on_at).arg(t_pick).arg(off_at).arg(t_drop);
+		else seen << QStringLiteral("Relais zieht an bei %1 s (soll 0,1 + τ·ln(1/(1−Ion/I∞)) + 10 ms = %2), fällt ab bei %3 s "
+									"(Freilauf über die Diode, soll %4)").arg(on_at, 0, 'f', 5).arg(t_pick, 0, 'f', 5).arg(off_at, 0, 'f', 5).arg(t_drop, 0, 'f', 5);
+		if (!near(ik1, i_end, 1e-6)) wrong << QStringLiteral("Spulenstrom %1 A statt %2").arg(ik1).arg(i_end);
+		else seen << QStringLiteral("Spulenstrom %1 A (soll Un/(R+Ron) = %2)").arg(ik1, 0, 'f', 6).arg(i_end, 0, 'f', 6);
+		if (!(std::abs(ir2_before) < 1e-6) || !near(ir2_on, 10.0 / (1000.0 + ron), 1e-9) || !(std::abs(ir2_after) < 1e-6))
+			wrong << QStringLiteral("Relaiskontakt: i(R2) %1 / %2 / %3 A").arg(ir2_before).arg(ir2_on).arg(ir2_after);
+		else seen << QStringLiteral("Relaiskontakt: i(R2) vor %1 A, angezogen %2 A (soll 10 V/(1 kΩ+Ron)), abgefallen %3 A")
+						 .arg(ir2_before, 0, 'g', 3).arg(ir2_on, 0, 'f', 7).arg(ir2_after, 0, 'g', 3);
+		const double rp = 1000.0 * 1e5 / (1000.0 + 1e5), u4 = 10.0 * rp / (1000.0 + rp), raw = 27648.0 * u4 / 10.0;
+		if (!near(ai, raw, 1e-3) || !near(ua2, u4, 1e-6) || !near(ur5, u4, 1e-6))
+			wrong << QStringLiteral("SPS-Analog: Eingang %1 (soll %2), Ausgang %3 / %4 V (soll %5)").arg(ai).arg(raw).arg(ua2).arg(ur5).arg(u4);
+		else seen << QStringLiteral("SPS-Analogeingang %1 (soll 27648·%2 V/10 V = %3, Rin belastet den Teiler), Ausgang %4 V an R5")
+						 .arg(ai, 0, 'f', 2).arg(u4, 0, 'f', 5).arg(raw, 0, 'f', 2).arg(ur5, 0, 'f', 5);
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
 		out << c;

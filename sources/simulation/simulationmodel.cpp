@@ -493,6 +493,8 @@ struct SimulationModel::Relay {
 	bool on = false, target = false;
 	double switch_at = -1, on_since = -1, off_since = -1, delay = 1.0;
 	QString mode;          // "on", "off" or empty
+	int circuit = -1;      // R17 stage 2: its coil in the analog circuit (part index)
+	double i_on = 0.0, i_off = 0.0;   // pick-up and drop-out current [A] (E07)
 };
 
 struct SimulationModel::Contact {
@@ -504,6 +506,7 @@ struct SimulationModel::Contact {
 	Relay *relay = nullptr;
 	QString mode;
 	bool latching = false; // selector switch: each press switches it over and it stays
+	int circuit = -1;      // R17 stage 2: the switch it is in the analog circuit (part index)
 };
 
 struct SimulationModel::Coil {
@@ -513,6 +516,8 @@ struct SimulationModel::Coil {
 	bool on = false, known = false;
 	Valve *valve = nullptr;   // the valve it is linked to (master), if not found by its label
 	int side = -1;            // 0 left, 1 right, -1 the valve's only solenoid
+	int circuit = -1;         // R17 stage 2: the coil in the analog circuit (part index)
+	double i_on = 0.0, i_off = 0.0;
 };
 
 	/// the inputs and outputs of a GRAFCET controller (FluidSIM "GRAFCET-SPS"): each input is true
@@ -1543,11 +1548,13 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						{QStringLiteral("R"), AnalogCircuit::Kind::Resistor}, {QStringLiteral("C"), AnalogCircuit::Kind::Capacitor},
 						{QStringLiteral("L"), AnalogCircuit::Kind::Inductor}, {QStringLiteral("V"), AnalogCircuit::Kind::VoltageSource},
 						{QStringLiteral("I"), AnalogCircuit::Kind::CurrentSource}, {QStringLiteral("D"), AnalogCircuit::Kind::Diode},
-						{QStringLiteral("GND"), AnalogCircuit::Kind::Ground}};
+						{QStringLiteral("GND"), AnalogCircuit::Kind::Ground},
+						{QStringLiteral("AI"), AnalogCircuit::Kind::Resistor}, {QStringLiteral("AQ"), AnalogCircuit::Kind::VoltageSource}};
 					if (!kinds.contains(blk)) {
-						m_model_errors << QStringLiteral("%1: sim_block „%2“ unbekannt (R, C, L, V, I, D, GND)").arg(pt.label, blk);
+						m_model_errors << QStringLiteral("%1: sim_block „%2“ unbekannt (R, C, L, V, I, D, GND, AI, AQ)").arg(pt.label, blk);
 						continue;
 					}
+					QHash<QString, double> io_par;    // AI/AQ (E08): Rin, Umin, Umax, raw
 					pt.kind = kinds.value(blk);
 					auto si = [&](const QString &text, bool *ok) {
 						static const QHash<QChar, double> prefix {{QLatin1Char('p'), 1e-12}, {QLatin1Char('n'), 1e-9}, {QLatin1Char('u'), 1e-6},
@@ -1574,7 +1581,28 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						else if (key.compare(QLatin1String("phase"), Qt::CaseInsensitive) == 0) pt.phase = v;
 						else if (key.compare(QLatin1String("Is"), Qt::CaseInsensitive) == 0) pt.is = v;
 						else if (key == QLatin1String("n") || key == QLatin1String("N")) pt.n = v;
+						else if (blk == QLatin1String("AI") || blk == QLatin1String("AQ")) io_par.insert(key.toLower(), v);
 						else pt.value = v;     // R, C, L, V, I
+					}
+					CircuitIo io;
+					if (blk == QLatin1String("AI") || blk == QLatin1String("AQ")) {
+						// R17 stage 2 (E08): PLC analog input = input resistance Rin, its voltage scaled into a PLC
+						// variable; output = ideal voltage source driven by the variable. Scale Umin…Umax ↔ 0…raw
+						// (Siemens nominal range 0…27648); without raw the variable is the voltage in V
+						io.output = blk == QLatin1String("AQ");
+						io.umin = io_par.value(QStringLiteral("umin"), 0.0);
+						io.umax = io_par.value(QStringLiteral("umax"), 10.0);
+						io.raw = io_par.value(QStringLiteral("raw"), 0.0);
+						if (!io.output) {
+							pt.value = io_par.value(QStringLiteral("rin"), 0.0);
+							if (!(pt.value > 0))
+								m_model_errors << QStringLiteral("%1: Analogeingang braucht den Eingangswiderstand Rin (Datenblatt)").arg(pt.label);
+						} else pt.value = io.umin;
+						if (io.raw > 0 && !(io.umax > io.umin))
+							m_model_errors << QStringLiteral("%1: Umax muss größer als Umin sein").arg(pt.label);
+						for (const QString &nm : info(e, "sim_var").split(QRegularExpression(QStringLiteral("[;,]")), Qt::SkipEmptyParts))
+							io.names << PlcProgram::normalized(nm.trimmed());
+						if (io.names.isEmpty()) io.names << PlcProgram::normalized(pt.label);
 					}
 					// terminals: "+", "P", "A" (anode), "1" first; else the order of the symbol
 					QList<Terminal *> ts = e->terminals();
@@ -1585,7 +1613,8 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					});
 					pt.a = ts.value(0) ? node(ts.value(0)) : -1;
 					pt.b = ts.size() > 1 ? node(ts.value(1)) : -1;
-					m_circuit.add(pt);
+					io.part = m_circuit.add(pt);
+					if (!io.names.isEmpty()) m_circuit_io << io;
 				} else if (role == QLatin1String("grafcet_io")) {
 					auto *io = new GrafcetIo;
 					io->e = e;
@@ -1823,6 +1852,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 		m_failed = true;
 		m_failure = m_model_errors.join(QStringLiteral("; "));
 	}
+	coupleCircuit();
 	linkAnalog(diagrams);
 	if (!m_model_errors.isEmpty() && !m_failed) {
 		m_failed = true;
@@ -1997,9 +2027,82 @@ bool SimulationModel::contactClosed(const Contact &c) const
 	return actuated != c.nc;
 }
 
+void SimulationModel::coupleCircuit()
+{
+	// R17 stage 2 (FORMELN.md E06, E07): a contact whose two terminals are nets of the analog circuit is a switch of
+	// the circuit; a relay coil or valve solenoid there is an R-L branch whose current decides pick-up and drop-out
+	if (m_circuit.isEmpty()) return;
+	QSet<int> nets;
+	for (const AnalogCircuit::Part &p : m_circuit.parts()) {
+		if (p.a >= 0) nets << p.a;
+		if (p.b >= 0) nets << p.b;
+	}
+	auto params = [&](Element *e, const char *key) {
+		QHash<QString, double> out;
+		for (const QString &item : info(e, key).split(QLatin1Char(';'), Qt::SkipEmptyParts)) {
+			const int eq = static_cast<int>(item.indexOf(QLatin1Char('=')));
+			if (eq <= 0) continue;
+			QString s = item.mid(eq + 1).trimmed().section(QLatin1Char(' '), 0, 0);
+			s.replace(QLatin1Char(','), QLatin1Char('.'));
+			double f = 1.0;
+			static const QHash<QChar, double> prefix {{QLatin1Char('u'), 1e-6}, {QChar(0x00B5), 1e-6}, {QLatin1Char('m'), 1e-3},
+				{QLatin1Char('k'), 1e3}, {QLatin1Char('M'), 1e6}, {QLatin1Char('G'), 1e9}};
+			if (!s.isEmpty() && prefix.contains(s.back())) { f = prefix.value(s.back()); s.chop(1); }
+			bool ok = false;
+			const double v = s.toDouble(&ok) * f;
+			if (ok) out.insert(item.left(eq).trimmed().toLower(), v);
+			else m_model_errors << QStringLiteral("%1: %2 „%3“ ist keine Zahl")
+								   .arg(label(e).isEmpty() ? e->name() : label(e), QString::fromLatin1(key), item.trimmed());
+		}
+		return out;
+	};
+	auto inCircuit = [&](int a, int b) { return a >= 0 && b >= 0 && nets.contains(a) && nets.contains(b); };
+	for (Contact *c : m_contacts) {
+		if (!inCircuit(c->n1, c->n2)) continue;
+		AnalogCircuit::Part sw;
+		sw.kind = AnalogCircuit::Kind::Switch;
+		QString side;
+		for (Terminal *t : c->e->terminals())
+			if (node(t) == c->n2 && !t->name().trimmed().isEmpty()) side = t->name().trimmed();
+		const QString base = label(c->e).isEmpty() ? c->e->name() : label(c->e);
+		sw.label = base + QLatin1Char('/') + (side.isEmpty() ? (c->nc ? QStringLiteral("Öffner") : QStringLiteral("Schließer")) : side);
+		sw.a = c->n1;
+		sw.b = c->n2;
+		const auto par = params(c->e, "sim_contact");
+		sw.ron = par.value(QStringLiteral("ron"), sw.ron);
+		sw.roff = par.value(QStringLiteral("roff"), sw.roff);
+		sw.closed = contactClosed(*c);
+		c->circuit = m_circuit.add(sw);
+	}
+	auto coil = [&](Element *e, const QString &lbl, int a, int b, double *i_on, double *i_off) {
+		const auto par = params(e, "sim_coil");
+		AnalogCircuit::Part k;
+		k.kind = AnalogCircuit::Kind::Coil;
+		k.label = lbl.isEmpty() ? e->name() : lbl;
+		k.a = a;
+		k.b = b;
+		k.r = par.value(QStringLiteral("r"), 0.0);
+		k.value = par.value(QStringLiteral("l"), 0.0);
+		const double un = par.value(QStringLiteral("un"), 0.0);
+		// pick-up and drop-out as currents (Ion, Ioff) or as fractions of the rated current Un/R (on, off: E07)
+		*i_on = par.contains(QStringLiteral("ion")) ? par.value(QStringLiteral("ion"))
+			  : (un > 0 && k.r > 0 ? par.value(QStringLiteral("on"), 0.8) * un / k.r : 0.0);
+		*i_off = par.contains(QStringLiteral("ioff")) ? par.value(QStringLiteral("ioff"))
+			   : (un > 0 && k.r > 0 ? par.value(QStringLiteral("off"), 0.1) * un / k.r : 0.0);
+		if (!(k.r > 0) || !(*i_on > 0) || !(*i_off >= 0) || !(*i_off < *i_on))
+			m_model_errors << QStringLiteral("%1: Spule im Stromkreis braucht sim_coil mit R, L und Un (oder Ion/Ioff) aus dem "
+				"Datenblatt; Ansprechstrom größer als Abfallstrom").arg(k.label);
+		return m_circuit.add(k);
+	};
+	for (Relay *r : m_relays)
+		if (inCircuit(r->n1, r->n2)) r->circuit = coil(r->e, r->label, r->n1, r->n2, &r->i_on, &r->i_off);
+	for (Coil *c : m_coils)
+		if (inCircuit(c->n1, c->n2)) c->circuit = coil(c->e, c->label, c->n1, c->n2, &c->i_on, &c->i_off);
+}
+
 void SimulationModel::electrics()
 {
-	if (m_sources.isEmpty() && m_plc_channels.isEmpty() && !m_grafcet) return;
+	if (m_sources.isEmpty() && m_plc_channels.isEmpty() && !m_grafcet && m_circuit.isEmpty()) return;
 	QHash<int, int> parent;
 	std::function<int(int)> root = [&](int a) {
 		while (parent.value(a, a) != a) {
@@ -2106,8 +2209,14 @@ void SimulationModel::electrics()
 		return a >= 0 && b >= 0 && ((plus.contains(root(a)) && minus.contains(root(b)))
 									|| (minus.contains(root(a)) && plus.contains(root(b))));
 	};
+	// R17 stage 2 (E07): a coil of the analog circuit picks up at |i| >= Ion and drops out at |i| <= Ioff
+	auto byCurrent = [&](int part, bool now, double i_on, double i_off) {
+		const double i = std::abs(m_circuit.parts().at(part).i);
+		return now ? i > i_off : i >= i_on;
+	};
 	for (Relay *r : m_relays) {
-		const bool want = powered(r->n1, r->n2) && !fault(r->e, FaultKind::CoilOpen);
+		const bool want = (r->circuit >= 0 ? byCurrent(r->circuit, r->target, r->i_on, r->i_off) : powered(r->n1, r->n2))
+						  && !fault(r->e, FaultKind::CoilOpen);
 		if (want != r->target) {
 			r->target = want;
 			r->switch_at = m_time + (want ? T_PULL_IN : T_DROP_OUT);
@@ -2142,7 +2251,8 @@ void SimulationModel::electrics()
 		z->last = on;
 	}
 	for (Coil *c : m_coils) {
-		const bool on = powered(c->n1, c->n2) && !fault(c->e, FaultKind::CoilOpen);
+		const bool on = (c->circuit >= 0 ? byCurrent(c->circuit, c->on, c->i_on, c->i_off) : powered(c->n1, c->n2))
+						&& !fault(c->e, FaultKind::CoilOpen);
 		if (c->known && on != c->on)
 			m_messages << Message{m_time, QStringLiteral("Spule %1 %2").arg(c->label,
 				on ? QStringLiteral("an") : QStringLiteral("aus"))};
@@ -3153,9 +3263,26 @@ void SimulationModel::step(double dt)
 					  .arg(s->force, 0, 'f', 2).arg(s->safety * s->weight, 0, 'f', 2)};
 		}
 	}
-	// R17: the analog circuit, one implicit Euler step to the end of this step
-	if (!m_circuit.isEmpty() && !m_failed && !m_circuit.step(m_time + dt, dt))
-		fail(QStringLiteral("Stromkreis: %1").arg(m_circuit.failure()));
+	// R17: the analog circuit, one implicit Euler step to the end of this step; stage 2: contacts and PLC outputs
+	// of this step go in, PLC analog inputs come out (E06, E08)
+	if (!m_circuit.isEmpty() && !m_failed) {
+		for (const Contact *c : std::as_const(m_contacts))
+			if (c->circuit >= 0) m_circuit.setClosed(c->circuit, contactClosed(*c));
+		for (const CircuitIo &io : std::as_const(m_circuit_io)) {
+			if (!io.output) continue;
+			double x = 0.0;
+			for (const QString &nm : io.names) x = m_plc_vars.value(nm, x);
+			m_circuit.setSource(io.part, io.raw > 0 ? io.umin + x / io.raw * (io.umax - io.umin) : x);
+		}
+		if (!m_circuit.step(m_time + dt, dt)) fail(QStringLiteral("Stromkreis: %1").arg(m_circuit.failure()));
+		else
+			for (const CircuitIo &io : std::as_const(m_circuit_io)) {
+				if (io.output) continue;
+				const double u = m_circuit.parts().at(io.part).v;
+				const double x = io.raw > 0 ? (u - io.umin) / (io.umax - io.umin) * io.raw : u;
+				for (const QString &nm : io.names) m_plc_vars.insert(nm, x);
+			}
+	}
 	m_time += dt;
 }
 
@@ -3382,6 +3509,11 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 			return kind == QLatin1String("u") ? cp->v : kind == QLatin1String("i") ? cp->i : cp->v * cp->i;
 		}
 		if (kind != QLatin1String("u")) return std::nan("");
+	}
+	if (kind == QLatin1String("plc")) {     // a PLC variable (R17 stage 2: analog values of AI/AQ)
+		const QString nm = PlcProgram::normalized(rest);
+		if (ok) *ok = m_plc_vars.contains(nm);
+		return m_plc_vars.contains(nm) ? m_plc_vars.value(nm) : std::nan("");
 	}
 	if (kind == QLatin1String("fault")) {
 		bool any = false, on = false;

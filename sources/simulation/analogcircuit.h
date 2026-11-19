@@ -28,13 +28,14 @@
 	R17 stage 1 (FORMELN.md E01–E05): an electric circuit by Kirchhoff's laws, modified nodal analysis with the
 	implicit Euler method: resistors, capacitors and inductors (companion models), DC and sine voltage and current
 	sources, diodes (Shockley, Newton iteration with a limited voltage step) and ground. Nodes are the electric nets
-	of the simulation; the reference is every net with a ground part. The circuit stands beside the switching logic:
-	in stage 1 it does not drive relays, coils or the PLC.
+	of the simulation; the reference is every net with a ground part.
+	R17 stage 2 (E06–E08): switches (a contact of the switching logic, R_on or R_off) and coils (R and L in series;
+	whether the relay or valve solenoid picks up is decided from the coil current in SimulationModel).
 */
 class AnalogCircuit
 {
 	public:
-		enum class Kind { Resistor, Capacitor, Inductor, VoltageSource, CurrentSource, Diode, Ground };
+		enum class Kind { Resistor, Capacitor, Inductor, VoltageSource, CurrentSource, Diode, Ground, Switch, Coil };
 		struct Part {
 			Kind kind = Kind::Resistor;
 			QString label;
@@ -42,10 +43,15 @@ class AnalogCircuit
 			double value = 0.0;                 // R [Ohm], C [F], L [H], source amplitude [V or A]
 			double offset = 0.0, freq = 0.0, phase = 0.0;   // source: DC offset, frequency [Hz], phase [deg]
 			double is = 1e-12, n = 1.0;         // diode saturation current [A], emission coefficient
+			double r = 0.0;                     // coil: winding resistance [Ohm] (value: inductance [H], may be 0)
+			double ron = 0.01, roff = 1e9;      // switch: closed and open resistance [Ohm] (project definition E06)
+			bool closed = false;                // switch state, set by the switching logic before each step
 			double v = 0.0, i = 0.0;            // voltage a − b and current a → b of the last step
 		};
 
-		void add(const Part &p);
+		int add(const Part &p);             // index of the part
+		void setClosed(int index, bool closed);
+		void setSource(int index, double value);
 		bool isEmpty() const { return m_parts.isEmpty(); }
 		int partCount() const { return static_cast<int>(m_parts.size()); }
 		QString check() const;              // empty or the reason why the circuit cannot be solved

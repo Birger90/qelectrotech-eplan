@@ -3,6 +3,23 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.42.0 – 19.11.2026
+
+Simulations-Roadmap R17 (analoge Elektrik), Stufe 2: Kopplung an die Schaltlogik:
+
+- Kontakte im Stromkreis: liegen beide Anschlüsse eines Tasters, Grenztasters oder Relaiskontakts auf Netzen des
+  Kirchhoff-Stromkreises, schaltet der Kontakt dort einen Widerstand (R_on 10 mΩ, R_off 1 GΩ, änderbar mit `sim_contact`).
+  Messgrößen `u:`/`i:` unter „-K1/Schließer“ bzw. „-K1/14“.
+- Relais- und Ventilspulen im Stromkreis: R und L in Reihe aus `sim_coil` („R=240;L=2.4;Un=24“), Anzug und Abfall nach dem
+  Spulenstrom mit Hysterese (Vorgabe 0,8 bzw. 0,1 des Nennstroms oder „Ion/Ioff“), danach Ansprech- und Abfallzeit wie bisher.
+  Freilaufdioden verlängern den Abfall wie im echten Kreis.
+- SPS-Analogeingang `sim_block` AI (Eingangswiderstand Rin, Normierung „Umin/Umax/raw“, z. B. 0…10 V ↔ 0…27648) und
+  -ausgang AQ (Spannungsquelle aus einer Variablen), Variable aus `sim_var`. Neues Signal `plc:<Variable>`.
+- Formeln E06–E08; neue Prüfung „Kopplung Stromkreis (R17, Stufe 2)“ mit `kopplung.qet`: Anzugszeit gegen die e-Funktion,
+  Abfallzeit über die Freilaufdiode gegen eine unabhängige Runge-Kutta-Rechnung, Relaiskontakt im zweiten Kreis,
+  Analogeingang gegen den belasteten Teiler, Analogausgang.
+- Offen in R17: Stufe 3 (Transistor, Operationsverstärker), 4 (Schutzorgane), 5 (Motoren).
+
 ## 1.41.0 – 19.11.2026
 
 Simulations-Roadmap R17 (analoge Elektrik), Stufe 1; R18 und R19 entschieden:

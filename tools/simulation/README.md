@@ -103,7 +103,19 @@ Euler-Verfahren, Formeln E01–E05). Je Bauteil `sim_block` und `sim_params` (SI
 | `GND` | Masse (0 V), mindestens eine je Stromkreis | – |
 
 Messgrößen `u:-R1` (Spannung erster gegen zweiten Anschluss), `i:-R1` (Strom vom ersten zum zweiten), `pel:-R1` (aufgenommene
-Leistung, Quellen negativ). Stufe 1 treibt die Schaltlogik nicht (Relais, Spulen, SPS bleiben bei ihrem Plus-/Minus-Modell).
+Leistung, Quellen negativ).
+
+**Stufe 2 (Fork 1.42.0): Kopplung an die Schaltlogik** (Formeln E06–E08, Prüfplan `kopplung.qet`):
+
+| Teil | wird im Stromkreis | Angaben |
+|---|---|---|
+| Taster, Grenztaster, Relaiskontakt mit beiden Anschlüssen auf Stromkreisnetzen | Schalter R_on / R_off | `sim_contact` „Ron=10m;Roff=1G“ (Vorgabe) |
+| Relaisspule, Ventilmagnet mit beiden Anschlüssen auf Stromkreisnetzen | R und L in Reihe; Anzug bei I_an, Abfall bei I_ab | `sim_coil` „R=240;L=2.4;Un=24;on=0.8;off=0.1“ oder „Ion=…;Ioff=…“ – R, L, Un aus dem Datenblatt |
+| `sim_block` `AI` | Eingangswiderstand, Spannung → Variable | `sim_params` „Rin=100k;Umin=0;Umax=10;raw=27648“, `sim_var` „Messwert“ |
+| `sim_block` `AQ` | Spannungsquelle aus der Variable | `sim_params` „Umin=0;Umax=10;raw=27648“, `sim_var` |
+
+Kontakte heißen im Stromkreis „-K1/14“ (Anschluss der Schaltseite) bzw. „-K1/Schließer“; `plc:Messwert` liest die Variable.
+Die Schaltlogik sieht den Spulenstrom des vorigen Rechenschritts (10 µs bei der Referenz).
 Prüfplan `analog.qet`.
 
 ## Simulationsmodi und Leistung (R16, Fork 1.40.0)

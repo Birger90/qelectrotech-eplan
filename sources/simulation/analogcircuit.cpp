@@ -28,10 +28,21 @@ constexpr double V_T = 1.380649e-23 * 293.15 / 1.602176634e-19;
 constexpr double G_MIN = 1e-12;     // S from every node to ground and across every diode (keeps the matrix regular)
 }
 
-void AnalogCircuit::add(const Part &p)
+int AnalogCircuit::add(const Part &p)
 {
 	m_parts << p;
 	m_built = false;
+	return static_cast<int>(m_parts.size()) - 1;
+}
+
+void AnalogCircuit::setClosed(int index, bool closed)
+{
+	if (index >= 0 && index < m_parts.size()) m_parts[index].closed = closed;
+}
+
+void AnalogCircuit::setSource(int index, double value)
+{
+	if (index >= 0 && index < m_parts.size()) m_parts[index].value = value;
 }
 
 QString AnalogCircuit::check() const
@@ -41,6 +52,10 @@ QString AnalogCircuit::check() const
 		ground = ground || p.kind == Kind::Ground;
 		if ((p.kind == Kind::Resistor || p.kind == Kind::Capacitor || p.kind == Kind::Inductor) && !(p.value > 0))
 			return QStringLiteral("%1: Wert muss größer als 0 sein").arg(p.label);
+		if (p.kind == Kind::Coil && (!(p.r > 0) || !(p.value >= 0)))
+			return QStringLiteral("%1: Spule braucht R > 0 und L ≥ 0 (sim_coil)").arg(p.label);
+		if (p.kind == Kind::Switch && (!(p.ron > 0) || !(p.roff > p.ron)))
+			return QStringLiteral("%1: Kontaktwiderstände ungültig (Ron > 0, Roff > Ron)").arg(p.label);
 		if (p.kind == Kind::Diode && (!(p.is > 0) || !(p.n > 0)))
 			return QStringLiteral("%1: Is und n müssen größer als 0 sein").arg(p.label);
 		if (p.kind != Kind::Ground && p.a < 0 && p.b < 0)
@@ -143,6 +158,13 @@ bool AnalogCircuit::step(double t, double dt)
 					break;
 				}
 				case Kind::CurrentSource: inject(p.a, p.b, sourceValue(p, t)); break;
+				case Kind::Switch: conductance(p.a, p.b, 1.0 / (p.closed ? p.ron : p.roff)); break;
+				case Kind::Coil: {          // R and L in series: v = R·i + L/dt·(i − i_prev)
+					const double g = 1.0 / (p.r + p.value / dt);
+					conductance(p.a, p.b, g);
+					inject(p.a, p.b, -g * p.value / dt * p.i);
+					break;
+				}
 				case Kind::Diode: {         // Shockley, linearised at the present iterate
 					nonlinear = true;
 					const double nv = p.n * V_T;
@@ -210,6 +232,8 @@ bool AnalogCircuit::step(double t, double dt)
 			case Kind::Inductor: p.i = dt / p.value * v + p.i; break;
 			case Kind::VoltageSource: p.i = x.at(vs++); break;
 			case Kind::CurrentSource: p.i = -sourceValue(p, t); break;
+			case Kind::Switch: p.i = v / (p.closed ? p.ron : p.roff); break;
+			case Kind::Coil: { const double g = 1.0 / (p.r + p.value / dt); p.i = g * v + g * p.value / dt * p.i; break; }
 			case Kind::Diode: p.i = p.is * (std::exp(std::min(v, 40.0 * p.n * V_T) / (p.n * V_T)) - 1.0); break;
 			case Kind::Ground: p.i = 0.0; break;
 		}

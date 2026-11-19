@@ -174,6 +174,7 @@ class SimulationModel
 		void electrics();
 		void analog(double dt);
 		void linkAnalog(const QList<Diagram *> &diagrams);
+		void coupleCircuit();                      // R17 stage 2: contacts, coils in the analog circuit
 			/// potential of an electric net [V]: an analog output, else the supply it is connected to
 		double volt(int net) const;
 		void fail(const QString &why);
@@ -222,6 +223,8 @@ class SimulationModel
 		QHash<QString, double> m_plc_vars;
 		std::unique_ptr<Grafcet> m_grafcet;
 		AnalogCircuit m_circuit;                   // R17 stage 1: analog electric circuit (sim_role circuit)
+		struct CircuitIo { int part = -1; QStringList names; double umin = 0.0, umax = 0.0, raw = 0.0; bool output = false; };
+		QList<CircuitIo> m_circuit_io;             // R17 stage 2: PLC analog inputs (AI) and outputs (AQ) of the circuit
 		QStringList m_program_errors;
 		QStringList m_model_errors;
 		bool m_failed = false;

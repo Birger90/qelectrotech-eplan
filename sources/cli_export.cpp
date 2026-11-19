@@ -36,6 +36,7 @@
 #include "simulation/simulationcatalog.h"
 #include "qetversion.h"
 #include <QCryptographicHash>
+#include <QElapsedTimer>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -722,6 +723,8 @@ int simulateProject(QETProject &project, const QStringList &args)
 	double duration = 2.0, pressure = 6.0, png_at = -1.0, raster = 0.005;
 	QString csv_path, png_dir, measure, meta_path;
 	bool list_signals = false;
+	bool until_change = false;   // R16
+	QString folios;               // R16: 1,3 or 2-4
 	struct Event { double t; QString label; int side; bool on; double value = 0.0; };   // side 2: setpoint (R07)
 	QList<Event> events;
 	static const QRegularExpression ev_re(QStringLiteral(
@@ -738,6 +741,8 @@ int simulateProject(QETProject &project, const QStringList &args)
 		else if (a == QLatin1String("--raster")) { raster = v.toDouble(); ++i; }
 		else if (a == QLatin1String("--meta")) { meta_path = v; ++i; }
 		else if (a == QLatin1String("--signals")) list_signals = true;
+		else if (a == QLatin1String("--until-change")) until_change = true;
+		else if (a == QLatin1String("--folios")) { folios = v; ++i; }
 		else if (a == QLatin1String("--event")) {
 			// R07: "0.5 -QM1 sollwert 5" sets the setpoint of a proportional valve (volts)
 			static const QRegularExpression sp_re(QStringLiteral("^\\s*([\\d.]+)\\s+(.+?)\\s+(?:sollwert|setpoint)\\s+(-?[\\d.]+)\\s*$"));
@@ -766,7 +771,23 @@ int simulateProject(QETProject &project, const QStringList &args)
 	}
 	// R03: events at the same time keep the order of the command line (stable), so a run is reproducible
 	std::stable_sort(events.begin(), events.end(), [](const Event &x, const Event &y) { return x.t < y.t; });
-	SimulationModel sim(project.diagrams(), pressure);
+	// R16: only some folios of the project (1-based, "1,3" or "2-4")
+	QList<Diagram *> chosen;
+	if (folios.isEmpty()) chosen = project.diagrams();
+	else {
+		const QList<Diagram *> all = project.diagrams();
+		for (const QString &part : folios.split(QLatin1Char(','), Qt::SkipEmptyParts)) {
+			const QStringList r = part.trimmed().split(QLatin1Char('-'));
+			bool ok1 = false, ok2 = true;
+			const int lo = r.value(0).toInt(&ok1), hi = r.size() > 1 ? r.value(1).toInt(&ok2) : lo;
+			if (!ok1 || !ok2 || lo < 1 || hi > all.size() || hi < lo) { err << "folios not understood: " << folios << "\n"; return 2; }
+			for (int k = lo; k <= hi; ++k)
+				if (!chosen.contains(all.at(k - 1))) chosen << all.at(k - 1);
+		}
+	}
+	QElapsedTimer wall;
+	wall.start();
+	SimulationModel sim(chosen, pressure);
 	if (!list_signals) out << sim.summary() << "\n";
 	for (const QString &e : sim.modelErrors()) err << "Model error: " << e << "\n";
 	if (sim.failed()) {
@@ -871,9 +892,17 @@ int simulateProject(QETProject &project, const QStringList &args)
 			png_done = true;
 		}
 		sim.step(dt);
-		for (const auto &m : sim.takeMessages())
+		bool changed = false;
+		for (const auto &m : sim.takeMessages()) {
 			out << QString::number(m.time, 'f', 3).rightJustified(8) << " s  " << m.text << "\n";
+			changed = changed || m.time > 1e-9;
+		}
 		if (sim.failed()) break;
+		// R16: --until-change ends the run at the first state change after the start
+		if (until_change && changed) {
+			out << "Halt bei der ersten Zustandsänderung\n";
+			break;
+		}
 	}
 	if (!png_done) write_png();
 	out << "Status: " << (sim.failed() ? "abgebrochen" : "ok") << ", Endzeit " << QString::number(sim.time(), 'f', 4) << " s\n";
@@ -889,6 +918,13 @@ int simulateProject(QETProject &project, const QStringList &args)
 		meta.insert(QStringLiteral("supplyPressureBar"), pressure);
 		meta.insert(QStringLiteral("durationS"), duration);
 		meta.insert(QStringLiteral("integrationStepS"), dt);
+		// R16 performance figures: wall time of build and run, steps, problem size
+		const double seconds = wall.nsecsElapsed() / 1e9;
+		meta.insert(QStringLiteral("wallTimeS"), seconds);
+		meta.insert(QStringLiteral("steps"), static_cast<double>(sim.stepCount()));
+		meta.insert(QStringLiteral("stepsPerSecond"), seconds > 0 ? sim.stepCount() / seconds : 0.0);
+		meta.insert(QStringLiteral("fluidNets"), sim.netCount());
+		meta.insert(QStringLiteral("folios"), folios.isEmpty() ? QStringLiteral("alle") : folios);
 		meta.insert(QStringLiteral("outputRasterS"), raster);
 		meta.insert(QStringLiteral("integrator"), QStringLiteral("explicit Euler; oil nets with accumulator implicit (bisection)"));
 		QJsonArray evs;

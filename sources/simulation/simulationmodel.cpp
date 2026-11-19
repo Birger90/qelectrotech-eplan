@@ -2477,6 +2477,7 @@ void SimulationModel::multiStep(Cylinder *z, double dt, QVector<double> &vol, QV
 void SimulationModel::step(double dt)
 {
 	if (m_failed) return;
+	++m_step_count;
 	const int n = static_cast<int>(m_p.size());
 	QVector<double> flow(n, 0.0), dvdt(n, 0.0), vol(n, V_LINE);
 	for (int k = 0; k < n; ++k)
@@ -3106,6 +3107,16 @@ void SimulationModel::runUntil(double time, double dt)
 	// a failed run does not advance the time: stop instead of looping
 	while (!m_failed && m_time + dt <= time + 1e-12)
 		step(dt);
+}
+
+bool SimulationModel::runUntilChange(double limit, double dt)
+{
+	const auto before = m_messages.size();
+	while (!m_failed && m_time + dt <= limit + 1e-12) {
+		step(dt);
+		if (m_messages.size() > before) return true;
+	}
+	return false;
 }
 
 // ------------------------------------------------------------------------- input / state

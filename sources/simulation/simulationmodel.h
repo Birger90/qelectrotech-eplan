@@ -80,6 +80,13 @@ class SimulationModel
 
 		void step(double dt);
 		void runUntil(double time, double dt = 1e-5);
+			/// R16: runs until the next state change (a new message: valve, end position, relay, step …) or until
+			/// @a limit; true when a change happened
+		bool runUntilChange(double limit, double dt = 1e-5);
+			/// R16: integration steps so far (performance figures)
+		long long stepCount() const { return m_step_count; }
+			/// R16: number of fluid nets (problem size for the performance figures)
+		int netCount() const { return static_cast<int>(m_p.size()); }
 		double time() const { return m_time; }
 
 		void pressButton(const QString &label, bool pressed);
@@ -222,6 +229,7 @@ class SimulationModel
 		QList<int> m_silenced;                      // free ports with a silencer
 		double m_silencer_c = 0.0;
 		double m_next_plc_cycle = 0.0;
+		long long m_step_count = 0;
 		QList<QPair<QList<int>, QList<int>>> m_sources;
 		QSet<int> m_plus_nets;
 		QSet<QString> m_pressed;

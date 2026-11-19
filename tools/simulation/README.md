@@ -90,6 +90,15 @@ Programme aller SPS-Baugruppen eines Projekts teilen sich die Variablen. Das Sim
 während des Laufs in der Liste *SPS-Variablen* (Ein- und Ausgänge, Merker, Schritt, Bausteinausgänge);
 `--simulate` gibt am Ende die Werte aus.
 
+## Simulationsmodi und Leistung (R16, Fork 1.40.0)
+
+- Simulationsfenster: **Start**, **Pause**/**Fortsetzen**, **Stop** (Ende; der nächste Start beginnt von vorn), **Schritt 10 ms**
+  (ein Steuerzyklus), **Bis zur nächsten Änderung** (bis Ventil, Endlage, Relais, Schritt … umschalten, höchstens 10 s),
+  **Nur aktuelles Blatt**.
+- Kommandozeile: `--folios 2` bzw. `1,3` oder `2-4` (nur diese Blätter), `--until-change` (Halt bei der ersten Zustandsänderung),
+  `--measure`/`--csv`/`--raster` (Messabgriffe wie bisher), `--meta` mit `wallTimeS`, `steps`, `stepsPerSecond`, `fluidNets`, `folios`.
+- Formel N10, Prüfplan `zwei_blaetter.qet`.
+
 ## Fehlerszenarien (R15, Fork 1.39.0)
 
 Ein Defekt steht als Elementinformation `sim_fault` am Bauteil, Schreibweise „`<Fehler> [Wert] [ab t] [bis t]`“, mehrere durch

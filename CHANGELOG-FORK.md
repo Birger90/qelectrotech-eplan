@@ -3,6 +3,19 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.40.0 – 19.11.2026
+
+Simulations-Roadmap R16 (Simulationsmodi, Messabgriffe, Leistung):
+
+- Simulationsfenster: „Schritt 10 ms“ (ein Steuerzyklus) und „Bis zur nächsten Änderung“ (höchstens 10 s), Ankreuzfeld „Nur
+  aktuelles Blatt“; Pause/Fortsetzen und Stop/Neustart (Rücksetzen) wie bisher.
+- Kommandozeile `--simulate`: `--folios 1,3` bzw. `2-4` rechnet nur diese Blätter, `--until-change` hält bei der ersten
+  Zustandsänderung; `--meta` nennt Rechenzeit, Schritte, Schritte je Sekunde, Zahl der Fluidnetze und die Blätter.
+- Kern: `runUntilChange()`, `stepCount()`, `netCount()`. Formel N10.
+- Neue Prüfung „Simulationsmodi (R16)“ mit `zwei_blaetter.qet`: Halt an der Ventilumschaltung, Endlage zur selben Zeit wie im
+  Dauerlauf, Einzelschritt 10 ms, Blatt 2 allein mit demselben Druck wie im ganzen Projekt.
+- Das Simulationsfenster selbst ist nicht im Programm durchgeklickt (Bedienung ungeprüft), der Kern dahinter ist geprüft.
+
 ## 1.39.0 – 19.11.2026
 
 Simulations-Roadmap R15 (Fehlerszenarien und Reparatur, Fehlermodelle wie FluidSIM):

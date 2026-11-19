@@ -18,6 +18,7 @@
 #include "simulationreference.h"
 
 #include "grafcet.h"
+#include <QElapsedTimer>
 #include "plcprogram.h"
 #include "simulationcatalog.h"
 #include "simulationmodel.h"
@@ -521,7 +522,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Lenkung und Sperrventile (R13): Lenkventil voll, halb, neutral, rechts; Vorsteuergerät; Sperrblock entsperrt, gesperrt, Durchfluss; Belastungseinheit 1; Speicher mit Sicherheitsblock"),
 		QStringLiteral("LS-Steuerblock und Prioritätsventil (R13): Druckwaage hält den Strom lastunabhängig, Lastmeldung, Rückhub; Prioritätsventil teilt CF/EF"),
 		QStringLiteral("GRAFCET-Struktur (R14): einschließender Schritt, Makroschritt, Zwangssteuerung, Instanzen, Analogwert"),
-		QStringLiteral("Fehlerszenarien (R15): Taster, Spule mit Reparatur, klemmender Kolben, Rückschlagventil, Verstopfung, Leckage, Wiederholbarkeit")};
+		QStringLiteral("Fehlerszenarien (R15): Taster, Spule mit Reparatur, klemmender Kolben, Rückschlagventil, Verstopfung, Leckage, Wiederholbarkeit"),
+		QStringLiteral("Simulationsmodi (R16): bis zur nächsten Änderung, Einzelschritt, Teilprojekt (Blatt), Leistung")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1488,6 +1490,70 @@ QList<Check> endToEnd(const QString &reference_dir)
 					wrong << QStringLiteral("%1: %2 N statt %3 N (v %4 / %5 m/s)").arg(QString::fromUtf8(k.what)).arg(got).arg(want).arg(s.v).arg(base.v);
 				else seen << QStringLiteral("%1: %2 N (soll %3)").arg(QString::fromUtf8(k.what)).arg(got, 0, 'f', 1).arg(want, 0, 'f', 1);
 			}
+		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 23. simulation modes (R16, FORMELN.md N10): run to the next state change on hydraulik.qet (valve switch, then end
+		//     position at the times of the continuous run), single step of one control cycle, zwei_blaetter.qet run whole and
+		//     folio 2 alone (the throttle circuit gives the same pressure), steps per second
+		Check c{names.at(22)};
+		QStringList wrong, seen;
+		ProjectRun ref = runProject(path("hydraulik.qet"), 6.0, {{0.3, QStringLiteral("-SF1"), 0, true}}, 3.0);
+		const double t_valve = ref.eventTime(QStringLiteral("schaltet in Stellung"), 0.3), t_end = ref.eventTime(QStringLiteral("Endlage vorne"), 0.3);
+		QETProject proj(path("hydraulik.qet"));
+		if (!ref.error.isEmpty() || proj.state() != QETProject::Ok) wrong << QStringLiteral("hydraulik.qet: %1").arg(ref.error);
+		else {
+			SimulationModel m(proj.diagrams(), 6.0);
+			m.runUntil(0.3);
+			m.pressButton(QStringLiteral("-SF1"), true);
+			m.takeMessages();
+			const bool c1 = m.runUntilChange(5.0);
+			const double t1 = m.time();
+			const QString e1 = m.takeMessages().value(0).text;
+			const bool c2 = m.runUntilChange(5.0);
+			const double t2 = m.time();
+			bool c3 = false;
+			double t_end_found = t2;
+			for (const auto &msg : m.takeMessages())
+				if (msg.text.contains(QLatin1String("Endlage vorne"))) { c3 = true; t_end_found = msg.time; }
+			// later stops may be the relay or the coil first: go on change by change until the end position
+			while (!c3 && m.runUntilChange(5.0))
+				for (const auto &msg : m.takeMessages())
+					if (msg.text.contains(QLatin1String("Endlage vorne"))) { c3 = true; t_end_found = msg.time; }
+			if (!c1 || !c2 || !c3 || !(std::abs(t_end_found - t_end) < 1e-6) || t1 > t_valve + 1e-9 || t1 < 0.3)
+				wrong << QStringLiteral("bis zur Änderung: erster Halt %1 s (%2), Endlage %3 s statt %4").arg(t1).arg(e1).arg(t_end_found).arg(t_end);
+			else seen << QStringLiteral("bis zur Änderung: Halt bei %1 s („%2“), Ventil %3 s, Endlage %4 s wie im Dauerlauf")
+							 .arg(t1, 0, 'f', 5).arg(e1).arg(t_valve, 0, 'f', 5).arg(t_end_found, 0, 'f', 5);
+			const double before = m.time();
+			m.runUntil(before + 0.010);
+			if (!(std::abs(m.time() - before - 0.010) < 1e-9)) wrong << QStringLiteral("Einzelschritt %1 s statt 0,010").arg(m.time() - before);
+			else seen << QStringLiteral("Einzelschritt 10 ms (%1 → %2 s)").arg(before, 0, 'f', 4).arg(m.time(), 0, 'f', 4);
+		}
+		QETProject two(path("zwei_blaetter.qet"));
+		if (two.state() != QETProject::Ok || two.diagrams().size() != 2) wrong << QStringLiteral("zwei_blaetter.qet fehlt oder hat nicht zwei Blätter");
+		else {
+			auto run = [&](const QList<Diagram *> &ds, double *p2, double *p1, long long *steps, double *secs) {
+				SimulationModel m(ds, 6.0);
+				QElapsedTimer w;
+				w.start();
+				m.runUntil(1.0);
+				*secs = w.nsecsElapsed() / 1e9;
+				*steps = m.stepCount();
+				*p2 = m.signalValue(QStringLiteral("p:-GZ2.P2")) / 1e5;
+				*p1 = m.signalValue(QStringLiteral("p:-GZ1.P2")) / 1e5;
+				return m.netCount();
+			};
+			double pa2 = 0, pa1 = 0, pb2 = 0, pb1 = 0, sa = 0, sb = 0;
+			long long na = 0, nb = 0;
+			const int nets_all = run(two.diagrams(), &pa2, &pa1, &na, &sa);
+			const int nets_two = run({two.diagrams().at(1)}, &pb2, &pb1, &nb, &sb);
+			if (!(std::abs(pa2 - pb2) < 1e-9) || std::isfinite(pb1) || !(nets_two < nets_all) || na != nb)
+				wrong << QStringLiteral("Teilprojekt: Blatt 2 %1 bar (ganz %2), Blatt 1 im Teilprojekt %3, Netze %4/%5").arg(pb2).arg(pa2).arg(pb1).arg(nets_two).arg(nets_all);
+			else seen << QStringLiteral("nur Blatt 2: %1 bar wie im ganzen Projekt, %2 statt %3 Netze, Blatt 1 nicht gerechnet; "
+										"%4 Schritte/s (ganz %5)")
+							 .arg(pb2, 0, 'f', 3).arg(nets_two).arg(nets_all).arg(nb / std::max(sb, 1e-9), 0, 'f', 0).arg(na / std::max(sa, 1e-9), 0, 'f', 0);
 		}
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));

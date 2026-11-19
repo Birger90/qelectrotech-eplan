@@ -248,7 +248,7 @@ Filterwirkung). Ein pneumatischer „pump“ ist ein Verdichter und damit ideale
 - **Filter, Wartungseinheit, Öler …**: Durchgangswiderstand; `clogged` 1 mit `qNN_clogged` (Vorgabe 10 l/min) bzw.
   `rT_clogged` (Vorgabe 1000·rT). Keine Filter-, Kühl- oder Heizwirkung.
 
-Nicht unterstützt (Start abgewiesen): Stetig-/Proportionalventile, Muskel-, Lade- und Druckluftmotorantriebe,
+Nicht unterstützt (Start abgewiesen): Stetig-/Proportionalventile, Lade- und Druckluftmotorantriebe,
 Load-Sensing-Pumpen, Folge-, Senkbrems- und Kompensatorventile, Vakuum-Sparventil, Ventilgruppen und pneumatische
 Zeitglieder/Zähler – siehe Roadmap (R07–R13).
 
@@ -337,8 +337,18 @@ Elektrische Teile mit reellen Werten. Sie tragen die Bauteilinformationen `sim_r
   die Zwischenstellung, C2 fährt den vorderen allein bis `xMax`, C3 ist seine Stangenseite. Kontakt einseitig, Stoß
   plastisch; Startlagen `xStart`, `xStart1`; Messgrößen `x:` (vorderer Kolben) und `x1:` (hinterer). Prüfplan
   `mehrstellungszylinder.qet` (Formel M12).
-- Nicht gerechnet: Muskeln (Kennlinie nur aus dem Datenblatt), Belastungseinheit (R13), Druckübersetzer (FluidSIM gibt
-  keine Kennwerte, nur Datenblattgrößen). Tandem- und Teleskopzylinder gibt es in FluidSIM nicht als Bauteil.
+- **Pneumatischer Muskel** (`actuator.fluidic_muscle1`, A; Fork 1.46.0, Formel M15): `muscleType` 1/2/3 = DMSP-10/20/40,
+  `len` Nennlänge, `F_extern_const` (zieht gegen die Kontraktion), `m_ext`, `mu_B_ext`, `mu_M_ext`, `alpha`, optional
+  `F_V` (Dämpfung, Vorgabe 20 N·s/m). Kraft aus den Festo-Kurven (`simulationmuscle.h`), Volumen über virtuelle Arbeit.
+  Messgrößen `x:` (Kontraktion in m, negativ vorgespannt), `h:` (%), `v:`, `F:` (Zugkraft). Prüfplan `muskel.qet`.
+  MAS-Typen und Muskel mit Zylinder (`fluidic_muscle2/3`) werden mit Begründung abgewiesen.
+- **Druckübersetzer** (`actuator.pressure_intensifier01`, IN, R, H; Fork 1.46.0, Formel H13): `r`, `p_max_in`, `q_max_in`,
+  `q_max_hi` aus dem Herstellerdatenblatt (Pflicht, FluidSIM gibt keine Vorgabe), `G_leak`. Bypass IN → H, Pumpkolben
+  bis r·p_IN − (r − 1)·p_R, Rückschlag H → IN bei Druck an R. Messgröße `qh:` (Förderstrom). Prüfplan
+  `druckuebersetzer.qet` (Scanwill MP-F-4.0).
+- Kennlinien neu lesen: `python -I tools/simulation/datenblaetter/dmsp_kennlinien.py DMSP_EN.PDF dmsp.json`, dann
+  `erzeuge_muskelkopf.py dmsp.json sources/simulation/simulationmuscle.h`.
+- Nicht gerechnet: Belastungseinheit 1 siehe R13. Tandem- und Teleskopzylinder gibt es in FluidSIM nicht als Bauteil.
 
 ## Mobilhydraulik (R13, Fork 1.35.0)
 

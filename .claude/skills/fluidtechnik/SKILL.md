@@ -175,11 +175,13 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
   weiter `F_stat`, `F_ref`/`v_ref`), Feder `spring_left`/`spring_right` mit `p_spring_min`/`p_spring_max` (bezogen auf
   die Kolbenfläche) und Kraftprofil `F_var_ex`/`F_var_re` = {x mm, F N, …} bei `use_F_const` False.
 - Druckluftmotoren (Fork 1.33.0, R12): `MotorWithMidExhaust` rechnet aus `p_N`, `rpm_N`, `M_N`, `n0_nN` (lineare
-  Kennlinie, Nennpunkt exakt), `Pneu.Actuator.RotaryMotor` aus `displacement`, `f`, `I`; Muskeln und Belastungseinheit
-  noch nicht (Muskelkennlinie nur aus dem Festo-Datenblatt, nicht schätzen).
+  Kennlinie, Nennpunkt exakt), `Pneu.Actuator.RotaryMotor` aus `displacement`, `f`, `I`. Muskel `FluidicMuscle1`
+  (Fork 1.46.0): DMSP-10/20/40 nach den Festo-Kurven (`muscleType`, `len`, `F_extern_const`); MAS und Muskel mit Zylinder
+  abgewiesen.
 - Mehrstellungszylinder (Fork 1.34.0, R12): `MultiPositionCylinder` (C1 hinterer Kolben, C2 vorderer, C3 Stangenseite)
-  fährt drei Stellungen an: 0, `xMax2` (Standard halber Gesamthub), `xMax`. Druckübersetzer (`PressureIntensifier01`)
-  bleibt abgewiesen: FluidSIM nennt keine Kennwerte, nur Datenblattgrößen – nicht schätzen.
+  fährt drei Stellungen an: 0, `xMax2` (Standard halber Gesamthub), `xMax`. Druckübersetzer (`PressureIntensifier01`,
+  hydraulisch, IN/R/H) rechnet seit 1.46.0 mit `r`, `p_max_in`, `q_max_in`, `q_max_hi` aus dem Datenblatt (Pflicht, nicht
+  schätzen; Beispiel Scanwill MP-F-4.0: 4, 17,5 MPa, 14 l/min, 0,4 l/min).
 - Mobilhydraulik (Fork 1.35.0, R13): `LoadSensingPumpUnit` (P1 LS-Verstellpumpe, P2 Konstantpumpe, LS-Anschluss; T/L/LA dürfen offen bleiben), 6/3-Handhebelventil (`xStep` ±100 %, + öffnet P2 → B) und `LoadingUnit_2` rechnen; Lenkventil, LS-Steuerblock, Vorsteuergerät noch nicht.
 - Fehlerszenarien (Fork 1.39.0, R15): Fehler wie FluidSIM über die Elementinformation `sim_fault` (z. B. „kolben_klemmt ab 1“, „interne_leckage 0.5“), Reparatur mit dem Ereignis „1.5 -QM1 reparieren“.
 - GRAFCET aus FluidSIM (Fork 1.38.0): Teil-GRAFCET-Rahmen → `sim_grafcet`, einschließende Schritte → `sim_encloses`, alink → `sim_activation`, Makro/Eingang/Ausgang → M/E/S, zwangssteuernde Befehle → Aktion `G12{…}`, Sprungziel einer Transition → Sprung.

@@ -71,8 +71,12 @@ QList<Entry> build()
 		      "zwei Kolben gleichen Durchmessers hintereinander, der hintere schiebt den vorderen mit seiner Stange (Kontakt einseitig, Stoß plastisch); "
 		      "C2 wirkt auch auf das Stangenende des hinteren Kolbens; Stangenraum des hinteren Kolbens entlüftet; beide Kolben gleiche Masse und Reibung",
 		      "Mehrstellungszylinder (R12)");
-	e << other("actuator.pressure_intensifier01", Role::Unsupported, "",
-		   "Druckübersetzer: FluidSIM nennt nur die Datenblattgrößen (Übersetzung r, p_max IN, q_max IN/H, G_leak) ohne Standardwerte und ohne Innenschaltung – Kennwerte aus dem Herstellerdatenblatt nötig");
+	e << physical("actuator.pressure_intensifier01", "pressure_intensifier", "hydraulic", "IN (Zulauf), R (Rücklauf), H (Hochdruck)",
+		      "r, p_max_in [Pa], q_max_in, q_max_hi [l/min] (alle Pflicht, aus dem Datenblatt), G_leak [m3/(s.Pa)]",
+		      "Mittelwertmodell des oszillierenden Pumpkolbens: q_H linear bis zum Stillstand bei r·p_IN − (r − 1)·p_R, Zulauf r·q_H, "
+		      "Rücklauf (r − 1)·q_H; Bypass IN→H und entsperrbares Rückschlagventil H→IN (Steuerdruck an R) als Rückschlagventile; "
+		      "keine Hubpulsation, keine Umsteuerverluste",
+		      "Druckübersetzer (R12)");
 	e << physical("actuator.motor_with_mid_exhaust", "air_motor", "pneumatic", "A, B (Zulauf je Drehrichtung), EX Mittelauspuff",
 		      "p_N [Pa], rpm_N [1/min], M_N [N.m], n0_nN, I [kg.m2], M_ext [N.m], torqueType (1 bremsend, 2 antreibend)",
 		      "lineare Momentenkennlinie aus den Nennwerten, Moment ∝ Druckdifferenz, Luftverbrauch ρ·D·ω/2π zum Auspuff; ohne Leckage und Anlaufverhalten der Lamellen",
@@ -85,8 +89,14 @@ QList<Entry> build()
 		      "wie Belastungseinheit 2; Druckbegrenzung zwischen den Stangenseiten p0_prv, dpEnd_prv [Pa], rT_prv, Rückschlagventil rT_cv [bar.min2/l2]",
 		      "wie Belastungseinheit 2; Stangenräume A1.2 und A2.1 entlasten sich über Druckbegrenzungs- und Rückschlagventil in Reihe ineinander (Zwischenknoten nicht eigens gerechnet)",
 		      "Mobilhydraulik (R13)");
-	for (const char *f : {"actuator.fluidic_muscle1", "actuator.fluidic_muscle3"})
-		e << other(f, Role::Unsupported, "", "Muskel (Kraftkennlinie aus dem Herstellerdatenblatt nötig)");
+	e << physical("actuator.fluidic_muscle1", "muscle", "pneumatic", "A",
+		      "muscleType (1 DMSP-10, 2 DMSP-20, 3 DMSP-40), len [m], F_extern_const [N], m_ext [kg], mu_B_ext, mu_M_ext, alpha; F_V [N.s/m]",
+		      "Kraft-Weg-Kennlinien aus dem Festo-Katalog DMSP (linear zwischen den Druckkurven), Volumen über virtuelle Arbeit; "
+		      "Last wirkt gegen die Kontraktion; Anschläge an Vorspanngrenze und max. Kontraktion; keine Hysterese, MAS ohne Kennlinie",
+		      "Muskel (R12)");
+	for (const char *f : {"actuator.fluidic_muscle2", "actuator.fluidic_muscle3"})
+		e << other(f, Role::Unsupported, "",
+			   "Muskel mit doppeltwirkendem Zylinder: FluidSIM dokumentiert die Kopplung (Zylinderhub zu Muskelkontraktion, Nullpunkt) nicht");
 	// ---------------------------------------------------------- Wegeventile
 	for (const char *f : {"directional_valve.two_pins", "directional_valve.three_pins", "directional_valve.four_pins",
 			       "directional_valve.five_pins"})

@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "simulationreference.h"
+#include "simulationmuscle.h"
 
 #include <array>
 #include <complex>
@@ -531,7 +532,9 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Kopplung Stromkreis (R17, Stufe 2): Taster und Relaisspule mit R, L und Freilaufdiode, Relaiskontakt, SPS-Analogeingang und -ausgang"),
 		QStringLiteral("Halbleiter (R17, Stufe 3): NPN aktiv und gesättigt, PNP, invertierender Operationsverstärker linear und begrenzt"),
 		QStringLiteral("Schutzorgane (R17, Stufe 4): Leitungsschutzschalter B/C an den Prüfpunkten der IEC 60898-1, Motorschutz Klasse 10, Sicherung mit Zurücksetzen"),
-		QStringLiteral("Elektrische Maschinen (R17, Stufe 5): Gleichstrommotor Hochlauf und Last, Asynchronmotor am Drehstromnetz gegen das Ersatzschaltbild")};
+		QStringLiteral("Elektrische Maschinen (R17, Stufe 5): Gleichstrommotor Hochlauf und Last, Asynchronmotor am Drehstromnetz gegen das Ersatzschaltbild"),
+		QStringLiteral("Pneumatischer Muskel (R12): Festo DMSP gegen das Auslegungsbeispiel des Katalogs, Vorspannung ohne Druck, Volumen gegen die Aufweitung"),
+		QStringLiteral("Druckübersetzer (R12): Scanwill MP-F-4.0 – Bypass, Enddruck r·p_IN, Druckaufbau nach der Pumpenkennlinie")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -721,7 +724,7 @@ QList<Check> endToEnd(const QString &reference_dir)
 		struct Case { const char *from, *to, *expect; };
 		const QList<Case> cases{
 			{"supply.pump", "vacuum.vacuum_efficiency_valve", "vacuum.vacuum_efficiency_valve hat kein Rechenmodell"},
-			{"actuator.cyl_conf", "actuator.fluidic_muscle1", "actuator.fluidic_muscle1 hat kein Rechenmodell"},
+			{"actuator.cyl_conf", "actuator.fluidic_muscle3", "actuator.fluidic_muscle3 hat kein Rechenmodell"},
 			{"supply.tank", "unbekannt.pruefling", "steht nicht im Modellkatalog"},
 			{"actuator.cyl_conf", "directional_valve.part", ""},
 		};
@@ -1805,6 +1808,87 @@ QList<Check> endToEnd(const QString &reference_dir)
 										"Strom %6 A eff. (Ersatzschaltbild %7 A)")
 							 .arg(w_sim, 0, 'f', 3).arg(w_sim * 30 / M_PI, 0, 'f', 1).arg(w_asm, 0, 'f', 3).arg(slip * 100, 0, 'f', 3)
 							 .arg(tau_sim, 0, 'f', 4).arg(irms, 0, 'f', 3).arg(is_rms, 0, 'f', 3);
+		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 29. fluidic muscle (R12, FORMELN.md M15), plan muskel.qet, Festo catalogue DMSP 2026/01: sizing example 1
+		//     (DMSP-20-200N, stroke 10 mm = 5 %: 674 N at 4 bar, 609 N at 3.7 bar, Festo engineering tool); -MM2 without
+		//     pressure pretensioned by 400 N, -MM3 DMSP-40-575N with 2000 N at 4 bar against the 0-bar/4-bar curve;
+		//     volume by virtual work against the diameter expansion at max. contraction (data sheet 24/40/80 mm)
+		Check c{names.at(28)};
+		QStringList wrong, seen;
+		const auto &types = SimMuscle::types();
+		auto settle = [&](const QString &file, double bar, double xs[3]) {
+			ProjectRun r = runProject(file, bar, {}, 1.0001, [&](SimulationModel &m) {
+				if (std::abs(m.time() - 1.0) < 5e-6)
+					for (int i = 0; i < 3; ++i) xs[i] = m.signalValue(QStringLiteral("x:-MM%1").arg(i + 1));
+			});
+			if (!r.error.isEmpty()) wrong << QStringLiteral("%1: %2").arg(QFileInfo(file).fileName(), r.error);
+		};
+		auto balance = [&](int type, double bar, double load, double len) {   // h where the curve force equals the load
+			double lo = -types.at(type).pre, hi = types.at(type).h_max;
+			for (int i = 0; i < 100; ++i) {
+				const double mid = 0.5 * (lo + hi);
+				(SimMuscle::force(types.at(type), mid, bar) > load ? lo : hi) = mid;
+			}
+			return 0.5 * (lo + hi) / 100.0 * len;
+		};
+		double a[3] = {std::nan(""), std::nan(""), std::nan("")}, b[3] = {std::nan(""), std::nan(""), std::nan("")};
+		settle(path("muskel.qet"), 4.0, a);
+		const QString v37 = textVariant(path("muskel.qet"), {{QStringLiteral("<parameter name=\"F_extern_const\" unit=\"N\" value=\"674\"/>"),
+															   QStringLiteral("<parameter name=\"F_extern_const\" unit=\"N\" value=\"609\"/>")}},
+										QStringLiteral("qet_sim_r12_muskel37.qet"));
+		if (v37.isEmpty()) wrong << QStringLiteral("Variante 609 N nicht erzeugt");
+		else { settle(v37, 3.7, b); QFile::remove(v37); }
+		if (wrong.isEmpty()) {
+			if (!(std::abs(a[0] - 0.010) <= 1e-4) || !(std::abs(b[0] - 0.010) <= 1e-4))
+				wrong << QStringLiteral("DMSP-20-200N: 674 N/4 bar %1 mm, 609 N/3,7 bar %2 mm statt 10 mm (Festo-Beispiel 1)").arg(a[0] * 1000).arg(b[0] * 1000);
+			else seen << QStringLiteral("DMSP-20-200N 674 N bei 4 bar %1 mm, 609 N bei 3,7 bar %2 mm (Festo-Auslegungsbeispiel: 10 mm Hub)")
+							 .arg(a[0] * 1000, 0, 'f', 3).arg(b[0] * 1000, 0, 'f', 3);
+			const double x2 = balance(1, 0.0, 400.0, 0.2), x3 = balance(2, 4.0, 2000.0, 0.575);
+			if (!(std::abs(a[1] - x2) <= 1e-5) || !(std::abs(a[2] - x3) <= 1e-5))
+				wrong << QStringLiteral("drucklos 400 N %1 mm (Kennlinie %2), DMSP-40 2000 N %3 mm (Kennlinie %4)").arg(a[1] * 1000).arg(x2 * 1000).arg(a[2] * 1000).arg(x3 * 1000);
+			else seen << QStringLiteral("DMSP-20 drucklos mit 400 N %1 mm vorgespannt, DMSP-40-575N 2000 N bei 4 bar %2 mm (je wie die 0-/4-bar-Kurve)")
+							 .arg(a[1] * 1000, 0, 'f', 3).arg(a[2] * 1000, 0, 'f', 2);
+		}
+		QStringList vol;
+		for (const SimMuscle::Type &mt : types) {
+			const double v = SimMuscle::volumePerMetre(mt, mt.h_max), deq = std::sqrt(4 * v / (M_PI * (1 - mt.h_max / 100)));
+			if (!(std::abs(deq / mt.d_max - 1) <= 0.1))
+				wrong << QStringLiteral("%1: Ersatzdurchmesser %2 mm bei max. Kontraktion, Datenblatt %3 mm").arg(QLatin1String(mt.name)).arg(deq * 1000).arg(mt.d_max * 1000);
+			vol << QStringLiteral("%1 %2/%3 mm").arg(QLatin1String(mt.name)).arg(deq * 1000, 0, 'f', 1).arg(mt.d_max * 1000, 0, 'f', 0);
+		}
+		seen << QStringLiteral("Volumen bei 25 %: Ersatzdurchmesser/Aufweitung laut Datenblatt ") + vol.join(QStringLiteral(", "));
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 30. hydraulic pressure intensifier (R12, FORMELN.md H13), plan druckuebersetzer.qet: Scanwill MP-F-4.0 (r 4,
+		//     max. supply 175 bar, 14 l/min, average outlet flow 0.4 l/min) on the pump (6 MPa), H to a cylinder 20/10-20:
+		//     the bypass extends it, then the end pressure r·p_IN; the rise follows q_H = k·(r·p_IN - p_H) in the closed
+		//     H volume (V_HYD + dead volume + cylinder), i.e. an exponential with τ = V/(E·k)
+		Check c{names.at(29)};
+		QStringList wrong, seen;
+		double x1 = std::nan(""), p1 = std::nan(""), p2 = std::nan(""), p8 = std::nan(""), pin = std::nan("");
+		ProjectRun r = runProject(path("druckuebersetzer.qet"), 6.0, {}, 8.0001, [&](SimulationModel &m) {
+			const double tm = m.time();
+			if (std::abs(tm - 1.0) < 5e-6) { x1 = m.signalValue(QStringLiteral("x:-MM1")); p1 = m.signalValue(QStringLiteral("p:-MM1.A")); }
+			if (std::abs(tm - 2.0) < 5e-6) p2 = m.signalValue(QStringLiteral("p:-MM1.A"));
+			if (std::abs(tm - 8.0) < 5e-6) { p8 = m.signalValue(QStringLiteral("p:-MM1.A")); pin = m.signalValue(QStringLiteral("p:-GZ1.IN")); }
+		});
+		if (!r.error.isEmpty()) wrong << r.error;
+		else {
+			const double k = 0.4 / 60000.0 / (0.4 * 4 * 175e5), vh = 1e-4 + 2e-6 + M_PI * 0.02 * 0.02 / 4 * 0.02, tau = vh / (7e8 * k);
+			const double pend = 4 * pin, ratio = (pend - p2) / (pend - p1), want = std::exp(-1.0 / tau);
+			if (!(std::abs(x1 - 0.02) <= 1e-6)) wrong << QStringLiteral("Zylinder nach 1 s bei %1 mm statt 20 mm (Bypass)").arg(x1 * 1000);
+			else if (!(std::abs(p8 - pend) <= 0.002 * pend)) wrong << QStringLiteral("Enddruck %1 bar statt 4 · %2 bar").arg(p8 / 1e5).arg(pin / 1e5);
+			else if (!(std::abs(ratio - want) <= 0.02 * want))
+				wrong << QStringLiteral("Druckaufbau: Restverhältnis 1→2 s %1 statt e^(−1/τ) = %2 (τ %3 s)").arg(ratio).arg(want).arg(tau);
+			else seen << QStringLiteral("Zylinder über den Bypass ausgefahren; Enddruck %1 bar = 4 · %2 bar (Datenblatt: Ausgangsdruck proportional, "
+										"80–700 bar bei r = 4); Druckaufbau Restverhältnis %3 (soll e^(−1/τ) = %4, τ = %5 s)")
+							 .arg(p8 / 1e5, 0, 'f', 2).arg(pin / 1e5, 0, 'f', 2).arg(ratio, 0, 'f', 4).arg(want, 0, 'f', 4).arg(tau, 0, 'f', 3);
 		}
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));

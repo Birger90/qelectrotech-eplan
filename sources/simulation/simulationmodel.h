@@ -166,6 +166,7 @@ class SimulationModel
 		struct Joystick;
 		struct LsBlock;
 		struct PriorityValve;
+		struct Intensifier;
 
 		int node(Terminal *t) const;
 		int node(Element *e, const QString &port) const;
@@ -194,6 +195,7 @@ class SimulationModel
 		QList<Ejector *> m_ejectors;               // vacuum generators (R10)
 		QList<Pipe *> m_pipes;                     // lines with geometry (R05)
 		QList<PropValve *> m_prop_valves;          // proportional valves (R07)
+		QList<Intensifier *> m_intensifiers;      // R12 hydraulic pressure intensifiers
 		QList<LsUnit *> m_ls_units;                // R13 load sensing power units
 		QList<Valve63 *> m_valves63;               // R13 6/3 hand lever valves
 		QList<Steering *> m_steerings;             // R13 steering units (Orbitrol)

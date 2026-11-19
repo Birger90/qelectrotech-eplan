@@ -116,6 +116,8 @@
 >   stage 3 adds bipolar transistors (Ebers-Moll) and operational amplifiers,
 >   stage 4 fuses, circuit breakers (B/C/D) and motor protection (class 10),
 >   stage 5 DC motors and squirrel-cage induction motors on a three-phase supply.
+>   Special drives (R12): fluidic muscle Festo DMSP from the catalogue force/displacement graphs and hydraulic pressure
+>   intensifier (bypass, pump piston, pilot check valve) from data sheet values.
 >   Lines under pressure turn blue/red, live wires red, active steps get a token; buttons and valves are operated in
 >   the window or by clicking the symbol; a live list shows the PLC and GRAFCET variables.
 > - Headless: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv out.csv --png folder`.

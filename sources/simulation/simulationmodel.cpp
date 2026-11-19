@@ -22,6 +22,7 @@
 #include "simulationunits.h"
 #include "grafcet.h"
 #include "simulationcatalog.h"
+#include "simulationmuscle.h"
 
 #include "plcprogram.h"
 
@@ -330,8 +331,32 @@ struct SimulationModel::Cylinder {
 	// dpEnd with rT_prv, then the check valve rT_cv into the other chamber)
 	bool cross = false;
 	double xr_p0 = 120e5, xr_dp = 35.3e5, xr_rt = 0.09, xr_cv = 0.07;
+	// R12 fluidic muscle (FluidSIM Pneu.Actuator.FluidicMuscle1, FORMELN.md M15): x is the contraction [m] (0 = nominal
+	// length, negative = pretensioned), stroke the max. contraction; force and volume from the Festo DMSP data
+	int muscle = -1;                            // index into SimMuscle::types(), -1: no muscle
+	double muscle_len = 0.25;                   // nominal length [m]
+	double muscle_h0 = 0.0;                     // contraction [%] of the first entry of muscle_vol / muscle_area
+	std::vector<double> muscle_vol, muscle_area;   // per 0.05 % contraction: volume [m³], effective area [m²]
+	double muscleTable(const std::vector<double> &tab, double x) const {
+		const double s = (100.0 * x / muscle_len - muscle_h0) / 0.05;
+		const int i = std::clamp(static_cast<int>(std::floor(s)), 0, static_cast<int>(tab.size()) - 2);
+		return tab[i] + (tab[i + 1] - tab[i]) * (s - i);
+	}
 	/// position compared with a marker "-MM1 lo..hi": metres, for a rotary drive degrees / 1000
 	double markPos() const { return rotary ? x * 180.0 / M_PI / 1000.0 : x; }
+};
+
+	/// R12 hydraulic pressure intensifier (FluidSIM Hyd.Actuator.PressureIntensifier01, FORMELN.md H13): bypass check
+	/// valve IN → H, oscillating pump piston IN → H with the return R, pilot operated check valve H → IN (pilot R)
+struct SimulationModel::Intensifier {
+	Element *e = nullptr;
+	QString label;
+	double r = 4.0;          // intensification ratio
+	double k = 0.0;          // pump characteristic [m³/(s·Pa)]: q_H = k·(p_stall - p_H)
+	double q_in_max = 0.0;   // max. supply flow [m³/s]
+	double rt_cv = 0.1;      // check valves [bar.min2/l2]
+	double gleak = 0.0;      // internal leakage IN → R [m³/(s·Pa)]
+	double q_h = 0.0;        // pumped flow into H of the last step [m³/s]
 };
 
 	/// line with geometry (R05): Darcy/Hagen-Poiseuille between two ports
@@ -637,6 +662,7 @@ SimulationModel::~SimulationModel()
 	qDeleteAll(m_pipes);
 	qDeleteAll(m_prop_valves);
 	qDeleteAll(m_ls_units);
+	qDeleteAll(m_intensifiers);
 	qDeleteAll(m_valves63);
 	qDeleteAll(m_steerings);
 	qDeleteAll(m_faults);
@@ -1259,6 +1285,75 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					s->object = paramNative(f, QStringLiteral("object"), 1.0, QString(), &m_model_errors, who, Range::NonNegative) > 0.5;
 					if (s->node >= 0) m_extra_volume[s->node] += s->area * 0.005;   // cup volume: 5 mm deep
 					m_cups << s;
+				} else if (model == QLatin1String("muscle")) {
+					// R12 fluidic muscle (FORMELN.md M15): type and nominal length as in FluidSIM (muscleType 1 … 3 =
+					// DMSP-10/20/40, 4 … 6 MAS-10/20/40), force and volume from the Festo DMSP catalogue
+					auto *c = new Cylinder;
+					c->e = e;
+					c->label = label(e);
+					const QString who = c->label.isEmpty() ? e->name() : c->label;
+					const int type = static_cast<int>(std::lround(paramNative(f, QStringLiteral("muscleType"), 1.0, QString(), &m_model_errors, who, Range::Positive)));
+					if (type >= 4 && type <= 6)
+						m_model_errors << QStringLiteral("%1: Muskel MAS-%2 hat keine hinterlegte Kennlinie (Baureihe ersetzt durch DMSP; "
+														 "Kraft-Weg-Diagramm aus dem Festo-Katalog DMSP nur für DMSP-10/20/40)").arg(who).arg(type == 4 ? 10 : type == 5 ? 20 : 40);
+					else if (type < 1 || type > 3)
+						m_model_errors << QStringLiteral("%1: Muskeltyp %2 unbekannt (1 DMSP-10, 2 DMSP-20, 3 DMSP-40)").arg(who).arg(type);
+					c->muscle = std::clamp(type - 1, 0, 2);
+					const SimMuscle::Type &mt = SimMuscle::types().at(c->muscle);
+					c->muscle_len = paramIn(f, QStringLiteral("len"), 0.25, QStringLiteral("m"), &m_model_errors, who, Range::Positive);
+					if (!std::isfinite(c->muscle_len) || c->muscle_len <= 0) c->muscle_len = 0.25;
+					c->stroke = mt.h_max / 100.0 * c->muscle_len;
+					const QString kg = QStringLiteral("kg"), newton = QStringLiteral("N");
+					const double m_ext = paramIn(f, QStringLiteral("m_ext"), 0.0, kg, &m_model_errors, who, Range::NonNegative);
+					// moving mass: the load plus the kinetic equivalent of the muscle (one end fixed): the free fitting
+					// (half the weight at 0 m) and a third of the tube (FORMELN.md M15, weights from the data sheet)
+					c->m = m_ext + mt.m0 / 2 + mt.m_per_m * c->muscle_len / 3;
+					c->f_load = paramIn(f, QStringLiteral("F_extern_const"), 0.0, newton, &m_model_errors, who);
+					const double alpha = paramIn(f, QStringLiteral("alpha"), 0.0, QStringLiteral("rad"), &m_model_errors, who);
+					c->weight = c->m * 9.81 * std::sin(alpha);
+					const double normal = m_ext * 9.81 * std::abs(std::cos(alpha));
+					c->f_slide = paramNative(f, QStringLiteral("mu_M_ext"), 0.0, QString(), &m_model_errors, who, Range::NonNegative) * normal;
+					c->f_static = std::max(c->f_slide, paramNative(f, QStringLiteral("mu_B_ext"), 0.0, QString(), &m_model_errors, who, Range::NonNegative) * normal);
+					c->damping = paramIn(f, QStringLiteral("F_V"), 20.0, QStringLiteral("N.s/m"), &m_model_errors, who, Range::NonNegative);
+					// volume and effective area per 0.05 % from the max. pretension to the max. contraction (virtual work)
+					c->muscle_h0 = -mt.pre;
+					const int nh = static_cast<int>(std::lround((mt.h_max + mt.pre) / 0.05)) + 1;
+					c->muscle_area.resize(nh);
+					c->muscle_vol.resize(nh);
+					for (int i = 0; i < nh; ++i) c->muscle_area[i] = SimMuscle::area(mt, c->muscle_h0 + 0.05 * i);
+					const int i0 = static_cast<int>(std::lround(mt.pre / 0.05));
+					c->muscle_vol[i0] = M_PI / 4 * mt.id * mt.id * c->muscle_len;
+					for (int i = i0 + 1; i < nh; ++i)
+						c->muscle_vol[i] = c->muscle_vol[i - 1] + 0.5 * (c->muscle_area[i - 1] + c->muscle_area[i]) * 0.0005 * c->muscle_len;
+					for (int i = i0 - 1; i >= 0; --i)
+						c->muscle_vol[i] = c->muscle_vol[i + 1] - 0.5 * (c->muscle_area[i + 1] + c->muscle_area[i]) * 0.0005 * c->muscle_len;
+					c->x = 0.0;
+					m_cylinders << c;
+					m_end_position.insert(c->label, QString());
+				} else if (model == QLatin1String("pressure_intensifier")) {
+					// R12 (FORMELN.md H13): FluidSIM gives no defaults, all values from the data sheet
+					auto *b = new Intensifier;
+					b->e = e;
+					b->label = label(e);
+					const QString who = b->label.isEmpty() ? e->name() : b->label;
+					for (const char *need : {"r", "p_max_in", "q_max_in", "q_max_hi"})
+						if (f.parameter(QLatin1String(need)).trimmed().isEmpty())
+							m_model_errors << QStringLiteral("%1: Druckübersetzer ohne Kennwert %2 (aus dem Herstellerdatenblatt, FluidSIM gibt keine Vorgabe)")
+												  .arg(who, QLatin1String(need));
+					const QString lmin = QStringLiteral("l/min");
+					b->r = paramNative(f, QStringLiteral("r"), 4.0, QString(), &m_model_errors, who, Range::Positive);
+					if (std::isfinite(b->r) && b->r <= 1.0)
+						m_model_errors << QStringLiteral("%1: Übersetzungsverhältnis r %2 muss größer als 1 sein").arg(who).arg(b->r);
+					const double pmax = paramIn(f, QStringLiteral("p_max_in"), 100e5, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive);
+					const double qin = paramIn(f, QStringLiteral("q_max_in"), 10.0, lmin, &m_model_errors, who, Range::Positive);
+					const double qhi = paramIn(f, QStringLiteral("q_max_hi"), 0.5, lmin, &m_model_errors, who, Range::Positive);
+					b->q_in_max = qin / 60000.0;
+					// linear characteristic through q_max_hi at 60 % of the max. outlet pressure r·p_max_in (FluidSIM definition)
+					b->k = qhi / 60000.0 / (0.4 * b->r * pmax);
+					// check valves (bypass, POV): the max. supply flow at 5 bar (project definition, FORMELN.md H13)
+					b->rt_cv = 5.0 / (qin * qin);
+					b->gleak = paramIn(f, QStringLiteral("G_leak"), 0.0, QStringLiteral("m3/(s.Pa)"), &m_model_errors, who, Range::NonNegative);
+					m_intensifiers << b;
 				} else if (model == QLatin1String("linear_cylinder")) {
 					auto *c = new Cylinder;
 					c->e = e;
@@ -1921,6 +2016,11 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 	m_silencer_c = conductanceFromQnn(300);
 	for (const Cylinder *z : std::as_const(m_cylinders)) {
 		const QString who = z->label.isEmpty() ? z->e->name() : z->label;
+		if (z->muscle >= 0) {
+			if (!(z->m > 0) || !std::isfinite(z->f_load) || !(z->muscle_len > 0))
+				m_model_errors << QStringLiteral("%1: ungültige Muskeldaten (Länge %2 mm, Masse %3 kg)").arg(who).arg(z->muscle_len * 1000).arg(z->m);
+			continue;
+		}
 		if (z->rotary) {
 			if (!(z->stroke > 0) || !(z->m > 0) || !(z->a_k > 0) || !std::isfinite(z->x) || z->x < 0 || z->x > z->stroke
 				|| !std::isfinite(z->f_load) || !(z->f_static >= 0))
@@ -3239,7 +3339,62 @@ void SimulationModel::step(double dt)
 		if (c > 0) book(s->node, -1, massFlow(p(s->node), P_ATM, c), s->e);
 	}
 
+	for (Intensifier *b : m_intensifiers) {   // FORMELN.md H13
+		const int ki = node(b->e, QStringLiteral("IN")), kr = node(b->e, QStringLiteral("R")), kh = node(b->e, QStringLiteral("H"));
+		b->q_h = 0.0;
+		if (ki < 0 || kh < 0) continue;
+		const double pi = p(ki), pr = p(kr), ph = p(kh);
+		// bypass check valve IN → H; pilot operated check valve H → IN, opened by the return R above IN
+		if (pi > ph) book(ki, kh, volumeFlow(pi, ph, b->rt_cv), b->e);
+		else if (pr - pi >= P_PILOT) book(kh, ki, volumeFlow(ph, pi, b->rt_cv), b->e);
+		// pump piston: stall at r·p_IN - (r - 1)·p_R (gauge), the supply r·q_H, the return (r - 1)·q_H
+		const double stall = P_ATM + b->r * (pi - P_ATM) - (b->r - 1.0) * (pr - P_ATM);
+		const double q = std::clamp(b->k * (stall - ph), 0.0, b->q_in_max / b->r);
+		b->q_h = q;
+		if (q > 0) {
+			book(ki, kh, q, b->e);
+			book(ki, kr, (b->r - 1.0) * q, b->e);
+		}
+		if (b->gleak > 0) book(ki, kr, b->gleak * (pi - pr), b->e);
+	}
+
 	for (Cylinder *z : m_cylinders) {
+		if (z->muscle >= 0) {
+			// R12 fluidic muscle (FORMELN.md M15): tensile force from the data sheet curves, load against the contraction;
+			// velocity semi-implicit in the muscle stiffness and the damping (stable for a light free end)
+			const SimMuscle::Type &mt = SimMuscle::types().at(z->muscle);
+			int ka = -1;
+			for (Terminal *t : z->e->terminals())
+				if (node(t) >= 0) { ka = node(t); break; }
+			const double bar = ka >= 0 ? (p(ka) - P_ATM) / 1e5 : 0.0;
+			auto hx = [&](double x) { return 100.0 * x / z->muscle_len; };
+			const double fm = SimMuscle::force(mt, hx(z->x), bar);
+			const double dx = 1e-5 * z->muscle_len;
+			const double stiff = std::max(0.0, (SimMuscle::force(mt, hx(z->x - dx), bar) - SimMuscle::force(mt, hx(z->x + dx), bar)) / (2 * dx));
+			const double total = fm - z->f_load - z->weight;
+			if (m_record_flows) m_cylinder_force.insert(z->e, fm);
+			if (std::abs(z->v) < 1e-4 && std::abs(total) <= z->f_static) {
+				z->v = 0.0;
+			} else {
+				const double dir = std::abs(z->v) >= 1e-4 ? z->v : total;
+				const double f_net = total - std::copysign(z->f_slide, dir);
+				z->v = (z->v + dt / z->m * f_net) / (1.0 + dt * z->damping / z->m + dt * dt * stiff / z->m);
+				z->x += z->v * dt;
+			}
+			const double lo = -mt.pre / 100.0 * z->muscle_len;
+			QString end;
+			if (z->x <= lo) { z->x = lo; z->v = std::max(z->v, 0.0); end = QStringLiteral("Vorspanngrenze"); }
+			else if (z->x >= z->stroke) { z->x = z->stroke; z->v = std::min(z->v, 0.0); end = QStringLiteral("maximale Kontraktion"); }
+			if (ka >= 0) {
+				vol[ka] += z->muscleTable(z->muscle_vol, z->x);
+				dvdt[ka] += z->muscleTable(z->muscle_area, z->x) * z->v;
+			}
+			if (end != m_end_position.value(z->label)) {
+				m_end_position.insert(z->label, end);
+				if (!end.isEmpty()) m_messages << Message{m_time, QStringLiteral("%1 %2").arg(z->label, end)};
+			}
+			continue;
+		}
 		if (z->multi) { multiStep(z, dt, vol, dvdt); continue; }
 		if (z->loading) {
 			const int k11 = node(z->e, QStringLiteral("A1.1")), k12 = node(z->e, QStringLiteral("A1.2"));
@@ -3540,7 +3695,21 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 		out << Signal{QStringLiteral("hold:") + s->label, QStringLiteral("state"), QStringLiteral("1"),
 					  QStringLiteral("1 = hält (Haltekraft ≥ s·m·g)"), s->label, QString()};
 	}
+	for (const Intensifier *b : m_intensifiers)
+		out << Signal{QStringLiteral("qh:") + b->label, QStringLiteral("volume_flow"), QStringLiteral("m3/s"),
+					  QStringLiteral("vom Pumpkolben nach H gefördert (ohne Bypass)"), b->label, QString()};
 	for (const Cylinder *z : m_cylinders) {
+		if (z->muscle >= 0) {
+			out << Signal{QStringLiteral("x:") + z->label, QStringLiteral("position"), QStringLiteral("m"),
+						  QStringLiteral("Kontraktion, 0 = Nennlänge, negativ = vorgespannt"), z->label, QString()};
+			out << Signal{QStringLiteral("h:") + z->label, QStringLiteral("ratio"), QStringLiteral("%"),
+						  QStringLiteral("Kontraktion in % der Nennlänge"), z->label, QString()};
+			out << Signal{QStringLiteral("v:") + z->label, QStringLiteral("velocity"), QStringLiteral("m/s"),
+						  QStringLiteral("positiv: kontrahierend"), z->label, QString()};
+			out << Signal{QStringLiteral("F:") + z->label, QStringLiteral("force"), QStringLiteral("N"),
+						  QStringLiteral("Zugkraft des Muskels nach dem Datenblatt (ohne Last und Reibung)"), z->label, QString()};
+			continue;
+		}
 		if (z->rotary) {
 			out << Signal{QStringLiteral("x:") + z->label, QStringLiteral("angle"), QStringLiteral("rad"),
 						  QStringLiteral("0 = Ausgangslage"), z->label, QString()};
@@ -3640,6 +3809,22 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 			if (f->label == rest) { any = true; on = on || f->active(m_time); }
 		if (ok) *ok = any;
 		return any ? (on ? 1.0 : 0.0) : std::nan("");
+	}
+	if (kind == QLatin1String("h")) {      // R12 muscle contraction [%]
+		for (const Cylinder *z : m_cylinders)
+			if (z->label == rest && z->muscle >= 0) {
+				if (ok) *ok = true;
+				return 100.0 * z->x / z->muscle_len;
+			}
+		return std::nan("");
+	}
+	if (kind == QLatin1String("qh")) {     // R12 pressure intensifier: pumped flow into H [m³/s]
+		for (const Intensifier *b : m_intensifiers)
+			if (b->label == rest) {
+				if (ok) *ok = true;
+				return b->q_h;
+			}
+		return std::nan("");
 	}
 	if (kind == QLatin1String("x1")) {
 		for (const Cylinder *z : m_cylinders)

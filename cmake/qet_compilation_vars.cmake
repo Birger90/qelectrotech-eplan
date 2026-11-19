@@ -274,6 +274,7 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/simulation/plcprogram.cpp
   ${QET_DIR}/sources/simulation/plcprogram.h
   ${QET_DIR}/sources/simulation/simulationphysics.h
+  ${QET_DIR}/sources/simulation/simulationmuscle.h
   ${QET_DIR}/sources/simulation/simulationsignals.h
   ${QET_DIR}/sources/simulation/grafcet.cpp
   ${QET_DIR}/sources/simulation/grafcet.h

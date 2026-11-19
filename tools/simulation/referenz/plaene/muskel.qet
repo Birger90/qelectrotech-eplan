@@ -1,0 +1,306 @@
+<project title="Pneumatischer Muskel Festo DMSP (R12)" uuid="{31f324cc-3989-5c9d-aeca-742a8010e096}" version="0.200.1">
+    <properties/>
+    <usage enabled="true" time_spent="0"/>
+    <symbol_texts upright="true"/>
+    <newdiagrams>
+        <border cols="17" colsize="60" displaycols="true" displayrows="true" rows="8" rowsize="80"/>
+        <inset author="" auto_page_num="" date="null" displayAt="bottom" filename="" folio="" indexrev="" locmach="" plant="" title="" version=""/>
+        <conductors bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <report label="%f-%l%c"/>
+        <xrefs>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="cable" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="coil" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="commutator" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="plc" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="protection" xrefpos="AlignBottom"/>
+        </xrefs>
+        <conductors_autonums auto_break_conductors="false" current_autonum="" freeze_new_conductors="false"/>
+        <folio_autonums/>
+        <element_autonums current_autonum="" freeze_new_elements="false"/>
+        <guides/>
+    </newdiagrams>
+    <diagram author="" auto_page_num="" cols="17" colsize="60" date="null" displayAt="bottom" displaycols="true" displayrows="true" filename="" folio="" freezeNewConductor="false" freezeNewElement="false" height="660" indexrev="" locmach="" order="1" plant="" rows="8" rowsize="80" title="" uuid="{27355be0-a275-4d5b-8c3c-7389757a3656}" version="0.200.1-dev">
+        <defaultconductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <elements>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/muskel_dmsp20_674.elmt" uuid="{7bbe5232-a7ae-4c82-a0e7-dbfdbaf47d76}" x="100" y="250" z="10">
+                <terminals>
+                    <terminal id="0" orientation="0" x="0" y="-26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-MM1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{54e7e0fb-e155-4971-abec-7d26ec20d8de}" x="0" y="-45">
+                        <text>-MM1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GP" type="embed://import/50_pneumatic/5010_compressed_air/501010_air_generation/50101000_compressed_air_source.elmt" uuid="{3bd22bec-e560-4591-ba2d-e84bae090bc9}" x="100" y="450" z="10">
+                <terminals>
+                    <terminal id="1" orientation="0" x="0" y="-6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-GP1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{eaa150b7-cfb1-44d4-816d-aec7ac856cb5}" x="-14" y="-20">
+                        <text>-GP1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{1af91502-3396-4ecf-8e34-0f98125304cc}" x="-10" y="9">
+                        <text></text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/muskel_dmsp20_0bar.elmt" uuid="{4abe6eff-9b23-4738-83f6-72e349802d90}" x="300" y="250" z="10">
+                <terminals>
+                    <terminal id="2" orientation="0" x="0" y="-26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-MM2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{ade2a604-6675-4e1d-bbc0-ef25977e01a1}" x="0" y="-45">
+                        <text>-MM2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/muskel_dmsp40_2000.elmt" uuid="{7446704f-b4d5-4743-bec3-f25a07c5f557}" x="500" y="250" z="10">
+                <terminals>
+                    <terminal id="3" orientation="0" x="0" y="-26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-MM3</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{ca4fa909-73e6-4bcf-8aeb-100820f77cb2}" x="0" y="-45">
+                        <text>-MM3</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GP" type="embed://import/50_pneumatic/5010_compressed_air/501010_air_generation/50101000_compressed_air_source.elmt" uuid="{f104e499-7e7e-4c09-9f0e-64a16e9d953e}" x="500" y="450" z="10">
+                <terminals>
+                    <terminal id="4" orientation="0" x="0" y="-6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-GP2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{dc3f2ca5-8b20-4bbf-8396-6fe4aa17a0a1}" x="-14" y="-20">
+                        <text>-GP2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{467d2313-7eef-4308-bb3b-9d888595fd27}" x="-10" y="9">
+                        <text></text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+        </elements>
+        <conductors>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{7bbe5232-a7ae-4c82-a0e7-dbfdbaf47d76}" element1_label="-MM1" element1_name="DMSP-20 674 N (test symbol)" element2="{3bd22bec-e560-4591-ba2d-e84bae090bc9}" element2_label="-GP1" element2_name="compressed air source" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{dcd01257-b717-5517-94b3-5a13d2ed258e}" terminal2="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminalname1="A" terminalname2="1" text_color="#000000" type="multi" uuid="{439554e3-2be1-44f5-92e3-dea0d9b81b0c}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{7446704f-b4d5-4743-bec3-f25a07c5f557}" element1_label="-MM3" element1_name="DMSP-40 2000 N (test symbol)" element2="{f104e499-7e7e-4c09-9f0e-64a16e9d953e}" element2_label="-GP2" element2_name="compressed air source" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{210f948c-4894-5f28-8fef-828d19e866b9}" terminal2="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminalname1="A" terminalname2="1" text_color="#000000" type="multi" uuid="{8f733033-ef3c-4053-b8a8-0285096191a3}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+        </conductors>
+    </diagram>
+    <collection>
+        <category name="import">
+            <names>
+                <name lang="ca">Elements importats</name>
+                <name lang="cs">Zavedené prvky</name>
+                <name lang="da">Importerede elementer</name>
+                <name lang="de">Importierte Elemente</name>
+                <name lang="el">Εισηγμένα στοιχεία</name>
+                <name lang="en">Imported elements</name>
+                <name lang="es">Elementos importados</name>
+                <name lang="fr">Éléments importés</name>
+                <name lang="hr">Uvezeni elementi</name>
+                <name lang="it">Elementi importati</name>
+                <name lang="ja">インバートされた要素</name>
+                <name lang="ko">전기 심볼 요소</name>
+                <name lang="ko_KR">전기 심볼 요소</name>
+                <name lang="lv">Importētie elementi</name>
+                <name lang="nl">Elementen geïmporteerd</name>
+                <name lang="nl_BE">Elementen geïmporteerd</name>
+                <name lang="pl">Elementy importowane</name>
+                <name lang="pt">Elementos importados</name>
+                <name lang="pt_BR">Elementos importados</name>
+                <name lang="ro">Elemente importate</name>
+                <name lang="ru">Импортированные элементы</name>
+                <name lang="sk">Importované prvky</name>
+                <name lang="sl">Uvoženi elementi</name>
+                <name lang="sv">Importerade element</name>
+                <name lang="tr">İthal öğeler</name>
+                <name lang="uk">Імпортовані елементи</name>
+                <name lang="zh">导入元件</name>
+            </names>
+        <category name="50_pneumatic">
+                <category name="5010_compressed_air">
+                    <category name="501010_air_generation">
+                        <element name="50101000_compressed_air_source.elmt">
+                            <definition height="30" hotspot_x="10" hotspot_y="18" link_type="simple" type="element" version="0.100.0" width="20">
+                                <uuid uuid="{e42b889b-269e-7e99-beb4-fb660c417716}"/>
+                                <names>
+                                    <name lang="ar">مصدر الهواء المضغوط</name>
+                                    <name lang="ca">font d'aire comprimit</name>
+                                    <name lang="cs">zdroj stlačeného vzduchu</name>
+                                    <name lang="da">trykluftkilde</name>
+                                    <name lang="de">Qruckluftquelle</name>
+                                    <name lang="el">πηγή πεπιεσμένου αέρα</name>
+                                    <name lang="en">compressed air source</name>
+                                    <name lang="es">fuente de aire comprimido</name>
+                                    <name lang="fi">paineilman lähde</name>
+                                    <name lang="fr">source d'air comprimé</name>
+                                    <name lang="hr">izvor komprimiranog zraka</name>
+                                    <name lang="hu">sűrített levegő forrás</name>
+                                    <name lang="it">fonte di aria compressa</name>
+                                    <name lang="ja">圧縮空気源</name>
+                                    <name lang="ko">압축 공기 공급원</name>
+                                    <name lang="mn">шахсан агаарын эх үүсвэр</name>
+                                    <name lang="nb">trykkluftkilde</name>
+                                    <name lang="nl">persluchtbron</name>
+                                    <name lang="nl_BE">persluchtbron</name>
+                                    <name lang="pl">źródło sprężonego powietrza</name>
+                                    <name lang="pt">fonte de ar comprimido</name>
+                                    <name lang="pt_BR">fonte de ar comprimido</name>
+                                    <name lang="ro">sursa de aer comprimat</name>
+                                    <name lang="ru">источник сжатого воздуха</name>
+                                    <name lang="sk">Zdroj stlačeného vzduchu</name>
+                                    <name lang="sl">vir stisnjenega zraka</name>
+                                    <name lang="sr">извор компримованог ваздуха</name>
+                                    <name lang="sv">Tryckluftskälla</name>
+                                    <name lang="tr">basınçlı hava kaynağı</name>
+                                    <name lang="uk">джерело стисненого повітря</name>
+                                    <name lang="zh">压缩空气源</name>
+                                </names>
+                                <fluid function="supply.pump" kind="source" prefix="GP">
+                                    <parameter name="displacement" unit="cm3" value="8"/>
+                                    <parameter name="rpm" unit="1/min" value="1450"/>
+                                    <parameter name="pMax" unit="MPa" value="6"/>
+                                </fluid>
+                                <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                <description>
+                                    <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{84c5a282-673b-da78-5176-09a611b3de1d}" x="-14" y="-20" z="1">
+                                        <text/>
+                                        <info_name>label</info_name>
+                                    </dynamic_text>
+                                    <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="-1" uuid="{30a02494-8600-035e-2a99-e496813c8136}" x="-10" y="9" z="1">
+                                        <text/>
+                                        <info_name>label</info_name>
+                                    </dynamic_text>
+                                    <polygon antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-4" x2="4" x3="0" y1="8" y2="8" y3="0"/>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-10" y2="0"/>
+                                    <terminal medium="pneumatic" name="1" orientation="n" type="Generic" uuid="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" x="0" y="-10"/>
+                                </description>
+                            </definition>
+                        </element>
+                    </category>
+                </category>
+            </category>
+            <category name="90_signal">
+                <element name="muskel_dmsp20_674.elmt">
+                    <definition height="100" hotspot_x="60" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="120">
+                        <uuid uuid="{362498a4-a5dd-5233-bb22-eacd589dfd88}"/>
+                        <names>
+                            <name lang="de">DMSP-20 674 N (Prüfsymbol)</name>
+                            <name lang="en">DMSP-20 674 N (test symbol)</name>
+                        </names>
+                        <fluid function="actuator.fluidic_muscle1" kind="cylinder" prefix="MM">
+                            <parameter name="muscleType" unit="" value="2"/>
+                            <parameter name="len" unit="mm" value="200"/>
+                            <parameter name="F_extern_const" unit="N" value="674"/>
+                            <parameter name="m_ext" unit="kg" value="0"/>
+                            <parameter name="alpha" unit="deg" value="0"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R12 (Muskel, Druckübersetzer)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="80" x="-40" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="DMSP-20 674 N" x="-36" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{5e8cbcac-a6b9-553f-ab26-9c0024271db8}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="A" x="2" y="-21"/>
+                            <terminal medium="pneumatic" name="A" orientation="n" type="Generic" uuid="{dcd01257-b717-5517-94b3-5a13d2ed258e}" x="0" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="muskel_dmsp20_0bar.elmt">
+                    <definition height="100" hotspot_x="60" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="120">
+                        <uuid uuid="{10745980-5602-588a-b636-236be547f053}"/>
+                        <names>
+                            <name lang="de">DMSP-20 drucklos (Prüfsymbol)</name>
+                            <name lang="en">DMSP-20 no pressure (test symbol)</name>
+                        </names>
+                        <fluid function="actuator.fluidic_muscle1" kind="cylinder" prefix="MM">
+                            <parameter name="muscleType" unit="" value="2"/>
+                            <parameter name="len" unit="mm" value="200"/>
+                            <parameter name="F_extern_const" unit="N" value="400"/>
+                            <parameter name="m_ext" unit="kg" value="0"/>
+                            <parameter name="alpha" unit="deg" value="0"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R12 (Muskel, Druckübersetzer)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="80" x="-40" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="DMSP-20 drucklos" x="-36" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{c0703ea3-8f46-5695-96f7-2bc504210e61}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="A" x="2" y="-21"/>
+                            <terminal medium="pneumatic" name="A" orientation="n" type="Generic" uuid="{b8a9c679-f6dd-5a34-bf3d-a1124987528e}" x="0" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="muskel_dmsp40_2000.elmt">
+                    <definition height="100" hotspot_x="60" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="120">
+                        <uuid uuid="{35120cdc-1052-5b93-a47c-d7b5b2341064}"/>
+                        <names>
+                            <name lang="de">DMSP-40 2000 N (Prüfsymbol)</name>
+                            <name lang="en">DMSP-40 2000 N (test symbol)</name>
+                        </names>
+                        <fluid function="actuator.fluidic_muscle1" kind="cylinder" prefix="MM">
+                            <parameter name="muscleType" unit="" value="3"/>
+                            <parameter name="len" unit="mm" value="575"/>
+                            <parameter name="F_extern_const" unit="N" value="2000"/>
+                            <parameter name="m_ext" unit="kg" value="0"/>
+                            <parameter name="alpha" unit="deg" value="0"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R12 (Muskel, Druckübersetzer)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="80" x="-40" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="DMSP-40 2000 N" x="-36" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{1fd97435-6f91-5e8d-8aa5-549dd3df49b0}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="A" x="2" y="-21"/>
+                            <terminal medium="pneumatic" name="A" orientation="n" type="Generic" uuid="{210f948c-4894-5f28-8fef-828d19e866b9}" x="0" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+            </category>
+        </category>
+    </collection>
+</project>

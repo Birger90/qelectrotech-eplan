@@ -3,6 +3,23 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.46.0 – 19.11.2026
+
+Simulations-Roadmap R12 (Sonderantriebe) fertig: pneumatischer Muskel und hydraulischer Druckübersetzer mit
+Herstellerdaten:
+
+- Pneumatischer Muskel (FluidSIM `FluidicMuscle1`, Typ DMSP-10/20/40, Länge, externe Last): Zugkraft aus den
+  Kraft-Weg-Kurven des Festo-Katalogs DMSP (exakt aus den Vektorpfaden des PDFs gelesen), Volumen über virtuelle Arbeit,
+  Anschläge an Vorspanngrenze und max. Kontraktion; Messgrößen `x:` (Kontraktion), `h:` (%), `v:`, `F:`. MAS und Muskel
+  mit Zylinder bleiben mit Begründung abgewiesen.
+- Hydraulischer Druckübersetzer (FluidSIM `PressureIntensifier01`, IN/R/H, Kennwerte `r`, `p_max_in`, `q_max_in`,
+  `q_max_hi` aus dem Datenblatt Pflicht, `G_leak`): Bypass, Pumpkolben bis r·p_IN, entsperrbares Rückschlagventil;
+  Messgröße `qh:`.
+- Formeln M15, H13, Quellen QS17 (Festo DMSP), QS18 (Scanwill MP-F); neue Prüfungen „Pneumatischer Muskel (R12)“
+  (Festo-Auslegungsbeispiel 674 N/609 N → 10 mm, Vorspannung, Volumen gegen die Aufweitung laut Datenblatt) und
+  „Druckübersetzer (R12)“ (Bypass, Enddruck 4·p_IN, Druckaufbau nach der Kennlinie).
+- `tools/simulation/datenblaetter/`: Leser der Festo-Kennlinien und Erzeuger von `simulationmuscle.h`.
+
 ## 1.45.0 – 19.11.2026
 
 Simulations-Roadmap R17 (analoge Elektrik), Stufe 5: elektrische Maschinen – damit ist R17 vollständig:

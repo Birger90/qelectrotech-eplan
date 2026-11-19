@@ -135,7 +135,8 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
   (`sim_role` circuit); Stufe 2 koppelt sie an die Schaltlogik: Kontakte schalten im Stromkreis, Relais- und Ventilspulen
   (R, L) ziehen nach ihrem Strom an, SPS-Analogein- und -ausgänge (AI, AQ);
   Stufe 3 ergänzt Bipolartransistoren (Ebers-Moll) und Operationsverstärker,
-  Stufe 4 Sicherungen, Leitungsschutzschalter (B/C/D) und Motorschutzschalter (Klasse 10).
+  Stufe 4 Sicherungen, Leitungsschutzschalter (B/C/D) und Motorschutzschalter (Klasse 10),
+  Stufe 5 Gleichstrom- und Asynchronmotoren am Drehstromnetz.
   Leitungen unter Druck werden blau bzw. rot, stromführende Drähte rot, aktive Schritte bekommen eine Marke; Taster und
   Ventile bedient man im Fenster oder per Klick auf das Symbol; eine Liste zeigt die SPS- und GRAFCET-Variablen.
 - Ohne Oberfläche: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv weg.csv --png ordner`.

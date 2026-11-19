@@ -3,6 +3,19 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.45.0 – 19.11.2026
+
+Simulations-Roadmap R17 (analoge Elektrik), Stufe 5: elektrische Maschinen – damit ist R17 vollständig:
+
+- Gleichstrommotor (`sim_block` MDC, `sim_params` „Ra=…;La=…;k=…;J=…;b=…;ML=…“): Ankerkreis mit Gegenspannung und Welle
+  mit Trägheit, Reibung und Lastmoment im Kirchhoff-Stromkreis.
+- Asynchronmotor mit Käfigläufer (`sim_block` MASM, Anschlüsse U/V/W bzw. L1/L2/L3, „Rs=…;Rr=…;Lls=…;Llr=…;Lm=…;p=…;J=…;ML=…“):
+  Raumzeigermodell am Drehstromnetz (drei Sinusquellen), Hochlauf und Schlupf unter Last.
+- Messgrößen `omega:` (rad/s), `n:` (1/min), `tau:` (Moment) für beide Motoren; alle Kennwerte aus Datenblatt bzw.
+  Ersatzschaltbild (keine Vorgaben).
+- Formeln E12, E13; neue Prüfung „Elektrische Maschinen (R17, Stufe 5)“ mit `motoren.qet`: Gleichstrom-Hochlauf gegen
+  Runge-Kutta und den stationären Endwert, Asynchronmotor gegen das Strang-Ersatzschaltbild (Drehzahl, Moment, Strom).
+
 ## 1.44.0 – 19.11.2026
 
 Simulations-Roadmap R17 (analoge Elektrik), Stufe 4: Schutzorgane:

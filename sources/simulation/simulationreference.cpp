@@ -18,6 +18,7 @@
 #include "simulationreference.h"
 
 #include <array>
+#include <complex>
 
 #include "grafcet.h"
 #include <QElapsedTimer>
@@ -529,7 +530,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Analoge Elektrik (R17, Stufe 1): RC, RL, RLC, Einweggleichrichter, Spannungsteiler, Leistungsbilanz"),
 		QStringLiteral("Kopplung Stromkreis (R17, Stufe 2): Taster und Relaisspule mit R, L und Freilaufdiode, Relaiskontakt, SPS-Analogeingang und -ausgang"),
 		QStringLiteral("Halbleiter (R17, Stufe 3): NPN aktiv und gesättigt, PNP, invertierender Operationsverstärker linear und begrenzt"),
-		QStringLiteral("Schutzorgane (R17, Stufe 4): Leitungsschutzschalter B/C an den Prüfpunkten der IEC 60898-1, Motorschutz Klasse 10, Sicherung mit Zurücksetzen")};
+		QStringLiteral("Schutzorgane (R17, Stufe 4): Leitungsschutzschalter B/C an den Prüfpunkten der IEC 60898-1, Motorschutz Klasse 10, Sicherung mit Zurücksetzen"),
+		QStringLiteral("Elektrische Maschinen (R17, Stufe 5): Gleichstrommotor Hochlauf und Last, Asynchronmotor am Drehstromnetz gegen das Ersatzschaltbild")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1732,6 +1734,77 @@ QList<Check> endToEnd(const QString &reference_dir)
 							 .arg(fz.at(0), 0, 'f', 3).arg(tf, 0, 'f', 4).arg(fz.at(1), 0, 'f', 3);
 			const double ir = m.signalValue(QStringLiteral("i:-R2"));
 			if (!(std::abs(ir) < 1e-6)) wrong << QStringLiteral("nach der Auslösung fließen noch %1 A").arg(ir);
+		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 28. electric machines (R17 stage 5, FORMELN.md E12, E13), plan motoren.qet: DC motor Ra 2 Ω, La 10 mH, k 0.1 V·s/rad,
+		//     J 1e-4 kg·m², load 0.05 N·m on 24 V, against RK4 (0.1 µs) at 20 ms and the steady state (k·U − Ra·ML)/k² at
+		//     1.5 s; induction motor Rs = Rr 2 Ω, Lls = Llr 10 mH, Lm 0.3 H, 2 pole pairs, J 0.01, load 5 N·m on three
+		//     sine sources 325 V / 50 Hz, steady state 1.3…1.5 s against the per-phase equivalent circuit (Steinmetz)
+		Check c{names.at(27)};
+		QStringList wrong, seen;
+		double w_dc20 = std::nan(""), i_dc20 = std::nan(""), w_dc = std::nan(""), i_dc = std::nan("");
+		double w_sum = 0, tau_sum = 0, i_sq = 0;
+		int n = 0;
+		ProjectRun r = runProject(path("motoren.qet"), 6.0, {}, 1.5001, [&](SimulationModel &m) {
+			const double tm = m.time();
+			if (std::abs(tm - 0.02) < 5e-6) { w_dc20 = m.signalValue(QStringLiteral("omega:-M1")); i_dc20 = m.signalValue(QStringLiteral("i:-M1")); }
+			if (std::abs(tm - 1.5) < 5e-6) { w_dc = m.signalValue(QStringLiteral("omega:-M1")); i_dc = m.signalValue(QStringLiteral("i:-M1")); }
+			if (tm > 1.3 + 1e-9 && tm <= 1.5 + 1e-9) {
+				w_sum += m.signalValue(QStringLiteral("omega:-M2"));
+				tau_sum += m.signalValue(QStringLiteral("tau:-M2"));
+				const double ia = m.signalValue(QStringLiteral("i:-M2"));
+				i_sq += ia * ia;
+				++n;
+			}
+		});
+		if (!r.error.isEmpty()) wrong << r.error;
+		else {
+			// DC motor: di/dt = (U − Ra·i − k·ω)/La, dω/dt = (k·i − ML)/J, RK4
+			const double U = 24, Ra = 2, La = 0.01, k = 0.1, J = 1e-4, ML = 0.05;
+			double i = 0, w = 0;
+			const double h = 1e-7;
+			for (int s = 0; s < 200000; ++s) {
+				auto f = [&](double ii, double ww, double &di, double &dw) { di = (U - Ra * ii - k * ww) / La; dw = (k * ii - ML) / J; };
+				double a1, b1, a2, b2, a3, b3, a4, b4;
+				f(i, w, a1, b1); f(i + h / 2 * a1, w + h / 2 * b1, a2, b2); f(i + h / 2 * a2, w + h / 2 * b2, a3, b3); f(i + h * a3, w + h * b3, a4, b4);
+				i += h / 6 * (a1 + 2 * a2 + 2 * a3 + a4);
+				w += h / 6 * (b1 + 2 * b2 + 2 * b3 + b4);
+			}
+			const double w_end = (k * U - Ra * ML) / (k * k), i_end = ML / k;
+			if (!(std::abs(w_dc20 - w) <= 0.005 * w_end) || !(std::abs(i_dc20 - i) <= 0.005 * 12.0) || !(std::abs(w_dc - w_end) <= 1e-6 * w_end)
+				|| !(std::abs(i_dc - i_end) <= 1e-6))
+				wrong << QStringLiteral("Gleichstrommotor: 20 ms %1 rad/s / %2 A (RK4 %3 / %4), Ende %5 rad/s / %6 A (soll %7 / %8)")
+							 .arg(w_dc20).arg(i_dc20).arg(w).arg(i).arg(w_dc).arg(i_dc).arg(w_end).arg(i_end);
+			else seen << QStringLiteral("Gleichstrommotor nach 20 ms %1 rad/s, %2 A (RK4 %3 rad/s, %4 A); stationär %5 rad/s = %6 1/min, %7 A "
+										"(soll (k·U − Ra·ML)/k² = %8 rad/s, ML/k = %9 A)")
+							 .arg(w_dc20, 0, 'f', 2).arg(i_dc20, 0, 'f', 3).arg(w, 0, 'f', 2).arg(i, 0, 'f', 3).arg(w_dc, 0, 'f', 4)
+							 .arg(w_dc * 30 / M_PI, 0, 'f', 1).arg(i_dc, 0, 'f', 5).arg(w_end, 0, 'f', 4).arg(i_end, 0, 'f', 5);
+			// induction motor: per-phase equivalent circuit, slip from T(s) = ML on the stable branch
+			using cd = std::complex<double>;
+			const double we = 2 * M_PI * 50, Rs = 2, Rr = 2, Lls = 0.01, Llr = 0.01, Lm = 0.3, p = 2, Ml = 5, Uph = 325 / std::sqrt(2.0);
+			auto calc = [&](double s, double *is_rms) {
+				const cd zs(Rs, we * Lls), zr(Rr / s, we * Llr), zm(0, we * Lm);
+				const cd is = Uph / (zs + zm * zr / (zm + zr)), ir = is * zm / (zm + zr);
+				if (is_rms) *is_rms = std::abs(is);
+				return 3 * p / we * std::norm(ir) * Rr / s;
+			};
+			double lo = 1e-7, hi = 0.25;
+			for (int it = 0; it < 200; ++it) { const double mid = 0.5 * (lo + hi); (calc(mid, nullptr) < Ml ? lo : hi) = mid; }
+			const double slip = 0.5 * (lo + hi);
+			double is_rms = 0;
+			calc(slip, &is_rms);
+			const double w_sync = we / p, w_asm = w_sync * (1 - slip);
+			const double w_sim = n ? w_sum / n : std::nan(""), tau_sim = n ? tau_sum / n : std::nan(""), irms = n ? std::sqrt(i_sq / n) : std::nan("");
+			if (!(std::abs(w_sim - w_asm) <= 1e-3 * w_asm) || !(std::abs(tau_sim - Ml) <= 0.005 * Ml) || !(std::abs(irms - is_rms) <= 0.002 * is_rms))
+				wrong << QStringLiteral("Asynchronmotor: %1 rad/s, %2 N·m, %3 A eff. statt %4 / %5 / %6 (Schlupf %7)")
+							 .arg(w_sim).arg(tau_sim).arg(irms).arg(w_asm).arg(Ml).arg(is_rms).arg(slip);
+			else seen << QStringLiteral("Asynchronmotor %1 rad/s = %2 1/min (Ersatzschaltbild %3 rad/s, Schlupf %4 %), Moment %5 N·m (Last 5), "
+										"Strom %6 A eff. (Ersatzschaltbild %7 A)")
+							 .arg(w_sim, 0, 'f', 3).arg(w_sim * 30 / M_PI, 0, 'f', 1).arg(w_asm, 0, 'f', 3).arg(slip * 100, 0, 'f', 3)
+							 .arg(tau_sim, 0, 'f', 4).arg(irms, 0, 'f', 3).arg(is_rms, 0, 'f', 3);
 		}
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));

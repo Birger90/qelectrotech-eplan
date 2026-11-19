@@ -136,6 +136,16 @@ Ohne Frequenzgang, Anstiegsrate, Early-Effekt und Kapazitäten; die Begrenzung d
 
 Alle mit `R` (Vorgabe 10 mΩ), überschreibbar `kf`, `tau`, `Im`. Ausgelöst: 1 GΩ, Meldung „… löst aus (thermisch|magnetisch, … A)“;
 `trip:-F1` (1/0), `w:-F1` (thermischer Zustand A²s). Zurücksetzen mit dem Ereignis „-F1 reparieren“.
+
+**Stufe 5 (Fork 1.45.0): elektrische Maschinen** (Formeln E12, E13, Prüfplan `motoren.qet`):
+
+| sim_block | Bauteil | Anschlüsse | sim_params (alle aus Datenblatt/Ersatzschaltbild) |
+|---|---|---|---|
+| `MDC` | Gleichstrommotor | 2 (Anker, erster = +) | `Ra`, `La`, `k` (V·s/rad = N·m/A), `J`, optional `b`, `ML` |
+| `MASM` | Asynchronmotor (Käfig, Stern) | U, V, W bzw. L1, L2, L3 | `Rs`, `Rr`, `Lls`, `Llr`, `Lm`, `p` (Polpaare), `J`, optional `b`, `ML` |
+
+Messgrößen `omega:` (rad/s), `n:` (1/min), `tau:` (Moment N·m), `i:` (Ankerstrom bzw. Strom L1), `u:` (Ankerspannung bzw.
+Leiterspannung L1–L2). Drehstrom: drei `V`-Quellen „V=325;f=50;phase=0 / -120 / -240“ gegen Masse.
 Prüfplan `analog.qet`.
 
 ## Simulationsmodi und Leistung (R16, Fork 1.40.0)

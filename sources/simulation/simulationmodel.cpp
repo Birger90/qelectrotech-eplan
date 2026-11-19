@@ -1554,10 +1554,11 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						{QStringLiteral("QP"), AnalogCircuit::Kind::Transistor}, {QStringLiteral("OP"), AnalogCircuit::Kind::OpAmp},
 						{QStringLiteral("F"), AnalogCircuit::Kind::Protection}, {QStringLiteral("MCB_B"), AnalogCircuit::Kind::Protection},
 						{QStringLiteral("MCB_C"), AnalogCircuit::Kind::Protection}, {QStringLiteral("MCB_D"), AnalogCircuit::Kind::Protection},
-						{QStringLiteral("MPCB"), AnalogCircuit::Kind::Protection}};
+						{QStringLiteral("MPCB"), AnalogCircuit::Kind::Protection},
+						{QStringLiteral("MDC"), AnalogCircuit::Kind::DcMotor}, {QStringLiteral("MASM"), AnalogCircuit::Kind::InductionMotor}};
 					if (!kinds.contains(blk)) {
 						m_model_errors << QStringLiteral("%1: sim_block „%2“ unbekannt (R, C, L, V, I, D, GND, AI, AQ, QN, QP, OP, F, MCB_B, "
-														 "MCB_C, MCB_D, MPCB)").arg(pt.label, blk);
+														 "MCB_C, MCB_D, MPCB, MDC, MASM)").arg(pt.label, blk);
 						continue;
 					}
 					QHash<QString, double> io_par;    // AI/AQ (E08): Rin, Umin, Umax, raw
@@ -1588,7 +1589,8 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						else if (key.compare(QLatin1String("Is"), Qt::CaseInsensitive) == 0) pt.is = v;
 						else if (key == QLatin1String("n") || key == QLatin1String("N")) pt.n = v;
 						else if (blk == QLatin1String("AI") || blk == QLatin1String("AQ") || pt.kind == AnalogCircuit::Kind::Transistor
-								 || pt.kind == AnalogCircuit::Kind::OpAmp || pt.kind == AnalogCircuit::Kind::Protection) io_par.insert(key.toLower(), v);
+								 || pt.kind == AnalogCircuit::Kind::OpAmp || pt.kind == AnalogCircuit::Kind::Protection
+								 || pt.kind == AnalogCircuit::Kind::DcMotor || pt.kind == AnalogCircuit::Kind::InductionMotor) io_par.insert(key.toLower(), v);
 						else pt.value = v;     // R, C, L, V, I
 					}
 					if (pt.kind == AnalogCircuit::Kind::Transistor) {
@@ -1596,6 +1598,21 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						pt.sign = blk == QLatin1String("QP") ? -1.0 : 1.0;
 						pt.bf = io_par.value(QStringLiteral("bf"), pt.bf);
 						pt.br = io_par.value(QStringLiteral("br"), pt.br);
+					} else if (pt.kind == AnalogCircuit::Kind::DcMotor || pt.kind == AnalogCircuit::Kind::InductionMotor) {
+						// R17 stage 5 (E12, E13): all values from the motor datasheet or its equivalent circuit (no defaults
+						// except b = 0 and ML = 0); DC: Ra, La, k [V·s/rad], J; induction: Rs, Rr, Lls, Llr, Lm, p, J
+						pt.r = io_par.value(QStringLiteral("ra"), 0.0);
+						pt.la = io_par.value(QStringLiteral("la"), 0.0);
+						pt.km = io_par.value(QStringLiteral("k"), 0.0);
+						pt.rs = io_par.value(QStringLiteral("rs"), 0.0);
+						pt.rr = io_par.value(QStringLiteral("rr"), 0.0);
+						pt.lls = io_par.value(QStringLiteral("lls"), 0.0);
+						pt.llr = io_par.value(QStringLiteral("llr"), 0.0);
+						pt.lm = io_par.value(QStringLiteral("lm"), 0.0);
+						pt.poles = io_par.value(QStringLiteral("p"), 0.0);
+						pt.jm = io_par.value(QStringLiteral("j"), 0.0);
+						pt.bm = io_par.value(QStringLiteral("b"), 0.0);
+						pt.ml = io_par.value(QStringLiteral("ml"), 0.0);
 					} else if (pt.kind == AnalogCircuit::Kind::Protection) {
 						// R17 stage 4 (E11): F fuse (I2t melting integral from the datasheet, fusing factor kf, gG 1.6 per
 						// IEC 60269); MCB_B/C/D circuit breaker (IEC 60898-1: conventional tripping 1.45·In, magnetic
@@ -1662,6 +1679,18 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					});
 					pt.a = ts.value(0) ? node(ts.value(0)) : -1;
 					pt.b = ts.size() > 1 ? node(ts.value(1)) : -1;
+					if (pt.kind == AnalogCircuit::Kind::InductionMotor) {
+						// three phases by name: U/U1/L1/1, V/V1/L2/2, W/W1/L3/3
+						pt.a = pt.b = pt.c = -1;
+						for (Terminal *t : e->terminals()) {
+							const QString tn = t->name().trimmed().toUpper();
+							int *slot = tn == QLatin1String("U") || tn == QLatin1String("U1") || tn == QLatin1String("L1") || tn == QLatin1String("1") ? &pt.a
+									  : tn == QLatin1String("V") || tn == QLatin1String("V1") || tn == QLatin1String("L2") || tn == QLatin1String("2") ? &pt.b
+									  : tn == QLatin1String("W") || tn == QLatin1String("W1") || tn == QLatin1String("L3") || tn == QLatin1String("3") ? &pt.c
+									  : nullptr;
+							if (slot) *slot = node(t);
+						}
+					}
 					if (pt.kind == AnalogCircuit::Kind::Transistor || pt.kind == AnalogCircuit::Kind::OpAmp) {
 						// three terminals by name: C, B, E or +, −, output (OUT, A, Q, O)
 						pt.a = pt.b = pt.c = -1;
@@ -3580,6 +3609,14 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 			return kind == QLatin1String("u") ? cp->v : kind == QLatin1String("i") ? cp->i : cp->v * cp->i;
 		}
 		if (kind != QLatin1String("u")) return std::nan("");
+	}
+	if (kind == QLatin1String("omega") || kind == QLatin1String("tau") || kind == QLatin1String("n")) {
+		// R17 stage 5: shaft of an electric motor of the circuit (rad/s, N·m, 1/min); else the hydraulic motors below
+		const AnalogCircuit::Part *cp = m_circuit.part(rest);
+		if (cp && (cp->kind == AnalogCircuit::Kind::DcMotor || cp->kind == AnalogCircuit::Kind::InductionMotor)) {
+			if (ok) *ok = true;
+			return kind == QLatin1String("tau") ? cp->i2 : kind == QLatin1String("n") ? cp->omega * 60.0 / (2.0 * M_PI) : cp->omega;
+		}
 	}
 	if (kind == QLatin1String("trip") || kind == QLatin1String("w")) {   // R17 stage 4: tripped (1/0), thermal state [A²s]
 		const AnalogCircuit::Part *cp = m_circuit.part(rest);

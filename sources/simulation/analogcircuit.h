@@ -38,7 +38,7 @@
 class AnalogCircuit
 {
 	public:
-		enum class Kind { Resistor, Capacitor, Inductor, VoltageSource, CurrentSource, Diode, Ground, Switch, Coil, Transistor, OpAmp, Protection };
+		enum class Kind { Resistor, Capacitor, Inductor, VoltageSource, CurrentSource, Diode, Ground, Switch, Coil, Transistor, OpAmp, Protection, DcMotor, InductionMotor };
 		struct Part {
 			Kind kind = Kind::Resistor;
 			QString label;
@@ -62,6 +62,11 @@ class AnalogCircuit
 			double wth = 0.0, w = 0.0;          // thermal limit and state [A²s]
 			bool tripped = false;
 			QString trip_kind;                  // "Sicherung", "Leitungsschutzschalter" … for the message
+			// R17 stage 5 (E12, E13): DC motor a/b = armature (r = Ra, la = La, km = k), induction motor a/b/c = L1/L2/L3
+			// (star, no neutral); shaft J, viscous b, constant load torque ml; omega [rad/s], torque i2 [N·m]
+			double la = 0.0, km = 0.0, jm = 0.0, bm = 0.0, ml = 0.0, omega = 0.0;
+			double rs = 0.0, rr = 0.0, lls = 0.0, llr = 0.0, lm = 0.0, poles = 1.0;
+			double psi[8] = {0, 0, 0, 0, 0, 0, 0, 0};   // ψs α, β, ψr α, β, is α, β, us α, β of the last step
 		};
 
 		int add(const Part &p);             // index of the part
@@ -88,6 +93,8 @@ class AnalogCircuit
 		QString m_failure;
 		QStringList m_trips;
 		void build();
+		struct Asm { double G[3][3]; double j[3]; double Y[2][2]; double yh[2]; double P[2]; double Q[2][2]; };
+		Asm asmStamp(const Part &p, double dt) const;
 };
 
 #endif // ANALOGCIRCUIT_H

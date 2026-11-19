@@ -1,0 +1,320 @@
+<project title="Elektrische Maschinen (R17 Stufe 5)" uuid="{19b8d403-0b70-5a47-83b4-dfb0ed6e2cec}" version="0.200.1">
+    <properties/>
+    <usage enabled="true" time_spent="0"/>
+    <symbol_texts upright="true"/>
+    <newdiagrams>
+        <border cols="17" colsize="60" displaycols="true" displayrows="true" rows="8" rowsize="80"/>
+        <inset author="" auto_page_num="" date="null" displayAt="bottom" filename="" folio="" indexrev="" locmach="" plant="" title="" version=""/>
+        <conductors bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <report label="%f-%l%c"/>
+        <xrefs>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="cable" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="coil" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="commutator" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="plc" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="protection" xrefpos="AlignBottom"/>
+        </xrefs>
+        <conductors_autonums auto_break_conductors="false" current_autonum="" freeze_new_conductors="false"/>
+        <folio_autonums/>
+        <element_autonums current_autonum="" freeze_new_elements="false"/>
+        <guides/>
+    </newdiagrams>
+    <diagram author="" auto_page_num="" cols="17" colsize="60" date="null" displayAt="bottom" displaycols="true" displayrows="true" filename="" folio="" freezeNewConductor="false" freezeNewElement="false" height="660" indexrev="" locmach="" order="1" plant="" rows="8" rowsize="80" title="" uuid="{ce1b9eed-f660-4478-bc85-4cf78074b3df}" version="0.200.1-dev">
+        <defaultconductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <elements>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/zweipol_r17.elmt" uuid="{417f9c10-dc88-40f0-8510-93a216e26cea}" x="80" y="450" z="10">
+                <terminals>
+                    <terminal id="0" orientation="0" x="0" y="-26"/>
+                    <terminal id="1" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-V1</elementInformation>
+                    <elementInformation name="sim_block" show="1">V</elementInformation>
+                    <elementInformation name="sim_params" show="1">V=24</elementInformation>
+                    <elementInformation name="sim_role" show="1">circuit</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{4ae0bed9-e07d-403c-adbd-56870c87860c}" x="0" y="-45">
+                        <text>-V1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/masse_r17.elmt" uuid="{cb267127-a976-4acf-bb55-f4dae07f10ef}" x="140" y="560" z="10">
+                <terminals>
+                    <terminal id="2" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-G1</elementInformation>
+                    <elementInformation name="sim_block" show="1">GND</elementInformation>
+                    <elementInformation name="sim_role" show="1">circuit</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{f27bf360-89f5-43b9-abfb-6edacd98e4fd}" x="0" y="-45">
+                        <text>-G1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/zweipol_r17.elmt" uuid="{b869494a-f51c-48b6-ab41-4546d74b8519}" x="200" y="300" z="10">
+                <terminals>
+                    <terminal id="3" orientation="0" x="0" y="-26"/>
+                    <terminal id="4" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-M1</elementInformation>
+                    <elementInformation name="sim_block" show="1">MDC</elementInformation>
+                    <elementInformation name="sim_params" show="1">Ra=2;La=10m;k=0.1;J=1e-4;b=0;ML=0.05</elementInformation>
+                    <elementInformation name="sim_role" show="1">circuit</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{da076fb3-9d56-466b-9f2b-01022f840618}" x="0" y="-45">
+                        <text>-M1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/zweipol_r17.elmt" uuid="{91f85676-17d1-457d-a415-58a342143227}" x="400" y="450" z="10">
+                <terminals>
+                    <terminal id="5" orientation="0" x="0" y="-26"/>
+                    <terminal id="6" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-V2</elementInformation>
+                    <elementInformation name="sim_block" show="1">V</elementInformation>
+                    <elementInformation name="sim_params" show="1">V=325;f=50;phase=0</elementInformation>
+                    <elementInformation name="sim_role" show="1">circuit</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{5a568fa0-f0a2-45c8-a325-7083190d1d49}" x="0" y="-45">
+                        <text>-V2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/drehstrommotor_r17e.elmt" uuid="{f1f9fc04-ae85-4bd2-a56f-4b57a3542f92}" x="480" y="250" z="10">
+                <terminals>
+                    <terminal id="7" orientation="0" x="-40" y="-26"/>
+                    <terminal id="8" orientation="0" x="0" y="-26"/>
+                    <terminal id="9" orientation="0" x="40" y="-26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-M2</elementInformation>
+                    <elementInformation name="sim_block" show="1">MASM</elementInformation>
+                    <elementInformation name="sim_params" show="1">Rs=2;Rr=2;Lls=10m;Llr=10m;Lm=0.3;p=2;J=0.01;b=0;ML=5</elementInformation>
+                    <elementInformation name="sim_role" show="1">circuit</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{d82685bf-6ceb-447d-8152-36122f290c48}" x="0" y="-45">
+                        <text>-M2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/zweipol_r17.elmt" uuid="{dcb9a3b5-aefb-4d7b-8cdb-fb915d71f67f}" x="480" y="450" z="10">
+                <terminals>
+                    <terminal id="10" orientation="0" x="0" y="-26"/>
+                    <terminal id="11" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-V3</elementInformation>
+                    <elementInformation name="sim_block" show="1">V</elementInformation>
+                    <elementInformation name="sim_params" show="1">V=325;f=50;phase=-120</elementInformation>
+                    <elementInformation name="sim_role" show="1">circuit</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{2dcfd385-926e-42c0-873b-2d22a11a4ab5}" x="0" y="-45">
+                        <text>-V3</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/masse_r17.elmt" uuid="{1e78eafd-4cc6-47b7-8b73-04ba597129e2}" x="480" y="560" z="10">
+                <terminals>
+                    <terminal id="12" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-G2</elementInformation>
+                    <elementInformation name="sim_block" show="1">GND</elementInformation>
+                    <elementInformation name="sim_role" show="1">circuit</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{c687db10-d010-470b-8053-1f7bc2cf3431}" x="0" y="-45">
+                        <text>-G2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="embed://import/90_signal/zweipol_r17.elmt" uuid="{1f4ba815-1ba5-4db8-81bd-9baa99de456a}" x="560" y="450" z="10">
+                <terminals>
+                    <terminal id="13" orientation="0" x="0" y="-26"/>
+                    <terminal id="14" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-V4</elementInformation>
+                    <elementInformation name="sim_block" show="1">V</elementInformation>
+                    <elementInformation name="sim_params" show="1">V=325;f=50;phase=-240</elementInformation>
+                    <elementInformation name="sim_role" show="1">circuit</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{61b3911c-8dc7-43a5-8ea1-e125e3d54a0b}" x="0" y="-45">
+                        <text>-V4</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+        </elements>
+        <conductors>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{417f9c10-dc88-40f0-8510-93a216e26cea}" element1_label="-V1" element1_name="Zweipol (test symbol)" element2="{cb267127-a976-4acf-bb55-f4dae07f10ef}" element2_label="-G1" element2_name="Masse (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{852dc6e2-9a18-57b0-a9ba-dd4a74cbf700}" terminal2="{0a2d2837-a1fd-5784-add9-0fc302a46f47}" terminalname1="2" terminalname2="1" text_color="#000000" type="multi" uuid="{fe131cdd-9014-4ae1-b620-04522250066c}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{417f9c10-dc88-40f0-8510-93a216e26cea}" element1_label="-V1" element1_name="Zweipol (test symbol)" element2="{b869494a-f51c-48b6-ab41-4546d74b8519}" element2_label="-M1" element2_name="Zweipol (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{ab35bae2-85db-568e-9e9e-02d2edc86054}" terminal2="{ab35bae2-85db-568e-9e9e-02d2edc86054}" terminalname1="1" terminalname2="1" text_color="#000000" type="multi" uuid="{aec685f4-bc5d-46b6-ac43-2e47a321fb8b}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{cb267127-a976-4acf-bb55-f4dae07f10ef}" element1_label="-G1" element1_name="Masse (test symbol)" element2="{b869494a-f51c-48b6-ab41-4546d74b8519}" element2_label="-M1" element2_name="Zweipol (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{0a2d2837-a1fd-5784-add9-0fc302a46f47}" terminal2="{852dc6e2-9a18-57b0-a9ba-dd4a74cbf700}" terminalname1="1" terminalname2="2" text_color="#000000" type="multi" uuid="{3b9f1706-c220-4cb6-b257-29233d4b8dad}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{91f85676-17d1-457d-a415-58a342143227}" element1_label="-V2" element1_name="Zweipol (test symbol)" element2="{f1f9fc04-ae85-4bd2-a56f-4b57a3542f92}" element2_label="-M2" element2_name="Drehstrommotor (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{ab35bae2-85db-568e-9e9e-02d2edc86054}" terminal2="{b4d3c009-c4ec-50af-b076-895293132cfb}" terminalname1="1" terminalname2="U" text_color="#000000" type="multi" uuid="{309dded9-3188-434b-b31d-ffa0b5e4ee63}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{91f85676-17d1-457d-a415-58a342143227}" element1_label="-V2" element1_name="Zweipol (test symbol)" element2="{1e78eafd-4cc6-47b7-8b73-04ba597129e2}" element2_label="-G2" element2_name="Masse (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{852dc6e2-9a18-57b0-a9ba-dd4a74cbf700}" terminal2="{0a2d2837-a1fd-5784-add9-0fc302a46f47}" terminalname1="2" terminalname2="1" text_color="#000000" type="multi" uuid="{e5d5462f-6e57-4d94-807c-5d0d96841674}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{f1f9fc04-ae85-4bd2-a56f-4b57a3542f92}" element1_label="-M2" element1_name="Drehstrommotor (test symbol)" element2="{dcb9a3b5-aefb-4d7b-8cdb-fb915d71f67f}" element2_label="-V3" element2_name="Zweipol (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{ea782851-fe53-52b6-8be1-b6af2cede92b}" terminal2="{ab35bae2-85db-568e-9e9e-02d2edc86054}" terminalname1="V" terminalname2="1" text_color="#000000" type="multi" uuid="{b37cc0c0-2b98-4fbe-88e6-0fe2017df4a2}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{f1f9fc04-ae85-4bd2-a56f-4b57a3542f92}" element1_label="-M2" element1_name="Drehstrommotor (test symbol)" element2="{1f4ba815-1ba5-4db8-81bd-9baa99de456a}" element2_label="-V4" element2_name="Zweipol (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{a4404aeb-9abb-5569-87b8-c1e1846ba396}" terminal2="{ab35bae2-85db-568e-9e9e-02d2edc86054}" terminalname1="W" terminalname2="1" text_color="#000000" type="multi" uuid="{f6c399a8-3cbd-4739-920f-e69349cb9706}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{dcb9a3b5-aefb-4d7b-8cdb-fb915d71f67f}" element1_label="-V3" element1_name="Zweipol (test symbol)" element2="{1e78eafd-4cc6-47b7-8b73-04ba597129e2}" element2_label="-G2" element2_name="Masse (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{852dc6e2-9a18-57b0-a9ba-dd4a74cbf700}" terminal2="{0a2d2837-a1fd-5784-add9-0fc302a46f47}" terminalname1="2" terminalname2="1" text_color="#000000" type="multi" uuid="{e9e3bb80-dd83-44fa-b020-df3191c6c056}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{1e78eafd-4cc6-47b7-8b73-04ba597129e2}" element1_label="-G2" element1_name="Masse (test symbol)" element2="{1f4ba815-1ba5-4db8-81bd-9baa99de456a}" element2_label="-V4" element2_name="Zweipol (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{0a2d2837-a1fd-5784-add9-0fc302a46f47}" terminal2="{852dc6e2-9a18-57b0-a9ba-dd4a74cbf700}" terminalname1="1" terminalname2="2" text_color="#000000" type="multi" uuid="{5e2c4ba9-2615-4895-903b-d6c2d09a580a}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+        </conductors>
+    </diagram>
+    <collection>
+        <category name="import">
+            <names>
+                <name lang="ca">Elements importats</name>
+                <name lang="cs">Zavedené prvky</name>
+                <name lang="da">Importerede elementer</name>
+                <name lang="de">Importierte Elemente</name>
+                <name lang="el">Εισηγμένα στοιχεία</name>
+                <name lang="en">Imported elements</name>
+                <name lang="es">Elementos importados</name>
+                <name lang="fr">Éléments importés</name>
+                <name lang="hr">Uvezeni elementi</name>
+                <name lang="it">Elementi importati</name>
+                <name lang="ja">インバートされた要素</name>
+                <name lang="ko">전기 심볼 요소</name>
+                <name lang="ko_KR">전기 심볼 요소</name>
+                <name lang="lv">Importētie elementi</name>
+                <name lang="nl">Elementen geïmporteerd</name>
+                <name lang="nl_BE">Elementen geïmporteerd</name>
+                <name lang="pl">Elementy importowane</name>
+                <name lang="pt">Elementos importados</name>
+                <name lang="pt_BR">Elementos importados</name>
+                <name lang="ro">Elemente importate</name>
+                <name lang="ru">Импортированные элементы</name>
+                <name lang="sk">Importované prvky</name>
+                <name lang="sl">Uvoženi elementi</name>
+                <name lang="sv">Importerade element</name>
+                <name lang="tr">İthal öğeler</name>
+                <name lang="uk">Імпортовані елементи</name>
+                <name lang="zh">导入元件</name>
+            </names>
+        <category name="90_signal">
+                <element name="zweipol_r17.elmt">
+                    <definition height="100" hotspot_x="50" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="100">
+                        <uuid uuid="{79f75223-0e73-578e-882b-63ed8f035ee6}"/>
+                        <names>
+                            <name lang="de">Zweipol (Prüfsymbol)</name>
+                            <name lang="en">Zweipol (test symbol)</name>
+                        </names>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R17 (elektrisch)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="60" x="-30" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Zweipol" x="-26" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{91f4410c-e20a-5e55-8cdc-8a7889171edc}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="2" x="2" y="28"/>
+                            <terminal name="2" orientation="s" type="Generic" uuid="{852dc6e2-9a18-57b0-a9ba-dd4a74cbf700}" x="0" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="1" x="2" y="-21"/>
+                            <terminal name="1" orientation="n" type="Generic" uuid="{ab35bae2-85db-568e-9e9e-02d2edc86054}" x="0" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="masse_r17.elmt">
+                    <definition height="100" hotspot_x="50" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="100">
+                        <uuid uuid="{8ccd3686-5b05-5c84-84c3-1af5ba3609b5}"/>
+                        <names>
+                            <name lang="de">Masse (Prüfsymbol)</name>
+                            <name lang="en">Masse (test symbol)</name>
+                        </names>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R17 (elektrisch)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="60" x="-30" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Masse" x="-26" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{778c3d3a-8b0e-532e-9f23-b36095bc5284}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="1" x="2" y="28"/>
+                            <terminal name="1" orientation="s" type="Generic" uuid="{0a2d2837-a1fd-5784-add9-0fc302a46f47}" x="0" y="30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="drehstrommotor_r17e.elmt">
+                    <definition height="100" hotspot_x="90" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="180">
+                        <uuid uuid="{583650d7-60fd-51ab-9009-4d20d70bfd36}"/>
+                        <names>
+                            <name lang="de">Drehstrommotor (Prüfsymbol)</name>
+                            <name lang="en">Drehstrommotor (test symbol)</name>
+                        </names>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R17 (elektrisch)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="140" x="-70" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Drehstrommotor" x="-66" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{d09916f9-f2bb-5f7a-8fdc-5ba6e9c9a424}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-40" x2="-40" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="U" x="-38" y="-21"/>
+                            <terminal name="U" orientation="n" type="Generic" uuid="{b4d3c009-c4ec-50af-b076-895293132cfb}" x="-40" y="-30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="V" x="2" y="-21"/>
+                            <terminal name="V" orientation="n" type="Generic" uuid="{ea782851-fe53-52b6-8be1-b6af2cede92b}" x="0" y="-30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="40" x2="40" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="W" x="42" y="-21"/>
+                            <terminal name="W" orientation="n" type="Generic" uuid="{a4404aeb-9abb-5569-87b8-c1e1846ba396}" x="40" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+            </category>
+        </category>
+    </collection>
+</project>

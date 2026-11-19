@@ -85,6 +85,13 @@ QString AnalogCircuit::check() const
 			return QStringLiteral("%1: alle drei Anschlüsse müssen angeschlossen sein").arg(p.label);
 		if (p.kind == Kind::Protection && (!(p.inom > 0) || !(p.r > 0) || !(p.tau > 0) || !(p.wth > 0) || !(p.im >= 0)))
 			return QStringLiteral("%1: Schutzorgan braucht In, R, Zeitkonstante und Auslösegrenze größer als 0").arg(p.label);
+		if (p.kind == Kind::DcMotor && (!(p.r > 0) || !(p.la >= 0) || !(p.km > 0) || !(p.jm > 0) || !(p.bm >= 0)))
+			return QStringLiteral("%1: Gleichstrommotor braucht Ra, k, J > 0 und La, b ≥ 0").arg(p.label);
+		if (p.kind == Kind::InductionMotor && (!(p.rs > 0) || !(p.rr > 0) || !(p.lls > 0) || !(p.llr > 0) || !(p.lm > 0)
+											   || !(p.poles >= 1) || !(p.jm > 0) || !(p.bm >= 0)))
+			return QStringLiteral("%1: Asynchronmotor braucht Rs, Rr, Lls, Llr, Lm, p ≥ 1, J > 0").arg(p.label);
+		if (p.kind == Kind::InductionMotor && (p.a < 0 || p.b < 0 || p.c < 0))
+			return QStringLiteral("%1: alle drei Außenleiter (L1, L2, L3) müssen angeschlossen sein").arg(p.label);
 		if (p.kind == Kind::Diode && (!(p.is > 0) || !(p.n > 0)))
 			return QStringLiteral("%1: Is und n müssen größer als 0 sein").arg(p.label);
 		if (p.kind != Kind::Ground && p.a < 0 && p.b < 0)
@@ -114,6 +121,44 @@ void AnalogCircuit::build()
 	for (const Part &p : m_parts) sources += p.kind == Kind::VoltageSource ? 1 : 0;
 	m_x = QVector<double>(n + sources, 0.0);
 	m_built = true;
+}
+
+AnalogCircuit::Asm AnalogCircuit::asmStamp(const Part &p, double dt) const
+{
+	// E13: space vector model in the stator frame (amplitude invariant Clarke transform), trapezoidal rule with the
+	// speed of the last step (implicit Euler would damp the 50 Hz rotation of the rotor flux by ω²·Δt/2, which acts
+	// like a larger rotor resistance). Rotor: dψr/dt = −Rr/Lr·ψr + Rr·Lm/Lr·is + p·ω·J·ψr; stator: us = Rs·is + dψs/dt,
+	// ψs = σ·Ls·is + Lm/Lr·ψr. Result: phase currents I = G·v + j (into the motor from the nets L1, L2, L3)
+	Asm s{};
+	const double ls = p.lls + p.lm, lr = p.llr + p.lm, kr = p.lm / lr, sig_ls = ls - p.lm * p.lm / lr;
+	const double a = 1.0 + dt * p.rr / lr / 2, b = 1.0 - dt * p.rr / lr / 2, w = dt * p.poles * p.omega / 2, det = a * a + w * w;
+	const double mi[2][2] = {{a / det, -w / det}, {w / det, a / det}};   // inverse of [[a, w], [−w, a]]
+	const double cq = dt * p.rr * p.lm / lr / 2;
+	const double r0[2] = {b * p.psi[2] - w * p.psi[3] + cq * p.psi[4], b * p.psi[3] + w * p.psi[2] + cq * p.psi[5]};
+	for (int r = 0; r < 2; ++r) {
+		s.P[r] = mi[r][0] * r0[0] + mi[r][1] * r0[1];
+		for (int k = 0; k < 2; ++k) s.Q[r][k] = cq * mi[r][k];
+	}
+	double Z[2][2];
+	for (int r = 0; r < 2; ++r)
+		for (int k = 0; k < 2; ++k) Z[r][k] = (r == k ? p.rs + 2 * sig_ls / dt : 0.0) + 2 * kr * s.Q[r][k] / dt;
+	const double h[2] = {2 * (kr * s.P[0] - p.psi[0]) / dt - p.psi[6] + p.rs * p.psi[4],
+						 2 * (kr * s.P[1] - p.psi[1]) / dt - p.psi[7] + p.rs * p.psi[5]};
+	const double dz = Z[0][0] * Z[1][1] - Z[0][1] * Z[1][0];
+	s.Y[0][0] = Z[1][1] / dz; s.Y[0][1] = -Z[0][1] / dz; s.Y[1][0] = -Z[1][0] / dz; s.Y[1][1] = Z[0][0] / dz;
+	for (int r = 0; r < 2; ++r) s.yh[r] = s.Y[r][0] * h[0] + s.Y[r][1] * h[1];
+	static const double T[2][3] = {{2.0 / 3, -1.0 / 3, -1.0 / 3}, {0.0, 1.0 / std::sqrt(3.0), -1.0 / std::sqrt(3.0)}};
+	static const double Cm[3][2] = {{1.0, 0.0}, {-0.5, std::sqrt(3.0) / 2}, {-0.5, -std::sqrt(3.0) / 2}};
+	for (int r = 0; r < 3; ++r) {
+		for (int k = 0; k < 3; ++k) {
+			double g = 0.0;
+			for (int m = 0; m < 2; ++m)
+				for (int n = 0; n < 2; ++n) g += Cm[r][m] * s.Y[m][n] * T[n][k];
+			s.G[r][k] = g;
+		}
+		s.j[r] = -(Cm[r][0] * s.yh[0] + Cm[r][1] * s.yh[1]);
+	}
+	return s;
 }
 
 double AnalogCircuit::sourceValue(const Part &p, double t) const
@@ -202,6 +247,27 @@ bool AnalogCircuit::step(double t, double dt)
 				case Kind::CurrentSource: inject(p.a, p.b, sourceValue(p, t)); break;
 				case Kind::Switch: conductance(p.a, p.b, 1.0 / (p.closed ? p.ron : p.roff)); break;
 				case Kind::Protection: conductance(p.a, p.b, 1.0 / (p.tripped ? p.roff : p.r)); break;
+				case Kind::DcMotor: {       // E12: Ra, La and the back EMF k·ω with the shaft solved in the same step
+					const double d = 1.0 + p.bm * dt / p.jm, beta = p.km * p.km * dt / (p.jm * d);
+					const double e0 = p.km * (p.omega - dt * p.ml / p.jm) / d, g = 1.0 / (p.r + p.la / dt + beta);
+					conductance(p.a, p.b, g);
+					inject(p.a, p.b, -g * (p.la / dt * p.i - e0));
+					break;
+				}
+				case Kind::InductionMotor: {    // E13: linear 3 × 3 admittance of the phases for this step
+					const Asm s = asmStamp(p, dt);
+					const int nets[3] = {p.a, p.b, p.c};
+					for (int r = 0; r < 3; ++r) {
+						const int in = idx(nets[r]);
+						if (in < 0) continue;
+						for (int k = 0; k < 3; ++k) {
+							const int col = idx(nets[k]);
+							if (col >= 0) at(in, col) += s.G[r][k];
+						}
+						rhs[in] -= s.j[r];
+					}
+					break;
+				}
 				case Kind::Coil: {          // R and L in series: v = R·i + L/dt·(i − i_prev)
 					const double g = 1.0 / (p.r + p.value / dt);
 					conductance(p.a, p.b, g);
@@ -318,6 +384,32 @@ bool AnalogCircuit::step(double t, double dt)
 			case Kind::VoltageSource: p.i = x.at(vs++); break;
 			case Kind::CurrentSource: p.i = -sourceValue(p, t); break;
 			case Kind::Switch: p.i = v / (p.closed ? p.ron : p.roff); break;
+			case Kind::DcMotor: {
+				const double d = 1.0 + p.bm * dt / p.jm, beta = p.km * p.km * dt / (p.jm * d);
+				const double e0 = p.km * (p.omega - dt * p.ml / p.jm) / d, g = 1.0 / (p.r + p.la / dt + beta);
+				p.i = g * v + g * (p.la / dt * p.i - e0);
+				p.i2 = p.km * p.i;
+				p.omega = (p.omega + dt / p.jm * (p.i2 - p.ml)) / d;
+				break;
+			}
+			case Kind::InductionMotor: {
+				const Asm s = asmStamp(p, dt);
+				const double va = volt(x, p.a), vb = volt(x, p.b), vc = volt(x, p.c);
+				const double ua = (2 * va - vb - vc) / 3, ub = (vb - vc) / std::sqrt(3.0);
+				const double ia = s.Y[0][0] * ua + s.Y[0][1] * ub - s.yh[0], ib = s.Y[1][0] * ua + s.Y[1][1] * ub - s.yh[1];
+				const double lr = p.llr + p.lm, ls = p.lls + p.lm, kr = p.lm / lr, sig_ls = ls - p.lm * p.lm / lr;
+				p.psi[2] = s.P[0] + s.Q[0][0] * ia + s.Q[0][1] * ib;
+				p.psi[3] = s.P[1] + s.Q[1][0] * ia + s.Q[1][1] * ib;
+				p.psi[0] = sig_ls * ia + kr * p.psi[2];
+				p.psi[1] = sig_ls * ib + kr * p.psi[3];
+				p.psi[4] = ia; p.psi[5] = ib; p.psi[6] = ua; p.psi[7] = ub;
+				p.i = ia;                   // current of L1
+				p.v = va - vb;              // line voltage L1–L2
+				p.i2 = 1.5 * p.poles * (p.psi[0] * ib - p.psi[1] * ia);
+				const double d = 1.0 + p.bm * dt / p.jm;
+				p.omega = (p.omega + dt / p.jm * (p.i2 - p.ml)) / d;
+				continue;
+			}
 			case Kind::Protection: {
 				// E11: thermal state dW/dt = i² − W/τ, solved exactly for the current of this step; trips at W ≥ W_th
 				// (thermal) or |i| ≥ Im·In (magnetic, im > 0); open from the next step on

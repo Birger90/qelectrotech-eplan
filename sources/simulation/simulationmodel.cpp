@@ -1533,6 +1533,59 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						if (eq > 0) a->links << qMakePair(item.left(eq).trimmed().toUpper(), item.mid(eq + 1).trimmed());
 					}
 					m_analog << a;
+				} else if (role == QLatin1String("circuit")) {
+					// R17 (FORMELN.md E01–E05): part of the analog circuit; sim_block R, C, L, V, I, D, GND;
+					// sim_params "R=1k", "C=100u", "V=10;f=50", "Is=1e-12;n=1" (SI prefixes p n u µ m k M G)
+					AnalogCircuit::Part pt;
+					pt.label = label(e).isEmpty() ? e->name() : label(e);
+					const QString blk = info(e, "sim_block").trimmed().toUpper();
+					static const QHash<QString, AnalogCircuit::Kind> kinds {
+						{QStringLiteral("R"), AnalogCircuit::Kind::Resistor}, {QStringLiteral("C"), AnalogCircuit::Kind::Capacitor},
+						{QStringLiteral("L"), AnalogCircuit::Kind::Inductor}, {QStringLiteral("V"), AnalogCircuit::Kind::VoltageSource},
+						{QStringLiteral("I"), AnalogCircuit::Kind::CurrentSource}, {QStringLiteral("D"), AnalogCircuit::Kind::Diode},
+						{QStringLiteral("GND"), AnalogCircuit::Kind::Ground}};
+					if (!kinds.contains(blk)) {
+						m_model_errors << QStringLiteral("%1: sim_block „%2“ unbekannt (R, C, L, V, I, D, GND)").arg(pt.label, blk);
+						continue;
+					}
+					pt.kind = kinds.value(blk);
+					auto si = [&](const QString &text, bool *ok) {
+						static const QHash<QChar, double> prefix {{QLatin1Char('p'), 1e-12}, {QLatin1Char('n'), 1e-9}, {QLatin1Char('u'), 1e-6},
+							{QChar(0x00B5), 1e-6}, {QLatin1Char('m'), 1e-3}, {QLatin1Char('k'), 1e3}, {QLatin1Char('M'), 1e6}, {QLatin1Char('G'), 1e9}};
+						QString s = text.trimmed();
+						s.replace(QLatin1Char(','), QLatin1Char('.'));
+						double f = 1.0;
+						if (!s.isEmpty() && prefix.contains(s.back())) { f = prefix.value(s.back()); s.chop(1); }
+						const double v = s.toDouble(ok);
+						return v * f;
+					};
+					for (const QString &item : info(e, "sim_params").split(QLatin1Char(';'), Qt::SkipEmptyParts)) {
+						const int eq = static_cast<int>(item.indexOf(QLatin1Char('=')));
+						if (eq <= 0) continue;
+						const QString key = item.left(eq).trimmed();
+						bool ok = false;
+						const double v = si(item.mid(eq + 1).section(QLatin1Char(' '), 0, 0), &ok);
+						if (!ok) {
+							m_model_errors << QStringLiteral("%1: Kennwert %2 ist keine Zahl").arg(pt.label, item.trimmed());
+							continue;
+						}
+						if (key.compare(QLatin1String("f"), Qt::CaseInsensitive) == 0) pt.freq = v;
+						else if (key.compare(QLatin1String("offset"), Qt::CaseInsensitive) == 0) pt.offset = v;
+						else if (key.compare(QLatin1String("phase"), Qt::CaseInsensitive) == 0) pt.phase = v;
+						else if (key.compare(QLatin1String("Is"), Qt::CaseInsensitive) == 0) pt.is = v;
+						else if (key == QLatin1String("n") || key == QLatin1String("N")) pt.n = v;
+						else pt.value = v;     // R, C, L, V, I
+					}
+					// terminals: "+", "P", "A" (anode), "1" first; else the order of the symbol
+					QList<Terminal *> ts = e->terminals();
+					std::stable_sort(ts.begin(), ts.end(), [](Terminal *x, Terminal *y) {
+						auto first = [](Terminal *t) { const QString n = t->name().trimmed().toUpper();
+							return n == QLatin1String("+") || n == QLatin1String("P") || n == QLatin1String("A") || n == QLatin1String("1"); };
+						return first(x) && !first(y);
+					});
+					pt.a = ts.value(0) ? node(ts.value(0)) : -1;
+					pt.b = ts.size() > 1 ? node(ts.value(1)) : -1;
+					m_circuit.add(pt);
 				} else if (role == QLatin1String("grafcet_io")) {
 					auto *io = new GrafcetIo;
 					io->e = e;
@@ -1776,6 +1829,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 		m_failure = m_model_errors.join(QStringLiteral("; "));
 	}
 	buildFaults(diagrams);
+	if (const QString why = m_circuit.check(); !why.isEmpty()) m_model_errors << QStringLiteral("Stromkreis: %1").arg(why);
 	m_grafcet = std::make_unique<Grafcet>(diagrams, [this](Terminal *t) { return node(t); });
 	if (m_grafcet->isEmpty()) m_grafcet.reset();
 	else m_program_errors << m_grafcet->errors();
@@ -3099,6 +3153,9 @@ void SimulationModel::step(double dt)
 					  .arg(s->force, 0, 'f', 2).arg(s->safety * s->weight, 0, 'f', 2)};
 		}
 	}
+	// R17: the analog circuit, one implicit Euler step to the end of this step
+	if (!m_circuit.isEmpty() && !m_failed && !m_circuit.step(m_time + dt, dt))
+		fail(QStringLiteral("Stromkreis: %1").arg(m_circuit.failure()));
 	m_time += dt;
 }
 
@@ -3286,6 +3343,15 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 		out << Signal{QStringLiteral("P:") + mo->label, QStringLiteral("power"), QStringLiteral("W"),
 					  QStringLiteral("Wellenleistung tau·omega"), mo->label, QString()};
 	}
+	for (const AnalogCircuit::Part &cp : m_circuit.parts()) {
+		if (cp.kind == AnalogCircuit::Kind::Ground) continue;
+		out << Signal{QStringLiteral("u:") + cp.label, QStringLiteral("voltage"), QStringLiteral("V"),
+					  QStringLiteral("Spannung am Bauteil (erster gegen zweiten Anschluss)"), cp.label, QString()};
+		out << Signal{QStringLiteral("i:") + cp.label, QStringLiteral("current"), QStringLiteral("A"),
+					  QStringLiteral("Strom durch das Bauteil vom ersten zum zweiten Anschluss"), cp.label, QString()};
+		out << Signal{QStringLiteral("pel:") + cp.label, QStringLiteral("power"), QStringLiteral("W"),
+					  QStringLiteral("aufgenommene elektrische Leistung u·i (Quellen negativ)"), cp.label, QString()};
+	}
 	for (const Fault *f : m_faults)
 		out << Signal{QStringLiteral("fault:") + f->label, QStringLiteral("state"), QStringLiteral("1"),
 					  QStringLiteral("Fehler „%1“ wirksam (1) oder nicht (0)").arg(f->text), f->label, QString()};
@@ -3309,6 +3375,14 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 	const int colon = static_cast<int>(id.indexOf(QLatin1Char(':')));
 	if (colon <= 0) return std::nan("");
 	const QString kind = id.left(colon), rest = id.mid(colon + 1);
+	if (kind == QLatin1String("u") || kind == QLatin1String("i") || kind == QLatin1String("pel")) {
+		// a part of the analog circuit; u: of proportional valves and analog blocks follows below
+		if (const AnalogCircuit::Part *cp = m_circuit.part(rest)) {
+			if (ok) *ok = true;
+			return kind == QLatin1String("u") ? cp->v : kind == QLatin1String("i") ? cp->i : cp->v * cp->i;
+		}
+		if (kind != QLatin1String("u")) return std::nan("");
+	}
 	if (kind == QLatin1String("fault")) {
 		bool any = false, on = false;
 		for (const Fault *f : m_faults)

@@ -27,6 +27,7 @@
 #include <QVector>
 #include <memory>
 
+#include "analogcircuit.h"
 #include "simulationphysics.h"
 
 class Diagram;
@@ -220,6 +221,7 @@ class SimulationModel
 		double m_vessel_c = 0.0;
 		QHash<QString, double> m_plc_vars;
 		std::unique_ptr<Grafcet> m_grafcet;
+		AnalogCircuit m_circuit;                   // R17 stage 1: analog electric circuit (sim_role circuit)
 		QStringList m_program_errors;
 		QStringList m_model_errors;
 		bool m_failed = false;

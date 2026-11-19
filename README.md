@@ -110,7 +110,8 @@
 >   relays, timers, counters, coils), PLC programs in Structured Text (IEC 61131-3 subset with step sequences) and
 >   GRAFCET charts after IEC 60848 drawn with the GRAFCET symbols (redrawn on the grid, `bauteile/grafcet`), with
 >   partial grafcets, enclosing steps, macro steps and forcing orders. Faults after FluidSIM (stuck spool, open coil, leak,
->   clogged part, check valve stuck, switch that never or always switches) are set per part (`sim_fault`) and repaired by an event.
+>   clogged part, check valve stuck, switch that never or always switches) are set per part (`sim_fault`) and repaired by an event. Stage 1 of analog electrics: R, C, L, sources
+>   and diodes solved by Kirchhoff's laws (`sim_role` circuit).
 >   Lines under pressure turn blue/red, live wires red, active steps get a token; buttons and valves are operated in
 >   the window or by clicking the symbol; a live list shows the PLC and GRAFCET variables.
 > - Headless: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv out.csv --png folder`.

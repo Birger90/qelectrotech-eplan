@@ -277,6 +277,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/simulation/simulationsignals.h
   ${QET_DIR}/sources/simulation/grafcet.cpp
   ${QET_DIR}/sources/simulation/grafcet.h
+  ${QET_DIR}/sources/simulation/analogcircuit.cpp
+  ${QET_DIR}/sources/simulation/analogcircuit.h
   ${QET_DIR}/sources/simulation/simulationreference.cpp
   ${QET_DIR}/sources/simulation/simulationreference.h
   ${QET_DIR}/sources/conductordashpattern.cpp

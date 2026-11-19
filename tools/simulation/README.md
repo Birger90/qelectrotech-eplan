@@ -90,6 +90,22 @@ Programme aller SPS-Baugruppen eines Projekts teilen sich die Variablen. Das Sim
 während des Laufs in der Liste *SPS-Variablen* (Ein- und Ausgänge, Merker, Schritt, Bausteinausgänge);
 `--simulate` gibt am Ende die Werte aus.
 
+## Analoge Elektrik (R17 Stufe 1, Fork 1.41.0)
+
+Ein Stromkreis aus Bauteilen mit `sim_role` = `circuit` wird nach Kirchhoff gerechnet (modifizierte Knotenanalyse, implizites
+Euler-Verfahren, Formeln E01–E05). Je Bauteil `sim_block` und `sim_params` (SI-Vorsätze p n u µ m k M G):
+
+| sim_block | Bauteil | sim_params |
+|---|---|---|
+| `R`, `C`, `L` | Widerstand, Kondensator, Spule | `R=1k`, `C=100u`, `L=100m` |
+| `V`, `I` | Spannungs-, Stromquelle (erster Anschluss + bzw. „+“, „P“, „1“) | `V=10` (Gleich), `V=10;f=50;offset=0;phase=0` (Sinus) |
+| `D` | Diode (Anode = erster Anschluss bzw. „A“) | `Is=1e-12;n=1` |
+| `GND` | Masse (0 V), mindestens eine je Stromkreis | – |
+
+Messgrößen `u:-R1` (Spannung erster gegen zweiten Anschluss), `i:-R1` (Strom vom ersten zum zweiten), `pel:-R1` (aufgenommene
+Leistung, Quellen negativ). Stufe 1 treibt die Schaltlogik nicht (Relais, Spulen, SPS bleiben bei ihrem Plus-/Minus-Modell).
+Prüfplan `analog.qet`.
+
 ## Simulationsmodi und Leistung (R16, Fork 1.40.0)
 
 - Simulationsfenster: **Start**, **Pause**/**Fortsetzen**, **Stop** (Ende; der nächste Start beginnt von vorn), **Schritt 10 ms**

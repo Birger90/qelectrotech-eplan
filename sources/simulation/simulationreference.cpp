@@ -523,7 +523,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("LS-Steuerblock und Prioritätsventil (R13): Druckwaage hält den Strom lastunabhängig, Lastmeldung, Rückhub; Prioritätsventil teilt CF/EF"),
 		QStringLiteral("GRAFCET-Struktur (R14): einschließender Schritt, Makroschritt, Zwangssteuerung, Instanzen, Analogwert"),
 		QStringLiteral("Fehlerszenarien (R15): Taster, Spule mit Reparatur, klemmender Kolben, Rückschlagventil, Verstopfung, Leckage, Wiederholbarkeit"),
-		QStringLiteral("Simulationsmodi (R16): bis zur nächsten Änderung, Einzelschritt, Teilprojekt (Blatt), Leistung")};
+		QStringLiteral("Simulationsmodi (R16): bis zur nächsten Änderung, Einzelschritt, Teilprojekt (Blatt), Leistung"),
+		QStringLiteral("Analoge Elektrik (R17, Stufe 1): RC, RL, RLC, Einweggleichrichter, Spannungsteiler, Leistungsbilanz")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -1491,6 +1492,62 @@ QList<Check> endToEnd(const QString &reference_dir)
 				else seen << QStringLiteral("%1: %2 N (soll %3)").arg(QString::fromUtf8(k.what)).arg(got, 0, 'f', 1).arg(want, 0, 'f', 1);
 			}
 		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 24. analog circuit (R17 stage 1, FORMELN.md E01–E05), plan analog.qet: 10 V step on R 1 kΩ + C 100 µF (τ 0.1 s),
+		//     on R 10 Ω + L 1 H (τ 0.1 s), on R 10 Ω + L 0.1 H + C 100 µF (underdamped), 10 V 50 Hz on diode + R 1 kΩ,
+		//     12 V on 100 Ω + 200 Ω
+		Check c{names.at(23)};
+		QStringList wrong, seen;
+		double uc1 = std::nan(""), uc1b = std::nan(""), il2 = std::nan(""), uc3a = std::nan(""), uc3b = std::nan("");
+		double ur4max = -1e9, ur4min = 1e9, ur6 = std::nan(""), pbal = std::nan("");
+		auto sig = [](SimulationModel &m, const char *id) { return m.signalValue(QString::fromUtf8(id)); };
+		ProjectRun r = runProject(path("analog.qet"), 6.0, {}, 0.3001, [&](SimulationModel &m) {
+			const double tm = m.time();
+			if (std::abs(tm - 0.1) < 5e-6) { uc1 = sig(m, "u:-C1"); il2 = sig(m, "i:-L2"); }
+			if (std::abs(tm - 0.3) < 5e-6) {
+				uc1b = sig(m, "u:-C1");
+				ur6 = sig(m, "u:-R6");
+				pbal = sig(m, "pel:-V5") + sig(m, "pel:-R5") + sig(m, "pel:-R6");
+			}
+			if (std::abs(tm - 0.005) < 5e-6) uc3a = sig(m, "u:-C3");
+			if (std::abs(tm - 0.010) < 5e-6) uc3b = sig(m, "u:-C3");
+			if (tm <= 0.04 + 1e-9) {
+				const double u = sig(m, "u:-R4");
+				ur4max = std::max(ur4max, u);
+				ur4min = std::min(ur4min, u);
+			}
+		});
+		if (!r.error.isEmpty()) wrong << r.error;
+		auto near = [](double got, double want, double tol) { return std::isfinite(got) && std::abs(got - want) <= tol; };
+		const double rc1 = 10 * (1 - std::exp(-1.0)), rc3 = 10 * (1 - std::exp(-3.0)), rl = 1 - std::exp(-1.0);
+		if (!near(uc1, rc1, 0.01) || !near(uc1b, rc3, 0.01))
+			wrong << QStringLiteral("RC: u_C %1 / %2 V statt %3 / %4").arg(uc1).arg(uc1b).arg(rc1).arg(rc3);
+		else seen << QStringLiteral("RC: u_C(τ) %1 V (soll %2), u_C(3τ) %3 V (soll %4)").arg(uc1, 0, 'f', 4).arg(rc1, 0, 'f', 4).arg(uc1b, 0, 'f', 4).arg(rc3, 0, 'f', 4);
+		if (!near(il2, rl, 0.001)) wrong << QStringLiteral("RL: i(τ) %1 A statt %2").arg(il2).arg(rl);
+		else seen << QStringLiteral("RL: i(τ) %1 A (soll %2)").arg(il2, 0, 'f', 5).arg(rl, 0, 'f', 5);
+		const double al = 10.0 / (2 * 0.1), w0 = 1 / std::sqrt(0.1 * 100e-6), wd = std::sqrt(w0 * w0 - al * al);
+		auto rlc = [&](double tt) { return 10 * (1 - std::exp(-al * tt) * (std::cos(wd * tt) + al / wd * std::sin(wd * tt))); };
+		// implicit Euler damps the oscillation by about ω₀²·Δt/2 per second (FORMELN.md E02): tolerance from that bound
+		auto damp = [&](double tt) { return 10.0 * w0 * w0 * 1e-5 / 2 * tt + 0.005; };
+		if (!near(uc3a, rlc(0.005), damp(0.005)) || !near(uc3b, rlc(0.010), damp(0.010)))
+			wrong << QStringLiteral("RLC: u_C %1 / %2 V statt %3 / %4").arg(uc3a).arg(uc3b).arg(rlc(0.005)).arg(rlc(0.010));
+		else seen << QStringLiteral("RLC (α 50/s, ω_d %1/s): u_C(5 ms) %2 V (soll %3), u_C(10 ms) %4 V (soll %5, Euler-Dämpfung bis %6 V)")
+						 .arg(wd, 0, 'f', 1).arg(uc3a, 0, 'f', 3).arg(rlc(0.005), 0, 'f', 3).arg(uc3b, 0, 'f', 3).arg(rlc(0.010), 0, 'f', 3)
+						 .arg(damp(0.010), 0, 'f', 3);
+		// diode peak: 10 V = v_D + R·Is·(exp(v_D/V_T) − 1)
+		const double vt = 1.380649e-23 * 293.15 / 1.602176634e-19;
+		double lo = 0.0, hi = 1.0;
+		for (int i = 0; i < 200; ++i) { const double mid = 0.5 * (lo + hi); ((mid + 1000 * 1e-12 * (std::exp(mid / vt) - 1) > 10.0) ? hi : lo) = mid; }
+		const double peak = 10.0 - 0.5 * (lo + hi);
+		if (!near(ur4max, peak, 0.02) || !(ur4min > -1e-3))
+			wrong << QStringLiteral("Gleichrichter: Spitze %1 V statt %2, kleinster Wert %3 V").arg(ur4max).arg(peak).arg(ur4min);
+		else seen << QStringLiteral("Einweggleichrichter: Spitze %1 V (soll 10 − U_D = %2), Sperrhalbwelle %3 V").arg(ur4max, 0, 'f', 3).arg(peak, 0, 'f', 3).arg(ur4min, 0, 'g', 3);
+		if (!near(ur6, 8.0, 1e-6) || !near(pbal, 0.0, 1e-9))
+			wrong << QStringLiteral("Teiler: %1 V statt 8, Leistungsbilanz %2 W").arg(ur6).arg(pbal);
+		else seen << QStringLiteral("Spannungsteiler %1 V (soll 8), Leistungsbilanz Quelle + Widerstände %2 W").arg(ur6, 0, 'f', 6).arg(pbal, 0, 'g', 3);
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
 		out << c;

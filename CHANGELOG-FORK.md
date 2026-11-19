@@ -3,6 +3,22 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.41.0 – 19.11.2026
+
+Simulations-Roadmap R17 (analoge Elektrik), Stufe 1; R18 und R19 entschieden:
+
+- Analoger Stromkreis nach Kirchhoff (modifizierte Knotenanalyse, implizites Euler-Verfahren): Bauteile mit Elementinformation
+  `sim_role` = `circuit`, `sim_block` = R, C, L, V (Spannungsquelle), I (Stromquelle), D (Diode), GND (Masse) und
+  `sim_params` mit SI-Vorsätzen („R=1k“, „C=100u“, „V=10;f=50“, „Is=1e-12;n=1“). Messgrößen `u:`, `i:`, `pel:` je Bauteil.
+  Formeln E01–E05.
+- Neue Prüfung „Analoge Elektrik (R17, Stufe 1)“ mit `analog.qet`: RC- und RL-Glied gegen die e-Funktion, gedämpfter
+  Reihenschwingkreis gegen die geschlossene Lösung, Einweggleichrichter gegen die Shockley-Gleichung, Spannungsteiler mit
+  Leistungsbilanz.
+- Stufe 1 steht neben der Schaltlogik: der Stromkreis treibt noch keine Relais, Spulen oder SPS-Eingänge; Transistoren,
+  Verstärker, Schutzorgane und elektrische Maschinen folgen in eigenen Stufen (`tools/simulation/ROADMAP_STAND.md`).
+- R18 (OPC UA, echte E/A) für die lokale Offline-Simulation ausgeklammert, R19 (Zusatzphysik, FMI) ohne Umsetzungsauftrag,
+  solange kein Beleg oder Bedarf vorliegt – beides wie in der Roadmap vorgesehen, mit Begründung im Stand.
+
 ## 1.40.0 – 19.11.2026
 
 Simulations-Roadmap R16 (Simulationsmodi, Messabgriffe, Leistung):

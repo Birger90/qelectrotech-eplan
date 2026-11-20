@@ -1972,6 +1972,12 @@ projectDataBase::PotentialGroups projectDataBase::potentialGroupsOf(const QSqlDa
 					join(own->first(), a);
 				if (isolating.contains(element))
 					isolated << own->first();
+			} else if (kind & ElementData::Junction) {
+				//A junction joins its own terminals into one potential -- the
+				//pass-through a wire is drawn for -- but it isolates nothing:
+				//its terminals are one node, so there is no separation to keep
+				for (int a : *own)
+					join(own->first(), a);
 			}
 		}
 	}
@@ -5616,7 +5622,8 @@ static ElementData::Types allElementTypes()
 		   | ElementData::Slave
 		   | ElementData::Terminal
 		   | ElementData::Thumbnail
-		   | ElementData::ConductorDefinition;
+		   | ElementData::ConductorDefinition
+		   | ElementData::Junction;
 }
 
 /**
@@ -9207,7 +9214,7 @@ QStringList projectDataBase::foreignChildren(const QDomElement &parent, bool fol
 	static const QSet<QString> project_known{
 		QStringLiteral("properties"), QStringLiteral("newdiagrams"), QStringLiteral("diagram"),
 		QStringLiteral("collection"), QStringLiteral("titleblocktemplates"), QStringLiteral("usage"),
-		QStringLiteral("wire_crossings"), QStringLiteral("symbol_texts"),
+		QStringLiteral("wire_crossings"), QStringLiteral("auto_conductor"), QStringLiteral("symbol_texts"),
 		QStringLiteral("plant_location"), QStringLiteral("languages"),
 		QStringLiteral("terminal_labelling"), QStringLiteral("wiring_rules"),
 		QStringLiteral("chained_reports"), QStringLiteral("style"),

@@ -10065,7 +10065,7 @@ Alle Einstellungen außer „Keine Rundung“ können je nach folgenden Faktoren
     </message>
     <message>
         <source> grid squares</source>
-        <translation>Rasterfelder</translation>
+        <translation> Rasterfelder</translation>
     </message>
     <message>
         <source>Space between terminals:</source>

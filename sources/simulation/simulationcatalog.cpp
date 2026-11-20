@@ -121,7 +121,10 @@ QList<Entry> build()
 		      "p0 [Pa] Federvorspannung, dpEnd [Pa], rT_CF, rT_EF [bar.min2/l2]",
 		      "Kolben quasistatisch aus p_CF − p_LS gegen die Feder; Dämpfungsdrosseln rT_L, rT_R (dynamisch) nicht gerechnet",
 		      "Mobilhydraulik LS (R13)");
-	e << other("proportional.mpye", Role::Unsupported, "", "pneumatisches Stetigventil (Roadmap R07)");
+	e << physical("proportional.mpye", "proportional_valve", "pneumatic", "1 (C4) Zuluft, 2 (C2), 4 (C1) Arbeitsanschlüsse, 3 (C5), 5 (C3) Abluft; Sollwert über S",
+		      "qNN [l/min] (FluidSIM 773), u [V] 0 … 10 (5 = Mitte), tau [s] (Vorgabe 1,6 ms)",
+		      "Querschnitt nach der Festo-Kennlinie q(U) bei 6 → 5 bar (unter 5 V 1→2, über 5 V 1→4), Abluftkante gleich weit offen; "
+		      "Schieber PT1, keine Hysterese, keine Mittelstellungsleckage", "Stetigventil MPYE");
 	// ---------------------------------------------------------- Strom-, Sperr-, Logikventile
 	e << physical("flow_control_valve.throttle_valve", "orifice", "both", "erste zwei Anschlüsse", "qNN [l/min] bzw. rT", "kein druckkompensierter Stromregler", "Orifice");
 	e << physical("shutoff_valve.shutoff_valve", "orifice", "both", "erste zwei Anschlüsse", "qNN bzw. rT", "Stellung fest (Öffnung über qNN/rT)", "Orifice");
@@ -138,9 +141,15 @@ QList<Entry> build()
 			      "rT [bar.min2/l2], ratio Flächenverhältnis des Entsperrkolbens, p0 [Pa] Federvorspannung (02), dpEnd [Pa] Öffnungsbereich (Vorgabe 0,5 bar)",
 			      "entsperrt bei ratio·(p_Steuer − p_ein) ≥ (p_aus − p_ein) + p0, voll offen über dpEnd; ohne Kolbendynamik und Leckage",
 			      "Mobilhydraulik (R13)");
-	for (const char *f : {"shutoff_valve.pneumatic_counter",
-			       "shutoff_valve.timer1", "shutoff_valve.timer2", "shutoff_valve.three_way_valve"})
-		e << other(f, Role::Unsupported, "", "kein eigenes Modell");
+	for (const char *f : {"shutoff_valve.timer1", "shutoff_valve.timer2"})
+		e << physical(f, "flow_valve", "pneumatic", "1 (C2), 2 (C1), 3 (C3); Timer 2: Signal 10 (PL)",
+			      "delayTime [s] (3), qNN [l/min] (50)",
+			      "Timer 1 schaltet 1 → 2, wenn 1 mindestens delayTime ≥ 1,6 bar führt, Timer 2 sperrt 1 → 2 nach delayTime an 10; "
+			      "Rückstellung sofort (FluidSIM: < 200 ms)", "Pneumatische Zeit-, Zähl- und Sicherheitsbausteine");
+	e << physical("shutoff_valve.pneumatic_counter", "flow_valve", "pneumatic", "1 (C4), 2 (C3), Rücksetzen 10 (C2), Zählen 12 (C1)",
+		      "counterEnd (3), qNN [l/min] (60)", "zählt steigende Signale an 12 rückwärts, bei 0: 1 → 2 bis zum Signal an 10; Rücksetzen von Hand nicht",
+		      "Pneumatische Zeit-, Zähl- und Sicherheitsbausteine");
+	e << other("shutoff_valve.three_way_valve", Role::Unsupported, "", "kein eigenes Modell");
 	// ---------------------------------------------------------- Druckventile
 	e << physical("pressure_valve.pressure_relief_valve01", "pressure_relief_valve", "both", "1/P → 2/T/3", "p0, dpEnd [Pa], rT/qNN", "direktgesteuert, ohne Dynamik", "Projekt Druckbegrenzung");
 	e << physical("pressure_valve.pressure_regulator", "pressure_regulator", "both", "1/P → 2/A, Entlüftung", "p0, dpEnd [Pa], qNN/rT", "ohne Dynamik und Pilotdrain", "");
@@ -223,10 +232,21 @@ QList<Entry> build()
 			      "M_user [N.m] Handmoment (+: links), M_userMax [N.m], rT [bar.min2/l2], displacement [m3] Dosierpumpe",
 			      "Drehventil öffnet mit M_user/M_userMax (Kanten rT/Anteil²), Neutral P → E; Lenkradwinkel aus dem Dosierstrom; Moment fest für den Lauf, revolutionMax und xStep nicht ausgewertet",
 			      "Mobilhydraulik (R13)");
-	for (const char *f : {"vacuum.vacuum_efficiency_valve",
-			       "valve_group.control_block_for_two_hand_start", "valve_group.taa_01", "valve_group.tab_01",
-			       "valve_group.timer3", "valve_group.timer4", "other.misc"})
-		e << other(f, Role::Unsupported, "", "kein Modell (Vakuum-Sparventil, Ventilgruppen); keine Überdruckquelle als Ersatz");
+	for (const char *f : {"valve_group.timer3", "valve_group.timer4"})
+		e << physical(f, "flow_valve", "pneumatic", "1 (C2), 2 (C1), Steuerung 12 bzw. 10 (C3)",
+			      "level [%] (100), qNN_nozzle [l/min] (10), vol [l] (0,01), qNN [l/min] (50)",
+			      "Drossel mit Rückschlagventil füllt den Speicher, das 3/2-Ventil schaltet bei 1,5 bar Speicherdruck (isotherm)",
+			      "Pneumatische Zeit-, Zähl- und Sicherheitsbausteine");
+	e << physical("valve_group.control_block_for_two_hand_start", "flow_valve", "pneumatic", "11 (C11), 12 (C12), 2 (C2)",
+		      "level [%] (100), qNN [l/min] (50)", "UND-Glied mit 0,5-s-Fenster, Ausgang aus dem niedrigeren Eingang, sonst 2 entlüftet",
+		      "Pneumatische Zeit-, Zähl- und Sicherheitsbausteine");
+	e << physical("vacuum.vacuum_efficiency_valve", "flow_valve", "pneumatic", "1 (C1), 2 (C2)",
+		      "ps_min, ps_max [Pa] (0,1/0,2 bar), q_min, q_max [l/min] bei 50 kPa (1,9/4)",
+		      "Schwimmer schließt über dem Federband von |p1 − p2|: Leitwert von q_max auf q_min; ohne Schwimmerdynamik",
+		      "Pneumatische Zeit-, Zähl- und Sicherheitsbausteine");
+	for (const char *f : {"valve_group.taa_01", "valve_group.tab_01", "other.misc"})
+		e << other(f, Role::Unsupported, "",
+			   "Taktstufen-Baustein: FluidSIM nennt Speicher, UND- und ODER-Glied, aber nicht deren Verschaltung mit Yn, Zn, X, L, A");
 	// ---------------------------------------------------------- Vakuum (R10)
 	for (const char *f : {"vacuum.vacuum_generator", "vacuum.vacuum_generator_05_h", "vacuum.vacuum_generator_05_l"})
 		e << physical(f, "vacuum_generator", "pneumatic", "1 (Versorgung), 2 (Vakuum)",

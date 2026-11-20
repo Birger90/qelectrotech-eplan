@@ -279,7 +279,7 @@ Herkunft, Beleg und Grenze jeder Formel stehen im [Formelregister](FORMELN.md).
   12 den Schaltdruck `p0` erreicht (Übergang 0,1 bar); geschlossen ist 2 abgesperrt.
 - Prüfpläne `druckwaagen.qet` (LS-Druckwaage, vorgeschaltete Druckwaage vor einer Drossel, Schließer als Druckregler,
   Schockblock mit Begrenzung und Nachsaugen) und `folgeventil.qet`.
-- Weiter nicht gerechnet (Start abgewiesen): LS-/Mobilventilblöcke, MPYE, Druckwaage `closer03` (ohne Kennwerte),
+- Weiter nicht gerechnet (Start abgewiesen): LS-/Mobilventilblöcke, Druckwaage `closer03` (ohne Kennwerte und Hilfeseite, in keinem FluidSIM-Beispiel),
   Vorsteuergeber Joystick.
 
 ## Analoge Signale und Regler (R06)
@@ -349,6 +349,16 @@ Elektrische Teile mit reellen Werten. Sie tragen die Bauteilinformationen `sim_r
 - Kennlinien neu lesen: `python -I tools/simulation/datenblaetter/dmsp_kennlinien.py DMSP_EN.PDF dmsp.json`, dann
   `erzeuge_muskelkopf.py dmsp.json sources/simulation/simulationmuscle.h`.
 - Nicht gerechnet: Belastungseinheit 1 siehe R13. Tandem- und Teleskopzylinder gibt es in FluidSIM nicht als Bauteil.
+
+## FluidSIM-Ergänzungen (Fork 1.47.0)
+
+- **MPYE** (`proportional.mpye`, 1 … 5 bzw. FluidSIM C4/C2/C5/C1/C3): Sollwert 0 … 10 V (5 V Mitte) über den
+  lagegeregelten Proportionalmagneten („C=-QM1/S“), den Kennwert `u` oder ein Sollwert-Ereignis; Querschnitt nach der
+  Festo-Kennlinie (Formel V19), `qNN` (FluidSIM 773 l/min), `tau` (1,6 ms). Messgrößen `u:`, `s:` ((u − 5)/5).
+- **Timer** (`shutoff_valve.timer1/2`), **Verzögerungsventile** (`valve_group.timer3/4`), **Vorwahlzähler**
+  (`shutoff_valve.pneumatic_counter`), **Zweihandsteuerblock**, **Vakuumsaugventil**: Kennwerte wie in FluidSIM
+  (Formeln V20–V24), Prüfplan `pneu_logik.qet`.
+- Weiter abgewiesen: Taktstufen TAA/TAB (FluidSIM nennt die interne Verschaltung nicht).
 
 ## Mobilhydraulik (R13, Fork 1.35.0)
 

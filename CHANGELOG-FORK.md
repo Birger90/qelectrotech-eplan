@@ -3,6 +3,18 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.47.0 – 20.11.2026
+
+FluidSIM-Bauteile, die bisher den Start verhinderten (FluidSIM-Gesamtlauf: 35 Schaltungen mit Modellfehler):
+
+- Proportional-Wegeventil MPYE (pneumatisch 5/3, Sollwert 0 … 10 V über den lagegeregelten Proportionalmagneten):
+  Querschnitt nach der Festo-Kennlinie q(U), aus dem Katalog-PDF gelesen; Formel V19.
+- Pneumatische Timer (in Ruhe gesperrt/offen), Verzögerungsventile mit Speicher und Düse, pneumatischer Vorwahlzähler,
+  Zweihandsteuerblock (0,5-s-Fenster) und Vakuumsaugventil nach der FluidSIM-Hilfe; Formeln V20–V24.
+- Neue Prüfungen „Proportional-Wegeventil MPYE“ und „Pneumatische Zeit-, Zähl- und Sicherheitsbausteine“ (Pläne
+  `mpye.qet`, `pneu_logik.qet`). Weiter abgewiesen mit Begründung: Taktstufen TAA/TAB (Verschaltung nicht
+  dokumentiert), Druckwaage `closer03` (ohne Kennwerte und Hilfeseite, in keinem Beispiel), Muskel mit Zylinder.
+
 ## 1.46.1 – 20.11.2026
 
 - Pneumatischer Muskel: Vorzeichen der externen Kraft wie in FluidSIM (in FluidSIM 6.3 an TP220_14 geprüft: −750 N

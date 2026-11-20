@@ -118,6 +118,8 @@
 >   stage 5 DC motors and squirrel-cage induction motors on a three-phase supply.
 >   Special drives (R12): fluidic muscle Festo DMSP from the catalogue force/displacement graphs and hydraulic pressure
 >   intensifier (bypass, pump piston, pilot check valve) from data sheet values.
+>   FluidSIM parts added in 1.47.0: proportional valve MPYE (Festo flow characteristic), pneumatic timers, delay valves,
+>   preset counter, two-hand control block, vacuum efficiency valve.
 >   Lines under pressure turn blue/red, live wires red, active steps get a token; buttons and valves are operated in
 >   the window or by clicking the symbol; a live list shows the PLC and GRAFCET variables.
 > - Headless: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv out.csv --png folder`.

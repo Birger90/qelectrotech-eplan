@@ -182,6 +182,7 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
   fährt drei Stellungen an: 0, `xMax2` (Standard halber Gesamthub), `xMax`. Druckübersetzer (`PressureIntensifier01`,
   hydraulisch, IN/R/H) rechnet seit 1.46.0 mit `r`, `p_max_in`, `q_max_in`, `q_max_hi` aus dem Datenblatt (Pflicht, nicht
   schätzen; Beispiel Scanwill MP-F-4.0: 4, 17,5 MPa, 14 l/min, 0,4 l/min).
+- FluidSIM-Ergänzungen (Fork 1.47.0): MPYE (Sollwert 0 … 10 V, 5 V Mitte, Festo-Kennlinie), pneumatische Timer, Verzögerungsventile, Vorwahlzähler, Zweihandblock, Vakuumsaugventil rechnen; Taktstufen TAA/TAB nicht.
 - Mobilhydraulik (Fork 1.35.0, R13): `LoadSensingPumpUnit` (P1 LS-Verstellpumpe, P2 Konstantpumpe, LS-Anschluss; T/L/LA dürfen offen bleiben), 6/3-Handhebelventil (`xStep` ±100 %, + öffnet P2 → B) und `LoadingUnit_2` rechnen; Lenkventil, LS-Steuerblock, Vorsteuergerät noch nicht.
 - Fehlerszenarien (Fork 1.39.0, R15): Fehler wie FluidSIM über die Elementinformation `sim_fault` (z. B. „kolben_klemmt ab 1“, „interne_leckage 0.5“), Reparatur mit dem Ereignis „1.5 -QM1 reparieren“.
 - GRAFCET aus FluidSIM (Fork 1.38.0): Teil-GRAFCET-Rahmen → `sim_grafcet`, einschließende Schritte → `sim_encloses`, alink → `sim_activation`, Makro/Eingang/Ausgang → M/E/S, zwangssteuernde Befehle → Aktion `G12{…}`, Sprungziel einer Transition → Sprung.

@@ -338,7 +338,7 @@ Elektrische Teile mit reellen Werten. Sie tragen die Bauteilinformationen `sim_r
   plastisch; Startlagen `xStart`, `xStart1`; Messgrößen `x:` (vorderer Kolben) und `x1:` (hinterer). Prüfplan
   `mehrstellungszylinder.qet` (Formel M12).
 - **Pneumatischer Muskel** (`actuator.fluidic_muscle1`, A; Fork 1.46.0, Formel M15): `muscleType` 1/2/3 = DMSP-10/20/40,
-  `len` Nennlänge, `F_extern_const` (zieht gegen die Kontraktion), `m_ext`, `mu_B_ext`, `mu_M_ext`, `alpha`, optional
+  `len` Nennlänge, `F_extern_const` (negativ = streckende Last, wie in FluidSIM), `m_ext`, `mu_B_ext`, `mu_M_ext`, `alpha`, optional
   `F_V` (Dämpfung, Vorgabe 20 N·s/m). Kraft aus den Festo-Kurven (`simulationmuscle.h`), Volumen über virtuelle Arbeit.
   Messgrößen `x:` (Kontraktion in m, negativ vorgespannt), `h:` (%), `v:`, `F:` (Zugkraft). Prüfplan `muskel.qet`.
   MAS-Typen und Muskel mit Zylinder (`fluidic_muscle2/3`) werden mit Begründung abgewiesen.

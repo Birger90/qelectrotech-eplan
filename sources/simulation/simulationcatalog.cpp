@@ -90,9 +90,9 @@ QList<Entry> build()
 		      "wie Belastungseinheit 2; Stangenräume A1.2 und A2.1 entlasten sich über Druckbegrenzungs- und Rückschlagventil in Reihe ineinander (Zwischenknoten nicht eigens gerechnet)",
 		      "Mobilhydraulik (R13)");
 	e << physical("actuator.fluidic_muscle1", "muscle", "pneumatic", "A",
-		      "muscleType (1 DMSP-10, 2 DMSP-20, 3 DMSP-40), len [m], F_extern_const [N], m_ext [kg], mu_B_ext, mu_M_ext, alpha; F_V [N.s/m]",
+		      "muscleType (1 DMSP-10, 2 DMSP-20, 3 DMSP-40), len [m], F_extern_const [N] (negativ streckt), m_ext [kg], mu_B_ext, mu_M_ext, alpha; F_V [N.s/m]",
 		      "Kraft-Weg-Kennlinien aus dem Festo-Katalog DMSP (linear zwischen den Druckkurven), Volumen über virtuelle Arbeit; "
-		      "Last wirkt gegen die Kontraktion; Anschläge an Vorspanngrenze und max. Kontraktion; keine Hysterese, MAS ohne Kennlinie",
+		      "negative Last streckt (Vorzeichen wie FluidSIM); Anschläge an Vorspanngrenze und max. Kontraktion; keine Hysterese, MAS ohne Kennlinie",
 		      "Muskel (R12)");
 	for (const char *f : {"actuator.fluidic_muscle2", "actuator.fluidic_muscle3"})
 		e << other(f, Role::Unsupported, "",

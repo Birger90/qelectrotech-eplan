@@ -1308,7 +1308,9 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					// moving mass: the load plus the kinetic equivalent of the muscle (one end fixed): the free fitting
 					// (half the weight at 0 m) and a third of the tube (FORMELN.md M15, weights from the data sheet)
 					c->m = m_ext + mt.m0 / 2 + mt.m_per_m * c->muscle_len / 3;
-					c->f_load = paramIn(f, QStringLiteral("F_extern_const"), 0.0, newton, &m_model_errors, who);
+					// FluidSIM sign (checked in FluidSIM 6.3 with TP220_14: -750 N stretches the muscle): a negative external
+					// force pulls against the contraction; f_load is the force against the contraction
+					c->f_load = -paramIn(f, QStringLiteral("F_extern_const"), 0.0, newton, &m_model_errors, who);
 					const double alpha = paramIn(f, QStringLiteral("alpha"), 0.0, QStringLiteral("rad"), &m_model_errors, who);
 					c->weight = c->m * 9.81 * std::sin(alpha);
 					const double normal = m_ext * 9.81 * std::abs(std::cos(alpha));

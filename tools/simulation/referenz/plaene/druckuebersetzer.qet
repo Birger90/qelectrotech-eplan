@@ -19,10 +19,10 @@
         <element_autonums current_autonum="" freeze_new_elements="false"/>
         <guides/>
     </newdiagrams>
-    <diagram author="" auto_page_num="" cols="17" colsize="60" date="null" displayAt="bottom" displaycols="true" displayrows="true" filename="" folio="" freezeNewConductor="false" freezeNewElement="false" height="660" indexrev="" locmach="" order="1" plant="" rows="8" rowsize="80" title="" uuid="{8e13bf44-c12e-4046-a3a4-c90da8f7f63a}" version="0.200.1-dev">
+    <diagram author="" auto_page_num="" cols="17" colsize="60" date="null" displayAt="bottom" displaycols="true" displayrows="true" filename="" folio="" freezeNewConductor="false" freezeNewElement="false" height="660" indexrev="" locmach="" order="1" plant="" rows="8" rowsize="80" title="" uuid="{ebf8046e-47f0-43a8-a64c-3e3684275580}" version="0.200.1-dev">
         <defaultconductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
         <elements>
-            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GP" type="embed://import/30_hydraulic/61_pumps/pompe_debit_fixe.elmt" uuid="{4c75d537-3b08-4e71-88c2-8d4316d750c2}" x="120" y="480" z="10">
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GP" type="embed://import/30_hydraulic/61_pumps/pompe_debit_fixe.elmt" uuid="{eaf5eaef-c302-4199-b72d-bbd94171b330}" x="120" y="480" z="10">
                 <terminals>
                     <terminal id="0" orientation="0" x="0" y="-20"/>
                     <terminal id="1" orientation="3" x="-20" y="0"/>
@@ -33,14 +33,14 @@
                     <elementInformation name="label" show="1">-GP1</elementInformation>
                 </elementInformations>
                 <dynamic_texts>
-                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{d7645aea-3e2b-4fe2-a6a3-5875e88cff84}" x="24" y="-25.67">
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{63069ff8-011e-4902-a95f-27e5f143fb9f}" x="24" y="-25.67">
                         <text>-GP1</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
                 <texts_groups/>
             </element>
-            <element freezeLabel="false" is_movable="1" orientation="0" prefix="CM" type="embed://import/30_hydraulic/21_tanks/bache_a_l_air_libre.elmt" uuid="{9da715fd-e9f3-45b0-a825-9274dbdfc507}" x="120" y="600" z="10">
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="CM" type="embed://import/30_hydraulic/21_tanks/bache_a_l_air_libre.elmt" uuid="{eeecad0f-77bc-4899-9de6-5d04203e2f1a}" x="120" y="600" z="10">
                 <terminals>
                     <terminal id="3" orientation="0" x="0" y="-6"/>
                 </terminals>
@@ -49,14 +49,14 @@
                     <elementInformation name="label" show="1">-CM1</elementInformation>
                 </elementInformations>
                 <dynamic_texts>
-                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{a951d381-bf0f-453a-908b-867c429dcbe4}" x="15" y="-2.5">
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{4a310a19-844f-404a-a8a2-741d9ea2282b}" x="15" y="-2.5">
                         <text>-CM1</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
                 <texts_groups/>
             </element>
-            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/hochdruckzylinder.elmt" uuid="{5202412b-a100-40b4-8358-55337e81da97}" x="300" y="130" z="10">
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/hochdruckzylinder.elmt" uuid="{a5ebc789-5aee-47f8-a465-d3ba8e26a961}" x="300" y="130" z="10">
                 <terminals>
                     <terminal id="4" orientation="2" x="-20" y="26"/>
                     <terminal id="5" orientation="2" x="20" y="26"/>
@@ -66,14 +66,14 @@
                     <elementInformation name="label" show="1">-MM1</elementInformation>
                 </elementInformations>
                 <dynamic_texts>
-                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{9a34243c-0caa-4345-9d60-091d8149a47d}" x="0" y="-45">
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{88300b0f-9e41-4c95-ab2e-07b7e07f7ead}" x="0" y="-45">
                         <text>-MM1</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
                 <texts_groups/>
             </element>
-            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/druckuebersetzer_mpf40.elmt" uuid="{e1d8f323-197c-488f-b3b1-960a12424ef5}" x="300" y="330" z="10">
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/druckuebersetzer_mpf40.elmt" uuid="{09c7b3b7-f509-4712-855b-19bee2705f35}" x="300" y="330" z="10">
                 <terminals>
                     <terminal id="6" orientation="0" x="-20" y="-26"/>
                     <terminal id="7" orientation="2" x="-20" y="26"/>
@@ -84,14 +84,14 @@
                     <elementInformation name="label" show="1">-GZ1</elementInformation>
                 </elementInformations>
                 <dynamic_texts>
-                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{022f508a-4565-47f5-831d-45a03c2af66c}" x="0" y="-45">
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{d32533a1-2e00-4aa8-8c24-73d1b177738d}" x="0" y="-45">
                         <text>-GZ1</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
                 <texts_groups/>
             </element>
-            <element freezeLabel="false" is_movable="1" orientation="0" prefix="CM" type="embed://import/30_hydraulic/21_tanks/bache_a_l_air_libre.elmt" uuid="{e9e359b1-19eb-446e-aa46-d5bed71ec809}" x="340" y="480" z="10">
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="CM" type="embed://import/30_hydraulic/21_tanks/bache_a_l_air_libre.elmt" uuid="{fb677d27-8041-4a45-87ed-8ae2840b37a9}" x="340" y="480" z="10">
                 <terminals>
                     <terminal id="9" orientation="0" x="0" y="-6"/>
                 </terminals>
@@ -100,14 +100,14 @@
                     <elementInformation name="label" show="1">-CM2</elementInformation>
                 </elementInformations>
                 <dynamic_texts>
-                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{543fe0e5-fec2-4bbe-8724-b8b95c0458c9}" x="15" y="-2.5">
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{c3a3409f-8f74-42a7-b15d-8d41636531d5}" x="15" y="-2.5">
                         <text>-CM2</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
                 <texts_groups/>
             </element>
-            <element freezeLabel="false" is_movable="1" orientation="0" prefix="CM" type="embed://import/30_hydraulic/21_tanks/bache_a_l_air_libre.elmt" uuid="{b047563b-faac-4dbe-a10e-a4c6140d1d20}" x="480" y="240" z="10">
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="CM" type="embed://import/30_hydraulic/21_tanks/bache_a_l_air_libre.elmt" uuid="{5f803428-174e-45b3-8f66-e577c26dda27}" x="480" y="240" z="10">
                 <terminals>
                     <terminal id="10" orientation="0" x="0" y="-6"/>
                 </terminals>
@@ -116,7 +116,7 @@
                     <elementInformation name="label" show="1">-CM3</elementInformation>
                 </elementInformations>
                 <dynamic_texts>
-                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{dbc3ac40-e792-493a-83bc-cbb5e665c34a}" x="15" y="-2.5">
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{3b68e498-b354-4941-a9a3-5748753a60c4}" x="15" y="-2.5">
                         <text>-CM3</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
@@ -125,22 +125,22 @@
             </element>
         </elements>
         <conductors>
-            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{4c75d537-3b08-4e71-88c2-8d4316d750c2}" element1_label="-GP1" element1_name="Fixed Displacement hydraulic pump" element2="{9da715fd-e9f3-45b0-a825-9274dbdfc507}" element2_label="-CM1" element2_name="Pipings under level" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{5a114086-7948-4d66-ad56-859d4ea42cbf}" terminal2="{1a7d7aea-53a4-42e0-bded-b81825b13808}" terminalname1="T" terminalname2="P" text_color="#000000" type="multi" uuid="{98339642-ec74-403c-b7ce-d8ad72dcddb7}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{eaf5eaef-c302-4199-b72d-bbd94171b330}" element1_label="-GP1" element1_name="Fixed Displacement hydraulic pump" element2="{eeecad0f-77bc-4899-9de6-5d04203e2f1a}" element2_label="-CM1" element2_name="Pipings under level" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{5a114086-7948-4d66-ad56-859d4ea42cbf}" terminal2="{1a7d7aea-53a4-42e0-bded-b81825b13808}" terminalname1="T" terminalname2="P" text_color="#000000" type="multi" uuid="{330a4064-831a-45fa-b266-713b06f31867}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                 <sequentialNumbers/>
             </conductor>
-            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{4c75d537-3b08-4e71-88c2-8d4316d750c2}" element1_label="-GP1" element1_name="Fixed Displacement hydraulic pump" element2="{9da715fd-e9f3-45b0-a825-9274dbdfc507}" element2_label="-CM1" element2_name="Pipings under level" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{d9d04591-bdb6-4154-90ef-2674ec497353}" terminal2="{1a7d7aea-53a4-42e0-bded-b81825b13808}" terminalname1="L" terminalname2="P" text_color="#000000" type="multi" uuid="{36f783c8-2894-4fe6-ac4e-e77945fec4b8}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{eaf5eaef-c302-4199-b72d-bbd94171b330}" element1_label="-GP1" element1_name="Fixed Displacement hydraulic pump" element2="{eeecad0f-77bc-4899-9de6-5d04203e2f1a}" element2_label="-CM1" element2_name="Pipings under level" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{d9d04591-bdb6-4154-90ef-2674ec497353}" terminal2="{1a7d7aea-53a4-42e0-bded-b81825b13808}" terminalname1="L" terminalname2="P" text_color="#000000" type="multi" uuid="{7d23e034-9999-4e50-8791-433a93278b7a}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                 <sequentialNumbers/>
             </conductor>
-            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{4c75d537-3b08-4e71-88c2-8d4316d750c2}" element1_label="-GP1" element1_name="Fixed Displacement hydraulic pump" element2="{e1d8f323-197c-488f-b3b1-960a12424ef5}" element2_label="-GZ1" element2_name="Pressure intensifier MP-F-4.0 (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{b31ade34-5793-4ce2-898a-5900631aa6d4}" terminal2="{843ab812-bb9b-5a04-a412-bc26ee224546}" terminalname1="P" terminalname2="IN" text_color="#000000" type="multi" uuid="{ea275840-b05a-4b61-8b21-9f7033237028}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{eaf5eaef-c302-4199-b72d-bbd94171b330}" element1_label="-GP1" element1_name="Fixed Displacement hydraulic pump" element2="{09c7b3b7-f509-4712-855b-19bee2705f35}" element2_label="-GZ1" element2_name="Pressure intensifier MP-F-4.0 (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{b31ade34-5793-4ce2-898a-5900631aa6d4}" terminal2="{843ab812-bb9b-5a04-a412-bc26ee224546}" terminalname1="P" terminalname2="IN" text_color="#000000" type="multi" uuid="{4e3d249e-62c2-40f1-9a10-1133e2554f8f}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                 <sequentialNumbers/>
             </conductor>
-            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{5202412b-a100-40b4-8358-55337e81da97}" element1_label="-MM1" element1_name="Cylinder 20/10-20 (test symbol)" element2="{e1d8f323-197c-488f-b3b1-960a12424ef5}" element2_label="-GZ1" element2_name="Pressure intensifier MP-F-4.0 (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{bac3242d-4a60-5b02-a5c8-407c59352625}" terminal2="{3e5fc032-e59d-55ab-9cdf-433bc6b92536}" terminalname1="A" terminalname2="H" text_color="#000000" type="multi" uuid="{4d53e28a-fe98-4901-b298-df45624139db}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{a5ebc789-5aee-47f8-a465-d3ba8e26a961}" element1_label="-MM1" element1_name="Cylinder 20/10-20 (test symbol)" element2="{09c7b3b7-f509-4712-855b-19bee2705f35}" element2_label="-GZ1" element2_name="Pressure intensifier MP-F-4.0 (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{bac3242d-4a60-5b02-a5c8-407c59352625}" terminal2="{3e5fc032-e59d-55ab-9cdf-433bc6b92536}" terminalname1="A" terminalname2="H" text_color="#000000" type="multi" uuid="{a9eb1cce-3ffd-4bed-90a3-7b811947c762}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                 <sequentialNumbers/>
             </conductor>
-            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{5202412b-a100-40b4-8358-55337e81da97}" element1_label="-MM1" element1_name="Cylinder 20/10-20 (test symbol)" element2="{b047563b-faac-4dbe-a10e-a4c6140d1d20}" element2_label="-CM3" element2_name="Pipings under level" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{b73d5015-111e-52cc-b358-15f3cc73f0e6}" terminal2="{1a7d7aea-53a4-42e0-bded-b81825b13808}" terminalname1="B" terminalname2="P" text_color="#000000" type="multi" uuid="{1b0cf110-021a-469a-b823-0911ebfa5555}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{a5ebc789-5aee-47f8-a465-d3ba8e26a961}" element1_label="-MM1" element1_name="Cylinder 20/10-20 (test symbol)" element2="{5f803428-174e-45b3-8f66-e577c26dda27}" element2_label="-CM3" element2_name="Pipings under level" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{b73d5015-111e-52cc-b358-15f3cc73f0e6}" terminal2="{1a7d7aea-53a4-42e0-bded-b81825b13808}" terminalname1="B" terminalname2="P" text_color="#000000" type="multi" uuid="{fca59462-57f3-46c5-a0ae-b7543d0797d0}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                 <sequentialNumbers/>
             </conductor>
-            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{e1d8f323-197c-488f-b3b1-960a12424ef5}" element1_label="-GZ1" element1_name="Pressure intensifier MP-F-4.0 (test symbol)" element2="{e9e359b1-19eb-446e-aa46-d5bed71ec809}" element2_label="-CM2" element2_name="Pipings under level" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{44950a25-c130-5df0-bc8b-e46d563425c5}" terminal2="{1a7d7aea-53a4-42e0-bded-b81825b13808}" terminalname1="R" terminalname2="P" text_color="#000000" type="multi" uuid="{8c2ac031-11ac-4e10-955f-e56342ba245c}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{09c7b3b7-f509-4712-855b-19bee2705f35}" element1_label="-GZ1" element1_name="Pressure intensifier MP-F-4.0 (test symbol)" element2="{fb677d27-8041-4a45-87ed-8ae2840b37a9}" element2_label="-CM2" element2_name="Pipings under level" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{44950a25-c130-5df0-bc8b-e46d563425c5}" terminal2="{1a7d7aea-53a4-42e0-bded-b81825b13808}" terminalname1="R" terminalname2="P" text_color="#000000" type="multi" uuid="{18a9363c-d704-47db-90ec-66fe0ec2aa9d}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                 <sequentialNumbers/>
             </conductor>
         </conductors>

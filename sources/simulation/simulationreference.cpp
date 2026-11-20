@@ -1837,8 +1837,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		};
 		double a[3] = {std::nan(""), std::nan(""), std::nan("")}, b[3] = {std::nan(""), std::nan(""), std::nan("")};
 		settle(path("muskel.qet"), 4.0, a);
-		const QString v37 = textVariant(path("muskel.qet"), {{QStringLiteral("<parameter name=\"F_extern_const\" unit=\"N\" value=\"674\"/>"),
-															   QStringLiteral("<parameter name=\"F_extern_const\" unit=\"N\" value=\"609\"/>")}},
+		const QString v37 = textVariant(path("muskel.qet"), {{QStringLiteral("<parameter name=\"F_extern_const\" unit=\"N\" value=\"-674\"/>"),
+															   QStringLiteral("<parameter name=\"F_extern_const\" unit=\"N\" value=\"-609\"/>")}},
 										QStringLiteral("qet_sim_r12_muskel37.qet"));
 		if (v37.isEmpty()) wrong << QStringLiteral("Variante 609 N nicht erzeugt");
 		else { settle(v37, 3.7, b); QFile::remove(v37); }

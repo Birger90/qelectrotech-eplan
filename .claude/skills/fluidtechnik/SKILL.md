@@ -176,7 +176,7 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
   die Kolbenfläche) und Kraftprofil `F_var_ex`/`F_var_re` = {x mm, F N, …} bei `use_F_const` False.
 - Druckluftmotoren (Fork 1.33.0, R12): `MotorWithMidExhaust` rechnet aus `p_N`, `rpm_N`, `M_N`, `n0_nN` (lineare
   Kennlinie, Nennpunkt exakt), `Pneu.Actuator.RotaryMotor` aus `displacement`, `f`, `I`. Muskel `FluidicMuscle1`
-  (Fork 1.46.0): DMSP-10/20/40 nach den Festo-Kurven (`muscleType`, `len`, `F_extern_const`); MAS und Muskel mit Zylinder
+  (Fork 1.46.0): DMSP-10/20/40 nach den Festo-Kurven (`muscleType`, `len`, `F_extern_const` negativ = streckende Last, in FluidSIM geprüft); MAS und Muskel mit Zylinder
   abgewiesen.
 - Mehrstellungszylinder (Fork 1.34.0, R12): `MultiPositionCylinder` (C1 hinterer Kolben, C2 vorderer, C3 Stangenseite)
   fährt drei Stellungen an: 0, `xMax2` (Standard halber Gesamthub), `xMax`. Druckübersetzer (`PressureIntensifier01`,

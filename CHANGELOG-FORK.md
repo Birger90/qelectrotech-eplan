@@ -3,6 +3,12 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.46.1 – 20.11.2026
+
+- Pneumatischer Muskel: Vorzeichen der externen Kraft wie in FluidSIM (in FluidSIM 6.3 an TP220_14 geprüft: −750 N
+  streckt den Muskel). In 1.46.0 wirkte eine negative Kraft fälschlich in Kontraktionsrichtung. Prüfplan `muskel.qet`
+  mit −674/−400/−2000 N; Befund und FluidSIM-Vergleich (FluidSIM 9,45 %, Festo-Katalogkurve 10,65 %) in FORMELN.md M15.
+
 ## 1.46.0 – 19.11.2026
 
 Simulations-Roadmap R12 (Sonderantriebe) fertig: pneumatischer Muskel und hydraulischer Druckübersetzer mit

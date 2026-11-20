@@ -19,10 +19,10 @@
         <element_autonums current_autonum="" freeze_new_elements="false"/>
         <guides/>
     </newdiagrams>
-    <diagram author="" auto_page_num="" cols="17" colsize="60" date="null" displayAt="bottom" displaycols="true" displayrows="true" filename="" folio="" freezeNewConductor="false" freezeNewElement="false" height="660" indexrev="" locmach="" order="1" plant="" rows="8" rowsize="80" title="" uuid="{27355be0-a275-4d5b-8c3c-7389757a3656}" version="0.200.1-dev">
+    <diagram author="" auto_page_num="" cols="17" colsize="60" date="null" displayAt="bottom" displaycols="true" displayrows="true" filename="" folio="" freezeNewConductor="false" freezeNewElement="false" height="660" indexrev="" locmach="" order="1" plant="" rows="8" rowsize="80" title="" uuid="{ba9086e2-fb5f-4551-999b-1d760962382f}" version="0.200.1-dev">
         <defaultconductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
         <elements>
-            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/muskel_dmsp20_674.elmt" uuid="{7bbe5232-a7ae-4c82-a0e7-dbfdbaf47d76}" x="100" y="250" z="10">
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/muskel_dmsp20_674.elmt" uuid="{8e42a994-4c44-48fa-ab79-6c1a1dfe0137}" x="100" y="250" z="10">
                 <terminals>
                     <terminal id="0" orientation="0" x="0" y="-26"/>
                 </terminals>
@@ -31,14 +31,14 @@
                     <elementInformation name="label" show="1">-MM1</elementInformation>
                 </elementInformations>
                 <dynamic_texts>
-                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{54e7e0fb-e155-4971-abec-7d26ec20d8de}" x="0" y="-45">
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{d4d76d26-bc2c-4099-a76c-371bebdd60f5}" x="0" y="-45">
                         <text>-MM1</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
                 <texts_groups/>
             </element>
-            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GP" type="embed://import/50_pneumatic/5010_compressed_air/501010_air_generation/50101000_compressed_air_source.elmt" uuid="{3bd22bec-e560-4591-ba2d-e84bae090bc9}" x="100" y="450" z="10">
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GP" type="embed://import/50_pneumatic/5010_compressed_air/501010_air_generation/50101000_compressed_air_source.elmt" uuid="{a022b891-e4d7-4489-8769-9b8dfcd336e9}" x="100" y="450" z="10">
                 <terminals>
                     <terminal id="1" orientation="0" x="0" y="-6"/>
                 </terminals>
@@ -47,18 +47,18 @@
                     <elementInformation name="label" show="1">-GP1</elementInformation>
                 </elementInformations>
                 <dynamic_texts>
-                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{eaa150b7-cfb1-44d4-816d-aec7ac856cb5}" x="-14" y="-20">
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{2ac9e472-e22a-48e5-82a7-e3f1d797cfba}" x="-14" y="-20">
                         <text>-GP1</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
-                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{1af91502-3396-4ecf-8e34-0f98125304cc}" x="-10" y="9">
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{a933e836-6e21-48fe-84bb-d5247091e78d}" x="-10" y="9">
                         <text></text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
                 <texts_groups/>
             </element>
-            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/muskel_dmsp20_0bar.elmt" uuid="{4abe6eff-9b23-4738-83f6-72e349802d90}" x="300" y="250" z="10">
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/muskel_dmsp20_0bar.elmt" uuid="{ed2df93f-612e-4a6e-b81e-37aa4512ad63}" x="300" y="250" z="10">
                 <terminals>
                     <terminal id="2" orientation="0" x="0" y="-26"/>
                 </terminals>
@@ -67,14 +67,14 @@
                     <elementInformation name="label" show="1">-MM2</elementInformation>
                 </elementInformations>
                 <dynamic_texts>
-                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{ade2a604-6675-4e1d-bbc0-ef25977e01a1}" x="0" y="-45">
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{4561cadf-72d0-488c-a384-e782131724f4}" x="0" y="-45">
                         <text>-MM2</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
                 <texts_groups/>
             </element>
-            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/muskel_dmsp40_2000.elmt" uuid="{7446704f-b4d5-4743-bec3-f25a07c5f557}" x="500" y="250" z="10">
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/muskel_dmsp40_2000.elmt" uuid="{f6264385-a5a8-434f-a29e-9d502995e898}" x="500" y="250" z="10">
                 <terminals>
                     <terminal id="3" orientation="0" x="0" y="-26"/>
                 </terminals>
@@ -83,14 +83,14 @@
                     <elementInformation name="label" show="1">-MM3</elementInformation>
                 </elementInformations>
                 <dynamic_texts>
-                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{ca4fa909-73e6-4bcf-8aeb-100820f77cb2}" x="0" y="-45">
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{36239f86-19a6-496d-818c-5676ed20140d}" x="0" y="-45">
                         <text>-MM3</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
                 </dynamic_texts>
                 <texts_groups/>
             </element>
-            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GP" type="embed://import/50_pneumatic/5010_compressed_air/501010_air_generation/50101000_compressed_air_source.elmt" uuid="{f104e499-7e7e-4c09-9f0e-64a16e9d953e}" x="500" y="450" z="10">
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GP" type="embed://import/50_pneumatic/5010_compressed_air/501010_air_generation/50101000_compressed_air_source.elmt" uuid="{215654fe-d030-40f1-9265-fc6ca829d61d}" x="500" y="450" z="10">
                 <terminals>
                     <terminal id="4" orientation="0" x="0" y="-6"/>
                 </terminals>
@@ -99,11 +99,11 @@
                     <elementInformation name="label" show="1">-GP2</elementInformation>
                 </elementInformations>
                 <dynamic_texts>
-                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{dc3f2ca5-8b20-4bbf-8396-6fe4aa17a0a1}" x="-14" y="-20">
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{ca1e8cf7-be05-4b31-b2bc-3b720b0aad75}" x="-14" y="-20">
                         <text>-GP2</text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
-                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{467d2313-7eef-4308-bb3b-9d888595fd27}" x="-10" y="9">
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{ad12570b-3c82-4f1e-9311-4c7494ea63bc}" x="-10" y="9">
                         <text></text>
                         <info_name>label</info_name>
                     </dynamic_elmt_text>
@@ -112,10 +112,10 @@
             </element>
         </elements>
         <conductors>
-            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{7bbe5232-a7ae-4c82-a0e7-dbfdbaf47d76}" element1_label="-MM1" element1_name="DMSP-20 674 N (test symbol)" element2="{3bd22bec-e560-4591-ba2d-e84bae090bc9}" element2_label="-GP1" element2_name="compressed air source" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{dcd01257-b717-5517-94b3-5a13d2ed258e}" terminal2="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminalname1="A" terminalname2="1" text_color="#000000" type="multi" uuid="{439554e3-2be1-44f5-92e3-dea0d9b81b0c}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{8e42a994-4c44-48fa-ab79-6c1a1dfe0137}" element1_label="-MM1" element1_name="DMSP-20 674 N (test symbol)" element2="{a022b891-e4d7-4489-8769-9b8dfcd336e9}" element2_label="-GP1" element2_name="compressed air source" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{dcd01257-b717-5517-94b3-5a13d2ed258e}" terminal2="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminalname1="A" terminalname2="1" text_color="#000000" type="multi" uuid="{80db850f-2df9-4e22-90fd-ce022ffe0f9a}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                 <sequentialNumbers/>
             </conductor>
-            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{7446704f-b4d5-4743-bec3-f25a07c5f557}" element1_label="-MM3" element1_name="DMSP-40 2000 N (test symbol)" element2="{f104e499-7e7e-4c09-9f0e-64a16e9d953e}" element2_label="-GP2" element2_name="compressed air source" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{210f948c-4894-5f28-8fef-828d19e866b9}" terminal2="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminalname1="A" terminalname2="1" text_color="#000000" type="multi" uuid="{8f733033-ef3c-4053-b8a8-0285096191a3}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{f6264385-a5a8-434f-a29e-9d502995e898}" element1_label="-MM3" element1_name="DMSP-40 2000 N (test symbol)" element2="{215654fe-d030-40f1-9265-fc6ca829d61d}" element2_label="-GP2" element2_name="compressed air source" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{210f948c-4894-5f28-8fef-828d19e866b9}" terminal2="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminalname1="A" terminalname2="1" text_color="#000000" type="multi" uuid="{ad68593e-ee0c-4be6-9c44-3b1d5025ddab}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                 <sequentialNumbers/>
             </conductor>
         </conductors>
@@ -226,7 +226,7 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                         <fluid function="actuator.fluidic_muscle1" kind="cylinder" prefix="MM">
                             <parameter name="muscleType" unit="" value="2"/>
                             <parameter name="len" unit="mm" value="200"/>
-                            <parameter name="F_extern_const" unit="N" value="674"/>
+                            <parameter name="F_extern_const" unit="N" value="-674"/>
                             <parameter name="m_ext" unit="kg" value="0"/>
                             <parameter name="alpha" unit="deg" value="0"/>
                         </fluid>
@@ -254,7 +254,7 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                         <fluid function="actuator.fluidic_muscle1" kind="cylinder" prefix="MM">
                             <parameter name="muscleType" unit="" value="2"/>
                             <parameter name="len" unit="mm" value="200"/>
-                            <parameter name="F_extern_const" unit="N" value="400"/>
+                            <parameter name="F_extern_const" unit="N" value="-400"/>
                             <parameter name="m_ext" unit="kg" value="0"/>
                             <parameter name="alpha" unit="deg" value="0"/>
                         </fluid>
@@ -282,7 +282,7 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                         <fluid function="actuator.fluidic_muscle1" kind="cylinder" prefix="MM">
                             <parameter name="muscleType" unit="" value="3"/>
                             <parameter name="len" unit="mm" value="575"/>
-                            <parameter name="F_extern_const" unit="N" value="2000"/>
+                            <parameter name="F_extern_const" unit="N" value="-2000"/>
                             <parameter name="m_ext" unit="kg" value="0"/>
                             <parameter name="alpha" unit="deg" value="0"/>
                         </fluid>

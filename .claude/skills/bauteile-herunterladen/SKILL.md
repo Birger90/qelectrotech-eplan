@@ -131,6 +131,22 @@ importiert EDZ/DXF in die Firmensammlung und legt STEP nach `3D\<H>\<Nr>.stp`. L
   „Alternativartikel“. Bei gleichem Gehäuse: STEP über `gleiche_modelle.txt`, Aufbau als Kopie des Nachfolger-Aufbaus
   mit eigener Bestellnummer und Vermerk in der Beschreibung (so 750-66x/000-003 → 750-662/000-004, 10.11.2026).
 
+## Beckhoff (beckhoff.com; erprobt 11.11.2026)
+
+- Beckhoff ist **nicht im EPLAN Data Portal**. Makros gibt es nur als Gesamtpaket: beliebige Produktseite
+  (Kurzadresse `https://www.beckhoff.com/<Typ>`, z. B. `/EK9300`) → Reiter „Dokumentation und Downloads“ → „Makros“ →
+  „EPLAN Makros ab 2.7“, ZIP ~63 MB (Schloss-Symbol: myBeckhoff-Anmeldung, Nutzer in Chrome angemeldet).
+  Inhalt: `Beckhoff/<Bereich>/<Reihe>/<Typ>.ema` + `<Typ>_Article_Data.xml` (1923 Makros), `Beckhoff/Article_DB.xml`.
+  Ablage: `Daten\herstellerdaten\Beckhoff\Beckhoff__EPLAN_Macros_2_7.zip`. Import in die Sammlung über die Quelle
+  „Hersteller-Makropaket“ des Forks (Branch feature/hersteller-makropaket).
+- Technische Zeichnungen (DXF-Maßbild, STP) stehen im selben Reiter unter „Technische Zeichnungen“, ohne Anmeldung, aber
+  **je Gehäuseform**, nicht je Typ (EL1809 = EL2809 = „12 mm 16 pin“; EL3068/EL3064/EL4008/EL4004/EL3024 = „12 mm 8 pin“).
+  Die Linkliste wird erst nach dem Klick auf den Reiter geladen: per JS den Reiter klicken, 3 s warten, dann
+  `a[href*="/download/"]` mit Text DXF/STP lesen → `https://www.beckhoff.com/de-de/download/<id>`.
+- **curl bekommt nur eine 919-Byte-Weiterleitungsseite** – die Download-Adresse im Chrome-Tab aufrufen (`navigate`),
+  dann liegt `<name>.dxf.zip` / `.stp.zip` in `Downloads`. 3 s Abstand je Datei genügt.
+- STEP → `Daten\3D\Beckhoff\<Typ>.stp` für einen Vertreter je Gehäuse, die übrigen über `gleiche_modelle.txt`.
+
 ## Rittal (rittal.com, Anmeldung nicht nötig)
 
 - Produktseite: `https://www.rittal.com/de-de/product/show/variantdetail.action?productID=<Artikelnr ohne SV>`
@@ -160,6 +176,35 @@ importiert EDZ/DXF in die Firmensammlung und legt STEP nach `3D\<H>\<Nr>.stp`. L
 - DXF-ZIP enthält sechs Ansichten `<nr>_front|back|left|right|top|bottom.dxf` in mm. **Achtung:** „front“ ist die
   Ansicht des 3D-Modells, nicht unbedingt die Schrankansicht – beim NH-Trenner 9343000 ist es „top“ (214 × 106 mm,
   Datenblatt B 106 / H 194 + Klemmen). Ansicht wählen, deren Maße zum Datenblatt (Breite × Höhe) passen.
+
+## Weitere Hersteller (geprüft 11.11.2026)
+
+- **Pilz** (ohne Anmeldung): `https://www.pilz.com/de-DE/eshop/p/<Bestellnr>` leitet auf die Produktseite (auch abgekündigte).
+  Dort Links `https://www.pilz.com/download/open/<name>.stp.zip` / `.dxf.zip` / `.edz`. curl bekommt nur eine HTML-Seite
+  (5 KB) → die Download-Adresse im Chrome-Tab aufrufen (`navigate`), Datei liegt dann in `Downloads`. Ein JS-Klick auf
+  den Link lädt nichts. 772000 ist PNOZ mm0p (nicht PNOZ m B0 = 772100).
+- **OMRON**: CAD-Bibliothek `https://industrial.omron.de/de/services-support/support/cad-library` (Suche nach Typ, z. B. ZX2-LD)
+  listet die Teile, „Herunterladen“ verlangt aber eine OMRON-Anmeldung. Nicht bei 3Dfindit.
+- **SMC**: smc.eu-Konfigurator (`…/produkte/<reihe>~<id>~cfg?partNumber=<Typ>`) → „Download CAD“ verlangt eine Anmeldung.
+  Bei **3Dfindit** steht SMC als konfigurierbare Baureihe: nicht nach der vollen Typnummer suchen, sondern `SMC <Reihe>`
+  (z. B. `SMC IZS41`), Tabellenzeile per **Doppelklick** wählen. Die Auswahllisten der Merkmale (NPN/PNP, Anschluss)
+  ließen sich per Automatik nicht umstellen → Grundtyp laden und in `gleiche_modelle.txt` zuordnen.
+- **JUMO**: Produktseite `https://www.jumo.group/de/de/products/productdetails/<Typnr>` → Downloads: nur EPLAN-Symbolmakros
+  (.ema, ohne Anmeldung), **kein STEP/DXF**. Nicht bei 3Dfindit.
+- **Weintek**: nicht bei 3Dfindit; der deutsche Vertrieb Wachendorff hat auf der Produktseite unter „Drawings → Step file“
+  ein `.rar` – darin liegt ein SolidWorks-Teil (`.SLDPRT`), kein STEP. Mit 7-Zip entpacken, im laufenden SolidWorks per COM
+  still öffnen (`OpenDoc6`, Optionen 3) und mit `SaveAs3(<name>.step, 0, 1)` speichern.
+
+## RS Components (Händler, TraceParts-Modelle; erprobt 12.11.2026)
+
+Ausweichquelle, wenn der Hersteller eine eigene Anmeldung verlangt (OMRON) – nur auf Wunsch des Nutzers, er meldet sich selbst an.
+- Suche `https://de.rs-online.com/web/c/?searchTerm=<Typ>`, Produkt `https://de.rs-online.com/web/p/x/<RS-Nr ohne Strich>`.
+  Suche/Produktseiten lassen sich im Tab per `fetch` + `DOMParser` vorab prüfen (Titel = Herstellernummer).
+- Ohne Anmeldung steht „Login zum Download von CAD-Modellen“. Angemeldet: Reiter „Mehr Infos und technische Dokumente“ →
+  Auswahlliste (STEP AP214, DXF 2D …) + Knopf „Download“. Fehlt die Liste, gibt es kein Modell (z. B. JUMO 707071).
+- Nach „Download“ ~30 s Erzeugung, dann Dialog „Allgemeine Nutzungsbedingungen“ → dessen Knopf „Download“ (Zustimmung:
+  vorher den Nutzer fragen). Datei: `Downloads\<id>-19-<RS-Nr>.zip` mit `<RS-Nr>.stp` + `.txt` (Herstellernummer in REFERENCE).
+- Ablage unter der Hersteller-Bestellnummer des Plans, auch mit Leerzeichen (`3D\OMRON\ZX2-LDA41 2M.stp` wird gefunden).
 
 ## Regeln
 

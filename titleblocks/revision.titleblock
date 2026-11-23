@@ -1,0 +1,140 @@
+<titleblocktemplate name="revision">
+    <information>Title block with a revision table: the last three revisions closed (Project &gt; Revision &gt; Close revision), newest at the top; %{rev1_index}, %{rev1_date}, %{rev1_text}, %{rev1_author} and so on.</information>
+    <logos/>
+    <grid cols="28px;52px;r60%;52px;r40%;t20%;" rows="13;13;13;13;">
+        <field valign="center" row="0" hadjust="true" col="0" name="" displaylabel="false" align="left" fontsize="6">
+            <value>
+                <translation lang="en">Rev.</translation>
+                <translation lang="de">Rev.</translation>
+            </value>
+        </field>
+        <field valign="center" row="0" hadjust="true" col="1" name="" displaylabel="false" align="left" fontsize="6">
+            <value>
+                <translation lang="en">Date</translation>
+                <translation lang="de">Datum</translation>
+            </value>
+        </field>
+        <field valign="center" row="0" hadjust="true" col="2" name="" displaylabel="false" align="left" fontsize="6">
+            <value>
+                <translation lang="en">Change</translation>
+                <translation lang="de">Änderung</translation>
+            </value>
+        </field>
+        <field valign="center" row="0" hadjust="true" col="3" name="" displaylabel="false" align="left" fontsize="6">
+            <value>
+                <translation lang="en">Name</translation>
+                <translation lang="de">Name</translation>
+            </value>
+        </field>
+        <field valign="center" row="1" hadjust="true" col="0" name="rev1_index" displaylabel="false" align="left" fontsize="7">
+            <value>
+                <translation lang="en">%{rev1_index}</translation>
+            </value>
+        </field>
+        <field valign="center" row="1" hadjust="true" col="1" name="rev1_date" displaylabel="false" align="left" fontsize="7">
+            <value>
+                <translation lang="en">%{rev1_date}</translation>
+            </value>
+        </field>
+        <field valign="center" row="1" hadjust="true" col="2" name="rev1_text" displaylabel="false" align="left" fontsize="7">
+            <value>
+                <translation lang="en">%{rev1_text}</translation>
+            </value>
+        </field>
+        <field valign="center" row="1" hadjust="true" col="3" name="rev1_author" displaylabel="false" align="left" fontsize="7">
+            <value>
+                <translation lang="en">%{rev1_author}</translation>
+            </value>
+        </field>
+        <field valign="center" row="2" hadjust="true" col="0" name="rev2_index" displaylabel="false" align="left" fontsize="7">
+            <value>
+                <translation lang="en">%{rev2_index}</translation>
+            </value>
+        </field>
+        <field valign="center" row="2" hadjust="true" col="1" name="rev2_date" displaylabel="false" align="left" fontsize="7">
+            <value>
+                <translation lang="en">%{rev2_date}</translation>
+            </value>
+        </field>
+        <field valign="center" row="2" hadjust="true" col="2" name="rev2_text" displaylabel="false" align="left" fontsize="7">
+            <value>
+                <translation lang="en">%{rev2_text}</translation>
+            </value>
+        </field>
+        <field valign="center" row="2" hadjust="true" col="3" name="rev2_author" displaylabel="false" align="left" fontsize="7">
+            <value>
+                <translation lang="en">%{rev2_author}</translation>
+            </value>
+        </field>
+        <field valign="center" row="3" hadjust="true" col="0" name="rev3_index" displaylabel="false" align="left" fontsize="7">
+            <value>
+                <translation lang="en">%{rev3_index}</translation>
+            </value>
+        </field>
+        <field valign="center" row="3" hadjust="true" col="1" name="rev3_date" displaylabel="false" align="left" fontsize="7">
+            <value>
+                <translation lang="en">%{rev3_date}</translation>
+            </value>
+        </field>
+        <field valign="center" row="3" hadjust="true" col="2" name="rev3_text" displaylabel="false" align="left" fontsize="7">
+            <value>
+                <translation lang="en">%{rev3_text}</translation>
+            </value>
+        </field>
+        <field valign="center" row="3" hadjust="true" col="3" name="rev3_author" displaylabel="false" align="left" fontsize="7">
+            <value>
+                <translation lang="en">%{rev3_author}</translation>
+            </value>
+        </field>
+        <field valign="center" row="0" hadjust="true" col="4" name="title" displaylabel="false" align="center" rowspan="3">
+            <value>
+                <translation lang="en">%title</translation>
+            </value>
+        </field>
+        <field valign="center" row="3" hadjust="true" col="4" name="file" displaylabel="false" align="center" fontsize="7">
+            <value>
+                <translation lang="en">%filename</translation>
+            </value>
+        </field>
+        <field valign="center" row="0" hadjust="true" col="5" name="author" displaylabel="true" align="left" rowspan="1" fontsize="7">
+            <value>
+                <translation lang="en">%author</translation>
+            </value>
+            <label>
+                <translation lang="en">Author</translation>
+                <translation lang="de">Bearb.</translation>
+                <translation lang="fr">Auteur</translation>
+            </label>
+        </field>
+        <field valign="center" row="1" hadjust="true" col="5" name="date" displaylabel="true" align="left" fontsize="7">
+            <value>
+                <translation lang="en">%date</translation>
+            </value>
+            <label>
+                <translation lang="en">Date</translation>
+                <translation lang="de">Datum</translation>
+                <translation lang="fr">Date</translation>
+            </label>
+        </field>
+        <field valign="center" row="2" hadjust="true" col="5" name="indexrev" displaylabel="true" align="left" fontsize="7">
+            <value>
+                <translation lang="en">%indexrev</translation>
+            </value>
+            <label>
+                <translation lang="en">Revision</translation>
+                <translation lang="de">Revision</translation>
+                <translation lang="fr">Révision</translation>
+            </label>
+        </field>
+        <field valign="center" row="3" hadjust="true" col="5" name="folio" displaylabel="true" align="left" fontsize="7">
+            <value>
+                <translation lang="en">%folio</translation>
+            </value>
+            <label>
+                <translation lang="en">Sheet</translation>
+                <translation lang="de">Blatt</translation>
+                <translation lang="fr">Folio</translation>
+            </label>
+        </field>
+    </grid>
+</titleblocktemplate>

@@ -576,6 +576,16 @@ class QetScriptApi : public QObject
 		Q_INVOKABLE bool setFolioProperty(int folioIndex, const QString &property, const QString &value);
 		Q_INVOKABLE QString folioProperty(int folioIndex, const QString &property) const;
 
+		// -- revisions (revision/projectrevisions.h, EPLAN's revision management) --
+		Q_INVOKABLE QString closeRevision(const QString &index, const QString &text = QString(),
+										  bool pdf = true);
+		Q_INVOKABLE QStringList revisions() const;
+		Q_INVOKABLE QStringList revisionChanges(const QString &since = QString()) const;
+		Q_INVOKABLE QString nextRevisionIndex() const;
+		Q_INVOKABLE bool revisionMarks() const;
+		Q_INVOKABLE bool setRevisionMarks(bool on);
+		Q_INVOKABLE bool exportRevisionPdf(const QString &output, const QString &since = QString());
+
 		// -- terminal strips (borniers) --
 		Q_INVOKABLE QStringList terminalStrips() const;
 		Q_INVOKABLE int addTerminalStrip(const QString &installation, const QString &location,

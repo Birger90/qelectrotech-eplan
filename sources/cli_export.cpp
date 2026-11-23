@@ -16,6 +16,8 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "cli_export.h"
+#include "revision/projectrevisions.h"
+#include "qetresult.h"
 #include "projectlock.h"
 #include "bomexport.h"
 
@@ -137,6 +139,10 @@ const QHash<QString, QString> &exportFlags()
 		{"--simulate", "simulate"},
 		{"--simulate-reference", "simreference"},
 		{"--simulate-catalog", "simcatalog"},
+		{"--close-revision", "closerevision"},
+		{"--revisions", "revisions"},
+		{"--revision-marks", "revisionmarks"},
+		{"--compare-revisions", "comparerevisions"},
 	};
 	return flags;
 }
@@ -1616,6 +1622,123 @@ int queryProjects(const QString &sql, const QStringList &files, bool json)
 	return failed ? 1 : 0;
 }
 
+
+/// The changes as lines, or as a JSON array with --json
+void printChanges(const QList<QetRevision::Change> &changes, const QetRevision::Fingerprint &now,
+				  const QetRevision::Fingerprint &before, bool json)
+{
+	if (!json) {
+		for (const QString &line : QetRevision::describe(changes, now, before))
+			out << line << "\n";
+		out << changes.size() << " change(s)\n";
+		return;
+	}
+	QJsonArray rows;
+	for (const QetRevision::Change &c : changes) {
+		const QetRevision::Item &i = c.item();
+		QJsonObject row;
+		row[QStringLiteral("change")] = c.kind == QetRevision::Change::Added ? QStringLiteral("added")
+				: c.kind == QetRevision::Change::Removed ? QStringLiteral("removed") : QStringLiteral("changed");
+		static const QHash<QChar, QString> kinds{{QLatin1Char('e'), QStringLiteral("symbol")},
+			{QLatin1Char('c'), QStringLiteral("wire")}, {QLatin1Char('t'), QStringLiteral("text")},
+			{QLatin1Char('s'), QStringLiteral("shape")}, {QLatin1Char('i'), QStringLiteral("image")},
+			{QLatin1Char('f'), QStringLiteral("folio")}};
+		row[QStringLiteral("kind")] = kinds.value(i.kind);
+		row[QStringLiteral("folio")] = i.folio_index;
+		row[QStringLiteral("folio_name")] = (c.kind == QetRevision::Change::Removed ? before : now)
+				.folio_names.value(i.folio);
+		row[QStringLiteral("name")] = i.name;
+		row[QStringLiteral("uuid")] = i.uuid;
+		rows.append(row);
+	}
+	out << QJsonDocument(rows).toJson(QJsonDocument::Indented);
+}
+
+/// --close-revision <project> <index> [text...] [--no-pdf]
+int closeRevision(QETProject &project, const QStringList &rest, bool pdf)
+{
+	if (rest.size() < 2) {
+		err << "Usage: qelectrotech --close-revision <project> <index> [text...] [--no-pdf]\n";
+		return 2;
+	}
+	const ProjectRevisions::CloseResult r = project.revisions()->closeRevision(
+				rest.at(1), rest.mid(2).join(QLatin1Char(' ')), pdf, true);
+	if (!r.ok) {
+		err << "Revision not closed: " << r.error << "\n";
+		return 1;
+	}
+	out << "Revision " << rest.at(1).trimmed() << " closed: " << r.changes
+		<< " change(s) since the last revision\n";
+	if (!r.pdf.isEmpty()) out << "PDF: " << QDir::toNativeSeparators(r.pdf) << "\n";
+	out << "Snapshot: " << QDir::toNativeSeparators(r.snapshot) << "\n";
+	return 0;
+}
+
+/// --revisions <project>
+int listRevisions(QETProject &project, bool json)
+{
+	ProjectRevisions *revisions = project.revisions();
+	const QList<ProjectRevisions::Entry> entries = revisions->entries();
+	if (!json) {
+		if (entries.isEmpty()) out << "No revision closed yet; the next is " << revisions->proposedIndex() << "\n";
+		for (const ProjectRevisions::Entry &e : entries)
+			out << e.index << "\t" << e.date << "\t" << e.author << "\t" << e.text
+				<< (e.snapshot.isEmpty() ? QString() : QStringLiteral("\t") + e.snapshot) << "\n";
+		out << "Marks: " << (revisions->marksShown() ? "on" : "off") << "\n";
+	}
+	if (!revisions->hasBaseline()) return 0;
+	if (!json) out << "Since revision " << revisions->lastIndex() << ":\n";
+	const QetRevision::Fingerprint before = revisions->baseline();
+	const QetRevision::Fingerprint now = QetRevision::fingerprint(&project);
+	printChanges(QetRevision::compare(before, now), now, before, json);
+	return 0;
+}
+
+/// --compare-revisions <older> <newer> [<output.pdf>]
+int compareRevisions(const QStringList &rest, bool json)
+{
+	if (rest.size() < 2) {
+		err << "Usage: qelectrotech --compare-revisions <older> <newer> [<output.pdf>] [--json]\n";
+		return 2;
+	}
+	QETProject newer(rest.at(1));
+	if (newer.state() != QETProject::Ok) {
+		err << "Failed to open project: " << rest.at(1) << "\n";
+		return 1;
+	}
+	QString older_path = rest.at(0), label;
+	if (!QFileInfo::exists(older_path)) {
+			//A revision index of the newer project
+		for (const ProjectRevisions::Entry &e : newer.revisions()->entries())
+			if (e.index == rest.at(0)) older_path = newer.revisions()->snapshotPath(e);
+		if (!QFileInfo::exists(older_path)) {
+			err << "Neither a file nor a revision of " << rest.at(1) << ": " << rest.at(0) << "\n";
+			return 2;
+		}
+	}
+	QString error;
+	const QetRevision::Fingerprint before = QetRevision::fingerprintOfFile(older_path, &error);
+	if (!error.isEmpty()) {
+		err << error << "\n";
+		return 1;
+	}
+	const QetRevision::Fingerprint now = QetRevision::fingerprint(&newer);
+	printChanges(QetRevision::compare(before, now), now, before, json);
+	if (rest.size() >= 3) {
+			//The revision the changes belong to: the newer's own when it is
+			//a closed revision as it is (a snapshot), else the next one
+		ProjectRevisions *revisions = newer.revisions();
+		label = revisions->hasBaseline()
+				&& QetRevision::compare(revisions->baseline(), now).isEmpty()
+				? revisions->lastIndex() : revisions->proposedIndex();
+		newer.revisions()->beginComparison(before, label);
+		const int code = exportPdf(newer, rest.at(2));
+		newer.revisions()->endComparison();
+		return code;
+	}
+	return 0;
+}
+
 } // anonymous namespace
 
 namespace CLIExport {
@@ -1644,6 +1767,7 @@ int run(const QStringList &args)
 	const bool ignoreLock = filtered.removeAll("--ignore-lock") > 0;
 	const bool json = filtered.removeAll("--json") > 0;
 	const bool grid = filtered.removeAll("--grid") > 0;
+	const bool noPdf = filtered.removeAll("--no-pdf") > 0;
 
 	QString flag;
 	QStringList rest;
@@ -2121,6 +2245,10 @@ int run(const QStringList &args)
 		return queryProjects(rest.at(0), rest.mid(1), json);
 	}
 
+	// --compare-revisions opens two projects
+	if (format == "comparerevisions")
+		return compareRevisions(rest, json);
+
 	const QString input = rest.value(0);
 	if (input.isEmpty()) {
 		err << "Usage: qelectrotech " << flag << " <project.qet> <output>\n";
@@ -2141,6 +2269,34 @@ int run(const QStringList &args)
 	// --simulate runs the pneumatic/hydraulic/electric simulation headless
 	if (format == "simulate")
 		return simulateProject(project, rest.mid(1));
+
+	if (format == "revisions")
+		return listRevisions(project, json);
+	if (format == "closerevision" || format == "revisionmarks") {
+		if (!ignoreLock) {
+			const ProjectLock::Holder holder = ProjectLock::liveHolder(input);
+			if (holder.valid) {
+				err << "'" << input << "' is open by " << holder.user << " on " << holder.host
+					<< ". Not writing it; close it there or pass --ignore-lock.\n";
+				return 1;
+			}
+		}
+		if (format == "closerevision")
+			return closeRevision(project, rest, !noPdf);
+		const QString state = rest.value(1);
+		if (state != QLatin1String("on") && state != QLatin1String("off")) {
+			err << "Usage: qelectrotech --revision-marks <project> on|off\n";
+			return 2;
+		}
+		project.revisions()->setMarksShown(state == QLatin1String("on"));
+		const QETResult saved = project.write();
+		if (!saved.isOk()) {
+			err << saved.errorMessage() << "\n";
+			return 1;
+		}
+		out << "Revision marks " << state << "\n";
+		return 0;
+	}
 
 	// --info writes JSON to stdout, or to an optional output file.
 	if (format == "info")
@@ -2189,6 +2345,11 @@ int run(const QStringList &args)
 		return setTitleBlock(project, output, rest.mid(2));
 	return exportImages(project, format, output, showTerminals,
 						svgSmallPictures);
+}
+
+int exportProjectPdf(QETProject &project, const QString &output)
+{
+	return exportPdf(project, output, false);
 }
 
 } // namespace CLIExport

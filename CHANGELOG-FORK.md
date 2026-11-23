@@ -62,6 +62,25 @@ Prozess, Programmversion, „seit“ und Herzschlag jede Minute; wird beim Schli
 - Tests: `tst_projectlock` um verwaiste Sperre, gemeldete Absturzsperre, Konfliktkopien und zwei echte Prozesse
   erweitert (20 bestanden).
 
+## Unveröffentlicht – Revisionsverwaltung
+
+Einfache Revisionsverwaltung nach EPLAN-Vorbild (Skill `eplan-wissen`, `revision.md`):
+
+- Projekt > Revision > *Revision abschließen…* fragt nur Index (Vorschlag) und Kurztext. Danach: Index in jedem
+  Schriftfeld und in der Vorgabe für neue Blätter, Revisionstabelle als Projektvariablen `rev1_*`…`revN_*`
+  (neueste zuerst) und `rev_index`, `rev_date`, `rev_text`, `rev_count`, PDF mit den markierten Änderungen seit der
+  vorigen Revision und Momentaufnahme `.qet` in `<Name>_Revisionen/`, Projekt gespeichert.
+- Fingerabdruck jedes Symbols, jeder Leitung, jedes Textes, jeder Form und jedes Bildes (ohne UUIDs, Klemmen-IDs,
+  abgeleitete Beschriftungen) im Block `<revisions>` des Projekts; den behalten `.qet`, `.qetz` und `.qetdb` unverändert
+  (Fremdblöcke). Zuordnung über UUID, danach wie EPLANs alternative Identifizierung.
+- *Änderungen markieren* (an/aus, wird mitgespeichert): Revisionswolke mit Dreieck und Index, Strich entlang
+  geänderter Leitungen, Gelöschtes gestrichelt und durchgekreuzt, Hinweis „Neues Blatt“; gezeichnet im Hintergrund
+  des Blatts, also auch im Druck und PDF.
+- *Revisionen vergleichen…*: Liste mit Sprung und PDF mit Markierung für zwei beliebige Stände.
+- Neues Schriftfeld *revision* mit Tabelle der letzten drei Revisionen.
+- CLI `--close-revision`, `--revisions`, `--revision-marks`, `--compare-revisions`; Skript-API `closeRevision`,
+  `revisions`, `revisionChanges`, `nextRevisionIndex`, `revisionMarks`, `setRevisionMarks`, `exportRevisionPdf`.
+
 ## 1.48.0 – 20.11.2026
 
 Die letzten FluidSIM-Bauteile ohne Modell, in FluidSIM 6.3 selbst untersucht:

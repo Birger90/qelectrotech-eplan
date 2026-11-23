@@ -15,6 +15,7 @@
 	You should have received a copy of the GNU General Public License
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "revision/revisionui.h"
 #include "qetdiagrameditor.h"
 #include "itemdescription.h"
 #include "container/qetcontainer.h"
@@ -2628,6 +2629,8 @@ void QETDiagramEditor::setUpMenu()
 	// menu Projet
 	menu_project -> addAction(m_project_edit_properties);
 	menu_project -> addAction(m_project_history);
+		//Close a revision, mark and compare its changes (EPLAN's revisions)
+	RevisionUi::addMenu(this, menu_project);
 	menu_project -> addAction(m_auto_conductor);
 		//Sits beside m_auto_conductor, the setting it pairs with. It was
 		//toolbar-only and so had no keyboard route at all.

@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "revision/projectrevisions.h"
 #include "qetproject.h"
 #include "ElementsCollection/terminaluuids.h"
 #include "TerminalStrip/terminalstriplabels.h"
@@ -361,6 +362,15 @@ QETProject::~QETProject()
 projectDataBase *QETProject::dataBase()
 {
 	return &m_data_base;
+}
+
+/**
+	@return the revisions of this project, read from it when first asked
+*/
+ProjectRevisions *QETProject::revisions()
+{
+	if (!m_revisions) m_revisions = new ProjectRevisions(this);
+	return m_revisions;
 }
 
 /**
@@ -4274,6 +4284,8 @@ void QETProject::readProjectXml(QDomDocument &xml_project)
 		//What this QET does not know of the project, kept for every format
 	m_data_base.storeForeignBlocks(QString::fromLatin1(projectDataBase::project_owner),
 								   projectDataBase::foreignChildren(xml_project.documentElement(), false));
+		//Its revisions are in one of them
+	if (m_revisions) m_revisions->reload();
 
 		//Load the default properties for the new diagrams
 	readDefaultPropertiesXml(xml_project);

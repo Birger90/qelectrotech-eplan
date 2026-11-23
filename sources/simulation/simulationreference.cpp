@@ -536,7 +536,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Pneumatischer Muskel (R12): Festo DMSP gegen das Auslegungsbeispiel des Katalogs, Vorspannung ohne Druck, Volumen gegen die Aufweitung"),
 		QStringLiteral("Druckübersetzer (R12): Scanwill MP-F-4.0 – Bypass, Enddruck r·p_IN, Druckaufbau nach der Pumpenkennlinie"),
 		QStringLiteral("Proportional-Wegeventil MPYE: Durchfluss nach der Festo-Kennlinie q(U), Richtung 1→2 / 1→4, Abluft, Mittelstellung"),
-		QStringLiteral("Pneumatische Zeit-, Zähl- und Sicherheitsbausteine: Timer, Verzögerungsventil, Vorwahlzähler, Zweihandblock, Vakuumsaugventil")};
+		QStringLiteral("Pneumatische Zeit-, Zähl- und Sicherheitsbausteine: Timer, Verzögerungsventil, Vorwahlzähler, Zweihandblock, Vakuumsaugventil"),
+		QStringLiteral("Leitungsabzweig (Upstream-Typ junction): ein Knoten, freier Anschluss offen, Lauf wie ohne Abzweig")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -2706,6 +2707,47 @@ QList<Check> endToEnd(const QString &reference_dir)
 				? QStringLiteral("Weg mit und ohne Abgriff gleich (%1 mm), Ventilbilanz ≤ %2 m³/s bei %3 l/min, Pumpe %4 l/min "
 								 "= Verdrängung · Drehzahl, unbekannte Kennung ohne Wert")
 					  .arg(x1, 0, 'f', 3).arg(worst_balance, 0, 'g', 2).arg(valve_flow * 60000, 0, 'f', 2).arg(pump_q * 60000, 0, 'f', 3)
+				: wrong.join(QStringLiteral("; "));
+		}
+		out << c;
+	}
+	{   // 33. junction (upstream type "junction", 20.11.2026): the supply runs -PZ1 -> junction W/E -> -QM1,
+		//     the third terminal S stays free; the junction is one node, so the cylinder runs as without it
+		Check c{names.at(32)};
+		const QList<Input> in{{0.2, QStringLiteral("-QM1"), 1, true}};
+		ProjectRun plain = runProject(path("zylinder_b_offen.qet"), 6.0, in, 1.5);
+		ProjectRun junction = runProject(path("zylinder_abzweig.qet"), 6.0, in, 1.5);
+		if (!plain.error.isEmpty() || !junction.error.isEmpty()) {
+			c.detail = plain.error + junction.error;
+		} else {
+			QStringList wrong;
+			Element *j = nullptr, *pz = nullptr;
+			for (Diagram *d : junction.project->diagrams())
+				for (Element *e : d->elements()) {
+					if (e->linkType() & Element::Junction) j = e;
+					if (e->elementInformations()[QStringLiteral("label")].toString() == QLatin1String("-PZ1")) pz = e;
+				}
+			double p_w = std::nan(""), p_e = std::nan(""), p_pz = std::nan("");
+			if (!j) wrong << QStringLiteral("kein Abzweig (Typ junction) im Projekt");
+			else {
+				for (Terminal *t : j->terminals()) {
+					const QString n = t->name().trimmed();
+					if (n == QLatin1String("W")) p_w = junction.sim->pressureBar(t);
+					if (n == QLatin1String("E")) p_e = junction.sim->pressureBar(t);
+				}
+				if (pz && !pz->terminals().isEmpty()) p_pz = junction.sim->pressureBar(pz->terminals().first());
+				if (!(p_pz > 1.0) || !(std::abs(p_w - p_pz) < 1e-9) || !(std::abs(p_e - p_pz) < 1e-9))
+					wrong << QStringLiteral("Abzweig trennt das Netz (W %1, E %2, Quelle %3 bar)")
+								 .arg(p_w, 0, 'f', 3).arg(p_e, 0, 'f', 3).arg(p_pz, 0, 'f', 3);
+			}
+			const double t_plain = plain.eventTime(QStringLiteral("-MM1 Endlage vorne"));
+			const double t_j = junction.eventTime(QStringLiteral("-MM1 Endlage vorne"));
+			if (!std::isfinite(t_plain) || !std::isfinite(t_j) || std::abs(t_j - t_plain) > 1e-6)
+				wrong << QStringLiteral("Endlage vorne mit Abzweig %1 s, ohne %2 s").arg(t_j, 0, 'f', 4).arg(t_plain, 0, 'f', 4);
+			c.passed = wrong.isEmpty();
+			c.detail = wrong.isEmpty()
+				? QStringLiteral("W, E und Quelle in einem Netz (%1 bar), S frei, Endlage vorne bei %2 s wie ohne Abzweig")
+					  .arg(p_pz, 0, 'f', 2).arg(t_j, 0, 'f', 3)
 				: wrong.join(QStringLiteral("; "));
 		}
 		out << c;

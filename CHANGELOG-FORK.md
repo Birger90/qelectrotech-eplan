@@ -3,6 +3,27 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## Unveröffentlicht – Upstream 20.11.2026
+
+Original-QElectroTech bis `64715e035` (20.11.2026) eingearbeitet, 32 Commits ohne Merges, ohne Textkonflikte:
+
+- Neuer Elementtyp **Leitungsabzweig** (`link_type="junction"`, #1500): Ecke, T-Abzweig, Kreuzung als reiner
+  Verbindungspunkt. Alle Anschlüsse liegen auf einem Potential, der Abzweig bekommt kein BMK, keine Infoseite und
+  erscheint nicht in der Stückliste und in keiner Klemmenleiste. Die Rollen (`junction_source`,
+  `junction_target_1..3`) stehen in der Symboldefinition; Verdrahtungsliste, Kabelzuordnung und Klemmenleisten
+  verfolgen die Leitung über die Kette bis zum echten Ende.
+- Gerätenavigator zeigt die freien Teile eines Geräts und platziert sie; Präfixdialog bearbeitet auch die
+  `qet_labels.xml` der Firmensammlung; die automatische Leitungserzeugung bleibt im Projekt gespeichert (#1920);
+  Eigenschaftsdialoge auf macOS verschiebbar.
+
+Anpassungen im Fork:
+
+- Simulation: ein Abzweig ist ein Knoten. Vorher hätte er das Netz an seinen Anschlüssen getrennt. Neue Prüfung
+  „Leitungsabzweig“ mit dem Plan `zylinder_abzweig.qet` (erzeugt von `referenz/erzeuge_abzweig.py`): Druck an
+  beiden Abzweiganschlüssen gleich dem der Quelle, Endlage wie ohne Abzweig.
+- `qet_mcp.py`: `junction` als `link_type` bei `qet_element_build` und `qet_element_search`.
+- `lang/qet_de.ts`: per lupdate auf Stand gebracht, alle 355 offenen Texte übersetzt (auch ältere, die bisher fehlten).
+
 ## 1.47.0 – 20.11.2026
 
 FluidSIM-Bauteile, die bisher den Start verhinderten (FluidSIM-Gesamtlauf: 35 Schaltungen mit Modellfehler):

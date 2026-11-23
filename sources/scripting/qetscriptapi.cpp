@@ -17,6 +17,7 @@
 */
 #include "qetscriptapi.h"
 #include "../revision/projectrevisions.h"
+#include "../plancheck/plancheck.h"
 #include "../import/portals/manufacturerportals.h"
 #include "../import/portals/partfetcher.h"
 
@@ -6250,6 +6251,33 @@ int QetScriptApi::searchAndReplace(const QString &kind, const QString &field,
 	const int changed = apply(/*dryRun=*/false);
 	m_project->undoStack()->endMacro();
 	return changed;
+}
+
+/**
+	@brief QetScriptApi::checkProject
+	"Check plan" for scripts: every check of PlanCheck::run() -- open
+	terminals and ports, duplicate labels and wire numbers, devices without
+	a part or label, terminals without a strip, contacts without their
+	coil, folio reports without a partner, cables without a target, PLC
+	channels without an address, potential types, device types and the
+	cabinet layout -- as a list of {severity ("error", "warning", "info"),
+	check, eplan (EPLAN's message number, may be empty), folio (from 0, -1
+	for the project), folioTitle, label, text, items (uuids of the
+	elements or conductors)}. Read only.
+	@param folioIndex a single folio, or -1 (the default) for the project
+*/
+QVariantList QetScriptApi::checkProject(int folioIndex)
+{
+	QVariantList list;
+	if (!m_project) return list;
+	if (folioIndex >= m_project->diagrams().count()) {
+		log(QStringLiteral("qet.checkProject: folio %1 does not exist (%2 folio(s))")
+			.arg(folioIndex).arg(m_project->diagrams().count()));
+		return list;
+	}
+	for (const PlanCheck::Finding &f : PlanCheck::run(m_project, folioIndex))
+		list << PlanCheck::toVariant(f, m_project);
+	return list;
 }
 
 /**

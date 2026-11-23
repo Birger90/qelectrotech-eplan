@@ -98,6 +98,23 @@ Einfache Revisionsverwaltung nach EPLAN-Vorbild (Skill `eplan-wissen`, `revision
 - CLI `--export-marking <projekt> <datei> [--format …] [--kinds …] [--folios N-M] [--plant …] [--location …]
   [--short] [--one-end]`, Skript-API `qet.exportMarking(datei, format, optionen)` und `qet.markings(optionen)`.
 
+## Unveröffentlicht – Plan prüfen
+
+- Neuer Knopf **Plan prüfen** (Menü *Projekt* und Werkzeugleiste): ein Prüflauf wie in EPLAN, der alle Prüfungen
+  an einem Ort sammelt. Ein Andockfenster listet jede Meldung mit Schwere (Fehler, Warnung, Hinweis), Blatt,
+  Kennzeichen, Text und EPLAN-Meldungsnummer; Filter „Fehler und Warnungen“ / „Nur Fehler“; ein Klick öffnet das
+  Blatt und markiert Gerät, Leitung oder Kabeladern. Ist ein Lauf schnell (unter 0,8 s), prüft das Fenster nach
+  jeder Änderung von selbst neu, sonst über „Erneut prüfen“.
+- Geprüft wird: offene Anschlüsse (005026, an Klemmen 005053), offene Fluidanschlüsse, doppelte Kennzeichen
+  (017005) und Leiternummern, Geräte ohne Artikel (007017) oder Kennzeichen (017001), Klemmen ohne Klemmleiste
+  (001010, je Leiste zusammengefasst), Kontakte ohne Spule bzw. Hauptfunktion (007005), Spulen ohne Kontakt (007009),
+  Abbruchstellen ohne Gegenstück (011002) oder Anschluss (011003), Kabel ohne Ziel/ohne Kennzeichen/mit verwaister
+  Ader (003005), SPS-Kanäle ohne Karte oder Adresse (004023), Potenzialtypen (005016), Gerätetypen (007001/007002)
+  und auf Aufbaublättern die Aufbauprüfung. Wiederverwendet werden die vorhandenen Einzelprüfungen (doppelte
+  Kennzeichen, Fluid, Potenzialtypen, Gerätetypen, Aufbauprüfung); Aufbaublätter werden nicht als Schaltplan geprüft.
+- Skript-API `qet.checkProject(folio = -1)` (Liste mit severity, check, eplan, folio, folioTitle, label, text, items)
+  und CLI `--check-project <projekt.qet> [bericht.json]` (JSON; Rückgabewert 3, wenn Fehler gefunden wurden).
+
 ## 1.48.0 – 20.11.2026
 
 Die letzten FluidSIM-Bauteile ohne Modell, in FluidSIM 6.3 selbst untersucht:

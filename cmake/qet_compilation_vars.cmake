@@ -231,6 +231,10 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/cellruler.h
   ${QET_DIR}/sources/conductorautonumerotation.cpp
   ${QET_DIR}/sources/conductorautonumerotation.h
+  ${QET_DIR}/sources/plancheck/plancheck.h
+  ${QET_DIR}/sources/plancheck/plancheck.cpp
+  ${QET_DIR}/sources/plancheck/plancheckdock.h
+  ${QET_DIR}/sources/plancheck/plancheckdock.cpp
   ${QET_DIR}/sources/duplicatelabels.h
   ${QET_DIR}/sources/duplicatelabels.cpp
   ${QET_DIR}/sources/projectcheck.h

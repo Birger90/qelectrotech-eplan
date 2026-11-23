@@ -35,6 +35,16 @@
 > - Cross reference formula `%=M`: the plant is shown only when it differs from the sheet's own (`/42/1`,
 >   `=DC/38/2`), as in EPLAN.
 >
+> **Check plan, like EPLAN's check run**
+> - *Project > Check plan* (also a toolbar button) runs every check at once and lists the findings in a side panel
+>   with severity (error, warning, note), folio, label, text and EPLAN's message number. A click opens the folio and
+>   selects the device. Checks: unconnected terminals and open fluid ports, duplicate labels and wire numbers,
+>   devices without a part or label, terminals without a terminal strip, contacts without their coil, folio reports
+>   without a partner, cables without a target, PLC channels without an address, potential types, device types and
+>   the cabinet layout check. While the panel is open a quick check follows every change.
+> - Script API `qet.checkProject(folio = -1)`, CLI `--check-project <project.qet> [report.json]` (exit code 3 when
+>   errors are found).
+>
 > **Sheets and title block**
 > - Light grey stamps over the sheet like an EPLAN form: title block variables `watermark` (diagonal, e.g. the print
 >   date) and `watermark-side` (upright at the right edge); empty = off, per folio or as project default.

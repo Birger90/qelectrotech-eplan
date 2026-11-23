@@ -31,6 +31,7 @@
 #include "diagram.h"
 #include "diagramcontext.h"
 #include "devicetype/devicetypecheck.h"
+#include "plancheck/plancheck.h"
 #include "devicetype/devicetypelist.h"
 #include "editor/symbolgridcheck.h"
 #include "editor/terminalnamecheck.h"
@@ -113,6 +114,7 @@ const QHash<QString, QString> &exportFlags()
 		{"--export-nets", "nets"},
 		{"--export-links", "links"},
 		{"--check-device-types", "devicetypes"},
+		{"--check-project", "checkproject"},
 		{"--export-device-types", "devicetypelist"},
 		{"--export-device-types-brief", "devicetypebrief"},
 		{"--info", "info"},
@@ -1287,6 +1289,34 @@ int exportLinks(QETProject &project, const QString &output)
 	return 0;
 }
 
+/// "Check plan" headless: every check of PlanCheck::run() as JSON, to
+/// stdout or to @p output. Exit code 0 when no finding is an error, 3 when
+/// at least one is (so a script can stop on it), 1 when the file cannot be
+/// written.
+int checkProject(QETProject &project, const QString &output)
+{
+	const QVector<PlanCheck::Finding> findings = PlanCheck::run(&project);
+	const QByteArray json = QJsonDocument(PlanCheck::toJson(findings, &project))
+		.toJson(QJsonDocument::Indented);
+	const int errors = PlanCheck::count(findings, PlanCheck::Severity::Error);
+	const int warnings = PlanCheck::count(findings, PlanCheck::Severity::Warning);
+	const int infos = PlanCheck::count(findings, PlanCheck::Severity::Info);
+	if (output.isEmpty() || output == QLatin1String("-")) {
+		out << QString::fromUtf8(json);
+	} else {
+		QFile file(output);
+		if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+			err << "Cannot open '" << output << "' for writing.\n";
+			return 1;
+		}
+		file.write(json);
+		file.close();
+		out << "Checked plan: " << errors << " error(s), " << warnings
+			<< " warning(s), " << infos << " note(s) -> " << output << "\n";
+	}
+	return errors ? 3 : 0;
+}
+
 /// Each device with a device type: is it drawn the way its type says?
 /// One row per device (DeviceTypeCheck::check()): its type, how many parts
 /// the type has, how many symbols it is drawn with, the parts not drawn
@@ -2376,6 +2406,9 @@ int run(const QStringList &args)
 		out << "Revision marks " << state << "\n";
 		return 0;
 	}
+	// --check-project: JSON to stdout, or to an optional output file
+	if (format == "checkproject")
+		return checkProject(project, rest.value(1));
 
 	// --info writes JSON to stdout, or to an optional output file.
 	if (format == "info")

@@ -737,6 +737,17 @@ void SimulationModel::buildNets(const QList<Diagram *> &diagrams)
 				}
 		}
 	}
+	// a junction (upstream 20.11.2026, #1500) is one node: all its terminals share one potential,
+	// so a wire through it stays one net; an unwired terminal of it stays open
+	for (Diagram *d : diagrams)
+		for (Element *e : sortedElements(d)) {
+			if (!(e->linkType() & Element::Junction)) continue;
+			Terminal *first = nullptr;
+			for (Terminal *t : e->terminals()) {
+				if (!connected.contains(t)) continue;
+				if (!first) first = t; else join(first, t);
+			}
+		}
 	// ideal connections (catalog role) and in-line measuring points join all their fluid ports
 	for (Diagram *d : diagrams)
 		for (Element *e : sortedElements(d)) {

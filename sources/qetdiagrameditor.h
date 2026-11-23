@@ -57,6 +57,7 @@ class AutoNumberingDockWidget;
 class DeviceNavigatorDockWidget;
 class AssistantDock;
 class SimulationDock;
+class CheckPanelDockWidget;
 class TerminalNumberingDialog;
 
 class KAutoSaveFile;
@@ -126,6 +127,7 @@ class QETDiagramEditor : public QETMainWindow
 		void setUpDeviceNavigatorDock();
 		void setUpAssistantDock();
 		void setUpSimulationDock();
+		void setUpCheckPanelDock();
 		void setUpActions       ();
 		void setUpToolBar       ();
 		void setUpMenu          ();
@@ -296,8 +298,13 @@ class QETDiagramEditor : public QETMainWindow
 		QAction* m_find_duplicate_labels = nullptr;
 		QAction* m_check_potentials = nullptr;
 		QAction* m_check_fluid = nullptr;
+		QAction *m_check_project = nullptr;
+		QAction* m_check_open_wire_ends = nullptr;
 		QAction *m_check_device_types = nullptr;
 		QAction *m_device_types = nullptr;
+		QAction *m_part_types = nullptr;
+		QAction *m_reports = nullptr;
+		QAction *m_plants_locations = nullptr;
 		QAction* m_project_languages = nullptr;
 
 		QAction
@@ -466,6 +473,7 @@ class QETDiagramEditor : public QETMainWindow
 		DeviceNavigatorDockWidget *m_device_navigator_dock = nullptr;
 		AssistantDock *m_assistant_dock = nullptr;
 		SimulationDock *m_simulation_dock = nullptr;
+		CheckPanelDockWidget *m_check_panel_dock = nullptr;
 		int activeSubWindowIndex;
 		SearchAndReplaceWidget m_search_and_replace_widget;
 };

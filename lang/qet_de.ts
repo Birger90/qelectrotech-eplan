@@ -371,6 +371,11 @@
         <source>Realistic (screw)</source>
         <translation>Realistisch (Schraubklemme)</translation>
     </message>
+    <message>
+        <source>%1 (connector)</source>
+        <extracomment>%1 is the label of a connector drawn as a device, such as &quot;-XP1&quot;</extracomment>
+        <translation>%1 (Steckverbinder)</translation>
+    </message>
 </context>
 <context>
     <name>AiAssistantDialog</name>
@@ -1433,6 +1438,14 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
         <translation>Gleiche Teile gruppieren und Mengen addieren</translation>
     </message>
     <message>
+        <source>Adds the unit price and labour time of each part, their totals for the quantity used, and a last line with the totals for the project. Parts with no price or labour time count as nothing.</source>
+        <translation>Fügt jedem Teil den Stückpreis und die Arbeitszeit hinzu, dazu deren Summen für die verwendete Menge und eine letzte Zeile mit den Projektsummen. Teile ohne Preis oder Arbeitszeit zählen als null.</translation>
+    </message>
+    <message>
+        <source>Add prices and labour time, with project totals</source>
+        <translation>Preise und Arbeitszeit mit Projektsummen hinzufügen</translation>
+    </message>
+    <message>
         <source>Terminals with no label, designation, manufacturer or manufacturer reference</source>
         <translation>Klemmen ohne BMK, Bezeichnung, Hersteller und Herstellerartikelnummer</translation>
     </message>
@@ -1480,6 +1493,11 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
         <translation>Menge Artikelnummer</translation>
     </message>
     <message>
+        <source>Total</source>
+        <comment>last line of the parts list with prices</comment>
+        <translation>Summe</translation>
+    </message>
+    <message>
         <source>No.</source>
         <translation>Nr.</translation>
     </message>
@@ -1506,6 +1524,22 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
     <message>
         <source>Unit</source>
         <translation>Einheit</translation>
+    </message>
+    <message>
+        <source>Unit price</source>
+        <translation>Stückpreis</translation>
+    </message>
+    <message>
+        <source>Total price</source>
+        <translation>Gesamtpreis</translation>
+    </message>
+    <message>
+        <source>Labour time [h]</source>
+        <translation>Arbeitszeit [h]</translation>
+    </message>
+    <message>
+        <source>Total labour [h]</source>
+        <translation>Gesamtarbeitszeit [h]</translation>
     </message>
     <message>
         <source>Request refused</source>
@@ -2195,6 +2229,14 @@ Wenn Sie bestätigen, gehen diese Adern im anderen Kabel verloren. Möchten Sie 
         <source>Used cores</source>
         <translation>genutzte Adern</translation>
     </message>
+    <message>
+        <source>Manufacturer</source>
+        <translation>Hersteller</translation>
+    </message>
+    <message>
+        <source>Part number</source>
+        <translation>Artikelnummer</translation>
+    </message>
 </context>
 <context>
     <name>CableListModelPropertiesWidget</name>
@@ -2515,6 +2557,18 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
     <message>
         <source>Length</source>
         <translation>Länge</translation>
+    </message>
+    <message>
+        <source>Manufacturer</source>
+        <translation>Hersteller</translation>
+    </message>
+    <message>
+        <source>Part number</source>
+        <translation>Artikelnummer</translation>
+    </message>
+    <message>
+        <source>The number this cable is ordered by. The parts list counts the cable under it, like the part number of an element.</source>
+        <translation>Die Nummer, unter der dieses Kabel bestellt wird. Die Teileliste zählt das Kabel unter dieser Nummer, wie die Artikelnummer eines Elements.</translation>
     </message>
     <message>
         <source>Core colors</source>
@@ -2850,6 +2904,108 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
     </message>
 </context>
 <context>
+    <name>CheckPanelDockWidget</name>
+    <message>
+        <source>Check</source>
+        <comment>dock title</comment>
+        <translation>Prüfen</translation>
+    </message>
+    <message>
+        <source>Run checks</source>
+        <translation>Prüfungen ausführen</translation>
+    </message>
+    <message>
+        <source>Run every check on the current project</source>
+        <translation>Alle Prüfungen für das aktuelle Projekt ausführen</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation>Optionen</translation>
+    </message>
+    <message>
+        <source>Symbols with no wire</source>
+        <translation>Symbole ohne Leitung</translation>
+    </message>
+    <message>
+        <source>The options changed. Run the checks again.</source>
+        <translation>Die Optionen wurden geändert. Prüfungen erneut ausführen.</translation>
+    </message>
+    <message>
+        <source>Leave out folios with no wire</source>
+        <translation>Blätter ohne Leitung auslassen</translation>
+    </message>
+    <message>
+        <source>Leave out strip terminals</source>
+        <translation>Reihenklemmen auslassen</translation>
+    </message>
+    <message>
+        <source>Leave out auxiliary contacts</source>
+        <translation>Hilfskontakte auslassen</translation>
+    </message>
+    <message>
+        <source>Finding</source>
+        <translation>Befund</translation>
+    </message>
+    <message>
+        <source>Folio</source>
+        <translation>Blatt</translation>
+    </message>
+    <message>
+        <source>Cell</source>
+        <translation>Feld</translation>
+    </message>
+    <message>
+        <source>Double-click a finding to show it on its folio.</source>
+        <translation>Doppelklick auf einen Befund zeigt ihn auf seinem Blatt.</translation>
+    </message>
+    <message>
+        <source>No project is open.</source>
+        <translation>Kein Projekt geöffnet.</translation>
+    </message>
+    <message>
+        <source>Press Run checks to check the project.</source>
+        <translation>Zum Prüfen des Projekts „Prüfungen ausführen“ drücken.</translation>
+    </message>
+    <message>
+        <source>Reading the folios...</source>
+        <translation>Blätter werden gelesen...</translation>
+    </message>
+    <message>
+        <source>Reading folio %1 of %2...</source>
+        <translation>Blatt %1 von %2 wird gelesen...</translation>
+    </message>
+    <message>
+        <source>%1: %2</source>
+        <extracomment>%1 is the check, %2 why it found nothing to check</extracomment>
+        <translation>%1: %2</translation>
+    </message>
+    <message>
+        <source>%1: nothing found</source>
+        <extracomment>%1 is the check</extracomment>
+        <translation>%1: nichts gefunden</translation>
+    </message>
+    <message>
+        <source>%1 (%2)</source>
+        <extracomment>%1 is the check, %2 how many findings it has</extracomment>
+        <translation>%1 (%2)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n finding(s). Run the checks again after a change.</source>
+        <translation>
+            <numerusform>%n Befund(e). Nach einer Änderung die Prüfungen erneut ausführen.</numerusform>
+            <numerusform>%n Befund(e). Nach einer Änderung die Prüfungen erneut ausführen.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Nothing found.</source>
+        <translation>Nichts gefunden.</translation>
+    </message>
+    <message>
+        <source>This is no longer in the project. Run the checks again.</source>
+        <translation>Dies ist nicht mehr im Projekt. Prüfungen erneut ausführen.</translation>
+    </message>
+</context>
+<context>
     <name>ClickableImageLabel</name>
     <message>
         <source>Click to choose a color</source>
@@ -2926,6 +3082,10 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
         <translation>Blau</translation>
     </message>
     <message>
+        <source>Green-yellow</source>
+        <translation>Grün-Gelb</translation>
+    </message>
+    <message>
         <source>Green</source>
         <translation>Grün</translation>
     </message>
@@ -2938,12 +3098,32 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
         <translation>Orange</translation>
     </message>
     <message>
+        <source>Yellow</source>
+        <translation>Gelb</translation>
+    </message>
+    <message>
         <source>Purple</source>
         <translation>Violett</translation>
     </message>
     <message>
         <source>White</source>
         <translation>Weiß</translation>
+    </message>
+    <message>
+        <source>Pink</source>
+        <translation>Rosa</translation>
+    </message>
+    <message>
+        <source>Turquoise</source>
+        <translation>Türkis</translation>
+    </message>
+    <message>
+        <source>Gold</source>
+        <translation>Gold</translation>
+    </message>
+    <message>
+        <source>Silver</source>
+        <translation>Silber</translation>
     </message>
     <message>
         <source>Conductor color</source>
@@ -3159,12 +3339,28 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
         <translation> %</translation>
     </message>
     <message>
+        <source>Choose the shapes and texts drawn at the stroke. The drawing is saved with the project as soon as you accept its editor, even if this dialog is cancelled then.</source>
+        <translation>Formen und Texte wählen, die am Strich gezeichnet werden. Die Zeichnung wird mit dem Projekt gespeichert, sobald der Editor bestätigt wird, auch wenn dieser Dialog danach abgebrochen wird.</translation>
+    </message>
+    <message>
+        <source>Customize...</source>
+        <translation>Anpassen...</translation>
+    </message>
+    <message>
         <source>With the stroke shown, the conductor&apos;s own text is hidden: the stroke already gives the colour and the section.</source>
         <translation>Bei angezeigtem Strich wird der eigene Text des Leiters ausgeblendet: der Strich gibt Farbe und Querschnitt bereits an.</translation>
     </message>
     <message>
         <source>The stroke replaces the conductor&apos;s text</source>
         <translation>Der Strich ersetzt den Text des Leiters</translation>
+    </message>
+    <message>
+        <source>IEC 60757 colour codes</source>
+        <translation>Farbcodes nach IEC 60757</translation>
+    </message>
+    <message>
+        <source>…</source>
+        <translation>…</translation>
     </message>
     <message>
         <source>cable</source>
@@ -3802,6 +3998,257 @@ Fortfahren?</translation>
     </message>
 </context>
 <context>
+    <name>DefinitionMarkStyleEditor</name>
+    <message>
+        <source>Customize the stroke and its texts</source>
+        <translation>Strich und seine Texte anpassen</translation>
+    </message>
+    <message>
+        <source>The stroke as the conductors show it. Drag the shapes and texts to move them.</source>
+        <translation>Der Strich, wie ihn die Leiter zeigen. Formen und Texte durch Ziehen verschieben.</translation>
+    </message>
+    <message>
+        <source>Draw the stroke with the shapes and texts below instead of the standard slanted stroke. The drawing is saved with the project.</source>
+        <translation>Den Strich mit den folgenden Formen und Texten statt des normalen Schrägstrichs zeichnen. Die Zeichnung wird mit dem Projekt gespeichert.</translation>
+    </message>
+    <message>
+        <source>Use a customized drawing</source>
+        <translation>Angepasste Zeichnung verwenden</translation>
+    </message>
+    <message>
+        <source>On a vertical conductor :</source>
+        <translation>Bei senkrechtem Leiter :</translation>
+    </message>
+    <message>
+        <source>Where the conductor runs up and down, the drawing turns by this much: shapes, texts and their places turn with it.</source>
+        <translation>Wo der Leiter senkrecht verläuft, wird die Zeichnung um diesen Winkel gedreht: Formen, Texte und ihre Positionen drehen mit.</translation>
+    </message>
+    <message>
+        <source>As designed</source>
+        <translation>Wie entworfen</translation>
+    </message>
+    <message>
+        <source>Turns 90°</source>
+        <translation>Dreht um 90°</translation>
+    </message>
+    <message>
+        <source>Turns 180°</source>
+        <translation>Dreht um 180°</translation>
+    </message>
+    <message>
+        <source>Turns 270°</source>
+        <translation>Dreht um 270°</translation>
+    </message>
+    <message>
+        <source>Items</source>
+        <translation>Elemente</translation>
+    </message>
+    <message>
+        <source>Add a text whose words come from a formula</source>
+        <translation>Text hinzufügen, dessen Wortlaut aus einer Formel stammt</translation>
+    </message>
+    <message>
+        <source>Add a text</source>
+        <translation>Text hinzufügen</translation>
+    </message>
+    <message>
+        <source>Add a line, a circle or a rectangle to the stroke</source>
+        <translation>Linie, Kreis oder Rechteck zum Strich hinzufügen</translation>
+    </message>
+    <message>
+        <source>Add a shape</source>
+        <translation>Form hinzufügen</translation>
+    </message>
+    <message>
+        <source>Remove the selected item</source>
+        <translation>Ausgewähltes Element entfernen</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Entfernen</translation>
+    </message>
+    <message>
+        <source>Shape :</source>
+        <translation>Form :</translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation>Linie</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation>Kreis</translation>
+    </message>
+    <message>
+        <source>Rectangle</source>
+        <translation>Rechteck</translation>
+    </message>
+    <message>
+        <source>Position X :</source>
+        <translation>Position X :</translation>
+    </message>
+    <message>
+        <source>Position Y :</source>
+        <translation>Position Y :</translation>
+    </message>
+    <message>
+        <source>Rotation :</source>
+        <translation>Drehung :</translation>
+    </message>
+    <message>
+        <source>Length :</source>
+        <translation>Länge :</translation>
+    </message>
+    <message>
+        <source>Height :</source>
+        <translation>Höhe :</translation>
+    </message>
+    <message>
+        <source>Pen width :</source>
+        <translation>Stiftbreite :</translation>
+    </message>
+    <message>
+        <source>The width of the shape&apos;s own outline, whatever the conductor&apos;s width is.</source>
+        <translation>Die Breite der eigenen Kontur der Form, unabhängig von der Leiterbreite.</translation>
+    </message>
+    <message>
+        <source>Conductor&apos;s</source>
+        <translation>Wie Leiter</translation>
+    </message>
+    <message>
+        <source>Colour :</source>
+        <translation>Farbe :</translation>
+    </message>
+    <message>
+        <source>Draw the shape in the conductor&apos;s own colour.</source>
+        <translation>Die Form in der eigenen Farbe des Leiters zeichnen.</translation>
+    </message>
+    <message>
+        <source>Conductor&apos;s own colour</source>
+        <translation>Eigene Farbe des Leiters</translation>
+    </message>
+    <message>
+        <source>Filled</source>
+        <translation>Gefüllt</translation>
+    </message>
+    <message>
+        <source>Text :</source>
+        <translation>Text :</translation>
+    </message>
+    <message>
+        <source>The words of the text, with the variables of a conductor&apos;s formula: %wc is its colour, %ws its section and so on.</source>
+        <translation>Der Wortlaut des Textes mit den Variablen einer Leiterformel: %wc ist die Farbe, %ws der Querschnitt usw.</translation>
+    </message>
+    <message>
+        <source>Insert a variable</source>
+        <translation>Variable einfügen</translation>
+    </message>
+    <message>
+        <source>Size :</source>
+        <translation>Größe :</translation>
+    </message>
+    <message>
+        <source>The size of the text in points, whatever the conductor&apos;s own text size is.</source>
+        <translation>Die Größe des Textes in Punkt, unabhängig von der eigenen Textgröße des Leiters.</translation>
+    </message>
+    <message>
+        <source>Alignment :</source>
+        <translation>Ausrichtung :</translation>
+    </message>
+    <message>
+        <source>Where the text stands around its place: Left, so the text grows to the right from it.</source>
+        <translation>Wo der Text um seine Position steht: Links, der Text wächst von dort nach rechts.</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Links</translation>
+    </message>
+    <message>
+        <source>Center</source>
+        <translation>Zentriert</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Rechts</translation>
+    </message>
+    <message>
+        <source>Where the text stands around its place: Top, so the text grows downwards from it.</source>
+        <translation>Wo der Text um seine Position steht: Oben, der Text wächst von dort nach unten.</translation>
+    </message>
+    <message>
+        <source>Top</source>
+        <translation>Oben</translation>
+    </message>
+    <message>
+        <source>Middle</source>
+        <translation>Mitte</translation>
+    </message>
+    <message>
+        <source>Bottom</source>
+        <translation>Unten</translation>
+    </message>
+    <message>
+        <source>Write the text in the conductor&apos;s own text colour.</source>
+        <translation>Den Text in der eigenen Textfarbe des Leiters schreiben.</translation>
+    </message>
+    <message>
+        <source>Keep the text horizontal whatever the drawing does. When off, the text turns with it, for example on a conductor that runs up and down.</source>
+        <translation>Den Text waagerecht halten, egal was die Zeichnung macht. Ausgeschaltet dreht der Text mit, zum Beispiel an einem senkrecht verlaufenden Leiter.</translation>
+    </message>
+    <message>
+        <source>Text stays horizontal</source>
+        <translation>Text bleibt waagerecht</translation>
+    </message>
+    <message>
+        <source>Go back to the standard slanted stroke, with the colour above and the section below.</source>
+        <translation>Zurück zum normalen Schrägstrich, mit der Farbe oben und dem Querschnitt unten.</translation>
+    </message>
+    <message>
+        <source>Back to the standard drawing</source>
+        <translation>Zurück zur normalen Zeichnung</translation>
+    </message>
+    <message>
+        <source>The projects you create from now on start with this drawing; the open one keeps its own.</source>
+        <translation>Neue Projekte beginnen ab jetzt mit dieser Zeichnung; das geöffnete behält seine eigene.</translation>
+    </message>
+    <message>
+        <source>Use for new projects</source>
+        <translation>Für neue Projekte verwenden</translation>
+    </message>
+    <message>
+        <source>Customize the stroke with colour and section</source>
+        <translation>Strich mit Farbe und Querschnitt anpassen</translation>
+    </message>
+    <message>
+        <source>Colour of the wire (%wc)</source>
+        <translation>Farbe der Leitung (%wc)</translation>
+    </message>
+    <message>
+        <source>Section of the wire (%ws)</source>
+        <translation>Querschnitt der Leitung (%ws)</translation>
+    </message>
+    <message>
+        <source>Function (%wf)</source>
+        <translation>Funktion (%wf)</translation>
+    </message>
+    <message>
+        <source>Voltage / protocol (%wv)</source>
+        <translation>Spannung / Protokoll (%wv)</translation>
+    </message>
+    <message>
+        <source>Conductor type (%wt)</source>
+        <translation>Leitertyp (%wt)</translation>
+    </message>
+    <message>
+        <source>Cable (%wb)</source>
+        <translation>Kabel (%wb)</translation>
+    </message>
+    <message>
+        <source>Text: %1</source>
+        <translation>Text: %1</translation>
+    </message>
+</context>
+<context>
     <name>DeviceNavigatorDockWidget</name>
     <message>
         <source>Device Navigator</source>
@@ -3845,19 +4292,7 @@ Fortfahren?</translation>
     </message>
     <message>
         <source>Device tag</source>
-        <translation type="vanished">BMK</translation>
-    </message>
-    <message>
-        <source>Devices</source>
-        <translation>Betriebsmittel</translation>
-    </message>
-    <message>
-        <source>Cables</source>
-        <translation>Kabel</translation>
-    </message>
-    <message>
-        <source>Device (BMK)</source>
-        <translation>Betriebsmittel (BMK)</translation>
+        <translation>BMK</translation>
     </message>
     <message>
         <source>Function / Description</source>
@@ -3957,7 +4392,7 @@ Fortfahren?</translation>
     </message>
     <message>
         <source>%1 cores</source>
-        <translation type="vanished">%1 Adern</translation>
+        <translation>%1 Adern</translation>
     </message>
     <message>
         <source>Unnamed Project</source>
@@ -3987,6 +4422,26 @@ Fortfahren?</translation>
         <source>Refresh</source>
         <translation>Aktualisieren</translation>
     </message>
+    <message>
+        <source>Place on the current folio</source>
+        <translation>Auf der aktuellen Seite platzieren</translation>
+    </message>
+    <message>
+        <source>free: %1</source>
+        <translation>frei: %1</translation>
+    </message>
+    <message>
+        <source>Place PLC points with the PLC Manager.</source>
+        <translation>Platzieren Sie SPS-Punkte mit dem SPS-Manager.</translation>
+    </message>
+    <message>
+        <source>The project does not have a symbol for this part.</source>
+        <translation>Das Projekt hat kein Symbol für dieses Teil.</translation>
+    </message>
+    <message>
+        <source>Not drawn yet. Double-click to place it on the current folio.</source>
+        <translation>Noch nicht gezeichnet. Doppelklicken Sie, um es auf der aktuellen Seite zu platzieren.</translation>
+    </message>
 </context>
 <context>
     <name>DeviceNavigatorFilterDialog</name>
@@ -4008,19 +4463,11 @@ Fortfahren?</translation>
     </message>
     <message>
         <source>Device tag</source>
-        <translation type="vanished">BMK</translation>
+        <translation>BMK</translation>
     </message>
     <message>
         <source>Device tag prefixes (comma-separated, e.g. K, Q, F, X, W):</source>
-        <translation type="vanished">BMK-Präfixe (durch Komma getrennt, z. B. K, Q, F, X, W):</translation>
-    </message>
-    <message>
-        <source>Device Tag (BMK)</source>
-        <translation>Betriebsmittelkennzeichen (BMK)</translation>
-    </message>
-    <message>
-        <source>BMK prefixes (comma-separated, e.g. K, Q, F, X, W):</source>
-        <translation>BMK-Kennbuchstaben (durch Komma getrennt, z. B. K, Q, F, X, W):</translation>
+        <translation>BMK-Präfixe (durch Komma getrennt, z. B. K, Q, F, X, W):</translation>
     </message>
     <message>
         <source>Quick Selection (DIN EN 81346)</source>
@@ -4099,6 +4546,14 @@ Fortfahren?</translation>
         <translation>Andere Geräte / Symbole</translation>
     </message>
     <message>
+        <source>Only the devices with a part of their device type which is not drawn yet</source>
+        <translation>Nur Geräte, bei denen ein Teil ihres Gerätetyps noch nicht gezeichnet ist</translation>
+    </message>
+    <message>
+        <source>Only devices with free parts</source>
+        <translation>Nur Geräte mit freien Teilen</translation>
+    </message>
+    <message>
         <source>Structure</source>
         <translation>Struktur</translation>
     </message>
@@ -4135,12 +4590,8 @@ Fortfahren?</translation>
         <translation>Löschen nicht möglich</translation>
     </message>
     <message>
-        <source>The default scheme cannot be deleted.</source>
-        <translation>Das Standardschema kann nicht gelöscht werden.</translation>
-    </message>
-    <message>
         <source>At least one filter scheme must remain.</source>
-        <translation type="vanished">Mindestens ein Filterschema muss bestehen bleiben.</translation>
+        <translation>Mindestens ein Filterschema muss bestehen bleiben.</translation>
     </message>
     <message>
         <source>Delete Scheme</source>
@@ -4161,6 +4612,568 @@ Fortfahren?</translation>
     <message>
         <source>Custom</source>
         <translation>Benutzerdefiniert</translation>
+    </message>
+</context>
+<context>
+    <name>DeviceTypeChangeDialog</name>
+    <message>
+        <source>Change the device type to %1</source>
+        <extracomment>%1 is a device type&apos;s name, such as &quot;CONTR10&quot;</extracomment>
+        <translation>Gerätetyp auf %1 ändern</translation>
+    </message>
+    <message>
+        <source>Choose, for each symbol of the device, the part of the new device type it draws. It takes that part&apos;s terminals. A symbol left beyond the type stays as it is.</source>
+        <translation>Wählen Sie für jedes Symbol des Geräts das Teil des neuen Gerätetyps, das es zeichnet. Es übernimmt die Anschlüsse dieses Teils. Ein Symbol, das außerhalb des Typs bleibt, wird nicht verändert.</translation>
+    </message>
+    <message>
+        <source>Symbol</source>
+        <translation>Symbol</translation>
+    </message>
+    <message>
+        <source>Part of the new type</source>
+        <translation>Teil des neuen Typs</translation>
+    </message>
+    <message>
+        <source>Beyond the type</source>
+        <translation>Außerhalb des Typs</translation>
+    </message>
+    <message>
+        <source>%1: %2</source>
+        <extracomment>%1 is a part&apos;s number in the type, %2 how it reads (&quot;contact NO 13 14&quot;)</extracomment>
+        <translation>%1: %2</translation>
+    </message>
+</context>
+<context>
+    <name>DeviceTypeCheckDialog</name>
+    <message>
+        <source>Check device types</source>
+        <translation>Gerätetypen prüfen</translation>
+    </message>
+    <message>
+        <source>A device takes the device type named on its Parts tab. Click a device or a symbol to select and show it on its sheet. Double-click a part not drawn to place it on the current folio. Refresh after editing the project.</source>
+        <translation>Ein Gerät übernimmt den Gerätetyp, der auf seinem Reiter Teile angegeben ist. Klicken Sie auf ein Gerät oder Symbol, um es auszuwählen und auf seiner Seite anzuzeigen. Doppelklicken Sie auf ein nicht gezeichnetes Teil, um es auf der aktuellen Seite zu platzieren. Aktualisieren Sie nach Änderungen am Projekt.</translation>
+    </message>
+    <message>
+        <source>Also list the complete devices</source>
+        <translation>Auch vollständige Geräte auflisten</translation>
+    </message>
+    <message>
+        <source>Device / part</source>
+        <translation>Gerät / Teil</translation>
+    </message>
+    <message>
+        <source>Device type</source>
+        <translation>Gerätetyp</translation>
+    </message>
+    <message>
+        <source>Sheet</source>
+        <translation>Seite</translation>
+    </message>
+    <message>
+        <source>Position</source>
+        <translation>Position</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Aktualisieren</translation>
+    </message>
+    <message>
+        <source>Place on the current folio</source>
+        <translation>Auf der aktuellen Seite platzieren</translation>
+    </message>
+    <message>
+        <source>Place the selected part: the symbol follows the mouse until you click</source>
+        <translation>Ausgewähltes Teil platzieren: Das Symbol folgt der Maus bis zum Klick</translation>
+    </message>
+    <message>
+        <source>Reading the folios...</source>
+        <translation>Seiten werden gelesen...</translation>
+    </message>
+    <message>
+        <source>Reading folio %1 of %2...</source>
+        <translation>Seite %1 von %2 wird gelesen...</translation>
+    </message>
+    <message>
+        <source>%1 — %2</source>
+        <translation>%1 — %2</translation>
+    </message>
+    <message>
+        <source>%1: the project has no device type %2</source>
+        <extracomment>%1 is the device, such as &quot;=P1+CP1-K12&quot;; %2 its device type</extracomment>
+        <translation>%1: Das Projekt hat keinen Gerätetyp %2</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1: %2 of %n pins drawn</source>
+        <extracomment>%1 is the connector, such as &quot;=P1+CP1-X1&quot;</extracomment>
+        <translation>
+            <numerusform>%1: %2 von %n Pin gezeichnet</numerusform>
+            <numerusform>%1: %2 von %n Pins gezeichnet</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%1: %2 of %n parts drawn</source>
+        <extracomment>%1 is the device, such as &quot;=P1+CP1-K12&quot;</extracomment>
+        <translation>
+            <numerusform>%1: %2 von %n Teil gezeichnet</numerusform>
+            <numerusform>%1: %2 von %n Teilen gezeichnet</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Free pin: %1</source>
+        <extracomment>%1 is the name of a pin of a connector, such as &quot;C2&quot;</extracomment>
+        <translation>Freier Pin: %1</translation>
+    </message>
+    <message>
+        <source>Not drawn: %1</source>
+        <extracomment>%1 describes the part, such as &quot;simple NO 13 14&quot;</extracomment>
+        <translation>Nicht gezeichnet: %1</translation>
+    </message>
+    <message>
+        <source>Place PLC points with the PLC Manager.</source>
+        <translation>Platzieren Sie SPS-Punkte mit dem SPS-Manager.</translation>
+    </message>
+    <message>
+        <source>The project does not have a symbol for this part.</source>
+        <translation>Das Projekt hat kein Symbol für dieses Teil.</translation>
+    </message>
+    <message>
+        <source>Double-click to place it on the current folio.</source>
+        <translation>Doppelklicken Sie, um es auf der aktuellen Seite zu platzieren.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n contact(s) more than the device type has</source>
+        <extracomment>%n counts the contacts linked to the device&apos;s master beyond the ones its type has</extracomment>
+        <translation>
+            <numerusform>%n Kontakt mehr, als der Gerätetyp hat</numerusform>
+            <numerusform>%n Kontakte mehr, als der Gerätetyp hat</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Pin %1 is drawn twice</source>
+        <extracomment>%1 is the name of a pin of a connector, such as &quot;C1&quot;</extracomment>
+        <translation>Der Pin %1 ist zweimal gezeichnet</translation>
+    </message>
+    <message>
+        <source>%1 has no pin %2</source>
+        <extracomment>%1 is a connector, such as &quot;X1&quot;, %2 a pin name, such as &quot;7&quot;</extracomment>
+        <translation>%1 hat keinen Pin %2</translation>
+    </message>
+    <message>
+        <source>%1: a terminal drawn without a pin name</source>
+        <extracomment>%1 is a connector, such as &quot;X1&quot;</extracomment>
+        <translation>%1: ein Anschluss ohne Pinnamen gezeichnet</translation>
+    </message>
+    <message>
+        <source>Beyond the type: %1</source>
+        <extracomment>%1 is the symbol&apos;s name</extracomment>
+        <translation>Außerhalb des Typs: %1</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n contact(s) linked to no master</source>
+        <extracomment>%n counts the contacts linked to no master</extracomment>
+        <translation>
+            <numerusform>%n Kontakt mit keinem Master verknüpft</numerusform>
+            <numerusform>%n Kontakte mit keinem Master verknüpft</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>A contact belongs to a device once it is linked to the device&apos;s master.</source>
+        <translation>Ein Kontakt gehört zu einem Gerät, sobald er mit dem Master des Geräts verknüpft ist.</translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <extracomment>%1 is the symbol&apos;s name, %2 its label</extracomment>
+        <translation>%1 %2</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n device(s) with a device type: %1 complete, %2 incomplete, %3 of a type the project does not have.</source>
+        <extracomment>%n counts the devices which have a device type</extracomment>
+        <translation>
+            <numerusform>%n Gerät mit Gerätetyp: %1 vollständig, %2 unvollständig, %3 mit einem Typ, den das Projekt nicht hat.</numerusform>
+            <numerusform>%n Geräte mit Gerätetyp: %1 vollständig, %2 unvollständig, %3 mit einem Typ, den das Projekt nicht hat.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n with too many contacts.</source>
+        <extracomment>%n counts the devices whose master has more contacts linked than their type has</extracomment>
+        <translation>
+            <numerusform>%n mit zu vielen Kontakten.</numerusform>
+            <numerusform>%n mit zu vielen Kontakten.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n contact(s) linked to no master.</source>
+        <extracomment>%n counts the contacts linked to no master</extracomment>
+        <translation>
+            <numerusform>%n Kontakt mit keinem Master verknüpft.</numerusform>
+            <numerusform>%n Kontakte mit keinem Master verknüpft.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Open a folio of this project to place the part.</source>
+        <translation>Öffnen Sie eine Seite dieses Projekts, um das Teil zu platzieren.</translation>
+    </message>
+    <message>
+        <source>This part cannot be placed.</source>
+        <translation>Dieses Teil kann nicht platziert werden.</translation>
+    </message>
+    <message>
+        <source>This symbol no longer exists. Refresh the results.</source>
+        <translation>Dieses Symbol existiert nicht mehr. Aktualisieren Sie die Ergebnisse.</translation>
+    </message>
+</context>
+<context>
+    <name>DeviceTypeChooser</name>
+    <message>
+        <source>Device type</source>
+        <translation>Gerätetyp</translation>
+    </message>
+    <message>
+        <source>Which device type is this device? Its parts are then checked against it.</source>
+        <translation>Welchen Gerätetyp hat dieses Gerät? Seine Teile werden anschließend dagegen geprüft.</translation>
+    </message>
+    <message>
+        <source>Which device type is %1? Its parts are then checked against it.</source>
+        <extracomment>%1 is the device&apos;s label, such as &quot;-K1&quot;</extracomment>
+        <translation>Welchen Gerätetyp hat %1? Seine Teile werden anschließend dagegen geprüft.</translation>
+    </message>
+    <message>
+        <source>Which device type is this connector? Its pins are then checked against it.</source>
+        <translation>Welchen Gerätetyp hat dieser Steckverbinder? Seine Pins werden anschließend dagegen geprüft.</translation>
+    </message>
+    <message>
+        <source>Which device type is %1? Its pins are then checked against it.</source>
+        <extracomment>%1 is the connector&apos;s name, such as &quot;X1&quot;</extracomment>
+        <translation>Welchen Gerätetyp hat %1? Seine Pins werden anschließend dagegen geprüft.</translation>
+    </message>
+    <message>
+        <source>Filter, * for any characters</source>
+        <translation>Filter, * steht für beliebige Zeichen</translation>
+    </message>
+    <message>
+        <source>Show every device type, not only those with pins</source>
+        <translation>Alle Gerätetypen anzeigen, nicht nur die mit Pins</translation>
+    </message>
+    <message>
+        <source>Show every device type, not only those this symbol can draw</source>
+        <translation>Alle Gerätetypen anzeigen, nicht nur die, die dieses Symbol zeichnen kann</translation>
+    </message>
+    <message>
+        <source>%1 - %2</source>
+        <extracomment>%1 is a device type&apos;s name, %2 its description</extracomment>
+        <translation>%1 - %2</translation>
+    </message>
+    <message>
+        <source>%1 - %2 (your library)</source>
+        <translation>%1 - %2 (Ihre Bibliothek)</translation>
+    </message>
+</context>
+<context>
+    <name>DeviceTypeEditor</name>
+    <message>
+        <source>Master</source>
+        <translation>Master</translation>
+    </message>
+    <message>
+        <source>Slave</source>
+        <translation>Slave</translation>
+    </message>
+    <message>
+        <source>Simple</source>
+        <translation>Einzelbauteil</translation>
+    </message>
+    <message>
+        <source>Terminal</source>
+        <translation>Klemme</translation>
+    </message>
+    <message>
+        <source>Coil</source>
+        <translation>Spule</translation>
+    </message>
+    <message>
+        <source>Protection</source>
+        <translation>Schutz</translation>
+    </message>
+    <message>
+        <source>Commutator</source>
+        <translation>Umschalter</translation>
+    </message>
+    <message>
+        <source>PLC</source>
+        <translation>SPS</translation>
+    </message>
+    <message>
+        <source>Simple contact</source>
+        <translation>Einfacher Kontakt</translation>
+    </message>
+    <message>
+        <source>Power contact</source>
+        <translation>Leistungskontakt</translation>
+    </message>
+    <message>
+        <source>Delay on</source>
+        <translation>Einschaltverzögert</translation>
+    </message>
+    <message>
+        <source>Delay off</source>
+        <translation>Ausschaltverzögert</translation>
+    </message>
+    <message>
+        <source>Delay on and off</source>
+        <translation>Ein- und ausschaltverzögert</translation>
+    </message>
+    <message>
+        <source>NO</source>
+        <translation>Schließer</translation>
+    </message>
+    <message>
+        <source>NC</source>
+        <translation>Öffner</translation>
+    </message>
+    <message>
+        <source>Changeover</source>
+        <translation>Wechsler</translation>
+    </message>
+    <message>
+        <source>Device type</source>
+        <translation>Gerätetyp</translation>
+    </message>
+    <message>
+        <source>The name devices give in their Device type field, such as CONTR10</source>
+        <translation>Der Name, den Geräte in ihrem Feld Gerätetyp angeben, z. B. CONTR10</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation>Name:</translation>
+    </message>
+    <message>
+        <source>Description:</source>
+        <translation>Beschreibung:</translation>
+    </message>
+    <message>
+        <source>Given to the symbols of its devices</source>
+        <translation>An die Symbole seiner Geräte vergeben</translation>
+    </message>
+    <message>
+        <source>Information</source>
+        <translation>Information</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Wert</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation>Hinzufügen</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Entfernen</translation>
+    </message>
+    <message>
+        <source>Parts</source>
+        <translation>Teile</translation>
+    </message>
+    <message>
+        <source>One row per way to draw a part. Rows with the same part number are the ways one part may be drawn, such as a contact as NO, NC or changeover. The first master part is the device&apos;s head.</source>
+        <translation>Eine Zeile pro Art, ein Teil zu zeichnen. Zeilen mit derselben Teilenummer sind die Arten, wie dasselbe Teil gezeichnet werden kann, z. B. ein Kontakt als Schließer, Öffner oder Wechsler. Das erste Master-Teil ist der Kopf des Geräts.</translation>
+    </message>
+    <message>
+        <source>Part</source>
+        <translation>Teil</translation>
+    </message>
+    <message>
+        <source>Role</source>
+        <translation>Rolle</translation>
+    </message>
+    <message>
+        <source>Kind</source>
+        <translation>Art</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>Zustand</translation>
+    </message>
+    <message>
+        <source>Symbol</source>
+        <translation>Symbol</translation>
+    </message>
+    <message>
+        <source>Pins</source>
+        <translation>Pins</translation>
+    </message>
+    <message>
+        <source>Add a part</source>
+        <translation>Teil hinzufügen</translation>
+    </message>
+    <message>
+        <source>Add a way to draw it</source>
+        <translation>Eine Zeichenart hinzufügen</translation>
+    </message>
+    <message>
+        <source>Another way to draw the selected part, such as the same contact as NC</source>
+        <translation>Eine weitere Art, das ausgewählte Teil zu zeichnen, z. B. derselbe Kontakt als Öffner</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>Nach oben</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>Nach unten</translation>
+    </message>
+    <message>
+        <source>Choose the symbol...</source>
+        <translation>Symbol auswählen...</translation>
+    </message>
+    <message>
+        <source>Give the device type a name.</source>
+        <translation>Geben Sie dem Gerätetyp einen Namen.</translation>
+    </message>
+    <message>
+        <source>A device type named %1 already exists.</source>
+        <extracomment>%1 is a device type&apos;s name, such as &quot;CONTR10&quot;</extracomment>
+        <translation>Ein Gerätetyp namens %1 existiert bereits.</translation>
+    </message>
+    <message>
+        <source>A device type needs at least one part.</source>
+        <translation>Ein Gerätetyp benötigt mindestens ein Teil.</translation>
+    </message>
+    <message>
+        <source>Part %1 has no role.</source>
+        <extracomment>%1 is a part&apos;s number in the device type</extracomment>
+        <translation>Teil %1 hat keine Rolle.</translation>
+    </message>
+    <message>
+        <source>Part %1: the symbol %2 cannot be found.</source>
+        <extracomment>%1 is a part&apos;s number, %2 the symbol it names</extracomment>
+        <translation>Teil %1: Das Symbol %2 wurde nicht gefunden.</translation>
+    </message>
+    <message>
+        <source>Part %1: %2 pins for a symbol with %3 terminals.</source>
+        <extracomment>%1 is a part&apos;s number, %2 its pins, %3 the symbol&apos;s terminals</extracomment>
+        <translation>Teil %1: %2 Pins für ein Symbol mit %3 Anschlüssen.</translation>
+    </message>
+</context>
+<context>
+    <name>DeviceTypesDialog</name>
+    <message>
+        <source>Name</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation>Beschreibung</translation>
+    </message>
+    <message>
+        <source>Parts</source>
+        <translation>Teile</translation>
+    </message>
+    <message>
+        <source>Symbols</source>
+        <translation>Symbole</translation>
+    </message>
+    <message>
+        <source>Device types</source>
+        <translation>Gerätetypen</translation>
+    </message>
+    <message>
+        <source>A device type says what a kind of device is made of. The project keeps the types its devices use; your library keeps the ones you make and share. A device takes a type in its Device type field on the Parts tab.</source>
+        <translation>Ein Gerätetyp beschreibt, woraus eine Geräteart besteht. Das Projekt behält die Typen, die seine Geräte verwenden; Ihre Bibliothek behält die, die Sie erstellen und teilen. Ein Gerät übernimmt einen Typ in seinem Feld Gerätetyp auf dem Reiter Teile.</translation>
+    </message>
+    <message>
+        <source>This project</source>
+        <translation>Dieses Projekt</translation>
+    </message>
+    <message>
+        <source>Your library</source>
+        <translation>Ihre Bibliothek</translation>
+    </message>
+    <message>
+        <source>New...</source>
+        <translation>Neu...</translation>
+    </message>
+    <message>
+        <source>Duplicate...</source>
+        <translation>Duplizieren...</translation>
+    </message>
+    <message>
+        <source>Edit...</source>
+        <translation>Bearbeiten...</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>Löschen</translation>
+    </message>
+    <message>
+        <source>Export list</source>
+        <translation>Liste exportieren</translation>
+    </message>
+    <message>
+        <source>Save the device types of this tab as a CSV list</source>
+        <translation>Die Gerätetypen dieses Reiters als CSV-Liste speichern</translation>
+    </message>
+    <message>
+        <source>Full list (every part and its terminals)...</source>
+        <translation>Vollständige Liste (jedes Teil und seine Anschlüsse)...</translation>
+    </message>
+    <message>
+        <source>Brief list (name and description)...</source>
+        <translation>Kurzliste (Name und Beschreibung)...</translation>
+    </message>
+    <message>
+        <source>Delete the device type %1 from your library? This cannot be undone.</source>
+        <extracomment>%1 is a device type&apos;s name, such as &quot;CONTR10&quot;</extracomment>
+        <translation>Gerätetyp %1 aus Ihrer Bibliothek löschen? Dies kann nicht rückgängig gemacht werden.</translation>
+    </message>
+    <message>
+        <source>Delete the device type %1 from the project? Its devices keep their Device type field and are listed as of a type the project does not have.</source>
+        <translation>Gerätetyp %1 aus dem Projekt löschen? Seine Geräte behalten ihr Feld Gerätetyp und werden als Geräte eines Typs aufgelistet, den das Projekt nicht hat.</translation>
+    </message>
+    <message>
+        <source>Delete a device type</source>
+        <translation>Gerätetyp löschen</translation>
+    </message>
+    <message>
+        <source>The project already has a device type %1. Replace it?</source>
+        <translation>Das Projekt hat bereits einen Gerätetyp %1. Ersetzen?</translation>
+    </message>
+    <message>
+        <source>Your library already has a device type %1. Replace it?</source>
+        <translation>Ihre Bibliothek hat bereits einen Gerätetyp %1. Ersetzen?</translation>
+    </message>
+    <message>
+        <source>Copy a device type</source>
+        <translation>Gerätetyp kopieren</translation>
+    </message>
+    <message>
+        <source>Export the list of device types</source>
+        <translation>Liste der Gerätetypen exportieren</translation>
+    </message>
+    <message>
+        <source>device_types.csv</source>
+        <translation>device_types.csv</translation>
+    </message>
+    <message>
+        <source>device_types_brief.csv</source>
+        <translation>device_types_brief.csv</translation>
+    </message>
+    <message>
+        <source>CSV files (*.csv)</source>
+        <translation>CSV-Dateien (*.csv)</translation>
+    </message>
+    <message>
+        <source>Cannot write %1: %2</source>
+        <extracomment>%1 is a file, %2 why it cannot be written</extracomment>
+        <translation>%1 kann nicht geschrieben werden: %2</translation>
+    </message>
+    <message>
+        <source>Copy to the project</source>
+        <translation>In das Projekt kopieren</translation>
+    </message>
+    <message>
+        <source>Copy to your library</source>
+        <translation>In Ihre Bibliothek kopieren</translation>
     </message>
 </context>
 <context>
@@ -4198,7 +5211,7 @@ Fortfahren?</translation>
     </message>
     <message>
         <source>a structure box</source>
-        <translation>einen Strukturkasten</translation>
+        <translation>ein Strukturrahmen</translation>
     </message>
     <message>
         <source>a picture</source>
@@ -4478,7 +5491,27 @@ Fortfahren?</translation>
     <message>
         <source>Click to place the pasted content, Esc or right-click to cancel</source>
         <comment>status bar tip while positioning a paste</comment>
-        <translation>Klicken Sie, um einzufügen, ESC oder rechte Maustaste zum Abbrechen.</translation>
+        <translation type="vanished">Klicken Sie, um einzufügen, ESC oder rechte Maustaste zum Abbrechen.</translation>
+    </message>
+    <message>
+        <source>Original position (X+Y locked)</source>
+        <comment>status bar lock state</comment>
+        <translation>Ursprüngliche Position (X+Y gesperrt)</translation>
+    </message>
+    <message>
+        <source>Original X locked (move along Y)</source>
+        <comment>status bar lock state</comment>
+        <translation>Ursprüngliches X gesperrt (Bewegung entlang Y)</translation>
+    </message>
+    <message>
+        <source>Original Y locked (move along X)</source>
+        <comment>status bar lock state</comment>
+        <translation>Ursprüngliches Y gesperrt (Bewegung entlang X)</translation>
+    </message>
+    <message>
+        <source>Click to place, Esc or right-click to cancel. [%1]: lock X, [%2]: lock Y, [%1]+[%2]: original position</source>
+        <comment>status bar tip while positioning a paste</comment>
+        <translation>Zum Platzieren klicken, Esc oder Rechtsklick zum Abbrechen. [%1]: sperrt X, [%2]: sperrt Y, [%1]+[%2]: ursprüngliche Position</translation>
     </message>
 </context>
 <context>
@@ -4525,6 +5558,25 @@ Fortfahren?</translation>
     <message>
         <source>Left click: next point; double-click or Enter: finish; right click: undo the last point</source>
         <translation>Linksklick: nächster Punkt; Doppelklick oder Enter: fertigstellen; Rechtsklick: letzten Punkt verwerfen</translation>
+    </message>
+</context>
+<context>
+    <name>DiagramEventAddStructureBox</name>
+    <message>
+        <source>New structure box</source>
+        <translation>Neuer Strukturrahmen</translation>
+    </message>
+    <message>
+        <source>Plant (=)</source>
+        <translation>Anlage (=)</translation>
+    </message>
+    <message>
+        <source>Location (+)</source>
+        <translation>Ort (+)</translation>
+    </message>
+    <message>
+        <source>Prefix (-)</source>
+        <translation>Präfix (-)</translation>
     </message>
 </context>
 <context>
@@ -5286,8 +6338,8 @@ Hold Shift and drag to move this text on its own</source>
         <translation>Klemmleiste zeichnen</translation>
     </message>
     <message>
-        <source>A new strip is suggested; pick an existing one to add the terminals to it</source>
-        <translation type="vanished">Vorgeschlagen ist eine neue Leiste; wähle eine vorhandene, um die Klemmen dort anzuhängen</translation>
+        <source>The strip of every wire you did not move elsewhere; a new strip is suggested, pick an existing one to add the terminals to it</source>
+        <translation>Die Leiste aller Leitungen, die du nicht anders zugeordnet hast. Vorgeschlagen wird eine neue Leiste; wähle eine vorhandene, um die Klemmen dort anzuhängen.</translation>
     </message>
     <message>
         <source>Choose…</source>
@@ -5326,12 +6378,20 @@ Hold Shift and drag to move this text on its own</source>
         <translation>Artikel PE:</translation>
     </message>
     <message>
-        <source>Terminal</source>
-        <translation>Klemme</translation>
+        <source>Wire</source>
+        <translation>Leitung</translation>
+    </message>
+    <message>
+        <source>PE</source>
+        <translation>PE</translation>
     </message>
     <message>
         <source>Strip</source>
         <translation>Leiste</translation>
+    </message>
+    <message>
+        <source>Terminal</source>
+        <translation>Klemme</translation>
     </message>
     <message>
         <source>Level</source>
@@ -5381,6 +6441,18 @@ Hold Shift and drag to move this text on its own</source>
         </translation>
     </message>
     <message>
+        <source>Place terminals</source>
+        <translation>Klemmen setzen</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>PE is a level of the terminal</source>
+        <translation>PE ist eine Etage der Klemme</translation>
+    </message>
+    <message>
         <source>Terminal with %1 levels (%2): the wires of one strip fill its levels in turn.</source>
         <translation>Klemme mit %1 Etagen (%2): die Leitungen einer Leiste belegen der Reihe nach ihre Etagen.</translation>
     </message>
@@ -5401,6 +6473,10 @@ Hold Shift and drag to move this text on its own</source>
         <translation>Doppelklick: anderen Artikel für diese Leitung wählen</translation>
     </message>
     <message>
+        <source>The terminal strip needs a name.</source>
+        <translation>Die Klemmleiste braucht einen Namen.</translation>
+    </message>
+    <message>
         <source>Every terminal needs a strip and a number.</source>
         <translation>Jede Klemme braucht eine Leiste und eine Nummer.</translation>
     </message>
@@ -5415,53 +6491,6 @@ Hold Shift and drag to move this text on its own</source>
     <message>
         <source>Preview of strip %1 (from above, at scale):</source>
         <translation>Vorschau der Leiste %1 (Draufsicht, maßstäblich):</translation>
-    </message>
-    <message>
-        <source>Wire</source>
-        <translation>Leitung</translation>
-    </message>
-    <message>
-        <source>The strip of every wire you did not move elsewhere; a new strip is suggested, pick an existing one to add the terminals to it</source>
-        <translation>Die Leiste aller Leitungen, die du nicht anders zugeordnet hast. Vorgeschlagen wird eine neue Leiste; wähle eine vorhandene, um die Klemmen dort anzuhängen.</translation>
-    </message>
-    <message>
-        <source>PE</source>
-        <translation>PE</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n wire(s) crossed. Every wire gets a terminal at the crossing and runs through it; the terminal strip, the terminal plan and the bill of materials follow from it.</source>
-        <translation type="vanished">
-            <numerusform>%n Leitung gekreuzt. Jede Leitung bekommt an der Kreuzung eine Klemme und läuft durch sie hindurch; Klemmleiste, Klemmenplan und Stückliste ergeben sich daraus.</numerusform>
-            <numerusform>%n Leitungen gekreuzt. Jede Leitung bekommt an der Kreuzung eine Klemme und läuft durch sie hindurch; Klemmleiste, Klemmenplan und Stückliste ergeben sich daraus.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Place terminals</source>
-        <translation>Klemmen setzen</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>Abbrechen</translation>
-    </message>
-    <message>
-        <source>Preview of the strip (from above, at scale):</source>
-        <translation type="vanished">Vorschau der Leiste (Draufsicht, maßstäblich):</translation>
-    </message>
-    <message>
-        <source>PE is a level of the terminal</source>
-        <translation>PE ist eine Etage der Klemme</translation>
-    </message>
-    <message>
-        <source>Terminal with %1 levels: every %1 wires share one terminal (%2 terminal(s) for %3 wires), one number and one article; the PE article is not needed.</source>
-        <translation type="vanished">Klemme mit %1 Etagen: je %1 Leitungen teilen sich eine Klemme (%2 Klemme(n) für %3 Leitungen), eine Nummer und einen Artikel; der PE-Artikel wird nicht gebraucht.</translation>
-    </message>
-    <message>
-        <source>The terminal strip needs a name.</source>
-        <translation>Die Klemmleiste braucht einen Namen.</translation>
-    </message>
-    <message>
-        <source>Every terminal needs a number.</source>
-        <translation type="vanished">Jede Klemme braucht eine Nummer.</translation>
     </message>
 </context>
 <context>
@@ -6093,7 +7122,7 @@ Hold Shift and drag to move this text on its own</source>
     <name>ElementArticlesWidget</name>
     <message>
         <source>Parts</source>
-        <translation>Bestandteile</translation>
+        <translation>Teile</translation>
     </message>
     <message>
         <source>Article</source>
@@ -6121,7 +7150,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>Choose from materials list…</source>
-        <translation>Aus Artikelliste wählen…</translation>
+        <translation>Aus der Materialliste wählen…</translation>
     </message>
     <message>
         <source>Main article (empty)</source>
@@ -6132,16 +7161,93 @@ Hold Shift and drag to move this text on its own</source>
         <translation>Leerer Artikel</translation>
     </message>
     <message>
+        <source>Change the device type</source>
+        <translation>Gerätetyp ändern</translation>
+    </message>
+    <message>
+        <source>The part number of this device names the device type %1. Change it to %2 anyway?</source>
+        <extracomment>%1 and %2 are device types&apos; names, such as &quot;CONTR10&quot;</extracomment>
+        <translation>Die Artikelnummer dieses Geräts nennt den Gerätetyp %1. Trotzdem auf %2 ändern?</translation>
+    </message>
+    <message>
+        <source>Copy the existing contacts to the new device type automatically?</source>
+        <translation>Vorhandene Kontakte automatisch in den neuen Gerätetyp kopieren?</translation>
+    </message>
+    <message>
+        <source>Set this symbol from the device type</source>
+        <translation>Dieses Symbol aus dem Gerätetyp festlegen</translation>
+    </message>
+    <message>
+        <source>Every part of this device type is already drawn.</source>
+        <translation>Jedes Teil dieses Gerätetyps ist bereits gezeichnet.</translation>
+    </message>
+    <message>
+        <source>Device type %1 of your library: the project keeps a copy once applied.</source>
+        <extracomment>%1 is a device type&apos;s name, such as &quot;CONTR10&quot;</extracomment>
+        <translation>Gerätetyp %1 aus Ihrer Bibliothek: Das Projekt behält nach dem Anwenden eine Kopie.</translation>
+    </message>
+    <message>
+        <source>No device type %1 in the project or your library.</source>
+        <translation>Kein Gerätetyp %1 im Projekt oder in Ihrer Bibliothek.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1 (%n part(s))</source>
+        <extracomment>%1 is the type&apos;s text, %n its number of parts</extracomment>
+        <translation>
+            <numerusform>%1 (%n Teil)</numerusform>
+            <numerusform>%1 (%n Teile)</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%1: %2 of %n part(s) drawn</source>
+        <extracomment>%1 is the type&apos;s text, %2 the parts drawn, %n all of its parts</extracomment>
+        <translation>
+            <numerusform>%1: %2 von %n Teil gezeichnet</numerusform>
+            <numerusform>%1: %2 von %n Teilen gezeichnet</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Not drawn: %1</source>
+        <translation>Nicht gezeichnet: %1</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n symbol(s) beyond the type</source>
+        <translation>
+            <numerusform>%n Symbol außerhalb des Typs</numerusform>
+            <numerusform>%n Symbole außerhalb des Typs</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>What this device is made of: its device type, from the project or your library</source>
+        <translation>Woraus dieses Gerät besteht: sein Gerätetyp, aus dem Projekt oder aus Ihrer Bibliothek</translation>
+    </message>
+    <message>
+        <source>Set this symbol from the device type...</source>
+        <translation>Dieses Symbol aus dem Gerätetyp festlegen...</translation>
+    </message>
+    <message>
+        <source>Choose which part of the device type this symbol draws: it takes that part&apos;s terminals.</source>
+        <translation>Wählen Sie, welches Teil des Gerätetyps dieses Symbol zeichnet: Es übernimmt die Anschlüsse dieses Teils.</translation>
+    </message>
+    <message>
+        <source>Change the device type...</source>
+        <translation>Gerätetyp ändern...</translation>
+    </message>
+    <message>
+        <source>Give the device another device type: its symbols take the parts of the new one.</source>
+        <translation>Dem Gerät einen anderen Gerätetyp geben: Seine Symbole übernehmen die Teile des neuen Typs.</translation>
+    </message>
+    <message>
         <source>Add another article slot (up to %1)</source>
-        <translation>Weiteren Artikel-Platz hinzufügen (bis zu %1)</translation>
+        <translation>Weiteren Artikelplatz hinzufügen (bis zu %1)</translation>
     </message>
     <message>
         <source>All %1 native article slots are already shown</source>
-        <translation>Alle %1 nativen Artikel-Plätze werden bereits angezeigt</translation>
+        <translation>Alle %1 nativen Artikelplätze werden bereits angezeigt</translation>
     </message>
     <message>
         <source>Clear and remove the selected auxiliary article</source>
-        <translation>Ausgewählten Zusatzartikel leeren und entfernen</translation>
+        <translation>Den ausgewählten Zusatzartikel leeren und entfernen</translation>
     </message>
     <message>
         <source>Clear the fields of Article 1</source>
@@ -6149,7 +7255,7 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>No materials list</source>
-        <translation>Materialliste fehlt</translation>
+        <translation>Keine Materialliste</translation>
     </message>
     <message>
         <source>There is no materials list file at this location:
@@ -6157,10 +7263,10 @@ Hold Shift and drag to move this text on its own</source>
 
 Create it?</source>
         <comment>message asking to create the material file</comment>
-        <translation>An diesem Ort existiert keine Materiallisten-Datei:
+        <translation>An diesem Ort gibt es keine Materiallistendatei:
 %1
 
-Soll sie erstellt werden?</translation>
+Erstellen?</translation>
     </message>
     <message>
         <source>Cannot create</source>
@@ -6170,7 +7276,7 @@ Soll sie erstellt werden?</translation>
         <source>Cannot create the file:
 %1
 %2</source>
-        <translation>Die Datei konnte nicht erstellt werden:
+        <translation>Die Datei kann nicht erstellt werden:
 %1
 %2</translation>
     </message>
@@ -6445,6 +7551,10 @@ Soll sie erstellt werden?</translation>
 %2</translation>
     </message>
     <message>
+        <source>A drawing aid (an interruption point) has no label: it is not printed, and is left out of every list.</source>
+        <translation>Eine Zeichenhilfe (ein Unterbrechungspunkt) hat keine Beschriftung: Sie wird nicht gedruckt und aus allen Listen ausgeschlossen.</translation>
+    </message>
+    <message>
         <source>Automatic numbering</source>
         <translation>Autom. Nummerierung</translation>
     </message>
@@ -6681,6 +7791,22 @@ Fortfahren?</translation>
         <translation>Farbe</translation>
     </message>
     <message>
+        <source>Junction</source>
+        <translation>Verzweigung</translation>
+    </message>
+    <message>
+        <source>Which connection the wire comes in at, and which ones it goes on to. Nothing is assigned until you choose it.</source>
+        <translation>Über welche Verbindung der Leiter ankommt und zu welchen er weiterläuft. Es wird nichts zugewiesen, bis Sie es auswählen.</translation>
+    </message>
+    <message>
+        <source>Connection</source>
+        <translation>Verbindung</translation>
+    </message>
+    <message>
+        <source>Role</source>
+        <translation>Rolle</translation>
+    </message>
+    <message>
         <source>Potential separation</source>
         <translation type="vanished">Potentialtrennung</translation>
     </message>
@@ -6867,6 +7993,42 @@ Fortfahren?</translation>
     <message>
         <source>%1 mm</source>
         <translation>%1 mm</translation>
+    </message>
+    <message>
+        <source>top</source>
+        <translation>oben</translation>
+    </message>
+    <message>
+        <source>right</source>
+        <translation>rechts</translation>
+    </message>
+    <message>
+        <source>bottom</source>
+        <translation>unten</translation>
+    </message>
+    <message>
+        <source>left</source>
+        <translation>links</translation>
+    </message>
+    <message>
+        <source>Not assigned</source>
+        <translation>Nicht zugewiesen</translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation>Quelle</translation>
+    </message>
+    <message>
+        <source>Target 1</source>
+        <translation>Ziel 1</translation>
+    </message>
+    <message>
+        <source>Target 2</source>
+        <translation>Ziel 2</translation>
+    </message>
+    <message>
+        <source>Target 3</source>
+        <translation>Ziel 3</translation>
     </message>
     <message>
         <source>T%1</source>
@@ -8448,6 +9610,105 @@ Mit dem Import dieser Datei bestätigen Sie, dass:
     </message>
 </context>
 <context>
+    <name>FindPartDialog</name>
+    <message>
+        <source>Find part</source>
+        <translation>Teil suchen</translation>
+    </message>
+    <message>
+        <source>Find part for %1</source>
+        <translation>Teil für %1 suchen</translation>
+    </message>
+    <message>
+        <source>Type words: part number, description, manufacturer...</source>
+        <translation>Wörter eingeben: Artikelnummer, Beschreibung, Hersteller...</translation>
+    </message>
+    <message>
+        <source>Category</source>
+        <translation>Kategorie</translation>
+    </message>
+    <message>
+        <source>Manufacturer</source>
+        <translation>Hersteller</translation>
+    </message>
+    <message>
+        <source>Device type</source>
+        <translation>Gerätetyp</translation>
+    </message>
+    <message>
+        <source>Voltage</source>
+        <translation>Spannung</translation>
+    </message>
+    <message>
+        <source>Current</source>
+        <translation>Strom</translation>
+    </message>
+    <message>
+        <source>Supplier</source>
+        <translation>Lieferant</translation>
+    </message>
+    <message>
+        <source>Suits this symbol</source>
+        <translation>Passt zu diesem Symbol</translation>
+    </message>
+    <message>
+        <source>No device type lists this symbol: every part is offered</source>
+        <translation>Kein Gerätetyp listet dieses Symbol: Es werden alle Teile angeboten</translation>
+    </message>
+    <message>
+        <source>Reset filters</source>
+        <translation>Filter zurücksetzen</translation>
+    </message>
+    <message>
+        <source>Show all parts</source>
+        <translation>Alle Teile anzeigen</translation>
+    </message>
+    <message>
+        <source>Part number</source>
+        <translation>Artikelnummer</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation>Beschreibung</translation>
+    </message>
+    <message>
+        <source>Rating</source>
+        <translation>Nennwert</translation>
+    </message>
+    <message>
+        <source>No parts match.</source>
+        <translation>Kein Teil passt.</translation>
+    </message>
+    <message>
+        <source>Clear filters</source>
+        <translation>Filter löschen</translation>
+    </message>
+    <message>
+        <source>Search all parts</source>
+        <translation>In allen Teilen suchen</translation>
+    </message>
+    <message>
+        <source>%1 of %2 parts</source>
+        <translation>%1 von %2 Teilen</translation>
+    </message>
+    <message>
+        <source>Filters on: %1</source>
+        <translation>Aktive Filter: %1</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>Alle</translation>
+    </message>
+    <message>
+        <source>Remove this filter</source>
+        <translation>Diesen Filter entfernen</translation>
+    </message>
+    <message>
+        <source>Already used in this project</source>
+        <translation>Bereits in diesem Projekt verwendet</translation>
+    </message>
+</context>
+<context>
     <name>FluidCheckDialog</name>
     <message>
         <source>Check fluid power</source>
@@ -8624,10 +9885,46 @@ In diesem Fall wird das Feld &quot;Inkrementierung&quot; ignoriert.
  -%F: Sheet Name
  -%f or %id: Sheet ID
  -%total: Total of sheets
+In a conductor&apos;s formula also:
+ -%wf: Conductor Function
+ -%wv: Conductor Voltage / Protocol
+ -%wc: Conductor Colour
+ -%ws: Conductor Section
+ -%wt: Conductor Type
+ -%wb: Conductor Cable
 You can also assign any other titleblock variable 
 that you create. Text and number inputs are
  also available.</source>
-        <translation>In der Formel können folgende Variablen verwendet werden:
+        <translation>Folgende Variablen können in der Formel verwendet werden:
+ -%prefix: Standardpräfix des Symbols
+ -%l: Zeile des Symbols
+ -%c: Spalte des Symbols
+ -%F: Blattname
+ -%f oder %id: Blatt-ID
+ -%total: Anzahl der Blätter
+In der Formel eines Leiters zusätzlich:
+ -%wf: Leiterfunktion
+ -%wv: Leiterspannung / Protokoll
+ -%wc: Leiterfarbe
+ -%ws: Leiterquerschnitt
+ -%wt: Leitertyp
+ -%wb: Leiterkabel
+Außerdem kann jede andere selbst angelegte
+Schriftfeld-Variable zugewiesen werden. Text- und
+Zahleneingaben sind ebenfalls möglich.</translation>
+    </message>
+    <message>
+        <source>You can use the following variables to your formula:
+ -%prefix: Default Element Prefix
+ -%l: Element Line
+ -%c: Element Column
+ -%F: Sheet Name
+ -%f or %id: Sheet ID
+ -%total: Total of sheets
+You can also assign any other titleblock variable 
+that you create. Text and number inputs are
+ also available.</source>
+        <translation type="vanished">In der Formel können folgende Variablen verwendet werden:
  - %prefix: Gerätekennbuchstabe
  - %l: Zeilennummer
  - %c: Spaltennummer
@@ -8835,7 +10132,7 @@ Texte und Zahlen sind ebenso erlaubt.</translation>
     </message>
     <message>
         <source>When enabled, report elements (cross-references) across folios with matching labels are automatically chained together. Newly created projects will have this enabled automatically.</source>
-        <translation>Wenn aktiviert, werden Folien-Verweise (Querverweise) über Folien hinweg mit gleichem Kennzeichen automatisch verkettet. Neu erstellte Projekte haben diese Funktion automatisch aktiv.</translation>
+        <translation type="vanished">Wenn aktiviert, werden Folien-Verweise (Querverweise) über Folien hinweg mit gleichem Kennzeichen automatisch verkettet. Neu erstellte Projekte haben diese Funktion automatisch aktiv.</translation>
     </message>
     <message>
         <source>Appearance</source>
@@ -8946,7 +10243,7 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     </message>
     <message>
         <source>Designation, type, plant, location, length:</source>
-        <translation>Kennzeichen, Typ, Anlage, Ort, Länge:</translation>
+        <translation type="vanished">Kennzeichen, Typ, Anlage, Ort, Länge:</translation>
     </message>
     <message>
         <source>Core colors (all of them):</source>
@@ -9101,6 +10398,41 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
         <translation>Nur ein Leiter pro Seitenverweis</translation>
     </message>
     <message>
+        <source>Designation:</source>
+        <extracomment>one of the five texts of a cable, one row each in the preferences; the same names the cable properties dialog uses</extracomment>
+        <translation>Bezeichnung:</translation>
+    </message>
+    <message>
+        <source>Font of this text written along the cable line; a cable which has its own keeps it.</source>
+        <extracomment>tooltip of the font button of one text of a cable in the preferences</extracomment>
+        <translation>Schriftart dieses Textes, der entlang der Kabellinie geschrieben wird; ein Kabel mit eigener Schriftart behält sie.</translation>
+    </message>
+    <message>
+        <source>Set this text back to the default font of the cable texts</source>
+        <extracomment>tooltip of the reset button beside a text of a cable in the preferences</extracomment>
+        <translation>Diesen Text auf die Standardschriftart der Kabeltexte zurücksetzen</translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <extracomment>one of the five texts of a cable, one row each in the preferences; the same names the cable properties dialog uses</extracomment>
+        <translation>Typ:</translation>
+    </message>
+    <message>
+        <source>Plant (=):</source>
+        <extracomment>one of the five texts of a cable, one row each in the preferences; the same names the cable properties dialog uses</extracomment>
+        <translation>Anlage (=):</translation>
+    </message>
+    <message>
+        <source>Location (+):</source>
+        <extracomment>one of the five texts of a cable, one row each in the preferences; the same names the cable properties dialog uses</extracomment>
+        <translation>Ort (+):</translation>
+    </message>
+    <message>
+        <source>Length:</source>
+        <extracomment>one of the five texts of a cable, one row each in the preferences; the same names the cable properties dialog uses</extracomment>
+        <translation>Länge:</translation>
+    </message>
+    <message>
         <source>Show the default grid (applied the next time the programme is launched)</source>
         <translation>Standardraster anzeigen (gilt ab dem nächsten Start)</translation>
     </message>
@@ -9222,7 +10554,31 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     </message>
     <message>
         <source>Drawing on the sheet</source>
-        <translation>Darstellung auf dem Blatt</translation>
+        <translation>Zeichnen auf der Seite</translation>
+    </message>
+    <message>
+        <source>Show the destination terminal of each cable core in terminal strip plans</source>
+        <translation>Zielklemme jeder Kabelader in den Klemmenleistenplänen anzeigen</translation>
+    </message>
+    <message>
+        <source>Show the destination device and terminal for each connected core in the cable&apos;s destination box.</source>
+        <translation>Gerät und Zielklemme jeder angeschlossenen Ader im Zielrahmen des Kabels anzeigen.</translation>
+    </message>
+    <message>
+        <source>Colour of new structure boxes</source>
+        <translation>Farbe neuer Strukturrahmen</translation>
+    </message>
+    <message>
+        <source>A structure box is drawn in this colour, its name too, so that it is told apart from wires and drawn shapes. Each box can take another colour in its properties. Black by default.</source>
+        <translation>Ein Strukturrahmen wird in dieser Farbe gezeichnet, ebenso sein Name, um ihn von Leitern und gezeichneten Formen zu unterscheiden. Jeder Rahmen kann in seinen Eigenschaften eine andere Farbe erhalten. Standardmäßig Schwarz.</translation>
+    </message>
+    <message>
+        <source>As soon as a structure box is drawn, its plant, location and prefix are asked for. Cancelled, the box stays empty. Unticked by default: they are entered afterwards in its properties.</source>
+        <translation>Sobald ein Strukturrahmen gezeichnet ist, werden seine Anlage, sein Ort und sein Präfix abgefragt. Bei Abbruch bleibt der Rahmen leer. Standardmäßig deaktiviert: Sie werden danach in seinen Eigenschaften eingegeben.</translation>
+    </message>
+    <message>
+        <source>Ask for the place of a structure box when it is drawn</source>
+        <translation>Beim Zeichnen eines Strukturrahmens nach seiner Zuordnung fragen</translation>
     </message>
     <message>
         <source>Mouse and input</source>
@@ -9238,7 +10594,7 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     </message>
     <message>
         <source>A jump along a cross reference or a folio report shows its target in the middle of the view, at this zoom at least; closer views stay as they are.</source>
-        <translation>Ein Sprung über einen Querverweis oder eine Unterbrechungsstelle zeigt das Ziel in der Mitte der Ansicht, mindestens mit diesem Zoom; nähere Ansichten bleiben, wie sie sind.</translation>
+        <translation>Ein Sprung entlang eines Querverweises oder Seitenverweises zeigt sein Ziel in der Mitte der Ansicht, mit mindestens diesem Zoom; näher herangezoomte Ansichten bleiben unverändert.</translation>
     </message>
     <message>
         <source>Whole folio</source>
@@ -9257,8 +10613,44 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
         <translation>Hierarchischen Betriebsmittel-Navigator nach Anlagen- und Ortsstruktur (wie in EPLAN) anzeigen</translation>
     </message>
     <message>
+        <source>Frame selected symbols clearly, in the highlight colour</source>
+        <translation>Ausgewählte Symbole deutlich in der Hervorhebungsfarbe umrahmen</translation>
+    </message>
+    <message>
         <source>Drawing and moving</source>
         <translation>Zeichnen und Verschieben</translation>
+    </message>
+    <message>
+        <source>The pointer and the crosshair jump from grid point to grid point only while something is placed or dragged; otherwise they follow the mouse, so small items are easy to grab. What is placed still lands on the grid.</source>
+        <translation>Zeiger und Fadenkreuz springen nur beim Platzieren oder Verschieben eines Objekts von Rasterpunkt zu Rasterpunkt; sonst folgen sie der Maus, sodass sich kleine Objekte leicht greifen lassen. Was platziert wird, landet immer auf dem Raster.</translation>
+    </message>
+    <message>
+        <source>Pointer on the grid only while placing</source>
+        <translation>Zeiger nur während des Platzierens am Raster</translation>
+    </message>
+    <message>
+        <source>In a project with &quot;auto conductor&quot; but without automatic connections: dragging a corner, T-junction or folio report being placed puts one on every wire the drag crosses, each joined once by an ordinary wire.</source>
+        <translation>In einem Projekt mit „automatischer Leitererstellung“, aber ohne automatische Verbindungen: Beim Ziehen einer Ecke, einer T-Verzweigung oder eines Seitenverweises während des Platzierens wird auf jedem gekreuzten Leiter einer gesetzt, jeweils einmal durch einen normalen Leiter verbunden.</translation>
+    </message>
+    <message>
+        <source>With &quot;auto conductor&quot;, a drag places a connection symbol on every wire it crosses</source>
+        <translation>Bei der „automatischen Leitererstellung“ setzt ein Ziehen ein Verbindungssymbol auf jeden gekreuzten Leiter</translation>
+    </message>
+    <message>
+        <source>Dragging with Ctrl held copies the selection</source>
+        <translation>Ziehen bei gedrückter Strg-Taste kopiert die Auswahl</translation>
+    </message>
+    <message>
+        <source>Duplicate: the copy follows the mouse until a click</source>
+        <translation>Duplizieren: Die Kopie folgt der Maus bis zum Klick</translation>
+    </message>
+    <message>
+        <source>After placing a device&apos;s head, ask how to place the parts of its device type</source>
+        <translation>Nach dem Platzieren des Kopfes eines Geräts fragen, wie die Teile seines Gerätetyps platziert werden sollen</translation>
+    </message>
+    <message>
+        <source>One by one, each following the mouse; all side by side to the right of the head; or not now, which leaves them free in the Device Navigator. Unticked by default: placing the head places nothing more.</source>
+        <translation>Eins nach dem anderen, jedes der Maus folgend; alle nebeneinander rechts vom Kopf; oder jetzt nicht, wodurch sie im Gerätenavigator frei bleiben. Standardmäßig deaktiviert: Das Platzieren des Kopfes platziert nichts weiter.</translation>
     </message>
     <message>
         <source>Automatically number pasted or duplicated elements that follow a numbering</source>
@@ -9291,6 +10683,26 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     <message>
         <source>An assistant connected through the MCP server can then run scripts on the open project, as you watch. A warning is shown at every start while this setting is on. Takes effect at the next start; unticking it closes the connection at once.</source>
         <translation>Ein über den MCP-Server verbundener Assistent kann dann vor Ihren Augen Skripte auf dem geöffneten Projekt ausführen. Solange diese Einstellung aktiviert ist, wird bei jedem Start eine Warnung angezeigt. Wirksam ab dem nächsten Start; das Deaktivieren trennt die Verbindung sofort.</translation>
+    </message>
+    <message>
+        <source>When enabled, report elements (cross-references) across folios with a matching name are automatically chained together. Newly created projects will have this enabled automatically.</source>
+        <translation>Wenn aktiviert, werden Seitenverweis-Elemente (Querverweise) mehrerer Seiten mit übereinstimmendem Namen automatisch verkettet. Neue Projekte haben dies automatisch aktiviert.</translation>
+    </message>
+    <message>
+        <source>Chain folio report elements by</source>
+        <translation>Seitenverweis-Elemente verketten nach</translation>
+    </message>
+    <message>
+        <source>What two folio report elements must share to be chained together: the label each of them carries, or the function of the wire its terminal holds. A report without a value of its own is never chained. Newly created projects will start with this choice.</source>
+        <translation>Was zwei Seitenverweis-Elemente gemeinsam haben müssen, um verkettet zu werden: die Beschriftung, die jedes trägt, oder die Funktion des Leiters, den sein Anschluss hält. Ein Verweis ohne eigenen Wert wird nie verkettet. Neue Projekte starten mit dieser Auswahl.</translation>
+    </message>
+    <message>
+        <source>Their label</source>
+        <translation>Ihre Beschriftung</translation>
+    </message>
+    <message>
+        <source>The function of their conductor</source>
+        <translation>Die Funktion ihres Leiters</translation>
     </message>
     <message>
         <source>Previous versions kept when saving a project</source>
@@ -9338,11 +10750,27 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     </message>
     <message>
         <source>Folios and macros</source>
-        <translation>Blätter und Makros</translation>
+        <translation>Seiten und Makros</translation>
+    </message>
+    <message>
+        <source>List folios by group and sub-group in the Projects panel</source>
+        <translation>Blätter im Projektfenster nach Gruppe und Untergruppe auflisten</translation>
+    </message>
+    <message>
+        <source>A folio with no group of its own is listed under its plant and location. A level is shown only where it splits the folios, so a project without groups stays a flat list.</source>
+        <translation>Ein Blatt ohne eigene Gruppe wird unter seiner Anlage und seinem Ort aufgelistet. Eine Ebene wird nur gezeigt, wo sie die Blätter trennt, daher bleibt ein Projekt ohne Gruppen eine flache Liste.</translation>
+    </message>
+    <message>
+        <source>Ask the label and the part of a symbol when it is placed</source>
+        <translation>Beim Platzieren eines Symbols nach Beschriftung und Teil fragen</translation>
+    </message>
+    <message>
+        <source>One small dialog per symbol: its label (the next free one is proposed) and its part number, which brings the device type. Unchecked, a symbol is placed without asking.</source>
+        <translation>Ein kleiner Dialog pro Symbol: seine Beschriftung (die nächste freie wird vorgeschlagen) und seine Artikelnummer, die den Gerätetyp mitbringt. Wenn deaktiviert, wird ein Symbol ohne Rückfrage platziert.</translation>
     </message>
     <message>
         <source>Terminal strips and conductors</source>
-        <translation>Klemmleisten und Leiter</translation>
+        <translation>Klemmenleisten und Leiter</translation>
     </message>
     <message>
         <source>Company collection directory</source>
@@ -9355,8 +10783,15 @@ Hier unten kann der Standardwert dieses Textfeldes für Ihre eigenen Bauteile de
     </message>
     <message>
         <source>Configure prefixes…</source>
-        <extracomment>button opening the dialog where the folder prefixes of the user collection are configured</extracomment>
+        <extracomment>button opening the dialog where the folder prefixes of the user collection are configured
+----------
+button opening the dialog where the folder prefixes of the company collection are configured</extracomment>
         <translation>Präfixe konfigurieren…</translation>
+    </message>
+    <message>
+        <source>Create or change the prefix of the company collection&apos;s folders (qet_labels.xml file)</source>
+        <extracomment>tooltip of the button opening the prefix configuration dialog of the company collection</extracomment>
+        <translation>Präfix der Ordner der Firmensammlung erstellen oder bearbeiten (Datei qet_labels.xml)</translation>
     </message>
     <message>
         <source>Company title-block directory</source>
@@ -9406,6 +10841,14 @@ hint shown when no cable type file is configured yet</extracomment>
         <translation>Erstellen Sie die Datei mit der Liste der Kabeltypen einschließlich der Kopfzeile</translation>
     </message>
     <message>
+        <source>Updating the elements moves a symbol whose insertion point moved</source>
+        <translation>Die Elementaktualisierung verschiebt ein Symbol, dessen Einfügepunkt sich verschoben hat</translation>
+    </message>
+    <message>
+        <source>Project &gt; Update elements from the collections: when a symbol&apos;s drawing was moved as a whole, its insertion point set elsewhere, each placed symbol is moved back by the same offset, so its terminals, conductors and texts stay where they are. Unticked by default: such a symbol keeps its old drawing and is listed.</source>
+        <translation>Projekt &gt; Elemente aus den Sammlungen aktualisieren: Wenn die Zeichnung eines Symbols als Ganzes verschoben wurde und der Einfügepunkt woanders liegt, wird jedes platzierte Symbol um denselben Versatz zurückbewegt, sodass seine Anschlüsse, Leiter und Texte dort bleiben, wo sie sind. Standardmäßig deaktiviert: Ein solches Symbol behält seine alte Zeichnung und wird aufgelistet.</translation>
+    </message>
+    <message>
         <source>Languages</source>
         <translation>Sprachen</translation>
     </message>
@@ -9446,12 +10889,20 @@ hint shown when no cable type file is configured yet</extracomment>
         <translation>Kabeltexte</translation>
     </message>
     <message>
+        <source>Off, the default: every dialog starts where it always did -- the pictures folder for a picture, the documents folder for a PDF, and for the others the folder it always opened in. On: it starts in the folder the last file was picked from; pictures and PDFs keep a folder of their own, and a folder that no longer exists sends the dialog back to the standard one. Saving and exporting are not affected.</source>
+        <translation>Aus, die Voreinstellung: jeder Dialog beginnt wie bisher -- im Bilderordner bei einem Bild, im Dokumenteordner bei einer PDF, bei den übrigen im bisher geöffneten Ordner. Ein: er beginnt im Ordner, aus dem zuletzt eine Datei gewählt wurde; Bilder und PDFs behalten einen eigenen Ordner, und ein nicht mehr vorhandener Ordner führt den Dialog zurück zum Standardordner. Speichern und Exportieren sind nicht betroffen.</translation>
+    </message>
+    <message>
+        <source>Remember the last folder a file was picked from</source>
+        <translation>Letzten Ordner merken, aus dem eine Datei gewählt wurde</translation>
+    </message>
+    <message>
         <source>Designation, type, plant, location, length :</source>
         <translation type="vanished">Bezeichnung, Typ, Anlage, Ort, Länge:</translation>
     </message>
     <message>
         <source>Font of the texts written along the cable line; a cable which has its own keeps it.</source>
-        <translation>Schriftart der Texte entlang der Kabellinie; ein Kabel, das über eine eigene Schriftart verfügt, behält diese bei.</translation>
+        <translation type="vanished">Schriftart der Texte entlang der Kabellinie; ein Kabel, das über eine eigene Schriftart verfügt, behält diese bei.</translation>
     </message>
     <message>
         <source>Core colors (all of them) :</source>
@@ -9784,6 +11235,22 @@ hint shown when no cable type file is configured yet</extracomment>
         <translation>Verzeichnis nicht gefunden</translation>
     </message>
     <message>
+        <source>The company collection folder:
+%1
+does not exist or cannot be reached.</source>
+        <translation>Der Ordner der Firmensammlung:
+%1
+existiert nicht oder ist nicht erreichbar.</translation>
+    </message>
+    <message>
+        <source>The company collection folder:
+%1
+does not exist and could not be created.</source>
+        <translation>Der Ordner der Firmensammlung:
+%1
+existiert nicht und konnte nicht erstellt werden.</translation>
+    </message>
+    <message>
         <source>The user collection folder:
 %1
 does not exist and could not be created.</source>
@@ -9792,8 +11259,28 @@ does not exist and could not be created.</source>
 existiert nicht und konnte nicht erstellt werden.</translation>
     </message>
     <message>
+        <source>Prefix file cannot be written</source>
+        <translation>Die Präfixdatei kann nicht geschrieben werden</translation>
+    </message>
+    <message>
+        <source>The prefixes of the company collection are kept in:
+%1
+This folder cannot be written, so the prefixes cannot be changed here. Ask whoever manages the company collection, or change the file with write access.</source>
+        <translation>Die Präfixe der Firmensammlung werden gespeichert in:
+%1
+Dieser Ordner ist nicht beschreibbar, daher können die Präfixe hier nicht geändert werden. Fragen Sie die Person, die die Firmensammlung verwaltet, oder bearbeiten Sie die Datei mit Schreibzugriff.</translation>
+    </message>
+    <message>
         <source>No subfolder</source>
         <translation>Kein Unterordner</translation>
+    </message>
+    <message>
+        <source>The company collection:
+%1
+has no subfolder, so there is no prefix to configure.</source>
+        <translation>Die Firmensammlung:
+%1
+hat keinen Unterordner, daher gibt es kein Präfix zu konfigurieren.</translation>
     </message>
     <message>
         <source>The user collection:
@@ -10065,7 +11552,7 @@ Alle Einstellungen außer „Keine Rundung“ können je nach folgenden Faktoren
     </message>
     <message>
         <source> grid squares</source>
-        <translation>Rasterfelder</translation>
+        <translation> Rasterfelder</translation>
     </message>
     <message>
         <source>Space between terminals:</source>
@@ -10108,11 +11595,11 @@ Alle Einstellungen außer „Keine Rundung“ können je nach folgenden Faktoren
     </message>
     <message>
         <source>PLC inputs and outputs:</source>
-        <translation>SPS-Ein- und -Ausgänge:</translation>
+        <translation>Ein- und Ausgänge der SPS:</translation>
     </message>
     <message>
         <source>Marking a side makes the device a PLC: its terminals become the PLC&apos;s inputs or outputs, in the order they are listed.</source>
-        <translation>Eine markierte Seite macht das Gerät zur SPS: seine Anschlüsse werden in der aufgeführten Reihenfolge zu Ein- oder Ausgängen der SPS.</translation>
+        <translation>Das Ankreuzen einer Seite macht das Gerät zu einer SPS: Seine Anschlüsse werden zu den Ein- oder Ausgängen der SPS, in der Reihenfolge, in der sie aufgelistet sind.</translation>
     </message>
     <message>
         <source>Name</source>
@@ -10224,6 +11711,14 @@ Alle Einstellungen außer „Keine Rundung“ können je nach folgenden Faktoren
         <source>This is a QElectroTech project, ie. a .qet file containing several sheets. It also embeds elements and title block templates used in the sheets.</source>
         <comment>&quot;What&apos;s this&quot; tip</comment>
         <translation>Das ist ein QElectroTech-Projekt: eine *.qet Datei, in der Seiten, eingebettete Bauteile und eingebettete Schriftfelder gespeichert sind.</translation>
+    </message>
+    <message>
+        <source>Folio group: %1</source>
+        <translation>Blattgruppe: %1</translation>
+    </message>
+    <message>
+        <source>Folio sub-group: %1</source>
+        <translation>Blatt-Untergruppe: %1</translation>
     </message>
     <message>
         <source>Untitled sheet</source>
@@ -10879,6 +12374,10 @@ Please use the advanced editor for this.</source>
         <translation>Anschluss</translation>
     </message>
     <message>
+        <source>Junction</source>
+        <translation>Verzweigung</translation>
+    </message>
+    <message>
         <source>Thumbnail</source>
         <translation>Vorschaubild</translation>
     </message>
@@ -10940,11 +12439,11 @@ Please use the advanced editor for this.</source>
     </message>
     <message>
         <source>Structure box</source>
-        <translation>Strukturkasten</translation>
+        <translation>Strukturrahmen</translation>
     </message>
     <message>
         <source>Structure box %1</source>
-        <translation>Strukturkasten %1</translation>
+        <translation>Strukturrahmen %1</translation>
     </message>
     <message>
         <source>Picture</source>
@@ -11139,6 +12638,10 @@ Bringen Sie sie zuerst auf eine Klemmleiste.</translation>
     <message>
         <source>Conductor section</source>
         <translation>Leiterquerschnitt</translation>
+    </message>
+    <message>
+        <source>This device has no free contact of this kind: every part of its device type is drawn.</source>
+        <translation>Dieses Gerät hat keinen freien Kontakt dieser Art: Jedes Teil seines Gerätetyps ist gezeichnet.</translation>
     </message>
     <message>
         <source> (already used)</source>
@@ -11496,6 +12999,14 @@ Mit dem MCP-Server qet: Lies es mit qet_recording_read, schreibe ein Skript, das
         <translation>Anordnung speichern</translation>
     </message>
     <message>
+        <source>That link cannot be made</source>
+        <translation>Diese Verknüpfung ist nicht möglich</translation>
+    </message>
+    <message>
+        <source>This device has no free contact of this kind: every part of its device type is drawn.</source>
+        <translation>Dieses Gerät hat keinen freien Kontakt dieser Art: Jedes Teil seines Gerätetyps ist gezeichnet.</translation>
+    </message>
+    <message>
         <source>Maximum number of slaves reached.</source>
         <translation>Die maximale Anzahl an Slaves wurde erreicht.</translation>
     </message>
@@ -11551,12 +13062,36 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>Geben Sie den hinzuzufügenden Artikel an. Leer gelassene Felder bleiben in der Datei leer.</translation>
     </message>
     <message>
+        <source>Edit entry</source>
+        <translation>Eintrag bearbeiten</translation>
+    </message>
+    <message>
+        <source>Edit the item. Fields left empty stay empty in the file.</source>
+        <translation>Den Artikel bearbeiten. Leer gelassene Felder bleiben in der Datei leer.</translation>
+    </message>
+    <message>
+        <source>e.g. 80.5</source>
+        <translation>z. B. 80.5</translation>
+    </message>
+    <message>
+        <source>Decimal number with a dot as separator (e.g. 80.5)</source>
+        <translation>Dezimalzahl mit Punkt als Trennzeichen (z. B. 80.5)</translation>
+    </message>
+    <message>
         <source>Save</source>
         <translation>Speichern</translation>
     </message>
     <message>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>Unfinished number</source>
+        <translation>Unvollständige Zahl</translation>
+    </message>
+    <message>
+        <source>Finish the number or empty the field.</source>
+        <translation>Vervollständigen Sie die Zahl oder leeren Sie das Feld.</translation>
     </message>
     <message>
         <source>Nothing filled in</source>
@@ -11580,6 +13115,14 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     <message>
         <source>The file has no header: columns are missing.</source>
         <translation>Die Datei enthält keine Kopfzeile: Spalten fehlen.</translation>
+    </message>
+    <message>
+        <source>The entry to edit no longer exists in the file.</source>
+        <translation>Der zu bearbeitende Eintrag existiert in der Datei nicht mehr.</translation>
+    </message>
+    <message>
+        <source>The selected entry no longer exists in the file.</source>
+        <translation>Der ausgewählte Eintrag existiert in der Datei nicht mehr.</translation>
     </message>
     <message>
         <source>The file already exists and is not empty.</source>
@@ -11607,13 +13150,85 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>In allen Spalten suchen</translation>
     </message>
     <message>
+        <source>Group:</source>
+        <translation>Gruppe:</translation>
+    </message>
+    <message>
+        <source>Group list entries by manufacturer, category, or show a flat list</source>
+        <translation>Einträge der Liste nach Hersteller, nach Kategorie gruppieren oder eine flache Liste anzeigen</translation>
+    </message>
+    <message>
+        <source>Filter:</source>
+        <translation>Filter:</translation>
+    </message>
+    <message>
+        <source>Disable filtering or choose a field to filter by</source>
+        <translation>Filterung deaktivieren oder ein Feld zum Filtern auswählen</translation>
+    </message>
+    <message>
+        <source>Select the value to filter by</source>
+        <translation>Wählen Sie den Wert zum Filtern</translation>
+    </message>
+    <message>
+        <source>Article number</source>
+        <translation>Artikelnummer</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation>Beschreibung</translation>
+    </message>
+    <message>
         <source>Entries: 0</source>
         <translation>Einträge: 0</translation>
     </message>
     <message>
+        <source>Field</source>
+        <translation>Feld</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>Wert</translation>
+    </message>
+    <message>
+        <source>New — Add a new item to the list</source>
+        <extracomment>button adding a new row to the material list file</extracomment>
+        <translation>Neu — Einen neuen Artikel zur Liste hinzufügen</translation>
+    </message>
+    <message>
+        <source>Edit — Edit the selected item in the list</source>
+        <extracomment>button editing the selected row in the material list file</extracomment>
+        <translation>Bearbeiten — Den ausgewählten Artikel in der Liste bearbeiten</translation>
+    </message>
+    <message>
+        <source>Duplicate — Duplicate the selected item in the list</source>
+        <extracomment>button duplicating the selected row in the material list file</extracomment>
+        <translation>Duplizieren — Den ausgewählten Artikel in der Liste duplizieren</translation>
+    </message>
+    <message>
+        <source>Remove — Remove selected item(s) from the list</source>
+        <extracomment>button removing the selected row(s) from the material list file</extracomment>
+        <translation>Entfernen — Die ausgewählten Artikel aus der Liste entfernen</translation>
+    </message>
+    <message>
+        <source>Import... — Import entries from a CSV file into the materials list</source>
+        <translation>Importieren... — Einträge aus einer CSV-Datei in die Materialliste importieren</translation>
+    </message>
+    <message>
+        <source>Export... — Export all, visible, or selected entries to a CSV file</source>
+        <translation>Exportieren... — Alle, die sichtbaren oder die ausgewählten Einträge in eine CSV-Datei exportieren</translation>
+    </message>
+    <message>
+        <source>Settings — Open QElectroTech settings to configure the materials list file</source>
+        <translation>Einstellungen — Die QElectroTech-Einstellungen öffnen, um die Materiallistendatei zu konfigurieren</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Speichern</translation>
+    </message>
+    <message>
         <source>Add a new item to the list</source>
         <extracomment>button adding a new row to the material list file</extracomment>
-        <translation>Einen neuen Artikel zur Liste hinzufügen</translation>
+        <translation type="vanished">Einen neuen Artikel zur Liste hinzufügen</translation>
     </message>
     <message>
         <source>New entry</source>
@@ -11628,6 +13243,26 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>Abbrechen</translation>
     </message>
     <message>
+        <source>e.g. 80.5</source>
+        <translation>z. B. 80.5</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Keine</translation>
+    </message>
+    <message>
+        <source>Manufacturer</source>
+        <translation>Hersteller</translation>
+    </message>
+    <message>
+        <source>Category</source>
+        <translation>Kategorie</translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation>Deaktiviert</translation>
+    </message>
+    <message>
         <source>Cannot read</source>
         <translation>Lesen nicht möglich</translation>
     </message>
@@ -11640,6 +13275,14 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
 %2</translation>
     </message>
     <message>
+        <source>All</source>
+        <translation>Alle</translation>
+    </message>
+    <message>
+        <source>(Empty)</source>
+        <translation>(Leer)</translation>
+    </message>
+    <message>
         <source>Entries: %1</source>
         <translation>Einträge: %1</translation>
     </message>
@@ -11648,12 +13291,36 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>Einträge: %1 von %2</translation>
     </message>
     <message>
+        <source>Edit on several lines</source>
+        <translation>In mehreren Zeilen bearbeiten</translation>
+    </message>
+    <message>
+        <source>Editing entry</source>
+        <translation>Bearbeitung des Eintrags</translation>
+    </message>
+    <message>
         <source>Nothing selected</source>
         <translation>Keine Auswahl</translation>
     </message>
     <message>
         <source>Select an item in the list first.</source>
         <translation>Wählen Sie zuerst einen Artikel aus der Liste.</translation>
+    </message>
+    <message>
+        <source>Unfinished number</source>
+        <translation>Unvollständige Zahl</translation>
+    </message>
+    <message>
+        <source>Finish the number or empty the field.</source>
+        <translation>Vervollständigen Sie die Zahl oder leeren Sie das Feld.</translation>
+    </message>
+    <message>
+        <source>Nothing filled in</source>
+        <translation>Nichts eingegeben</translation>
+    </message>
+    <message>
+        <source>Fill in at least one field to create an entry.</source>
+        <translation>Füllen Sie mindestens ein Feld aus, um einen Eintrag zu erstellen.</translation>
     </message>
     <message>
         <source>Cannot write</source>
@@ -11666,6 +13333,141 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
         <translation>In die Datei konnte nicht geschrieben werden:
 %1
 %2</translation>
+    </message>
+    <message numerus="yes">
+        <source>Export Materials List (%n item(s) selected for export)</source>
+        <translation>
+            <numerusform>Materialliste exportieren (%n Artikel zum Export ausgewählt)</numerusform>
+            <numerusform>Materialliste exportieren (%n Artikel zum Export ausgewählt)</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>CSV files (*.csv);;All files (*)</source>
+        <translation>CSV-Dateien (*.csv);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <source>Export Materials List</source>
+        <translation>Materialliste exportieren</translation>
+    </message>
+    <message>
+        <source>Unable to write the export file.</source>
+        <translation>Die Exportdatei kann nicht geschrieben werden.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Exported %n entry(s) to %1.</source>
+        <translation>
+            <numerusform>%n Eintrag nach %1 exportiert.</numerusform>
+            <numerusform>%n Einträge nach %1 exportiert.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Export Visible (%1)...</source>
+        <translation>Sichtbare exportieren (%1)...</translation>
+    </message>
+    <message>
+        <source>Export All (%1)...</source>
+        <translation>Alle exportieren (%1)...</translation>
+    </message>
+    <message>
+        <source>Import Materials List</source>
+        <translation>Materialliste importieren</translation>
+    </message>
+    <message>
+        <source>Unable to read the import file.</source>
+        <translation>Die Importdatei kann nicht gelesen werden.</translation>
+    </message>
+    <message>
+        <source>The selected file contains no entries.</source>
+        <translation>Die ausgewählte Datei enthält keine Einträge.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n imported entry(s) share an existing item number with different values.</source>
+        <translation>
+            <numerusform>%n importierter Eintrag hat dieselbe Artikelnummer wie ein vorhandener Artikel, aber andere Werte.</numerusform>
+            <numerusform>%n importierte Einträge haben dieselbe Artikelnummer wie ein vorhandener Artikel, aber andere Werte.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Update existing</source>
+        <translation>Vorhandene aktualisieren</translation>
+    </message>
+    <message>
+        <source>Skip existing</source>
+        <translation>Vorhandene ignorieren</translation>
+    </message>
+    <message>
+        <source>Keep both</source>
+        <translation>Beide behalten</translation>
+    </message>
+    <message>
+        <source>Unable to save the imported entries.</source>
+        <translation>Die importierten Einträge können nicht gespeichert werden.</translation>
+    </message>
+    <message>
+        <source>Import complete.
+Added: %1
+Updated: %2
+Skipped: %3</source>
+        <translation>Import abgeschlossen.
+Hinzugefügt: %1
+Aktualisiert: %2
+Ignoriert: %3</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>Kopieren</translation>
+    </message>
+    <message>
+        <source>Select All</source>
+        <translation>Alles auswählen</translation>
+    </message>
+    <message>
+        <source>Duplicate material entry</source>
+        <translation>Materialeintrag duplizieren</translation>
+    </message>
+    <message>
+        <source>Unable to duplicate selected entry in the material list.</source>
+        <translation>Der ausgewählte Eintrag in der Materialliste kann nicht dupliziert werden.</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove &quot;%1&quot; from the material list?</source>
+        <translation>Möchten Sie „%1“ wirklich aus der Materialliste entfernen?</translation>
+    </message>
+    <message>
+        <source>selected item</source>
+        <translation>ausgewählter Artikel</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to remove %1 selected items from the material list?</source>
+        <translation>Möchten Sie die %1 ausgewählten Artikel wirklich aus der Materialliste entfernen?</translation>
+    </message>
+    <message>
+        <source>Remove material entry</source>
+        <translation>Materialeintrag entfernen</translation>
+    </message>
+    <message>
+        <source>Unable to remove selected entry from the material list.</source>
+        <translation>Der ausgewählte Eintrag kann nicht aus der Materialliste entfernt werden.</translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation>Neu</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation>Bearbeiten</translation>
+    </message>
+    <message>
+        <source>Duplicate</source>
+        <translation>Duplizieren</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>Entfernen</translation>
+    </message>
+    <message>
+        <source>Export...</source>
+        <translation>Exportieren...</translation>
     </message>
 </context>
 <context>
@@ -12061,6 +13863,72 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     <message>
         <source>Element Prefix</source>
         <translation>Präfix vom Bauteil</translation>
+    </message>
+</context>
+<context>
+    <name>OpenWireEndsDialog</name>
+    <message>
+        <source>Check open wire ends</source>
+        <translation>Offene Leitungsenden prüfen</translation>
+    </message>
+    <message>
+        <source>Each row is a wire that leads nowhere: to a folio report linked to no other report, into a junction on one side only, or on a potential that reaches one symbol terminal or none. Click a row to select its wires.</source>
+        <translation>Jede Zeile ist eine Leitung, die ins Leere führt: zu einem Seitenverweis ohne Gegenstück, nur einseitig in einen Abzweig oder auf ein Potential, das einen Symbolanschluss oder keinen erreicht. Klick auf eine Zeile wählt ihre Leitungen aus.</translation>
+    </message>
+    <message>
+        <source>Problem</source>
+        <translation>Problem</translation>
+    </message>
+    <message>
+        <source>Folio</source>
+        <translation>Blatt</translation>
+    </message>
+    <message>
+        <source>Position</source>
+        <translation>Position</translation>
+    </message>
+    <message>
+        <source>Symbol</source>
+        <translation>Symbol</translation>
+    </message>
+    <message>
+        <source>Wires</source>
+        <translation>Leitungen</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Aktualisieren</translation>
+    </message>
+    <message>
+        <source>Folio report linked to no other report</source>
+        <translation>Seitenverweis ohne Gegenstück</translation>
+    </message>
+    <message>
+        <source>Junction with one wire</source>
+        <translation>Abzweig mit einer Leitung</translation>
+    </message>
+    <message>
+        <source>Wires that reach no symbol terminal</source>
+        <translation>Leitungen, die keinen Symbolanschluss erreichen</translation>
+    </message>
+    <message>
+        <source>Wires that reach only one symbol terminal</source>
+        <translation>Leitungen, die nur einen Symbolanschluss erreichen</translation>
+    </message>
+    <message>
+        <source>Every wire leads somewhere.</source>
+        <translation>Jede Leitung führt irgendwohin.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n place(s) where wires stop and go nowhere.</source>
+        <translation>
+            <numerusform>%n Stelle(n), an denen Leitungen enden und nirgendwohin führen.</numerusform>
+            <numerusform>%n Stelle(n), an denen Leitungen enden und nirgendwohin führen.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>These wires no longer exist. Refresh the results.</source>
+        <translation>Diese Leitungen existieren nicht mehr. Ergebnisse aktualisieren.</translation>
     </message>
 </context>
 <context>
@@ -13323,6 +15191,121 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     </message>
 </context>
 <context>
+    <name>PartCategory</name>
+    <message>
+        <source>Power cable</source>
+        <translation>Leistungskabel</translation>
+    </message>
+    <message>
+        <source>Instrument cable</source>
+        <translation>Instrumentierungskabel</translation>
+    </message>
+    <message>
+        <source>Control cable</source>
+        <translation>Steuerkabel</translation>
+    </message>
+    <message>
+        <source>Data cable</source>
+        <translation>Datenkabel</translation>
+    </message>
+    <message>
+        <source>Contactor</source>
+        <translation>Schütz</translation>
+    </message>
+    <message>
+        <source>Relay</source>
+        <translation>Relais</translation>
+    </message>
+    <message>
+        <source>Power supply</source>
+        <translation>Netzteil</translation>
+    </message>
+    <message>
+        <source>Fuse</source>
+        <translation>Sicherung</translation>
+    </message>
+    <message>
+        <source>Overload</source>
+        <translation>Überlastrelais</translation>
+    </message>
+    <message>
+        <source>Circuit breaker</source>
+        <translation>Leistungsschalter</translation>
+    </message>
+    <message>
+        <source>Motor starter</source>
+        <translation>Motorstarter</translation>
+    </message>
+    <message>
+        <source>Terminal</source>
+        <translation>Klemme</translation>
+    </message>
+    <message>
+        <source>Connector</source>
+        <translation>Steckverbinder</translation>
+    </message>
+    <message>
+        <source>PLC</source>
+        <translation>SPS</translation>
+    </message>
+    <message>
+        <source>Sensor</source>
+        <translation>Sensor</translation>
+    </message>
+    <message>
+        <source>Switch</source>
+        <translation>Schalter</translation>
+    </message>
+    <message>
+        <source>Push button</source>
+        <translation>Taster</translation>
+    </message>
+    <message>
+        <source>Pilot light</source>
+        <translation>Meldeleuchte</translation>
+    </message>
+    <message>
+        <source>Motor</source>
+        <translation>Motor</translation>
+    </message>
+    <message>
+        <source>Transformers</source>
+        <translation>Transformatoren</translation>
+    </message>
+    <message>
+        <source>Enclosure</source>
+        <translation>Schaltschrank</translation>
+    </message>
+    <message>
+        <source>Drive</source>
+        <translation>Antrieb</translation>
+    </message>
+    <message>
+        <source>Valve</source>
+        <translation>Ventil</translation>
+    </message>
+    <message>
+        <source>Busbar and link</source>
+        <translation>Schiene und Brücke</translation>
+    </message>
+    <message>
+        <source>Rail and trunking</source>
+        <translation>Tragschiene und Kanal</translation>
+    </message>
+    <message>
+        <source>Marking</source>
+        <translation>Kennzeichnung</translation>
+    </message>
+    <message>
+        <source>Accessory</source>
+        <translation>Zubehör</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation>Andere</translation>
+    </message>
+</context>
+<context>
     <name>PartDynamicTextField</name>
     <message>
         <source>Dynamic text field</source>
@@ -13539,6 +15522,84 @@ Möchten Sie diesen Slave-Kontakt trotzdem verbinden?</translation>
     </message>
 </context>
 <context>
+    <name>PartTypesDialog</name>
+    <message>
+        <source>Parts without a device type</source>
+        <translation>Artikel ohne Gerätetyp</translation>
+    </message>
+    <message>
+        <source>Search part, description or manufacturer...</source>
+        <translation>Artikel, Beschreibung oder Hersteller suchen...</translation>
+    </message>
+    <message>
+        <source>Only the parts this project uses</source>
+        <translation>Nur die in diesem Projekt verwendeten Artikel</translation>
+    </message>
+    <message>
+        <source>Use the suggestions</source>
+        <translation>Vorschläge übernehmen</translation>
+    </message>
+    <message>
+        <source>Takes the device type of the parts whose devices in this project all have the same one.</source>
+        <translation>Übernimmt den Gerätetyp der Artikel, deren Geräte in diesem Projekt alle denselben haben.</translation>
+    </message>
+    <message>
+        <source>Also give each type to the symbols of this project with that part and no device type</source>
+        <translation>Jedem Symbol dieses Projekts mit diesem Artikel und ohne Gerätetyp ebenfalls den Typ zuweisen</translation>
+    </message>
+    <message>
+        <source>The material list %1 does not exist yet.</source>
+        <translation>Die Stückliste %1 gibt es noch nicht.</translation>
+    </message>
+    <message>
+        <source>Part number</source>
+        <translation>Bestellnummer</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation>Beschreibung</translation>
+    </message>
+    <message>
+        <source>Manufacturer</source>
+        <translation>Hersteller</translation>
+    </message>
+    <message>
+        <source>Devices here</source>
+        <translation>Geräte hier</translation>
+    </message>
+    <message>
+        <source>Suggested type</source>
+        <translation>Vorgeschlagener Typ</translation>
+    </message>
+    <message>
+        <source>Device type</source>
+        <translation>Gerätetyp</translation>
+    </message>
+    <message>
+        <source>%1 (others too)</source>
+        <comment>a suggested device type some devices do not share</comment>
+        <translation>%1 (auch andere)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n part(s) of the material list have no device type:</source>
+        <translation>
+            <numerusform>%n Artikel der Stückliste haben keinen Gerätetyp:</numerusform>
+            <numerusform>%n Artikel der Stückliste haben keinen Gerätetyp:</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n shown.</source>
+        <translation>
+            <numerusform>%n angezeigt.</numerusform>
+            <numerusform>%n angezeigt.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>There is no device type called: %1</source>
+        <translation>Es gibt keinen Gerätetyp namens: %1</translation>
+    </message>
+</context>
+<context>
     <name>PasteNumberingImport</name>
     <message>
         <source>Numbering missing from this project</source>
@@ -13618,7 +15679,7 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
     </message>
     <message>
         <source>Margins are not used while &quot;Use the whole page&quot; is ticked.</source>
-        <translation>Die Ränder gelten nicht, solange „Ganze Seite verwenden“ angehakt ist.</translation>
+        <translation>Die Ränder werden nicht verwendet, solange „Ganze Seite verwenden“ aktiviert ist.</translation>
     </message>
 </context>
 <context>
@@ -13657,6 +15718,181 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
     <message>
         <source>Preview :</source>
         <translation>Übersicht:</translation>
+    </message>
+</context>
+<context>
+    <name>PlaceLabelPartDialog</name>
+    <message>
+        <source>Label and part</source>
+        <translation>Beschriftung und Teil</translation>
+    </message>
+    <message>
+        <source>Label</source>
+        <translation>Beschriftung</translation>
+    </message>
+    <message>
+        <source>Choose...</source>
+        <translation>Auswählen...</translation>
+    </message>
+    <message>
+        <source>Part number</source>
+        <translation>Artikelnummer</translation>
+    </message>
+    <message>
+        <source>No materials list</source>
+        <translation>Keine Materialliste</translation>
+    </message>
+    <message>
+        <source>There is no materials list file at this location:
+%1</source>
+        <translation>An diesem Ort gibt es keine Materiallistendatei:
+%1</translation>
+    </message>
+    <message>
+        <source>Device type: %1</source>
+        <translation>Gerätetyp: %1</translation>
+    </message>
+    <message>
+        <source>Place: %1</source>
+        <translation>Platzieren: %1</translation>
+    </message>
+    <message>
+        <source>No free part of %1 for this symbol</source>
+        <translation>Kein freies Teil von %1 für dieses Symbol</translation>
+    </message>
+    <message>
+        <source>Part: %1</source>
+        <translation>Teil: %1</translation>
+    </message>
+    <message>
+        <source>Terminal %1 already exists. Use it again?</source>
+        <extracomment>%1 is a terminal&apos;s label, such as &quot;X1:3&quot;</extracomment>
+        <translation>Die Klemme %1 existiert bereits. Erneut verwenden?</translation>
+    </message>
+</context>
+<context>
+    <name>PlaceRename</name>
+    <message>
+        <source>Change the new folio defaults and wire counters</source>
+        <translation>Standardwerte für neue Blätter und Leitungszähler ändern</translation>
+    </message>
+    <message>
+        <source>A symbol with no plant has nothing to rename.</source>
+        <translation>Ein Symbol ohne Anlage hat nichts umzubenennen.</translation>
+    </message>
+    <message>
+        <source>A symbol with no location has nothing to rename.</source>
+        <translation>Ein Symbol ohne Ort hat nichts umzubenennen.</translation>
+    </message>
+    <message>
+        <source>The new name is empty.</source>
+        <translation>Der neue Name ist leer.</translation>
+    </message>
+    <message>
+        <source>The new name starts or ends with a space.</source>
+        <translation>Der neue Name beginnt oder endet mit einem Leerzeichen.</translation>
+    </message>
+    <message>
+        <source>The new name is the old one.</source>
+        <translation>Der neue Name ist der alte.</translation>
+    </message>
+    <message>
+        <source>Rename location %1 to %2</source>
+        <translation>Ort %1 in %2 umbenennen</translation>
+    </message>
+    <message>
+        <source>Rename plant %1 to %2</source>
+        <translation>Anlage %1 in %2 umbenennen</translation>
+    </message>
+</context>
+<context>
+    <name>PlantsLocationsDialog</name>
+    <message>
+        <source>Plants and locations</source>
+        <translation>Anlagen und Orte</translation>
+    </message>
+    <message>
+        <source>Double-click a row to go to its first folio</source>
+        <translation>Doppelklick auf eine Zeile springt zu ihrem ersten Blatt</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Aktualisieren</translation>
+    </message>
+    <message>
+        <source>Rename plant...</source>
+        <translation>Anlage umbenennen...</translation>
+    </message>
+    <message>
+        <source>Changes this plant&apos;s name everywhere in the project</source>
+        <translation>Ändert den Namen dieser Anlage überall im Projekt</translation>
+    </message>
+    <message>
+        <source>Rename location...</source>
+        <translation>Ort umbenennen...</translation>
+    </message>
+    <message>
+        <source>Changes this location&apos;s name in its plant, everywhere in the project</source>
+        <translation>Ändert den Namen dieses Ortes in seiner Anlage überall im Projekt</translation>
+    </message>
+    <message>
+        <source>(none)</source>
+        <translation>(keine)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n plant and location row(s).</source>
+        <translation>
+            <numerusform>%n Zeile(n) mit Anlage und Ort.</numerusform>
+            <numerusform>%n Zeile(n) mit Anlage und Ort.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Reading the folios...</source>
+        <translation>Blätter werden gelesen...</translation>
+    </message>
+    <message>
+        <source>Reading folio %1 of %2...</source>
+        <translation>Blatt %1 von %2 wird gelesen...</translation>
+    </message>
+    <message>
+        <source>Rename location</source>
+        <translation>Ort umbenennen</translation>
+    </message>
+    <message>
+        <source>Rename plant</source>
+        <translation>Anlage umbenennen</translation>
+    </message>
+    <message>
+        <source>New name for the location %1 of plant %2:</source>
+        <translation>Neuer Name für den Ort %1 der Anlage %2:</translation>
+    </message>
+    <message>
+        <source>New name for the plant %1:</source>
+        <translation>Neuer Name für die Anlage %1:</translation>
+    </message>
+    <message>
+        <source>&quot;%1&quot; already exists. The two will become one. Continue?</source>
+        <translation>„%1“ gibt es bereits. Beide werden zu einer. Fortfahren?</translation>
+    </message>
+    <message>
+        <source>Both plants have wire numbers counted. Which counters should &quot;%1&quot; keep?</source>
+        <translation>Beide Anlagen haben gezählte Leitungsnummern. Welche Zähler soll „%1“ behalten?</translation>
+    </message>
+    <message>
+        <source>The higher number of each</source>
+        <translation>Jeweils die höhere Nummer</translation>
+    </message>
+    <message>
+        <source>Those of %1</source>
+        <translation>Die von %1</translation>
+    </message>
+    <message>
+        <source>Not every folio could be read, so nothing was renamed.</source>
+        <translation>Nicht alle Blätter konnten gelesen werden, daher wurde nichts umbenannt.</translation>
+    </message>
+    <message>
+        <source>The project does not store &quot;%1&quot; anywhere that can be renamed.</source>
+        <translation>Das Projekt speichert „%1“ nirgends, wo es umbenannt werden kann.</translation>
     </message>
 </context>
 <context>
@@ -13857,10 +16093,6 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
         <translation>Herstellerportale</translation>
     </message>
     <message>
-        <source>One account per portal. Passwords and tokens are kept in the Windows Credential Manager, never in the settings. QElectroTech uses official interfaces and public files only; it does not fill in login forms and solves no CAPTCHAs.</source>
-        <translation type="vanished">Ein Konto je Portal. Passwörter und Tokens liegen in der Windows-Anmeldeinformationsverwaltung, nie in den Einstellungen. QElectroTech nutzt nur offizielle Schnittstellen und öffentliche Dateien; es füllt keine Anmeldeformulare aus und löst keine CAPTCHAs.</translation>
-    </message>
-    <message>
         <source>One account per portal. Passwords and tokens are kept in the credential store of the system (Credential Manager on Windows, keychain on macOS), never in the settings. QElectroTech uses official interfaces and public files only; it does not fill in login forms and solves no CAPTCHAs.</source>
         <translation>Ein Konto je Portal. Passwörter und Tokens liegen im Anmeldespeicher des Systems (unter Windows in der Anmeldeinformationsverwaltung, unter macOS im Schlüsselbund), nie in den Einstellungen. QElectroTech nutzt nur offizielle Schnittstellen und öffentliche Dateien; es füllt keine Anmeldeformulare aus und löst keine CAPTCHAs.</translation>
     </message>
@@ -13983,10 +16215,6 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
     <message>
         <source>Logged in (token in the credential store).</source>
         <translation>Angemeldet (Token im Anmeldespeicher).</translation>
-    </message>
-    <message>
-        <source>Logged in (token in the Credential Manager).</source>
-        <translation type="vanished">Angemeldet (Token in der Anmeldeinformationsverwaltung).</translation>
     </message>
     <message>
         <source>Account stored.</source>
@@ -14290,6 +16518,11 @@ Folgende Variablen sind inkompatibel:
 <context>
     <name>PrefixConfigurationDialog</name>
     <message>
+        <source>Company collection prefixes</source>
+        <comment>title of the dialog configuring the prefixes of the company collection</comment>
+        <translation>Präfixe der Firmensammlung</translation>
+    </message>
+    <message>
         <source>User collection prefixes</source>
         <comment>title of the dialog configuring the prefixes of the user collection</comment>
         <translation>Präfixe der Benutzersammlung</translation>
@@ -14317,6 +16550,11 @@ Ein leeres Feld bedeutet, dass der Ordner das Präfix seines übergeordneten Ord
     <message>
         <source>Collapse all</source>
         <translation>Alle einklappen</translation>
+    </message>
+    <message>
+        <source>The last column shows the prefix the user collection gives a folder: the user collection is read first, so that prefix is the one used.</source>
+        <comment>hint of the company prefix dialog</comment>
+        <translation>Die letzte Spalte zeigt das Präfix, das die Benutzersammlung einem Ordner gibt: Die Benutzersammlung wird zuerst gelesen, daher wird dieses Präfix verwendet.</translation>
     </message>
     <message>
         <source>Entries without a folder</source>
@@ -14351,6 +16589,20 @@ behalten oder löschen?</numerusform>
         <translation>vom übergeordneten Ordner erben</translation>
     </message>
     <message>
+        <source>Used instead (user collection)</source>
+        <comment>column header: the prefix the user collection gives the folder, which wins over the company one</comment>
+        <translation>Stattdessen verwendet (Benutzersammlung)</translation>
+    </message>
+    <message>
+        <source>no prefix</source>
+        <comment>the user collection explicitly gives the folder no prefix</comment>
+        <translation>kein Präfix</translation>
+    </message>
+    <message>
+        <source>The user collection gives this folder the prefix &quot;%1&quot;. The user collection is read first, so its symbols get that prefix, not the one set here.</source>
+        <translation>Die Benutzersammlung gibt diesem Ordner das Präfix „%1“. Die Benutzersammlung wird zuerst gelesen: Ihre Symbole erhalten dieses Präfix, nicht das hier festgelegte.</translation>
+    </message>
+    <message>
         <source>Cannot save</source>
         <translation>Speichern nicht möglich</translation>
     </message>
@@ -14358,6 +16610,18 @@ behalten oder löschen?</numerusform>
         <source>The file %1 could not be saved:
 %2</source>
         <translation>Die Datei %1 konnte nicht gespeichert werden:
+%2</translation>
+    </message>
+    <message>
+        <source>Prefix file updated</source>
+        <translation>Präfixdatei aktualisiert</translation>
+    </message>
+    <message>
+        <source>The file %1 has been rewritten in the form this dialog uses. Every folder keeps its prefix.
+Its previous version was kept as:
+%2</source>
+        <translation>Die Datei %1 wurde in die von diesem Dialog verwendete Form umgeschrieben. Jeder Ordner behält sein Präfix.
+Ihre vorherige Version wurde gesichert als:
 %2</translation>
     </message>
     <message>
@@ -14656,6 +16920,203 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     </message>
 </context>
 <context>
+    <name>ProjectCheck</name>
+    <message>
+        <source>Duplicate signals and components</source>
+        <translation>Doppelte Signale und Bauteile</translation>
+    </message>
+    <message>
+        <source>Potential types</source>
+        <translation>Potentialtypen</translation>
+    </message>
+    <message>
+        <source>Open wire ends</source>
+        <translation>Offene Leitungsenden</translation>
+    </message>
+    <message>
+        <source>Symbols with no wire</source>
+        <translation>Symbole ohne Leitung</translation>
+    </message>
+    <message>
+        <source>Device types</source>
+        <translation>Gerätetypen</translation>
+    </message>
+    <message>
+        <source>Wires per terminal</source>
+        <translation>Leitungen je Anschluss</translation>
+    </message>
+    <message>
+        <source>Terminal names</source>
+        <translation>Anschlussnamen</translation>
+    </message>
+    <message>
+        <source>Project &gt; Find duplicate signals and components... has the options of this check.</source>
+        <translation>Projekt &gt; Doppelte Signale und Bauteile suchen... hat die Optionen dieser Prüfung.</translation>
+    </message>
+    <message>
+        <source>Wires of different potential types joined on one potential. Project &gt; Check potential types... lists them too.</source>
+        <translation>Leitungen unterschiedlicher Potentialtypen, die auf einem Potential verbunden sind. Projekt &gt; Potentialtypen prüfen... listet sie ebenfalls.</translation>
+    </message>
+    <message>
+        <source>Wires that run to an unlinked folio report, into a junction on one side only, or reach one symbol terminal. Project &gt; Check open wire ends... lists them too.</source>
+        <translation>Leitungen, die zu einem nicht verknüpften Seitenverweis laufen, nur einseitig in einen Abzweig führen oder einen Symbolanschluss erreichen. Projekt &gt; Offene Leitungsenden prüfen... listet sie ebenfalls.</translation>
+    </message>
+    <message>
+        <source>Symbols none of whose terminals has a wire. Folio reports are never listed; Options chooses what else is left out.</source>
+        <translation>Symbole, von deren Anschlüssen keiner eine Leitung hat. Seitenverweise werden nie aufgelistet; die Optionen bestimmen, was sonst noch ausgelassen wird.</translation>
+    </message>
+    <message>
+        <source>Devices not drawn the way their device type says. Project &gt; Check device types... can place the missing parts.</source>
+        <translation>Geräte, die nicht so gezeichnet sind, wie ihr Gerätetyp es vorgibt. Projekt &gt; Gerätetypen prüfen... kann die fehlenden Teile platzieren.</translation>
+    </message>
+    <message>
+        <source>Terminals with more wires than the limit set in Project properties &gt; Wiring.</source>
+        <translation>Anschlüsse mit mehr Leitungen als die in Projekteigenschaften &gt; Verdrahtung eingestellte Grenze.</translation>
+    </message>
+    <message>
+        <source>Symbols of the project with two terminals of one name, which a wiring list cannot tell apart.</source>
+        <translation>Symbole des Projekts mit zwei Anschlüssen gleichen Namens, die eine Verdrahtungsliste nicht unterscheiden kann.</translation>
+    </message>
+    <message>
+        <source>Duplicate signal: %1</source>
+        <translation>Doppeltes Signal: %1</translation>
+    </message>
+    <message>
+        <source>Duplicate component: %1</source>
+        <translation>Doppeltes Bauteil: %1</translation>
+    </message>
+    <message>
+        <source>Duplicate signal: %1 in %2</source>
+        <extracomment>%2 is the plant, or the plant and location, such as &quot;=P1+UV1&quot;.</extracomment>
+        <translation>Doppeltes Signal: %1 in %2</translation>
+    </message>
+    <message>
+        <source>Duplicate component: %1 in %2</source>
+        <translation>Doppeltes Bauteil: %1 in %2</translation>
+    </message>
+    <message>
+        <source>%1 — different part numbers: %2</source>
+        <extracomment>%1 is the finding above, %2 the part numbers, &quot;A9, B1&quot;.</extracomment>
+        <translation>%1 – unterschiedliche Bestellnummern: %2</translation>
+    </message>
+    <message>
+        <source>Potential types are off for this project.</source>
+        <translation>Potentialtypen sind für dieses Projekt ausgeschaltet.</translation>
+    </message>
+    <message>
+        <source>One potential with wires of types %1</source>
+        <extracomment>%1 is the potential types, such as &quot;L1 / N&quot;</extracomment>
+        <translation>Ein Potential mit Leitungen der Typen %1</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n wire(s)</source>
+        <translation>
+            <numerusform>%n Leitung(en)</numerusform>
+            <numerusform>%n Leitung(en)</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>%1: %2</source>
+        <extracomment>%1 is the problem, %2 the report, junction or symbol terminal
+----------
+%1 is the symbol&apos;s label, %2 its name, such as &quot;QF1: Circuit breaker&quot;</extracomment>
+        <translation>%1: %2</translation>
+    </message>
+    <message>
+        <source>No device of the project has a device type.</source>
+        <translation>Kein Gerät des Projekts hat einen Gerätetyp.</translation>
+    </message>
+    <message>
+        <source>%1: the project has no device type %2</source>
+        <extracomment>%1 is the device, such as &quot;=P1+CP1-K12&quot;; %2 its device type</extracomment>
+        <translation>%1: das Projekt hat keinen Gerätetyp %2</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1: %2 of %n pins drawn</source>
+        <extracomment>%1 is the connector, such as &quot;=P1+CP1-X1&quot;</extracomment>
+        <translation>
+            <numerusform>%1: %2 von %n Pins gezeichnet</numerusform>
+            <numerusform>%1: %2 von %n Pins gezeichnet</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Free pin: %1</source>
+        <translation>Freier Pin: %1</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1: %2 of %n parts drawn</source>
+        <extracomment>%1 is the device, such as &quot;=P1+CP1-K12&quot;</extracomment>
+        <translation>
+            <numerusform>%1: %2 von %n Teilen gezeichnet</numerusform>
+            <numerusform>%1: %2 von %n Teilen gezeichnet</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Not drawn: %1</source>
+        <extracomment>%1 describes the part, such as &quot;simple NO 13 14&quot;</extracomment>
+        <translation>Nicht gezeichnet: %1</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n contact(s) more than the device type has</source>
+        <translation>
+            <numerusform>%n Kontakt(e) mehr, als der Gerätetyp hat</numerusform>
+            <numerusform>%n Kontakt(e) mehr, als der Gerätetyp hat</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Pin %1 is drawn twice</source>
+        <translation>Pin %1 ist doppelt gezeichnet</translation>
+    </message>
+    <message>
+        <source>%1 has no pin %2</source>
+        <extracomment>%1 is a connector, such as &quot;X1&quot;, %2 a pin name, such as &quot;7&quot;</extracomment>
+        <translation>%1 hat keinen Pin %2</translation>
+    </message>
+    <message>
+        <source>%1: a terminal drawn without a pin name</source>
+        <translation>%1: ein Anschluss ohne Pin-Namen gezeichnet</translation>
+    </message>
+    <message>
+        <source>Beyond the type: %1</source>
+        <translation>Über den Typ hinaus: %1</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n contact(s) linked to no master</source>
+        <translation>
+            <numerusform>%n Kontakt(e) ohne Master verknüpft</numerusform>
+            <numerusform>%n Kontakt(e) ohne Master verknüpft</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <extracomment>%1 is the symbol&apos;s name, %2 its label</extracomment>
+        <translation>%1 %2</translation>
+    </message>
+    <message>
+        <source>The wiring rules are switched off in Settings &gt; Configure QElectroTech.</source>
+        <translation>Die Verdrahtungsregeln sind unter Einstellungen &gt; QElectroTech konfigurieren ausgeschaltet.</translation>
+    </message>
+    <message>
+        <source>No limit is set for the wires of a terminal.</source>
+        <translation>Für die Leitungen eines Anschlusses ist keine Grenze gesetzt.</translation>
+    </message>
+    <message>
+        <source>terminal %1</source>
+        <extracomment>%1 numbers the terminals of a symbol, from 1</extracomment>
+        <translation>Anschluss %1</translation>
+    </message>
+    <message>
+        <source>%1: %2 wires, the limit is %3</source>
+        <extracomment>%1 is the symbol&apos;s label and terminal, such as &quot;-K1:A1&quot;; %2 and %3 count wires</extracomment>
+        <translation>%1: %2 Leitungen, die Grenze ist %3</translation>
+    </message>
+    <message>
+        <source>%1: terminals of one name: %2</source>
+        <extracomment>%1 is the symbol&apos;s name; %2 the names, such as &quot;L (2), N (2)&quot;</extracomment>
+        <translation>%1: Anschlüsse gleichen Namens: %2</translation>
+    </message>
+</context>
+<context>
     <name>ProjectDBModel</name>
     <message>
         <source>Position</source>
@@ -14808,7 +17269,7 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     <message>
         <source>Automatically chains folio report elements with the same label in a forward/backward sequence.</source>
         <comment>tooltip</comment>
-        <translation>Verkettet Folien-Verweise mit gleichem Kennzeichen automatisch über die Folien hinweg.</translation>
+        <translation type="vanished">Verkettet Folien-Verweise mit gleichem Kennzeichen automatisch über die Folien hinweg.</translation>
     </message>
     <message>
         <source>General</source>
@@ -14883,12 +17344,72 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     <message>
         <source>Elements without their own plant or location show those of their structure box or folio</source>
         <comment>checkbox label</comment>
-        <translation>Bauteile ohne eigene Anlage oder eigenen Ort zeigen die ihres Strukturkastens oder Blatts</translation>
+        <translation>Elemente ohne eigene Anlage und eigenen Ort zeigen die ihres Strukturrahmens oder ihrer Seite</translation>
     </message>
     <message>
         <source>The variables %{plant} and %{location} of an element that has none of its own give the plant and location of the structure box around it, else of its folio, as %{structure_id_full} does. Uncheck to show only the element&apos;s own, as before.</source>
         <comment>tooltip</comment>
-        <translation>Die Variablen %{plant} und %{location} eines Bauteils ohne eigene Werte liefern Anlage und Ort des umgebenden Strukturkastens, sonst des Blatts, so wie %{structure_id_full}. Abwählen, um wie bisher nur die eigenen Werte des Bauteils zu zeigen.</translation>
+        <translation>Die Variablen %{plant} und %{location} eines Elements, das keine eigenen hat, liefern die Anlage und den Ort des umgebenden Strukturrahmens, andernfalls seiner Seite, wie es %{structure_id_full} tut. Deaktivieren Sie dies, um nur die eigenen des Elements anzuzeigen, wie bisher.</translation>
+    </message>
+    <message>
+        <source>Element labels show:</source>
+        <comment>label when configuring</comment>
+        <translation>Die Beschriftungen der Elemente zeigen:</translation>
+    </message>
+    <message>
+        <source>The label only (K1)</source>
+        <comment>designation display</comment>
+        <translation>Nur die Beschriftung (K1)</translation>
+    </message>
+    <message>
+        <source>Short reference designation, IEC 81346 (=+-), without what the folio or structure box already gives</source>
+        <comment>designation display</comment>
+        <translation>Kurzes Referenzkennzeichen, IEC 81346 (=+-), ohne das, was die Seite oder der Strukturrahmen bereits liefert</translation>
+    </message>
+    <message>
+        <source>Full reference designation, IEC 81346 (=A1+B2-K1)</source>
+        <comment>designation display</comment>
+        <translation>Vollständiges Referenzkennzeichen, IEC 81346 (=A1+B2-K1)</translation>
+    </message>
+    <message>
+        <source>What the label field of each element shows. The plant and location are the element&apos;s own, else those of its structure box or folio. Only the drawing changes: the label stays as typed, and a text written with %{label} still shows the label only.</source>
+        <comment>tooltip</comment>
+        <translation>Was das Beschriftungsfeld jedes Elements zeigt. Anlage und Ort sind die des Elements, andernfalls die seines Strukturrahmens oder seiner Seite. Nur die Zeichnung ändert sich: Die Beschriftung bleibt wie eingegeben, und ein mit %{label} geschriebener Text zeigt weiterhin nur die Beschriftung.</translation>
+    </message>
+    <message>
+        <source>Follow device types when placing and linking</source>
+        <comment>checkbox label</comment>
+        <translation>Gerätetypen beim Platzieren und Verknüpfen berücksichtigen</translation>
+    </message>
+    <message>
+        <source>A contact is linked only to a device whose type has a free part for it, and takes that part&apos;s terminals; a master symbol placed is asked its device type. Uncheck to place and link as before.</source>
+        <comment>tooltip</comment>
+        <translation>Ein Kontakt wird nur mit einem Gerät verknüpft, dessen Typ ein freies Teil für ihn hat, und übernimmt die Anschlüsse dieses Teils; bei einem platzierten Master-Symbol wird nach seinem Gerätetyp gefragt. Deaktivieren Sie dies, um wie bisher zu platzieren und zu verknüpfen.</translation>
+    </message>
+    <message>
+        <source>Automatically chains folio report elements that share a name in a forward/backward sequence.</source>
+        <comment>tooltip</comment>
+        <translation>Verkettet automatisch Seitenverweise, die einen Namen teilen, in einer Hin-und-zurück-Folge.</translation>
+    </message>
+    <message>
+        <source>Chain folio report elements by</source>
+        <comment>group box title</comment>
+        <translation>Seitenverweis-Elemente verketten nach</translation>
+    </message>
+    <message>
+        <source>What two folio report elements must share to be chained together: the label each of them carries, or the function of the wire its terminal holds. A report without a value of its own is never chained. Changing this dissolves the chains of this project and makes them again from the new key.</source>
+        <comment>tooltip</comment>
+        <translation>Was zwei Seitenverweis-Elemente gemeinsam haben müssen, um verkettet zu werden: die Beschriftung, die jedes trägt, oder die Funktion des Leiters, den sein Anschluss hält. Ein Verweis ohne eigenen Wert wird nie verkettet. Eine Änderung löst die Ketten dieses Projekts auf und baut sie aus dem neuen Schlüssel neu auf.</translation>
+    </message>
+    <message>
+        <source>Their label</source>
+        <comment>radio button label</comment>
+        <translation>Ihre Beschriftung</translation>
+    </message>
+    <message>
+        <source>The function of their conductor</source>
+        <comment>radio button label</comment>
+        <translation>Die Funktion ihres Leiters</translation>
     </message>
     <message>
         <source>Display of the terminal labelling</source>
@@ -15181,6 +17702,213 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     <message>
         <source>File (*.pdf)</source>
         <translation>Datei (*.pdf)</translation>
+    </message>
+</context>
+<context>
+    <name>ProjectReports</name>
+    <message>
+        <source>Parts list</source>
+        <translation>Teileliste</translation>
+    </message>
+    <message>
+        <source>Device</source>
+        <translation>Gerät</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation>Beschreibung</translation>
+    </message>
+    <message>
+        <source>Model</source>
+        <translation>Modell</translation>
+    </message>
+    <message>
+        <source>Part number</source>
+        <translation>Artikelnummer</translation>
+    </message>
+    <message>
+        <source>Symbols</source>
+        <translation>Symbole</translation>
+    </message>
+    <message>
+        <source>Sheet</source>
+        <translation>Seite</translation>
+    </message>
+    <message>
+        <source>Position</source>
+        <translation>Position</translation>
+    </message>
+    <message>
+        <source>Wire list</source>
+        <translation>Leiterliste</translation>
+    </message>
+    <message>
+        <source>Wire</source>
+        <translation>Leiter</translation>
+    </message>
+    <message>
+        <source>Section</source>
+        <translation>Querschnitt</translation>
+    </message>
+    <message>
+        <source>Colour</source>
+        <translation>Farbe</translation>
+    </message>
+    <message>
+        <source>From</source>
+        <translation>Von</translation>
+    </message>
+    <message>
+        <source>To</source>
+        <translation>Nach</translation>
+    </message>
+    <message>
+        <source>Cable</source>
+        <translation>Kabel</translation>
+    </message>
+    <message>
+        <source>Potential list</source>
+        <translation>Potenzialliste</translation>
+    </message>
+    <message>
+        <source>Wire numbers</source>
+        <translation>Leiternummern</translation>
+    </message>
+    <message>
+        <source>Names</source>
+        <translation>Namen</translation>
+    </message>
+    <message>
+        <source>Pins</source>
+        <translation>Pins</translation>
+    </message>
+    <message>
+        <source>Connected</source>
+        <translation>Angeschlossen</translation>
+    </message>
+    <message>
+        <source>First sheet</source>
+        <translation>Erste Seite</translation>
+    </message>
+    <message>
+        <source>Sheets</source>
+        <translation>Seiten</translation>
+    </message>
+    <message>
+        <source>Terminal list</source>
+        <translation>Klemmenliste</translation>
+    </message>
+    <message>
+        <source>Strip</source>
+        <translation>Klemmenleiste</translation>
+    </message>
+    <message>
+        <source>Terminal</source>
+        <translation>Klemme</translation>
+    </message>
+    <message>
+        <source>Wires</source>
+        <translation>Leiter</translation>
+    </message>
+    <message>
+        <source>Cable list</source>
+        <translation>Kabelliste</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Typ</translation>
+    </message>
+    <message>
+        <source>Cores</source>
+        <translation>Adern</translation>
+    </message>
+    <message>
+        <source>Wired</source>
+        <translation>Verdrahtet</translation>
+    </message>
+    <message>
+        <source>Length</source>
+        <translation>Länge</translation>
+    </message>
+    <message>
+        <source>Cable core list</source>
+        <translation>Aderliste der Kabel</translation>
+    </message>
+    <message>
+        <source>Core</source>
+        <translation>Ader</translation>
+    </message>
+    <message>
+        <source>PLC input and output list</source>
+        <translation>Liste der SPS-Ein- und Ausgänge</translation>
+    </message>
+    <message>
+        <source>PLC</source>
+        <translation>SPS</translation>
+    </message>
+    <message>
+        <source>Entry</source>
+        <translation>Eingang</translation>
+    </message>
+    <message>
+        <source>Address</source>
+        <translation>Adresse</translation>
+    </message>
+    <message>
+        <source>Function</source>
+        <translation>Funktion</translation>
+    </message>
+    <message>
+        <source>Panel space list</source>
+        <translation>Schrankplatzliste</translation>
+    </message>
+    <message>
+        <source>(no place)</source>
+        <translation>(kein Ort)</translation>
+    </message>
+    <message>
+        <source>Place</source>
+        <translation>Ort</translation>
+    </message>
+    <message>
+        <source>Parts with a size</source>
+        <translation>Artikel mit Größe</translation>
+    </message>
+    <message>
+        <source>Area [m²]</source>
+        <translation>Fläche [m²]</translation>
+    </message>
+    <message>
+        <source>Deepest [mm]</source>
+        <translation>Tiefster [mm]</translation>
+    </message>
+    <message>
+        <source>Parts without a size</source>
+        <translation>Artikel ohne Größe</translation>
+    </message>
+    <message>
+        <source>Plant</source>
+        <translation>Anlage</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation>Ort</translation>
+    </message>
+    <message>
+        <source>Designation</source>
+        <translation>Kennzeichen</translation>
+    </message>
+    <message>
+        <source>Folios</source>
+        <translation>Blätter</translation>
+    </message>
+    <message>
+        <source>First folio</source>
+        <translation>Erstes Blatt</translation>
+    </message>
+    <message>
+        <source>The project has no database.</source>
+        <translation>Das Projekt hat keine Datenbank.</translation>
     </message>
 </context>
 <context>
@@ -16272,6 +19000,24 @@ Verfügbare Optionen:
         <translation>Bauteilinformationen einfügen</translation>
     </message>
     <message>
+        <source>Lock X axis (paste mode)</source>
+        <translation>X-Achse sperren (Einfügemodus)</translation>
+    </message>
+    <message>
+        <source>Locks the X coordinate while positioning a paste, so items move only along Y</source>
+        <comment>status bar tip</comment>
+        <translation>Sperrt die X-Koordinate beim Positionieren einer Einfügung, sodass sich die Objekte nur entlang Y bewegen</translation>
+    </message>
+    <message>
+        <source>Lock Y axis (paste mode)</source>
+        <translation>Y-Achse sperren (Einfügemodus)</translation>
+    </message>
+    <message>
+        <source>Locks the Y coordinate while positioning a paste, so items move only along X</source>
+        <comment>status bar tip</comment>
+        <translation>Sperrt die Y-Koordinate beim Positionieren einer Einfügung, sodass sich die Objekte nur entlang X bewegen</translation>
+    </message>
+    <message>
         <source>Places the clipboard&apos;s items at their original position and moves the cursor to that point</source>
         <comment>status bar tip</comment>
         <translation>Fügt die Bauteile der Zwischenablage an ihrer ursprünglichen Position ein und bewegt den Cursor zu diesem Punkt</translation>
@@ -16315,6 +19061,15 @@ Verfügbare Optionen:
         <source>Move the texts that sit on a wire off it, in one undo step</source>
         <comment>status bar tip</comment>
         <translation>Verschiebt Texte, die auf einem Draht liegen, von ihm weg, in einem Rückgängig-Schritt</translation>
+    </message>
+    <message>
+        <source>Replace the symbols...</source>
+        <translation>Symbole ersetzen...</translation>
+    </message>
+    <message>
+        <source>Replaces the selected symbols by a symbol from a collection, keeping their place, label and wires</source>
+        <comment>status bar tip</comment>
+        <translation>Ersetzt die ausgewählten Symbole durch ein Symbol aus einer Sammlung und behält Platz, Beschriftung und Leiter bei</translation>
     </message>
     <message>
         <source>&amp;Duplicate</source>
@@ -16395,6 +19150,14 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
         <translation>Deaktiviert</translation>
     </message>
     <message>
+        <source>Snap the middle of the text</source>
+        <translation>Textmitte einrasten</translation>
+    </message>
+    <message>
+        <source>Puts the middle of a moved text on the grid instead of the top left corner of its frame, e.g. a terminal number centred on a grid line.</source>
+        <translation>Setzt die Mitte eines verschobenen Textes auf das Raster statt der oberen linken Ecke seines Rahmens, z. B. eine auf einer Rasterlinie zentrierte Anschlussnummer.</translation>
+    </message>
+    <message>
         <source>View the guides</source>
         <translation>Hilfslinien anzeigen</translation>
     </message>
@@ -16451,6 +19214,10 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
         <translation>Querverweise</translation>
     </message>
     <message>
+        <source>Drawing aids</source>
+        <translation>Zeichenhilfen</translation>
+    </message>
+    <message>
         <source>See Display &gt; Show</source>
         <translation>Siehe Ansicht &gt; Anzeigen</translation>
     </message>
@@ -16497,6 +19264,68 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     <message>
         <source>Whole folio</source>
         <translation>Ganze Seite</translation>
+    </message>
+    <message>
+        <source>Device types...</source>
+        <translation>Gerätetypen...</translation>
+    </message>
+    <message>
+        <source>Make and change the device types of the project and of your library</source>
+        <comment>status bar tip</comment>
+        <translation>Die Gerätetypen des Projekts und Ihrer Bibliothek erstellen und bearbeiten</translation>
+    </message>
+    <message>
+        <source>Reports...</source>
+        <translation>Berichte...</translation>
+    </message>
+    <message>
+        <source>Shows the project&apos;s lists and exports them to CSV or PDF</source>
+        <comment>status bar tip</comment>
+        <translation>Zeigt die Listen des Projekts an und exportiert sie als CSV oder PDF</translation>
+    </message>
+    <message>
+        <source>Plants and locations...</source>
+        <translation>Anlagen und Orte...</translation>
+    </message>
+    <message>
+        <source>Lists the project&apos;s plants and locations with their symbol and folio counts</source>
+        <comment>status bar tip</comment>
+        <translation>Listet die Anlagen und Orte des Projekts mit der Zahl ihrer Symbole und Blätter auf</translation>
+    </message>
+    <message>
+        <source>Parts without a device type...</source>
+        <translation>Artikel ohne Gerätetyp...</translation>
+    </message>
+    <message>
+        <source>Lists the parts of your material list which do not say their device type</source>
+        <translation>Listet die Artikel der Stückliste auf, die ihren Gerätetyp nicht angeben</translation>
+    </message>
+    <message>
+        <source>Check device types...</source>
+        <translation>Gerätetypen prüfen...</translation>
+    </message>
+    <message>
+        <source>Lists the parts of each device&apos;s type which are not drawn, and the symbols beyond it</source>
+        <comment>status bar tip</comment>
+        <translation>Listet die nicht gezeichneten Teile des Typs jedes Geräts und die Symbole außerhalb des Typs auf</translation>
+    </message>
+    <message>
+        <source>Check project</source>
+        <translation>Projekt prüfen</translation>
+    </message>
+    <message>
+        <source>Runs every check on the project and lists the findings in the Check panel</source>
+        <comment>status bar tip</comment>
+        <translation>Führt alle Prüfungen für das Projekt aus und listet die Befunde im Prüfpanel auf</translation>
+    </message>
+    <message>
+        <source>Check open wire ends...</source>
+        <translation>Offene Leitungsenden prüfen...</translation>
+    </message>
+    <message>
+        <source>Lists the wires that run to an unlinked folio report, into a junction on one side only, or reach one symbol terminal</source>
+        <comment>status bar tip</comment>
+        <translation>Listet die Leitungen auf, die zu einem nicht verknüpften Seitenverweis laufen, nur einseitig in einen Abzweig führen oder einen Symbolanschluss erreichen</translation>
     </message>
     <message>
         <source>Check potential types...</source>
@@ -16980,11 +19809,11 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>Add a structure box</source>
-        <translation>Strukturkasten hinzufügen</translation>
+        <translation>Strukturrahmen hinzufügen</translation>
     </message>
     <message>
         <source>Adds a structure box (plant, location, prefix) to the current sheet: the symbols inside it take its plant and location</source>
-        <translation>Fügt dem aktuellen Blatt einen Strukturkasten (Anlage, Ort, Präfix) hinzu: die Symbole darin übernehmen seine Anlage und seinen Ort</translation>
+        <translation>Fügt der aktuellen Seite einen Strukturrahmen (Anlage, Ort, Präfix) hinzu: Die darin enthaltenen Symbole übernehmen seine Anlage und seinen Ort</translation>
     </message>
     <message>
         <source>Search / Replace</source>
@@ -17033,14 +19862,6 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
         <translation>Ordner der Benutzersammlung öffnen</translation>
     </message>
     <message>
-        <source>Import FluidSIM circuit (.circ)…</source>
-        <translation>FluidSIM-Schaltung importieren (.circ)…</translation>
-    </message>
-    <message>
-        <source>Reads FluidSIM circuits with their parts, wires, flow paths, values and GRAFCET and opens them as a QElectroTech project</source>
-        <translation>Liest FluidSIM-Schaltungen mit Bauteilen, Leitungen, Schaltwegen, Kennwerten und GRAFCET und öffnet sie als QElectroTech-Projekt</translation>
-    </message>
-    <message>
         <source>Import EPLAN project (.zw1)…</source>
         <translation>EPLAN-Projekt importieren (.zw1)…</translation>
     </message>
@@ -17049,12 +19870,20 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
         <translation>Liest ein gepacktes EPLAN-Projekt ein und öffnet es als QElectroTech-Projekt</translation>
     </message>
     <message>
+        <source>Import FluidSIM circuit (.circ)…</source>
+        <translation>FluidSIM-Schaltung importieren (.circ)…</translation>
+    </message>
+    <message>
+        <source>Reads FluidSIM circuits with their parts, wires, flow paths, values and GRAFCET and opens them as a QElectroTech project</source>
+        <translation>Liest FluidSIM-Schaltungen mit Bauteilen, Leitungen, Schaltwegen, Kennwerten und GRAFCET und öffnet sie als QElectroTech-Projekt</translation>
+    </message>
+    <message>
         <source>Paste special</source>
         <translation>Inhalte einfügen</translation>
     </message>
     <message>
         <source>Rotate and mirror</source>
-        <translation>Drehen und Spiegeln</translation>
+        <translation>Drehen und spiegeln</translation>
     </message>
     <message>
         <source>Texts</source>
@@ -17063,6 +19892,10 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     <message>
         <source>Show or hide the device navigator</source>
         <translation>Geräte-Navigator ein- oder ausblenden</translation>
+    </message>
+    <message>
+        <source>Show or hide the Check panel</source>
+        <translation>Prüfpanel ein- oder ausblenden</translation>
     </message>
     <message>
         <source>XML Files (*.xml);;All files (*)</source>
@@ -17343,6 +20176,10 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
         </translation>
     </message>
     <message>
+        <source>Placed elements are redrawn and keep their conductors, as long as their terminals have not moved or moved all together with the insertion point: such an element is moved back so its terminals stay where they are. This action cannot be undone.</source>
+        <translation>Platzierte Elemente werden neu gezeichnet und behalten ihre Leiter, solange sich ihre Anschlüsse nicht bewegt haben oder alle gemeinsam mit dem Einfügepunkt bewegt wurden: Ein solches Element wird zurückversetzt, damit seine Anschlüsse bleiben, wo sie sind. Dies kann nicht rückgängig gemacht werden.</translation>
+    </message>
+    <message>
         <source>Placed elements are redrawn and keep their conductors, as long as their terminals have not moved. This action cannot be undone.</source>
         <translation>Platzierte Bauteile werden neu gezeichnet und behalten ihre Leiter, solange sich ihre Anschlüsse nicht verschoben haben. Diese Aktion kann nicht rückgängig gemacht werden.</translation>
     </message>
@@ -17351,6 +20188,13 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
         <translation>
             <numerusform>%n Bauteil aktualisiert.</numerusform>
             <numerusform>%n Bauteile aktualisiert.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n of them moved with their insertion point: their terminals and conductors stayed where they were.</source>
+        <translation>
+            <numerusform>%n davon hat sich mit seinem Einfügepunkt bewegt: Seine Anschlüsse und Leiter sind geblieben, wo sie waren.</numerusform>
+            <numerusform>%n davon haben sich mit ihrem Einfügepunkt bewegt: Ihre Anschlüsse und Leiter sind geblieben, wo sie waren.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -17375,6 +20219,17 @@ Sie können die Kabel auch später automatisch nummerieren: Die Regel lässt sic
     <message>
         <source>Show the T-junction symbol</source>
         <translation>T-Abzweig-Symbol anzeigen</translation>
+    </message>
+    <message>
+        <source>Replace the symbols</source>
+        <translation>Symbole ersetzen</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n wire(s) found no terminal on the new symbol and were removed. Undo brings them back.</source>
+        <translation>
+            <numerusform>%n Leiter hat am neuen Symbol keinen Anschluss gefunden und wurde entfernt. Rückgängig stellt ihn wieder her.</numerusform>
+            <numerusform>%n Leiter haben am neuen Symbol keinen Anschluss gefunden und wurden entfernt. Rückgängig stellt sie wieder her.</numerusform>
+        </translation>
     </message>
     <message>
         <source>History of saves</source>
@@ -19417,49 +22272,6 @@ Was möchten Sie tun?</translation>
 <context>
     <name>QObject</name>
     <message>
-        <source>Import FluidSIM circuit</source>
-        <translation>FluidSIM-Schaltung importieren</translation>
-    </message>
-    <message>
-        <source>The import program (%1) was not found next to QElectroTech. Set QET_FLUIDSIM_IMPORT to its path.</source>
-        <translation>Das Importprogramm (%1) liegt nicht neben QElectroTech. QET_FLUIDSIM_IMPORT auf seinen Pfad setzen.</translation>
-    </message>
-    <message>
-        <source>FluidSIM circuits (*.circ);;All files (*)</source>
-        <translation>FluidSIM-Schaltungen (*.circ);;Alle Dateien (*)</translation>
-    </message>
-    <message>
-        <source>Save the imported project as</source>
-        <translation>Importiertes Projekt speichern unter</translation>
-    </message>
-    <message>
-        <source>QElectroTech projects (*.qet)</source>
-        <translation>QElectroTech-Projekte (*.qet)</translation>
-    </message>
-    <message numerus="yes">
-        <source>Importing %n FluidSIM circuit(s) …</source>
-        <translation>
-            <numerusform>Importiere %n FluidSIM-Schaltung …</numerusform>
-            <numerusform>Importiere %n FluidSIM-Schaltungen …</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>Abbrechen</translation>
-    </message>
-    <message>
-        <source>No Python could run the import program:
-%1</source>
-        <translation>Kein Python konnte das Importprogramm ausführen:
-%1</translation>
-    </message>
-    <message>
-        <source>The import did not finish:
-%1</source>
-        <translation>Der Import ist nicht fertig geworden:
-%1</translation>
-    </message>
-    <message>
         <source>Apply text format</source>
         <translation>Beschriftungsart zuweisen</translation>
     </message>
@@ -20326,6 +23138,10 @@ Möchten Sie sie ersetzen?</translation>
         <translation>Funktion</translation>
     </message>
     <message>
+        <source>Device type</source>
+        <translation>Gerätetyp</translation>
+    </message>
+    <message>
         <source>Folio group</source>
         <translation>Seitengruppe</translation>
     </message>
@@ -20348,6 +23164,14 @@ Möchten Sie sie ersetzen?</translation>
     <message>
         <source>Depth [mm]</source>
         <translation>Tiefe [mm]</translation>
+    </message>
+    <message>
+        <source>Unit price</source>
+        <translation>Stückpreis</translation>
+    </message>
+    <message>
+        <source>Labour time [h]</source>
+        <translation>Arbeitszeit [h]</translation>
     </message>
     <message>
         <source>Conductor type</source>
@@ -20602,6 +23426,10 @@ Möchten Sie sie ersetzen?</translation>
         <translation>Speicherdatum der Datei im Format TT-MM-JJJJ</translation>
     </message>
     <message>
+        <source>Remote endpoint</source>
+        <translation>Remote-Endpunkt</translation>
+    </message>
+    <message>
         <source>File saving time</source>
         <translation>Uhrzeit vom Abspeichern der Datei</translation>
     </message>
@@ -20801,6 +23629,10 @@ Möchten Sie sie ersetzen?</translation>
     <message>
         <source>Default layout</source>
         <translation>Standard-Layout</translation>
+    </message>
+    <message>
+        <source>Connector layout</source>
+        <translation>Layout des Steckverbinders</translation>
     </message>
     <message>
         <source>Enter the scale factor</source>
@@ -21898,8 +24730,266 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
         <translation>Keine Strukturkennung</translation>
     </message>
     <message>
+        <source>Devices with free parts</source>
+        <translation>Geräte mit freien Teilen</translation>
+    </message>
+    <message>
         <source>lay out the symbol texts as in the symbol</source>
         <translation>Symboltexte wie im Symbol anordnen</translation>
+    </message>
+    <message>
+        <source>Give the device type %1</source>
+        <extracomment>%1 is a device type&apos;s name, such as &quot;CONTR10&quot;</extracomment>
+        <translation>Gerätetyp %1 vergeben</translation>
+    </message>
+    <message>
+        <source>%1: keep this drawing</source>
+        <comment>a part of a device type</comment>
+        <translation>%1: diese Zeichnung behalten</translation>
+    </message>
+    <message numerus="yes">
+        <source>This drawing has %n terminal(s), which do not fit this part.</source>
+        <translation>
+            <numerusform>Diese Zeichnung hat %n Anschluss, der nicht zu diesem Teil passt.</numerusform>
+            <numerusform>Diese Zeichnung hat %n Anschlüsse, die nicht zu diesem Teil passen.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>%1: use the type&apos;s drawing</source>
+        <comment>a part of a device type</comment>
+        <translation>%1: die Zeichnung des Typs verwenden</translation>
+    </message>
+    <message>
+        <source>This folio cannot be changed.</source>
+        <translation>Diese Seite kann nicht geändert werden.</translation>
+    </message>
+    <message>
+        <source>The device type gives no usable drawing for this part.</source>
+        <translation>Der Gerätetyp liefert keine verwendbare Zeichnung für dieses Teil.</translation>
+    </message>
+    <message>
+        <source>The drawing of this part could not be read.</source>
+        <translation>Die Zeichnung dieses Teils konnte nicht gelesen werden.</translation>
+    </message>
+    <message>
+        <source>This drawing has other terminals than the symbol, and the symbol is wired: disconnect its wires first.</source>
+        <translation>Diese Zeichnung hat andere Anschlüsse als das Symbol, und das Symbol ist verdrahtet: Trennen Sie zuerst seine Leiter.</translation>
+    </message>
+    <message>
+        <source>A terminal of this symbol belongs to a bridge or a strip, so it cannot be replaced.</source>
+        <translation>Ein Anschluss dieses Symbols gehört zu einer Brücke oder einer Klemmenleiste, daher kann er nicht ersetzt werden.</translation>
+    </message>
+    <message>
+        <source>Give a symbol the terminals of its part</source>
+        <translation>Einem Symbol die Anschlüsse seines Teils geben</translation>
+    </message>
+    <message>
+        <source>This device has no free contact of this kind.</source>
+        <translation>Dieses Gerät hat keinen freien Kontakt dieser Art.</translation>
+    </message>
+    <message>
+        <source>The free part&apos;s terminals do not fit this symbol.</source>
+        <translation>Die Anschlüsse des freien Teils passen nicht zu diesem Symbol.</translation>
+    </message>
+    <message>
+        <source>folio %1, %2</source>
+        <extracomment>%1 is a folio&apos;s number, %2 a position on it such as &quot;C5&quot;</extracomment>
+        <translation>Seite %1, %2</translation>
+    </message>
+    <message>
+        <source>%1 (%2)</source>
+        <translation>%1 (%2)</translation>
+    </message>
+    <message>
+        <source>This device cannot be changed.</source>
+        <translation>Dieses Gerät kann nicht geändert werden.</translation>
+    </message>
+    <message>
+        <source>Change the device type to %1</source>
+        <extracomment>%1 is a device type&apos;s name, such as &quot;CONTR10&quot;</extracomment>
+        <translation>Gerätetyp auf %1 ändern</translation>
+    </message>
+    <message>
+        <source>Place the parts of %1</source>
+        <extracomment>%1 is the device&apos;s label, such as &quot;-K1&quot;</extracomment>
+        <translation>Teile von %1 platzieren</translation>
+    </message>
+    <message>
+        <source>Parts of %1</source>
+        <extracomment>%1 is the device&apos;s label, such as &quot;-K1&quot;</extracomment>
+        <translation>Teile von %1</translation>
+    </message>
+    <message>
+        <source>%1 has parts not drawn yet: %2.
+How do you want to place them?</source>
+        <extracomment>%1 is the device&apos;s label, %2 its parts, as &quot;power contacts 1 2 3 4 5 6, NO 13 14&quot;</extracomment>
+        <translation>%1 hat noch nicht gezeichnete Teile: %2.
+Wie möchten Sie sie platzieren?</translation>
+    </message>
+    <message>
+        <source>One by one</source>
+        <translation>Eins nach dem anderen</translation>
+    </message>
+    <message>
+        <source>Each part follows the mouse until a click; Escape stops, the rest stay free</source>
+        <translation>Jedes Teil folgt der Maus bis zum Klick; Esc beendet, die übrigen bleiben frei</translation>
+    </message>
+    <message>
+        <source>All side by side</source>
+        <translation>Alle nebeneinander</translation>
+    </message>
+    <message>
+        <source>All parts to the right of the head, to be moved where they belong</source>
+        <translation>Alle Teile rechts vom Kopf, um sie dorthin zu verschieben, wo sie hingehören</translation>
+    </message>
+    <message>
+        <source>Not now</source>
+        <translation>Jetzt nicht</translation>
+    </message>
+    <message>
+        <source>The parts stay free in the Device Navigator</source>
+        <translation>Die Teile bleiben im Gerätenavigator frei</translation>
+    </message>
+    <message>
+        <source>Add the device type %1 to the project</source>
+        <extracomment>%1 is a device type&apos;s name, such as &quot;CONTR10&quot;</extracomment>
+        <translation>Gerätetyp %1 zum Projekt hinzufügen</translation>
+    </message>
+    <message>
+        <source>Delete the device type %1</source>
+        <extracomment>%1 is a device type&apos;s name, such as &quot;CONTR10&quot;</extracomment>
+        <translation>Gerätetyp %1 löschen</translation>
+    </message>
+    <message>
+        <source>Edit the device type %1</source>
+        <translation>Gerätetyp %1 bearbeiten</translation>
+    </message>
+    <message>
+        <source>A terminal to replace is bridged or belongs to a multi-level terminal.</source>
+        <translation>Ein zu ersetzender Anschluss ist überbrückt oder gehört zu einer mehrstöckigen Klemme.</translation>
+    </message>
+    <message>
+        <source>The symbol could not be added to the project.</source>
+        <translation>Das Symbol konnte dem Projekt nicht hinzugefügt werden.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Replace %n symbol(s)</source>
+        <translation>
+            <numerusform>%n Symbol ersetzen</numerusform>
+            <numerusform>%n Symbole ersetzen</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>The symbol could not be loaded.</source>
+        <translation>Das Symbol konnte nicht geladen werden.</translation>
+    </message>
+    <message>
+        <source>The project has no database.</source>
+        <translation>Das Projekt hat keine Datenbank.</translation>
+    </message>
+    <message>
+        <source>Cannot write the file.</source>
+        <translation>Die Datei kann nicht geschrieben werden.</translation>
+    </message>
+    <message>
+        <source>Page %1 of %2</source>
+        <comment>project report</comment>
+        <translation>Seite %1 von %2</translation>
+    </message>
+    <message>
+        <source>Set the label and the part</source>
+        <translation>Beschriftung und Teil festlegen</translation>
+    </message>
+    <message>
+        <source>Plug</source>
+        <translation>Stecker</translation>
+    </message>
+    <message>
+        <source>Socket</source>
+        <translation>Buchse</translation>
+    </message>
+    <message>
+        <source>Spare</source>
+        <comment>a pin of a connector&apos;s device type drawn nowhere</comment>
+        <translation>Reserve</translation>
+    </message>
+    <message>
+        <source>Take away the folio report links of a potential</source>
+        <comment>undo caption</comment>
+        <translation>Seitenverweise eines Potenzials entfernen</translation>
+    </message>
+    <message>
+        <source>Change what chains folio report elements together</source>
+        <comment>undo caption</comment>
+        <translation>Ändern, was die Seitenverweis-Elemente verkettet</translation>
+    </message>
+    <message>
+        <source>Search: %1</source>
+        <translation>Suche: %1</translation>
+    </message>
+    <message>
+        <source>Suits this symbol</source>
+        <translation>Passt zu diesem Symbol</translation>
+    </message>
+    <message>
+        <source>Voltage</source>
+        <translation>Spannung</translation>
+    </message>
+    <message>
+        <source>Current</source>
+        <translation>Strom</translation>
+    </message>
+    <message>
+        <source>%1: %2</source>
+        <extracomment>%1 is a filter (&quot;Category&quot;), %2 its value (&quot;Relay&quot;)</extracomment>
+        <translation>%1: %2</translation>
+    </message>
+    <message>
+        <source>Import FluidSIM circuit</source>
+        <translation>FluidSIM-Schaltung importieren</translation>
+    </message>
+    <message>
+        <source>The import program (%1) was not found next to QElectroTech. Set QET_FLUIDSIM_IMPORT to its path.</source>
+        <translation>Das Importprogramm (%1) liegt nicht neben QElectroTech. QET_FLUIDSIM_IMPORT auf seinen Pfad setzen.</translation>
+    </message>
+    <message>
+        <source>FluidSIM circuits (*.circ);;All files (*)</source>
+        <translation>FluidSIM-Schaltungen (*.circ);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <source>Save the imported project as</source>
+        <translation>Importiertes Projekt speichern unter</translation>
+    </message>
+    <message>
+        <source>QElectroTech projects (*.qet)</source>
+        <translation>QElectroTech-Projekte (*.qet)</translation>
+    </message>
+    <message numerus="yes">
+        <source>Importing %n FluidSIM circuit(s) …</source>
+        <translation>
+            <numerusform>Importiere %n FluidSIM-Schaltung …</numerusform>
+            <numerusform>Importiere %n FluidSIM-Schaltungen …</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>No Python could run the import program:
+%1</source>
+        <translation>Kein Python konnte das Importprogramm ausführen:
+%1</translation>
+    </message>
+    <message>
+        <source>The import did not finish:
+%1</source>
+        <translation>Der Import ist nicht fertig geworden:
+%1</translation>
+    </message>
+    <message>
+        <source>Give the symbols of these parts their device type</source>
+        <translation>Den Symbolen dieser Artikel ihren Gerätetyp geben</translation>
     </message>
     <message>
         <source>rails and ducts as a grid</source>
@@ -22820,6 +25910,92 @@ Folgende Variablen sind verfügbar:
 %LM: Ort
 %l: Zeilennummer
 %c: Spaltennummer</translation>
+    </message>
+</context>
+<context>
+    <name>ReportsDialog</name>
+    <message>
+        <source>Reports</source>
+        <translation>Berichte</translation>
+    </message>
+    <message>
+        <source>List:</source>
+        <translation>Liste:</translation>
+    </message>
+    <message>
+        <source>Place:</source>
+        <translation>Bereich:</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Aktualisieren</translation>
+    </message>
+    <message>
+        <source>Export to CSV...</source>
+        <translation>Als CSV exportieren...</translation>
+    </message>
+    <message>
+        <source>Export to PDF...</source>
+        <translation>Als PDF exportieren...</translation>
+    </message>
+    <message>
+        <source>Whole project</source>
+        <translation>Ganzes Projekt</translation>
+    </message>
+    <message>
+        <source>Reading the folios...</source>
+        <translation>Seiten werden gelesen...</translation>
+    </message>
+    <message>
+        <source>Reading folio %1 of %2...</source>
+        <translation>Seite %1 von %2 wird gelesen...</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n row(s).</source>
+        <translation>
+            <numerusform>%n Zeile.</numerusform>
+            <numerusform>%n Zeilen.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Export the list</source>
+        <translation>Liste exportieren</translation>
+    </message>
+    <message>
+        <source>CSV files (*.csv)</source>
+        <translation>CSV-Dateien (*.csv)</translation>
+    </message>
+    <message>
+        <source>Export to CSV</source>
+        <translation>Als CSV exportieren</translation>
+    </message>
+    <message>
+        <source>Cannot write the file:
+%1</source>
+        <translation>Die Datei kann nicht geschrieben werden:
+%1</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n row(s) written to %1.</source>
+        <translation>
+            <numerusform>%n Zeile nach %1 geschrieben.</numerusform>
+            <numerusform>%n Zeilen nach %1 geschrieben.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>PDF files (*.pdf)</source>
+        <translation>PDF-Dateien (*.pdf)</translation>
+    </message>
+    <message>
+        <source>Export to PDF</source>
+        <translation>Als PDF exportieren</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n page(s) written to %1.</source>
+        <translation>
+            <numerusform>%n Seite nach %1 geschrieben.</numerusform>
+            <numerusform>%n Seiten nach %1 geschrieben.</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -23766,6 +26942,30 @@ Andere Felder werden nicht verwendet.</translation>
         <translation>Simulation beenden und ihre Anzeige von den Blättern entfernen</translation>
     </message>
     <message>
+        <source>Step 10 ms</source>
+        <translation>Schritt 10 ms</translation>
+    </message>
+    <message>
+        <source>Run one control cycle (10 ms) and stop</source>
+        <translation>Einen Steuerzyklus (10 ms) ausführen und anhalten</translation>
+    </message>
+    <message>
+        <source>To next change</source>
+        <translation>Bis zur nächsten Änderung</translation>
+    </message>
+    <message>
+        <source>Run until the next state change (valve, end position, relay, step …), at most 10 s</source>
+        <translation>Bis zur nächsten Zustandsänderung (Ventil, Endlage, Relais, Schritt …) ausführen, höchstens 10 s</translation>
+    </message>
+    <message>
+        <source>Current folio only</source>
+        <translation>Nur aktuelles Blatt</translation>
+    </message>
+    <message>
+        <source>Simulate only the folio shown in the editor (used at the next start)</source>
+        <translation>Nur das im Editor gezeigte Blatt simulieren (gilt ab dem nächsten Start)</translation>
+    </message>
+    <message>
         <source>PLC program...</source>
         <translation>SPS-Programm …</translation>
     </message>
@@ -23799,7 +26999,7 @@ Andere Felder werden nicht verwendet.</translation>
     </message>
     <message>
         <source>stopped</source>
-        <translation type="unfinished">abgebrochen</translation>
+        <translation>angehalten</translation>
     </message>
     <message>
         <source>Speed:</source>
@@ -23827,7 +27027,7 @@ Andere Felder werden nicht verwendet.</translation>
     </message>
     <message>
         <source>Value</source>
-        <translation type="unfinished">Wert</translation>
+        <translation>Wert</translation>
     </message>
     <message>
         <source>Current values of the PLC: inputs, outputs, flags, steps and function block outputs</source>
@@ -23838,8 +27038,16 @@ Andere Felder werden nicht verwendet.</translation>
         <translation>Ereignisse:</translation>
     </message>
     <message>
+        <source>Simulation stopped: %1</source>
+        <translation>Simulation abgebrochen: %1</translation>
+    </message>
+    <message>
         <source>Open a project first.</source>
         <translation>Bitte zuerst ein Projekt öffnen.</translation>
+    </message>
+    <message>
+        <source>%1 s  no state change within 10 s</source>
+        <translation>%1 s  keine Zustandsänderung innerhalb von 10 s</translation>
     </message>
     <message>
         <source>Continue</source>
@@ -23862,10 +27070,6 @@ Andere Felder werden nicht verwendet.</translation>
         <translation>rechts</translation>
     </message>
     <message>
-        <source>Simulation stopped: %1</source>
-        <translation>Simulation abgebrochen: %1</translation>
-    </message>
-    <message>
         <source>The project has no PLC (module with an IO table).</source>
         <translation>Das Projekt hat keine SPS (Baugruppe mit E/A-Tabelle).</translation>
     </message>
@@ -23882,16 +27086,8 @@ Andere Felder werden nicht verwendet.</translation>
         <translation>Strukturierter Text (Teil von IEC 61131-3): IF/ELSIF, Schrittketten mit CASE, INT und BOOL, TON, TOF, CTU, CTD, R_TRIG, F_TRIG, SR, RS. Variablen sind die Adressen und Symbole der E/A-Tabelle:</translation>
     </message>
     <message>
-        <source>Structured Text (IEC 61131-3 subset). Variables are the IO addresses and symbols of the IO table, function blocks TON, TOF, CTU:</source>
-        <translation type="vanished">Strukturierter Text (Teil von IEC 61131-3). Variablen sind die Adressen und Symbole der E/A-Tabelle, Funktionsbausteine TON, TOF, CTU:</translation>
-    </message>
-    <message>
         <source>Saved, but the program has an error: %1</source>
         <translation>Gespeichert, aber das Programm hat einen Fehler: %1</translation>
-    </message>
-    <message>
-        <source>%1: position %2</source>
-        <translation type="vanished">%1: Stellung %2</translation>
     </message>
 </context>
 <context>
@@ -23975,7 +27171,14 @@ Andere Felder werden nicht verwendet.</translation>
     <name>StructureBoxItem</name>
     <message>
         <source>a structure box</source>
-        <translation>einen Strukturkasten</translation>
+        <translation>ein Strukturrahmen</translation>
+    </message>
+</context>
+<context>
+    <name>StructureBoxLabelItem</name>
+    <message>
+        <source>Move the name of a structure box</source>
+        <translation>Den Namen eines Strukturrahmens verschieben</translation>
     </message>
 </context>
 <context>
@@ -23993,12 +27196,24 @@ Andere Felder werden nicht verwendet.</translation>
         <translation>Präfix (-)</translation>
     </message>
     <message>
+        <source> pt</source>
+        <translation> pt</translation>
+    </message>
+    <message>
+        <source>Size of its name</source>
+        <translation>Größe seines Namens</translation>
+    </message>
+    <message>
+        <source>Colour</source>
+        <translation>Farbe</translation>
+    </message>
+    <message>
         <source>Modify a structure box</source>
-        <translation>Strukturkasten ändern</translation>
+        <translation>Strukturrahmen bearbeiten</translation>
     </message>
     <message>
         <source>Edit the properties of a structure box</source>
-        <translation>Die Eigenschaften eines Strukturkastens bearbeiten</translation>
+        <translation>Eigenschaften eines Strukturrahmens bearbeiten</translation>
     </message>
 </context>
 <context>
@@ -26278,6 +29493,22 @@ Andere Felder werden nicht verwendet.</translation>
         <translation>Name:</translation>
     </message>
     <message>
+        <source>Kind:</source>
+        <translation>Art:</translation>
+    </message>
+    <message>
+        <source>Device type:</source>
+        <translation>Gerätetyp:</translation>
+    </message>
+    <message>
+        <source>Choose...</source>
+        <translation>Auswählen...</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Keine</translation>
+    </message>
+    <message>
         <source>Comment :</source>
         <translation>Kommentar:</translation>
     </message>
@@ -26434,6 +29665,30 @@ Andere Felder werden nicht verwendet.</translation>
         <translation type="vanished">Sortiert die Klemmen so, wie die Zeichnung angeordnet ist, und übernimmt die dort gezeichneten Brücken mit. Was die Zeichnung mitbringt, ist hier schreibgeschützt: es wird in der Zeichnung geändert oder gar nicht.</translation>
     </message>
     <message>
+        <source>Terminal strip</source>
+        <translation>Klemmenleiste</translation>
+    </message>
+    <message>
+        <source>Plug</source>
+        <translation>Stecker</translation>
+    </message>
+    <message>
+        <source>A plug: the male side of a connector</source>
+        <translation>Ein Stecker: die männliche Seite eines Steckverbinders</translation>
+    </message>
+    <message>
+        <source>Socket</source>
+        <translation>Buchse</translation>
+    </message>
+    <message>
+        <source>A socket: the female side of a connector</source>
+        <translation>Eine Buchse: die weibliche Seite eines Steckverbinders</translation>
+    </message>
+    <message>
+        <source>The device type says the pins of this connector: the check of the device types reports a pin it does not have, a pin drawn twice and the pins not drawn.</source>
+        <translation>Der Gerätetyp liefert die Pins dieses Steckverbinders: Die Gerätetypprüfung meldet einen Pin, den er nicht hat, einen zweimal gezeichneten Pin und die nicht gezeichneten Pins.</translation>
+    </message>
+    <message>
         <source>Sort the terminals the way the drawing is laid out, or by label when the general settings ask for it, and bring the bridges drawn there in with them. What the drawing brought is read-only here: it is changed in the drawing or not at all.</source>
         <translation>Sortiert die Klemmen so, wie die Zeichnung angeordnet ist, oder nach BMK, wenn die allgemeinen Einstellungen es verlangen, und übernimmt die dort gezeichneten Brücken mit. Was die Zeichnung mitbringt, ist hier schreibgeschützt: es wird in der Zeichnung geändert oder gar nicht.</translation>
     </message>
@@ -26444,6 +29699,10 @@ Andere Felder werden nicht verwendet.</translation>
     <message>
         <source>Modify terminal strip properties</source>
         <translation>Eigenschaften der Klemmleiste ändern</translation>
+    </message>
+    <message>
+        <source>Add a device type</source>
+        <translation>Gerätetyp hinzufügen</translation>
     </message>
     <message>
         <source>Column searched by the filter</source>
@@ -26953,19 +30212,19 @@ Strg+Eingabe gibt die Zelle zurück, Escape verwirft den Text.</translation>
     </message>
     <message>
         <source>Expand all</source>
-        <translation>Alle ausklappen</translation>
+        <translation>Alle aufklappen</translation>
     </message>
     <message>
         <source>Unfold every plant, location and terminal strip of the tree</source>
-        <translation>Alle Anlagen, Orte und Klemmleisten des Baums aufklappen</translation>
+        <translation>Jede Anlage, jeden Ort und jede Klemmenleiste des Baums aufklappen</translation>
     </message>
     <message>
         <source>Collapse all</source>
-        <translation>Alle einklappen</translation>
+        <translation>Alle zuklappen</translation>
     </message>
     <message>
         <source>Fold every plant, location and terminal strip of the tree</source>
-        <translation>Alle Anlagen, Orte und Klemmleisten des Baums zuklappen</translation>
+        <translation>Jede Anlage, jeden Ort und jede Klemmenleiste des Baums zuklappen</translation>
     </message>
     <message>
         <source>Untitled project</source>
@@ -26977,7 +30236,7 @@ Strg+Eingabe gibt die Zelle zurück, Escape verwirft den Text.</translation>
     </message>
     <message>
         <source>(no label) %1, folio %2</source>
-        <translation>(ohne Beschriftung) %1, Blatt %2</translation>
+        <translation>(ohne Beschriftung) %1, Seite %2</translation>
     </message>
 </context>
 <context>
@@ -28010,6 +31269,11 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
         <comment>column title</comment>
         <translation>Seite</translation>
     </message>
+    <message>
+        <source>The wiring list could not be read: %1</source>
+        <comment>wiring list read error</comment>
+        <translation>Die Verdrahtungsliste konnte nicht gelesen werden: %1</translation>
+    </message>
     <message numerus="yes">
         <source>%n conductors listed.</source>
         <comment>wiring list summary</comment>
@@ -28024,6 +31288,14 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
         <translation>
             <numerusform>%n ausgeschlossene Leiter: Ein Ende ist mit keinem Element verbunden.</numerusform>
             <numerusform>%n ausgeschlossene Leiter: Ein Ende ist mit keinem Element verbunden.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n junction(s) have rows that still end at a junction: no source connection set, or no way on to follow.</source>
+        <comment>wiring list junction warning</comment>
+        <translation>
+            <numerusform>%n Verzweigung hat Linien, die noch an einer Verzweigung enden: keine Quellverbindung festgelegt oder kein Weg zu verfolgen.</numerusform>
+            <numerusform>%n Verzweigungen haben Linien, die noch an einer Verzweigung enden: keine Quellverbindung festgelegt oder kein Weg zu verfolgen.</numerusform>
         </translation>
     </message>
 </context>
@@ -28048,6 +31320,13 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <message>
         <source>Unable to open the file for writing.</source>
         <translation>Die Datei kann nicht zum Schreiben geöffnet werden.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Note: %n junction(s) have rows that still end at a junction: no source connection set, or no way on to follow.</source>
+        <translation>
+            <numerusform>Hinweis: %n Verzweigung hat Linien, die noch an einer Verzweigung enden: keine Quellverbindung festgelegt oder kein Weg zu verfolgen.</numerusform>
+            <numerusform>Hinweis: %n Verzweigungen haben Linien, die noch an einer Verzweigung enden: keine Quellverbindung festgelegt oder kein Weg zu verfolgen.</numerusform>
+        </translation>
     </message>
     <message>
         <source>Page</source>

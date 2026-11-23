@@ -1471,7 +1471,7 @@ TERMINAL_ORIENTATIONS = ("n", "s", "e", "w")
 # As used in the collection. "thumbnail" is included because it is the
 # second most common value, not because this tool can build a good one.
 LINK_TYPES = ("simple", "thumbnail", "master", "slave", "terminal",
-              "next_report", "previous_report")
+              "next_report", "previous_report", "junction")
 
 
 def _f(value, where: str) -> float:
@@ -1663,7 +1663,7 @@ def tool_element_build(output: str, names: dict, parts: list,
                              f"{', '.join(TERMINAL_ORIENTATIONS)}, got {t['orientation']!r}")
     # A master with no terminal cannot be wired, and a slave with none
     # cannot be placed on a rail -- both are silent failures at use time.
-    if link_type in ("master", "slave", "simple") and not terminals:
+    if link_type in ("master", "slave", "simple", "junction") and not terminals:
         raise ValueError(f"a {link_type} element with no terminals cannot be connected; "
                          "add terminals, or use link_type 'thumbnail' for a drawing-only element")
 
@@ -6242,7 +6242,11 @@ TOOLS = [
                 "link_type": {"type": "string", "enum": list(LINK_TYPES),
                               "description": "simple for an ordinary symbol, master/slave "
                                              "for a cross-referenced pair, thumbnail for "
-                                             "a drawing with no terminals"},
+                                             "a drawing with no terminals, junction for a "
+                                             "wire branch point (never numbered, not in the "
+                                             "parts list; its roles are the informations "
+                                             "junction_source and junction_target_1..3, each "
+                                             "a terminal uuid)"},
                 "informations": {"type": "object",
                                  "description": "kindInformation entries, e.g. {\"type\": \"coil\"}"},
                 "uuid": {"type": "string", "description": "reuse an existing uuid; "

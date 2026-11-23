@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "qetdiagrameditor.h"
+#include "plancheck/plancheckdock.h"
 #include "itemdescription.h"
 #include "container/qetcontainer.h"
 #include "container/qetzip.h"
@@ -1347,6 +1348,33 @@ void QETDiagramEditor::setUpActions()
 			dialog->show();
 		}
 	});
+		// Every check of the project in one list, as EPLAN's check run
+	m_check_plan = new QAction(QET::Icons::DialogOk, tr("Check plan"), this);
+	m_check_plan->setObjectName(QStringLiteral("checkPlan"));
+	m_check_plan->setCheckable(true);
+	m_check_plan->setToolTip(tr("Check plan: open terminals, duplicate labels, devices without a part, "
+				    "terminals without a strip, contacts without a coil, cables and PLC channels, "
+				    "in one list. A click on a finding shows it."));
+	m_check_plan->setStatusTip(tr("Runs every check of the project and lists errors, warnings and notes", "status bar tip"));
+	ShortcutManager::instance().registerAction(m_check_plan, "diagrameditor.check_plan", tr("Diagram editors"), QKeySequence());
+	connect(m_check_plan, &QAction::triggered, this, [this](bool on) {
+		if (!m_plan_check_dock) {
+			if (!on) return;
+			m_plan_check_dock = new PlanCheckDock(this);
+			addDockWidget(Qt::RightDockWidgetArea, m_plan_check_dock);
+			connect(m_plan_check_dock, &QDockWidget::visibilityChanged, m_check_plan,
+				[this](bool visible) {m_check_plan->setChecked(visible);});
+		}
+		if (!on) {
+			m_plan_check_dock->hide();
+			return;
+		}
+		m_plan_check_dock->show();
+		m_plan_check_dock->raise();
+		QETProject *project = currentProject();
+		if (m_plan_check_dock->project() == project) m_plan_check_dock->refresh();
+		else m_plan_check_dock->setProject(project);
+	});
 		// Open fluid ports, solenoids and coils not linked
 	m_check_fluid = new QAction(tr("Check fluid power..."), this);
 	m_check_fluid->setObjectName(QStringLiteral("checkFluidPower"));
@@ -2546,6 +2574,7 @@ void QETDiagramEditor::setUpMenu()
 	menu_project -> addAction(m_project_add_diagram);
 	menu_project -> addAction(m_remove_diagram_from_project);
 	menu_project -> addAction(m_clean_project);
+	menu_project->addAction(m_check_plan);
 	menu_project->addAction(m_find_duplicate_labels);
 	menu_project->addAction(m_check_potentials);
 	menu_project->addAction(m_check_fluid);
@@ -4189,6 +4218,7 @@ void QETDiagramEditor::slot_updateActions()
 	m_find_duplicate_labels->setEnabled(opened_project);
 	m_check_potentials->setEnabled(opened_project);
 	m_check_fluid->setEnabled(opened_project);
+	m_check_plan->setEnabled(opened_project);
 	m_device_types->setEnabled(opened_project);
 	m_check_device_types->setEnabled(opened_project);
 	m_project_languages->setEnabled(opened_project);
@@ -5431,6 +5461,9 @@ void QETDiagramEditor::subWindowActivated(QMdiSubWindow *subWindows)
 	updateWindowModifiedState();
 	if (m_device_navigator_dock && m_device_navigator_dock->isVisible()) {
 		m_device_navigator_dock->setProject(currentProject());
+	}
+	if (m_plan_check_dock && m_plan_check_dock->isVisible()) {
+		m_plan_check_dock->setProject(currentProject());
 	}
 }
 

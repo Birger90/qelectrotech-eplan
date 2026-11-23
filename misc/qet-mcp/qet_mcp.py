@@ -1182,7 +1182,7 @@ def _run_qet(binary: str, args: list[str], timeout: int = 180,
                 "QET_ENABLE_SCRIPTING=1 to the environment this server is "
                 "started in -- in an MCP client that is the \"env\" block of "
                 "its entry in the client configuration. Only qet_query, "
-                "qet_continuity, qet_check, qet_layout_check, qet_project_new, "
+                "qet_continuity, qet_check, qet_plan_check, qet_layout_check, qet_project_new, "
                 "qet_edit, "
                 "qet_script_api, qet_script_test, qet_script_install, "
                 "qet_script_remove and qet_recording_check need it; every "
@@ -3173,6 +3173,47 @@ def tool_check(binary: str, project: str, checks: list | None = None,
         answer["hint"] = result["hint"]
         answer["exit_code"] = result.get("exit_code")
     return answer
+
+
+def tool_plan_check(binary: str, project: str, folio: int = -1,
+                    elements_dir: str | None = None, timeout: int = 180) -> dict:
+    """Run QElectroTech's own "Check plan" (qet.checkProject()) in one launch.
+
+    Unlike qet_check, which asks the project database a handful of SQL
+    questions, this is the check run the GUI's "Check plan" panel shows:
+    the live object graph -- links, terminal strips, cables, PLC tables,
+    fluid ports, device types, cabinet layouts -- with EPLAN's message
+    numbers. folio is counted from 0, -1 for the whole project.
+    """
+    proj = Path(project).expanduser()
+    if not proj.is_file():
+        raise ValueError(f"no such project: {proj}")
+    script = ("var r = (typeof qet.checkProject === 'function') ? qet.checkProject(%d) : null;\n"
+              "qet.log(%s + JSON.stringify({kind: 'plancheck', findings: r}));\n"
+              % (int(folio), json.dumps(_MARKER)))
+    result = _run_qet(binary, [str(proj)], timeout=timeout,
+                      elements_dir=elements_dir, script=script, tail=2_000_000)
+    streams = result.get("stdout", "") + "\n" + result.get("stderr", "")
+    findings = None
+    for line in streams.splitlines():
+        idx = line.find(_MARKER)
+        if idx < 0:
+            continue
+        try:
+            rec = json.loads(line[idx + len(_MARKER):])
+        except json.JSONDecodeError:
+            continue
+        if rec.get("kind") == "plancheck":
+            findings = rec.get("findings")
+    if findings is None:
+        answer = {"ok": False, "error": "this QElectroTech has no qet.checkProject() "
+                  "(needs the fork's \"Check plan\") or the run failed"}
+        if result.get("hint"):
+            answer["hint"] = result["hint"]
+        return answer
+    summary = {k: sum(f.get("severity") == k for f in findings)
+               for k in ("error", "warning", "info")}
+    return {"ok": summary["error"] == 0, "summary": summary, "findings": findings}
 
 
 # --------------------------------------------------------------------------
@@ -6156,6 +6197,34 @@ TOOLS = [
                                         a.get("timeout", 180)),
     },
     {
+        "name": "qet_plan_check",
+        "description": "Run the fork's \"Check plan\" (Project > Check plan, qet.checkProject()) "
+                       "headless: every check the GUI panel lists, with severity "
+                       "(error/warning/info), EPLAN message number, folio (from 0), "
+                       "label, text and the uuids of the items concerned -- open "
+                       "terminals and fluid ports, duplicate labels and wire numbers, "
+                       "devices without a part or label, terminals without a strip, "
+                       "contacts without their coil, folio reports without a partner, "
+                       "cables without a target, PLC channels without an address, "
+                       "potential types, device types, cabinet layout. One "
+                       "QElectroTech launch; read-only. Complements qet_check (SQL "
+                       "heuristics over the project database).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "binary": {"type": "string", "description": "the qelectrotech executable; leave it out to use the one this server is configured with. Any other is refused unless its configuration allows it"},
+                "project": {"type": "string"},
+                "folio": {"type": "integer", "default": -1,
+                          "description": "one folio counted from 0, -1 for the whole project"},
+                "elements_dir": {"type": "string"},
+                "timeout": {"type": "integer", "default": 180},
+            },
+            "required": ["project"],
+        },
+        "handler": lambda a: tool_plan_check(a["binary"], a["project"], a.get("folio", -1),
+                                             a.get("elements_dir"), a.get("timeout", 180)),
+    },
+    {
         "name": "qet_layout_check",
         "description": "Score how well a drawing reads, 0-100, and list what spoils it: "
                        "wires that jog because two symbols are a few pixels out of line "
@@ -6708,6 +6777,7 @@ _DATA_PATHS = {
     "qet_query":          {"read": ("project",)},
     "qet_continuity":     {"read": ("project",)},
     "qet_check":          {"read": ("project",)},
+    "qet_plan_check":     {"read": ("project",)},
     "qet_layout_check":   {"read": ("project",)},
     "qet_project_new":    {"write": ("output",)},
     # QElectroTech writes this file, but where is the client's choice:
@@ -6731,7 +6801,7 @@ _DATA_PATHS = {
 
 # Tools that launch QElectroTech, and so take "binary" and "elements_dir".
 _LAUNCHES_QET = {"qet_simulate", "qet_simulate_reference", "qet_fluidsim_import", "qet_export", "qet_edit", "qet_query", "qet_continuity",
-                 "qet_check", "qet_layout_check", "qet_project_new", "qet_script_api",
+                 "qet_check", "qet_plan_check", "qet_layout_check", "qet_project_new", "qet_script_api",
                  "qet_script_test", "qet_recording_check", "qet_live_layout_check",
                  "qet_dataportal_import"}
 

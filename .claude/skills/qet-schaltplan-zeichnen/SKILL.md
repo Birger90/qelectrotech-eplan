@@ -132,6 +132,7 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
 
 ## Gelernt (fortschreiben)
 
+- 23.11.2026, Plan prüfen: Nach dem Zeichnen `--check-project <plan.qet> bericht.json` (oder MCP `qet_plan_check`, im Programm Projekt > *Plan prüfen*) laufen lassen und alle Fehler beheben; Warnungen ansehen. Klemmen nur dann ohne Warnung, wenn sie in einer Klemmleiste stehen (`add_terminal_strip` + `add_to_strip`), Geräte brauchen `manufacturer_reference`, SPS-Kanäle eine Karte mit Adresse (`link_plc_io`). Rückgabewert 3 = Fehler gefunden.
 - 03.11.2026, Blatt „Fußschalter“: erster Wurf hatte schräge/um das Gerät laufende Leitungen,
   überlappende Pin-Kennzeichen, „…“-Felder und abgeschnittene Kabelnamen – Ursachen und
   Abhilfen stehen oben. Vorlage mit dem fertigen Stand: `vorlagen/beispiel_fussschalter.py`.

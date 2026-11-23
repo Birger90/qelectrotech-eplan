@@ -13660,6 +13660,192 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
     </message>
 </context>
 <context>
+    <name>PlanCheck</name>
+    <message>
+        <source>Duplicate device labels</source>
+        <translation>Doppelte Gerätekennzeichen</translation>
+    </message>
+    <message>
+        <source>Duplicate wire numbers</source>
+        <translation>Doppelte Leiternummern</translation>
+    </message>
+    <message>
+        <source>Potentials with wires of different types</source>
+        <translation>Potenziale mit Leitungen verschiedener Typen</translation>
+    </message>
+    <message>
+        <source>Contacts without their coil or main function</source>
+        <translation>Kontakte ohne Spule bzw. Hauptfunktion</translation>
+    </message>
+    <message>
+        <source>Folio reports without their partner</source>
+        <translation>Abbruchstellen ohne Gegenstück</translation>
+    </message>
+    <message>
+        <source>PLC channels without an address</source>
+        <translation>SPS-Kanäle ohne Adresse</translation>
+    </message>
+    <message>
+        <source>Cables without a target</source>
+        <translation>Kabel ohne Ziel</translation>
+    </message>
+    <message>
+        <source>Terminals without a terminal strip</source>
+        <translation>Klemmen ohne Klemmleiste</translation>
+    </message>
+    <message>
+        <source>Devices without a part</source>
+        <translation>Geräte ohne Artikel</translation>
+    </message>
+    <message>
+        <source>Devices without a label</source>
+        <translation>Geräte ohne Kennzeichen</translation>
+    </message>
+    <message>
+        <source>Unconnected terminals</source>
+        <translation>Offene Anschlüsse</translation>
+    </message>
+    <message>
+        <source>Open fluid ports</source>
+        <translation>Offene Fluidanschlüsse</translation>
+    </message>
+    <message>
+        <source>Solenoid valves without their coil</source>
+        <translation>Magnetventile ohne Spule</translation>
+    </message>
+    <message>
+        <source>Coils without any contact</source>
+        <translation>Spulen ohne Kontakt</translation>
+    </message>
+    <message>
+        <source>Devices not drawn as their device type</source>
+        <translation>Geräte, die nicht wie ihr Gerätetyp gezeichnet sind</translation>
+    </message>
+    <message>
+        <source>Cabinet layout</source>
+        <translation>Schaltschrankaufbau</translation>
+    </message>
+    <message>
+        <source>(no label)</source>
+        <translation>(ohne Kennzeichen)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n terminal(s) in no terminal strip: the terminal diagram leaves them out</source>
+        <translation>
+            <numerusform>%n Klemme in keiner Klemmleiste: der Klemmenplan lässt sie aus</numerusform>
+            <numerusform>%n Klemmen in keiner Klemmleiste: der Klemmenplan lässt sie aus</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>One potential with wires of different types: %1</source>
+        <translation>Ein Potenzial mit Leitungen verschiedener Typen: %1</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>Fehler</translation>
+    </message>
+    <message>
+        <source>Warning</source>
+        <translation>Warnung</translation>
+    </message>
+    <message>
+        <source>Note</source>
+        <translation>Hinweis</translation>
+    </message>
+</context>
+<context>
+    <name>PlanCheckDock</name>
+    <message>
+        <source>Check plan</source>
+        <translation>Plan prüfen</translation>
+    </message>
+    <message>
+        <source>All findings</source>
+        <translation>Alle Meldungen</translation>
+    </message>
+    <message>
+        <source>Errors and warnings</source>
+        <translation>Fehler und Warnungen</translation>
+    </message>
+    <message>
+        <source>Errors only</source>
+        <translation>Nur Fehler</translation>
+    </message>
+    <message>
+        <source>Which findings the list shows</source>
+        <translation>Welche Meldungen die Liste zeigt</translation>
+    </message>
+    <message>
+        <source>Check again</source>
+        <translation>Erneut prüfen</translation>
+    </message>
+    <message>
+        <source>Severity</source>
+        <translation>Schwere</translation>
+    </message>
+    <message>
+        <source>Folio</source>
+        <translation>Blatt</translation>
+    </message>
+    <message>
+        <source>Label</source>
+        <translation>Kennzeichen</translation>
+    </message>
+    <message>
+        <source>Message</source>
+        <translation>Meldung</translation>
+    </message>
+    <message>
+        <source>No.</source>
+        <translation>Nr.</translation>
+    </message>
+    <message>
+        <source>Click a finding to open its folio and select what it is about</source>
+        <translation>Meldung anklicken: das Blatt öffnet sich und das Betroffene wird markiert</translation>
+    </message>
+    <message>
+        <source>No project open.</source>
+        <translation>Kein Projekt geöffnet.</translation>
+    </message>
+    <message>
+        <source>Number of the same message in EPLAN</source>
+        <translation>Nummer derselben Meldung in EPLAN</translation>
+    </message>
+    <message>
+        <source>No findings: the plan is fine.</source>
+        <translation>Keine Meldungen: der Plan ist in Ordnung.</translation>
+    </message>
+    <message>
+        <source>%1, %2, %3. Click a finding to show it.</source>
+        <translation>%1, %2, %3. Meldung anklicken, um sie zu zeigen.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n error(s)</source>
+        <translation>
+            <numerusform>%n Fehler</numerusform>
+            <numerusform>%n Fehler</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n warning(s)</source>
+        <translation>
+            <numerusform>%n Warnung</numerusform>
+            <numerusform>%n Warnungen</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n note(s)</source>
+        <translation>
+            <numerusform>%n Hinweis</numerusform>
+            <numerusform>%n Hinweise</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>This finding concerns the whole project, there is no folio to show.</source>
+        <translation>Diese Meldung betrifft das ganze Projekt, es gibt kein Blatt zu zeigen.</translation>
+    </message>
+</context>
+<context>
     <name>PlcLinkWidget</name>
     <message>
         <source>This element is already linked</source>
@@ -15683,6 +15869,19 @@ Verfügbare Optionen:
 </context>
 <context>
     <name>QETDiagramEditor</name>
+    <message>
+        <source>Check plan</source>
+        <translation>Plan prüfen</translation>
+    </message>
+    <message>
+        <source>Check plan: open terminals, duplicate labels, devices without a part, terminals without a strip, contacts without a coil, cables and PLC channels, in one list. A click on a finding shows it.</source>
+        <translation>Plan prüfen: offene Anschlüsse, doppelte Kennzeichen, Geräte ohne Artikel, Klemmen ohne Klemmleiste, Kontakte ohne Spule, Kabel und SPS-Kanäle in einer Liste. Ein Klick auf eine Meldung zeigt sie.</translation>
+    </message>
+    <message>
+        <source>Runs every check of the project and lists errors, warnings and notes</source>
+        <comment>status bar tip</comment>
+        <translation>Führt alle Prüfungen des Projekts aus und listet Fehler, Warnungen und Hinweise</translation>
+    </message>
     <message>
         <source>Tape measure</source>
         <translation>Maßband</translation>

@@ -140,7 +140,7 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
   Sonderantriebe (R12): pneumatischer Muskel Festo DMSP nach den Kraft-Weg-Kurven des Katalogs und hydraulischer
   Druckübersetzer (Bypass, Pumpkolben, entsperrbares Rückschlagventil) nach Datenblattwerten.
   FluidSIM-Bauteile seit 1.47.0: Proportionalventil MPYE (Festo-Kennlinie), pneumatische Timer, Verzögerungsventile,
-  Vorwahlzähler, Zweihandsteuerblock, Vakuumsaugventil.
+  Vorwahlzähler, Zweihandsteuerblock, Vakuumsaugventil; seit 1.48.0 Taktstufen TAA/TAB und Muskel mit Führungszylindern.
   Leitungen unter Druck werden blau bzw. rot, stromführende Drähte rot, aktive Schritte bekommen eine Marke; Taster und
   Ventile bedient man im Fenster oder per Klick auf das Symbol; eine Liste zeigt die SPS- und GRAFCET-Variablen.
 - Ohne Oberfläche: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv weg.csv --png ordner`.

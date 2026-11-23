@@ -341,7 +341,7 @@ Elektrische Teile mit reellen Werten. Sie tragen die Bauteilinformationen `sim_r
   `len` Nennlänge, `F_extern_const` (negativ = streckende Last, wie in FluidSIM), `m_ext`, `mu_B_ext`, `mu_M_ext`, `alpha`, optional
   `F_V` (Dämpfung, Vorgabe 20 N·s/m). Kraft aus den Festo-Kurven (`simulationmuscle.h`), Volumen über virtuelle Arbeit.
   Messgrößen `x:` (Kontraktion in m, negativ vorgespannt), `h:` (%), `v:`, `F:` (Zugkraft). Prüfplan `muskel.qet`.
-  MAS-Typen und Muskel mit Zylinder (`fluidic_muscle2/3`) werden mit Begründung abgewiesen.
+  MAS-Typen werden mit Begründung abgewiesen; Muskel mit Zylinder siehe FluidSIM-Ergänzungen.
 - **Druckübersetzer** (`actuator.pressure_intensifier01`, IN, R, H; Fork 1.46.0, Formel H13): `r`, `p_max_in`, `q_max_in`,
   `q_max_hi` aus dem Herstellerdatenblatt (Pflicht, FluidSIM gibt keine Vorgabe), `G_leak`. Bypass IN → H, Pumpkolben
   bis r·p_IN − (r − 1)·p_R, Rückschlag H → IN bei Druck an R. Messgröße `qh:` (Förderstrom). Prüfplan
@@ -358,7 +358,8 @@ Elektrische Teile mit reellen Werten. Sie tragen die Bauteilinformationen `sim_r
 - **Timer** (`shutoff_valve.timer1/2`), **Verzögerungsventile** (`valve_group.timer3/4`), **Vorwahlzähler**
   (`shutoff_valve.pneumatic_counter`), **Zweihandsteuerblock**, **Vakuumsaugventil**: Kennwerte wie in FluidSIM
   (Formeln V20–V24), Prüfplan `pneu_logik.qet`.
-- Weiter abgewiesen: Taktstufen TAA/TAB (FluidSIM nennt die interne Verschaltung nicht).
+- **Taktstufen TAA/TAB** (Fork 1.48.0, Formel V25): Anschlüsse Yn, Zn, P.1, L.1, X…, A…, Yn+1, Zn+1, P.2, L.2 wie der Import; TAA setzt mit Yn, TAB mit Yn oder L; Prüfplan `taktkette.qet`.
+- **Muskel mit Führungszylindern** (`actuator.fluidic_muscle2/3`, AM, AC, BC, AC2, BC2; Fork 1.48.0, Formel M16): `d_piston`, `d_rod`, `xMax`, `xStart`; Messgröße `xz:` (Zylinderweg wie FluidSIMs x); Prüfplan `muskel_zylinder.qet`.
 
 ## Mobilhydraulik (R13, Fork 1.35.0)
 

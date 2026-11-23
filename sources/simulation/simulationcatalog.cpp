@@ -95,8 +95,11 @@ QList<Entry> build()
 		      "negative Last streckt (Vorzeichen wie FluidSIM); Anschläge an Vorspanngrenze und max. Kontraktion; keine Hysterese, MAS ohne Kennlinie",
 		      "Muskel (R12)");
 	for (const char *f : {"actuator.fluidic_muscle2", "actuator.fluidic_muscle3"})
-		e << other(f, Role::Unsupported, "",
-			   "Muskel mit doppeltwirkendem Zylinder: FluidSIM dokumentiert die Kopplung (Zylinderhub zu Muskelkontraktion, Nullpunkt) nicht");
+		e << physical(f, "muscle", "pneumatic", "AM (Muskel), AC, BC (Zylinder 1), AC2, BC2 (Zylinder 2)",
+			      "wie Muskel; d_piston, d_rod, xMax, xStart [m] der Führungszylinder",
+			      "Kolbenstangen am freien Muskelende: Zylinderweg = xStart − Kontraktion, Druck an AC streckt den Muskel (in FluidSIM 6.3 "
+			      "an TP220_13 geprüft); Zylindermasse und -reibung wie ein Standardzylinder; keine Endlagendämpfung",
+			      "Muskel (R12)");
 	// ---------------------------------------------------------- Wegeventile
 	for (const char *f : {"directional_valve.two_pins", "directional_valve.three_pins", "directional_valve.four_pins",
 			       "directional_valve.five_pins"})
@@ -244,9 +247,13 @@ QList<Entry> build()
 		      "ps_min, ps_max [Pa] (0,1/0,2 bar), q_min, q_max [l/min] bei 50 kPa (1,9/4)",
 		      "Schwimmer schließt über dem Federband von |p1 − p2|: Leitwert von q_max auf q_min; ohne Schwimmerdynamik",
 		      "Pneumatische Zeit-, Zähl- und Sicherheitsbausteine");
-	for (const char *f : {"valve_group.taa_01", "valve_group.tab_01", "other.misc"})
-		e << other(f, Role::Unsupported, "",
-			   "Taktstufen-Baustein: FluidSIM nennt Speicher, UND- und ODER-Glied, aber nicht deren Verschaltung mit Yn, Zn, X, L, A");
+	for (const char *f : {"valve_group.taa_01", "valve_group.tab_01"})
+		e << physical(f, "flow_valve", "pneumatic", "Yn, Zn, P, L, X (links/unten), A, Yn+1, Zn+1, P, L (oben/rechts)",
+			      "initialPosNo (TAA 2 = rückgesetzt, TAB 1 = gesetzt), posNoWanted, qNN [l/min] (60)",
+			      "Speicher-Impulsventil P → A (TAA: Yn setzt, Zn+1 oder L setzt zurück; TAB: Yn oder L setzt, Zn+1 setzt zurück), "
+			      "Zn = A, Yn+1 = A UND X; Innenschaltung aus dem FluidSIM-Symbol; ohne Handhilfsbetätigung",
+			      "Pneumatische Zeit-, Zähl- und Sicherheitsbausteine");
+	e << other("other.misc", Role::Unsupported, "", "Sammelfunktion ohne Modell");
 	// ---------------------------------------------------------- Vakuum (R10)
 	for (const char *f : {"vacuum.vacuum_generator", "vacuum.vacuum_generator_05_h", "vacuum.vacuum_generator_05_l"})
 		e << physical(f, "vacuum_generator", "pneumatic", "1 (Versorgung), 2 (Vakuum)",

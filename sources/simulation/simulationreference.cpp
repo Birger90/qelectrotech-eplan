@@ -536,7 +536,9 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Pneumatischer Muskel (R12): Festo DMSP gegen das Auslegungsbeispiel des Katalogs, Vorspannung ohne Druck, Volumen gegen die Aufweitung"),
 		QStringLiteral("Druckübersetzer (R12): Scanwill MP-F-4.0 – Bypass, Enddruck r·p_IN, Druckaufbau nach der Pumpenkennlinie"),
 		QStringLiteral("Proportional-Wegeventil MPYE: Durchfluss nach der Festo-Kennlinie q(U), Richtung 1→2 / 1→4, Abluft, Mittelstellung"),
-		QStringLiteral("Pneumatische Zeit-, Zähl- und Sicherheitsbausteine: Timer, Verzögerungsventil, Vorwahlzähler, Zweihandblock, Vakuumsaugventil")};
+		QStringLiteral("Pneumatische Zeit-, Zähl- und Sicherheitsbausteine: Timer, Verzögerungsventil, Vorwahlzähler, Zweihandblock, Vakuumsaugventil"),
+		QStringLiteral("Taktstufen-Kette TAA, TAA, TAB: Grundstellung, Start, Weiterschalten mit Quittung, Rücksetzen über L"),
+		QStringLiteral("Muskel mit Führungszylindern (R12): Zylinderweg = xStart − Kontraktion, Muskel zieht ein, Zylinder strecken den Muskel")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -725,8 +727,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		//    unknown function as well (no guessed source, no linear piston for a muscle); a graphic part is ignored
 		struct Case { const char *from, *to, *expect; };
 		const QList<Case> cases{
-			{"supply.pump", "valve_group.taa_01", "valve_group.taa_01 hat kein Rechenmodell"},
-			{"actuator.cyl_conf", "actuator.fluidic_muscle3", "actuator.fluidic_muscle3 hat kein Rechenmodell"},
+			{"supply.pump", "shutoff_valve.three_way_valve", "shutoff_valve.three_way_valve hat kein Rechenmodell"},
+			{"actuator.cyl_conf", "pressure_valve.pressure_compensator_closer03", "pressure_valve.pressure_compensator_closer03 hat kein Rechenmodell"},
 			{"supply.tank", "unbekannt.pruefling", "steht nicht im Modellkatalog"},
 			{"actuator.cyl_conf", "directional_valve.part", ""},
 		};
@@ -2009,6 +2011,71 @@ QList<Check> endToEnd(const QString &reference_dir)
 			if (!(std::abs(g1 - w1) <= 0.002 * w1) || !(std::abs(g2 - w2) <= 0.002 * w2))
 				wrong << QStringLiteral("Vakuumsaugventil: %1 / %2 g/s statt %3 / %4").arg(g1 * 1e3).arg(g2 * 1e3).arg(w1 * 1e3).arg(w2 * 1e3);
 			else seen << QStringLiteral("Vakuumsaugventil 0,5 bar: %1 g/s (q_min), 0,05 bar: %2 g/s (q_max)").arg(g1 * 1e3, 0, 'f', 4).arg(g2 * 1e3, 0, 'f', 4);
+		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 33. step modules (FORMELN.md V25), plan taktkette.qet: ring TAA -KH1, TAA -KH2, TAB -KH3 with P and L through all
+		//     three. Start: TAB set (A3), the TAA reset; start -QM1 sets -KH1 and its Zn resets -KH3; the acknowledgement X1 (-QM2)
+		//     passes A1 to -KH2 (Yn+1 = A AND X), whose Zn resets -KH1; L (-QM4) resets the TAA and sets the TAB
+		Check c{names.at(32)};
+		QStringList wrong, seen;
+		const QList<int> times{90, 240, 450, 700};   // after filling/venting through qNN 60 l/min
+		QMap<int, std::array<double, 3>> at;
+		const QList<Input> in{{0.10, QStringLiteral("-QM1"), 1, true}, {0.15, QStringLiteral("-QM1"), 1, false},
+							  {0.25, QStringLiteral("-QM2"), 1, true}, {0.32, QStringLiteral("-QM2"), 1, false},
+							  {0.50, QStringLiteral("-QM4"), 1, true}, {0.55, QStringLiteral("-QM4"), 1, false}};
+		ProjectRun r = runProject(path("taktkette.qet"), 6.0, in, 0.7001, [&](SimulationModel &m) {
+			const int ms = static_cast<int>(std::lround(m.time() * 1000));
+			if (std::abs(m.time() - ms / 1000.0) < 5e-6 && times.contains(ms))
+				at.insert(ms, {m.signalValue(QStringLiteral("p:-PG1.1")), m.signalValue(QStringLiteral("p:-PG2.1")), m.signalValue(QStringLiteral("p:-PG3.1"))});
+		});
+		if (!r.error.isEmpty()) wrong << r.error;
+		else {
+			const QList<std::array<int, 3>> want{{0, 0, 1}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+			for (int i = 0; i < times.size(); ++i) {
+				const auto g = at.value(times.at(i));
+				QString st;
+				bool okay = true;
+				for (int k = 0; k < 3; ++k) {
+					const bool on = g[k] > 5.5e5, off = g[k] < 0.2e5;
+					okay = okay && (want.at(i)[k] ? on : off);
+					st += on ? QLatin1Char('1') : off ? QLatin1Char('0') : QLatin1Char('?');
+				}
+				if (!okay) wrong << QStringLiteral("%1 ms: A1 A2 A3 = %2 statt %3%4%5").arg(times.at(i)).arg(st).arg(want.at(i)[0]).arg(want.at(i)[1]).arg(want.at(i)[2]);
+				else seen << QStringLiteral("%1 ms %2").arg(times.at(i)).arg(st);
+			}
+			if (wrong.isEmpty()) seen.prepend(QStringLiteral("A1 A2 A3: Grundstellung, nach Start, nach Quittung X1, nach L"));
+		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 34. muscle with two guide cylinders (FORMELN.md M16, coupling seen in FluidSIM 6.3 with TP220_13: x_cyl = xStart −
+		//     contraction), plan muskel_zylinder.qet: DMSP-20 200 mm, cylinders 20/8, stroke 100, xStart 50, 4 bar. -MZ1: muscle
+		//     fed, cylinders vented → contracts until the curve force equals the cylinder friction; -MZ2: cylinders fed, muscle
+		//     vented → stretched until the 0-bar curve carries 2·p·A_k (both within the static friction band)
+		Check c{names.at(33)};
+		QStringList wrong, seen;
+		double x1 = std::nan(""), z1 = std::nan(""), x2 = std::nan(""), z2 = std::nan("");
+		ProjectRun r = runProject(path("muskel_zylinder.qet"), 4.0, {}, 1.5001, [&](SimulationModel &m) {
+			if (std::abs(m.time() - 1.5) < 5e-6) {
+				x1 = m.signalValue(QStringLiteral("x:-MZ1")); z1 = m.signalValue(QStringLiteral("xz:-MZ1"));
+				x2 = m.signalValue(QStringLiteral("x:-MZ2")); z2 = m.signalValue(QStringLiteral("xz:-MZ2"));
+			}
+		});
+		if (!r.error.isEmpty()) wrong << r.error;
+		else {
+			const SimMuscle::Type &mt = SimMuscle::types().at(1);
+			const double ak = M_PI * 0.02 * 0.02 / 4, fs = 2 * 0.05 * ak * 6e5;
+			const double f1 = SimMuscle::force(mt, 100 * x1 / 0.2, 4.0), f2 = SimMuscle::force(mt, 100 * x2 / 0.2, 0.0), push = 2 * 4e5 * ak;
+			if (!(std::abs(x1 + z1 - 0.05) < 1e-9 && std::abs(x2 + z2 - 0.05) < 1e-9)) wrong << QStringLiteral("Kopplung: x + xz = %1 / %2 m statt 0,05").arg(x1 + z1).arg(x2 + z2);
+			else if (!(x1 > 0 && std::abs(f1) <= fs + 1e-6)) wrong << QStringLiteral("-MZ1: Kontraktion %1 mm, Muskelkraft %2 N (Reibband ± %3 N)").arg(x1 * 1000).arg(f1).arg(fs);
+			else if (!(x2 < 0 && std::abs(f2 - push) <= fs + 1e-6)) wrong << QStringLiteral("-MZ2: Kontraktion %1 mm, Muskelkraft %2 N statt %3 ± %4 N").arg(x2 * 1000).arg(f2).arg(push).arg(fs);
+			else seen << QStringLiteral("x + xz = xStart; -MZ1 zieht %1 mm ein (Zylinder bei %2 mm, Restkraft %3 N im Haftreibband ± %4 N); -MZ2 um %5 mm gestreckt "
+										"(Zylinder bei %6 mm, Muskel %7 N gegen 2·p·A_k = %8 N)").arg(x1 * 1000, 0, 'f', 2).arg(z1 * 1000, 0, 'f', 2).arg(f1, 0, 'f', 1)
+							 .arg(fs, 0, 'f', 1).arg(-x2 * 1000, 0, 'f', 2).arg(z2 * 1000, 0, 'f', 2).arg(f2, 0, 'f', 1).arg(push, 0, 'f', 1);
 		}
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));

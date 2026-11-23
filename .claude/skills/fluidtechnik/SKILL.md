@@ -102,7 +102,7 @@ Betätigungen aus den Ebenennamen, Zylinder, Quelle, Tank, Messgerät, Rückschl
 Anschlussachse, Druck- und Logikventile, Kontakte, Spulen, Leuchten, Potentiale; sonst Kasten mit Klassenname).
 Aus der .circ nur Anschlusslagen und Daten – jeder kann übernehmen, ohne FluidSIM und ohne Festo-Grafik im Projekt.
 `--fluidsim-grafik` nimmt die Originalgrafik (nur Eigengebrauch mit Lizenz). Und sofort simulierbar (auch: Datei → „FluidSIM-Schaltung importieren (.circ)…“, MCP
-`qet_fluidsim_import`, Gesamtprüfung `tools/fluidsim_import/fluidsim_batch.py --ausgabe ORDNER`; 15.11.2026: 1136/1136 übernommen, 0 Modellfehler, Zylinder bewegt sich in 276/461):
+`qet_fluidsim_import`, Gesamtprüfung `tools/fluidsim_import/fluidsim_batch.py --ausgabe ORDNER`; 23.11.2026 (Fork 1.48.0): 1136/1136 übernommen und ohne Modellfehler, 1131 ohne Programmfehler, Zylinder bewegt sich in 317/481):
 - **Schaltwege** je Stellung aus den Stellungsbausteinen `B<n>_<nr>` des Ventilsymbols (nach `ref-x`),
   Anschlussnamen aus `CON<n>`; gespiegelt (`scale-x=-1`) oder 180° gedreht → Stellungen, Ruhestellung
   und Seiten tauschen (Klick links = linke Hälfte der Zeichnung).
@@ -120,7 +120,7 @@ Aus der .circ nur Anschlusslagen und Daten – jeder kann übernehmen, ohne Flui
 - **GRAFCET** (`fluidsim_grafcet.py`): Grafcet.Step (flags initial), Transition (condition: `*`→`·`,
   `+`→`∨`, `RE`→`↑`, `.signal` weg), Action (actionType 0 N, 1 bedingt, 2/3 speichernd bei Aktivierung/
   Deaktivierung, 4 beim Auslösen ≈ 2, 5 bei Ereignis, 6 Zwangssteuerung – nicht), MultiPin/SyncRule.
-Nicht übernommen: Rahmen, Tabellen, Zustandsdiagramme, Digitaltechnik (LOGO), Teil-GRAFCETs,
+Nicht übernommen: Rahmen, Tabellen, Zustandsdiagramme, Teil-GRAFCETs,
 Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
 
 ## FluidSIM-Format (Kurzfassung, ausführlich in PLAN-PNEUMATIK.md)
@@ -144,6 +144,50 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
   3/2-Ventile nennen ihren einzigen Steueranschluss oft „12“ (ISO 5599: verbindet 1 mit 2).
 - Zylinder: `F_ref`/`v_ref` (auto_friction) = viskose Reibung F_ref/v_ref; ohne sie fährt ein leichter
   Zylinder an einem 1000-l/min-Ventil unrealistisch schnell (100 mm in 27 ms statt ≈ 130 ms).
+
+## Gute Fluidpläne – Muster aus den FluidSIM-Beispielen (gezählt 17.11.2026)
+
+Gezählt über alle 1081 lesbaren Beispielschaltungen (`circ/`, Skripte `muster_layout.py`, `muster_detail.py`).
+Die Zahl in Klammern ist der Beleg; so zeichnen, wenn nichts anderes vorgegeben ist.
+
+**Aufbau von unten nach oben (Energiefluss):**
+- Versorgung (Quelle, Wartungseinheit, Pumpe) unten, darüber die Signalglieder (Taster-, Rollen-3/2-Ventile),
+  darüber die Stellglieder (Wegeventile), oben die Antriebe (425 von 432 Schaltungen mit allen dreien).
+- Das Stellglied steht **unter seinem Zylinder** (509 von 513), etwa 10 Raster tiefer (Median 117 FluidSIM-
+  Einheiten ≈ 100 px), mit den Arbeitsanschlüssen 4/2 nach oben; 1, 3, 5 unten.
+- Mehrere Antriebe nebeneinander, je Antrieb eine Spalte (Abstand Median ≈ 220 px = 22 Raster). Meist ein
+  Zylinder (355), zwei (93), selten mehr (9 von 457).
+- Nummerierung von links nach rechts: -MM (68 von 68), -MB (92/95), -RZ (124/125), -SF (66/69), -BG (74/98).
+  -QM nur 54/90: Wegeventile gehören zu ihrem Antrieb (-QM1 steuert -MM1), nicht zur Lage.
+
+**Ventile und Leitungen:**
+- Entlüftung 3/5 eines Wegeventils mit Schalldämpfer (1044 von 1128); in QET `port_end="silencer"`, keine Leitung.
+- Drosselrückschlagventil direkt am Zylinderanschluss (255 von 580 Zylindern, 148 davon mit zwei = beide
+  Richtungen). Pneumatik: **Abluftdrosselung**, Anschluss 1 zum Zylinder (285 von 326): frei zum Zylinder hin,
+  gedrosselt beim Ausströmen. Hydraulik: beide Seiten etwa gleich oft (A 23, B 32) – nach Last wählen.
+- Der Zylinder hängt mal an 2 (151), mal an 4 (120): kein festes Muster; Ausfahren ist die Seite, die das
+  Signal 14 mit 1 verbindet (ISO 5599: 14 verbindet 1→4).
+- Kennbuchstaben siehe oben; Steuerleitungen in FluidSIM meist durchgezogen, in QET `fluid_line="pilot"`.
+
+**Hydraulik:**
+- Pumpe unten links, Druckbegrenzungsventil am Pumpenausgang (53 frei gezeichnet, 53 im Pumpenaggregat),
+  Manometer am Pumpenausgang (82 von 240 Schaltungen mit Pumpe).
+- Rücklauf: ein Tanksymbol an jeder Rücklaufstelle statt einer Sammelleitung (73 von 207 mit zwei und mehr
+  Tanksymbolen) – spart Leitungen quer über das Blatt.
+
+**Endlagen und Abläufe:**
+- Endschalter und Rollenventile über den Wegmaßstab am Zylinder (139 Schaltungen, Marken fast nur -BG): im QET-
+  Plan `sim_role=limit` und `function="-MM1 0..2"`; das Symbol steht im Steuerteil, nicht am Zylinder.
+- Folgesteuerungen (zwei und mehr Zylinder mit Endlagen: 56) zeichnen jeden Antrieb mit Stellglied als Spalte, die
+  Signalglieder darunter in der Reihenfolge des Ablaufs; Zustandsdiagramme übernimmt der Import nicht, den
+  Ablauf als GRAFCET (QET-Symbole, siehe `qet-schaltplan-zeichnen`) zeichnen.
+
+**Elektropneumatik/-hydraulik:** Fluidteil links, Steuerstromkreis rechts auf demselben Blatt (z. B. TP601_14);
+Regeln für den Stromlaufplan im Skill `qet-schaltplan-zeichnen`, Abschnitt „Steuerstromkreise“.
+
+Belege (Beispiele in `C:\Users\test\Desktop\qet pläne`): TP101_06 (ein Zylinder, Drosselrückschlag beidseitig),
+TP102_02 (zwei Zylinder, Rollenventile, Zähler), TP601_14 (Elektrohydraulik mit 6 Relais), Selbsthaltung
+(Europa Lehrmittel, Elektropneumatik).
 
 ## Gelernt
 
@@ -176,13 +220,12 @@ Artikeldaten (FluidSIM speichert keine), Leitungswege (QET legt sie neu).
   die Kolbenfläche) und Kraftprofil `F_var_ex`/`F_var_re` = {x mm, F N, …} bei `use_F_const` False.
 - Druckluftmotoren (Fork 1.33.0, R12): `MotorWithMidExhaust` rechnet aus `p_N`, `rpm_N`, `M_N`, `n0_nN` (lineare
   Kennlinie, Nennpunkt exakt), `Pneu.Actuator.RotaryMotor` aus `displacement`, `f`, `I`. Muskel `FluidicMuscle1`
-  (Fork 1.46.0): DMSP-10/20/40 nach den Festo-Kurven (`muscleType`, `len`, `F_extern_const` negativ = streckende Last, in FluidSIM geprüft); MAS und Muskel mit Zylinder
-  abgewiesen.
+  (Fork 1.46.0): DMSP-10/20/40 nach den Festo-Kurven (`muscleType`, `len`, `F_extern_const` negativ = streckende Last, in FluidSIM geprüft); MAS abgewiesen.
 - Mehrstellungszylinder (Fork 1.34.0, R12): `MultiPositionCylinder` (C1 hinterer Kolben, C2 vorderer, C3 Stangenseite)
   fährt drei Stellungen an: 0, `xMax2` (Standard halber Gesamthub), `xMax`. Druckübersetzer (`PressureIntensifier01`,
   hydraulisch, IN/R/H) rechnet seit 1.46.0 mit `r`, `p_max_in`, `q_max_in`, `q_max_hi` aus dem Datenblatt (Pflicht, nicht
   schätzen; Beispiel Scanwill MP-F-4.0: 4, 17,5 MPa, 14 l/min, 0,4 l/min).
-- FluidSIM-Ergänzungen (Fork 1.47.0): MPYE (Sollwert 0 … 10 V, 5 V Mitte, Festo-Kennlinie), pneumatische Timer, Verzögerungsventile, Vorwahlzähler, Zweihandblock, Vakuumsaugventil rechnen; Taktstufen TAA/TAB nicht.
+- FluidSIM-Ergänzungen (Fork 1.47.0): MPYE (Sollwert 0 … 10 V, 5 V Mitte, Festo-Kennlinie), pneumatische Timer, Verzögerungsventile, Vorwahlzähler, Zweihandblock, Vakuumsaugventil rechnen; seit 1.48.0 auch Taktstufen TAA/TAB und Muskel mit Führungszylindern (Zylinderweg = xStart − Kontraktion).
 - Mobilhydraulik (Fork 1.35.0, R13): `LoadSensingPumpUnit` (P1 LS-Verstellpumpe, P2 Konstantpumpe, LS-Anschluss; T/L/LA dürfen offen bleiben), 6/3-Handhebelventil (`xStep` ±100 %, + öffnet P2 → B) und `LoadingUnit_2` rechnen; Lenkventil, LS-Steuerblock, Vorsteuergerät noch nicht.
 - Fehlerszenarien (Fork 1.39.0, R15): Fehler wie FluidSIM über die Elementinformation `sim_fault` (z. B. „kolben_klemmt ab 1“, „interne_leckage 0.5“), Reparatur mit dem Ereignis „1.5 -QM1 reparieren“.
 - GRAFCET aus FluidSIM (Fork 1.38.0): Teil-GRAFCET-Rahmen → `sim_grafcet`, einschließende Schritte → `sim_encloses`, alink → `sim_activation`, Makro/Eingang/Ausgang → M/E/S, zwangssteuernde Befehle → Aktion `G12{…}`, Sprungziel einer Transition → Sprung.

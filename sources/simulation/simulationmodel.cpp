@@ -348,6 +348,10 @@ struct SimulationModel::Cylinder {
 	// R12 fluidic muscle (FluidSIM Pneu.Actuator.FluidicMuscle1, FORMELN.md M15): x is the contraction [m] (0 = nominal
 	// length, negative = pretensioned), stroke the max. contraction; force and volume from the Festo DMSP data
 	int muscle = -1;                            // index into SimMuscle::types(), -1: no muscle
+	// FORMELN.md M16: guide cylinders on the free end (FluidicMuscle2/3): count, start and maximum stroke [m], piston and
+	// annulus area [m²]; cylinder position = mc_start − contraction, pressure at AC pushes out (stretches the muscle)
+	int mcyl = 0;
+	double mc_start = 0.0, mc_max = 0.2, mc_ak = 0.0, mc_ar = 0.0;
 	double muscle_len = 0.25;                   // nominal length [m]
 	double muscle_h0 = 0.0;                     // contraction [%] of the first entry of muscle_vol / muscle_area
 	std::vector<double> muscle_vol, muscle_area;   // per 0.05 % contraction: volume [m³], effective area [m²]
@@ -848,6 +852,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 		{QStringLiteral("valve_group.timer3"), 50}, {QStringLiteral("valve_group.timer4"), 50},
 		{QStringLiteral("shutoff_valve.pneumatic_counter"), 60}, {QStringLiteral("valve_group.control_block_for_two_hand_start"), 50},
 		{QStringLiteral("vacuum.vacuum_efficiency_valve"), 4},
+		{QStringLiteral("valve_group.taa_01"), 60}, {QStringLiteral("valve_group.tab_01"), 60},
 		{QStringLiteral("pressure_valve.counterbalance_valve"), 200},
 		{QStringLiteral("pressure_valve.pressure_sequence_valve01"), 200},
 		{QStringLiteral("pressure_valve.pressure_sequence_valve02"), 200},
@@ -1372,6 +1377,23 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					for (int i = i0 - 1; i >= 0; --i)
 						c->muscle_vol[i] = c->muscle_vol[i + 1] - 0.5 * (c->muscle_area[i + 1] + c->muscle_area[i]) * 0.0005 * c->muscle_len;
 					c->x = 0.0;
+					if (fn == QLatin1String("actuator.fluidic_muscle2") || fn == QLatin1String("actuator.fluidic_muscle3")) {
+						// FORMELN.md M16 (checked in FluidSIM 6.3 with TP220_13): the rods of one or two double acting cylinders hold the
+						// free end; x_cyl = xStart − contraction; each cylinder adds its mass and the friction of a standard cylinder
+						c->mcyl = fn.endsWith(QLatin1Char('3')) ? 2 : 1;
+						const QString m = QStringLiteral("m");
+						const double dp = paramIn(f, QStringLiteral("d_piston"), 0.02, m, &m_model_errors, who, Range::Positive);
+						const double dr = paramIn(f, QStringLiteral("d_rod"), 0.008, m, &m_model_errors, who, Range::NonNegative);
+						if (std::isfinite(dp) && std::isfinite(dr) && dr >= dp)
+							m_model_errors << QStringLiteral("%1: Kolbenstange Ø %2 mm nicht kleiner als Kolben Ø %3 mm").arg(who).arg(dr * 1000).arg(dp * 1000);
+						c->mc_ak = M_PI * dp * dp / 4;
+						c->mc_ar = c->mc_ak - M_PI * dr * dr / 4;
+						c->mc_max = paramIn(f, QStringLiteral("xMax"), 0.2, m, &m_model_errors, who, Range::Positive);
+						c->mc_start = std::clamp(paramIn(f, QStringLiteral("xStart"), 0.0, m, &m_model_errors, who, Range::NonNegative), 0.0, c->mc_max);
+						c->m += c->mcyl * 0.1;
+						c->f_static += c->mcyl * 0.05 * c->mc_ak * 6e5;
+						c->f_slide += c->mcyl * 0.7 * 0.05 * c->mc_ak * 6e5;
+					}
 					m_cylinders << c;
 					m_end_position.insert(c->label, QString());
 				} else if (model == QLatin1String("pressure_intensifier")) {
@@ -1561,6 +1583,14 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					if (fn == QLatin1String("shutoff_valve.pneumatic_counter")) {
 						fv->preset = static_cast<int>(std::lround(paramNative(f, QStringLiteral("counterEnd"), 3.0, QString(), &m_model_errors, who, Range::NonNegative)));
 						fv->count = fv->preset;
+					}
+					if (fn == QLatin1String("valve_group.taa_01") || fn == QLatin1String("valve_group.tab_01")) {
+						// FORMELN.md V25: initialPosNo 1 = memory set (FluidSIM default of TAB), 2 = reset (TAA); posNoWanted 1/2 overrides
+						const int init = static_cast<int>(std::lround(paramNative(f, QStringLiteral("initialPosNo"),
+							fn.endsWith(QLatin1String("tab_01")) ? 1.0 : 2.0, QString(), &m_model_errors, who, Range::NonNegative)));
+						const int wanted = static_cast<int>(std::lround(paramNative(f, QStringLiteral("posNoWanted"), 0.0, QString(), &m_model_errors, who, Range::NonNegative)));
+						fv->latched = (wanted > 0 ? wanted : init) == 1;
+						fv->c_aux = conductanceFromQnn(1000.0);   // internal through lines P and L, Zn = A (project definition)
 					}
 					if (fn == QLatin1String("vacuum.vacuum_efficiency_valve")) {
 						const QString bar = QStringLiteral("Pa"), lmin = QStringLiteral("l/min");
@@ -3311,6 +3341,44 @@ void SimulationModel::step(double dt)
 			} else {
 				book(out, -1, s->flow(p(out), P_ATM), s->e);
 			}
+		} else if (fn == QLatin1String("valve_group.taa_01") || fn == QLatin1String("valve_group.tab_01")) {
+			// FORMELN.md V25 (circuit inside the FluidSIM symbol): impulse 3/2 memory P → A; TAA set by Yn, reset by Zn+1 or L;
+			// TAB set by Yn or L, reset by Zn+1; with both pilots it keeps its state. Zn carries A to the previous step; a
+			// spring 3/2 valve piloted by X passes A to Yn+1; P and L run through
+			int kp1 = -1, kp2 = -1, kl1 = -1, kl2 = -1, ka = -1, kx = -1, kyn = -1, kyn1 = -1, kz = -1, kz1 = -1;
+			for (auto it = kn.constBegin(); it != kn.constEnd(); ++it) {
+				const QString &nm = it.key();
+				if (nm == QLatin1String("P.1") || nm == QLatin1String("C4")) kp1 = it.value();
+				else if (nm == QLatin1String("P.2") || nm == QLatin1String("C5")) kp2 = it.value();
+				else if (nm == QLatin1String("L.1") || nm == QLatin1String("C8")) kl1 = it.value();
+				else if (nm == QLatin1String("L.2") || nm == QLatin1String("C9")) kl2 = it.value();
+				else if (nm == QLatin1String("Yn") || nm == QLatin1String("C2")) kyn = it.value();
+				else if (nm == QLatin1String("Yn+1") || nm == QLatin1String("C3")) kyn1 = it.value();
+				else if (nm == QLatin1String("Zn") || nm == QLatin1String("C6")) kz = it.value();
+				else if (nm == QLatin1String("Zn+1") || nm == QLatin1String("C7")) kz1 = it.value();
+				else if (nm.startsWith(QLatin1Char('A')) || nm == QLatin1String("C1")) ka = it.value();
+				else if (nm.startsWith(QLatin1Char('X')) || nm == QLatin1String("C10")) kx = it.value();
+			}
+			auto sig = [&](int k) { return k >= 0 && p(k) - P_ATM > P_PILOT; };
+			const bool tab = fn.endsWith(QLatin1String("tab_01"));
+			const bool l = sig(kl1) || sig(kl2);
+			const bool set = tab ? (sig(kyn) || l) : sig(kyn), reset = tab ? sig(kz1) : (sig(kz1) || l);
+			if (set != reset && set != s->latched) {
+				s->latched = set;
+				m_messages << Message{m_time, QStringLiteral("%1 %2").arg(label(s->e), set ? QStringLiteral("Taktstufe gesetzt") : QStringLiteral("Taktstufe rückgesetzt"))};
+			}
+			if (kp1 >= 0 && kp2 >= 0 && kp1 != kp2) book(kp1, kp2, massFlow(p(kp1), p(kp2), s->c_aux), s->e);
+			if (kl1 >= 0 && kl2 >= 0 && kl1 != kl2) book(kl1, kl2, massFlow(p(kl1), p(kl2), s->c_aux), s->e);
+			const int kp = kp1 >= 0 ? kp1 : kp2;
+			if (ka >= 0) {
+				if (s->latched) book(kp, ka, s->flow(p(kp), p(ka)), s->e);
+				else book(ka, -1, s->flow(p(ka), P_ATM), s->e);
+				if (kz >= 0 && kz != ka) book(ka, kz, massFlow(p(ka), p(kz), s->c_aux), s->e);
+			}
+			if (kyn1 >= 0) {
+				if (sig(kx) && ka >= 0) book(ka, kyn1, s->flow(p(ka), p(kyn1)), s->e);
+				else book(kyn1, -1, s->flow(p(kyn1), P_ATM), s->e);
+			}
 		} else if (fn == QLatin1String("vacuum.vacuum_efficiency_valve")) {
 			// FORMELN.md V24: the float closes over the spring band ps_min … ps_max of |p1 − p2|: conductance from the
 			// maximum to the minimum flow (both at 50 kPa)
@@ -3522,15 +3590,24 @@ void SimulationModel::step(double dt)
 			// R12 fluidic muscle (FORMELN.md M15): tensile force from the data sheet curves, load against the contraction;
 			// velocity semi-implicit in the muscle stiffness and the damping (stable for a light free end)
 			const SimMuscle::Type &mt = SimMuscle::types().at(z->muscle);
-			int ka = -1;
-			for (Terminal *t : z->e->terminals())
-				if (node(t) >= 0) { ka = node(t); break; }
+			int ka = node(z->e, QStringLiteral("AM"));
+			if (ka < 0 && z->mcyl == 0)
+				for (Terminal *t : z->e->terminals())
+					if (node(t) >= 0) { ka = node(t); break; }
 			const double bar = ka >= 0 ? (p(ka) - P_ATM) / 1e5 : 0.0;
 			auto hx = [&](double x) { return 100.0 * x / z->muscle_len; };
 			const double fm = SimMuscle::force(mt, hx(z->x), bar);
 			const double dx = 1e-5 * z->muscle_len;
 			const double stiff = std::max(0.0, (SimMuscle::force(mt, hx(z->x - dx), bar) - SimMuscle::force(mt, hx(z->x + dx), bar)) / (2 * dx));
-			const double total = fm - z->f_load - z->weight;
+			double total = fm - z->f_load - z->weight;
+			// FORMELN.md M16: the cylinders push out (against the contraction) with p_AC·A_k − p_BC·A_r each
+			int kac[2] = {-1, -1}, kbc[2] = {-1, -1};
+			if (z->mcyl > 0) {
+				kac[0] = node(z->e, QStringLiteral("AC")); kbc[0] = node(z->e, QStringLiteral("BC"));
+				if (z->mcyl > 1) { kac[1] = node(z->e, QStringLiteral("AC2")); kbc[1] = node(z->e, QStringLiteral("BC2")); }
+				for (int i = 0; i < z->mcyl; ++i)
+					total -= (kac[i] >= 0 ? p(kac[i]) - P_ATM : 0.0) * z->mc_ak - (kbc[i] >= 0 ? p(kbc[i]) - P_ATM : 0.0) * z->mc_ar;
+			}
 			if (m_record_flows) m_cylinder_force.insert(z->e, fm);
 			if (std::abs(z->v) < 1e-4 && std::abs(total) <= z->f_static) {
 				z->v = 0.0;
@@ -3540,10 +3617,19 @@ void SimulationModel::step(double dt)
 				z->v = (z->v + dt / z->m * f_net) / (1.0 + dt * z->damping / z->m + dt * dt * stiff / z->m);
 				z->x += z->v * dt;
 			}
-			const double lo = -mt.pre / 100.0 * z->muscle_len;
+			double lo = -mt.pre / 100.0 * z->muscle_len, hi = z->stroke;
+			if (z->mcyl > 0) {   // the cylinder strokes limit the contraction: x_cyl = mc_start − x within 0 … mc_max
+				lo = std::max(lo, z->mc_start - z->mc_max);
+				hi = std::min(hi, z->mc_start);
+			}
 			QString end;
 			if (z->x <= lo) { z->x = lo; z->v = std::max(z->v, 0.0); end = QStringLiteral("Vorspanngrenze"); }
-			else if (z->x >= z->stroke) { z->x = z->stroke; z->v = std::min(z->v, 0.0); end = QStringLiteral("maximale Kontraktion"); }
+			else if (z->x >= hi) { z->x = hi; z->v = std::min(z->v, 0.0); end = QStringLiteral("maximale Kontraktion"); }
+			for (int i = 0; i < z->mcyl; ++i) {
+				const double xc = z->mc_start - z->x;
+				if (kac[i] >= 0) { vol[kac[i]] += V_DEAD + z->mc_ak * xc; dvdt[kac[i]] -= z->mc_ak * z->v; }
+				if (kbc[i] >= 0) { vol[kbc[i]] += V_DEAD + z->mc_ar * (z->mc_max - xc); dvdt[kbc[i]] += z->mc_ar * z->v; }
+			}
 			if (ka >= 0) {
 				vol[ka] += z->muscleTable(z->muscle_vol, z->x);
 				dvdt[ka] += z->muscleTable(z->muscle_area, z->x) * z->v;
@@ -3868,6 +3954,9 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 						  QStringLiteral("positiv: kontrahierend"), z->label, QString()};
 			out << Signal{QStringLiteral("F:") + z->label, QStringLiteral("force"), QStringLiteral("N"),
 						  QStringLiteral("Zugkraft des Muskels nach dem Datenblatt (ohne Last und Reibung)"), z->label, QString()};
+			if (z->mcyl > 0)
+				out << Signal{QStringLiteral("xz:") + z->label, QStringLiteral("position"), QStringLiteral("m"),
+							  QStringLiteral("Weg der Führungszylinder (xStart − Kontraktion), wie FluidSIMs x"), z->label, QString()};
 			continue;
 		}
 		if (z->rotary) {
@@ -3975,6 +4064,14 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 			if (z->label == rest && z->muscle >= 0) {
 				if (ok) *ok = true;
 				return 100.0 * z->x / z->muscle_len;
+			}
+		return std::nan("");
+	}
+	if (kind == QLatin1String("xz")) {     // FORMELN.md M16: position of the guide cylinders [m]
+		for (const Cylinder *z : m_cylinders)
+			if (z->label == rest && z->mcyl > 0) {
+				if (ok) *ok = true;
+				return z->mc_start - z->x;
 			}
 		return std::nan("");
 	}

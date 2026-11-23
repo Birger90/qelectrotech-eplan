@@ -3,6 +3,17 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.48.0 – 20.11.2026
+
+Die letzten FluidSIM-Bauteile ohne Modell, in FluidSIM 6.3 selbst untersucht:
+
+- Taktstufen-Bausteine TAA und TAB: Innenschaltung aus dem FluidSIM-Symbol (Speicher-Impulsventil, UND über X, ODER mit
+  L), Grundstellung an TP102_04 beobachtet; Formel V25, Prüfung „Taktstufen-Kette“ (Plan `taktkette.qet`).
+- Muskel mit einem oder zwei Führungszylindern (FluidicMuscle2/3): Zylinderweg = xStart − Kontraktion, Zylinderdruck an
+  AC streckt den Muskel (an TP220_13 beobachtet); Messgröße `xz:`; Formel M16, Prüfung „Muskel mit Führungszylindern“
+  (Plan `muskel_zylinder.qet`).
+- Damit rechnen alle FluidSIM-Beispielschaltungen ohne Modellfehler.
+
 ## 1.47.0 – 20.11.2026
 
 FluidSIM-Bauteile, die bisher den Start verhinderten (FluidSIM-Gesamtlauf: 35 Schaltungen mit Modellfehler):

@@ -320,6 +320,9 @@ QVector<DataPortalPart> DataPortalClient::parseParts(const QByteArray &json, con
 		p.part_number = a.value(QStringLiteral("part_number")).toString();
 		p.order_number = a.value(QStringLiteral("order_number")).toString();
 		p.type_number = a.value(QStringLiteral("type_number")).toString();
+		p.identcode = a.value(QStringLiteral("identcode")).toString().trimmed();
+		p.lifecycle = a.value(QStringLiteral("lifecycle")).toObject()
+				.value(QStringLiteral("name")).toString();
 		p.designation = localized(a.value(QStringLiteral("designation")).toObject(), language);
 		p.description = localized(a.value(QStringLiteral("description")).toObject(), language);
 		const QJsonObject man = included.value(

@@ -284,6 +284,12 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/conductornumexport.h
   ${QET_DIR}/sources/bomexport.cpp
   ${QET_DIR}/sources/bomexport.h
+  ${QET_DIR}/sources/purchase/purchaselist.cpp
+  ${QET_DIR}/sources/purchase/purchaselist.h
+  ${QET_DIR}/sources/purchase/purchasefetch.cpp
+  ${QET_DIR}/sources/purchase/purchasefetch.h
+  ${QET_DIR}/sources/purchase/purchaseexport.cpp
+  ${QET_DIR}/sources/purchase/purchaseexport.h
   ${QET_DIR}/sources/fluid/fluiddata.cpp
   ${QET_DIR}/sources/fluid/fluiddata.h
   ${QET_DIR}/sources/fluid/fluidtypes.cpp

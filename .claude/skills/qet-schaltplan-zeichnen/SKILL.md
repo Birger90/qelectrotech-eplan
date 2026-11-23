@@ -153,6 +153,13 @@ Funktionsvorlage einfügen – mit Artikeldaten, Klemmen, Kabel und Verknüpfung
 ## Gelernt (fortschreiben)
 
 - 23.11.2026, Plan prüfen: Nach dem Zeichnen `--check-project <plan.qet> bericht.json` (oder MCP `qet_plan_check`, im Programm Projekt > *Plan prüfen*) laufen lassen und alle Fehler beheben; Warnungen ansehen. Klemmen nur dann ohne Warnung, wenn sie in einer Klemmleiste stehen (`add_terminal_strip` + `add_to_strip`), Geräte brauchen `manufacturer_reference`, SPS-Kanäle eine Karte mit Adresse (`link_plc_io`). Rückgabewert 3 = Fehler gefunden.
+
+- 20.11.2026, Einkaufsliste: Für Einkauf/ERP `--export-purchase <plan> liste.xlsx --erp` (oder Menü Projekt >
+  *Einkaufsliste exportieren…*). Damit sie taugt, am Gerät `manufacturer`, `manufacturer_reference`, `description`
+  und ggf. `supplier`/`quantity` setzen; Preise/Lieferzeiten pflegt die Firma in `Daten\einkauf\preisliste.csv`
+  (`Bestellnummer;Preis;Lieferzeit;Lieferant`). Das Data Portal liefert nur EAN/GTIN und Lebenszyklus, keine Preise,
+  Lieferzeiten oder VPE (auch nicht mit Token) – nie Werte erfinden, leer lassen. Geräte ohne Artikel erscheinen als
+  „Artikel offen“; ein BMK, dessen anderes Element einen Artikel hat (SPS-Kanal neben Modul), gilt nicht als offen.
 - 03.11.2026, Blatt „Fußschalter“: erster Wurf hatte schräge/um das Gerät laufende Leitungen,
   überlappende Pin-Kennzeichen, „…“-Felder und abgeschnittene Kabelnamen – Ursachen und
   Abhilfen stehen oben. Vorlage mit dem fertigen Stand: `vorlagen/beispiel_fussschalter.py`.

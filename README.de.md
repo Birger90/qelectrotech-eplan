@@ -118,6 +118,29 @@ Seitenleiste *Anzeige > Funktionsvorlagen*, wie EPLAN-Makros mit Wertesätzen:
   Kein Hersteller veröffentlicht ein festes Importschema; jede Datei ist eine CSV nach dem, was der jeweilige Import
   belegt liest. Spalten und Belege in [docs/beschriftung-export.md](docs/beschriftung-export.md).
 
+## Einkaufsliste für Einkauf und ERP
+
+- Menü Projekt > *Einkaufsliste exportieren…*: eine Dateiauswahl, sonst nichts. Heraus kommt eine Excel-Mappe
+  (`.xlsx`, oder CSV) mit einer Zeile je Artikel, gruppiert nach Lieferant (sonst Hersteller), Summe je Gruppe und
+  Gesamtsumme, dazu Menge, VPE, Bestellmenge (auf VPE aufgerundet), Preis, Preiseinheit, Gesamtpreis, Lieferzeit,
+  EAN/GTIN, Lebenszyklus und Preisquelle. Geräte ohne Artikel stehen am Ende mit „Artikel offen“. Preise lassen sich
+  in Excel nachtragen: Bestellmenge, Gesamtpreis und Summen sind Formeln.
+- Daneben entsteht `<Name>_ERP.csv`, ein neutrales Importformat: eine Zeile je Artikel, feste englische
+  Spaltennamen (`line;supplier;manufacturer;order_number;description;references;quantity;order_quantity;unit;
+  packaging_unit;unit_price;price_unit;currency;total_price;delivery_time;gtin;lifecycle;price_source;article_open`),
+  `;` als Trenner, `.` als Dezimalzeichen, UTF-8 ohne BOM, keine Summenzeilen.
+- Woher die Werte kommen (später überschreibt früher): Preis und Lieferant am Gerät → Artikeldaten aus dem EPLAN
+  Data Portal und den EDZ-Paketen in `herstellerdaten` (Zwischenspeicher `einkauf/artikeldaten.csv`, 30 Tage) →
+  eigene Preisliste `einkauf/preisliste.csv` im Datenordner (`Bestellnummer;Preis;Lieferzeit;Lieferant`, optional
+  `Preiseinheit;VPE;EAN;Hersteller;Währung`; die Kopfzeile wird beim ersten Export angelegt).
+- Ehrlich geprüft: Das Data Portal liefert ohne Token EAN/GTIN und Lebenszyklus, aber weder Preis noch Lieferzeit
+  noch VPE; die kaufmännische CSV mit Token enthält nur Stammdaten. EDZ-Pakete haben VPE und Mengeneinheit, ihre
+  Preisfelder sind bei den Herstellern 0. Preise und Lieferzeiten kommen deshalb aus der eigenen Preisliste;
+  Fehlendes bleibt leer.
+- CLI: `--export-purchase <projekt> <liste.xlsx|liste.csv> [--online] [--erp]`, `--fetch-commercial <projekt>
+  [--offline]`. Skript-API: `purchaseList()`, `exportPurchaseList(datei, '{"online":true,"erp":true}')`,
+  `fetchCommercialData()`, `purchasePriceListPath()`.
+
 ## Schaltschrankaufbau und Tafelfertigung
 
 Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem normalen Blatt:

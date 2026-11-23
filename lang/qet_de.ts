@@ -18456,6 +18456,211 @@ Wenn Sie darüber speichern, gehen seine Änderungen verloren.</translation>
     </message>
 </context>
 <context>
+    <name>PurchaseExport</name>
+    <message>
+        <source>purchase list</source>
+        <translation>Einkaufsliste</translation>
+    </message>
+    <message>
+        <source>Excel workbook (*.xlsx)</source>
+        <translation>Excel-Mappe (*.xlsx)</translation>
+    </message>
+    <message>
+        <source>CSV file (*.csv)</source>
+        <translation>CSV-Datei (*.csv)</translation>
+    </message>
+    <message>
+        <source>Export purchase list</source>
+        <translation>Einkaufsliste exportieren</translation>
+    </message>
+    <message>
+        <source>The parts of the project cannot be read.
+%1</source>
+        <translation>Die Bauteile des Projekts lassen sich nicht lesen.
+%1</translation>
+    </message>
+    <message>
+        <source>Looking up article data...</source>
+        <translation>Artikeldaten werden geholt …</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Überspringen</translation>
+    </message>
+    <message>
+        <source>Looking up article data: %1</source>
+        <translation>Artikeldaten werden geholt: %1</translation>
+    </message>
+    <message>
+        <source>Unable to save the purchase list to %1.
+%2</source>
+        <translation>Die Einkaufsliste kann nicht als %1 gespeichert werden.
+%2</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n article(s) written, grouped by supplier.</source>
+        <translation>
+            <numerusform>%n Artikel geschrieben, nach Lieferant gruppiert.</numerusform>
+            <numerusform>%n Artikel geschrieben, nach Lieferant gruppiert.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>With price: %1, with EAN/GTIN: %2.</source>
+        <translation>Mit Preis: %1, mit EAN/GTIN: %2.</translation>
+    </message>
+    <message>
+        <source>Total of the known prices: %1 %2</source>
+        <translation>Summe der bekannten Preise: %1 %2</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n device(s) without article (&quot;Article open&quot;).</source>
+        <translation>
+            <numerusform>%n Gerät ohne Artikel („Artikel offen“).</numerusform>
+            <numerusform>%n Geräte ohne Artikel („Artikel offen“).</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>The Data Portal could not be asked: %1</source>
+        <translation>Das Data Portal war nicht erreichbar: %1</translation>
+    </message>
+    <message>
+        <source>Own prices, delivery times and suppliers: %1</source>
+        <translation>Eigene Preise, Lieferzeiten und Lieferanten: %1</translation>
+    </message>
+    <message>
+        <source>Open list</source>
+        <translation>Liste öffnen</translation>
+    </message>
+    <message>
+        <source>Open price list</source>
+        <translation>Preisliste öffnen</translation>
+    </message>
+</context>
+<context>
+    <name>PurchaseList</name>
+    <message>
+        <source>yes</source>
+        <comment>article open</comment>
+        <translation>ja</translation>
+    </message>
+    <message>
+        <source>Article open</source>
+        <translation>Artikel offen</translation>
+    </message>
+    <message>
+        <source>No supplier</source>
+        <translation>Ohne Lieferant</translation>
+    </message>
+    <message>
+        <source>No company data folder is set up.</source>
+        <translation>Es ist kein Firmen-Datenordner eingerichtet.</translation>
+    </message>
+    <message>
+        <source>Cannot create the folder %1.</source>
+        <translation>Der Ordner %1 kann nicht angelegt werden.</translation>
+    </message>
+    <message>
+        <source>%1 has no column &quot;Bestellnummer&quot;.</source>
+        <translation>%1 hat keine Spalte „Bestellnummer“.</translation>
+    </message>
+    <message>
+        <source>No project.</source>
+        <translation>Kein Projekt.</translation>
+    </message>
+    <message>
+        <source>Project</source>
+        <translation>Projekt</translation>
+    </message>
+    <message>
+        <source>Price list</source>
+        <translation>Preisliste</translation>
+    </message>
+    <message>
+        <source>Pos.</source>
+        <translation>Pos.</translation>
+    </message>
+    <message>
+        <source>Supplier</source>
+        <translation>Lieferant</translation>
+    </message>
+    <message>
+        <source>Manufacturer</source>
+        <translation>Hersteller</translation>
+    </message>
+    <message>
+        <source>Order number</source>
+        <translation>Bestellnummer</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Bezeichnung</translation>
+    </message>
+    <message>
+        <source>Device tags</source>
+        <translation>BMK</translation>
+    </message>
+    <message>
+        <source>Quantity</source>
+        <translation>Menge</translation>
+    </message>
+    <message>
+        <source>Unit</source>
+        <translation>Einheit</translation>
+    </message>
+    <message>
+        <source>Packaging unit</source>
+        <translation>VPE</translation>
+    </message>
+    <message>
+        <source>Order quantity</source>
+        <translation>Bestellmenge</translation>
+    </message>
+    <message>
+        <source>Price</source>
+        <translation>Preis</translation>
+    </message>
+    <message>
+        <source>Price unit</source>
+        <translation>Preiseinheit</translation>
+    </message>
+    <message>
+        <source>Currency</source>
+        <translation>Währung</translation>
+    </message>
+    <message>
+        <source>Total price</source>
+        <translation>Gesamtpreis</translation>
+    </message>
+    <message>
+        <source>Delivery time</source>
+        <translation>Lieferzeit</translation>
+    </message>
+    <message>
+        <source>EAN/GTIN</source>
+        <translation>EAN/GTIN</translation>
+    </message>
+    <message>
+        <source>Lifecycle</source>
+        <translation>Lebenszyklus</translation>
+    </message>
+    <message>
+        <source>Price source</source>
+        <translation>Preisquelle</translation>
+    </message>
+    <message>
+        <source>Sum %1</source>
+        <translation>Summe %1</translation>
+    </message>
+    <message>
+        <source>Grand total</source>
+        <translation>Gesamtsumme</translation>
+    </message>
+    <message>
+        <source>Purchase list</source>
+        <translation>Einkaufsliste</translation>
+    </message>
+</context>
+<context>
     <name>QETApp</name>
     <message>
         <source>Loading... Initializing the elements collection cache</source>
@@ -18808,6 +19013,14 @@ Verfügbare Optionen:
     <message>
         <source>Show or hide the function templates: circuits with placeholders to place in one go</source>
         <translation>Funktionsvorlagen ein- oder ausblenden: Schaltungsteile mit Platzhaltern, in einem Schritt eingefügt</translation>
+    </message>
+    <message>
+        <source>Export purchase list...</source>
+        <translation>Einkaufsliste exportieren …</translation>
+    </message>
+    <message>
+        <source>Articles grouped by supplier with price, EAN and packaging unit, as Excel and ERP file</source>
+        <translation>Artikel nach Lieferant mit Preis, EAN und VPE, als Excel- und ERP-Datei</translation>
     </message>
     <message>
         <source>Tape measure</source>

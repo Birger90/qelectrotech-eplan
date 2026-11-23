@@ -1,0 +1,158 @@
+<qet_macro>
+    <function_template category="Meldungen" name="Meldeleuchte DQ" version="1">
+        <description>Leuchtmelder am SPS-Ausgang. Die Farbe wählt Frontelement und LED-Element.</description>
+        <parameter default="PF1" kind="label" label="Kennzeichen" name="BMK"/>
+        <parameter default="Betrieb" label="Funktion" name="TEXT"/>
+        <parameter default="grün" label="Farbe" name="FARBE"/>
+        <parameter default="%Q0.2" label="SPS-Ausgang" name="ADR"/>
+        <table key="FARBE">
+            <row FARBE="grün" P_ART="M22-L-G + M22-A + M22-LED-G"/>
+            <row FARBE="gelb" P_ART="M22-L-Y + M22-A + M22-LED-Y"/>
+            <row FARBE="rot" P_ART="M22-L-R + M22-A + M22-LED-R"/>
+            <row FARBE="weiß" P_ART="M22-L-W + M22-A + M22-LED-W"/>
+            <row FARBE="blau" P_ART="M22-L-B + M22-A + M22-LED-B"/>
+        </table>
+    </function_template>
+    <collection>
+        <element path="import/Allgemein/SPS/SPS_Kanal_DQ.elmt">
+            <definition height="50" hotspot_x="40" hotspot_y="25" link_type="slave" type="element" version="0.100.0" width="80">
+                <uuid uuid="{fad495b1-35e0-50d8-a863-cf03e502c3fd}"/>
+                <names>
+                    <name lang="de">SPS-Ausgangskanal (allgemein)</name>
+                    <name lang="en">PLC output channel (generic)</name>
+                </names>
+                <kindInformations>
+                    <kindInformation name="type">plc</kindInformation>
+                    <kindInformation name="state">NO</kindInformation>
+                    <kindInformation name="number">1</kindInformation>
+                </kindInformations>
+                <informations>Allgemeiner digitaler Kanal, Anschluss unten zum Feldgeraet. Die Adresse steht in plc_address; eine Funktionsvorlage verknuepft den Kanal mit dem SPS-Modul, das diese Adresse hat.
+Author: QElectroTech-EPLAN fork. License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                <description>
+                    <rect antialias="false" height="30" style="line-style:normal;line-weight:normal;filling:none;color:black" width="60" x="-30" y="-20"/>
+                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="10" y2="20"/>
+                    <text color="#000000" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="DQ" x="-27" y="-8"/>
+                    <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{44f4bdd7-2d50-5e65-91e8-76e9afeac18f}" x="-27" y="-6" z="6">
+                        <text/>
+                        <info_name>plc_address</info_name>
+                    </dynamic_text>
+                    <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{cabc07fd-8cd8-5fcb-ab21-eb1a6dd67713}" x="34" y="-20" z="6">
+                        <text/>
+                        <info_name>label</info_name>
+                    </dynamic_text>
+                    <terminal name="1" orientation="s" type="Generic" uuid="{64a60bc1-30d8-5898-85e1-f24932247e6d}" x="0" y="20"/>
+                </description>
+            </definition>
+        </element>
+        <element path="import/10_electric/10_allpole/380_signaling_operating/11_optical_signaling/lampe2.elmt">
+            <definition height="60" hotspot_x="15" hotspot_y="30" link_type="simple" type="element" version="0.100.0" width="30">
+                <uuid uuid="{1b55531e-a24c-5e65-df87-b9f6ba21209e}"/>
+                <names>
+                    <name lang="ar">مصباح</name>
+                    <name lang="ca">Llum</name>
+                    <name lang="cs">Kontrolka</name>
+                    <name lang="da">Lys</name>
+                    <name lang="de">Meldeleuchte</name>
+                    <name lang="el">Λυχνία</name>
+                    <name lang="en">Light</name>
+                    <name lang="lv">Gaismas indikators</name>
+                    <name lang="es">Lámpara</name>
+                    <name lang="fi">Valo</name>
+                    <name lang="fr">Lampe</name>
+                    <name lang="hr">Svjetlo</name>
+                    <name lang="hu">Lámpa</name>
+                    <name lang="it">Luce</name>
+                    <name lang="ja">表示灯</name>
+                    <name lang="ko">등</name>
+                    <name lang="mn">Гэрэл</name>
+                    <name lang="nb">Lampe</name>
+                    <name lang="nl">Lamp</name>
+                    <name lang="nl_BE">Licht</name>
+                    <name lang="pl">Lampa</name>
+                    <name lang="pt">Lâmpada</name>
+                    <name lang="pt_BR">Lâmpada</name>
+                    <name lang="ro">Lumină</name>
+                    <name lang="ru">Лампа</name>
+                    <name lang="sk">Kontrolka</name>
+                    <name lang="sl">Luč</name>
+                    <name lang="sr">Светло</name>
+                    <name lang="sv">Indikeringslampa</name>
+                    <name lang="tr">Işık</name>
+                    <name lang="uk">Світло</name>
+                    <name lang="zh">灯2</name>
+                </names>
+                <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                <description>
+                    <ellipse antialias="true" height="20" style="line-style:normal;line-weight:normal;filling:none;color:black" width="20" x="-10" y="-10"/>
+                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="7" x2="-7" y1="-7" y2="7"/>
+                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-7" x2="7" y1="-7" y2="7"/>
+                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20" y2="-10"/>
+                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="10" y2="20"/>
+                    <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{7c787e66-069c-4c07-853a-facb5c153948}" x="15" y="-9.5" z="6">
+                        <text/>
+                        <info_name>label</info_name>
+                    </dynamic_text>
+                    <terminal name="A1" orientation="n" type="Generic" uuid="{e8f2916b-c880-40ab-99eb-0b6842bd3a4c}" x="0" y="-20"/>
+                    <terminal name="A2" orientation="s" type="Generic" uuid="{144f0e22-3faf-4100-81eb-bc67fe9eaebe}" x="0" y="20"/>
+                </description>
+            </definition>
+        </element>
+    </collection>
+    <diagram_content>
+        <diagram projectId="-1">
+            <elements>
+                <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="macro://import/Allgemein/SPS/SPS_Kanal_DQ.elmt" uuid="{54151cc2-958f-4f2b-938f-c52d5771b5a4}" x="200" y="150" z="10">
+                    <terminals>
+                        <terminal id="0" orientation="2" x="0" y="16"/>
+                    </terminals>
+                    <inputs/>
+                    <elementInformations>
+                        <elementInformation name="function" show="1">{TEXT}</elementInformation>
+                        <elementInformation name="plc_address" show="1">{ADR}</elementInformation>
+                    </elementInformations>
+                    <dynamic_texts>
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{fabdc9bb-cd60-4012-a705-ba0e9701e044}" x="-27" y="-6">
+                            <text>{ADR}</text>
+                            <info_name>plc_address</info_name>
+                        </dynamic_elmt_text>
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{61825033-a989-401c-8208-5fe4dd495a76}" x="34" y="-20">
+                            <text></text>
+                            <info_name>label</info_name>
+                        </dynamic_elmt_text>
+                    </dynamic_texts>
+                    <texts_groups/>
+                </element>
+                <element freezeLabel="false" is_movable="1" orientation="0" prefix="P" type="macro://import/10_electric/10_allpole/380_signaling_operating/11_optical_signaling/lampe2.elmt" uuid="{e2398ccb-e0f4-4cd7-b8a2-4bf9711352db}" x="200" y="230" z="10">
+                    <terminals>
+                        <terminal id="1" orientation="0" x="0" y="-16"/>
+                        <terminal id="2" orientation="2" x="0" y="16"/>
+                    </terminals>
+                    <inputs/>
+                    <elementInformations>
+                        <elementInformation name="description" show="1">Leuchtmelder {FARBE}, LED 24 V</elementInformation>
+                        <elementInformation name="function" show="1">{TEXT}</elementInformation>
+                        <elementInformation name="label" show="1">{BMK}</elementInformation>
+                        <elementInformation name="manufacturer" show="1">Eaton</elementInformation>
+                        <elementInformation name="manufacturer_reference" show="1">{P_ART}</elementInformation>
+                    </elementInformations>
+                    <dynamic_texts>
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{fc98084f-97a8-4858-bb3c-4351d60fb066}" x="15" y="-9.5">
+                            <text>{BMK}</text>
+                            <info_name>label</info_name>
+                        </dynamic_elmt_text>
+                    </dynamic_texts>
+                    <texts_groups/>
+                </element>
+            </elements>
+            <conductors>
+                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{54151cc2-958f-4f2b-938f-c52d5771b5a4}" element1_label="" element1_name="PLC output channel (generic)" element2="{e2398ccb-e0f4-4cd7-b8a2-4bf9711352db}" element2_label="{BMK}" element2_name="Light" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{64a60bc1-30d8-5898-85e1-f24932247e6d}" terminal2="{e8f2916b-c880-40ab-99eb-0b6842bd3a4c}" terminalname1="1" terminalname2="A1" text_color="#000000" type="multi" uuid="{7f74a0dc-b423-4cd6-a006-cae6ca29f40b}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                    <sequentialNumbers/>
+                </conductor>
+            </conductors>
+            <inputs>
+                <input font="Liberation Sans,9,-1,0,50,0,0,0,0,0,Regular" rotation="0" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;meta charset=&quot;utf-8&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;hr { height: 1px; border-width: 0; }&#xa;li.unchecked::marker { content: &quot;\2610&quot;; }&#xa;li.checked::marker { content: &quot;\2612&quot;; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Liberation Sans'; font-size:9pt; font-weight:400; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>M&lt;/p>&lt;/body>&lt;/html>" uuid="{49699324-7e85-4cc4-8b82-fc839de899e6}" x="206" y="246"/>
+            </inputs>
+        </diagram>
+    </diagram_content>
+</qet_macro>

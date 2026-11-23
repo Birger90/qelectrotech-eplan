@@ -539,6 +539,8 @@ class EditValidation(unittest.TestCase):
         two = el + [{"op": "add_element", "id": "e2", "folio": "$f", "path": "p", "x": 1, "y": 2}]
         samples.update({
             "set_position": el + [{"op": "set_position", "folio": "$f", "element": "$e", "x": 1, "y": 1}],
+            "insert_template": [{"op": "insert_template", "template": "Motorabgang DOL", "values": {"P_kW": "4"}}],
+            "save_template": [f, {"op": "save_template", "folio": "$f", "name": "Vorlage"}],
             "move_element": el + [{"op": "move_element", "folio": "$f", "element": "$e", "dx": 1, "dy": 1}],
             "rotate_element": el + [{"op": "rotate_element", "folio": "$f", "element": "$e", "angle": 90}],
             "mirror_element": el + [{"op": "mirror_element", "folio": "$f", "element": "$e", "vertical": False}],

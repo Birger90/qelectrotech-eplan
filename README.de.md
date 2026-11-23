@@ -50,6 +50,24 @@ In QET und im exportierten PDF:
 - Neue Schriftfeld-Variablen `%{printdate}` und `%{saveddate-de}` (TT.MM.JJJJ).
 - Skript-API: `outsideSheet(folio)` listet, was außerhalb des Blatts liegt.
 
+## Funktionsvorlagen
+
+Seitenleiste *Anzeige > Funktionsvorlagen*, wie EPLAN-Makros mit Wertesätzen:
+
+- Wiederverwendbare Schaltungsteile mit Platzhaltern: Vorlage in der Seitenleiste wählen (mit Vorschau), wenige Werte
+  eingeben (Kennzeichen, Leistung, SPS-Adresse), per Klick einfügen oder auf ein neues Blatt legen – fertig verknüpft,
+  mit Artikeldaten, Klemmen und Kabel, ein Rückgängig-Schritt. Beim nächsten Einfügen zählen Kennzeichen, Klemmen und
+  Kabel auf die nächsten freien weiter.
+- Platzhalter `{BMK}`, `{P_kW}`, `{ADR}`, `{XN+1}` in Kennzeichen, Texten, Elementinformationen, Drahtnummern und
+  Kabeltypen. Eine Auswahltabelle wählt den Artikel nach Leistung (nächstgrößere Zeile: 3 kW bekommt Schutzschalter
+  und Schütz der 4-kW-Zeile). Ein SPS-Kanal wird mit dem SPS-Modul des Projekts verknüpft, das seine Adresse hat.
+- Eigene Vorlagen aus einer Auswahl: Kontextmenü *Als Funktionsvorlage speichern…* (Name, Kategorie, Platzhalter,
+  eingefügte Excel-Tabelle). Ablage als `.qetmak` im Vorlagenordner des Nutzers (mit `--data-dir`:
+  `Daten\macros\Funktionsvorlagen`); sechs Beispiele ohne Kundendaten in `funktionsvorlagen/` (neu erzeugt mit
+  `tools/funktionsvorlagen/beispiele_erzeugen.py`).
+- Skript-API `listTemplates()`, `templateInfo()`, `insertTemplate(folio, vorlage, werte, x, y)`,
+  `saveTemplate(folio, name, optionen)`; MCP: `qet_edit`-Operationen `insert_template` und `save_template`.
+
 ## Kabel
 
 - Menü Projekt > *Kabelliste (Typen wählen)…*: alle Kabel des Projekts mit Typ, Adern, Farben, Anlage, Ort und

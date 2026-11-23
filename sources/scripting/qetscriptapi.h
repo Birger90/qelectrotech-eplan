@@ -23,6 +23,7 @@
 #include <QStringList>
 #include <QVariantList>
 #include <QVariantMap>
+#include <QtNumeric>
 
 #include <optional>
 
@@ -677,6 +678,24 @@ class QetScriptApi : public QObject
 		Q_INVOKABLE int addFolio();
 		Q_INVOKABLE int insertFolio(int position);
 		Q_INVOKABLE bool setFolioTitle(int folioIndex, const QString &title);
+
+		// -- function templates ("Motorabgang DOL"): circuits with
+		// placeholders, placed in one undo step, see FunctionTemplate --
+			/// Every template found: name, category, path, parameters
+		Q_INVOKABLE QVariantList listTemplates() const;
+			/// One template by path, file name or name, with its tables
+		Q_INVOKABLE QVariantMap templateInfo(const QString &templateName) const;
+			/// Place it on folio folioIndex (-1: a new folio at the end), its top
+			/// left corner at x, y (left out: where it was saved); returns ok,
+			/// error, folio, elements (uuids), values, notes
+		Q_INVOKABLE QVariantMap insertTemplate(int folioIndex, const QString &templateName,
+											   const QVariantMap &values = QVariantMap(),
+											   double x = qQNaN(), double y = qQNaN());
+			/// Save folio folioIndex (or options.elements, uuids) as a template;
+			/// options: category, description, parameters, tables, path.
+			/// Returns the file written, empty on failure
+		Q_INVOKABLE QString saveTemplate(int folioIndex, const QString &name,
+										 const QVariantMap &options = QVariantMap());
 
 		Q_INVOKABLE bool undo();
 		Q_INVOKABLE bool redo();

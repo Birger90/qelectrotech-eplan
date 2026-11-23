@@ -561,6 +561,14 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/diagramevent/diagrameventinterface.cpp
   ${QET_DIR}/sources/diagramevent/diagrameventinterface.h
   ${QET_DIR}/sources/diagramevent/diagrameventaddmacro.cpp
+  ${QET_DIR}/sources/functiontemplates/functiontemplate.cpp
+  ${QET_DIR}/sources/functiontemplates/functiontemplate.h
+  ${QET_DIR}/sources/functiontemplates/diagrameventaddfunctiontemplate.cpp
+  ${QET_DIR}/sources/functiontemplates/diagrameventaddfunctiontemplate.h
+  ${QET_DIR}/sources/functiontemplates/functiontemplatedock.cpp
+  ${QET_DIR}/sources/functiontemplates/functiontemplatedock.h
+  ${QET_DIR}/sources/functiontemplates/functiontemplatesavedialog.cpp
+  ${QET_DIR}/sources/functiontemplates/functiontemplatesavedialog.h
   ${QET_DIR}/sources/diagramevent/diagrameventaddmacro.h
   ${QET_DIR}/sources/diagramevent/diagrameventaddpaste.cpp
   ${QET_DIR}/sources/diagramevent/diagrameventaddpaste.h

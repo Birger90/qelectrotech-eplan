@@ -165,6 +165,7 @@
 #include <QFileDialog>
 #include <QSpinBox>
 #include <QDockWidget>
+#include "functiontemplates/functiontemplatedock.h"
 #include <QJsonObject>
 #include <QTime>
 #include <QStatusBar>
@@ -350,6 +351,7 @@ QETDiagramEditor::QETDiagramEditor(const QStringList &files, QWidget *parent) :
 	setUpDeviceNavigatorDock();
 	setUpAssistantDock();
 	setUpSimulationDock();
+	setUpFunctionTemplateDock();
 
 	setUpActions();
 	setUpToolBar();
@@ -573,6 +575,27 @@ void QETDiagramEditor::setUpSimulationDock()
 	m_simulation_dock->toggleViewAction()->setStatusTip(
 		tr("Show or hide the simulation of pneumatics, hydraulics and the electric control"));
 	m_simulation_dock->hide();
+}
+
+/**
+	@brief QETDiagramEditor::setUpFunctionTemplateDock
+	The function templates ("Motorabgang DOL", "DI-Sensor mit Kabel"),
+	beside the collections, from the Display menu
+*/
+void QETDiagramEditor::setUpFunctionTemplateDock()
+{
+	m_function_template_dock = new FunctionTemplateDock(this);
+	m_function_template_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+	m_function_template_dock->setFeatures(
+		QDockWidget::DockWidgetClosable |
+		QDockWidget::DockWidgetMovable |
+		QDockWidget::DockWidgetFloatable);
+	addDockWidget(Qt::RightDockWidgetArea, m_function_template_dock);
+	if (m_qdw_elmt_collection)
+		tabifyDockWidget(m_qdw_elmt_collection, m_function_template_dock);
+	m_function_template_dock->toggleViewAction()->setStatusTip(
+		tr("Show or hide the function templates: circuits with placeholders to place in one go"));
+	if (m_qdw_elmt_collection) m_qdw_elmt_collection->raise();
 }
 
 /**
@@ -2635,6 +2658,9 @@ void QETDiagramEditor::setUpMenu()
 	if (m_simulation_dock) {
 		menu_affichage -> addAction(m_simulation_dock->toggleViewAction());
 	}
+	if (m_function_template_dock) {
+		menu_affichage -> addAction(m_function_template_dock->toggleViewAction());
+	}
 	menu_affichage -> addSeparator();
 	menu_affichage -> addActions(m_zoom_actions_group.actions());
 
@@ -3459,6 +3485,8 @@ void QETDiagramEditor::templateSaved(const ElementsLocation &location)
 {
 	if (m_element_collection_widget)
 		m_element_collection_widget->addTemplate(location);
+	if (m_function_template_dock)
+		m_function_template_dock->reload();
 }
 
 /**

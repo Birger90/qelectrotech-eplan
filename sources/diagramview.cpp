@@ -35,6 +35,9 @@
 #include "diagramevent/diagrameventadddimension.h"
 #include "diagramevent/diagrameventaddelement.h"
 #include "diagramevent/diagrameventaddmacro.h"
+#include "functiontemplates/diagrameventaddfunctiontemplate.h"
+#include "functiontemplates/functiontemplatedock.h"
+#include "functiontemplates/functiontemplatesavedialog.h"
 #include "dvevent/dveventinterface.h"
 #include "projectview.h"
 #include "qetdiagrameditor.h"
@@ -82,6 +85,7 @@
 #include <QPainter>
 #include <QPointer>
 #include <QDir>
+#include <QStatusBar>
 #include <QSet>
 #include <QUuid>
 #include <algorithm>
@@ -159,7 +163,7 @@ DiagramView::DiagramView(Diagram *diagram, QWidget *parent) :
 	});
 
 	// Setup the action to create a template
-	m_create_template = new QAction(tr("Create a template", "context menu action"), this);
+	m_create_template = new QAction(tr("Save as function template…", "context menu action"), this);
 	connect(m_create_template, &QAction::triggered, this, &DiagramView::createTemplateFromSelection);
 
 		//Setup the action to generate cabinet placement thumbnails (discussion #602)
@@ -382,8 +386,18 @@ bool DiagramView::startElementPlacement(const ElementsLocation &location,
 	}
 
 	if (location.path().endsWith(".qetmak")) {
-		diagram()->setEventInterface(
-			new DiagramEventAddMacro(location, diagram(), scene_pos));
+			//A function template asks for its values first, then follows
+			//the cursor filled with them
+		const FunctionTemplate tpl = FunctionTemplate::fromFile(location.fileSystemPath());
+		if (tpl.isValid() && tpl.hasParameters()) {
+			FunctionTemplateValuesDialog dialog(tpl, diagram(), this);
+			if (dialog.exec() != QDialog::Accepted) return false;
+			diagram()->setEventInterface(
+				new DiagramEventAddFunctionTemplate(tpl, dialog.values(), diagram(), scene_pos));
+		} else {
+			diagram()->setEventInterface(
+				new DiagramEventAddMacro(location, diagram(), scene_pos));
+		}
 	} else {
 			//DiagramEventAddElement takes a non-const reference, so it needs
 			//an lvalue it may modify. Copying keeps the caller's location
@@ -3666,96 +3680,20 @@ void DiagramView::changeSelectedElementsType(const ElementsLocation &location)
  */
 void DiagramView::createTemplateFromSelection()
 {
-	QList<QGraphicsItem *> selected_elements = m_diagram->selectedItems();
+	const QList<QGraphicsItem *> selected = m_diagram->selectedItems();
+	if (selected.isEmpty()) return;
 
-	if (selected_elements.isEmpty()) {
-		return;
-	}
+		//Name, category and the placeholders to ask for, in one dialog;
+		//it goes into the user's own templates, beside the examples
+	FunctionTemplateSaveDialog dialog(m_diagram, selected, this);
+	if (dialog.exec() != QDialog::Accepted) return;
 
-	qDebug() << "Ready to create a template from" << selected_elements.size() << "elements!";
-
-	// Open the dialog to let the user select where to save the .qetmak file
-	ElementsLocation template_location = ElementDialog::getSaveTemplateLocation(this);
-
-	// Check if the user clicked 'Cancel' or closed the window
-	if (template_location.isNull()) {
-		qDebug() << "User canceled template creation.";
-		return;
-	}
-
-	qDebug() << "Will save template to:" << template_location.path();
-
-	QDomDocument content_xml = m_diagram->toXml(false, true);
-
-	QDomDocument macro_doc;
-	QDomElement root = macro_doc.createElement("qet_macro");
-	macro_doc.appendChild(root);
-
-	QDomElement collection_node = macro_doc.createElement("collection");
-	root.appendChild(collection_node);
-
-	QSet<QString> processed_types;
-
-	QDomNodeList element_nodes = content_xml.elementsByTagName("element");
-	for (int i = 0; i < element_nodes.count(); ++i) {
-		QDomElement elmt_node = element_nodes.at(i).toElement();
-		QString old_type = elmt_node.attribute("type");
-
-		if (old_type.isEmpty()) continue;
-
-		ElementsLocation loc(old_type, m_diagram->project());
-
-		QString clean_path = loc.collectionPath(false);
-
-		QString new_type = "macro://" + clean_path;
-		elmt_node.setAttribute("type", new_type);
-
-		if (!processed_types.contains(clean_path)) {
-			processed_types.insert(clean_path);
-
-			QDomElement definition_node = loc.xml();
-
-			if (!definition_node.isNull()) {
-				QDomElement collection_elmt = macro_doc.createElement("element");
-				collection_elmt.setAttribute("path", clean_path);
-
-				QDomNode imported_def = macro_doc.importNode(definition_node, true);
-				collection_elmt.appendChild(imported_def);
-
-				collection_node.appendChild(collection_elmt);
-			} else {
-				qDebug() << "Warning: could not load XML definition for" << old_type;
-			}
-		}
-	}
-
-	QDomElement content_container = macro_doc.createElement("diagram_content");
-	root.appendChild(content_container);
-
-	QDomNode imported_node = macro_doc.importNode(content_xml.documentElement(), true);
-	content_container.appendChild(imported_node);
-
-	QString full_path = template_location.fileSystemPath();
-
-	QDir().mkpath(QFileInfo(full_path).absolutePath());
-
-	QFile file(full_path);
-	if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-		QTextStream out(&file);
-		out << macro_doc.toString(4);
-		file.close();
-		qDebug() << "Template successfully saved to:" << full_path;
-
-			// List it right away, not only after the collections are reloaded
-		for (QETDiagramEditor *qde : QETApp::diagramEditors())
-			qde->templateSaved(template_location);
-
-		QMessageBox::information(this, tr("Registered template"),
-								 tr("The template has been successfully saved as :\n%1").arg(full_path));
-	} else {
-		qDebug() << "Error: Could not open file for writing:" << full_path;
-		QMessageBox::critical(this, tr("Error"), tr("The file could not be written."));
-	}
+	const ElementsLocation location(dialog.savedPath());
+	for (QETDiagramEditor *qde : QETApp::diagramEditors())
+		qde->templateSaved(location);
+	if (QETDiagramEditor *qde = QETApp::diagramEditorAncestorOf(this))
+		qde->statusBar()->showMessage(tr("Function template saved: %1")
+									  .arg(QDir::toNativeSeparators(dialog.savedPath())), 8000);
 }
 
 /**

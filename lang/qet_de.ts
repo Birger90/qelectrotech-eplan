@@ -4834,6 +4834,14 @@ Hold Shift and drag to move this text on its own</source>
 <context>
     <name>DiagramView</name>
     <message>
+        <source>Save as function template…</source>
+        <translation>Als Funktionsvorlage speichern…</translation>
+    </message>
+    <message>
+        <source>Function template saved: %1</source>
+        <translation>Funktionsvorlage gespeichert: %1</translation>
+    </message>
+    <message>
         <source>In this area you conceive your diagrams by adding elements and conductors between their terminals. You may also add independent texts.</source>
         <comment>&quot;What&apos;s this?&quot; tip</comment>
         <translation>In diesem Bereich entwerfen Sie Ihre Schaltpläne, indem Sie Elemente hinzufügen und Leiter zwischen Anschlüssen verlegen. Es ist auch möglich, unabhängige Texte hinzuzufügen.</translation>
@@ -15683,6 +15691,10 @@ Verfügbare Optionen:
 </context>
 <context>
     <name>QETDiagramEditor</name>
+    <message>
+        <source>Show or hide the function templates: circuits with placeholders to place in one go</source>
+        <translation>Funktionsvorlagen ein- oder ausblenden: Schaltungsteile mit Platzhaltern, in einem Schritt eingefügt</translation>
+    </message>
     <message>
         <source>Tape measure</source>
         <translation>Maßband</translation>
@@ -28591,6 +28603,275 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <message>
         <source>What:</source>
         <translation>Was:</translation>
+    </message>
+</context>
+<context>
+    <name>FunctionTemplate</name>
+    <message>
+        <source>The file %1 cannot be read.</source>
+        <translation>Die Datei %1 kann nicht gelesen werden.</translation>
+    </message>
+    <message>
+        <source>The file %1 is no valid XML.</source>
+        <translation>Die Datei %1 ist kein gültiges XML.</translation>
+    </message>
+    <message>
+        <source>The file %1 is no template.</source>
+        <translation>Die Datei %1 ist keine Vorlage.</translation>
+    </message>
+    <message>
+        <source>%1 = %2 is larger than the table goes (%3): its last row is used.</source>
+        <translation>%1 = %2 ist größer als die Tabelle reicht (%3): ihre letzte Zeile wird verwendet.</translation>
+    </message>
+    <message>
+        <source>The table for %1 holds no row for %2.</source>
+        <translation>Die Tabelle für %1 hat keine Zeile für %2.</translation>
+    </message>
+    <message>
+        <source>No value for %1: left as it is.</source>
+        <translation>Kein Wert für %1: bleibt stehen.</translation>
+    </message>
+    <message>
+        <source>This is no valid template.</source>
+        <translation>Das ist keine gültige Vorlage.</translation>
+    </message>
+    <message>
+        <source>There is no folio to place the template on.</source>
+        <translation>Es gibt kein Blatt, auf das die Vorlage kommen könnte.</translation>
+    </message>
+    <message>
+        <source>The project is read-only.</source>
+        <translation>Das Projekt ist schreibgeschützt.</translation>
+    </message>
+    <message>
+        <source>The template holds nothing to place.</source>
+        <translation>Die Vorlage enthält nichts zum Einfügen.</translation>
+    </message>
+    <message>
+        <source>Insert function template %1</source>
+        <translation>Funktionsvorlage %1 einfügen</translation>
+    </message>
+    <message>
+        <source>No folio could be added.</source>
+        <translation>Es konnte kein Blatt angelegt werden.</translation>
+    </message>
+    <message>
+        <source>PLC channel %1 linked to %2.</source>
+        <translation>SPS-Kanal %1 mit %2 verknüpft.</translation>
+    </message>
+    <message>
+        <source>PLC channel %1 of %2 is already used: the channel is left unlinked.</source>
+        <translation>SPS-Kanal %1 von %2 ist schon belegt: der Kanal bleibt unverknüpft.</translation>
+    </message>
+    <message>
+        <source>No PLC module of the project offers %1: the channel is left unlinked.</source>
+        <translation>Kein SPS-Modul des Projekts hat %1: der Kanal bleibt unverknüpft.</translation>
+    </message>
+    <message>
+        <source>Device tag</source>
+        <translation>Kennzeichen</translation>
+    </message>
+    <message>
+        <source>PLC address</source>
+        <translation>SPS-Adresse</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>Leistung</translation>
+    </message>
+    <message>
+        <source>There is no folio to save from.</source>
+        <translation>Es gibt kein Blatt, aus dem gespeichert werden kann.</translation>
+    </message>
+    <message>
+        <source>The template needs a name.</source>
+        <translation>Die Vorlage braucht einen Namen.</translation>
+    </message>
+    <message>
+        <source>The selection holds no symbol.</source>
+        <translation>Die Auswahl enthält kein Symbol.</translation>
+    </message>
+    <message>
+        <source>The file %1 cannot be written.</source>
+        <translation>Die Datei %1 kann nicht geschrieben werden.</translation>
+    </message>
+</context>
+<context>
+    <name>FunctionTemplateDock</name>
+    <message>
+        <source>Function templates</source>
+        <translation>Funktionsvorlagen</translation>
+    </message>
+    <message>
+        <source>Search a template</source>
+        <translation>Vorlage suchen</translation>
+    </message>
+    <message>
+        <source>Read the templates again</source>
+        <translation>Vorlagen neu einlesen</translation>
+    </message>
+    <message>
+        <source>Open the folder of your own templates</source>
+        <translation>Ordner der eigenen Vorlagen öffnen</translation>
+    </message>
+    <message>
+        <source>Insert</source>
+        <translation>Einfügen</translation>
+    </message>
+    <message>
+        <source>Place it with the mouse on the current folio</source>
+        <translation>Mit der Maus auf dem aktuellen Blatt platzieren</translation>
+    </message>
+    <message>
+        <source>On a new folio</source>
+        <translation>Auf neues Blatt</translation>
+    </message>
+    <message>
+        <source>Add a folio at the end of the project and put the template on it</source>
+        <translation>Ein Blatt am Ende des Projekts anlegen und die Vorlage darauf setzen</translation>
+    </message>
+    <message>
+        <source>Without category</source>
+        <translation>Ohne Kategorie</translation>
+    </message>
+    <message>
+        <source>Examples</source>
+        <translation>Beispiele</translation>
+    </message>
+    <message>
+        <source>No template yet: select part of a folio and choose &quot;Save as function template…&quot;.</source>
+        <translation>Noch keine Vorlage: Teil eines Blatts markieren und „Als Funktionsvorlage speichern…“ wählen.</translation>
+    </message>
+    <message>
+        <source>Choose a template</source>
+        <translation>Vorlage wählen</translation>
+    </message>
+    <message>
+        <source>No picture</source>
+        <translation>Keine Vorschau</translation>
+    </message>
+    <message>
+        <source>Open a folio first, or put the template on a new folio.</source>
+        <translation>Erst ein Blatt öffnen oder die Vorlage auf ein neues Blatt setzen.</translation>
+    </message>
+    <message>
+        <source>Open a project first.</source>
+        <translation>Erst ein Projekt öffnen.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n symbol(s) placed.</source>
+        <translation>
+            <numerusform>%n Symbol eingefügt.</numerusform>
+            <numerusform>%n Symbole eingefügt.</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>FunctionTemplateForm</name>
+    <message>
+        <source>This template asks for nothing: its labels are counted on.</source>
+        <translation>Diese Vorlage fragt nichts ab: ihre Kennzeichen zählen weiter.</translation>
+    </message>
+    <message>
+        <source>Row %1 = %2: %3</source>
+        <translation>Zeile %1 = %2: %3</translation>
+    </message>
+</context>
+<context>
+    <name>FunctionTemplateValuesDialog</name>
+    <message>
+        <source>Function template %1</source>
+        <translation>Funktionsvorlage %1</translation>
+    </message>
+</context>
+<context>
+    <name>FunctionTemplateSaveDialog</name>
+    <message>
+        <source>Save as function template</source>
+        <translation>Als Funktionsvorlage speichern</translation>
+    </message>
+    <message>
+        <source>Motor feeder DOL</source>
+        <translation>Motorabgang DOL</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation>Name:</translation>
+    </message>
+    <message>
+        <source>Category:</source>
+        <translation>Kategorie:</translation>
+    </message>
+    <message>
+        <source>Description:</source>
+        <translation>Beschreibung:</translation>
+    </message>
+    <message>
+        <source>Write {NAME} in a label, a text or an article to ask for it when the template is placed: {BMK}, {P_kW}, {ADR}. {N+1} is the value counted on by one. Labels without braces are counted on to the next free one by themselves.</source>
+        <translation>{NAME} in ein Kennzeichen, einen Text oder einen Artikel schreiben, um es beim Einfügen abzufragen: {BMK}, {P_kW}, {ADR}. {N+1} ist der Wert um eins weitergezählt. Kennzeichen ohne Klammern zählen von selbst auf das nächste freie weiter.</translation>
+    </message>
+    <message>
+        <source>Placeholder</source>
+        <translation>Platzhalter</translation>
+    </message>
+    <message>
+        <source>Asked as</source>
+        <translation>Abgefragt als</translation>
+    </message>
+    <message>
+        <source>Kind</source>
+        <translation>Art</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation>Vorgabe</translation>
+    </message>
+    <message>
+        <source>Unit</source>
+        <translation>Einheit</translation>
+    </message>
+    <message>
+        <source>Text</source>
+        <translation>Text</translation>
+    </message>
+    <message>
+        <source>Device tag (next free one)</source>
+        <translation>Kennzeichen (nächstes freies)</translation>
+    </message>
+    <message>
+        <source>Terminal number (next free one)</source>
+        <translation>Klemmennummer (nächste freie)</translation>
+    </message>
+    <message>
+        <source>Number</source>
+        <translation>Zahl</translation>
+    </message>
+    <message>
+        <source>The selection holds no placeholder: it is placed as it is, its labels counted on.</source>
+        <translation>Die Auswahl enthält keinen Platzhalter: sie wird so eingefügt, ihre Kennzeichen zählen weiter.</translation>
+    </message>
+    <message>
+        <source>Choice table (optional, pasted from Excel): the first line names the columns, the first column is the placeholder which picks the row, the others become placeholders too.</source>
+        <translation>Auswahltabelle (optional, aus Excel eingefügt): Die erste Zeile nennt die Spalten, die erste Spalte ist der Platzhalter, der die Zeile wählt, die anderen werden ebenfalls Platzhalter.</translation>
+    </message>
+    <message>
+        <source>Saved in: %1</source>
+        <translation>Gespeichert in: %1</translation>
+    </message>
+    <message>
+        <source>The first line of the table has to name its columns.</source>
+        <translation>Die erste Zeile der Tabelle muss die Spalten benennen.</translation>
+    </message>
+    <message>
+        <source>Give the template a name.</source>
+        <translation>Gib der Vorlage einen Namen.</translation>
+    </message>
+</context>
+<context>
+    <name>DiagramEventAddFunctionTemplate</name>
+    <message>
+        <source>Click to place &quot;%1&quot;, right click or Escape to stop.</source>
+        <translation>Klicken, um „%1“ zu platzieren; Rechtsklick oder Esc beendet.</translation>
     </message>
 </context>
 </TS>

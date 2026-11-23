@@ -1158,6 +1158,12 @@ def _run_qet(binary: str, args: list[str], timeout: int = 180,
             script_path.write_text(script, encoding="utf-8")
             args = ["--run", str(script_path), *args]
         env = _launch_env(dict(os.environ), home, os.name == "nt")
+        # The sandbox HOME hides the user's own templates (function templates,
+        # insert_template): name their folder, as qet-assistant.json gives it
+        macros = ((assistant_info() or {}).get("folders") or {}).get("macros")
+        if (isinstance(macros, str) and macros and Path(macros).is_dir()
+                and not env.get("QET_FUNCTION_TEMPLATES_DIR")):
+            env["QET_FUNCTION_TEMPLATES_DIR"] = macros
         env.update(extra_env or {})
         try:
             p = subprocess.run([str(exe), *args], env=env, timeout=timeout,
@@ -1776,6 +1782,15 @@ OPS = {
     "delete_conductor": ("deleteConductor",     [("folio", "folio"), ("element", "elmt"),
                                                  ("terminal", "term")]),
     "remove_folio":     ("removeFolio",         [("folio", "folio")]),
+    # A function template ("Motorabgang DOL", "DI-Sensor mit Kabel") with its
+    # placeholders filled from "values"; folio -1 puts it on a new folio, x/y
+    # left out keep where it was saved. Result: {ok, folio, elements, values, notes}.
+    "insert_template":  ("insertTemplate",      [("folio", "folio"), ("template", "str"),
+                                                 ("values", "obj"), ("x", "num"), ("y", "num")]),
+    # A folio (or options.elements) saved as a function template; options:
+    # category, description, parameters, tables, path. Result: the file.
+    "save_template":    ("saveTemplate",        [("folio", "folio"), ("name", "str"),
+                                                 ("options", "obj")]),
     "set_folio":        ("setFolioProperty",    [("folio", "folio"), ("property", "str"),
                                                  ("value", "str")]),
     # A cable drawn across conductors, as the cable tool draws it: every
@@ -1917,6 +1932,8 @@ OPS = {
 
 # Arguments those ops may leave out.
 OP_DEFAULTS = {
+    "insert_template": {"folio": -1, "values": {}, "x": float("nan"), "y": float("nan")},
+    "save_template": {"options": {}},
     "align_elements": {"to": ""},
     "distribute_elements": {"pitch": 0},
     "place_element": {"side": "", "gap": 40, "angle": 0},
@@ -2278,6 +2295,11 @@ def _build_script(operations: list, output: str) -> str:
                 raise ValueError(f"operation {op_index}: {key!r} must be a folio index, "
                                  f"its uuid, or a \"$name\" reference, got {value!r}")
             return _js(value)
+        if kind == "obj":
+            if not isinstance(value, dict):
+                raise ValueError(f"operation {op_index}: {key!r} must be an object, "
+                                 f"got {value!r}")
+            return _js(value)
         if kind == "bool":
             if not isinstance(value, bool):
                 raise ValueError(f"operation {op_index}: {key!r} must be true or false, "
@@ -2473,6 +2495,13 @@ def _build_script(operations: list, output: str) -> str:
                          f"JSON.stringify({{kind: 'op_note', index: {i}, note: 'no route "
                          f"around the symbols was found; the conductor keeps the default "
                          f"path'}})); }}")
+        if name == "insert_template":
+            # A map comes back either way: a refusal is ok false with its
+            # error, a placement says what it filled in and found
+            lines.append(f"  if (v{i} && v{i}.notes && v{i}.notes.length) qet.log({_js(_MARKER)} + "
+                         f"JSON.stringify({{kind: 'op_note', index: {i}, note: v{i}.notes.join(' ')}}));")
+            lines.append(f"  if (v{i} && v{i}.ok === false) {{ qet.log({_js(_MARKER)} + "
+                         f"JSON.stringify({{kind: 'op_note', index: {i}, note: v{i}.error}})); v{i} = false; }}")
         if name == "route_conductor":
             lines.append(f"  if (v{i} === 'no-route') qet.log({_js(_MARKER)} + "
                          f"JSON.stringify({{kind: 'op_note', index: {i}, note: 'no route "

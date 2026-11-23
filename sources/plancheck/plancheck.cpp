@@ -35,10 +35,12 @@
 #include "../qetgraphicsitem/terminal.h"
 #include "../qetgraphicsitem/terminalelement.h"
 #include "../qetproject.h"
+#include "../utils/qetsettings.h"
 
 #include <QCoreApplication>
 #include <QHash>
 #include <QJsonArray>
+#include <QSqlQuery>
 #include <QSet>
 
 #include <algorithm>
@@ -47,38 +49,31 @@
 namespace {
 
 using PlanCheck::Finding;
-using PlanCheck::Severity;
+using Severity = ProjectCheck::Severity;
 
-QString tr(const char *text, const char *comment = nullptr, int n = -1)
-{
-	return QCoreApplication::translate("PlanCheck", text, comment, n);
-}
-
-	/// the order of the checks in the report, and EPLAN's numbers
-struct CheckDef { const char *key; const char *eplan; const char *title; };
-const CheckDef kChecks[] = {
-	{"duplicate_label",         "017005", QT_TRANSLATE_NOOP("PlanCheck", "Duplicate device labels")},
-	{"duplicate_wire_number",   "",       QT_TRANSLATE_NOOP("PlanCheck", "Duplicate wire numbers")},
-	{"potential_types",         "005016", QT_TRANSLATE_NOOP("PlanCheck", "Potentials with wires of different types")},
-	{"contact_without_master",  "007005", QT_TRANSLATE_NOOP("PlanCheck", "Contacts without their coil or main function")},
-	{"report_without_partner",  "011002", QT_TRANSLATE_NOOP("PlanCheck", "Folio reports without their partner")},
-	{"plc_channel_address",     "004023", QT_TRANSLATE_NOOP("PlanCheck", "PLC channels without an address")},
-	{"cable_without_target",    "003005", QT_TRANSLATE_NOOP("PlanCheck", "Cables without a target")},
-	{"terminal_without_strip",  "001010", QT_TRANSLATE_NOOP("PlanCheck", "Terminals without a terminal strip")},
-	{"device_without_part",     "007017", QT_TRANSLATE_NOOP("PlanCheck", "Devices without a part")},
-	{"unlabelled_device",       "017001", QT_TRANSLATE_NOOP("PlanCheck", "Devices without a label")},
-	{"open_terminal",           "005026", QT_TRANSLATE_NOOP("PlanCheck", "Unconnected terminals")},
-	{"open_port",               "005026", QT_TRANSLATE_NOOP("PlanCheck", "Open fluid ports")},
-	{"solenoid_without_coil",   "",       QT_TRANSLATE_NOOP("PlanCheck", "Solenoid valves without their coil")},
-	{"coil_without_contact",    "007009", QT_TRANSLATE_NOOP("PlanCheck", "Coils without any contact")},
-	{"device_type",             "007001", QT_TRANSLATE_NOOP("PlanCheck", "Devices not drawn as their device type")},
-	{"cabinet_layout",          "",       QT_TRANSLATE_NOOP("PlanCheck", "Cabinet layout")},
+	/// the rules in the order of the report, EPLAN's numbers and the
+	/// category of the panel they are listed in
+using Kind = ProjectCheck::Kind;
+struct RuleDef { const char *key; const char *eplan; Kind kind; };
+const RuleDef kRules[] = {
+	{"contact_without_master",  "007005", Kind::Links},
+	{"report_without_partner",  "011002", Kind::Links},
+	{"solenoid_without_coil",   "",       Kind::Links},
+	{"coil_without_contact",    "007009", Kind::Links},
+	{"plc_channel_address",     "004023", Kind::PlcChannels},
+	{"cable_without_target",    "003005", Kind::Cables},
+	{"terminal_without_strip",  "001010", Kind::TerminalStrips},
+	{"unlabelled_device",       "017001", Kind::LabelsAndParts},
+	{"device_without_part",     "007017", Kind::LabelsAndParts},
+	{"open_terminal",           "005026", Kind::OpenTerminals},
+	{"open_port",               "005026", Kind::OpenTerminals},
+	{"cabinet_layout",          "",       Kind::CabinetLayout},
 };
 
 int checkOrder(const QString &key)
 {
 	int i = 0;
-	for (const CheckDef &c : kChecks) {
+	for (const RuleDef &c : kRules) {
 		if (key == QLatin1String(c.key)) return i;
 		++i;
 	}
@@ -87,7 +82,7 @@ int checkOrder(const QString &key)
 
 QString eplanOf(const QString &key)
 {
-	for (const CheckDef &c : kChecks)
+	for (const RuleDef &c : kRules)
 		if (key == QLatin1String(c.key)) return QString::fromLatin1(c.eplan);
 	return QString();
 }
@@ -106,9 +101,9 @@ class Collector
 		{
 			Finding f;
 			f.severity = severity;
-			f.check = check;
+			f.rule = check;
 			f.eplan = eplan.isNull() ? eplanOf(check) : eplan;
-			f.folio = folio ? m_project->folioIndex(folio) : -1;
+			f.folio = folio;
 			f.label = label;
 			f.text = text;
 			f.items = items;
@@ -177,13 +172,13 @@ void checkElement(Collector &c, Diagram *d, Element *e, LooseTerminals &loose_te
 	if (isReport(data)) {
 		if (linked.isEmpty())
 			c.add(Severity::Error, QStringLiteral("report_without_partner"), d, shown,
-				  tr("Folio report without its partner: it leads nowhere"), self);
+				  ProjectCheck::tr("Folio report without its partner: it leads nowhere"), self);
 		bool wired = false;
 		for (Terminal *t : e->terminals())
 			if (!t->conductors().isEmpty()) wired = true;
 		if (!wired && !e->terminals().isEmpty())
 			c.add(Severity::Warning, QStringLiteral("report_without_partner"), d, shown,
-				  tr("Folio report connected to nothing"), self, QStringLiteral("011003"));
+				  ProjectCheck::tr("Folio report connected to nothing"), self, QStringLiteral("011003"));
 		return;
 	}
 
@@ -206,30 +201,40 @@ void checkElement(Collector &c, Diagram *d, Element *e, LooseTerminals &loose_te
 		}
 	}
 	const bool is_terminal = data.m_type == ElementData::Terminal;
+		//a symbol with no wire at all is the panel's own check ("Symbols
+		//with no wire"); a strip terminal only when that check leaves
+		//strip terminals out
+	bool any_wired = false;
+	for (Terminal *t : terminals)
+		if (t->conductorsCount()) any_wired = true;
+	if (!any_wired && !(is_terminal && QetSettings::unwiredSymbolsSkipStripTerminals())) {
+		open.clear();
+		ports.clear();
+	}
 	if (!open.isEmpty()) {
 		if (is_terminal)
 			c.add(Severity::Warning, QStringLiteral("open_terminal"), d, shown,
-				  tr("Terminal not connected on both sides: %1 open").arg(open.join(QStringLiteral(", "))),
+				  ProjectCheck::tr("Terminal not connected on both sides: %1 open").arg(open.join(QStringLiteral(", "))),
 				  self, QStringLiteral("005053"));
 		else
 			c.add(Severity::Info, QStringLiteral("open_terminal"), d, shown,
-				  tr("%n unconnected terminal(s): %1", nullptr, int(open.count()))
+				  ProjectCheck::tr("%n unconnected terminal(s): %1", nullptr, int(open.count()))
 					  .arg(open.join(QStringLiteral(", "))), self);
 	}
 	if (!ports.isEmpty())
 		c.add(Severity::Warning, QStringLiteral("open_port"), d, shown,
-			  tr("%n open fluid port(s) without line, silencer or plug: %1", nullptr, int(ports.count()))
+			  ProjectCheck::tr("%n open fluid port(s) without line, silencer or plug: %1", nullptr, int(ports.count()))
 				  .arg(ports.join(QStringLiteral(", "))), self);
 
 		//Fluid power: solenoids and their coils (as "Check fluid power...")
 	const int sides = data.m_fluid.solenoidSides();
 	if (sides > linked.size())
 		c.add(Severity::Warning, QStringLiteral("solenoid_without_coil"), d, shown,
-			  tr("%n solenoid(s) without a coil", nullptr, sides - int(linked.size())), self);
+			  ProjectCheck::tr("%n solenoid(s) without a coil", nullptr, sides - int(linked.size())), self);
 	if (data.m_fluid.m_kind == FluidData::Kind::Solenoid) {
 		if (linked.isEmpty())
 			c.add(Severity::Warning, QStringLiteral("solenoid_without_coil"), d, shown,
-				  tr("Valve coil linked to no valve"), self);
+				  ProjectCheck::tr("Valve coil linked to no valve"), self);
 		return;
 	}
 
@@ -238,10 +243,10 @@ void checkElement(Collector &c, Diagram *d, Element *e, LooseTerminals &loose_te
 		if (linked.isEmpty()) {
 			if (data.m_slave_type == ElementData::PLCSlave)
 				c.add(Severity::Error, QStringLiteral("plc_channel_address"), d, shown,
-					  tr("PLC channel assigned to no PLC card, so it has no address"), self);
+					  ProjectCheck::tr("PLC channel assigned to no PLC card, so it has no address"), self);
 			else
 				c.add(Severity::Error, QStringLiteral("contact_without_master"), d, shown,
-					  tr("Contact without its coil or main function"), self);
+					  ProjectCheck::tr("Contact without its coil or main function"), self);
 		} else if (data.m_slave_type == ElementData::PLCSlave) {
 			Element *card = linked.first();
 			const int row = plcRow(card, e);
@@ -249,11 +254,11 @@ void checkElement(Collector &c, Diagram *d, Element *e, LooseTerminals &loose_te
 			if (row < 0 || row >= ios.count()) {
 				if (!ios.isEmpty())
 					c.add(Severity::Warning, QStringLiteral("plc_channel_address"), d, shown,
-						  tr("PLC channel linked to %1 but to none of its channels").arg(labelOf(card)),
+						  ProjectCheck::tr("PLC channel linked to %1 but to none of its channels").arg(labelOf(card)),
 						  self, QStringLiteral("004027"));
 			} else if (ios.at(row).address.trimmed().isEmpty()) {
 				c.add(Severity::Warning, QStringLiteral("plc_channel_address"), d, shown,
-					  tr("PLC channel without an address (channel %1 of %2)")
+					  ProjectCheck::tr("PLC channel without an address (channel %1 of %2)")
 						  .arg(row + 1).arg(labelOf(card)), self);
 			}
 		}
@@ -268,7 +273,7 @@ void checkElement(Collector &c, Diagram *d, Element *e, LooseTerminals &loose_te
 			loose_terminals[label.section(QLatin1Char(':'), 0, 0)] << qMakePair(d, e);
 		if (hasNoPart(e))
 			c.add(Severity::Info, QStringLiteral("device_without_part"), d, shown,
-				  tr("Terminal without a part number: the bill of materials leaves it out"), self);
+				  ProjectCheck::tr("Terminal without a part number: the bill of materials leaves it out"), self);
 		return;
 	}
 
@@ -279,10 +284,10 @@ void checkElement(Collector &c, Diagram *d, Element *e, LooseTerminals &loose_te
 	if (data.m_type == ElementData::Master) {
 		if (label.isEmpty())
 			c.add(Severity::Warning, QStringLiteral("unlabelled_device"), d, e->name(),
-				  tr("Device without a label: its contacts cannot point to it"), self);
+				  ProjectCheck::tr("Device without a label: its contacts cannot point to it"), self);
 		if (data.m_master_type == ElementData::Coil && linked.isEmpty() && sides == 0)
 			c.add(Severity::Info, QStringLiteral("coil_without_contact"), d, shown,
-				  tr("Coil without any contact"), self);
+				  ProjectCheck::tr("Coil without any contact"), self);
 		if (data.m_master_type == ElementData::PLC) {
 				//rows with a linked channel are reported at the channel;
 				//here only rows used by a cross reference alone
@@ -300,7 +305,7 @@ void checkElement(Collector &c, Diagram *d, Element *e, LooseTerminals &loose_te
 			for (int row : std::as_const(rows))
 				if (row < ios.count() && ios.at(row).address.trimmed().isEmpty())
 					c.add(Severity::Warning, QStringLiteral("plc_channel_address"), d, shown,
-						  tr("Channel %1 of the PLC card is used but has no address").arg(row + 1), self);
+						  ProjectCheck::tr("Channel %1 of the PLC card is used but has no address").arg(row + 1), self);
 		}
 	}
 
@@ -308,7 +313,7 @@ void checkElement(Collector &c, Diagram *d, Element *e, LooseTerminals &loose_te
 	if ((data.m_type == ElementData::Master || !label.isEmpty()) && hasNoPart(e))
 		c.add(data.m_type == ElementData::Master ? Severity::Warning : Severity::Info,
 			  QStringLiteral("device_without_part"), d, shown,
-			  tr("Device without a part number: the bill of materials shows it without one"), self);
+			  ProjectCheck::tr("Device without a part number: the bill of materials shows it without one"), self);
 }
 
 using Wires = QHash<QUuid, QPair<Diagram *, Conductor *>>;
@@ -330,10 +335,10 @@ void checkCables(Collector &c, QETProject *project, const Wires &wires)
 
 		if (name.isEmpty())
 			c.add(Severity::Warning, QStringLiteral("cable_without_target"), folio, shown,
-				  tr("Cable without a label"), items, QStringLiteral("017001"));
+				  ProjectCheck::tr("Cable without a label"), items, QStringLiteral("017001"));
 		if (cores.isEmpty()) {
 			c.add(Severity::Warning, QStringLiteral("cable_without_target"), folio, shown,
-				  tr("Cable without a target: none of its %n core(s) is on a wire", nullptr,
+				  ProjectCheck::tr("Cable without a target: none of its %n core(s) is on a wire", nullptr,
 					 cable->coreCount()), items, QString(""));
 			continue;
 		}
@@ -360,103 +365,28 @@ void checkCables(Collector &c, QETProject *project, const Wires &wires)
 		}
 		if (!gone.isEmpty())
 			c.add(Severity::Error, QStringLiteral("cable_without_target"), folio, shown,
-				  tr("Core(s) %1 lead to a wire that no longer exists").arg(gone.join(QStringLiteral(", "))),
+				  ProjectCheck::tr("Core(s) %1 lead to a wire that no longer exists").arg(gone.join(QStringLiteral(", "))),
 				  items, QString(""));
 		if (!unlabelled.isEmpty())
 			c.add(Severity::Warning, QStringLiteral("cable_without_target"), folio, shown,
-				  tr("Cable target without a label: core(s) %1 end at a symbol without a label")
+				  ProjectCheck::tr("Cable target without a label: core(s) %1 end at a symbol without a label")
 					  .arg(unlabelled.join(QStringLiteral(", "))), items);
-	}
-}
-
-void checkDuplicates(Collector &c, QETProject *project, const QSet<Diagram *> &panel_folios)
-{
-	const QVector<DuplicateLabels::Group> groups = DuplicateLabels::find(project);
-	for (const DuplicateLabels::Group &group : groups) {
-		QList<QUuid> items;
-		QSet<int> entities;
-		Diagram *first = nullptr;
-		bool all_terminals = true;
-		for (const DuplicateLabels::Occurrence &o : group.occurrences) {
-			if (!o.item) continue;
-			Diagram *d = DuplicateLabels::diagramOf(o.item);
-			if (!d || panel_folios.contains(d)) continue;
-			if (auto *e = qobject_cast<Element *>(o.item.data())) {
-				if (isPanelDevice(e)) continue;
-				if (e->elementData().m_type != ElementData::Terminal) all_terminals = false;
-				items << e->uuid();
-			} else if (auto *w = qobject_cast<Conductor *>(o.item.data())) {
-				items << w->uuid();
-			}
-			entities << o.entity;
-			if (!first) first = d;
-		}
-		if (entities.size() < 2) continue;
-			//the terminals of one strip share its label (X1) on purpose:
-			//they are told apart by their numbers
-		if (group.kind == DuplicateLabels::Kind::Component && all_terminals) continue;
-		const QString label = group.place.isEmpty() ? group.label : group.place + group.label;
-		if (group.kind == DuplicateLabels::Kind::Component)
-			c.add(Severity::Error, QStringLiteral("duplicate_label"), first, label,
-				  tr("Label used by %n devices which are not linked", nullptr, int(entities.size())),
-				  items);
-		else
-			c.add(Severity::Warning, QStringLiteral("duplicate_wire_number"), first, label,
-				  tr("Wire number on %n separate potentials", nullptr, int(entities.size())),
-				  items);
-	}
-}
-
-void checkDeviceTypes(Collector &c, QETProject *project, const QSet<Diagram *> &panel_folios)
-{
-	const QVector<DeviceTypeCheck::Device> devices = DeviceTypeCheck::check(project);
-	for (const DeviceTypeCheck::Device &device : devices) {
-		if (!device.known() || device.symbols.isEmpty()) continue;
-		Element *head = device.symbols.first();
-		if (!head) continue;
-		Diagram *d = head->diagram();
-		if (panel_folios.contains(d)) continue;
-		QList<QUuid> items;
-		for (const auto &s : device.symbols)
-			if (s) items << s->uuid();
-		const QString label = device.label.isEmpty() ? device.designation : device.label;
-		if (!device.missing.isEmpty()) {
-			QStringList parts;
-			const auto &type_parts = device.type.parts;
-			for (int i : device.missing)
-				if (i >= 0 && i < type_parts.count())
-					parts << DeviceTypeCheck::partText(type_parts.at(i));
-			c.add(Severity::Info, QStringLiteral("device_type"), d, label,
-				  tr("Not drawn of device type %1: %2").arg(device.typeName, parts.join(QStringLiteral(", "))),
-				  items, QStringLiteral("007002"));
-		}
-		if (device.beyond() > 0)
-			c.add(Severity::Warning, QStringLiteral("device_type"), d, label,
-				  tr("%n symbol(s) beyond device type %1", nullptr, device.beyond()).arg(device.typeName),
-				  items);
-		const int extra = DeviceTypeCheck::extraContacts(device);
-		if (extra > 0)
-			c.add(Severity::Warning, QStringLiteral("device_type"), d, label,
-				  tr("%n contact(s) more than device type %1 has", nullptr, extra).arg(device.typeName),
-				  items);
 	}
 }
 
 } // namespace
 
-QList<PlanCheck::CheckInfo> PlanCheck::checks()
+ProjectCheck::Kind PlanCheck::kindOf(const QString &rule)
 {
-	QList<CheckInfo> list;
-	for (const CheckDef &c : kChecks)
-		list << CheckInfo{QString::fromLatin1(c.key), QString::fromLatin1(c.eplan),
-						  QCoreApplication::translate("PlanCheck", c.title)};
-	return list;
+	for (const RuleDef &c : kRules)
+		if (rule == QLatin1String(c.key)) return c.kind;
+	return Kind::Links;
 }
 
-QVector<PlanCheck::Finding> PlanCheck::run(QETProject *project, int folio)
+QVector<PlanCheck::Finding> PlanCheck::run(QETProject *project)
 {
 	if (!project) return {};
-		//links, potentials and duplicates reach across folios
+		//links reach across folios
 	if (project->unloadedFolioCount()) project->loadFolios();
 
 	Collector c(project);
@@ -495,44 +425,237 @@ QVector<PlanCheck::Finding> PlanCheck::run(QETProject *project, int folio)
 	for (auto it = loose_terminals.cbegin(); it != loose_terminals.cend(); ++it) {
 		QList<QUuid> items;
 		for (const auto &pair : it.value()) items << pair.second->uuid();
-		const QString strip = it.key().isEmpty() ? tr("(no label)") : it.key();
+		const QString strip = it.key().isEmpty() ? ProjectCheck::tr("(no label)") : it.key();
 		c.add(Severity::Warning, QStringLiteral("terminal_without_strip"),
 			  it.value().first().first, strip,
-			  tr("%n terminal(s) in no terminal strip: the terminal diagram leaves them out",
+			  ProjectCheck::tr("%n terminal(s) in no terminal strip: the terminal diagram leaves them out",
 				 nullptr, int(it.value().count())), items);
 	}
 
 	checkCables(c, project, wires);
-	checkDuplicates(c, project, panel_folios);
 
-	if (auto *db = project->dataBase()) {
-		for (const auto &mismatch : db->potentialTypeMismatches()) {
-			Diagram *d = nullptr;
-			for (const QUuid &u : mismatch.wires)
-				if (wires.contains(u)) {d = wires.value(u).first; break;}
-			c.add(Severity::Error, QStringLiteral("potential_types"), d, QString(),
-				  tr("One potential with wires of different types: %1")
-					  .arg(mismatch.types.join(QStringLiteral(" / "))), mismatch.wires);
-		}
-	}
-
-	checkDeviceTypes(c, project, panel_folios);
-
-	QVector<Finding> out;
-	for (const Finding &f : std::as_const(c.m_findings))
-		if (folio < 0 || f.folio == folio) out << f;
-	std::stable_sort(out.begin(), out.end(), [](const Finding &a, const Finding &b) {
+	QVector<Finding> out = c.m_findings;
+	std::stable_sort(out.begin(), out.end(), [project](const Finding &a, const Finding &b) {
 		if (a.severity != b.severity) return int(a.severity) < int(b.severity);
-		const int fa = a.folio < 0 ? INT_MAX : a.folio, fb = b.folio < 0 ? INT_MAX : b.folio;
+		const int fa = a.folio ? project->folioIndex(a.folio) : INT_MAX;
+		const int fb = b.folio ? project->folioIndex(b.folio) : INT_MAX;
 		if (fa != fb) return fa < fb;
-		const int ca = checkOrder(a.check), cb = checkOrder(b.check);
+		const int ca = checkOrder(a.rule), cb = checkOrder(b.rule);
 		if (ca != cb) return ca < cb;
 		return QString::localeAwareCompare(a.label, b.label) < 0;
 	});
 	return out;
 }
 
-QString PlanCheck::severityKey(Severity severity)
+/* ---- ProjectCheck: the fork's part of the Check panel ---------------- */
+
+namespace {
+
+	/// "A-03 — Power", as ProjectCheck words a folio
+QString folioTextOf(QETProject *project, Diagram *diagram)
+{
+	if (!project || !diagram) return QString();
+	QString folio = diagram->border_and_titleblock.finalfolio().trimmed();
+	if (folio.isEmpty())
+		folio = QString::number(project->folioIndex(diagram) + 1);
+	return QStringLiteral("%1 — %2").arg(folio, diagram->title());
+}
+
+ProjectCheck::Place placeOf(QETProject *project, QGraphicsObject *item, const QString &text)
+{
+	ProjectCheck::Place place;
+	place.text = text;
+	place.item = item;
+	if (Diagram *diagram = DuplicateLabels::diagramOf(item)) {
+		place.folio = folioTextOf(project, diagram);
+		place.cell = diagram->convertPosition(item->sceneBoundingRect().center()).toString();
+	}
+	return place;
+}
+
+QString placeText(QGraphicsObject *item)
+{
+	if (auto *e = qobject_cast<Element *>(item)) {
+		const QString label = labelOf(e);
+		return label.isEmpty() ? e->name() : label;
+	}
+	if (auto *w = qobject_cast<Conductor *>(item)) {
+		const QString text = w->properties().text.trimmed();
+		return text.isEmpty() ? ProjectCheck::tr("Wire") : ProjectCheck::tr("Wire %1").arg(text);
+	}
+	return QString();
+}
+
+bool onPanel(Element *e)
+{
+	return isPanelDevice(e) || !PanelLayout::surfaces(e->diagram()).isEmpty();
+}
+
+	/// The fork's severity of each finding of the panel's own checks, and
+	/// its rule; findings the fork's rules report better are dropped
+void rate(ProjectCheck::Result &result)
+{
+	using K = ProjectCheck::Kind;
+	QVector<ProjectCheck::Finding> kept;
+	for (ProjectCheck::Finding f : std::as_const(result.findings)) {
+		switch (result.kind) {
+			case K::DuplicateLabels: {
+					//a wire number on separate potentials is a warning; one
+					//label on separate devices an error, unless they are the
+					//terminals of one strip (X1:1, X1:2) or the cabinet
+					//layout's copy of a device
+				bool wires = false;
+				QSet<QUuid> devices;
+				for (const auto &place : std::as_const(f.places)) {
+					if (qobject_cast<Conductor *>(place.item.data())) wires = true;
+					auto *e = qobject_cast<Element *>(place.item.data());
+					if (!e || onPanel(e)) continue;
+					if (e->elementData().m_type == ElementData::Terminal) continue;
+					const QList<Element *> linked = e->linkedElements();
+					Element *head = (e->linkType() & Element::Slave) && !linked.isEmpty()
+						? linked.first() : e;
+					devices << head->uuid();
+				}
+				if (wires) {
+					f.severity = Severity::Warning;
+					f.rule = QStringLiteral("duplicate_wire_number");
+				} else {
+					f.severity = devices.size() >= 2 ? Severity::Error : Severity::Info;
+					f.rule = QStringLiteral("duplicate_label");
+					f.eplan = QStringLiteral("017005");
+				}
+				break;
+			}
+			case K::PotentialTypes:
+				f.severity = Severity::Error;
+				f.rule = QStringLiteral("potential_types");
+				f.eplan = QStringLiteral("005016");
+				break;
+			case K::OpenWireEnds:
+				f.severity = Severity::Warning;
+				f.rule = QStringLiteral("open_wire_end");
+				break;
+			case K::UnwiredSymbols:
+				f.severity = Severity::Info;
+				f.rule = QStringLiteral("unwired_symbol");
+				f.eplan = QStringLiteral("005026");
+				break;
+			case K::DeviceTypes: {
+					//the contacts linked to no master: the rule
+					//"contact_without_master" lists every one of them
+				const int n = int(f.places.size());
+				if (f.text == ProjectCheck::tr("%n contact(s) linked to no master", nullptr, n))
+					continue;
+				f.severity = Severity::Warning;
+				f.rule = QStringLiteral("device_type");
+				f.eplan = QStringLiteral("007001");
+				break;
+			}
+			case K::WiresPerTerminal:
+				f.severity = Severity::Warning;
+				f.rule = QStringLiteral("wires_per_terminal");
+				break;
+			case K::TerminalNames:
+				f.severity = Severity::Warning;
+				f.rule = QStringLiteral("terminal_names");
+				break;
+			default:
+				break;
+		}
+		kept << f;
+	}
+		//the worst first, as the fork's rules
+	std::stable_sort(kept.begin(), kept.end(),
+		[](const ProjectCheck::Finding &a, const ProjectCheck::Finding &b) {
+			return int(a.severity) < int(b.severity);
+		});
+	result.findings = kept;
+}
+
+} // namespace
+
+bool ProjectCheck::isForkKind(Kind kind)
+{
+	switch (kind) {
+		case Kind::Links:
+		case Kind::PlcChannels:
+		case Kind::Cables:
+		case Kind::TerminalStrips:
+		case Kind::LabelsAndParts:
+		case Kind::OpenTerminals:
+		case Kind::CabinetLayout:
+			return true;
+		default:
+			return false;
+	}
+}
+
+QString ProjectCheck::forkTitle(Kind kind)
+{
+	switch (kind) {
+		case Kind::Links: return tr("Contacts, coils and folio reports without their partner");
+		case Kind::PlcChannels: return tr("PLC channels without an address");
+		case Kind::Cables: return tr("Cables without a target");
+		case Kind::TerminalStrips: return tr("Terminals without a terminal strip");
+		case Kind::LabelsAndParts: return tr("Devices without a label or part");
+		case Kind::OpenTerminals: return tr("Unconnected terminals");
+		case Kind::CabinetLayout: return tr("Cabinet layout");
+		default: return QString();
+	}
+}
+
+QString ProjectCheck::forkToolTip(Kind kind)
+{
+	switch (kind) {
+		case Kind::Links:
+			return tr("Contacts linked to no coil or main function, coils without any contact, "
+					  "solenoid valves without their coil and folio reports without their partner "
+					  "(EPLAN 007005, 007009, 011002).");
+		case Kind::PlcChannels:
+			return tr("PLC channels assigned to no PLC card or to a channel without an address "
+					  "(EPLAN 004023, 004027).");
+		case Kind::Cables:
+			return tr("Cables without a label, without cores on a wire, with cores on a wire "
+					  "that no longer exists or ending at a symbol without a label (EPLAN 003005).");
+		case Kind::TerminalStrips:
+			return tr("Terminals which are in no terminal strip: the terminal diagram leaves "
+					  "them out (EPLAN 001010).");
+		case Kind::LabelsAndParts:
+			return tr("Devices without a label, and devices without a part number, which the "
+					  "bill of materials shows without one (EPLAN 017001, 007017).");
+		case Kind::OpenTerminals:
+			return tr("Terminals and fluid ports left open on a symbol that has wires "
+					  "(EPLAN 005026, 005053). A symbol with no wire at all is listed under "
+					  "Symbols with no wire.");
+		case Kind::CabinetLayout:
+			return tr("The warnings of the cabinet layouts: devices outside their mounting "
+					  "surface, overlapping or without a size.");
+		default: return QString();
+	}
+}
+
+QString ProjectCheck::key(Kind kind)
+{
+	switch (kind) {
+		case Kind::DuplicateLabels: return QStringLiteral("duplicate_labels");
+		case Kind::PotentialTypes: return QStringLiteral("potential_types");
+		case Kind::OpenWireEnds: return QStringLiteral("open_wire_ends");
+		case Kind::UnwiredSymbols: return QStringLiteral("unwired_symbols");
+		case Kind::DeviceTypes: return QStringLiteral("device_types");
+		case Kind::WiresPerTerminal: return QStringLiteral("wires_per_terminal");
+		case Kind::TerminalNames: return QStringLiteral("terminal_names");
+		case Kind::Links: return QStringLiteral("links");
+		case Kind::PlcChannels: return QStringLiteral("plc_channels");
+		case Kind::Cables: return QStringLiteral("cables");
+		case Kind::TerminalStrips: return QStringLiteral("terminal_strips");
+		case Kind::LabelsAndParts: return QStringLiteral("labels_and_parts");
+		case Kind::OpenTerminals: return QStringLiteral("open_terminals");
+		case Kind::CabinetLayout: return QStringLiteral("cabinet_layout");
+	}
+	return QString();
+}
+
+QString ProjectCheck::severityKey(Severity severity)
 {
 	switch (severity) {
 		case Severity::Error:   return QStringLiteral("error");
@@ -541,7 +664,7 @@ QString PlanCheck::severityKey(Severity severity)
 	}
 }
 
-QString PlanCheck::severityText(Severity severity)
+QString ProjectCheck::severityText(Severity severity)
 {
 	switch (severity) {
 		case Severity::Error:   return tr("Error");
@@ -550,44 +673,147 @@ QString PlanCheck::severityText(Severity severity)
 	}
 }
 
-int PlanCheck::count(const QVector<Finding> &findings, Severity severity)
+/**
+	@brief ProjectCheck::runAll
+	Every check of kinds(): the panel's own ones, each finding rated, and
+	the fork's rules in one pass over the folios (PlanCheck::run()), spread
+	over their categories. Builds the folios not built yet.
+*/
+QVector<ProjectCheck::Result> ProjectCheck::runAll(QETProject *project)
 {
-	return int(std::count_if(findings.cbegin(), findings.cend(),
-		[severity](const Finding &f) {return f.severity == severity;}));
+	QVector<Result> results;
+	if (!project) return results;
+	if (project->unloadedFolioCount()) project->loadFolios();
+
+	QHash<int, int> index;
+	for (Kind kind : kinds()) {
+		index.insert(int(kind), int(results.size()));
+		if (isForkKind(kind)) {
+			Result result;
+			result.kind = kind;
+			results << result;
+			continue;
+		}
+		Result result = run(project, kind);
+		rate(result);
+		results << result;
+	}
+
+	QHash<QUuid, QGraphicsObject *> items;
+	for (Diagram *d : project->diagrams()) {
+		for (Element *e : d->elements()) items.insert(e->uuid(), e);
+		for (Conductor *w : d->content().conductors()) items.insert(w->uuid(), w);
+	}
+	for (const PlanCheck::Finding &f : PlanCheck::run(project)) {
+		Result &result = results[index.value(int(PlanCheck::kindOf(f.rule)))];
+		Finding finding;
+		finding.severity = f.severity;
+		finding.rule = f.rule;
+		finding.eplan = f.eplan;
+		//: %1 is the label of the device, cable or strip, %2 what is wrong with it
+		finding.text = f.label.isEmpty() ? f.text : tr("%1: %2").arg(f.label, f.text);
+		for (const QUuid &uuid : f.items)
+			if (QGraphicsObject *item = items.value(uuid))
+				finding.places << placeOf(project, item,
+										  f.items.size() == 1 ? f.label : placeText(item));
+		if (finding.places.isEmpty()) {
+			Place place;
+			place.text = f.label;
+			place.folio = folioTextOf(project, f.folio);
+			finding.places << place;
+		}
+		result.findings << finding;
+	}
+	return results;
 }
 
-QVariantMap PlanCheck::toVariant(const Finding &finding, QETProject *project)
+Diagram *ProjectCheck::diagramOf(QETProject *project, const Place &place)
 {
+	if (!project) return nullptr;
+	if (place.item) return DuplicateLabels::diagramOf(place.item);
+	if (!place.diagram.isNull()) return project->diagramByUuid(place.diagram);
+	if (!place.wires.isEmpty()) {
+		QSqlQuery query = project->dataBase()->newQuery();
+		query.prepare(QStringLiteral("SELECT diagram_uuid FROM conductor WHERE uuid = :uuid"));
+		for (const QUuid &wire : place.wires) {
+			query.bindValue(QStringLiteral(":uuid"), wire.toString());
+			if (query.exec() && query.next())
+				if (Diagram *d = project->diagramByUuid(QUuid(query.value(0).toString())))
+					return d;
+		}
+	}
+	return nullptr;
+}
+
+QVariantMap ProjectCheck::toVariant(const Result &result, const Finding &finding,
+									QETProject *project)
+{
+	Diagram *diagram = nullptr;
+	QString label;
+	QStringList uuids;
+	for (const Place &place : finding.places) {
+		if (!diagram) diagram = diagramOf(project, place);
+		if (label.isEmpty()) label = place.text;
+		if (auto *e = qobject_cast<Element *>(place.item.data()))
+			uuids << e->uuid().toString(QUuid::WithoutBraces);
+		else if (auto *w = qobject_cast<Conductor *>(place.item.data()))
+			uuids << w->uuid().toString(QUuid::WithoutBraces);
+		if (!place.element.isNull())
+			uuids << place.element.toString(QUuid::WithoutBraces);
+		for (const QUuid &wire : place.wires)
+			uuids << wire.toString(QUuid::WithoutBraces);
+	}
 	QVariantMap m;
 	m.insert(QStringLiteral("severity"), severityKey(finding.severity));
-	m.insert(QStringLiteral("check"), finding.check);
+	m.insert(QStringLiteral("check"), finding.rule);
+	m.insert(QStringLiteral("category"), key(result.kind));
+	m.insert(QStringLiteral("categoryTitle"), title(result.kind));
 	m.insert(QStringLiteral("eplan"), finding.eplan);
-	m.insert(QStringLiteral("folio"), finding.folio);
-	const QList<Diagram *> diagrams = project ? project->diagrams() : QList<Diagram *>();
-	m.insert(QStringLiteral("folioTitle"),
-			 finding.folio >= 0 && finding.folio < diagrams.count()
-				 ? diagrams.at(finding.folio)->title() : QString());
-	m.insert(QStringLiteral("label"), finding.label);
+	m.insert(QStringLiteral("folio"), diagram ? project->folioIndex(diagram) : -1);
+	m.insert(QStringLiteral("folioTitle"), diagram ? diagram->title() : QString());
+	m.insert(QStringLiteral("label"), label);
 	m.insert(QStringLiteral("text"), finding.text);
-	QStringList items;
-	for (const QUuid &u : finding.items) items << u.toString(QUuid::WithoutBraces);
-	m.insert(QStringLiteral("items"), items);
+	m.insert(QStringLiteral("items"), uuids);
 	return m;
 }
 
-QJsonObject PlanCheck::toJson(const QVector<Finding> &findings, QETProject *project)
+QVariantList ProjectCheck::toVariantList(const QVector<Result> &results,
+										 QETProject *project, int folio)
+{
+	QVariantList list;
+	for (const Result &result : results)
+		for (const Finding &finding : result.findings) {
+			const QVariantMap m = toVariant(result, finding, project);
+			if (folio >= 0 && m.value(QStringLiteral("folio")).toInt() != folio) continue;
+			list << m;
+		}
+	return list;
+}
+
+QJsonObject ProjectCheck::toJson(const QVector<Result> &results, QETProject *project)
 {
 	QJsonArray list;
-	for (const Finding &f : findings)
-		list.append(QJsonObject::fromVariantMap(toVariant(f, project)));
+	int errors = 0, warnings = 0, infos = 0;
+	for (const QVariant &v : toVariantList(results, project)) {
+		const QVariantMap m = v.toMap();
+		const QString severity = m.value(QStringLiteral("severity")).toString();
+		if (severity == QLatin1String("error")) ++errors;
+		else if (severity == QLatin1String("warning")) ++warnings;
+		else ++infos;
+		list.append(QJsonObject::fromVariantMap(m));
+	}
 	QJsonObject summary;
-	summary[QStringLiteral("errors")] = count(findings, Severity::Error);
-	summary[QStringLiteral("warnings")] = count(findings, Severity::Warning);
-	summary[QStringLiteral("infos")] = count(findings, Severity::Info);
+	summary[QStringLiteral("errors")] = errors;
+	summary[QStringLiteral("warnings")] = warnings;
+	summary[QStringLiteral("infos")] = infos;
+	QJsonObject notes;
+	for (const Result &result : results)
+		if (!result.note.isEmpty()) notes[key(result.kind)] = result.note;
 	QJsonObject root;
 	root[QStringLiteral("project")] = project ? project->title() : QString();
-	root[QStringLiteral("ok")] = count(findings, Severity::Error) == 0;
+	root[QStringLiteral("ok")] = errors == 0;
 	root[QStringLiteral("summary")] = summary;
+	if (!notes.isEmpty()) root[QStringLiteral("notes")] = notes;
 	root[QStringLiteral("findings")] = list;
 	return root;
 }

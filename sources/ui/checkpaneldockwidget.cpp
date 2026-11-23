@@ -29,6 +29,7 @@
 #include "../utils/qetsettings.h"
 
 #include <QApplication>
+#include <QComboBox>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
@@ -36,6 +37,7 @@
 #include <QProgressDialog>
 #include <QPushButton>
 #include <QScopeGuard>
+#include <QSettings>
 #include <QSet>
 #include <QSqlQuery>
 #include <QStyle>
@@ -86,6 +88,20 @@ CheckPanelDockWidget::CheckPanelDockWidget(QWidget *parent) :
 		   &QetSettings::setUnwiredSymbolsSkipContacts);
 	options->setMenu(m_options);
 	top->addWidget(options);
+		// Fork: which severities the list shows
+	m_filter = new QComboBox(body);
+	m_filter->setObjectName(QStringLiteral("checkPanelFilter"));
+	m_filter->addItem(tr("All findings"));
+	m_filter->addItem(tr("Errors and warnings"));
+	m_filter->addItem(tr("Errors only"));
+	m_filter->setToolTip(tr("Which findings the list shows"));
+	m_filter->setCurrentIndex(qBound(0, QSettings().value(
+		QStringLiteral("check_panel/severity_filter"), 0).toInt(), 2));
+	connect(m_filter, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int index) {
+		QSettings().setValue(QStringLiteral("check_panel/severity_filter"), index);
+		applyFilter();
+	});
+	top->addWidget(m_filter);
 	m_summary = new QLabel(body);
 	m_summary->setWordWrap(true);
 	top->addWidget(m_summary, 1);
@@ -198,8 +214,20 @@ void CheckPanelDockWidget::run()
 		if (place.canShow()) m_places.insert(row, place);
 	};
 
-	for (ProjectCheck::Kind kind : ProjectCheck::kinds()) {
-		const auto result = ProjectCheck::run(m_project, kind);
+	int count[3] = {0, 0, 0};
+	const auto icon = [this](ProjectCheck::Severity severity) {
+		switch (severity) {
+			case ProjectCheck::Severity::Error:
+				return style()->standardIcon(QStyle::SP_MessageBoxCritical);
+			case ProjectCheck::Severity::Warning:
+				return style()->standardIcon(QStyle::SP_MessageBoxWarning);
+			default:
+				return style()->standardIcon(QStyle::SP_MessageBoxInformation);
+		}
+	};
+		// Fork: every check in one pass, each finding with its severity
+	for (const ProjectCheck::Result &result : ProjectCheck::runAll(m_project)) {
+		const ProjectCheck::Kind kind = result.kind;
 		auto *root = new QTreeWidgetItem(m_tree);
 		root->setToolTip(0, ProjectCheck::toolTip(kind));
 		const int found = int(result.findings.size());
@@ -219,11 +247,21 @@ void CheckPanelDockWidget::run()
 		}
 		//: %1 is the check, %2 how many findings it has
 		root->setText(0, tr("%1 (%2)").arg(ProjectCheck::title(kind)).arg(found));
-		root->setIcon(0, style()->standardIcon(QStyle::SP_MessageBoxWarning));
+		ProjectCheck::Severity worst = ProjectCheck::Severity::Info;
+		for (const auto &finding : result.findings)
+			if (int(finding.severity) < int(worst)) worst = finding.severity;
+		root->setIcon(0, icon(worst));
 		for (const auto &finding : result.findings) {
 			auto *row = new QTreeWidgetItem(root);
 			row->setText(0, finding.text);
-			row->setToolTip(0, finding.text);
+			row->setIcon(0, icon(finding.severity));
+			row->setData(0, Qt::UserRole, int(finding.severity));
+			++count[qBound(0, int(finding.severity), 2)];
+			//: %1 is the finding, %2 its severity, %3 EPLAN's number of the same message
+			row->setToolTip(0, finding.eplan.isEmpty()
+				? tr("%1 (%2)").arg(finding.text, ProjectCheck::severityText(finding.severity))
+				: tr("%1 (%2, EPLAN %3)").arg(finding.text,
+					ProjectCheck::severityText(finding.severity), finding.eplan));
 				// One place: on the finding's own row. Several: a row each,
 				// and the finding shows the first that can be shown.
 			if (finding.places.size() == 1) {
@@ -244,9 +282,40 @@ void CheckPanelDockWidget::run()
 		}
 		root->setExpanded(true);
 	}
+	//: %1 counts the errors, %2 the warnings, %3 the notes
 	m_summary->setText(m_finding_count
-		? tr("%n finding(s). Run the checks again after a change.", nullptr, m_finding_count)
+		? tr("%1, %2, %3. Double-click a finding to show it; run the checks again after a change.")
+			  .arg(tr("%n error(s)", nullptr, count[0]),
+				   tr("%n warning(s)", nullptr, count[1]),
+				   tr("%n note(s)", nullptr, count[2]))
 		: tr("Nothing found."));
+	applyFilter();
+}
+
+/**
+	@brief CheckPanelDockWidget::applyFilter
+	Fork: hide the findings below the severity the filter asks for, and the
+	checks left with none; "All findings" shows every check, also those
+	that found nothing.
+*/
+void CheckPanelDockWidget::applyFilter()
+{
+	const int level = m_filter ? m_filter->currentIndex() : 0;
+		// 0: all, 1: errors and warnings, 2: errors only
+	const int worst_shown = level == 2 ? int(ProjectCheck::Severity::Error)
+		: level == 1 ? int(ProjectCheck::Severity::Warning)
+					 : int(ProjectCheck::Severity::Info);
+	for (int i = 0 ; i < m_tree->topLevelItemCount() ; ++i) {
+		QTreeWidgetItem *root = m_tree->topLevelItem(i);
+		int shown = 0;
+		for (int j = 0 ; j < root->childCount() ; ++j) {
+			QTreeWidgetItem *row = root->child(j);
+			const bool show = row->data(0, Qt::UserRole).toInt() <= worst_shown;
+			row->setHidden(!show);
+			if (show) ++shown;
+		}
+		root->setHidden(level > 0 && !shown);
+	}
 }
 
 /**

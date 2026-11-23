@@ -52,17 +52,18 @@ In QET und im exportierten PDF:
 - Querverweisformel `%=M`: Die Anlage erscheint nur, wenn sie von der des eigenen Blatts abweicht (`/42/1`,
   `=DC/38/2`), wie bei EPLAN.
 
-## Plan prüfen wie der EPLAN-Prüflauf
+## Ein Prüfpanel wie der EPLAN-Prüflauf
 
-- *Projekt > Plan prüfen* (auch als Knopf in der Werkzeugleiste) führt alle Prüfungen auf einmal aus und zeigt die
-  Meldungen in einem Andockfenster mit Schwere (Fehler, Warnung, Hinweis), Blatt, Kennzeichen, Text und
-  EPLAN-Meldungsnummer. Ein Klick öffnet das Blatt und markiert das Gerät. Geprüft werden: offene Anschlüsse und
-  Fluidanschlüsse, doppelte Kennzeichen und Leiternummern, Geräte ohne Artikel oder Kennzeichen, Klemmen ohne
-  Klemmleiste, Kontakte ohne Spule, Abbruchstellen ohne Gegenstück, Kabel ohne Ziel, SPS-Kanäle ohne Adresse,
-  Potenzialtypen, Gerätetypen und die Aufbauprüfung. Solange das Fenster offen ist, prüft eine schnelle Prüfung nach
-  jeder Änderung neu.
-- Skript-API `qet.checkProject(folio = -1)`, CLI `--check-project <projekt.qet> [bericht.json]` (Rückgabewert 3 bei
-  Fehlern).
+- *Projekt > Projekt prüfen* (auch als Knopf in der Werkzeugleiste) führt alle Prüfungen auf einmal aus und zeigt die
+  Befunde in einem Panel, nach Prüfung gruppiert, jeder mit Schwere (Fehler, Warnung, Hinweis), Blatt und Feld; der
+  Tooltip nennt die EPLAN-Meldungsnummer. Eine Auswahl zeigt alle Befunde, nur Fehler und Warnungen oder nur Fehler;
+  Doppelklick öffnet das Blatt und markiert Gerät oder Leitung. Geprüft werden: doppelte Kennzeichen und
+  Leiternummern, Potenzialtypen, offene Leitungsenden, Symbole ohne Leitung, Gerätetypen, Leitungen je Anschluss,
+  Anschlussnamen und die Regeln des Forks: Kontakte, Spulen und Abbruchstellen ohne Gegenstück, SPS-Kanäle ohne
+  Adresse, Kabel ohne Ziel, Klemmen ohne Klemmleiste, Geräte ohne Kennzeichen oder Artikel, offene Anschlüsse und
+  Fluidanschlüsse, Schaltschrankaufbau.
+- Skript-API `qet.checkProject(folio = -1)`, CLI `--check-project <projekt.qet> [bericht.json]` (dieselben Regeln;
+  Rückgabewert 3 bei Fehlern).
 
 ## Blätter und Schriftfeld
 

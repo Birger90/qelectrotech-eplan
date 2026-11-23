@@ -110,6 +110,7 @@ QList<ProjectCheck::Kind> ProjectCheck::kinds()
 
 QString ProjectCheck::title(Kind kind)
 {
+	if (isForkKind(kind)) return forkTitle(kind);
 	switch (kind) {
 		case Kind::DuplicateLabels: return tr("Duplicate signals and components");
 		case Kind::PotentialTypes: return tr("Potential types");
@@ -124,6 +125,7 @@ QString ProjectCheck::title(Kind kind)
 
 QString ProjectCheck::toolTip(Kind kind)
 {
+	if (isForkKind(kind)) return forkToolTip(kind);
 	switch (kind) {
 		case Kind::DuplicateLabels:
 			return tr("Project > Find duplicate signals and components... has the options of this check.");
@@ -156,6 +158,11 @@ ProjectCheck::Result ProjectCheck::run(QETProject *project, Kind kind)
 		Result result;
 		result.kind = kind;
 		return result;
+	}
+	if (isForkKind(kind)) {
+		for (const Result &result : runAll(project))
+			if (result.kind == kind) return result;
+		return Result();
 	}
 	switch (kind) {
 		case Kind::DuplicateLabels: return duplicateLabels(project);

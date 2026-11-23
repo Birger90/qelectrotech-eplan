@@ -3,6 +3,28 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## Unveröffentlicht – Ein Prüfpanel
+
+„Plan prüfen“ des Forks und das Prüfpanel des Originals (#1878) sind jetzt ein einziges Panel.
+
+- Grundlage ist das Prüfpanel des Originals (*Projekt > Projekt prüfen*, Knopf in der Werkzeugleiste neben
+  „PDF exportieren“). Die Regeln von „Plan prüfen“ stehen dort als weitere Kategorien: Kontakte, Spulen und
+  Abbruchstellen ohne Gegenstück, SPS-Kanäle ohne Adresse, Kabel ohne Ziel, Klemmen ohne Klemmleiste, Geräte ohne
+  Kennzeichen oder Artikel, offene Anschlüsse, Schaltschrankaufbau.
+- Jeder Befund hat eine Schwere (Fehler, Warnung, Hinweis) mit Symbol; der Tooltip nennt die EPLAN-Meldungsnummer.
+  Eine Auswahl über der Liste zeigt alle Befunde, nur Fehler und Warnungen oder nur Fehler. Doppelklick öffnet das
+  Blatt und markiert das Betroffene; „Prüfungen ausführen“ prüft neu.
+- Keine doppelten Meldungen mehr: doppelte Kennzeichen, Potenzialtypen und Gerätetypen kommen nur aus den Prüfungen
+  des Originals (Klemmen einer Leiste und Aufbau-Kopien eines Geräts zählen dort als Hinweis, nicht als Fehler). Ein
+  Symbol ganz ohne Leitung steht nur unter „Symbole ohne Leitung“, offene Anschlüsse nur an Symbolen mit Leitung.
+- Menüeintrag und Andockfenster „Plan prüfen“ entfallen. Gespeicherte Werkzeugleisten behalten ihren Knopf, er führt
+  jetzt zum gemeinsamen Panel.
+- `--check-project` und `qet.checkProject()` nutzen dieselben Regeln wie das Panel. Jeder Eintrag hat zusätzlich
+  `category` und `categoryTitle`; `check` bleibt der Regelname. Das Panel prüft nicht mehr nach jeder Änderung von
+  selbst (wie im Original): nach einer Änderung neu prüfen.
+- Die Meldungstexte der Fork-Regeln sind jetzt auf Deutsch übersetzt (vorher fand lupdate sie nicht und sie blieben
+  englisch).
+
 ## 1.49.0 – 23.11.2026
 
 Sieben neue Funktionen für den Alltag und das Original-QElectroTech bis 23.11.2026. Alle ohne Oberfläche geprüft (Build, Referenzlauf 52/52, Befehle an Testprojekten); die Dialoge sind noch nicht von Hand angesehen. Hinweis: Das Original bringt jetzt ein eigenes Prüfpanel mit; „Plan prüfen“ des Forks steht vorerst daneben und wird zusammengelegt.

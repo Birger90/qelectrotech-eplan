@@ -17,7 +17,7 @@
 */
 #include "qetscriptapi.h"
 #include "../revision/projectrevisions.h"
-#include "../plancheck/plancheck.h"
+#include "../projectcheck.h"
 #include "../plc/tiaplctags.h"
 #include "../import/portals/manufacturerportals.h"
 #include "../import/portals/partfetcher.h"
@@ -6467,15 +6467,17 @@ int QetScriptApi::searchAndReplace(const QString &kind, const QString &field,
 
 /**
 	@brief QetScriptApi::checkProject
-	"Check plan" for scripts: every check of PlanCheck::run() -- open
-	terminals and ports, duplicate labels and wire numbers, devices without
-	a part or label, terminals without a strip, contacts without their
-	coil, folio reports without a partner, cables without a target, PLC
-	channels without an address, potential types, device types and the
-	cabinet layout -- as a list of {severity ("error", "warning", "info"),
-	check, eplan (EPLAN's message number, may be empty), folio (from 0, -1
-	for the project), folioTitle, label, text, items (uuids of the
-	elements or conductors)}. Read only.
+	"Check project" for scripts: every check of the Check panel
+	(ProjectCheck::runAll()) -- duplicate labels and wire numbers,
+	potential types, open wire ends, symbols with no wire, device types,
+	wires per terminal, terminal names, and the fork's rules: contacts,
+	coils and folio reports without their partner, PLC channels without an
+	address, cables without a target, terminals without a strip, devices
+	without a label or part, open terminals and fluid ports, the cabinet
+	layout -- as a list of {severity ("error", "warning", "info"), check
+	(the rule), category, categoryTitle, eplan (EPLAN's message number, may
+	be empty), folio (from 0, -1 if none), folioTitle, label, text, items
+	(uuids of the elements or conductors)}. Read only.
 	@param folioIndex a single folio, or -1 (the default) for the project
 */
 QVariantList QetScriptApi::checkProject(int folioIndex)
@@ -6487,9 +6489,7 @@ QVariantList QetScriptApi::checkProject(int folioIndex)
 			.arg(folioIndex).arg(m_project->diagrams().count()));
 		return list;
 	}
-	for (const PlanCheck::Finding &f : PlanCheck::run(m_project, folioIndex))
-		list << PlanCheck::toVariant(f, m_project);
-	return list;
+	return ProjectCheck::toVariantList(ProjectCheck::runAll(m_project), m_project, folioIndex);
 }
 
 /**

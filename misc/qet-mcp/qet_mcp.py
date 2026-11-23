@@ -3210,10 +3210,10 @@ def tool_check(binary: str, project: str, checks: list | None = None,
 
 def tool_plan_check(binary: str, project: str, folio: int = -1,
                     elements_dir: str | None = None, timeout: int = 180) -> dict:
-    """Run QElectroTech's own "Check plan" (qet.checkProject()) in one launch.
+    """Run QElectroTech's own check run (qet.checkProject()) in one launch.
 
     Unlike qet_check, which asks the project database a handful of SQL
-    questions, this is the check run the GUI's "Check plan" panel shows:
+    questions, this is the check run the GUI's Check panel shows:
     the live object graph -- links, terminal strips, cables, PLC tables,
     fluid ports, device types, cabinet layouts -- with EPLAN's message
     numbers. folio is counted from 0, -1 for the whole project.
@@ -3240,7 +3240,7 @@ def tool_plan_check(binary: str, project: str, folio: int = -1,
             findings = rec.get("findings")
     if findings is None:
         answer = {"ok": False, "error": "this QElectroTech has no qet.checkProject() "
-                  "(needs the fork's \"Check plan\") or the run failed"}
+                  "(needs the fork's Check panel) or the run failed"}
         if result.get("hint"):
             answer["hint"] = result["hint"]
         return answer
@@ -6231,15 +6231,17 @@ TOOLS = [
     },
     {
         "name": "qet_plan_check",
-        "description": "Run the fork's \"Check plan\" (Project > Check plan, qet.checkProject()) "
+        "description": "Run the Check panel (Project > Check project, qet.checkProject()) "
                        "headless: every check the GUI panel lists, with severity "
-                       "(error/warning/info), EPLAN message number, folio (from 0), "
-                       "label, text and the uuids of the items concerned -- open "
-                       "terminals and fluid ports, duplicate labels and wire numbers, "
+                       "(error/warning/info), rule (check), category, EPLAN message "
+                       "number, folio (from 0), label, text and the uuids of the items "
+                       "concerned -- duplicate labels and wire numbers, potential types, "
+                       "open wire ends, symbols with no wire, device types, wires per "
+                       "terminal, terminal names, open terminals and fluid ports, "
                        "devices without a part or label, terminals without a strip, "
                        "contacts without their coil, folio reports without a partner, "
                        "cables without a target, PLC channels without an address, "
-                       "potential types, device types, cabinet layout. One "
+                       "cabinet layout. One "
                        "QElectroTech launch; read-only. Complements qet_check (SQL "
                        "heuristics over the project database).",
         "inputSchema": {

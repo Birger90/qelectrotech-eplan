@@ -744,8 +744,8 @@ class QetScriptApi : public QObject
 		// against the live object graph rather than the XML -- see the
 		// .cpp doc comment for exactly what is and is not covered --
 		Q_INVOKABLE QVariantList checkContinuity(int folioIndex);
-		// -- "Check plan": every check of the project at once (PlanCheck),
-		// as the dock of the same name lists them --
+		// -- "Check project": every check of the project at once
+		// (ProjectCheck::runAll), as the Check panel lists them --
 		Q_INVOKABLE QVariantList checkProject(int folioIndex = -1);
 
 		// -- navigate and message --

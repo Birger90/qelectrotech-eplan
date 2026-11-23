@@ -19,77 +19,51 @@
 #ifndef PLANCHECK_H
 #define PLANCHECK_H
 
-#include <QJsonObject>
+#include "../projectcheck.h"
+
 #include <QList>
 #include <QString>
 #include <QUuid>
-#include <QVariantMap>
 #include <QVector>
 
+class Diagram;
 class QETProject;
 
 /**
 	@brief The PlanCheck namespace
-	"Check plan": every check of the project in one run, as EPLAN's check
-	run (Pruflauf) collects its messages in one list. It reuses the checks
-	that already exist one by one -- duplicate labels, fluid ports and
-	solenoids, potential types, device types, the cabinet layout check --
-	and adds the ones nothing did yet: open terminals, devices without a
-	part, terminals without a strip, contacts without their coil, folio
-	reports without their partner, cables without a target and PLC
-	channels without an address.
+	The fork's rules of the Check panel, the ones QElectroTech had no check
+	for, as EPLAN's check run (Prüflauf) has them: open terminals, devices
+	without a part or label, terminals without a strip, contacts without
+	their coil, folio reports without their partner, cables without a
+	target, PLC channels without an address, fluid ports and solenoids,
+	and the warnings of the cabinet layouts.
 
-	Each finding names its severity, its folio, the label of the device and
-	the items to show, so a click can jump to them. Where EPLAN has a
-	message for the same thing its number is given (e.g. 005026), so a
-	reader who knows EPLAN finds the rule again.
+	Duplicate labels, potential types and device types are the panel's own
+	checks (ProjectCheck): they are not repeated here. ProjectCheck::runAll()
+	runs both and gives every finding its severity.
 
-	Read only: nothing in the project is changed, apart from loading folios
-	not read yet.
+	Where EPLAN has a message for the same thing its number is given
+	(e.g. 005026), so a reader who knows EPLAN finds the rule again.
+	Read only: nothing is changed, apart from loading folios not read yet.
 */
 namespace PlanCheck
 {
-	enum class Severity {
-		Error,    ///< the plan is wrong: reports and lists will be wrong
-		Warning,  ///< most likely a mistake, worth a look
-		Info      ///< often on purpose, a hint only
-	};
-
 	struct Finding
 	{
-		Severity severity = Severity::Info;
-		QString check;        ///< key of the check, e.g. "open_terminal"
+		ProjectCheck::Severity severity = ProjectCheck::Severity::Info;
+		QString rule;         ///< key of the rule, e.g. "open_terminal"
 		QString eplan;        ///< number of EPLAN's message, empty when none
-		int folio = -1;       ///< index of the folio, -1 for the project
+		Diagram *folio = nullptr;
 		QString label;        ///< label (BMK) of the device, cable or strip
 		QString text;         ///< what is wrong, in the language of the interface
 		QList<QUuid> items;   ///< elements or conductors to show, may be empty
 	};
 
-	struct CheckInfo
-	{
-		QString key;
-		QString eplan;
-		QString title;        ///< the check in a few words, translated
-	};
+		/// the panel's category of a rule
+	ProjectCheck::Kind kindOf(const QString &rule);
 
-		/// every check this run makes, in the order of the report
-	QList<CheckInfo> checks();
-
-		/// run every check; @p folio >= 0 keeps only the findings of that
-		/// folio (and those of the whole project, folio -1)
-	QVector<Finding> run(QETProject *project, int folio = -1);
-
-	QString severityKey(Severity severity);    ///< "error", "warning", "info"
-	QString severityText(Severity severity);   ///< translated
-	int count(const QVector<Finding> &findings, Severity severity);
-
-		/// one finding for scripts: {severity, check, eplan, folio,
-		/// folioTitle, label, text, items}; folio counted from 0
-	QVariantMap toVariant(const Finding &finding, QETProject *project);
-		/// the whole report: {project, ok, summary{errors, warnings, infos},
-		/// findings[]}
-	QJsonObject toJson(const QVector<Finding> &findings, QETProject *project);
+		/// every rule, the folios loaded first
+	QVector<Finding> run(QETProject *project);
 }
 
 #endif // PLANCHECK_H

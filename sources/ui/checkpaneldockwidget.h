@@ -26,6 +26,7 @@
 #include <QPointer>
 
 class QETProject;
+class QComboBox;
 class QLabel;
 class QMenu;
 class QPushButton;
@@ -40,6 +41,9 @@ class QTreeWidgetItem;
 	kept up to date while the project is edited: Run checks again.
 	Options holds the choices of the checks which have some (what symbols
 	with no wire leaves out), kept in the settings.
+	Fork: the rules of "Check plan" are categories of their own; every
+	finding has a severity (error, warning, note), and the filter shows
+	all, errors and warnings, or errors only.
 */
 class CheckPanelDockWidget : public QDockWidget
 {
@@ -59,6 +63,8 @@ class CheckPanelDockWidget : public QDockWidget
 	public slots:
 		void run();
 		bool showRow(QTreeWidgetItem *row);
+			/// Fork: show the findings of the severity the filter asks for
+		void applyFilter();
 
 	private:
 		void clear(const QString &summary);
@@ -74,6 +80,7 @@ class CheckPanelDockWidget : public QDockWidget
 		QPushButton *m_run = nullptr;
 		QLabel *m_summary = nullptr;
 		QMenu *m_options = nullptr;
+		QComboBox *m_filter = nullptr;
 		QTreeWidget *m_tree = nullptr;
 		QHash<QTreeWidgetItem *, ProjectCheck::Place> m_places;
 		int m_finding_count = 0;

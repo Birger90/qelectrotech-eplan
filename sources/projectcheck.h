@@ -20,12 +20,15 @@
 
 #include <QCoreApplication>
 #include <QGraphicsObject>
+#include <QJsonObject>
 #include <QList>
 #include <QPointer>
 #include <QString>
 #include <QUuid>
+#include <QVariantList>
 #include <QVector>
 
+class Diagram;
 class QETProject;
 
 /**
@@ -51,7 +54,23 @@ class ProjectCheck
 			UnwiredSymbols,    ///< symbols none of whose terminals has a wire
 			DeviceTypes,       ///< DeviceTypeCheck::check()
 			WiresPerTerminal,  ///< terminals with more wires than WiringRules::limit()
-			TerminalNames      ///< symbols with two terminals of one name (TerminalNameCheck)
+			TerminalNames,     ///< symbols with two terminals of one name (TerminalNameCheck)
+				// Fork: the rules of "Check plan" (plancheck/plancheck.cpp)
+			Links,             ///< contacts, coils, valve coils and folio reports without their partner
+			PlcChannels,       ///< PLC channels without a card or an address
+			Cables,            ///< cables without a label or a target
+			TerminalStrips,    ///< terminals in no terminal strip
+			LabelsAndParts,    ///< devices without a label or a part number
+			OpenTerminals,     ///< terminals and fluid ports left open on a wired symbol
+			CabinetLayout      ///< the warnings of the cabinet layouts
+		};
+
+			/// Fork: how bad a finding is, for the filter of the panel and
+			/// the exit code of --check-project
+		enum class Severity {
+			Error,    ///< the plan is wrong: reports and lists will be wrong
+			Warning,  ///< most likely a mistake, worth a look
+			Info      ///< often on purpose, a hint only
 		};
 
 			/// Where a finding is. One of item, element or wires says what
@@ -71,6 +90,10 @@ class ProjectCheck
 		struct Finding {
 			QString text;
 			QList<Place> places;
+				// Fork: set by runAll()
+			Severity severity = Severity::Warning;
+			QString rule;   ///< key of the rule, e.g. "open_terminal"
+			QString eplan;  ///< number of EPLAN's message, empty when none
 		};
 
 		struct Result {
@@ -88,6 +111,25 @@ class ProjectCheck
 		static QString toolTip(Kind kind);
 		static Result run(QETProject *project, Kind kind);
 
+			// Fork (plancheck/plancheck.cpp): every check in one pass, each
+			// finding with its severity, for the panel, the script API and
+			// --check-project alike
+		static QVector<Result> runAll(QETProject *project);
+		static QString key(Kind kind);              ///< "duplicate_labels", ...
+		static QString severityKey(Severity severity);   ///< "error", "warning", "info"
+		static QString severityText(Severity severity);  ///< translated
+			/// the folio of a place, nullptr if none; builds no folio
+		static Diagram *diagramOf(QETProject *project, const Place &place);
+			/// one finding for scripts: {severity, check, rule, eplan,
+			/// folio, folioTitle, label, text, items}; folio counted from 0
+		static QVariantMap toVariant(const Result &result, const Finding &finding,
+									 QETProject *project);
+			/// the whole report: {project, ok, summary{errors, warnings,
+			/// infos}, findings[]}; @p folio >= 0 keeps that folio only
+		static QVariantList toVariantList(const QVector<Result> &results,
+										  QETProject *project, int folio = -1);
+		static QJsonObject toJson(const QVector<Result> &results, QETProject *project);
+
 	private:
 		static Result duplicateLabels(QETProject *project);
 		static Result potentialTypes(QETProject *project);
@@ -96,6 +138,10 @@ class ProjectCheck
 		static Result deviceTypes(QETProject *project);
 		static Result wiresPerTerminal(QETProject *project);
 		static Result terminalNames(QETProject *project);
+			// Fork
+		static bool isForkKind(Kind kind);
+		static QString forkTitle(Kind kind);
+		static QString forkToolTip(Kind kind);
 };
 
 #endif // PROJECTCHECK_H

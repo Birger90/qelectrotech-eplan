@@ -35,7 +35,7 @@
 #include "diagram.h"
 #include "diagramcontext.h"
 #include "devicetype/devicetypecheck.h"
-#include "plancheck/plancheck.h"
+#include "projectcheck.h"
 #include "devicetype/devicetypelist.h"
 #include "editor/symbolgridcheck.h"
 #include "editor/terminalnamecheck.h"
@@ -1366,18 +1366,18 @@ int exportLinks(QETProject &project, const QString &output)
 	return 0;
 }
 
-/// "Check plan" headless: every check of PlanCheck::run() as JSON, to
-/// stdout or to @p output. Exit code 0 when no finding is an error, 3 when
-/// at least one is (so a script can stop on it), 1 when the file cannot be
-/// written.
+/// "Check project" headless: every check of the Check panel
+/// (ProjectCheck::runAll()) as JSON, to stdout or to @p output. Exit code 0
+/// when no finding is an error, 3 when at least one is (so a script can
+/// stop on it), 1 when the file cannot be written.
 int checkProject(QETProject &project, const QString &output)
 {
-	const QVector<PlanCheck::Finding> findings = PlanCheck::run(&project);
-	const QByteArray json = QJsonDocument(PlanCheck::toJson(findings, &project))
-		.toJson(QJsonDocument::Indented);
-	const int errors = PlanCheck::count(findings, PlanCheck::Severity::Error);
-	const int warnings = PlanCheck::count(findings, PlanCheck::Severity::Warning);
-	const int infos = PlanCheck::count(findings, PlanCheck::Severity::Info);
+	const QJsonObject report = ProjectCheck::toJson(ProjectCheck::runAll(&project), &project);
+	const QByteArray json = QJsonDocument(report).toJson(QJsonDocument::Indented);
+	const QJsonObject summary = report.value(QStringLiteral("summary")).toObject();
+	const int errors = summary.value(QStringLiteral("errors")).toInt();
+	const int warnings = summary.value(QStringLiteral("warnings")).toInt();
+	const int infos = summary.value(QStringLiteral("infos")).toInt();
 	if (output.isEmpty() || output == QLatin1String("-")) {
 		out << QString::fromUtf8(json);
 	} else {

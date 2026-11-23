@@ -152,7 +152,7 @@ Funktionsvorlage einfügen – mit Artikeldaten, Klemmen, Kabel und Verknüpfung
 
 ## Gelernt (fortschreiben)
 
-- 23.11.2026, Plan prüfen: Nach dem Zeichnen `--check-project <plan.qet> bericht.json` (oder MCP `qet_plan_check`, im Programm Projekt > *Plan prüfen*) laufen lassen und alle Fehler beheben; Warnungen ansehen. Klemmen nur dann ohne Warnung, wenn sie in einer Klemmleiste stehen (`add_terminal_strip` + `add_to_strip`), Geräte brauchen `manufacturer_reference`, SPS-Kanäle eine Karte mit Adresse (`link_plc_io`). Rückgabewert 3 = Fehler gefunden.
+- 23.11.2026, Plan prüfen: Nach dem Zeichnen `--check-project <plan.qet> bericht.json` (oder MCP `qet_plan_check`, im Programm Projekt > *Projekt prüfen*, ein Panel für alle Prüfungen) laufen lassen und alle Fehler beheben; Warnungen ansehen. Klemmen nur dann ohne Warnung, wenn sie in einer Klemmleiste stehen (`add_terminal_strip` + `add_to_strip`), Geräte brauchen `manufacturer_reference`, SPS-Kanäle eine Karte mit Adresse (`link_plc_io`). Rückgabewert 3 = Fehler gefunden.
 
 - 20.11.2026, Einkaufsliste: Für Einkauf/ERP `--export-purchase <plan> liste.xlsx --erp` (oder Menü Projekt >
   *Einkaufsliste exportieren…*). Damit sie taugt, am Gerät `manufacturer`, `manufacturer_reference`, `description`

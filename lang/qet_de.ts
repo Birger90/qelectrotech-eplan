@@ -2943,6 +2943,22 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
         <translation>Hilfskontakte auslassen</translation>
     </message>
     <message>
+        <source>All findings</source>
+        <translation>Alle Befunde</translation>
+    </message>
+    <message>
+        <source>Errors and warnings</source>
+        <translation>Fehler und Warnungen</translation>
+    </message>
+    <message>
+        <source>Errors only</source>
+        <translation>Nur Fehler</translation>
+    </message>
+    <message>
+        <source>Which findings the list shows</source>
+        <translation>Welche Befunde die Liste zeigt</translation>
+    </message>
+    <message>
         <source>Finding</source>
         <translation>Befund</translation>
     </message>
@@ -2986,14 +3002,39 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
     </message>
     <message>
         <source>%1 (%2)</source>
-        <extracomment>%1 is the check, %2 how many findings it has</extracomment>
+        <extracomment>%1 is the check, %2 how many findings it has
+----------
+%1 is the finding, %2 its severity, %3 EPLAN&apos;s number of the same message</extracomment>
         <translation>%1 (%2)</translation>
     </message>
+    <message>
+        <source>%1 (%2, EPLAN %3)</source>
+        <translation>%1 (%2, EPLAN %3)</translation>
+    </message>
+    <message>
+        <source>%1, %2, %3. Double-click a finding to show it; run the checks again after a change.</source>
+        <extracomment>%1 counts the errors, %2 the warnings, %3 the notes</extracomment>
+        <translation>%1, %2, %3. Doppelklick zeigt einen Befund; nach einer Änderung erneut prüfen.</translation>
+    </message>
     <message numerus="yes">
-        <source>%n finding(s). Run the checks again after a change.</source>
+        <source>%n error(s)</source>
         <translation>
-            <numerusform>%n Befund(e). Nach einer Änderung die Prüfungen erneut ausführen.</numerusform>
-            <numerusform>%n Befund(e). Nach einer Änderung die Prüfungen erneut ausführen.</numerusform>
+            <numerusform>%n Fehler</numerusform>
+            <numerusform>%n Fehler</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n warning(s)</source>
+        <translation>
+            <numerusform>%n Warnung</numerusform>
+            <numerusform>%n Warnungen</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n note(s)</source>
+        <translation>
+            <numerusform>%n Hinweis</numerusform>
+            <numerusform>%n Hinweise</numerusform>
         </translation>
     </message>
     <message>
@@ -16056,192 +16097,6 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
     </message>
 </context>
 <context>
-    <name>PlanCheck</name>
-    <message>
-        <source>Duplicate device labels</source>
-        <translation>Doppelte Gerätekennzeichen</translation>
-    </message>
-    <message>
-        <source>Duplicate wire numbers</source>
-        <translation>Doppelte Leiternummern</translation>
-    </message>
-    <message>
-        <source>Potentials with wires of different types</source>
-        <translation>Potenziale mit Leitungen verschiedener Typen</translation>
-    </message>
-    <message>
-        <source>Contacts without their coil or main function</source>
-        <translation>Kontakte ohne Spule bzw. Hauptfunktion</translation>
-    </message>
-    <message>
-        <source>Folio reports without their partner</source>
-        <translation>Abbruchstellen ohne Gegenstück</translation>
-    </message>
-    <message>
-        <source>PLC channels without an address</source>
-        <translation>SPS-Kanäle ohne Adresse</translation>
-    </message>
-    <message>
-        <source>Cables without a target</source>
-        <translation>Kabel ohne Ziel</translation>
-    </message>
-    <message>
-        <source>Terminals without a terminal strip</source>
-        <translation>Klemmen ohne Klemmleiste</translation>
-    </message>
-    <message>
-        <source>Devices without a part</source>
-        <translation>Geräte ohne Artikel</translation>
-    </message>
-    <message>
-        <source>Devices without a label</source>
-        <translation>Geräte ohne Kennzeichen</translation>
-    </message>
-    <message>
-        <source>Unconnected terminals</source>
-        <translation>Offene Anschlüsse</translation>
-    </message>
-    <message>
-        <source>Open fluid ports</source>
-        <translation>Offene Fluidanschlüsse</translation>
-    </message>
-    <message>
-        <source>Solenoid valves without their coil</source>
-        <translation>Magnetventile ohne Spule</translation>
-    </message>
-    <message>
-        <source>Coils without any contact</source>
-        <translation>Spulen ohne Kontakt</translation>
-    </message>
-    <message>
-        <source>Devices not drawn as their device type</source>
-        <translation>Geräte, die nicht wie ihr Gerätetyp gezeichnet sind</translation>
-    </message>
-    <message>
-        <source>Cabinet layout</source>
-        <translation>Schaltschrankaufbau</translation>
-    </message>
-    <message>
-        <source>(no label)</source>
-        <translation>(ohne Kennzeichen)</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n terminal(s) in no terminal strip: the terminal diagram leaves them out</source>
-        <translation>
-            <numerusform>%n Klemme in keiner Klemmleiste: der Klemmenplan lässt sie aus</numerusform>
-            <numerusform>%n Klemmen in keiner Klemmleiste: der Klemmenplan lässt sie aus</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>One potential with wires of different types: %1</source>
-        <translation>Ein Potenzial mit Leitungen verschiedener Typen: %1</translation>
-    </message>
-    <message>
-        <source>Error</source>
-        <translation>Fehler</translation>
-    </message>
-    <message>
-        <source>Warning</source>
-        <translation>Warnung</translation>
-    </message>
-    <message>
-        <source>Note</source>
-        <translation>Hinweis</translation>
-    </message>
-</context>
-<context>
-    <name>PlanCheckDock</name>
-    <message>
-        <source>Check plan</source>
-        <translation>Plan prüfen</translation>
-    </message>
-    <message>
-        <source>All findings</source>
-        <translation>Alle Meldungen</translation>
-    </message>
-    <message>
-        <source>Errors and warnings</source>
-        <translation>Fehler und Warnungen</translation>
-    </message>
-    <message>
-        <source>Errors only</source>
-        <translation>Nur Fehler</translation>
-    </message>
-    <message>
-        <source>Which findings the list shows</source>
-        <translation>Welche Meldungen die Liste zeigt</translation>
-    </message>
-    <message>
-        <source>Check again</source>
-        <translation>Erneut prüfen</translation>
-    </message>
-    <message>
-        <source>Severity</source>
-        <translation>Schwere</translation>
-    </message>
-    <message>
-        <source>Folio</source>
-        <translation>Blatt</translation>
-    </message>
-    <message>
-        <source>Label</source>
-        <translation>Kennzeichen</translation>
-    </message>
-    <message>
-        <source>Message</source>
-        <translation>Meldung</translation>
-    </message>
-    <message>
-        <source>No.</source>
-        <translation>Nr.</translation>
-    </message>
-    <message>
-        <source>Click a finding to open its folio and select what it is about</source>
-        <translation>Meldung anklicken: das Blatt öffnet sich und das Betroffene wird markiert</translation>
-    </message>
-    <message>
-        <source>No project open.</source>
-        <translation>Kein Projekt geöffnet.</translation>
-    </message>
-    <message>
-        <source>Number of the same message in EPLAN</source>
-        <translation>Nummer derselben Meldung in EPLAN</translation>
-    </message>
-    <message>
-        <source>No findings: the plan is fine.</source>
-        <translation>Keine Meldungen: der Plan ist in Ordnung.</translation>
-    </message>
-    <message>
-        <source>%1, %2, %3. Click a finding to show it.</source>
-        <translation>%1, %2, %3. Meldung anklicken, um sie zu zeigen.</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n error(s)</source>
-        <translation>
-            <numerusform>%n Fehler</numerusform>
-            <numerusform>%n Fehler</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n warning(s)</source>
-        <translation>
-            <numerusform>%n Warnung</numerusform>
-            <numerusform>%n Warnungen</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n note(s)</source>
-        <translation>
-            <numerusform>%n Hinweis</numerusform>
-            <numerusform>%n Hinweise</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>This finding concerns the whole project, there is no folio to show.</source>
-        <translation>Diese Meldung betrifft das ganze Projekt, es gibt kein Blatt zu zeigen.</translation>
-    </message>
-</context>
-<context>
     <name>PlcLinkWidget</name>
     <message>
         <source>This element is already linked</source>
@@ -17362,8 +17217,189 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
         </translation>
     </message>
     <message>
+        <source>Folio report without its partner: it leads nowhere</source>
+        <translation>Abbruchstelle ohne Gegenstück: sie führt nirgendwohin</translation>
+    </message>
+    <message>
+        <source>Folio report connected to nothing</source>
+        <translation>Abbruchstelle ohne Ziel: mit nichts verbunden</translation>
+    </message>
+    <message>
+        <source>Terminal not connected on both sides: %1 open</source>
+        <translation>Offener Anschluss an Klemme: %1 nicht verbunden</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n unconnected terminal(s): %1</source>
+        <translation>
+            <numerusform>%n nicht verbundener Anschluss: %1</numerusform>
+            <numerusform>%n nicht verbundene Anschlüsse: %1</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n open fluid port(s) without line, silencer or plug: %1</source>
+        <translation>
+            <numerusform>%n offener Fluidanschluss ohne Leitung, Schalldämpfer oder Stopfen: %1</numerusform>
+            <numerusform>%n offene Fluidanschlüsse ohne Leitung, Schalldämpfer oder Stopfen: %1</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n solenoid(s) without a coil</source>
+        <translation>
+            <numerusform>%n Magnet ohne Spule</numerusform>
+            <numerusform>%n Magnete ohne Spule</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Valve coil linked to no valve</source>
+        <translation>Ventilspule mit keinem Ventil verknüpft</translation>
+    </message>
+    <message>
+        <source>PLC channel assigned to no PLC card, so it has no address</source>
+        <translation>SPS-Kanal keiner SPS-Karte zugeordnet, daher ohne Adresse</translation>
+    </message>
+    <message>
+        <source>Contact without its coil or main function</source>
+        <translation>Kontakt ohne Spule bzw. Hauptfunktion</translation>
+    </message>
+    <message>
+        <source>PLC channel linked to %1 but to none of its channels</source>
+        <translation>SPS-Kanal mit %1 verknüpft, aber mit keinem seiner Kanäle</translation>
+    </message>
+    <message>
+        <source>PLC channel without an address (channel %1 of %2)</source>
+        <translation>SPS-Kanal ohne Adresse (Kanal %1 von %2)</translation>
+    </message>
+    <message>
+        <source>Terminal without a part number: the bill of materials leaves it out</source>
+        <translation>Klemme ohne Artikelnummer: die Stückliste lässt sie aus</translation>
+    </message>
+    <message>
+        <source>Device without a label: its contacts cannot point to it</source>
+        <translation>Gerät ohne Kennzeichen: seine Kontakte können nicht darauf verweisen</translation>
+    </message>
+    <message>
+        <source>Coil without any contact</source>
+        <translation>Spule ohne Kontakt</translation>
+    </message>
+    <message>
+        <source>Channel %1 of the PLC card is used but has no address</source>
+        <translation>Kanal %1 der SPS-Karte ist belegt, hat aber keine Adresse</translation>
+    </message>
+    <message>
+        <source>Device without a part number: the bill of materials shows it without one</source>
+        <translation>Gerät ohne Artikelnummer: die Stückliste zeigt es ohne Artikel</translation>
+    </message>
+    <message>
+        <source>Cable without a label</source>
+        <translation>Kabel ohne Kennzeichen</translation>
+    </message>
+    <message numerus="yes">
+        <source>Cable without a target: none of its %n core(s) is on a wire</source>
+        <translation>
+            <numerusform>Kabel ohne Ziel: seine %n Ader liegt auf keiner Leitung</numerusform>
+            <numerusform>Kabel ohne Ziel: keine seiner %n Adern liegt auf einer Leitung</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Core(s) %1 lead to a wire that no longer exists</source>
+        <translation>Ader(n) %1 führen zu einer Leitung, die es nicht mehr gibt</translation>
+    </message>
+    <message>
+        <source>Cable target without a label: core(s) %1 end at a symbol without a label</source>
+        <translation>Kabelziel ohne Kennzeichen: Ader(n) %1 enden an einem Symbol ohne Kennzeichen</translation>
+    </message>
+    <message>
+        <source>(no label)</source>
+        <translation>(ohne Kennzeichen)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n terminal(s) in no terminal strip: the terminal diagram leaves them out</source>
+        <translation>
+            <numerusform>%n Klemme in keiner Klemmleiste: der Klemmenplan lässt sie aus</numerusform>
+            <numerusform>%n Klemmen in keiner Klemmleiste: der Klemmenplan lässt sie aus</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Wire</source>
+        <translation>Leitung</translation>
+    </message>
+    <message>
+        <source>Wire %1</source>
+        <translation>Leitung %1</translation>
+    </message>
+    <message>
+        <source>Contacts, coils and folio reports without their partner</source>
+        <translation>Kontakte, Spulen und Abbruchstellen ohne Gegenstück</translation>
+    </message>
+    <message>
+        <source>PLC channels without an address</source>
+        <translation>SPS-Kanäle ohne Adresse</translation>
+    </message>
+    <message>
+        <source>Cables without a target</source>
+        <translation>Kabel ohne Ziel</translation>
+    </message>
+    <message>
+        <source>Terminals without a terminal strip</source>
+        <translation>Klemmen ohne Klemmleiste</translation>
+    </message>
+    <message>
+        <source>Devices without a label or part</source>
+        <translation>Geräte ohne Kennzeichen oder Artikel</translation>
+    </message>
+    <message>
+        <source>Unconnected terminals</source>
+        <translation>Offene Anschlüsse</translation>
+    </message>
+    <message>
+        <source>Cabinet layout</source>
+        <translation>Schaltschrankaufbau</translation>
+    </message>
+    <message>
+        <source>Contacts linked to no coil or main function, coils without any contact, solenoid valves without their coil and folio reports without their partner (EPLAN 007005, 007009, 011002).</source>
+        <translation>Kontakte ohne verknüpfte Spule bzw. Hauptfunktion, Spulen ohne Kontakt, Magnetventile ohne Spule und Abbruchstellen ohne Gegenstück (EPLAN 007005, 007009, 011002).</translation>
+    </message>
+    <message>
+        <source>PLC channels assigned to no PLC card or to a channel without an address (EPLAN 004023, 004027).</source>
+        <translation>SPS-Kanäle, die keiner SPS-Karte oder einem Kanal ohne Adresse zugeordnet sind (EPLAN 004023, 004027).</translation>
+    </message>
+    <message>
+        <source>Cables without a label, without cores on a wire, with cores on a wire that no longer exists or ending at a symbol without a label (EPLAN 003005).</source>
+        <translation>Kabel ohne Kennzeichen, ohne Ader auf einer Leitung, mit Adern auf einer gelöschten Leitung oder mit Ende an einem Symbol ohne Kennzeichen (EPLAN 003005).</translation>
+    </message>
+    <message>
+        <source>Terminals which are in no terminal strip: the terminal diagram leaves them out (EPLAN 001010).</source>
+        <translation>Klemmen, die in keiner Klemmleiste stehen: der Klemmenplan lässt sie aus (EPLAN 001010).</translation>
+    </message>
+    <message>
+        <source>Devices without a label, and devices without a part number, which the bill of materials shows without one (EPLAN 017001, 007017).</source>
+        <translation>Geräte ohne Kennzeichen und Geräte ohne Artikelnummer, die die Stückliste ohne Artikel zeigt (EPLAN 017001, 007017).</translation>
+    </message>
+    <message>
+        <source>Terminals and fluid ports left open on a symbol that has wires (EPLAN 005026, 005053). A symbol with no wire at all is listed under Symbols with no wire.</source>
+        <translation>Offene Anschlüsse und Fluidanschlüsse an einem Symbol mit Leitungen (EPLAN 005026, 005053). Ein Symbol ganz ohne Leitung steht unter „Symbole ohne Leitung“.</translation>
+    </message>
+    <message>
+        <source>The warnings of the cabinet layouts: devices outside their mounting surface, overlapping or without a size.</source>
+        <translation>Die Warnungen der Schaltschrankaufbauten: Geräte außerhalb ihrer Montagefläche, überlappend oder ohne Maße.</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>Fehler</translation>
+    </message>
+    <message>
+        <source>Warning</source>
+        <translation>Warnung</translation>
+    </message>
+    <message>
+        <source>Note</source>
+        <translation>Hinweis</translation>
+    </message>
+    <message>
         <source>%1: %2</source>
-        <extracomment>%1 is the problem, %2 the report, junction or symbol terminal
+        <extracomment>%1 is the label of the device, cable or strip, %2 what is wrong with it
+----------
+%1 is the problem, %2 the report, junction or symbol terminal
 ----------
 %1 is the symbol&apos;s label, %2 its name, such as &quot;QF1: Circuit breaker&quot;</extracomment>
         <translation>%1: %2</translation>
@@ -18997,19 +19033,6 @@ Verfügbare Optionen:
 </context>
 <context>
     <name>QETDiagramEditor</name>
-    <message>
-        <source>Check plan</source>
-        <translation>Plan prüfen</translation>
-    </message>
-    <message>
-        <source>Check plan: open terminals, duplicate labels, devices without a part, terminals without a strip, contacts without a coil, cables and PLC channels, in one list. A click on a finding shows it.</source>
-        <translation>Plan prüfen: offene Anschlüsse, doppelte Kennzeichen, Geräte ohne Artikel, Klemmen ohne Klemmleiste, Kontakte ohne Spule, Kabel und SPS-Kanäle in einer Liste. Ein Klick auf eine Meldung zeigt sie.</translation>
-    </message>
-    <message>
-        <source>Runs every check of the project and lists errors, warnings and notes</source>
-        <comment>status bar tip</comment>
-        <translation>Führt alle Prüfungen des Projekts aus und listet Fehler, Warnungen und Hinweise</translation>
-    </message>
     <message>
         <source>Show or hide the function templates: circuits with placeholders to place in one go</source>
         <translation>Funktionsvorlagen ein- oder ausblenden: Schaltungsteile mit Platzhaltern, in einem Schritt eingefügt</translation>
@@ -21669,6 +21692,10 @@ Hier ist das Projekt ab sofort nur zum Lesen offen. Eigene Änderungen sichern S
     <message>
         <source>Show folder</source>
         <translation>Ordner zeigen</translation>
+    </message>
+    <message>
+        <source>Check project: duplicate labels, open terminals, devices without a part, terminals without a strip, contacts without a coil, cables, PLC channels and more, in one list with errors, warnings and notes. Double-click a finding to show it.</source>
+        <translation>Projekt prüfen: doppelte Kennzeichen, offene Anschlüsse, Geräte ohne Artikel, Klemmen ohne Klemmleiste, Kontakte ohne Spule, Kabel, SPS-Kanäle und mehr in einer Liste mit Fehlern, Warnungen und Hinweisen. Doppelklick zeigt einen Befund.</translation>
     </message>
 </context>
 <context>

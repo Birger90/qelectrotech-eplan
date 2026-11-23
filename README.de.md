@@ -80,6 +80,14 @@ In QET und im exportierten PDF:
 - `tools/kabelkatalog/kabelkatalog_eplan.py` erzeugt solche Kataloge aus den frei erhältlichen EPLAN-Artikeldaten der
   Hersteller (z. B. igus chainflex, LAPP): Adern mit Farben, Querschnitt, Außendurchmesser, Spannung, Artikelnummer.
 
+## Beschriftung
+
+- Menü Projekt > *Beschriftung exportieren…*: Draht-, Klemmen-, Geräte- und Kabelschilder als Datei für Phoenix
+  Contact MARKING system / PROJECT complete, Weidmüller M-Print PRO oder WAGO Smart Script, oder als neutrale CSV;
+  Auswahl nach Art, Blättern und Anlage/Ort. Auch per `--export-marking` und `qet.exportMarking()`/`qet.markings()`.
+  Kein Hersteller veröffentlicht ein festes Importschema; jede Datei ist eine CSV nach dem, was der jeweilige Import
+  belegt liest. Spalten und Belege in [docs/beschriftung-export.md](docs/beschriftung-export.md).
+
 ## Schaltschrankaufbau und Tafelfertigung
 
 Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem normalen Blatt:

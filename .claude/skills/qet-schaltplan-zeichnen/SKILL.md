@@ -230,6 +230,12 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
     gehen aufs Blatt. Blattskript-Muster: `blatt_auto.py <PDF-Seite>` im Projektordner (liest Titel,
     =Anlage, +Ort, Blattnummer aus dem Schriftfeld, zeichnet, erzeugt den Vergleich). Danach Vergleich ansehen
     und nur Auffälliges von Hand nacharbeiten.
+- Beschriftung (Fork, Unveröffentlicht): Schilder für Phoenix/Weidmüller/WAGO kommen aus den Plandaten. Damit sie
+  stimmen: Drahtnummern setzen (Drähte ohne Nummer bekommen kein Schild), Klemmen in eine `terminal_strip` legen
+  und die Klemmenbeschriftung als `X1:3` oder `3` führen (das Schild zeigt `3`), Artikelnummer an der Klemme
+  (wird die Materialreferenz), Kabel als echtes Kabel mit Bezeichnung. Export: `--export-marking <qet> <csv>
+  --format phoenix|weidmueller|wago|neutral [--kinds …] [--folios N-M] [--plant/--location]` oder
+  `qet.exportMarking()`. Spalten und Belege: `docs/beschriftung-export.md`.
 
 ## Data instead of hand-typed text: PLC channels and contacts like EPLAN
 

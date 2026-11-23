@@ -440,6 +440,12 @@ class QetScriptApi : public QObject
 		Q_INVOKABLE bool exportBom(const QString &output, bool noSlaves = false,
 								   bool noJunctions = false);
 		Q_INVOKABLE bool exportCableList(const QString &output);
+			/// Markers for Phoenix Contact, Weidmüller, WAGO marking software
+			/// (or neutral CSV); returns the number written, -1 on failure
+		Q_INVOKABLE int exportMarking(const QString &output,
+									  const QString &format = QStringLiteral("phoenix"),
+									  const QString &optionsJson = QString());
+		Q_INVOKABLE QString markings(const QString &optionsJson = QString()) const;
 		Q_INVOKABLE bool exportWiring(const QString &output);
 		Q_INVOKABLE bool exportNets(const QString &output);
 		Q_INVOKABLE bool exportLinks(const QString &output);

@@ -81,6 +81,23 @@ Einfache Revisionsverwaltung nach EPLAN-Vorbild (Skill `eplan-wissen`, `revision
 - CLI `--close-revision`, `--revisions`, `--revision-marks`, `--compare-revisions`; Skript-API `closeRevision`,
   `revisions`, `revisionChanges`, `nextRevisionIndex`, `revisionMarks`, `setRevisionMarks`, `exportRevisionPdf`.
 
+## Unveröffentlicht – Beschriftungsexport
+
+- Menü Projekt > *Beschriftung exportieren…*: Draht-, Klemmen-, Geräte- und Kabelschilder für die
+  Beschriftungsprogramme Phoenix Contact MARKING system / PROJECT complete, Weidmüller M-Print PRO und WAGO Smart
+  Script, dazu eine neutrale CSV mit allen Spalten. Auswahl nach Art, Blattbereich und Anlage/Ort; vollständiges
+  oder kurzes Kennzeichen; ein Schild je Draht-/Kabelende oder eines. Die Zahl der Schilder steht im Dialog, bevor
+  die Datei geschrieben wird.
+- Die Daten kommen aus den Datenbank-Sichten `qet_wires`, `qet_terminals`, `qet_device_list` und `qet_cables`
+  (Drahtnummern, Klemmleisten, Kennzeichen, Kabel), also aus denselben Zeilen wie Klemmenplan und Kabelliste.
+- Keiner der drei Hersteller veröffentlicht ein festes Spaltenschema. Jede Datei ist deshalb eine beschriebene CSV
+  nach dem belegten Import: bei Phoenix eine Spalte „Material“ für das Material mapping (bei Klemmen die
+  Artikelnummer); bei Weidmüller der VK-Import mit Spalte „Referenz“, die nie leer ist, und „Anzahl“, als
+  Windows-Text; bei WAGO eine Zeile je Schild für die Vorlagenzuordnung. Spalten und Belegstellen stehen in
+  `docs/beschriftung-export.md`.
+- CLI `--export-marking <projekt> <datei> [--format …] [--kinds …] [--folios N-M] [--plant …] [--location …]
+  [--short] [--one-end]`, Skript-API `qet.exportMarking(datei, format, optionen)` und `qet.markings(optionen)`.
+
 ## 1.48.0 – 20.11.2026
 
 Die letzten FluidSIM-Bauteile ohne Modell, in FluidSIM 6.3 selbst untersucht:

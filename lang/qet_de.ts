@@ -12937,6 +12937,158 @@ Mit dem MCP-Server qet: Lies es mit qet_recording_read, schreibe ein Skript, das
     </message>
 </context>
 <context>
+    <name>MarkingExport</name>
+    <message>
+        <source>No project</source>
+        <translation>Kein Projekt</translation>
+    </message>
+    <message>
+        <source>Phoenix Contact MARKING system / PROJECT complete</source>
+        <translation>Phoenix Contact MARKING system / PROJECT complete</translation>
+    </message>
+    <message>
+        <source>Weidmüller M-Print PRO</source>
+        <translation>Weidmüller M-Print PRO</translation>
+    </message>
+    <message>
+        <source>WAGO Smart Script</source>
+        <translation>WAGO Smart Script</translation>
+    </message>
+    <message>
+        <source>Neutral CSV (all columns)</source>
+        <translation>Neutrale CSV (alle Spalten)</translation>
+    </message>
+    <message>
+        <source>CSV files (*.csv)</source>
+        <translation>CSV-Dateien (*.csv)</translation>
+    </message>
+    <message>
+        <source>Wire markers</source>
+        <translation>Drahtschilder</translation>
+    </message>
+    <message>
+        <source>Terminal markers</source>
+        <translation>Klemmenschilder</translation>
+    </message>
+    <message>
+        <source>Cable markers</source>
+        <translation>Kabelschilder</translation>
+    </message>
+    <message>
+        <source>Device markers</source>
+        <translation>Geräteschilder</translation>
+    </message>
+</context>
+<context>
+    <name>MarkingExportDialog</name>
+    <message>
+        <source>Export markers</source>
+        <translation>Beschriftung exportieren</translation>
+    </message>
+    <message>
+        <source>Marking software:</source>
+        <translation>Beschriftungsprogramm:</translation>
+    </message>
+    <message>
+        <source>Markers</source>
+        <translation>Schilder</translation>
+    </message>
+    <message>
+        <source>Wires</source>
+        <translation>Drähte</translation>
+    </message>
+    <message>
+        <source>Terminals</source>
+        <translation>Klemmen</translation>
+    </message>
+    <message>
+        <source>Devices</source>
+        <translation>Geräte</translation>
+    </message>
+    <message>
+        <source>Cables</source>
+        <translation>Kabel</translation>
+    </message>
+    <message>
+        <source>Range</source>
+        <translation>Bereich</translation>
+    </message>
+    <message>
+        <source>to</source>
+        <translation>bis</translation>
+    </message>
+    <message>
+        <source>Folios:</source>
+        <translation>Blätter:</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>Alle</translation>
+    </message>
+    <message>
+        <source>Plant (=):</source>
+        <translation>Anlage (=):</translation>
+    </message>
+    <message>
+        <source>Location (+):</source>
+        <translation>Ort (+):</translation>
+    </message>
+    <message>
+        <source>Full reference designation (=plant+location-device)</source>
+        <translation>Vollständiges Kennzeichen (=Anlage+Ort-Gerät)</translation>
+    </message>
+    <message>
+        <source>A marker at each end of wires and cables</source>
+        <translation>Je Draht- und Kabelende ein Schild</translation>
+    </message>
+    <message>
+        <source>Export...</source>
+        <translation>Exportieren…</translation>
+    </message>
+    <message>
+        <source>In PROJECT complete: File &gt; Data exchange, assign the column &quot;Material&quot; once in the material mapping.</source>
+        <translation>In PROJECT complete: Datei &gt; Datenaustausch, die Spalte „Material“ einmal im Material-Mapping zuordnen.</translation>
+    </message>
+    <message>
+        <source>In M-Print PRO: File &gt; Import, filter &quot;VK Text Format&quot;, separator semicolon; reference column &quot;Referenz&quot;, quantity column &quot;Anzahl&quot;.</source>
+        <translation>In M-Print PRO: Datei &gt; Importieren, Filter „VK Text Format“, Trennzeichen Semikolon; Referenzspalte „Referenz“, Anzahlspalte „Anzahl“.</translation>
+    </message>
+    <message>
+        <source>In Smart Script: import with a template and assign the column &quot;Beschriftung&quot;; choose the marker type there.</source>
+        <translation>In Smart Script: mit einer Vorlage importieren und die Spalte „Beschriftung“ zuordnen; den Markierertyp dort wählen.</translation>
+    </message>
+    <message>
+        <source>Every column, for any other marking software.</source>
+        <translation>Alle Spalten, für jedes andere Beschriftungsprogramm.</translation>
+    </message>
+    <message>
+        <source>Choose at least one kind of marker.</source>
+        <translation>Mindestens eine Schilderart wählen.</translation>
+    </message>
+    <message>
+        <source>project</source>
+        <translation>projekt</translation>
+    </message>
+    <message>
+        <source>The file could not be written: %1</source>
+        <translation>Die Datei konnte nicht geschrieben werden: %1</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n marker(s) will be exported.</source>
+        <translation>
+            <numerusform>%n Schild wird exportiert.</numerusform>
+            <numerusform>%n Schilder werden exportiert.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n marker(s) written to %1.</source>
+        <translation>
+            <numerusform>%n Schild nach %1 geschrieben.</numerusform>
+            <numerusform>%n Schilder nach %1 geschrieben.</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>MasterPropertiesWidget</name>
     <message>
         <source>Form</source>
@@ -19417,6 +19569,14 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     <message>
         <source>Export the cable list to CSV format</source>
         <translation>Kabelliste als CSV exportieren</translation>
+    </message>
+    <message>
+        <source>Export markers...</source>
+        <translation>Beschriftung exportieren…</translation>
+    </message>
+    <message>
+        <source>Wire, terminal, device and cable markers for Phoenix Contact, Weidmüller or WAGO marking software</source>
+        <translation>Draht-, Klemmen-, Geräte- und Kabelschilder für die Beschriftungsprogramme von Phoenix Contact, Weidmüller oder WAGO</translation>
     </message>
     <message>
         <source>Export the list of names of wires</source>

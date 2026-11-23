@@ -20,6 +20,7 @@
 #include "qetresult.h"
 #include "projectlock.h"
 #include "bomexport.h"
+#include "marking/markingexport.h"
 
 #include "bordertitleblock.h"
 #include "conductornumexport.h"
@@ -107,6 +108,7 @@ const QHash<QString, QString> &exportFlags()
 		{"--export-cables", "cables"},
 		{"--export-wires", "wires"},
 		{"--export-bom", "bom"},
+		{"--export-marking", "marking"},
 		{"--export-wiring", "wiring"},
 		{"--export-nets", "nets"},
 		{"--export-links", "links"},
@@ -492,6 +494,79 @@ int exportBom(QETProject &project, const QString &output,
 		return 1;
 	}
 	out << "Exported " << rows << " component(s) -> " << output << "\n";
+	return 0;
+}
+
+/// Markers for the marking software of the terminal makers, the same file
+/// Project > Export markers... writes. @p rest: the project, the output and
+/// the options, in any order after the two files.
+int exportMarking(const QStringList &rest)
+{
+	QStringList positional;
+	MarkingExport::Options o;
+	const QString usage = QStringLiteral(
+		"Usage: qelectrotech --export-marking <project.qet> <output.csv> "
+		"[--format phoenix|weidmueller|wago|neutral] "
+		"[--kinds wires,terminals,devices,cables] [--folios N[-M]] "
+		"[--plant P] [--location L] [--short] [--one-end]\n");
+	for (int i = 0; i < rest.size(); ++i) {
+		const QString &a = rest.at(i);
+		const auto value = [&]() { return i + 1 < rest.size() ? rest.at(++i) : QString(); };
+		if (a == QLatin1String("--format")) {
+			if (!MarkingExport::formatFromKey(value(), &o.format)) {
+				err << "Unknown --format; expected phoenix, weidmueller, wago or neutral.\n";
+				return 2;
+			}
+		} else if (a == QLatin1String("--kinds")) {
+			if (!MarkingExport::kindsFromKeys(value(), &o.kinds)) {
+				err << "Unknown --kinds; expected wires, terminals, devices, cables or all.\n";
+				return 2;
+			}
+		} else if (a == QLatin1String("--folios")) {
+			const QStringList range = value().split(QLatin1Char('-'));
+			bool ok_from = false, ok_to = true;
+			o.folio_from = range.value(0).toInt(&ok_from);
+			o.folio_to = range.size() > 1 ? range.value(1).toInt(&ok_to) : o.folio_from;
+			if (!ok_from || !ok_to || o.folio_from < 1 || o.folio_to < o.folio_from) {
+				err << "--folios takes a folio number or a range such as 2-5.\n";
+				return 2;
+			}
+		} else if (a == QLatin1String("--plant")) {
+			o.plant = value();
+		} else if (a == QLatin1String("--location")) {
+			o.location = value();
+		} else if (a == QLatin1String("--short")) {
+			o.full_designation = false;
+		} else if (a == QLatin1String("--one-end")) {
+			o.both_ends = false;
+		} else if (a.startsWith(QLatin1String("--"))) {
+			err << "Unknown option " << a << "\n" << usage;
+			return 2;
+		} else {
+			positional << a;
+		}
+	}
+	if (positional.size() < 2) {
+		err << usage;
+		return 2;
+	}
+	if (!QFileInfo::exists(positional.at(0))) {
+		err << "Project not found: " << positional.at(0) << "\n";
+		return 2;
+	}
+	QETProject project(positional.at(0));
+	if (project.state() != QETProject::Ok) {
+		err << "Failed to open project: " << positional.at(0) << "\n";
+		return 1;
+	}
+	QString error;
+	int markers = 0;
+	if (!MarkingExport::exportFile(&project, positional.at(1), o, &error, &markers)) {
+		err << "Marking export failed: " << error << "\n";
+		return 1;
+	}
+	out << "Exported " << markers << " marker(s) ("
+		<< MarkingExport::formatKey(o.format) << ") -> " << positional.at(1) << "\n";
 	return 0;
 }
 
@@ -2248,6 +2323,10 @@ int run(const QStringList &args)
 	// --compare-revisions opens two projects
 	if (format == "comparerevisions")
 		return compareRevisions(rest, json);
+	// --export-marking takes options with values, read before the
+	// project is opened
+	if (format == "marking")
+		return exportMarking(rest);
 
 	const QString input = rest.value(0);
 	if (input.isEmpty()) {

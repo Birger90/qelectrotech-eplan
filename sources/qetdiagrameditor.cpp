@@ -106,6 +106,7 @@
 #include "textgrid.h"
 #include "shortcutmanager.h"
 #include "cablelist/cableexportdialog.h"
+#include "marking/markingexportdialog.h"
 #include "ui/bomexportdialog.h"
 #include "ui/conductorcolortoolbutton.h"
 #include "ui/diagrambgcolorbutton.h"
@@ -1574,6 +1575,19 @@ void QETDiagramEditor::setUpActions()
 		dialog.exec();
 	});
 
+	//Markers for the marking software of the terminal makers
+	m_export_marking = new QAction(QET::Icons::DocumentSpreadsheet, tr("Export markers..."), this);
+	ShortcutManager::instance().registerAction(m_export_marking, "diagrameditor.export_marking", tr("Diagram editors"), QKeySequence());
+	m_export_marking->setStatusTip(tr("Wire, terminal, device and cable markers for Phoenix Contact, Weidmüller or WAGO marking software"));
+	connect(m_export_marking, &QAction::triggered, [this]() {
+		QETProject *project = this->currentProject();
+		if (!project) {
+			return;
+		}
+		MarkingExportDialog dialog(project, this);
+		dialog.exec();
+	});
+
 	//Export conductor num to csv
 	m_project_export_conductor_num = new QAction(QET::Icons::DocumentSpreadsheet, tr("Export the list of names of wires"), this);
 	ShortcutManager::instance().registerAction(m_project_export_conductor_num, "diagrameditor.export_conductor_names", tr("Diagram editors"), QKeySequence());
@@ -2657,6 +2671,7 @@ void QETDiagramEditor::setUpMenu()
 	menu_project -> addAction(m_csv_export);
 	menu_project -> addAction(m_cable_overview);
 	menu_project -> addAction(m_export_cable_list);
+	menu_project -> addAction(m_export_marking);
 	menu_project -> addAction(m_project_export_conductor_num);
 	menu_project -> addAction(m_project_export_wiring_list);
 	menu_project -> addAction(m_project_wiring_list_view);
@@ -4438,6 +4453,7 @@ void QETDiagramEditor::slot_updateActions()
 	m_cable_numbering             -> setEnabled(editable_project);
 	m_add_cable_list              -> setEnabled(editable_project);
 	m_export_cable_list           -> setEnabled(editable_project);
+	m_export_marking              -> setEnabled(opened_project);
 	m_cable_overview              -> setEnabled(editable_project);
 	if (auto *panel_menu = findChild<PanelMenu *>()) panel_menu->updateActions();
 	m_reload_element_drawings     -> setEnabled(opened_project);

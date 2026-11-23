@@ -33,6 +33,7 @@
 #include "../dataBase/qetdbfile.h"
 #include "../diagram.h"
 #include "../bomexport.h"
+#include "../marking/markingexport.h"
 #include "../cablelist/cablelistrows.h"
 #include "../cablelist/cablequerywidget.h"
 #include "../dataBase/ui/elementquerywidget.h"
@@ -855,6 +856,115 @@ bool QetScriptApi::exportCableList(const QString &output)
 		return false;
 	}
 	return true;
+}
+
+/**
+	@brief QetScriptApi::markingOptions
+	The options of the marking export from a script's JSON:
+	{"format": "phoenix"|"weidmueller"|"wago"|"neutral",
+	 "kinds": "wires,terminals,devices,cables" (or "all"),
+	 "folioFrom": 1, "folioTo": 3, "plant": "A1", "location": "S1",
+	 "fullDesignation": true, "bothEnds": true}; every key may be left out.
+	@return false, with the reason in @p error, for a key with a bad value
+*/
+static bool markingOptions(const QString &format, const QString &options_json,
+						   MarkingExport::Options *o, QString *error)
+{
+	if (!format.isEmpty() && !MarkingExport::formatFromKey(format, &o->format)) {
+		*error = QStringLiteral("unknown format '%1' (phoenix, weidmueller, wago, neutral)").arg(format);
+		return false;
+	}
+	if (options_json.trimmed().isEmpty()) return true;
+	QJsonParseError parse;
+	const QJsonObject j = QJsonDocument::fromJson(options_json.toUtf8(), &parse).object();
+	if (parse.error != QJsonParseError::NoError) {
+		*error = QStringLiteral("options are not JSON: %1").arg(parse.errorString());
+		return false;
+	}
+	if (j.contains(QLatin1String("format"))
+			&& !MarkingExport::formatFromKey(j.value(QLatin1String("format")).toString(), &o->format)) {
+		*error = QStringLiteral("unknown format");
+		return false;
+	}
+	if (j.contains(QLatin1String("kinds"))
+			&& !MarkingExport::kindsFromKeys(j.value(QLatin1String("kinds")).toString(), &o->kinds)) {
+		*error = QStringLiteral("unknown kinds (wires, terminals, devices, cables, all)");
+		return false;
+	}
+	o->folio_from = j.value(QLatin1String("folioFrom")).toInt(o->folio_from);
+	o->folio_to = j.value(QLatin1String("folioTo")).toInt(o->folio_to);
+	o->plant = j.value(QLatin1String("plant")).toString(o->plant);
+	o->location = j.value(QLatin1String("location")).toString(o->location);
+	o->full_designation = j.value(QLatin1String("fullDesignation")).toBool(o->full_designation);
+	o->both_ends = j.value(QLatin1String("bothEnds")).toBool(o->both_ends);
+	return true;
+}
+
+/**
+	@brief QetScriptApi::exportMarking
+	Write the markers of this project for a marking software to @p output:
+	the file Project > Export markers... writes (docs/beschriftung-export.md).
+	@param format phoenix, weidmueller, wago or neutral
+	@param optionsJson the choices, see markingOptions(); empty for all
+	@return the number of markers written, -1 when nothing was written
+*/
+int QetScriptApi::exportMarking(const QString &output, const QString &format,
+								const QString &optionsJson)
+{
+	if (!m_project) {
+		log(QStringLiteral("qet.exportMarking: no project"));
+		return -1;
+	}
+	MarkingExport::Options o;
+	QString error;
+	if (!markingOptions(format, optionsJson, &o, &error)) {
+		log(QStringLiteral("qet.exportMarking: %1").arg(error));
+		return -1;
+	}
+	int markers = 0;
+	if (!MarkingExport::exportFile(m_project, output, o, &error, &markers)) {
+		log(QStringLiteral("qet.exportMarking: %1").arg(error));
+		return -1;
+	}
+	return markers;
+}
+
+/**
+	@brief QetScriptApi::markings
+	The markers export Marking would write, as JSON: an array of
+	{kind, text, target, group, plant, location, folio, folioNumber,
+	 manufacturer, article, reference, count}, for a script to check or
+	print them its own way.
+*/
+QString QetScriptApi::markings(const QString &optionsJson) const
+{
+	MarkingExport::Options o;
+	QString error;
+	if (!m_project || !markingOptions(QString(), optionsJson, &o, &error)) {
+		return QStringLiteral("[]");
+	}
+	QJsonArray rows;
+	for (const MarkingExport::Item &i : MarkingExport::collect(m_project, o)) {
+		QJsonObject row;
+		row.insert(QStringLiteral("kind"), i.kind == MarkingExport::Wire ? QStringLiteral("wire")
+					   : i.kind == MarkingExport::Terminal ? (i.strip_marker ? QStringLiteral("strip")
+																			 : QStringLiteral("terminal"))
+					   : i.kind == MarkingExport::Cable ? QStringLiteral("cable")
+														: QStringLiteral("device"));
+		row.insert(QStringLiteral("text"), i.text);
+		row.insert(QStringLiteral("target"), i.target);
+		row.insert(QStringLiteral("group"), i.group);
+		row.insert(QStringLiteral("plant"), i.plant);
+		row.insert(QStringLiteral("location"), i.location);
+		row.insert(QStringLiteral("folio"), i.folio);
+		row.insert(QStringLiteral("folioNumber"), i.folio_number);
+		row.insert(QStringLiteral("manufacturer"), i.manufacturer);
+		row.insert(QStringLiteral("article"), i.article);
+		row.insert(QStringLiteral("reference"), MarkingExport::materialReference(i));
+		row.insert(QStringLiteral("count"), i.count);
+		rows.append(row);
+	}
+	return QString::fromUtf8(QJsonDocument(rows).toJson(QJsonDocument::Compact));
 }
 
 bool QetScriptApi::exportWiring(const QString &output)

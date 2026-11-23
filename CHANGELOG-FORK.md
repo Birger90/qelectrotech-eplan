@@ -3,7 +3,7 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
-## Unveröffentlicht – Upstream 20.11.2026
+## Unveröffentlicht – Upstream 20.11.2026 (nachgezogen bis 23.11.2026)
 
 Original-QElectroTech bis `64715e035` (20.11.2026) eingearbeitet, 32 Commits ohne Merges, ohne Textkonflikte:
 
@@ -15,6 +15,18 @@ Original-QElectroTech bis `64715e035` (20.11.2026) eingearbeitet, 32 Commits ohn
 - Gerätenavigator zeigt die freien Teile eines Geräts und platziert sie; Präfixdialog bearbeitet auch die
   `qet_labels.xml` der Firmensammlung; die automatische Leitungserzeugung bleibt im Projekt gespeichert (#1920);
   Eigenschaftsdialoge auf macOS verschiebbar.
+
+Danach bis `8d817fac8` (23.11.2026), 79 Commits ohne Merges: Prüfpanel, das alle Projektprüfungen auf einmal
+ausführt (#1878 B1), mit „Offene Leitungsenden“ und „Symbole ohne Leitung“; Projekt > Anlagen und Orte (mit
+Umbenennen); Projekt > Auswertungen mit Schrankplatzliste; Stecker als Kopf mit Pins, Pinplan und Gerätetyp;
+Klemmenleisten mit Art (Klemmenleiste, Stecker, Buchse); Hersteller und Bestellnummer an Kabeln; Fenster
+„Artikel suchen“, Abfrage von BMK und Artikel beim Platzieren; Strukturkasten-Namen als eigener Text;
+Ordnerbaum der Blätter; Seitenverweise mit Gegenstelle und wählbarer Verkettung; Kennzeichen-Anzeige einstellbar;
+Präfixdateien mit beliebiger Wurzel und Kurzpfaden; `elements` auf 661f5e9ce.
+Konflikte (alle „beides behalten“): `qet_compilation_vars.cmake` (Fluidprüfung + offene Leitungsenden),
+`cable.cpp` (Kabelziel `destination` des Fork + Hersteller/Bestellnummer), `qetdiagrameditor.{h,cpp}`
+(Assistent- und Simulationsfenster + Prüfpanel, Fluidprüfung + Leitungsenden-Prüfung im Menü Projekt);
+`qet_de.ts` aus Upstream übernommen, lupdate, 950 Texte aus der Fork-Fassung, 222 neue übersetzt.
 
 Anpassungen im Fork:
 

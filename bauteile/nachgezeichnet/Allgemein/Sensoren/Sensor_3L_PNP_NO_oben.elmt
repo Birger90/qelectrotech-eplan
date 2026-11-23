@@ -1,0 +1,31 @@
+<definition version="0.100.0" type="element" link_type="simple" width="80" height="60" hotspot_x="40" hotspot_y="35">
+    <uuid uuid="{aada363c-15a8-51cd-97c8-621ae5fa05a7}"/>
+    <names>
+        <name lang="de">Sensor 3-Leiter PNP Schliesser (Anschluesse oben)</name>
+        <name lang="en">Sensor 3-wire PNP NO (connections on top)</name>
+    </names>
+    <informations>Naeherungsschalter 3-Leiter: 1 = L+ (BN), 4 = Signal (BK), 3 = M (BU), alle Anschluesse oben, damit ein Kabel alle Adern auf einer Linie kreuzt.
+Author: QElectroTech-EPLAN fork. License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <rect x="-30" y="-20" width="60" height="40" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black"/>
+        <line x1="-20" y1="-30" x2="-20" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black"/>
+        <line x1="0" y1="-30" x2="0" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black"/>
+        <line x1="20" y1="-30" x2="20" y2="-20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black"/>
+        <line x1="-12" y1="0" x2="0" y2="-12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black"/>
+        <line x1="0" y1="-12" x2="12" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black"/>
+        <line x1="12" y1="0" x2="0" y2="12" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black"/>
+        <line x1="0" y1="12" x2="-12" y2="0" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black"/>
+        <text text="1" x="-27" y="-22" rotation="0" font="Liberation Sans,6,-1,5,50,0,0,0,0,0,Regular" color="#000000"/>
+        <text text="4" x="2" y="-22" rotation="0" font="Liberation Sans,6,-1,5,50,0,0,0,0,0,Regular" color="#000000"/>
+        <text text="3" x="22" y="-22" rotation="0" font="Liberation Sans,6,-1,5,50,0,0,0,0,0,Regular" color="#000000"/>
+        <text text="PNP" x="-27" y="17" rotation="0" font="Liberation Sans,6,-1,5,50,0,0,0,0,0,Regular" color="#000000"/>
+        <text text="NO" x="16" y="17" rotation="0" font="Liberation Sans,6,-1,5,50,0,0,0,0,0,Regular" color="#000000"/>
+        <dynamic_text x="34" y="-20" z="6" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{e5ef1ea4-5086-5aed-8bc6-340887e459c7}" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular">
+            <text></text>
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{09256d16-b056-560a-a580-b02307aaad2d}" name="1" x="-20" y="-30" orientation="n" type="Generic"/>
+        <terminal uuid="{e0d03106-e77c-5e4c-b5bc-d20d5dc052b0}" name="4" x="0" y="-30" orientation="n" type="Generic"/>
+        <terminal uuid="{e54e0dc1-d7d4-524e-93f8-619d5381bbbd}" name="3" x="20" y="-30" orientation="n" type="Generic"/>
+    </description>
+</definition>

@@ -490,6 +490,9 @@ if [ -d "${current_dir}/tools/simulation/referenz" ]; then
     mkdir -p "$BUNDLE/Contents/Resources/simulation"
     cp -R "${current_dir}/tools/simulation/referenz" "$BUNDLE/Contents/Resources/simulation/" || { echo "ERROR: cannot copy the simulation references"; exit 1; }
 fi
+if [ -d "${current_dir}/funktionsvorlagen" ]; then
+    cp -R "${current_dir}/funktionsvorlagen" "$BUNDLE/Contents/Resources/" || { echo "ERROR: cannot copy the function templates"; exit 1; }
+fi
 
 # The assistant's bridge (Claude) beside the MCP server it uses, and the
 # EPLAN project import (File > Import EPLAN project) with its page

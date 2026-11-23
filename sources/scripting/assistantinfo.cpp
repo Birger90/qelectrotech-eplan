@@ -18,6 +18,7 @@
 #include "assistantinfo.h"
 
 #include "qetscriptapi.h"
+#include "../functiontemplates/functiontemplate.h"
 #include "scriptlibrary.h"
 #include "macrorecorder.h"
 #include <qetapp.h>
@@ -103,6 +104,9 @@ void write()
 			{QStringLiteral("config"), QETApp::configDir()},
 			{QStringLiteral("scripts"), ScriptLibrary::folder()},
 			{QStringLiteral("recordings"), MacroRecorder::folder()},
+			{QStringLiteral("macros"), QETApp::userMacrosDir()},
+			{QStringLiteral("function_templates"), FunctionTemplate::userDirectory()},
+			{QStringLiteral("function_template_examples"), FunctionTemplate::examplesDirectory()},
 			{QStringLiteral("elements_common"), QETApp::commonElementsDir()},
 			{QStringLiteral("elements_company"), QETApp::companyElementsDir()},
 			{QStringLiteral("elements_custom"), QETApp::customElementsDir()},

@@ -130,6 +130,26 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
 - Variablen: `%title %author %date %plant %locmach %indexrev %folio %{folio-id}
   %{folio-total} %{previous-folio-num} %{next-folio-num} %{saveddate-eu} %projecttitle`.
 
+## Funktionsvorlagen (wiederkehrende Technik in einem Schritt)
+
+Ab dem Fork-Stand „Funktionsvorlagen“: Motorabgang, Sensor, Ventil usw. nicht Symbol für Symbol zeichnen, sondern als
+Funktionsvorlage einfügen – mit Artikeldaten, Klemmen, Kabel und Verknüpfung.
+- Liste: `qet.listTemplates()`, Einzelheiten (Parameter, Tabellen): `qet.templateInfo("Motorabgang DOL")`.
+- Einfügen: `qet.insertTemplate(folio, "Motorabgang DOL", {P_kW: "3", ADR: "%Q0.0"}, x, y)`; `folio = -1` legt ein
+  neues Blatt an, ohne `x, y` bleibt die gespeicherte Lage. MCP: `qet_edit`-Operation `insert_template`.
+  Kennzeichen (`kind label`), Klemmennummern (`kind terminal`) und Kabel (`kind cable`) nicht mitgeben: sie werden
+  auf die nächsten freien gesetzt. Die Antwort nennt `values` (alles, was eingesetzt wurde) und `notes`.
+- SPS-Kanäle der Vorlagen tragen `plc_address`; gibt es im Projekt ein SPS-Modul mit dieser Adresse, wird der Kanal
+  damit verknüpft. Deshalb zuerst die SPS-Station/Module zeichnen, dann die Vorlagen einfügen.
+- Eigene Vorlage: Blatt mit `{BMK}`, `{ADR}`, `{X}:{XN+1}` usw. zeichnen, dann `qet.saveTemplate(folio, name,
+  {category, parameters, tables})` bzw. MCP `save_template`. Beispiele und Generator: `funktionsvorlagen/`,
+  `tools/funktionsvorlagen/beispiele.js`.
+- Gelernt beim Bau der Beispiele: Klemmen 20 px auseinander vertragen keine Bezeichnung „X1:3“ an jeder Klemme
+  (liegt auf der Nachbarleitung) – an der Klemme nur die Nummer, den Leistennamen einmal links davor. Kabellinie mit
+  Abstand zu den Klemmen, sonst stoßen Aderfarben und Klemmentexte zusammen. Feldgeräte mit allen Anschlüssen oben
+  wählen (Ventilstecker, eigener 3-Leiter-Sensor), damit ein Kabel alle Adern auf einer Linie kreuzt. Anschlussbelegung
+  des Symbols vorher prüfen (Ventilstecker: +, −, PE).
+
 ## Gelernt (fortschreiben)
 
 - 23.11.2026, Plan prüfen: Nach dem Zeichnen `--check-project <plan.qet> bericht.json` (oder MCP `qet_plan_check`, im Programm Projekt > *Plan prüfen*) laufen lassen und alle Fehler beheben; Warnungen ansehen. Klemmen nur dann ohne Warnung, wenn sie in einer Klemmleiste stehen (`add_terminal_strip` + `add_to_strip`), Geräte brauchen `manufacturer_reference`, SPS-Kanäle eine Karte mit Adresse (`link_plc_io`). Rückgabewert 3 = Fehler gefunden.

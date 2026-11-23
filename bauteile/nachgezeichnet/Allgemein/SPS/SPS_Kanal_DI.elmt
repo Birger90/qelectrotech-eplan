@@ -1,0 +1,28 @@
+<definition version="0.100.0" type="element" link_type="slave" width="80" height="50" hotspot_x="40" hotspot_y="25">
+    <uuid uuid="{ad93eff1-593c-5d6c-a2c9-5bd142837bef}"/>
+    <names>
+        <name lang="de">SPS-Eingangskanal (allgemein)</name>
+        <name lang="en">PLC input channel (generic)</name>
+    </names>
+    <kindInformations>
+        <kindInformation name="type">plc</kindInformation>
+        <kindInformation name="state">NO</kindInformation>
+        <kindInformation name="number">1</kindInformation>
+    </kindInformations>
+    <informations>Allgemeiner digitaler Kanal, Anschluss unten zum Feldgeraet. Die Adresse steht in plc_address; eine Funktionsvorlage verknuepft den Kanal mit dem SPS-Modul, das diese Adresse hat.
+Author: QElectroTech-EPLAN fork. License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+    <description>
+        <rect x="-30" y="-20" width="60" height="30" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black"/>
+        <line x1="0" y1="10" x2="0" y2="20" end1="none" end2="none" length1="1.5" length2="1.5" antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black"/>
+        <text text="DI" x="-27" y="-8" rotation="0" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" color="#000000"/>
+        <dynamic_text x="-27" y="-6" z="6" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{af6035cb-73e5-5bba-886f-4c321d1a79bd}" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular">
+            <text></text>
+            <info_name>plc_address</info_name>
+        </dynamic_text>
+        <dynamic_text x="34" y="-20" z="6" text_width="-1" Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" keep_visual_rotation="false" text_from="ElementInfo" uuid="{4fc9b3e2-2602-5cee-944c-e19af6da4d01}" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular">
+            <text></text>
+            <info_name>label</info_name>
+        </dynamic_text>
+        <terminal uuid="{1d73d8e8-be51-5d14-b000-95e2b51eee0b}" name="1" x="0" y="20" orientation="s" type="Generic"/>
+    </description>
+</definition>

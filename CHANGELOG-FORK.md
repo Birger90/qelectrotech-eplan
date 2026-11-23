@@ -115,6 +115,29 @@ Einfache Revisionsverwaltung nach EPLAN-Vorbild (Skill `eplan-wissen`, `revision
 - Skript-API `qet.checkProject(folio = -1)` (Liste mit severity, check, eplan, folio, folioTitle, label, text, items)
   und CLI `--check-project <projekt.qet> [bericht.json]` (JSON; Rückgabewert 3, wenn Fehler gefunden wurden).
 
+## Unveröffentlicht – Funktionsvorlagen
+
+Wiederverwendbare Schaltungsteile mit Platzhaltern, ähnlich EPLAN-Makros mit Wertesätzen:
+
+- Seitenleiste *Anzeige > Funktionsvorlagen*: Vorlagen nach Kategorie mit Suche und Vorschau, ein Formular mit den
+  wenigen Werten der Vorlage, *Einfügen* (folgt der Maus, jeder Klick setzt eine weitere) und *Auf neues Blatt*. Die
+  Werte der Auswahltabelle (z. B. Artikel von Schutzschalter und Schütz) stehen vor dem Einfügen unter dem Formular.
+- Format: `.qetmak` mit Block `<function_template>` (Parameter mit Art `label`, `terminal`, `cable`, Text; Tabellen
+  mit Schlüssel). Platzhalter `{NAME}` und `{NAME+n}` in Kennzeichen, Texten, Elementinformationen, Drahtnummern,
+  Kabeltyp. Zahlen wählen die nächstgrößere Tabellenzeile, Texte die gleiche.
+- Einfügen wie Einfügen aus der Zwischenablage: ein Rückgängig-Schritt, neue Identitäten, Kabellinien mit Adern,
+  Verknüpfungen der Vorlage bleiben erhalten; feste Kennzeichen zählen weiter, Klemmen `X1:3` kommen sofort in ihre
+  Klemmleiste, ein SPS-Kanal mit `plc_address` wird mit dem SPS-Modul verknüpft, das die Adresse hat.
+- Kontextmenü *Als Funktionsvorlage speichern…* (ersetzt *Vorlage erstellen*): Name, Kategorie, Beschreibung, die
+  gefundenen Platzhalter mit Beschriftung, Art und Vorgabe, optional eine aus Excel eingefügte Auswahltabelle. Ablage
+  im Vorlagenordner des Nutzers (`<macros>/Funktionsvorlagen`). Eine Vorlage mit Parametern, die aus der Sammlung
+  gezogen wird, fragt ihre Werte im selben Formular ab.
+- Sechs Beispiele ohne Kundendaten in `funktionsvorlagen/`: Motorabgang DOL (Leistungstabelle 0,37–15 kW),
+  DI-Sensor mit Kabel, Ventil mit DQ-Kanal, Meldeleuchte DQ (Farbtabelle), Taster DI, Steckdose 230 V
+  (Absicherungstabelle). Neue Fork-Symbole: allgemeiner DI-/DQ-Kanal, 3-Leiter-Sensor mit Anschlüssen oben.
+- Skript-API: `listTemplates()`, `templateInfo()`, `insertTemplate()`, `saveTemplate()`. MCP: `qet_edit`-Operationen
+  `insert_template` und `save_template`; der Vorlagenordner des Nutzers wird an den Headless-Lauf weitergegeben.
+
 ## 1.48.0 – 20.11.2026
 
 Die letzten FluidSIM-Bauteile ohne Modell, in FluidSIM 6.3 selbst untersucht:

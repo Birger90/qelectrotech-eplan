@@ -59,6 +59,7 @@ class AssistantDock;
 class PlanCheckDock;
 class SimulationDock;
 class CheckPanelDockWidget;
+class FunctionTemplateDock;
 class TerminalNumberingDialog;
 
 class KAutoSaveFile;
@@ -75,6 +76,7 @@ class QETDiagramEditor : public QETMainWindow
         friend class TerminalStripEditorWindow;
         friend class LiveServer;
         friend class MacroRecorder;
+        friend class FunctionTemplateDock;
 	
 	public:
 			/// Warn about what lies outside the sheet (Settings > General)
@@ -130,6 +132,7 @@ class QETDiagramEditor : public QETMainWindow
 		void setUpAssistantDock();
 		void setUpSimulationDock();
 		void setUpCheckPanelDock();
+		void setUpFunctionTemplateDock();
 		void setUpActions       ();
 		void setUpToolBar       ();
 		void setUpMenu          ();
@@ -479,6 +482,7 @@ class QETDiagramEditor : public QETMainWindow
 		AssistantDock *m_assistant_dock = nullptr;
 		SimulationDock *m_simulation_dock = nullptr;
 		CheckPanelDockWidget *m_check_panel_dock = nullptr;
+		FunctionTemplateDock *m_function_template_dock = nullptr;
 		int activeSubWindowIndex;
 		SearchAndReplaceWidget m_search_and_replace_widget;
 };

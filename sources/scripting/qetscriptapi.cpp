@@ -140,6 +140,8 @@
 #include <QPixmap>
 #include <QTextStream>
 #include <QUndoCommand>
+#include "../functiontemplates/functiontemplate.h"
+#include <QtMath>
 
 QetScriptApi::QetScriptApi(QETProject *project, DiagramView *view, QObject *parent) :
 	QObject(parent),
@@ -6566,4 +6568,182 @@ void QetScriptApi::showMessage(const QString &text)
 		return;
 	}
 	QET::QetMessageBox::information(nullptr, QObject::tr("Script"), text);
+}
+
+// ---------------------------------------------------------------------------
+// Function templates
+// ---------------------------------------------------------------------------
+
+namespace
+{
+	QVariantMap templateMap(const FunctionTemplate &tpl, bool with_tables)
+	{
+		QVariantMap map;
+		map.insert(QStringLiteral("name"), tpl.name());
+		map.insert(QStringLiteral("category"), tpl.category());
+		map.insert(QStringLiteral("description"), tpl.description());
+		map.insert(QStringLiteral("path"), tpl.path());
+		map.insert(QStringLiteral("example"), tpl.isExample());
+		QVariantList parameters;
+		for (const FunctionTemplate::Parameter &p : tpl.parameters()) {
+			QVariantMap parameter;
+			parameter.insert(QStringLiteral("name"), p.name);
+			parameter.insert(QStringLiteral("label"), p.label);
+			parameter.insert(QStringLiteral("kind"), p.kind);
+			parameter.insert(QStringLiteral("default"), p.defaultValue);
+			if (!p.unit.isEmpty()) parameter.insert(QStringLiteral("unit"), p.unit);
+			if (!p.of.isEmpty()) parameter.insert(QStringLiteral("of"), p.of);
+			const QStringList choices = tpl.choicesFor(p);
+			if (!choices.isEmpty()) parameter.insert(QStringLiteral("choices"), choices);
+			parameters << parameter;
+		}
+		map.insert(QStringLiteral("parameters"), parameters);
+		if (with_tables) {
+			QVariantList tables;
+			for (const FunctionTemplate::Table &t : tpl.tables()) {
+				QVariantMap table;
+				table.insert(QStringLiteral("key"), t.key);
+				table.insert(QStringLiteral("columns"), t.columns);
+				QVariantList rows;
+				for (const auto &row : t.rows) {
+					QVariantMap r;
+					for (auto it = row.cbegin() ; it != row.cend() ; ++it) r.insert(it.key(), it.value());
+					rows << r;
+				}
+				table.insert(QStringLiteral("rows"), rows);
+				tables << table;
+			}
+			map.insert(QStringLiteral("tables"), tables);
+			map.insert(QStringLiteral("placeholders"),
+					   FunctionTemplate::placeholdersIn(tpl.document().documentElement()));
+		}
+		return map;
+	}
+}
+
+QVariantList QetScriptApi::listTemplates() const
+{
+	QVariantList list;
+	for (const FunctionTemplate &tpl : FunctionTemplate::available())
+		list << templateMap(tpl, false);
+	return list;
+}
+
+QVariantMap QetScriptApi::templateInfo(const QString &templateName) const
+{
+	const FunctionTemplate tpl = FunctionTemplate::find(templateName);
+	if (!tpl.isValid()) return QVariantMap();
+	return templateMap(tpl, true);
+}
+
+QVariantMap QetScriptApi::insertTemplate(int folioIndex, const QString &templateName,
+										 const QVariantMap &values, double x, double y)
+{
+	QVariantMap result;
+	result.insert(QStringLiteral("ok"), false);
+	const auto fail = [&](const QString &error) {
+		result.insert(QStringLiteral("error"), error);
+		log(QStringLiteral("qet.insertTemplate: ") + error);
+		return result;
+	};
+	if (!m_project) return fail(QStringLiteral("no project"));
+	if (m_project->isReadOnly()) return fail(QStringLiteral("project is read-only"));
+	const FunctionTemplate tpl = FunctionTemplate::find(templateName);
+	if (!tpl.isValid())
+		return fail(QStringLiteral("'%1' is no template (qet.listTemplates() lists them)").arg(templateName));
+
+	QMap<QString, QString> given;
+	for (auto it = values.cbegin() ; it != values.cend() ; ++it)
+		given.insert(it.key(), it.value().toString());
+
+	FunctionTemplate::Placed placed;
+	if (folioIndex < 0) {
+		placed = tpl.placeOnNewFolio(m_project, given);
+	} else {
+		const QList<Diagram *> folios = m_project->folios();
+		if (folioIndex >= folios.count())
+			return fail(QStringLiteral("there is no folio %1").arg(folioIndex));
+		QPointF pos;
+		if (!qIsNaN(x) && !qIsNaN(y)) {
+			pos = QPointF(x, y);
+				//A null position keeps the places it was saved at
+			if (pos.isNull()) pos = QPointF(0.1, 0.1);
+		}
+		placed = tpl.place(built(folios.at(folioIndex)), given, pos);
+	}
+	if (!placed.ok) return fail(placed.error);
+
+	QStringList uuids;
+	for (Element *element : std::as_const(placed.elements)) uuids << element->uuid().toString();
+	QVariantMap filled;
+	for (auto it = placed.values.cbegin() ; it != placed.values.cend() ; ++it)
+		filled.insert(it.key(), it.value());
+	result.insert(QStringLiteral("ok"), true);
+	result.insert(QStringLiteral("folio"), m_project->folioIndex(placed.folio));
+	result.insert(QStringLiteral("elements"), uuids);
+	result.insert(QStringLiteral("values"), filled);
+	result.insert(QStringLiteral("notes"), placed.notes);
+	return result;
+}
+
+QString QetScriptApi::saveTemplate(int folioIndex, const QString &name, const QVariantMap &options)
+{
+	if (!m_project) return QString();
+	const QList<Diagram *> folios = m_project->folios();
+	if (folioIndex < 0 || folioIndex >= folios.count()) {
+		log(QStringLiteral("qet.saveTemplate: there is no folio %1").arg(folioIndex));
+		return QString();
+	}
+	Diagram *folio = built(folios.at(folioIndex));
+
+	FunctionTemplate::SaveOptions save;
+	save.name = name;
+	save.category = options.value(QStringLiteral("category")).toString();
+	save.description = options.value(QStringLiteral("description")).toString();
+	save.path = options.value(QStringLiteral("path")).toString();
+	for (const QVariant &v : options.value(QStringLiteral("parameters")).toList()) {
+		const QVariantMap m = v.toMap();
+		FunctionTemplate::Parameter p;
+		p.name = m.value(QStringLiteral("name")).toString();
+		if (p.name.isEmpty()) continue;
+		p.label = m.value(QStringLiteral("label")).toString();
+		p.kind = m.value(QStringLiteral("kind"), QStringLiteral("text")).toString();
+		p.defaultValue = m.value(QStringLiteral("default")).toString();
+		p.unit = m.value(QStringLiteral("unit")).toString();
+		p.of = m.value(QStringLiteral("of")).toString();
+		p.help = m.value(QStringLiteral("help")).toString();
+		p.choices = m.value(QStringLiteral("choices")).toStringList();
+		save.parameters << p;
+	}
+	for (const QVariant &v : options.value(QStringLiteral("tables")).toList()) {
+		const QVariantMap m = v.toMap();
+		FunctionTemplate::Table t;
+		t.name = m.value(QStringLiteral("name")).toString();
+		t.key = m.value(QStringLiteral("key")).toString();
+		t.columns = m.value(QStringLiteral("columns")).toStringList();
+		for (const QVariant &r : m.value(QStringLiteral("rows")).toList()) {
+			QMap<QString, QString> row;
+			const QVariantMap rm = r.toMap();
+			for (auto it = rm.cbegin() ; it != rm.cend() ; ++it) row.insert(it.key(), it.value().toString());
+			t.rows << row;
+		}
+		if (!t.key.isEmpty()) save.tables << t;
+	}
+
+	QList<QGraphicsItem *> items;
+	for (const QVariant &v : options.value(QStringLiteral("elements")).toList())
+		if (Element *element = findElement(folioIndex, v.toString())) items << element;
+	if (!items.isEmpty()) {
+			//The wires between the elements chosen go with them
+		for (QGraphicsItem *item : folio->items())
+			if (auto *conductor = qgraphicsitem_cast<Conductor *>(item))
+				if (items.contains(conductor->terminal1->parentElement())
+						&& items.contains(conductor->terminal2->parentElement()))
+					items << conductor;
+	}
+
+	QString error;
+	const QString path = FunctionTemplate::save(folio, items, save, &error);
+	if (path.isEmpty()) log(QStringLiteral("qet.saveTemplate: ") + error);
+	return path;
 }

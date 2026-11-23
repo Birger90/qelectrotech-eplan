@@ -3,7 +3,11 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
-## Unveröffentlicht – Upstream 20.11.2026 (nachgezogen bis 23.11.2026)
+## 1.49.0 – 23.11.2026
+
+Sieben neue Funktionen für den Alltag und das Original-QElectroTech bis 23.11.2026. Alle ohne Oberfläche geprüft (Build, Referenzlauf 52/52, Befehle an Testprojekten); die Dialoge sind noch nicht von Hand angesehen. Hinweis: Das Original bringt jetzt ein eigenes Prüfpanel mit; „Plan prüfen“ des Forks steht vorerst daneben und wird zusammengelegt.
+
+### Upstream 20.11.2026 (nachgezogen bis 23.11.2026)
 
 Original-QElectroTech bis `64715e035` (20.11.2026) eingearbeitet, 32 Commits ohne Merges, ohne Textkonflikte:
 
@@ -36,7 +40,7 @@ Anpassungen im Fork:
 - `qet_mcp.py`: `junction` als `link_type` bei `qet_element_build` und `qet_element_search`.
 - `lang/qet_de.ts`: per lupdate auf Stand gebracht, alle 355 offenen Texte übersetzt (auch ältere, die bisher fehlten).
 
-## Unveröffentlicht – Projektsperre für SharePoint, OneDrive und Netzlaufwerke
+### Projektsperre für SharePoint, OneDrive und Netzlaufwerke
 
 Baut auf der Sperrdatei aus Upstream auf (`.~<Projekt>.lock` neben dem Projekt, JSON mit Benutzer, Rechner,
 Prozess, Programmversion, „seit“ und Herzschlag jede Minute; wird beim Schließen gelöscht):
@@ -62,7 +66,7 @@ Prozess, Programmversion, „seit“ und Herzschlag jede Minute; wird beim Schli
 - Tests: `tst_projectlock` um verwaiste Sperre, gemeldete Absturzsperre, Konfliktkopien und zwei echte Prozesse
   erweitert (20 bestanden).
 
-## Unveröffentlicht – Revisionsverwaltung
+### Revisionsverwaltung
 
 Einfache Revisionsverwaltung nach EPLAN-Vorbild (Skill `eplan-wissen`, `revision.md`):
 
@@ -81,7 +85,7 @@ Einfache Revisionsverwaltung nach EPLAN-Vorbild (Skill `eplan-wissen`, `revision
 - CLI `--close-revision`, `--revisions`, `--revision-marks`, `--compare-revisions`; Skript-API `closeRevision`,
   `revisions`, `revisionChanges`, `nextRevisionIndex`, `revisionMarks`, `setRevisionMarks`, `exportRevisionPdf`.
 
-## Unveröffentlicht – Beschriftungsexport
+### Beschriftungsexport
 
 - Menü Projekt > *Beschriftung exportieren…*: Draht-, Klemmen-, Geräte- und Kabelschilder für die
   Beschriftungsprogramme Phoenix Contact MARKING system / PROJECT complete, Weidmüller M-Print PRO und WAGO Smart
@@ -98,7 +102,7 @@ Einfache Revisionsverwaltung nach EPLAN-Vorbild (Skill `eplan-wissen`, `revision
 - CLI `--export-marking <projekt> <datei> [--format …] [--kinds …] [--folios N-M] [--plant …] [--location …]
   [--short] [--one-end]`, Skript-API `qet.exportMarking(datei, format, optionen)` und `qet.markings(optionen)`.
 
-## Unveröffentlicht – Plan prüfen
+### Plan prüfen
 
 - Neuer Knopf **Plan prüfen** (Menü *Projekt* und Werkzeugleiste): ein Prüflauf wie in EPLAN, der alle Prüfungen
   an einem Ort sammelt. Ein Andockfenster listet jede Meldung mit Schwere (Fehler, Warnung, Hinweis), Blatt,
@@ -115,7 +119,7 @@ Einfache Revisionsverwaltung nach EPLAN-Vorbild (Skill `eplan-wissen`, `revision
 - Skript-API `qet.checkProject(folio = -1)` (Liste mit severity, check, eplan, folio, folioTitle, label, text, items)
   und CLI `--check-project <projekt.qet> [bericht.json]` (JSON; Rückgabewert 3, wenn Fehler gefunden wurden).
 
-## Unveröffentlicht – Funktionsvorlagen
+### Funktionsvorlagen
 
 Wiederverwendbare Schaltungsteile mit Platzhaltern, ähnlich EPLAN-Makros mit Wertesätzen:
 
@@ -138,7 +142,7 @@ Wiederverwendbare Schaltungsteile mit Platzhaltern, ähnlich EPLAN-Makros mit We
 - Skript-API: `listTemplates()`, `templateInfo()`, `insertTemplate()`, `saveTemplate()`. MCP: `qet_edit`-Operationen
   `insert_template` und `save_template`; der Vorlagenordner des Nutzers wird an den Headless-Lauf weitergegeben.
 
-## Unveröffentlicht – Einkaufsliste
+### Einkaufsliste
 
 Stückliste für Einkauf und ERP (Menü Projekt > *Einkaufsliste exportieren…*, CLI `--export-purchase`,
 `--fetch-commercial`, Skript-API `purchaseList`, `exportPurchaseList`, `fetchCommercialData`, `purchasePriceListPath`):
@@ -153,7 +157,7 @@ Stückliste für Einkauf und ERP (Menü Projekt > *Einkaufsliste exportieren…*
   Preis, Lieferzeit oder VPE; EDZ-Preisfelder stehen bei den Herstellern auf 0. Solche Werte bleiben leer.
 - `DataPortalPart` liest zusätzlich `identcode` und `lifecycle`.
 
-## Unveröffentlicht – SPS-Abgleich mit TIA Portal
+### SPS-Abgleich mit TIA Portal
 
 - Neues Fenster *Projekt > SPS-Variablen und TIA Portal…*: alle Kanäle der SPS-Module (E/A-Tabellen) so, wie sie nach
   TIA Portal gehen – Adresse, Name, Datentyp (Bool für DI/DQ, Int für AI/AQ), Kommentar, Modul, Blatt; Klick auf eine

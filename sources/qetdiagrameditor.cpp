@@ -147,6 +147,8 @@
 #include <QDebug>
 #include <QDir>
 #include <QDesktopServices>
+#include <QCryptographicHash>
+#include <QSettings>
 #include <QTimer>
 #include <QGuiApplication>
 #include <QPushButton>
@@ -2972,6 +2974,9 @@ QETDiagramEditor::LockChoice QETDiagramEditor::askAboutLock(
 		const ProjectLock::Holder &holder)
 {
 	const QString name = QFileInfo(filepath).fileName();
+		//No heartbeat for ProjectLock::orphan_minutes: that session is
+		//most likely gone, and taking its lock over is the offered answer
+	const bool orphaned = ProjectLock::isOrphaned(holder);
 	QString text;
 	if (holder.session == QLatin1String("?")) {
 		text = tr("%1 is being opened by another session of QElectroTech.").arg(name);
@@ -2988,21 +2993,105 @@ QETDiagramEditor::LockChoice QETDiagramEditor::askAboutLock(
 		} else {
 			text += QLatin1Char('.');
 		}
+		if (!holder.app.isEmpty())
+			text += QLatin1Char('\n') + tr("Program: %1").arg(holder.app);
 	}
 
 	QMessageBox box(QMessageBox::Warning, tr("Project in use", "message box title"), text, QMessageBox::NoButton, this);
-	box.setInformativeText(tr("Open it read-only to look at it without changing it. "
-							  "Open it anyway only if you know that session is not "
-							  "using it any more: both of you could then save over each other."));
-	QPushButton *read_only = box.addButton(tr("Open read-only"), QMessageBox::AcceptRole);
-	QPushButton *anyway = box.addButton(tr("Open anyway"), QMessageBox::DestructiveRole);
+	QPushButton *take_over = nullptr;
+	if (orphaned) {
+		box.setInformativeText(tr("There has been no sign of life from there for over %n minute(s): "
+								  "QElectroTech probably crashed there, or the PC was switched off "
+								  "or lost the network. Take the lock over to edit the project. "
+								  "Should that session come back, it can no longer save over your work.",
+								  nullptr, ProjectLock::orphan_minutes));
+		take_over = box.addButton(tr("Take over the lock"), QMessageBox::AcceptRole);
+	} else {
+		box.setInformativeText(tr("Open it read-only to look at it without changing it. "
+								  "Edit it anyway only if you know that session is not "
+								  "using it any more: both of you could then save over each other."));
+	}
+	QPushButton *read_only = box.addButton(tr("Open read-only"), orphaned ? QMessageBox::RejectRole : QMessageBox::AcceptRole);
+	QPushButton *anyway = orphaned ? nullptr : box.addButton(tr("Edit anyway"), QMessageBox::DestructiveRole);
 	box.addButton(QMessageBox::Cancel);
-	box.setDefaultButton(read_only);
+	box.setDefaultButton(orphaned ? take_over : read_only);
 	box.setEscapeButton(box.button(QMessageBox::Cancel));
 	box.exec();
+	if (take_over && box.clickedButton() == take_over) return LockChoice::OpenAnyway;
 	if (box.clickedButton() == read_only) return LockChoice::ReadOnly;
-	if (box.clickedButton() == anyway) return LockChoice::OpenAnyway;
+	if (anyway && box.clickedButton() == anyway) {
+			//The one choice that can lose someone's work: said once more,
+			//plainly, before it is done
+		const auto answer = QET::QetMessageBox::warning(
+					this, tr("Edit anyway?", "message box title"),
+					tr("%1 is still working on %2. If you both save, the one who saves last "
+					   "overwrites the other's changes, and %1 can no longer save to this file.\n\n"
+					   "Edit it anyway?").arg(holder.user, name),
+					QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+		return answer == QMessageBox::Yes ? LockChoice::OpenAnyway : LockChoice::ReadOnly;
+	}
 	return LockChoice::Cancel;
+}
+
+/**
+	@brief QETDiagramEditor::tellConflictCopies
+	OneDrive and SharePoint keep both versions when two PCs changed the
+	project before either was synchronised: the other one lands beside it
+	as "<name>-<PC name>.<ext>" (ProjectLock::conflictCopies()). Those
+	changes are not in the opened project, so the user is told: once for
+	each copy, in a message box; every time in the status bar while one is
+	there.
+*/
+void QETDiagramEditor::tellConflictCopies(const QString &filepath)
+{
+	QStringList hosts;
+	const ProjectLock::Holder holder = ProjectLock::readHolder(filepath);
+	if (holder.valid) hosts << holder.host;
+	const QStringList copies = ProjectLock::conflictCopies(filepath, hosts);
+	if (copies.isEmpty()) return;
+
+	const QString name = QFileInfo(filepath).fileName();
+	statusBar()->showMessage(tr("%n conflict copy(ies) of %1 from OneDrive/SharePoint lie beside it.",
+								nullptr, static_cast<int>(copies.size())).arg(name), 30000);
+
+		//Already told about: the same name with the same time of change
+	QSettings settings;
+	const QString key = QStringLiteral("projectlock/conflicts_told/")
+			+ QString::fromLatin1(QCryptographicHash::hash(QFileInfo(filepath).absoluteFilePath().toLower().toUtf8(),
+														  QCryptographicHash::Sha1).toHex());
+	const QStringList told = settings.value(key).toStringList();
+	QStringList now;
+	QStringList lines;
+	bool news = false;
+	for (const QString &copy : copies) {
+		const QFileInfo info(copy);
+		const QString id = info.fileName() + QLatin1Char('|')
+				+ QString::number(info.lastModified().toSecsSinceEpoch());
+		now << id;
+		if (!told.contains(id)) news = true;
+		lines << QStringLiteral("• %1  (%2)").arg(info.fileName(),
+					QLocale::system().toString(info.lastModified(), QLocale::ShortFormat));
+	}
+	settings.setValue(key, now);
+	if (!news) return;
+
+	QMessageBox box(QMessageBox::Information, tr("Conflict copies found", "message box title"),
+					tr("Beside %1 lie copies that OneDrive or SharePoint made because the "
+					   "project was changed on two PCs at the same time:\n\n%2")
+					.arg(name, lines.join(QLatin1Char('\n'))),
+					QMessageBox::NoButton, this);
+	box.setInformativeText(tr("Their changes are not in the project you opened. Open the copy, "
+							  "carry over what is missing, then delete the copy so that this "
+							  "notice does not come back."));
+	QPushButton *open_copy = box.addButton(tr("Open the newest copy"), QMessageBox::ActionRole);
+	QPushButton *open_folder = box.addButton(tr("Show folder"), QMessageBox::ActionRole);
+	box.addButton(QMessageBox::Ok);
+	box.setDefaultButton(QMessageBox::Ok);
+	box.exec();
+	if (box.clickedButton() == open_folder)
+		QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(filepath).absolutePath()));
+	else if (box.clickedButton() == open_copy)
+		QTimer::singleShot(0, this, [this, copy = copies.first()]() { openAndAddProject(copy); });
 }
 
 /**
@@ -3354,12 +3443,28 @@ bool QETDiagramEditor::openAndAddProject(
 	}
 
 	if (opened_read_only_by_lock) project->setOpenedReadOnlyByLock(true);
+		//The lock of a session of this PC that crashed: taken without a
+		//question, but said, since its unsaved work is gone
+	const ProjectLock::Holder crashed = lock ? lock->replacedStale() : ProjectLock::Holder();
 	if (lock && lock->isHeld()) {
 		connect(lock.get(), &ProjectLock::lockTaken, this, [this, project](const ProjectLock::Holder &by) {
+				//From now on the file is the other person's: this session
+				//no longer writes it (QETProject::write() refuses too)
+			const QString file_name = QFileInfo(project->filePath()).fileName();
+			project->setOpenedReadOnlyByLock(true);
 			statusBar()->showMessage(
 				tr("%1 on %2 has taken over %3. Save your changes with Save As to keep them.")
-					.arg(by.user, by.host, QFileInfo(project->filePath()).fileName()),
-				30000);
+					.arg(by.user, by.host, file_name),
+				0);
+			auto *box = new QMessageBox(QMessageBox::Warning, tr("Project taken over", "message box title"),
+										tr("%1 on %2 has taken over %3 and is editing it now.\n\n"
+										   "The project is read-only here from now on. "
+										   "If you have changes, keep them with Save As in another file.")
+										.arg(by.user, by.host, file_name),
+										QMessageBox::Ok, this);
+			box->setAttribute(Qt::WA_DeleteOnClose);
+			box->setModal(false);
+			box->show();
 		});
 		project->setLock(std::move(lock));
 	}
@@ -3367,6 +3472,15 @@ bool QETDiagramEditor::openAndAddProject(
 	QETApp::projectsRecentFiles() -> fileWasOpened(filepath);
 	addProject(project);
 	DialogWaiting::dropInstance();
+	if (interactive && crashed.valid) {
+		statusBar()->showMessage(
+			tr("%1 was still marked as open by QElectroTech on this PC since %2, which has "
+			   "ended (crash?). The lock was taken over.")
+				.arg(QFileInfo(filepath).fileName(),
+					 QLocale::system().toString(crashed.since.toLocalTime(), QLocale::ShortFormat)),
+			30000);
+	}
+	if (interactive) tellConflictCopies(filepath);
 	tellRepair(interactive ? project : nullptr);
 	if (!interactive) {
 		const QetDbFile::Repair repaired = project->qetdbRepair();
@@ -4266,7 +4380,8 @@ void QETDiagramEditor::slot_updateActions()
 	updateItemInfo();
 
 	m_close_file->                  setEnabled(opened_project);
-	m_save_file->                   setEnabled(opened_project);
+		//Read-only: only Save As, to another file
+	m_save_file->                   setEnabled(editable_project);
 	m_save_file_as->                setEnabled(opened_project);
 	m_save_copy_for_older->         setEnabled(opened_project);
 	m_rotate_texts->                setEnabled(editable_project);

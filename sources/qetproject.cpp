@@ -3437,18 +3437,23 @@ QETResult QETProject::write(bool overwrite_changed)
 		return(QETResult(tr("Cannot save %1: %2").arg(m_file_path, error)));
 	};
 
-		// If the project was opened read-only, only refuse when the target
-		// really can't be written: an existing file that is not writable, or a
-		// new file (e.g. "Save As" to another location) whose directory is not
-		// writable.  A non-existent file reports isWritable() == false, so the
-		// old check wrongly blocked saving a read-only project elsewhere.
-	if (isReadOnly()) {
-		const QFileInfo file_info(m_file_path);
-		const bool can_write = file_info.exists()
-			? file_info.isWritable()
-			: QFileInfo(file_info.absolutePath()).isWritable();
-		if (!can_write)
-			return(QString("the file %1 was opened read-only and thus will not be written").arg(m_file_path));
+		//Read-only is read-only: the file it was opened read-only from is
+		//never written, whether or not the file system would let it (a
+		//project of a later version, a save of the history, one the user
+		//opened read-only). isReadOnly() is tied to that file: after Save
+		//As to another file it is false, so Save As still works.
+	if (isReadOnly())
+		return(tr("%1 is open read-only and is not saved. Use Save As to keep your changes in another file.").arg(m_file_path));
+
+		//Someone else took this file over ("Open anyway" on their PC) or
+		//holds it although this session could not take its lock: saving
+		//would wipe their work
+	if (ProjectLock::mayTake()) {
+		const ProjectLock::Holder other = ProjectLock::liveHolder(
+					m_file_path, m_lock ? m_lock->session() : QString());
+		if (other.valid && other.session != QLatin1String("?"))
+			return(tr("%1 is now open by %2 on %3, so it is not saved here. Use Save As to keep your changes in another file.")
+				   .arg(m_file_path, other.user, other.host));
 	}
 
 		//QET_QETDB_SAVE_TIMES=1: how long each step of the save took, in ms
@@ -3598,12 +3603,16 @@ void QETProject::setOpenedReadOnlyByLock(bool by_lock)
 */
 void QETProject::setReadOnly(bool read_only)
 {
-	if (m_read_only != read_only)
+		//Compared with what isReadOnly() says: after Save As the flag can
+		//still be set for the old file while the project is editable, and
+		//making it read-only again must then take the new file
+	if (isReadOnly() != read_only || m_read_only != read_only)
 	{
+		const bool was = isReadOnly();
 			//keep the file to which this project is read-only
 		read_only_file_path_ = m_file_path;
 		m_read_only = read_only;
-		emit readOnlyChanged(this, read_only);
+		if (was != isReadOnly()) emit readOnlyChanged(this, read_only);
 	}
 }
 

@@ -117,6 +117,16 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
 - Herstellerportale (Siemens, Rittal, 3Dfindit, SEW, WAGO, Keyence): Konten im Schlüsselspeicher des Systems, fehlende
   Bauteile automatisch holen (`--fetch-parts`). Läuft unter Windows und macOS (Workflow `macos-build.yml`).
 
+## Gemeinsame Ablage (SharePoint, OneDrive, Netzlaufwerk)
+
+- Projektsperre: Wer ein Projekt öffnet, das ein Kollege offen hat, erfährt „seit … bei … geöffnet“ und wählt
+  *Nur lesen öffnen*, *Trotzdem bearbeiten* (mit Warnung) oder *Abbrechen*. Eine Sperre ohne Herzschlag seit
+  10 Minuten (Absturz, Rechner aus) wird zum Übernehmen angeboten; die eines Absturzes auf dem eigenen Rechner wird
+  von selbst übernommen. Ohne Oberfläche: `--lock-status <Projekt>`.
+- Nur lesen verhindert jedes Speichern auf die Datei (auch automatisch, per Skript oder MCP); Änderungen gehen mit
+  *Speichern unter* in eine andere Datei.
+- OneDrive-/SharePoint-Konfliktkopien („Projekt-<Rechnername>.qetz“) neben dem Projekt werden beim Öffnen gemeldet.
+
 ## Pneumatik, Hydraulik und Simulation
 
 Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser Fork.

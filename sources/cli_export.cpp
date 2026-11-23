@@ -120,6 +120,7 @@ const QHash<QString, QString> &exportFlags()
 		{"--portal-logout", "portallogout"},
 		{"--portal-request", "portalrequest"},
 		{"--resave", "resave"},
+		{"--lock-status", "lockstatus"},
 		{"--recover", "recover"},
 		{"--history", "history"},
 		{"--history-on", "historyon"},
@@ -1664,6 +1665,57 @@ int run(const QStringList &args)
 			return 2;
 		}
 		return checkElements(rest.at(0), grid);
+	}
+
+	// --lock-status tells who has a project open (its lock file beside it),
+	// whether that lock is left over (crash on this PC, or no heartbeat for
+	// ProjectLock::orphan_minutes) and which OneDrive/SharePoint conflict
+	// copies lie beside it. Reads only; the project itself is not opened.
+	// Exit code: 0 free, 1 held by a live session, 3 left over, 2 usage.
+	if (format == "lockstatus") {
+		if (rest.isEmpty()) {
+			err << "Usage: qelectrotech --lock-status <project> [--json]\n";
+			return 2;
+		}
+		const QString path = QFileInfo(rest.at(0)).absoluteFilePath();
+		const ProjectLock::Holder holder = ProjectLock::readHolder(path);
+		const ProjectLock::Holder live = ProjectLock::liveHolder(path);
+		const bool crashed = ProjectLock::isStale(holder);
+		const bool orphaned = live.valid && ProjectLock::isOrphaned(live);
+		const QString state = !holder.valid ? QStringLiteral("free")
+				: crashed ? QStringLiteral("crashed")
+				: !live.valid ? QStringLiteral("free")
+				: orphaned ? QStringLiteral("orphaned")
+				: QStringLiteral("held");
+		const QStringList copies = ProjectLock::conflictCopies(
+					path, holder.valid ? QStringList{holder.host} : QStringList());
+		if (json) {
+			QJsonObject o;
+			o.insert("project", path);
+			o.insert("lock_file", ProjectLock::lockPathFor(path));
+			o.insert("state", state);
+			if (holder.valid) {
+				o.insert("user", holder.user);
+				o.insert("host", holder.host);
+				o.insert("pid", double(holder.pid));
+				o.insert("app", holder.app);
+				o.insert("since", holder.since.toUTC().toString(Qt::ISODate));
+				o.insert("heartbeat", holder.heartbeat.toUTC().toString(Qt::ISODate));
+				o.insert("heartbeat_age_s", double(holder.heartbeat.secsTo(QDateTime::currentDateTimeUtc())));
+			}
+			o.insert("conflict_copies", QJsonArray::fromStringList(copies));
+			out << QJsonDocument(o).toJson(QJsonDocument::Indented);
+		} else {
+			out << "state: " << state << "\n";
+			if (holder.valid)
+				out << "held by: " << holder.user << " on " << holder.host << " (" << holder.app
+					<< ") since " << holder.since.toLocalTime().toString(Qt::ISODate)
+					<< ", heartbeat " << holder.heartbeat.secsTo(QDateTime::currentDateTimeUtc()) << " s ago\n";
+			for (const QString &c : copies) out << "conflict copy: " << c << "\n";
+		}
+		out.flush();
+		return state == QLatin1String("held") ? 1
+			 : (state == QLatin1String("orphaned") || state == QLatin1String("crashed")) ? 3 : 0;
 	}
 
 	// --import-eplan turns manufacturer EPLAN DXF data into elements of a

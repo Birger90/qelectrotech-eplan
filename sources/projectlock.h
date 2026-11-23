@@ -22,6 +22,7 @@
 #include <QDateTime>
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QTimer>
 
 /**
@@ -79,11 +80,20 @@ class ProjectLock : public QObject
 		QString projectPath() const {return m_project_path;}
 		QString session() const {return m_session;}
 		Holder  blockingHolder() const {return m_blocking;}
+			/// The lock of a crashed session on this machine that the last
+			/// acquire() replaced silently; not valid when there was none
+		Holder  replacedStale() const {return m_replaced_stale;}
+
+			/// A heartbeat older than this many minutes: the holder is
+			/// probably gone (crash, PC off, network lost) -- offered to take
+		static constexpr int orphan_minutes = 10;
 
 		static QString lockPathFor(const QString &project_path);
 		static Holder  readHolder(const QString &project_path);
 		static bool    isStale(const Holder &holder);
+		static bool    isOrphaned(const Holder &holder, const QDateTime &now = QDateTime::currentDateTimeUtc());
 		static Holder  liveHolder(const QString &project_path, const QString &own_session = QString());
+		static QStringList conflictCopies(const QString &project_path, const QStringList &known_hosts = QStringList());
 
 		static bool enabled();
 		static void setEnabled(bool);
@@ -108,6 +118,7 @@ class ProjectLock : public QObject
 		QDateTime m_since;
 		bool      m_held = false;
 		Holder    m_blocking;
+		Holder    m_replaced_stale;
 		QTimer    m_timer;
 };
 

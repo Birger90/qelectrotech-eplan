@@ -18066,6 +18066,10 @@ Wenn Sie darüber speichern, gehen seine Änderungen verloren.</translation>
         <comment>window title for a project-less ProjectView</comment>
         <translation>Projekt</translation>
     </message>
+    <message>
+        <source>%1 is open read-only. Choose another file name to keep your changes.</source>
+        <translation>%1 ist nur zum Lesen geöffnet. Wählen Sie einen anderen Dateinamen, um Ihre Änderungen zu behalten.</translation>
+    </message>
 </context>
 <context>
     <name>PropertiesEditorDockWidget</name>
@@ -19907,7 +19911,7 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>%1 is open by %2 on %3 since %4</source>
-        <translation>%1 ist von %2 auf %3 geöffnet, seit %4</translation>
+        <translation>%1 ist seit %4 bei %2 auf %3 geöffnet</translation>
     </message>
     <message>
         <source> (active just now).</source>
@@ -19931,7 +19935,7 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>Open read-only</source>
-        <translation>Schreibgeschützt öffnen</translation>
+        <translation>Nur lesen öffnen</translation>
     </message>
     <message>
         <source>Open anyway</source>
@@ -20958,6 +20962,91 @@ Um daraus ein Skript zu machen, bitten Sie Ihren KI-Assistenten: Die Schaltfläc
         <source>Find duplicate signals and components...</source>
         <translation>Doppelte Signale und Bauteile suchen...</translation>
     </message>
+    <message>
+        <source>Program: %1</source>
+        <translation>Programm: %1</translation>
+    </message>
+    <message numerus="yes">
+        <source>There has been no sign of life from there for over %n minute(s): QElectroTech probably crashed there, or the PC was switched off or lost the network. Take the lock over to edit the project. Should that session come back, it can no longer save over your work.</source>
+        <translation>
+            <numerusform>Von dort kam seit über %n Minute kein Lebenszeichen: Vermutlich ist QElectroTech dort abgestürzt, oder der Rechner wurde ausgeschaltet oder hat das Netz verloren. Übernehmen Sie die Sperre, um das Projekt zu bearbeiten. Kommt diese Sitzung zurück, kann sie Ihre Arbeit nicht mehr überschreiben.</numerusform>
+            <numerusform>Von dort kam seit über %n Minuten kein Lebenszeichen: Vermutlich ist QElectroTech dort abgestürzt, oder der Rechner wurde ausgeschaltet oder hat das Netz verloren. Übernehmen Sie die Sperre, um das Projekt zu bearbeiten. Kommt diese Sitzung zurück, kann sie Ihre Arbeit nicht mehr überschreiben.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Take over the lock</source>
+        <translation>Sperre übernehmen</translation>
+    </message>
+    <message>
+        <source>Open it read-only to look at it without changing it. Edit it anyway only if you know that session is not using it any more: both of you could then save over each other.</source>
+        <translation>Öffnen Sie es nur zum Lesen, um es anzusehen, ohne es zu ändern. Bearbeiten Sie es trotzdem nur, wenn Sie wissen, dass diese Sitzung es nicht mehr verwendet: sonst überschreiben Sie sich gegenseitig die Änderungen.</translation>
+    </message>
+    <message>
+        <source>Edit anyway</source>
+        <translation>Trotzdem bearbeiten</translation>
+    </message>
+    <message>
+        <source>Edit anyway?</source>
+        <comment>message box title</comment>
+        <translation>Trotzdem bearbeiten?</translation>
+    </message>
+    <message>
+        <source>%1 is still working on %2. If you both save, the one who saves last overwrites the other&apos;s changes, and %1 can no longer save to this file.
+
+Edit it anyway?</source>
+        <translation>%1 arbeitet noch an %2. Speichern Sie beide, überschreibt der zuletzt Speichernde die Änderungen des anderen, und %1 kann nicht mehr in diese Datei speichern.
+
+Trotzdem bearbeiten?</translation>
+    </message>
+    <message>
+        <source>Project taken over</source>
+        <comment>message box title</comment>
+        <translation>Projekt übernommen</translation>
+    </message>
+    <message>
+        <source>%1 on %2 has taken over %3 and is editing it now.
+
+The project is read-only here from now on. If you have changes, keep them with Save As in another file.</source>
+        <translation>%1 auf %2 hat %3 übernommen und bearbeitet es jetzt.
+
+Hier ist das Projekt ab sofort nur zum Lesen offen. Eigene Änderungen sichern Sie mit „Speichern unter“ in einer anderen Datei.</translation>
+    </message>
+    <message>
+        <source>%1 was still marked as open by QElectroTech on this PC since %2, which has ended (crash?). The lock was taken over.</source>
+        <translation>%1 war seit %2 noch als geöffnet von QElectroTech auf diesem Rechner markiert, das inzwischen beendet ist (Absturz?). Die Sperre wurde übernommen.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n conflict copy(ies) of %1 from OneDrive/SharePoint lie beside it.</source>
+        <translation>
+            <numerusform>Neben %1 liegt %n Konfliktkopie von OneDrive/SharePoint.</numerusform>
+            <numerusform>Neben %1 liegen %n Konfliktkopien von OneDrive/SharePoint.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Conflict copies found</source>
+        <comment>message box title</comment>
+        <translation>Konfliktkopien gefunden</translation>
+    </message>
+    <message>
+        <source>Beside %1 lie copies that OneDrive or SharePoint made because the project was changed on two PCs at the same time:
+
+%2</source>
+        <translation>Neben %1 liegen Kopien, die OneDrive oder SharePoint angelegt hat, weil das Projekt auf zwei Rechnern gleichzeitig geändert wurde:
+
+%2</translation>
+    </message>
+    <message>
+        <source>Their changes are not in the project you opened. Open the copy, carry over what is missing, then delete the copy so that this notice does not come back.</source>
+        <translation>Deren Änderungen fehlen in dem Projekt, das Sie geöffnet haben. Öffnen Sie die Kopie, übernehmen Sie, was fehlt, und löschen Sie die Kopie danach, damit dieser Hinweis nicht wiederkommt.</translation>
+    </message>
+    <message>
+        <source>Open the newest copy</source>
+        <translation>Neueste Kopie öffnen</translation>
+    </message>
+    <message>
+        <source>Show folder</source>
+        <translation>Ordner zeigen</translation>
+    </message>
 </context>
 <context>
     <name>QETElementEditor</name>
@@ -21975,6 +22064,14 @@ Was möchten Sie tun?</translation>
     <message>
         <source>&lt;p align=&quot;center&quot;&gt;&lt;b&gt;Opening the project ...&lt;/b&gt;&lt;br/&gt;Setting up cross references&lt;/p&gt;</source>
         <translation>&lt;p align=&quot;center&quot;&gt;&lt;b&gt;Öffnen des Projekts...&lt;/b&gt;&lt;br/&gt;Querverweise werden eingelesen&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>%1 is open read-only and is not saved. Use Save As to keep your changes in another file.</source>
+        <translation>%1 ist nur zum Lesen geöffnet und wird nicht gespeichert. Sichern Sie Ihre Änderungen mit „Speichern unter“ in einer anderen Datei.</translation>
+    </message>
+    <message>
+        <source>%1 is now open by %2 on %3, so it is not saved here. Use Save As to keep your changes in another file.</source>
+        <translation>%1 ist jetzt bei %2 auf %3 geöffnet und wird deshalb hier nicht gespeichert. Sichern Sie Ihre Änderungen mit „Speichern unter“ in einer anderen Datei.</translation>
     </message>
 </context>
 <context>

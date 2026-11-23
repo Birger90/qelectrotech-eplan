@@ -100,6 +100,14 @@
 > - Manufacturer portals (Siemens, Rittal, 3Dfindit, SEW, WAGO, Keyence): accounts in the system key store, missing
 >   parts fetched automatically (`--fetch-parts`). Runs on Windows and macOS (workflow `macos-build.yml`).
 >
+> **Shared storage (SharePoint, OneDrive, network drive)**
+> - Project lock: opening a project a colleague has open says "open by … since …" and offers *Open read-only*,
+>   *Edit anyway* (with a warning) or *Cancel*. A lock without a heartbeat for 10 minutes (crash, PC off) is offered
+>   to take over; the lock of a crash on one's own PC is taken by itself. Headless: `--lock-status <project>`.
+> - Read-only prevents every save to the file (also autosave, scripts and MCP); changes go to another file with
+>   *Save As*.
+> - OneDrive/SharePoint conflict copies ("project-<PC name>.qetz") beside the project are reported on opening.
+>
 > **Pneumatics, hydraulics and simulation** -- unlike the upstream note further down, this fork simulates
 > - The 437 pneumatic and hydraulic symbols of the common collection carry simulation data (graphics unchanged):
 >   named ports with medium, function, positions and flow paths of every directional valve, actuation, cylinder data

@@ -50,6 +50,7 @@ namespace CLIExport {
 		  qelectrotech --export-wires   <project.qet> <output.csv>
 		  qelectrotech --export-bom     <project.qet> <output.csv> [--no-slaves] [--no-junctions]
 		  qelectrotech --export-wiring  <project.qet> <output.csv>
+		  qelectrotech --export-marking <project.qet> <output.csv> [--format phoenix|weidmueller|wago|neutral] [--kinds wires,terminals,devices,cables] [--folios N[-M]] [--plant P] [--location L] [--short] [--one-end]
 		  qelectrotech --export-nets    <project.qet> <output.json>
 		  qelectrotech --export-links   <project.qet> <output.csv>
 		  qelectrotech --check-device-types <project.qet> <output.csv>
@@ -93,6 +94,14 @@ namespace CLIExport {
 		--no-junctions: leave the junctions out of the bill of materials:
 		      terminal-type elements with no label, designation,
 		      manufacturer or manufacturer reference.
+		marking: wire, terminal, device and cable markers as a file for the
+		      marking software of Phoenix Contact (MARKING system / PROJECT
+		      complete), Weidmüller (M-Print PRO) or WAGO (Smart Script), or a
+		      neutral CSV; the columns of each are in docs/beschriftung-export.md.
+		      --kinds chooses what gets a marker (default all), --folios a
+		      folio or a range, --plant/--location a part of the structure,
+		      --short writes -K1 instead of =plant+location-K1, --one-end one
+		      marker per wire and cable instead of one per end.
 		wiring: from-to wiring list (one row per conductor) as CSV, read from
 		        the project database. Same logical list as `cables`, which
 		        reads the document XML instead; the two are meant to agree,

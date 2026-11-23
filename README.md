@@ -51,6 +51,13 @@
 >   manufacturers (e.g. igus chainflex, LAPP): cores with colours, cross section, outer diameter, voltage, article
 >   number.
 >
+> **Markers**
+> - Menu Project > *Export markers…*: wire, terminal, device and cable markers as a file for Phoenix Contact
+>   MARKING system / PROJECT complete, Weidmüller M-Print PRO or WAGO Smart Script, or a neutral CSV; choose the
+>   kinds, folios and plant/location. Also `--export-marking` and `qet.exportMarking()`/`qet.markings()`. No maker
+>   publishes a fixed import layout, so each file is a CSV cut to what that import is documented to read; columns
+>   and sources in [docs/beschriftung-export.md](docs/beschriftung-export.md).
+>
 > **Cabinet layout and panel manufacturing** (menu *Cabinet layout*, the EPLAN Pro Panel 2D workflow)
 > - *Build cabinet...*: the whole layout in six guided steps with a tick each -- enclosure with mounting plate
 >   (Rittal by order number), DIN rails and ducts as a grid (ducts on the edges and between the rows, one rail per

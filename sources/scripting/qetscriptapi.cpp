@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "qetscriptapi.h"
+#include "../revision/projectrevisions.h"
 #include "../import/portals/manufacturerportals.h"
 #include "../import/portals/partfetcher.h"
 
@@ -3642,6 +3643,107 @@ bool QetScriptApi::setFolioProperty(int folioIndex, const QString &property, con
 	*field = value;
 	m_project->undoStack()->push(new ChangeTitleBlockCommand(diagram, old_p, new_p));
 	return true;
+}
+
+/**
+	@brief QetScriptApi::closeRevision
+	Close revision @p index with @p text: the index in every title block,
+	the row of the revision table (%{rev1_index} ...), with @p pdf a PDF of
+	the changes since the last revision marked, a snapshot beside the
+	project, and the project saved.
+	@return the snapshot's path, or "" when it was not closed (logged)
+*/
+QString QetScriptApi::closeRevision(const QString &index, const QString &text, bool pdf)
+{
+	if (!m_project) return QString();
+	const ProjectRevisions::CloseResult r = m_project->revisions()->closeRevision(index, text, pdf, true);
+	if (!r.ok) {
+		log(QStringLiteral("qet.closeRevision: %1").arg(r.error));
+		return QString();
+	}
+	return r.snapshot;
+}
+
+/// The revision table, oldest first: "A<tab>2026-11-20<tab>author<tab>text"
+QStringList QetScriptApi::revisions() const
+{
+	QStringList lines;
+	if (!m_project) return lines;
+	for (const ProjectRevisions::Entry &e : m_project->revisions()->entries())
+		lines << QStringList{e.index, e.date, e.author, e.text}.join(QLatin1Char('\t'));
+	return lines;
+}
+
+namespace {
+/// The fingerprint of @p since: "" the last revision, else a revision index or a project file
+QetRevision::Fingerprint stateSince(QETProject *project, const QString &since, QString *error)
+{
+	ProjectRevisions *revisions = project->revisions();
+	if (since.isEmpty() || since == revisions->lastIndex()) return revisions->baseline();
+	for (const ProjectRevisions::Entry &e : revisions->entries())
+		if (e.index == since) return QetRevision::fingerprintOfFile(revisions->snapshotPath(e), error);
+	return QetRevision::fingerprintOfFile(since, error);
+}
+}
+
+/**
+	@brief QetScriptApi::revisionChanges
+	What changed since the last revision, or since revision or project
+	file @p since: one line each, "Folio 3 - Title: Symbol -K1 changed"
+*/
+QStringList QetScriptApi::revisionChanges(const QString &since) const
+{
+	if (!m_project) return {};
+	QString error;
+	const QetRevision::Fingerprint before = stateSince(m_project, since, &error);
+	if (!error.isEmpty()) {
+		const_cast<QetScriptApi *>(this)->log(QStringLiteral("qet.revisionChanges: %1").arg(error));
+		return {};
+	}
+	if (before.isEmpty()) return {};
+	const QetRevision::Fingerprint now = QetRevision::fingerprint(m_project);
+	return QetRevision::describe(QetRevision::compare(before, now), now, before);
+}
+
+QString QetScriptApi::nextRevisionIndex() const
+{
+	return m_project ? m_project->revisions()->proposedIndex() : QString();
+}
+
+bool QetScriptApi::revisionMarks() const
+{
+	return m_project && m_project->revisions()->marksShown();
+}
+
+/// Show the marks of what changed since the last revision, or not (saved with the project)
+bool QetScriptApi::setRevisionMarks(bool on)
+{
+	if (!m_project || m_project->isReadOnly()) return false;
+	m_project->revisions()->setMarksShown(on);
+	return true;
+}
+
+/**
+	@brief QetScriptApi::exportRevisionPdf
+	A PDF of the project with what changed since @p since (the last
+	revision, a revision index or a project file) marked
+*/
+bool QetScriptApi::exportRevisionPdf(const QString &output, const QString &since)
+{
+	if (!m_project) return false;
+	QString error;
+	const QetRevision::Fingerprint before = stateSince(m_project, since, &error);
+	if (!error.isEmpty() || before.isEmpty()) {
+		log(QStringLiteral("qet.exportRevisionPdf: %1").arg(error.isEmpty()
+				? QStringLiteral("no revision to compare with") : error));
+		return false;
+	}
+	ProjectRevisions *revisions = m_project->revisions();
+	revisions->beginComparison(before, revisions->proposedIndex());
+	const bool ok = ProjectRevisions::exportPdf(m_project, output, &error);
+	revisions->endComparison();
+	if (!ok) log(QStringLiteral("qet.exportRevisionPdf: %1").arg(error));
+	return ok;
 }
 
 QStringList QetScriptApi::terminalStrips() const

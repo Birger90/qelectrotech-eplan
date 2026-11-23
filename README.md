@@ -41,6 +41,23 @@
 > - New title block variables `%{printdate}` and `%{saveddate-de}` (DD.MM.YYYY).
 > - Script API: `outsideSheet(folio)` lists what lies outside the sheet.
 >
+> **Revisions like EPLAN**
+> - Menu Project > Revision > *Close revision…*: index (proposed A, B, … or 01, 02, …) and a short text. The index
+>   then stands in every title block (`%indexrev`), the revision table in `%{rev1_index}`, `%{rev1_date}`,
+>   `%{rev1_text}`, `%{rev1_author}` (rev1 = newest) – the title block *revision* shows the last three. Beside the
+>   project, `<name>_Revisionen/` gets the snapshot `<name>_Rev_<index>.qet` and a PDF with the changes since the
+>   previous revision marked; the project is saved.
+> - *Mark changes*: whatever changed since the last revision gets a red revision cloud with a triangle (symbols,
+>   texts, shapes), wires a broad stroke along their path; removed items dashed and crossed, a new sheet a note
+>   above the title block. On screen, in print and in PDF; switched on from the first revision.
+> - *Compare revisions…*: two states (current, a revision, any project file) as a list (double click jumps there)
+>   and as a PDF with the changes marked. Matched by uuid, else like EPLAN's "alternative identification" by sheet,
+>   type and device tag or the terminals joined – plans generated again can be compared too.
+> - CLI: `--close-revision <project> <index> [text] [--no-pdf]`, `--revisions <project>`,
+>   `--revision-marks <project> on|off`, `--compare-revisions <older|index> <newer> [out.pdf] [--json]`.
+>   Script API: `closeRevision`, `revisions`, `revisionChanges`, `nextRevisionIndex`, `setRevisionMarks`,
+>   `exportRevisionPdf`.
+>
 > **Cables**
 > - Menu Project > *Cable list (choose types)…*: every cable of the project with type, cores, colours, plant,
 >   location and folios; *Choose type…* changes the type in one undo step.

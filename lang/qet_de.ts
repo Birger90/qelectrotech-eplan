@@ -15184,6 +15184,37 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     </message>
 </context>
 <context>
+    <name>ProjectRevisions</name>
+    <message>
+        <source>New folio</source>
+        <translation>Neues Blatt</translation>
+    </message>
+    <message>
+        <source>The PDF %1 could not be written</source>
+        <translation>Das PDF %1 ließ sich nicht schreiben</translation>
+    </message>
+    <message>
+        <source>No revision index given</source>
+        <translation>Kein Revisionsindex angegeben</translation>
+    </message>
+    <message>
+        <source>The project is read-only</source>
+        <translation>Das Projekt ist schreibgeschützt</translation>
+    </message>
+    <message>
+        <source>Save the project to a file first</source>
+        <translation>Das Projekt zuerst in einer Datei speichern</translation>
+    </message>
+    <message>
+        <source>Revision %1 was closed already</source>
+        <translation>Revision %1 ist schon abgeschlossen</translation>
+    </message>
+    <message>
+        <source>The snapshot %1 could not be written: %2</source>
+        <translation>Die Momentaufnahme %1 ließ sich nicht schreiben: %2</translation>
+    </message>
+</context>
+<context>
     <name>ProjectView</name>
     <message>
         <source>The project was modified.
@@ -21936,6 +21967,219 @@ So aktivieren Sie sie: QElectroTech konfigurieren &gt; Allgemein &gt; Projekte, 
     <message>
         <source>Change the type of an element</source>
         <translation>Typ eines Bauteils ändern</translation>
+    </message>
+    <message>
+        <source>%1 not found</source>
+        <translation>%1 nicht gefunden</translation>
+    </message>
+    <message>
+        <source>%1 could not be opened</source>
+        <translation>%1 ließ sich nicht öffnen</translation>
+    </message>
+    <message>
+        <source>Symbol</source>
+        <translation>Symbol</translation>
+    </message>
+    <message>
+        <source>Wire</source>
+        <translation>Leitung</translation>
+    </message>
+    <message>
+        <source>Shape</source>
+        <translation>Form</translation>
+    </message>
+    <message>
+        <source>Image</source>
+        <translation>Bild</translation>
+    </message>
+    <message>
+        <source>Folio</source>
+        <translation>Blatt</translation>
+    </message>
+    <message>
+        <source>added</source>
+        <translation>hinzugefügt</translation>
+    </message>
+    <message>
+        <source>removed</source>
+        <translation>gelöscht</translation>
+    </message>
+    <message>
+        <source>changed</source>
+        <translation>geändert</translation>
+    </message>
+    <message>
+        <source>Folio %1: %2</source>
+        <translation>Blatt %1: %2</translation>
+    </message>
+    <message>
+        <source>title block changed</source>
+        <translation>Schriftfeld geändert</translation>
+    </message>
+    <message>
+        <source>Folio %1: %2 %3 %4</source>
+        <translation>Blatt %1: %2 %3 %4</translation>
+    </message>
+    <message>
+        <source>Close revision</source>
+        <translation>Revision abschließen</translation>
+    </message>
+    <message>
+        <source>The project is read-only.</source>
+        <translation>Das Projekt ist schreibgeschützt.</translation>
+    </message>
+    <message>
+        <source>Save the project to a file first: the snapshot of the revision is kept beside it.</source>
+        <translation>Das Projekt zuerst in einer Datei speichern: Die Momentaufnahme der Revision liegt daneben.</translation>
+    </message>
+    <message>
+        <source>What changed, e.g. Motor M2 added</source>
+        <translation>Was sich geändert hat, z. B. Motor M2 ergänzt</translation>
+    </message>
+    <message>
+        <source>Keep a PDF with the changes marked</source>
+        <translation>PDF mit markierten Änderungen ablegen</translation>
+    </message>
+    <message>
+        <source>First revision: the project as it is now becomes the reference.</source>
+        <translation>Erste Revision: Der jetzige Stand wird zum Bezug.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n change(s) since revision %1.</source>
+        <translation>
+            <numerusform>%n Änderung seit Revision %1.</numerusform>
+            <numerusform>%n Änderungen seit Revision %1.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>The index goes in every title block; the project is saved.</source>
+        <translation>Der Index kommt in jedes Schriftfeld; das Projekt wird gespeichert.</translation>
+    </message>
+    <message>
+        <source>Revision index:</source>
+        <translation>Revisionsindex:</translation>
+    </message>
+    <message>
+        <source>Short text:</source>
+        <translation>Kurztext:</translation>
+    </message>
+    <message>
+        <source>The revision was not closed: %1</source>
+        <translation>Die Revision wurde nicht abgeschlossen: %1</translation>
+    </message>
+    <message numerus="yes">
+        <source>Revision %1 closed: %n change(s), snapshot in %2</source>
+        <translation>
+            <numerusform>Revision %1 abgeschlossen: %n Änderung, Momentaufnahme in %2</numerusform>
+            <numerusform>Revision %1 abgeschlossen: %n Änderungen, Momentaufnahme in %2</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Current state</source>
+        <translation>Aktueller Stand</translation>
+    </message>
+    <message>
+        <source>Revision %1 (%2) %3</source>
+        <translation>Revision %1 (%2) %3</translation>
+    </message>
+    <message>
+        <source>Compare revisions</source>
+        <translation>Revisionen vergleichen</translation>
+    </message>
+    <message>
+        <source>Project file...</source>
+        <translation>Projektdatei …</translation>
+    </message>
+    <message>
+        <source>Older state:</source>
+        <translation>Älterer Stand:</translation>
+    </message>
+    <message>
+        <source>Newer state:</source>
+        <translation>Neuerer Stand:</translation>
+    </message>
+    <message>
+        <source>Kind</source>
+        <translation>Art</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <source>Change</source>
+        <translation>Änderung</translation>
+    </message>
+    <message>
+        <source>PDF with marks...</source>
+        <translation>PDF mit Markierung …</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n change(s). A double click shows it on its folio.</source>
+        <translation>
+            <numerusform>%n Änderung. Ein Doppelklick zeigt sie auf ihrem Blatt.</numerusform>
+            <numerusform>%n Änderungen. Ein Doppelklick zeigt sie auf ihrem Blatt.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Project to compare</source>
+        <translation>Zu vergleichendes Projekt</translation>
+    </message>
+    <message>
+        <source>QElectroTech projects (*.qet *.qetz *.qetdb)</source>
+        <translation>QElectroTech-Projekte (*.qet *.qetz *.qetdb)</translation>
+    </message>
+    <message>
+        <source>_comparison.pdf</source>
+        <translation>_Vergleich.pdf</translation>
+    </message>
+    <message>
+        <source>PDF with marks</source>
+        <translation>PDF mit Markierung</translation>
+    </message>
+    <message>
+        <source>PDF (*.pdf)</source>
+        <translation>PDF (*.pdf)</translation>
+    </message>
+    <message>
+        <source>No revision is closed yet: choose a project file as the older state.</source>
+        <translation>Noch keine Revision abgeschlossen: Als älteren Stand eine Projektdatei wählen.</translation>
+    </message>
+    <message>
+        <source>Revision</source>
+        <translation>Revision</translation>
+    </message>
+    <message>
+        <source>Close revision...</source>
+        <translation>Revision abschließen …</translation>
+    </message>
+    <message>
+        <source>Index and short text in the title blocks, a snapshot and a PDF of the changes beside the project</source>
+        <translation>Index und Kurztext in die Schriftfelder, Momentaufnahme und PDF der Änderungen neben das Projekt</translation>
+    </message>
+    <message>
+        <source>Diagram editors</source>
+        <translation>Schaltplaneditoren</translation>
+    </message>
+    <message>
+        <source>Mark changes</source>
+        <translation>Änderungen markieren</translation>
+    </message>
+    <message>
+        <source>Show what changed since the last revision with a cloud, on screen and in print and PDF</source>
+        <translation>Änderungen seit der letzten Revision mit einer Wolke zeigen, am Bildschirm, im Druck und im PDF</translation>
+    </message>
+    <message>
+        <source>Compare revisions...</source>
+        <translation>Revisionen vergleichen …</translation>
+    </message>
+    <message>
+        <source>What changed between two states, as a list and as a PDF with marks</source>
+        <translation>Was sich zwischen zwei Ständen geändert hat, als Liste und als PDF mit Markierung</translation>
+    </message>
+    <message>
+        <source>Open revision folder</source>
+        <translation>Revisionsordner öffnen</translation>
     </message>
 </context>
 <context>

@@ -3,6 +3,25 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## Unveröffentlicht – Revisionsverwaltung
+
+Einfache Revisionsverwaltung nach EPLAN-Vorbild (Skill `eplan-wissen`, `revision.md`):
+
+- Projekt > Revision > *Revision abschließen…* fragt nur Index (Vorschlag) und Kurztext. Danach: Index in jedem
+  Schriftfeld und in der Vorgabe für neue Blätter, Revisionstabelle als Projektvariablen `rev1_*`…`revN_*`
+  (neueste zuerst) und `rev_index`, `rev_date`, `rev_text`, `rev_count`, PDF mit den markierten Änderungen seit der
+  vorigen Revision und Momentaufnahme `.qet` in `<Name>_Revisionen/`, Projekt gespeichert.
+- Fingerabdruck jedes Symbols, jeder Leitung, jedes Textes, jeder Form und jedes Bildes (ohne UUIDs, Klemmen-IDs,
+  abgeleitete Beschriftungen) im Block `<revisions>` des Projekts; den behalten `.qet`, `.qetz` und `.qetdb` unverändert
+  (Fremdblöcke). Zuordnung über UUID, danach wie EPLANs alternative Identifizierung.
+- *Änderungen markieren* (an/aus, wird mitgespeichert): Revisionswolke mit Dreieck und Index, Strich entlang
+  geänderter Leitungen, Gelöschtes gestrichelt und durchgekreuzt, Hinweis „Neues Blatt“; gezeichnet im Hintergrund
+  des Blatts, also auch im Druck und PDF.
+- *Revisionen vergleichen…*: Liste mit Sprung und PDF mit Markierung für zwei beliebige Stände.
+- Neues Schriftfeld *revision* mit Tabelle der letzten drei Revisionen.
+- CLI `--close-revision`, `--revisions`, `--revision-marks`, `--compare-revisions`; Skript-API `closeRevision`,
+  `revisions`, `revisionChanges`, `nextRevisionIndex`, `revisionMarks`, `setRevisionMarks`, `exportRevisionPdf`.
+
 ## 1.47.0 – 20.11.2026
 
 FluidSIM-Bauteile, die bisher den Start verhinderten (FluidSIM-Gesamtlauf: 35 Schaltungen mit Modellfehler):

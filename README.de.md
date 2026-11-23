@@ -50,6 +50,26 @@ In QET und im exportierten PDF:
 - Neue Schriftfeld-Variablen `%{printdate}` und `%{saveddate-de}` (TT.MM.JJJJ).
 - Skript-API: `outsideSheet(folio)` listet, was außerhalb des Blatts liegt.
 
+## Revisionen wie bei EPLAN
+
+- Menü Projekt > Revision > *Revision abschließen…*: Index (Vorschlag A, B, … bzw. 01, 02, …) und Kurztext. Der Index
+  steht danach in jedem Schriftfeld (`%indexrev`), die Revisionstabelle in `%{rev1_index}`, `%{rev1_date}`,
+  `%{rev1_text}`, `%{rev1_author}` (rev1 = neueste) – das Schriftfeld *revision* zeigt die letzten drei. Neben dem
+  Projekt entsteht `<Name>_Revisionen/` mit der Momentaufnahme `<Name>_Rev_<Index>.qet` und einem PDF, in dem die
+  Änderungen seit der vorigen Revision markiert sind; das Projekt wird gespeichert.
+- *Änderungen markieren*: Was sich seit der letzten Revision geändert hat, bekommt automatisch eine rote
+  Revisionswolke mit Dreieck (Symbole, Texte, Formen), Leitungen einen breiten Strich entlang ihres Wegs; Gelöschtes
+  gestrichelt und durchgekreuzt, ein neues Blatt einen Hinweis über dem Schriftfeld. Sichtbar am Bildschirm, im
+  Druck und im PDF; ab der ersten Revision eingeschaltet.
+- *Revisionen vergleichen…*: zwei Stände (aktueller Stand, eine Revision, eine beliebige Projektdatei) als Liste
+  mit Sprung per Doppelklick und als PDF mit markierten Änderungen. Zuordnung über UUID, sonst wie EPLANs
+  „alternative Identifizierung“ über Blatt, Typ und BMK bzw. die verbundenen Anschlüsse – auch neu erzeugte Pläne
+  lassen sich vergleichen.
+- CLI: `--close-revision <projekt> <index> [text] [--no-pdf]`, `--revisions <projekt>`,
+  `--revision-marks <projekt> on|off`, `--compare-revisions <alt|index> <neu> [ausgabe.pdf] [--json]`.
+  Skript-API: `closeRevision`, `revisions`, `revisionChanges`, `nextRevisionIndex`, `setRevisionMarks`,
+  `exportRevisionPdf`.
+
 ## Kabel
 
 - Menü Projekt > *Kabelliste (Typen wählen)…*: alle Kabel des Projekts mit Typ, Adern, Farben, Anlage, Ort und

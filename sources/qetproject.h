@@ -67,6 +67,7 @@ class TitleBlockTemplate;
 class MoveTitleBlockTemplatesHandler;
 class NumerotationContext;
 class QUndoStack;
+class ProjectRevisions;
 class XmlElementCollection;
 class QTimer;
 class TerminalStrip;
@@ -135,6 +136,8 @@ class QETProject : public QObject
 	public:
 		ProjectPropertiesHandler& projectPropertiesHandler();
 		projectDataBase *dataBase();
+			/// Its revisions: table, last fingerprint, marks (revision/projectrevisions.h)
+		ProjectRevisions *revisions();
 		QUuid uuid() const;
 		QUuid derivedItemUuid(const QString &kind, const QString &key);
 		QUuid renewedSharedUuid(int folio_index, int ordinal, const QUuid &uuid,
@@ -736,6 +739,7 @@ class QETProject : public QObject
 			/// renewedSharedUuid()
 		QHash<QUuid, std::pair<int, int>> m_shared_uuid_keepers;	//symbol and wire uuids the file carries, see derivedItemUuid()
 		projectDataBase m_data_base;
+		ProjectRevisions *m_revisions = nullptr;
 		QVector<TerminalStrip *> m_terminal_strip_vector;
 			//Called after each folio built, see setFolioBuildObserver()
 		std::function<void(int, int)> m_folio_build_observer;

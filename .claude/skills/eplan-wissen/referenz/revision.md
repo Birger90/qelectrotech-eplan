@@ -266,6 +266,15 @@ Quellen: wie in den Abschnitten 2–8.
   über UUIDs vergleichen, sondern über BMK + Elementtyp + Anschlussnamen + Folio.
 - Standardvergleich enthält die **grafische Platzierung**: reines Verschieben gilt in EPLAN als Änderung. Für einen
   „Inhalt vor Optik“-Vergleich die Position ausklammern.
+- **Umsetzung im Fork (Projekt > Revision):** *Revision abschließen* = EPLANs „Revision erzeugen“ + „Seiten
+  abschließen“ in einem Schritt (Index + Kurztext; Index in alle Schriftfelder, Tabelle `%{rev1_index}` …
+  `%{revN_text}` mit rev1 = neueste, PDF mit Markierung und `.qet`-Momentaufnahme in `<Name>_Revisionen/`).
+  *Änderungen markieren* = Revisionsmarkierungen (Wolke + Dreieck, Strich an Leitungen, Gelöschtes gestrichelt =
+  Löschzeichen-Ersatz), im Hintergrund gezeichnet und damit auch im PDF. *Revisionen vergleichen* =
+  Eigenschaftenvergleich gegen eine Momentaufnahme oder beliebige Datei; Zuordnung UUID, dann alternative
+  Identifizierung (Blatt + Typ + BMK, Leitung über verbundene Anschlüsse). Reines Verschieben zählt wie in EPLANs
+  Standardschema als Änderung. CLI `--close-revision`, `--revisions`, `--revision-marks`, `--compare-revisions`;
+  Skript-API `closeRevision`, `revisionChanges`, `exportRevisionPdf`.
 
 ## Quellen
 

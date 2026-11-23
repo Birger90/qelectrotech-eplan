@@ -68,6 +68,7 @@
 #include <QThreadPool>
 #include <QtConcurrentMap>
 #include <algorithm>
+#include "revision/projectrevisions.h"
 #include <climits>
 #include <cassert>
 #include <math.h>
@@ -485,6 +486,10 @@ void Diagram::drawBackground(QPainter *p, const QRectF &r) {
 	if (use_border_) {
 		border_and_titleblock.draw(p);
 	}
+		//What changed since the last revision, when its marks are shown
+		//(on screen, in a print and a PDF alike)
+	if (m_project && isLoaded())
+		m_project->revisions()->paint(this, p);
 
 	p -> restore();
 }

@@ -20,6 +20,8 @@
 
 #include <QStringList>
 
+class QETProject;
+
 /**
 	@brief Headless command-line export.
 
@@ -136,8 +138,26 @@ namespace CLIExport {
 		      Keys: title, author, date (or date=today), plant, location,
 		      revision, version, filename; any other key becomes a custom
 		      field.  E.g. --set-titleblock in.qet out.qet revision=B date=today
+		Revisions (revision/projectrevisions.h, EPLAN's revision management):
+		  --close-revision <project> <index> [text...] [--no-pdf]
+		      close a revision: index in every title block, the row in the
+		      revision table (%{rev1_index}, %{rev1_date}, %{rev1_text},
+		      %{rev1_author}, newest first), a PDF with the changes since
+		      the last revision marked and a snapshot in
+		      <name>_Revisionen/, then the project saved in place.
+		  --revisions <project>  the revision table and what changed since
+		      the last revision.
+		  --revision-marks <project> on|off  show the marks or not (saved).
+		  --compare-revisions <older> <newer> [<output.pdf>] [--json]
+		      what changed from one state to another, one line each; with
+		      an output, a PDF of the newer with the changes marked.
+		      <older> is a project file or a revision index of <newer>.
 	*/
 	int run(const QStringList &args);
+
+		/// Write every folio of @p project to the PDF @p output, as
+		/// --export-pdf does. @return 0 on success
+	int exportProjectPdf(QETProject &project, const QString &output);
 
 }
 

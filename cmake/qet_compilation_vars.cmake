@@ -384,6 +384,10 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/qetmessagebox.cpp
   ${QET_DIR}/sources/qetmessagebox.h
   ${QET_DIR}/sources/projectlock.cpp
+  ${QET_DIR}/sources/revision/projectrevisions.cpp
+  ${QET_DIR}/sources/revision/projectrevisions.h
+  ${QET_DIR}/sources/revision/revisionui.cpp
+  ${QET_DIR}/sources/revision/revisionui.h
   ${QET_DIR}/sources/projectlock.h
   ${QET_DIR}/sources/qetproject.cpp
   ${QET_DIR}/sources/qetproject.h

@@ -65,6 +65,7 @@ namespace CLIExport {
 		  qelectrotech --portal-request 3dfindit <order number>
 		  qelectrotech --resave         <project.qet> <output.qet>
 		  qelectrotech --recover        <damaged.qetz> <output.qet>
+		  qelectrotech --lock-status    <project> [--json]   (who has it open, left-over lock, OneDrive conflict copies)
 		  qelectrotech --set-titleblock <project.qet> <output.qet> key=value...
 		  qelectrotech --query          <SQL> <project>... [--json]
 

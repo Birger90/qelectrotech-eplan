@@ -27,7 +27,10 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QRegularExpression>
 #include <QSettings>
+
+#include <algorithm>
 #include <QSysInfo>
 #include <QUuid>
 
@@ -192,6 +195,74 @@ bool ProjectLock::isStale(const Holder &holder)
 }
 
 /**
+	@brief ProjectLock::isOrphaned
+	@return true when @p holder has not written a heartbeat for
+	orphan_minutes: the session is very likely gone (crashed, PC switched
+	off or off the network). It is not taken silently -- a laptop that
+	slept can wake up -- but the user is offered to take it over.
+*/
+bool ProjectLock::isOrphaned(const Holder &holder, const QDateTime &now)
+{
+	if (!holder.valid || holder.session == QLatin1String("?")) return false;
+	const QDateTime last = holder.heartbeat.isValid() ? holder.heartbeat : holder.since;
+	if (!last.isValid()) return false;
+	return last.secsTo(now) >= qint64(orphan_minutes) * 60;
+}
+
+/**
+	@brief ProjectLock::conflictCopies
+	The copies OneDrive and SharePoint make when two PCs changed the same
+	file before either was synchronised: "plant.qetz" is kept and the other
+	version is put beside it as "plant-<PC name>.qetz", or
+	"plant-<PC name>-1.qetz" for a further one.
+	A PC name is one word of letters, digits and hyphens with at least one
+	letter, written in capitals as Windows gives it; a lower-case word
+	("plant-old.qetz") counts only when it is a name in @p known_hosts or
+	this PC's, so that copies the user made by hand are not reported.
+	@return the paths of such files in the project's folder, newest first
+*/
+QStringList ProjectLock::conflictCopies(const QString &project_path, const QStringList &known_hosts)
+{
+	const QFileInfo project(project_path);
+	const QString base = project.completeBaseName();
+	const QString suffix = project.suffix();
+	if (base.isEmpty() || suffix.isEmpty()) return {};
+
+	QStringList hosts = known_hosts;
+	hosts << thisHost() << qEnvironmentVariable("COMPUTERNAME");
+	const QRegularExpression host_word(QStringLiteral("^[A-Za-z0-9][A-Za-z0-9-]{0,62}$"));
+	const QRegularExpression counter(QStringLiteral("-\\d{1,3}$"));
+	const QRegularExpression letter(QStringLiteral("[A-Za-z]"));
+
+	const QString prefix = base + QLatin1Char('-');
+	const QString ending = QLatin1Char('.') + suffix;
+	QFileInfoList found;
+	const QFileInfoList candidates = project.absoluteDir().entryInfoList(
+				{prefix + QLatin1Char('*') + ending}, QDir::Files | QDir::Hidden);
+	for (const QFileInfo &candidate : candidates)
+	{
+		const QString name = candidate.fileName();
+		if (name.compare(project.fileName(), Qt::CaseInsensitive) == 0) continue;
+		if (name.startsWith(QLatin1Char('.'))) continue;
+		if (!name.startsWith(prefix, Qt::CaseInsensitive) || !name.endsWith(ending, Qt::CaseInsensitive)) continue;
+		QString host = name.mid(prefix.size(), name.size() - prefix.size() - ending.size());
+		host.remove(counter);
+		if (!host_word.match(host).hasMatch() || !letter.match(host).hasMatch()) continue;
+		bool known = false;
+		for (const QString &h : std::as_const(hosts))
+			if (!h.isEmpty() && h.section(QLatin1Char('.'), 0, 0).compare(host, Qt::CaseInsensitive) == 0) known = true;
+		if (!known && host != host.toUpper()) continue;
+		found << candidate;
+	}
+	std::sort(found.begin(), found.end(), [](const QFileInfo &a, const QFileInfo &b) {
+		return a.lastModified() > b.lastModified();
+	});
+	QStringList paths;
+	for (const QFileInfo &f : std::as_const(found)) paths << f.absoluteFilePath();
+	return paths;
+}
+
+/**
 	@brief ProjectLock::liveHolder
 	@param own_session the session of the caller, whose lock is not a conflict
 	@return who holds @p project_path now: not valid when nobody does, the
@@ -277,6 +348,7 @@ ProjectLock::Result ProjectLock::acquire(const QString &project_path, bool take_
 {
 	release();
 	m_blocking = Holder();
+	m_replaced_stale = Holder();
 	const QString lock_path = lockPathFor(project_path);
 	m_since = QDateTime::currentDateTimeUtc();
 
@@ -305,6 +377,10 @@ ProjectLock::Result ProjectLock::acquire(const QString &project_path, bool take_
 			return Result::Held;
 		}
 			//Stale, unreadable for good, or taken over: replace it
+		if (!holder.valid) {
+			const Holder dead = readHolder(project_path);
+			if (isStale(dead)) m_replaced_stale = dead;
+		}
 		if (!QFile::remove(lock_path) && QFileInfo::exists(lock_path))
 			return Result::Unavailable;
 	}

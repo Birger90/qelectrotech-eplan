@@ -3,6 +3,32 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## Unveröffentlicht – Projektsperre für SharePoint, OneDrive und Netzlaufwerke
+
+Baut auf der Sperrdatei aus Upstream auf (`.~<Projekt>.lock` neben dem Projekt, JSON mit Benutzer, Rechner,
+Prozess, Programmversion, „seit“ und Herzschlag jede Minute; wird beim Schließen gelöscht):
+
+- Meldung beim Öffnen „<Projekt> ist seit … bei <Benutzer> auf <Rechner> geöffnet (zuletzt aktiv vor n Minuten)“
+  mit Programmversion. Wahl: *Nur lesen öffnen* (Vorgabe), *Trotzdem bearbeiten* (fragt mit einer deutlichen
+  Warnung nach), *Abbrechen*.
+- Verwaiste Sperren: Kam seit 10 Minuten kein Herzschlag, bietet die Meldung *Sperre übernehmen* als Vorgabe an
+  (Absturz, Rechner aus, Netz weg). Die Sperre einer abgestürzten Sitzung auf dem eigenen Rechner wird wie bisher
+  ohne Frage übernommen, jetzt mit Hinweis in der Statuszeile.
+- Übernimmt jemand anderes das Projekt, wird es hier sofort schreibgeschützt (Meldung, Statuszeile); eigene
+  Änderungen gehen mit *Speichern unter* in eine andere Datei. Speichern auf eine Datei, die gerade jemand anderes
+  hält, verweigert das Programm auch beim automatischen Speichern.
+- OneDrive-/SharePoint-Konfliktkopien („Projekt-<Rechnername>.qetz“) neben dem Projekt werden beim Öffnen gemeldet:
+  einmal je Kopie als Meldung (*Neueste Kopie öffnen*, *Ordner zeigen*), solange sie da sind in der Statuszeile.
+- Nur lesen heißt jetzt wirklich nur lesen: *Speichern* ist bei schreibgeschützten Projekten aus, Strg+S und
+  Speichern beim Schließen führen zu *Speichern unter*, und `QETProject::write()` schreibt die Datei nie – auch
+  nicht beim automatischen Speichern, per Skript oder MCP, und auch dann nicht, wenn das Dateisystem es erlauben
+  würde (Projekt einer neueren Version, Stand aus dem Verlauf). Fehler behoben: Ein abgewiesenes Speichern hat den
+  Rückgängig-Stapel trotzdem als gespeichert markiert.
+- Ohne Oberfläche: `--lock-status <Projekt> [--json]` zeigt Zustand (frei, gehalten, verwaist, abgestürzt), Halter
+  und Konfliktkopien; Rückgabewert 0 frei, 1 gehalten, 3 verwaist/abgestürzt.
+- Tests: `tst_projectlock` um verwaiste Sperre, gemeldete Absturzsperre, Konfliktkopien und zwei echte Prozesse
+  erweitert (20 bestanden).
+
 ## 1.47.0 – 20.11.2026
 
 FluidSIM-Bauteile, die bisher den Start verhinderten (FluidSIM-Gesamtlauf: 35 Schaltungen mit Modellfehler):

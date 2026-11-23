@@ -91,6 +91,7 @@ class QETDiagramEditor : public QETMainWindow
 		bool                 openAndAddProject (const QString &, bool = true);
 		enum class LockChoice {ReadOnly, OpenAnyway, Cancel};
 		LockChoice           askAboutLock (const QString &, const ProjectLock::Holder &);
+		void                 tellConflictCopies (const QString &);
 		QList<QString>       editedFiles       () const;
 		ProjectView         *viewForFile       (const QString &) const;
 		ProjectView *currentProjectView() const;

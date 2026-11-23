@@ -66,6 +66,7 @@
 #include "titleblockproperties.h"
 #include "wiringlistdb.h"
 #include "wiringlistexport.h"
+#include "plc/tiaplctags.h"
 
 // Private Qt PDF engine for drawHyperlink() — see pdf_links / projectprintwindow.
 #include <private/qpdf_p.h>
@@ -119,6 +120,8 @@ const QHash<QString, QString> &exportFlags()
 		{"--export-wiring", "wiring"},
 		{"--export-nets", "nets"},
 		{"--export-links", "links"},
+		{"--export-tia-tags", "tiaexport"},
+		{"--compare-tia-tags", "tiacompare"},
 		{"--check-device-types", "devicetypes"},
 		{"--check-project", "checkproject"},
 		{"--export-device-types", "devicetypelist"},
@@ -1922,6 +1925,73 @@ int compareRevisions(const QStringList &rest, bool json)
 
 namespace CLIExport {
 
+/// --export-tia-tags: the PLC channels of the project as tag table for
+/// TIA Portal (.xlsx for the tag table editor, .xml for Openness)
+int exportTiaTags(QETProject &project, const QString &output, const QHash<QString, QString> &opts)
+{
+	QStringList notes;
+	const QVector<TiaPlcTags::Channel> channels = TiaPlcTags::channels(&project, &notes);
+	QString error;
+	if (!TiaPlcTags::write(output, channels, opts.value("tia-table"), opts.value("tia-culture"), &error)) {
+		err << "Cannot write '" << output << "': " << error << "\n";
+		return 1;
+	}
+	int written = 0, counted = 0;
+	for (const auto &c : channels) {
+		if (c.address.isEmpty()) continue;
+		++written;
+		if (c.autoAddress) ++counted;
+	}
+	for (const QString &note : notes) err << "note: " << note << "\n";
+	out << "Exported " << written << " PLC tag(s) of " << channels.size() << " channel(s), "
+		<< counted << " with an address counted from the module start -> " << output << "\n";
+	return 0;
+}
+
+/// --compare-tia-tags: a TIA tag table against the PLC channels; the
+/// differences as CSV (stdout or a file), --apply OUT.qet takes the names
+/// and comments of the tags into the plan and saves it as OUT.qet
+int compareTiaTags(QETProject &project, const QString &tags_path, const QString &report,
+				   const QHash<QString, QString> &opts)
+{
+	QString error;
+	const QVector<TiaPlcTags::Tag> tags = TiaPlcTags::read(tags_path, &error);
+	if (tags.isEmpty() && !error.isEmpty()) {
+		err << "Cannot read '" << tags_path << "': " << error << "\n";
+		return 1;
+	}
+	QStringList notes;
+	const TiaPlcTags::Comparison cmp = TiaPlcTags::compare(TiaPlcTags::channels(&project, &notes), tags);
+	const QString csv = TiaPlcTags::reportCsv(cmp);
+	if (report.isEmpty() || report == "-") {
+		out << csv;
+	} else {
+		QSaveFile file(report);
+		if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+			err << "Cannot open '" << report << "' for writing.\n";
+			return 1;
+		}
+		file.write(csv.toUtf8());
+		file.commit();
+	}
+	using S = TiaPlcTags::Status;
+	err << "Compared " << cmp.channels.size() << " channel(s) with " << tags.size() << " tag(s): "
+		<< cmp.count(S::Same) << " same, "
+		<< cmp.count(S::NameDiffers) + cmp.count(S::BothDiffer) << " name differs, "
+		<< cmp.count(S::CommentDiffers) + cmp.count(S::BothDiffer) << " comment differs, "
+		<< cmp.count(S::AddressDiffers) << " address differs, "
+		<< cmp.count(S::MissingInTia) << " missing in TIA, "
+		<< cmp.count(S::OnlyInTia) << " only in TIA, "
+		<< cmp.otherTags << " other tag(s) (no I/Q address)\n";
+	const QString apply_to = opts.value("apply");
+	if (!apply_to.isEmpty()) {
+		const int changed = TiaPlcTags::apply(cmp);
+		err << "Took over " << changed << " name(s)/comment(s) from TIA.\n";
+		return resaveProject(project, apply_to);
+	}
+	return 0;
+}
+
 bool isExportRequest(const QStringList &args)
 {
 	for (const QString &a : args)
@@ -2516,6 +2586,20 @@ int run(const QStringList &args)
 		return exportNets(project, output);
 	if (format == "links")
 		return exportLinks(project, output);
+	if (format == "tiaexport" || format == "tiacompare") {
+		QStringList positional;
+		QHash<QString, QString> opts;
+		for (int i = 1; i < rest.size(); ++i) {
+			const QString &a = rest.at(i);
+			if (a.startsWith("--") && i + 1 < rest.size())
+				opts.insert(a.mid(2), rest.at(++i));
+			else
+				positional << a;
+		}
+		if (format == "tiaexport")
+			return exportTiaTags(project, positional.value(0), opts);
+		return compareTiaTags(project, positional.value(0), positional.value(1), opts);
+	}
 	if (format == "devicetypes")
 		return exportDeviceTypeCheck(project, output);
 	if (format == "devicetypelist" || format == "devicetypebrief")

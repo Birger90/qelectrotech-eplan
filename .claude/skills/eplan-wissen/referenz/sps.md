@@ -383,10 +383,19 @@ AutomationML / unterstützte Programme (TechTipp, Stand April 2026, für Version
   Untergeräte am Hauptartikel hinterlegen, sonst werden sie als eigene Geräte importiert.
   Quelle: https://www.eplan.help/techtipps/de-DE/SPS/TechTip-Configuring-PLC-devices-with-device-description-files.pdf
 
-**Bedeutung für QET:** QET hat keinen SPS-Datenaustausch. Nutzbar ist eine Zuordnungsliste (ASC/SEQ/Excel) bzw.
-eine TIA-Variablentabelle als Quelle für Adresse/symbolische Adresse/Kommentar, um die Kanalfelder zu füllen
-oder den Nachbau gegenzuprüfen (Vermutung: Zuordnung über Adresse, weil Listen keine BMK tragen). Der TIA-MCP
-dieser Umgebung kann Variablentabellen exportieren.
+**Bedeutung für QET:** Der Fork tauscht die SPS-Kanäle mit Siemens TIA Portal über die PLC-Variablentabelle aus
+(*Projekt > SPS-Variablen und TIA Portal…*, CLI `--export-tia-tags`/`--compare-tia-tags`, `sources/plc/tiaplctags.*`):
+Export als `.xlsx` für den Import im Variablentabellen-Editor oder SimaticML-`.xml` für Openness, Abgleich über die
+Adresse (Listen tragen kein BMK), dann über den Namen; TIA-Name → symbolische Adresse, TIA-Kommentar → Funktionstext.
+Belegtes Format (STEP-7-Hilfe V20/V21 „Format of the export file (*.xlsx)“,
+https://docs.tia.siemens.cloud/r/en-us/v21/declaring-plc-tags/editing-plc-tag-tables/exporting-and-importing-plc-tags):
+Blatt „PLCTags“ (Name, Path, Data Type, Logical Address, Comment, Hmi Visible, Hmi Accessible, Hmi Writeable,
+Typeobject ID, Version ID; Köpfe immer englisch, Reihenfolge frei, keine eigenen Spalten), Blatt „TagTableProperties“
+(Path, BelongsToUnit, Accessibility), Dokumenteigenschaft TIA_Version = 1.0 (sonst „Missing version ID“). Adressen in
+deutscher oder internationaler Mnemonik; Namen je CPU eindeutig ohne Groß-/Kleinschreibung, keine Anführungszeichen.
+Ältere TIA-Exporte heißen „PLC Tags“ – der Leser nimmt beide. Openness kann die xlsx nicht importieren (nur XML,
+`PlcTagTableComposition.Import`); der Excel-Import geht nur über die Oberfläche. EPLANs Zuordnungslisten (ASC/SEQ/SDF)
+bleiben ungenutzt.
 
 ## 13. Auswertungen: SPS-Diagramm, Karten- und Adressübersicht
 
@@ -468,7 +477,7 @@ Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/ht
 
 **Bedeutung für QET:** Die Tabelle ist das Muster für eine Prüf-/Soll-Liste je CPU: Adresse, Datentyp, Richtung,
 symbolische Adresse, Funktionstext, BMK + Stecker:Anschluss, Kanalbezeichnung. Ein Export aus dem QET-Nachbau in
-genau diesen Spalten wäre direkt mit einer EPLAN- oder TIA-Liste vergleichbar (Vermutung, kein Fork-Feature).
+genau diesen Spalten wäre direkt mit einer EPLAN-Liste vergleichbar; für TIA gibt es den Abgleich (Abschnitt 12).
 
 ## 16. Einstellungen: SPS (projektweit) und automatische Adressierung
 

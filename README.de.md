@@ -37,6 +37,15 @@ In QET und im exportierten PDF:
 - SPS: Die Karte (SPS-Master) führt ihre E/A-Tabelle (Adresse, Funktionstext, Kommentar, Klemmen); jeder Kanal ist
   an seine Zeile gebunden (`group_index`) und zeigt die Werte über seine Felder – Tabelle ändern, die Kanäle ziehen
   nach.
+- Siemens TIA Portal: *Projekt > SPS-Variablen und TIA Portal…* zeigt jeden Kanal so, wie er nach TIA geht (Adresse,
+  Name, Datentyp, Kommentar), und schreibt ihn als PLC-Variablentabelle – `.xlsx` im Format des Imports der
+  Variablentabelle (Blätter PLCTags/TagTableProperties, wie die STEP-7-Hilfe es beschreibt) oder SimaticML-`.xml` für
+  Openness. Eine aus TIA exportierte Tabelle wieder eingelesen, markiert das Fenster die Unterschiede (Name,
+  Kommentar, Adresse, fehlt, nur in TIA); ein Klick übernimmt Namen und Kommentare aus TIA in den Plan (ein
+  Rückgängig-Schritt). EPLAN-Adressen (E 50.0, PEW256) werden zu %I50.0/%IW256; Kanäle, die nur DI0/DQ3 heißen,
+  werden ab der Startadresse des Moduls gezählt (Elementinformation `plc_start_address`/`plc_start_address_2`,
+  sonst die nächsten freien Bytes). Auch per `--export-tia-tags`, `--compare-tia-tags … [--apply neu.qet]` und
+  `qet.exportTiaTags/compareTiaTags/applyTiaTags` in Skripten.
 - Kontakte: Eine platzierte Spule kann eigene Kontaktgruppen tragen (11/12/14, 21/22/24 …), wie die
   Funktionsschablone eines EPLAN-Artikels; die Kontakte übernehmen daraus ihre Anschlussbezeichnungen, der
   Kontaktspiegel zeigt sie.

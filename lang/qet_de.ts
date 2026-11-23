@@ -19023,6 +19023,14 @@ Verfügbare Optionen:
         <translation>Artikel nach Lieferant mit Preis, EAN und VPE, als Excel- und ERP-Datei</translation>
     </message>
     <message>
+        <source>PLC tags and TIA Portal...</source>
+        <translation>SPS-Variablen und TIA Portal...</translation>
+    </message>
+    <message>
+        <source>Export the PLC channels as TIA Portal tag table, or compare them with one exported from TIA Portal</source>
+        <translation>SPS-Kanäle als TIA-Portal-Variablentabelle exportieren oder mit einer aus TIA Portal exportierten abgleichen</translation>
+    </message>
+    <message>
         <source>Tape measure</source>
         <translation>Maßband</translation>
     </message>
@@ -22983,6 +22991,56 @@ Was möchten Sie tun?</translation>
 </context>
 <context>
     <name>QObject</name>
+    <message>
+
+    </message>
+    <message>
+        <source>Take over PLC tags from TIA Portal</source>
+        <translation>SPS-Variablen aus TIA Portal übernehmen</translation>
+    </message>
+    <message>
+        <source>Import FluidSIM circuit</source>
+        <translation>FluidSIM-Schaltung importieren</translation>
+    </message>
+    <message>
+        <source>The import program (%1) was not found next to QElectroTech. Set QET_FLUIDSIM_IMPORT to its path.</source>
+        <translation>Das Importprogramm (%1) liegt nicht neben QElectroTech. QET_FLUIDSIM_IMPORT auf seinen Pfad setzen.</translation>
+    </message>
+    <message>
+        <source>FluidSIM circuits (*.circ);;All files (*)</source>
+        <translation>FluidSIM-Schaltungen (*.circ);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <source>Save the imported project as</source>
+        <translation>Importiertes Projekt speichern unter</translation>
+    </message>
+    <message>
+        <source>QElectroTech projects (*.qet)</source>
+        <translation>QElectroTech-Projekte (*.qet)</translation>
+    </message>
+    <message numerus="yes">
+        <source>Importing %n FluidSIM circuit(s) …</source>
+        <translation>
+            <numerusform>Importiere %n FluidSIM-Schaltung …</numerusform>
+            <numerusform>Importiere %n FluidSIM-Schaltungen …</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>No Python could run the import program:
+%1</source>
+        <translation>Kein Python konnte das Importprogramm ausführen:
+%1</translation>
+    </message>
+    <message>
+        <source>The import did not finish:
+%1</source>
+        <translation>Der Import ist nicht fertig geworden:
+%1</translation>
+    </message>
     <message>
         <source>Apply text format</source>
         <translation>Beschriftungsart zuweisen</translation>
@@ -33064,6 +33122,229 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <message>
         <source>Click to place &quot;%1&quot;, right click or Escape to stop.</source>
         <translation>Klicken, um „%1“ zu platzieren; Rechtsklick oder Esc beendet.</translation>
+    </message>
+</context>
+<context>
+    <name>TiaPlcTags</name>
+    <message>
+        <source>The workbook has no sheet with the columns Name and Logical Address.</source>
+        <translation>Die Arbeitsmappe hat kein Blatt mit den Spalten Name und Logical Address.</translation>
+    </message>
+    <message>
+        <source>Not an XML file: %1</source>
+        <translation>Keine XML-Datei: %1</translation>
+    </message>
+    <message>
+        <source>The XML file is no TIA Portal tag table (SW.Tags.PlcTagTable).</source>
+        <translation>Die XML-Datei ist keine Variablentabelle von TIA Portal (SW.Tags.PlcTagTable).</translation>
+    </message>
+    <message>
+        <source>%1, row %2: address &quot;%3&quot; is neither an I/Q address nor a channel.</source>
+        <translation>%1, Zeile %2: Adresse „%3“ ist weder eine E/A-Adresse noch ein Kanal.</translation>
+    </message>
+    <message>
+        <source>%1, row %2: the name &quot;%3&quot; is taken, written as &quot;%4&quot;.</source>
+        <translation>%1, Zeile %2: Der Name „%3“ ist vergeben, geschrieben als „%4“.</translation>
+    </message>
+    <message>
+        <source>%1, row %2: address %3 is used twice.</source>
+        <translation>%1, Zeile %2: Adresse %3 ist doppelt belegt.</translation>
+    </message>
+    <message>
+        <source>same</source>
+        <translation>gleich</translation>
+    </message>
+    <message>
+        <source>name differs</source>
+        <translation>Name abweichend</translation>
+    </message>
+    <message>
+        <source>comment differs</source>
+        <translation>Kommentar abweichend</translation>
+    </message>
+    <message>
+        <source>name and comment differ</source>
+        <translation>Name und Kommentar abweichend</translation>
+    </message>
+    <message>
+        <source>address differs</source>
+        <translation>Adresse abweichend</translation>
+    </message>
+    <message>
+        <source>missing in TIA</source>
+        <translation>fehlt in TIA</translation>
+    </message>
+    <message>
+        <source>only in TIA</source>
+        <translation>nur in TIA</translation>
+    </message>
+</context>
+<context>
+    <name>TiaTagsDialog</name>
+    <message>
+        <source>Only differences</source>
+        <translation>Nur Unterschiede</translation>
+    </message>
+    <message>
+        <source>PLC tags and TIA Portal</source>
+        <translation>SPS-Variablen und TIA Portal</translation>
+    </message>
+    <message>
+        <source>Each row is a channel of a PLC module as it goes to TIA Portal. &quot;Export for TIA…&quot; writes the tag table (.xlsx: open the tag table in TIA Portal and click Import). &quot;Compare with TIA table…&quot; reads a tag table exported from TIA Portal and shows what differs; the TIA names and comments can then be taken into the plan. Click a row to show the channel.</source>
+        <translation>Jede Zeile ist ein Kanal eines SPS-Moduls, so wie er nach TIA Portal geht. „Für TIA exportieren…“ schreibt die Variablentabelle (.xlsx: in TIA Portal die Variablentabelle öffnen und Importieren klicken). „Mit TIA-Tabelle abgleichen…“ liest eine aus TIA Portal exportierte Variablentabelle und zeigt die Unterschiede; danach lassen sich Namen und Kommentare aus TIA in den Plan übernehmen. Klick auf eine Zeile zeigt den Kanal.</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Status</translation>
+    </message>
+    <message>
+        <source>Address</source>
+        <translation>Adresse</translation>
+    </message>
+    <message>
+        <source>Name (plan)</source>
+        <translation>Name (Plan)</translation>
+    </message>
+    <message>
+        <source>Name (TIA)</source>
+        <translation>Name (TIA)</translation>
+    </message>
+    <message>
+        <source>Data type</source>
+        <translation>Datentyp</translation>
+    </message>
+    <message>
+        <source>Comment (plan)</source>
+        <translation>Kommentar (Plan)</translation>
+    </message>
+    <message>
+        <source>Comment (TIA)</source>
+        <translation>Kommentar (TIA)</translation>
+    </message>
+    <message>
+        <source>Module</source>
+        <translation>Modul</translation>
+    </message>
+    <message>
+        <source>Folio</source>
+        <translation>Blatt</translation>
+    </message>
+    <message>
+        <source>Export for TIA…</source>
+        <translation>Für TIA exportieren…</translation>
+    </message>
+    <message>
+        <source>Compare with TIA table…</source>
+        <translation>Mit TIA-Tabelle abgleichen…</translation>
+    </message>
+    <message>
+        <source>Take over names and comments</source>
+        <translation>Namen und Kommentare übernehmen</translation>
+    </message>
+    <message>
+        <source>Save report…</source>
+        <translation>Bericht speichern…</translation>
+    </message>
+    <message>
+        <source>not compared</source>
+        <translation>nicht abgeglichen</translation>
+    </message>
+    <message>
+        <source>%1 (TIA: %2)</source>
+        <translation>%1 (TIA: %2)</translation>
+    </message>
+    <message>
+        <source>Counted from the module&apos;s start address (channel %1); set the element information plc_start_address / plc_start_address_2 of the module for other addresses.</source>
+        <translation>Ab der Startadresse des Moduls gezählt (Kanal %1); für andere Adressen die Elementinformation plc_start_address / plc_start_address_2 am Modul setzen.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n channel(s) of PLC modules, </source>
+        <translation>
+            <numerusform>%n Kanal von SPS-Modulen, </numerusform>
+            <numerusform>%n Kanäle von SPS-Modulen, </numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n with an address counted from the module start.</source>
+        <translation>
+            <numerusform>%n mit ab dem Modulanfang gezählter Adresse.</numerusform>
+            <numerusform>%n mit ab dem Modulanfang gezählter Adresse.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Compared with %1: %2 the same, %3 name differs, %4 comment differs, %5 address differs, %6 missing in TIA, %7 only in TIA.</source>
+        <translation>Abgeglichen mit %1: %2 gleich, %3 Name abweichend, %4 Kommentar abweichend, %5 Adresse abweichend, %6 fehlen in TIA, %7 nur in TIA.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n tag(s) without I/Q address (memory, data blocks) not compared.</source>
+        <translation>
+            <numerusform>%n Variable ohne E/A-Adresse (Merker, Datenbausteine) nicht abgeglichen.</numerusform>
+            <numerusform>%n Variablen ohne E/A-Adresse (Merker, Datenbausteine) nicht abgeglichen.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Export PLC tags for TIA Portal</source>
+        <translation>SPS-Variablen für TIA Portal exportieren</translation>
+    </message>
+    <message>
+        <source>TIA Portal tag table (*.xlsx);;TIA Portal Openness (*.xml)</source>
+        <translation>TIA-Portal-Variablentabelle (*.xlsx);;TIA Portal Openness (*.xml)</translation>
+    </message>
+    <message>
+        <source>Could not write %1:
+%2</source>
+        <translation>%1 konnte nicht geschrieben werden:
+%2</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n PLC tag(s) written to %1.</source>
+        <translation>
+            <numerusform>%n SPS-Variable nach %1 geschrieben.</numerusform>
+            <numerusform>%n SPS-Variablen nach %1 geschrieben.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Import it with TIA Portal Openness into the PLC tags of the CPU.</source>
+        <translation>Mit TIA Portal Openness in die PLC-Variablen der CPU importieren.</translation>
+    </message>
+    <message>
+        <source>In TIA Portal open the tag table of the CPU (PLC tags) and click Import.</source>
+        <translation>In TIA Portal die Variablentabelle der CPU (PLC-Variablen) öffnen und Importieren klicken.</translation>
+    </message>
+    <message>
+        <source>Compare with TIA tag table</source>
+        <translation>Mit TIA-Variablentabelle abgleichen</translation>
+    </message>
+    <message>
+        <source>TIA Portal tag tables (*.xlsx *.xml)</source>
+        <translation>TIA-Portal-Variablentabellen (*.xlsx *.xml)</translation>
+    </message>
+    <message>
+        <source>%1 has no PLC tags.</source>
+        <translation>%1 enthält keine SPS-Variablen.</translation>
+    </message>
+    <message>
+        <source>Take over PLC tags from TIA Portal</source>
+        <translation>SPS-Variablen aus TIA Portal übernehmen</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n channel(s) took name and comment from TIA Portal (undo with Ctrl+Z).</source>
+        <translation>
+            <numerusform>%n Kanal hat Name und Kommentar aus TIA Portal übernommen (rückgängig mit Strg+Z).</numerusform>
+            <numerusform>%n Kanäle haben Name und Kommentar aus TIA Portal übernommen (rückgängig mit Strg+Z).</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Save comparison</source>
+        <translation>Abgleich speichern</translation>
+    </message>
+    <message>
+        <source>CSV (*.csv)</source>
+        <translation>CSV (*.csv)</translation>
+    </message>
+    <message>
+        <source>Could not write %1.</source>
+        <translation>%1 konnte nicht geschrieben werden.</translation>
     </message>
 </context>
 </TS>

@@ -153,6 +153,35 @@ Stückliste für Einkauf und ERP (Menü Projekt > *Einkaufsliste exportieren…*
   Preis, Lieferzeit oder VPE; EDZ-Preisfelder stehen bei den Herstellern auf 0. Solche Werte bleiben leer.
 - `DataPortalPart` liest zusätzlich `identcode` und `lifecycle`.
 
+## Unveröffentlicht – SPS-Abgleich mit TIA Portal
+
+- Neues Fenster *Projekt > SPS-Variablen und TIA Portal…*: alle Kanäle der SPS-Module (E/A-Tabellen) so, wie sie nach
+  TIA Portal gehen – Adresse, Name, Datentyp (Bool für DI/DQ, Int für AI/AQ), Kommentar, Modul, Blatt; Klick auf eine
+  Zeile zeigt den Kanal.
+- *Für TIA exportieren…* schreibt eine PLC-Variablentabelle: `.xlsx` im Format, das der Import der Variablentabelle
+  erwartet (STEP-7-Hilfe V20/V21 „Format of the export file (*.xlsx)“: Blatt „PLCTags“ mit Name, Path, Data Type,
+  Logical Address, Comment, Hmi Visible/Accessible/Writeable, Typeobject ID, Version ID; Blatt „TagTableProperties“;
+  Dokumenteigenschaft TIA_Version = 1.0, ohne die TIA „Missing version ID“ meldet) oder SimaticML-`.xml`
+  (`SW.Tags.PlcTagTable`) für TIA Portal Openness.
+- Adressen: EPLAN-Adressen in deutscher oder internationaler Mnemonik (E 50.0, A1.3, PEW256, %QW64) werden zu
+  %I50.0, %Q1.3, %IW256 …; Kanäle, die nur ihren Kanal nennen (DI0, DQ3, AI1 wie die Module der Sammlung), werden ab
+  der Startadresse des Moduls gezählt – Elementinformation `plc_start_address` (Eingänge) bzw. `plc_start_address_2`
+  (Ausgänge) wie EPLANs Startadresse/Startadresse 2, sonst die nächsten freien Bytes in Blattreihenfolge.
+- Name = symbolische Adresse des Kanals, sonst Modul + Kanal (A3_DI0); doppelte Namen bekommen _2 (TIA verlangt
+  eindeutige Namen je CPU ohne Groß-/Kleinschreibung).
+- *Mit TIA-Tabelle abgleichen…* liest eine aus TIA exportierte Tabelle (`.xlsx`, auch ältere mit Blatt „PLC Tags“,
+  oder SimaticML-`.xml`) und zeigt je Kanal: gleich, Name abweichend, Kommentar abweichend, Adresse abweichend
+  (gleicher Name), fehlt in TIA, nur in TIA. Merker- und DB-Variablen werden gezählt, nicht verglichen.
+  *Namen und Kommentare übernehmen* schreibt TIA-Name als symbolische Adresse und TIA-Kommentar als Funktionstext in
+  die Kanäle mit gleicher Adresse (ein Rückgängig-Schritt). *Bericht speichern…* als CSV.
+- CLI: `--export-tia-tags <projekt> <datei.xlsx|.xml> [--tia-table NAME] [--tia-culture de-DE]`,
+  `--compare-tia-tags <projekt> <datei> [bericht.csv|-] [--apply neu.qet]`. Skript-API: `qet.exportTiaTags(datei,
+  tabelle)`, `qet.compareTiaTags(datei)` (CSV-Zeilen), `qet.applyTiaTags(datei)`.
+- Geprüft in TIA Portal V21 an einem leeren Testprojekt (S7-1511): der SimaticML-Export lässt sich per Openness
+  importieren (32 von 32 Variablen mit Name, Adresse, Datentyp, Kommentar), ein Openness-Export aus TIA wird
+  eingelesen und eine dort umbenannte Variable erkannt. Die `.xlsx` ist gegen die Formatbeschreibung der Hilfe
+  geprüft; ihr Import geht nur über die Oberfläche von TIA und ist noch nicht von Hand ausprobiert.
+
 ## 1.48.0 – 20.11.2026
 
 Die letzten FluidSIM-Bauteile ohne Modell, in FluidSIM 6.3 selbst untersucht:

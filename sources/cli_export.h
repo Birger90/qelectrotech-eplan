@@ -57,6 +57,8 @@ namespace CLIExport {
 		  qelectrotech --export-marking <project.qet> <output.csv> [--format phoenix|weidmueller|wago|neutral] [--kinds wires,terminals,devices,cables] [--folios N[-M]] [--plant P] [--location L] [--short] [--one-end]
 		  qelectrotech --export-nets    <project.qet> <output.json>
 		  qelectrotech --export-links   <project.qet> <output.csv>
+		  qelectrotech --export-tia-tags  <project.qet> <tags.xlsx | tags.xml> [--tia-table NAME] [--tia-culture de-DE]
+		  qelectrotech --compare-tia-tags <project.qet> <tags.xlsx | tags.xml> [report.csv | -] [--apply output.qet]
 		  qelectrotech --check-device-types <project.qet> <output.csv>
 		  qelectrotech --check-project  <project.qet> [output.json]   (exit 3 when errors are found)
 		  qelectrotech --export-device-types <project.qet> <output.csv>
@@ -116,6 +118,19 @@ namespace CLIExport {
 		nets: electrical nets (connected-terminal groups) as JSON.
 		links: element cross-references (coil/contact) as CSV, with
 		       unresolved links flagged.
+		export-tia-tags: the PLC channels (IO tables of the PLC modules) as
+		      PLC tag table for Siemens TIA Portal: .xlsx in the format of
+		      the tag table editor's Import (sheets PLCTags and
+		      TagTableProperties), .xml as SimaticML for TIA Portal
+		      Openness. --tia-table names the tag table (default QET_EA),
+		      --tia-culture the language of the comments in the .xml.
+		compare-tia-tags: read a TIA tag table (.xlsx exported by TIA
+		      Portal, or SimaticML .xml) and list per channel whether
+		      address, name and comment agree, as CSV: same, name,
+		      comment, name+comment, address, missing, only_tia. With
+		      --apply the tag names become the symbolic addresses and the
+		      tag comments the function texts of the channels with the
+		      same address, saved as output.qet.
 		info: structural project summary as JSON (stdout, or a file) —
 		      per-page element / conductor counts and unconnected terminals.
 		check-elements: validate .elmt file(s) against the element schema.

@@ -367,6 +367,7 @@ class QETDiagramEditor : public QETMainWindow
 		*m_add_cable_list,             ///< Add a cable list graphics item
 		*m_export_cable_list,          ///< Export the cable list of the project to CSV
 		*m_export_marking,             ///< Export the markers for marking software
+		*m_tia_tags,                   ///< PLC tags to TIA Portal and back (TiaTagsDialog)
 		*m_cable_overview,             ///< Window listing every cable, where its type is chosen
 		*m_reload_element_drawings,    ///< Action to redraw every placed element from its current definition
 		*m_update_elements_from_collections, ///< Action to replace embedded elements changed in their collection

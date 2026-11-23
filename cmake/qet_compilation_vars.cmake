@@ -152,6 +152,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/import/eplandxf/eplanimportdialog.h
   ${QET_DIR}/sources/import/plcchannels.cpp
   ${QET_DIR}/sources/import/plcchannels.h
+  ${QET_DIR}/sources/plc/tiaplctags.cpp
+  ${QET_DIR}/sources/plc/tiaplctags.h
   ${QET_DIR}/sources/import/eplanproject/eplanprojectimportdialog.cpp
   ${QET_DIR}/sources/import/eplanproject/eplanprojectimportdialog.h
   ${QET_DIR}/sources/import/fluidsim/fluidsimimport.cpp
@@ -1122,6 +1124,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/ui/openwireendsdialog.h
   ${QET_DIR}/sources/projectcheck/openwireends.cpp
   ${QET_DIR}/sources/projectcheck/openwireends.h
+  ${QET_DIR}/sources/ui/tiatagsdialog.cpp
+  ${QET_DIR}/sources/ui/tiatagsdialog.h
   ${QET_DIR}/sources/ui/potentialsourceswidget.cpp
   ${QET_DIR}/sources/ui/potentialsourceswidget.h
   ${QET_DIR}/sources/ui/potentialtypeswidget.cpp

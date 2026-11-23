@@ -122,6 +122,7 @@
 #include "ui/potentialcheckdialog.h"
 #include "ui/fluidcheckdialog.h"
 #include "ui/openwireendsdialog.h"
+#include "ui/tiatagsdialog.h"
 #include "ui/duplicateoffsetdialog.h"
 #include "ui/jumptoelementdialog.h"
 #include "ui/diagrampropertieseditordockwidget.h"
@@ -1507,6 +1508,18 @@ void QETDiagramEditor::setUpActions()
 			dialog->show();
 		}
 	});
+		//PLC tags of the channels to Siemens TIA Portal and back
+	m_tia_tags = new QAction(QET::Icons::DocumentSpreadsheet, tr("PLC tags and TIA Portal..."), this);
+	m_tia_tags->setObjectName(QStringLiteral("tiaTags"));
+	m_tia_tags->setStatusTip(tr("Export the PLC channels as TIA Portal tag table, or compare them with one exported from TIA Portal"));
+	ShortcutManager::instance().registerAction(m_tia_tags, "diagrameditor.tia_tags", tr("Diagram editors"), QKeySequence());
+	connect(m_tia_tags, &QAction::triggered, this, [this]() {
+		if (ProjectView *view = currentProjectView()) {
+			auto *dialog = new TiaTagsDialog(view->project(), this);
+			dialog->setAttribute(Qt::WA_DeleteOnClose);
+			dialog->show();
+		}
+	});
 		//The texts of the project in other languages
 	m_project_languages = new QAction(tr("Project languages..."), this);
 	m_project_languages->setStatusTip(tr("Show the texts of the project in another language"));
@@ -2736,6 +2749,7 @@ void QETDiagramEditor::setUpMenu()
 	menu_project -> addAction(m_cable_overview);
 	menu_project -> addAction(m_export_cable_list);
 	menu_project -> addAction(m_export_marking);
+	menu_project -> addAction(m_tia_tags);
 	menu_project -> addAction(m_project_export_conductor_num);
 	menu_project -> addAction(m_project_export_wiring_list);
 	menu_project -> addAction(m_project_wiring_list_view);
@@ -4525,6 +4539,7 @@ void QETDiagramEditor::slot_updateActions()
 	m_add_cable_list              -> setEnabled(editable_project);
 	m_export_cable_list           -> setEnabled(editable_project);
 	m_export_marking              -> setEnabled(opened_project);
+	m_tia_tags                    -> setEnabled(editable_project);
 	m_cable_overview              -> setEnabled(editable_project);
 	if (auto *panel_menu = findChild<PanelMenu *>()) panel_menu->updateActions();
 	m_reload_element_drawings     -> setEnabled(opened_project);

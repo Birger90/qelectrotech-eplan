@@ -18,6 +18,7 @@
 #include "qetscriptapi.h"
 #include "../revision/projectrevisions.h"
 #include "../plancheck/plancheck.h"
+#include "../plc/tiaplctags.h"
 #include "../import/portals/manufacturerportals.h"
 #include "../import/portals/partfetcher.h"
 
@@ -906,6 +907,31 @@ static bool markingOptions(const QString &format, const QString &options_json,
 }
 
 /**
+	@brief QetScriptApi::exportTiaTags
+	Write the PLC channels of this project as PLC tag table for Siemens
+	TIA Portal: .xlsx (tag table editor > Import) or .xml (SimaticML, TIA
+	Portal Openness), by the suffix of @p output. Same file as
+	--export-tia-tags and Project > Export PLC tags for TIA Portal.
+	@param table name of the tag table, default QET_EA
+*/
+bool QetScriptApi::exportTiaTags(const QString &output, const QString &table)
+{
+	if (!m_project) {
+		log(QStringLiteral("qet.exportTiaTags: no project"));
+		return false;
+	}
+	QStringList notes;
+	const auto channels = TiaPlcTags::channels(m_project, &notes);
+	for (const QString &note : notes) log(QStringLiteral("qet.exportTiaTags: ") + note);
+	QString error;
+	if (!TiaPlcTags::write(output, channels, table, QString(), &error)) {
+		log(QStringLiteral("qet.exportTiaTags: %1").arg(error));
+		return false;
+	}
+	return true;
+}
+
+/**
 	@brief QetScriptApi::exportMarking
 	Write the markers of this project for a marking software to @p output:
 	the file Project > Export markers... writes (docs/beschriftung-export.md).
@@ -1101,6 +1127,57 @@ QString QetScriptApi::fetchCommercialData(bool online)
 QString QetScriptApi::purchasePriceListPath() const
 {
 	return QDir::toNativeSeparators(PurchaseList::priceListPath());
+}
+
+/**
+	@brief QetScriptApi::compareTiaTags
+	Compare a TIA tag table (.xlsx or SimaticML .xml) with the PLC channels.
+	@return CSV lines as --compare-tia-tags writes them, the header first:
+	status;address_plan;address_tia;name_plan;name_tia;comment_plan;
+	comment_tia;module;row;folio. Empty if the file cannot be read.
+*/
+QStringList QetScriptApi::compareTiaTags(const QString &tagFile)
+{
+	if (!m_project) return {};
+	QString error;
+	const auto tags = TiaPlcTags::read(tagFile, &error);
+	if (!error.isEmpty()) {
+		log(QStringLiteral("qet.compareTiaTags: %1").arg(error));
+		if (tags.isEmpty()) return {};
+	}
+	QStringList lines = TiaPlcTags::reportCsv(
+		TiaPlcTags::compare(TiaPlcTags::channels(m_project), tags)).split(QLatin1Char('\n'));
+	while (!lines.isEmpty() && lines.last().isEmpty()) lines.removeLast();
+	return lines;
+}
+
+/**
+	@brief QetScriptApi::applyTiaTags
+	Take the names and comments of a TIA tag table into the IO tables of
+	the PLC modules: for every channel with the same address the tag name
+	becomes its symbolic address, the tag comment (if any) its function
+	text. One undo step (qet.undo()).
+	@return number of IO rows changed, -1 on error
+*/
+int QetScriptApi::applyTiaTags(const QString &tagFile)
+{
+	if (!m_project) return -1;
+	if (m_project->isReadOnly()) {
+		log(QStringLiteral("qet.applyTiaTags: project is read-only"));
+		return -1;
+	}
+	QString error;
+	const auto tags = TiaPlcTags::read(tagFile, &error);
+	if (tags.isEmpty()) {
+		log(QStringLiteral("qet.applyTiaTags: %1").arg(error.isEmpty() ? QStringLiteral("no tags") : error));
+		return -1;
+	}
+	const auto cmp = TiaPlcTags::compare(TiaPlcTags::channels(m_project), tags);
+	auto *undo = new QUndoCommand(QObject::tr("Take over PLC tags from TIA Portal"));
+	const int changed = TiaPlcTags::apply(cmp, undo);
+	if (undo->childCount() > 0) m_project->undoStack()->push(undo);
+	else delete undo;
+	return changed;
 }
 
 bool QetScriptApi::exportWiring(const QString &output)

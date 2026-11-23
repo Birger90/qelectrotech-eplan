@@ -456,6 +456,13 @@ class QetScriptApi : public QObject
 		Q_INVOKABLE QString exportPurchaseList(const QString &output, const QString &optionsJson = QString());
 		Q_INVOKABLE QString fetchCommercialData(bool online = true);
 		Q_INVOKABLE QString purchasePriceListPath() const;
+			/// PLC tags for Siemens TIA Portal (TiaPlcTags): the channels of
+			/// the PLC modules as tag table (.xlsx for the tag table editor,
+			/// .xml SimaticML for Openness), a TIA table compared with them
+			/// (CSV lines, header first), its names/comments taken over
+		Q_INVOKABLE bool exportTiaTags(const QString &output, const QString &table = QString());
+		Q_INVOKABLE QStringList compareTiaTags(const QString &tagFile);
+		Q_INVOKABLE int applyTiaTags(const QString &tagFile);
 		Q_INVOKABLE bool exportWiring(const QString &output);
 		Q_INVOKABLE bool exportNets(const QString &output);
 		Q_INVOKABLE bool exportLinks(const QString &output);

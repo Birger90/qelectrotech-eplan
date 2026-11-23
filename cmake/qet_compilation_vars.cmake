@@ -1185,6 +1185,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/marking/markingexport.h
   ${QET_DIR}/sources/marking/markingexportdialog.cpp
   ${QET_DIR}/sources/marking/markingexportdialog.h
+  ${QET_DIR}/sources/marking/mprintpro.cpp
+  ${QET_DIR}/sources/marking/mprintpro.h
   ${QET_DIR}/sources/cablelist/cablelistmodel.cpp
   ${QET_DIR}/sources/cablelist/cablelistmodel.h
   ${QET_DIR}/sources/cablelist/cablelistmodelpropertieswidget.cpp

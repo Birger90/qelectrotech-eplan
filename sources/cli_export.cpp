@@ -19,6 +19,7 @@
 #include "projectlock.h"
 #include "bomexport.h"
 #include "marking/markingexport.h"
+#include "marking/mprintpro.h"
 
 #include "bordertitleblock.h"
 #include "conductornumexport.h"
@@ -500,11 +501,36 @@ int exportMarking(const QStringList &rest)
 		"Usage: qelectrotech --export-marking <project.qet> <output.csv> "
 		"[--format phoenix|weidmueller|wago|neutral] "
 		"[--kinds wires,terminals,devices,cables] [--folios N[-M]] "
-		"[--plant P] [--location L] [--short] [--one-end]\n");
+		"[--plant P] [--location L] [--short] [--one-end] "
+		"[--printer printjet|thm] [--material Klemme=N,Draht=N,...] "
+		"[--mprint [--open] [--print] [--mprint-exe PATH]]\n");
+		//Weidmüller: the printer's materials, and with --mprint one file
+		//per material for M-Print PRO's command line instead of one file
+	MPrintPro::Settings mprint = MPrintPro::load();
+	bool mprint_jobs = false, mprint_open = false;
+	QString material_text;  //read after --printer, whatever the order
 	for (int i = 0; i < rest.size(); ++i) {
 		const QString &a = rest.at(i);
 		const auto value = [&]() { return i + 1 < rest.size() ? rest.at(++i) : QString(); };
-		if (a == QLatin1String("--format")) {
+		if (a == QLatin1String("--printer")) {
+			if (!MPrintPro::printerFromKey(value(), &mprint.printer)) {
+				err << "Unknown --printer; expected printjet or thm.\n";
+				return 2;
+			}
+			for (QString &m : mprint.materials) m.clear();
+			o.format = MarkingExport::Weidmueller;
+		} else if (a == QLatin1String("--material")) {
+			material_text += value() + QLatin1Char(',');
+			o.format = MarkingExport::Weidmueller;
+		} else if (a == QLatin1String("--mprint")) {
+			mprint_jobs = true;
+		} else if (a == QLatin1String("--open")) {
+			mprint_open = true;
+		} else if (a == QLatin1String("--print")) {
+			mprint.print = true;
+		} else if (a == QLatin1String("--mprint-exe")) {
+			mprint.exe = value();
+		} else if (a == QLatin1String("--format")) {
 			if (!MarkingExport::formatFromKey(value(), &o.format)) {
 				err << "Unknown --format; expected phoenix, weidmueller, wago or neutral.\n";
 				return 2;
@@ -542,6 +568,13 @@ int exportMarking(const QStringList &rest)
 		err << usage;
 		return 2;
 	}
+	{
+		QString error;
+		if (!MPrintPro::parseMaterials(material_text, &mprint, &error)) {
+			err << error << "\n";
+			return 2;
+		}
+	}
 	if (!QFileInfo::exists(positional.at(0))) {
 		err << "Project not found: " << positional.at(0) << "\n";
 		return 2;
@@ -552,6 +585,42 @@ int exportMarking(const QStringList &rest)
 		return 1;
 	}
 	QString error;
+	if (mprint_jobs || mprint_open) {
+			//<output> is a folder: a file per material, and the command
+			//that hands each to M-Print PRO
+		const QList<MarkingExport::Item> items = MarkingExport::collect(&project, o, &error);
+		if (!error.isEmpty()) {
+			err << "Marking export failed: " << error << "\n";
+			return 1;
+		}
+		const QString base = QFileInfo(positional.at(0)).completeBaseName();
+		const QList<MPrintPro::Job> jobs = MPrintPro::writeJobs(items, mprint, positional.at(1), base, &error);
+		if (jobs.isEmpty()) {
+			err << (error.isEmpty() ? QStringLiteral("No markers to export.") : error) << "\n";
+			return 1;
+		}
+		const QString exe = MPrintPro::findExe(mprint);
+			//The command as it would be typed: arguments with spaces quoted
+		const auto quoted = [](const QString &arg) {
+			return arg.contains(QLatin1Char(' ')) ? QLatin1Char('"') + arg + QLatin1Char('"') : arg;
+		};
+		for (const MPrintPro::Job &job : jobs) {
+			QStringList command {quoted(exe.isEmpty() ? QStringLiteral("MPrintPRO.exe") : exe)};
+			for (const QString &arg : MPrintPro::arguments(job, mprint.print)) command << quoted(arg);
+			out << job.markers << " marker(s) on " << job.material << " "
+				<< (job.material_name.isEmpty() ? QStringLiteral("(own material)") : job.material_name)
+				<< " -> " << job.file << "\n"
+				<< "  " << command.join(QLatin1Char(' ')) << "\n";
+		}
+		if (mprint_open && !MPrintPro::open(jobs, mprint, &error)) {
+			err << error << "\n";
+			return 1;
+		}
+		return 0;
+	}
+	if (o.format == MarkingExport::Weidmueller) {
+		o.materials = MPrintPro::materialsByKey(mprint);
+	}
 	int markers = 0;
 	if (!MarkingExport::exportFile(&project, positional.at(1), o, &error, &markers)) {
 		err << "Marking export failed: " << error << "\n";

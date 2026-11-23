@@ -446,6 +446,11 @@ class QetScriptApi : public QObject
 									  const QString &format = QStringLiteral("phoenix"),
 									  const QString &optionsJson = QString());
 		Q_INVOKABLE QString markings(const QString &optionsJson = QString()) const;
+			/// Weidmüller M-Print PRO: a file per material in @p dir, as JSON
+			/// [{file, material, name, markers, arguments}]; openInMPrintPro()
+			/// also hands each to M-Print PRO
+		Q_INVOKABLE QString mprintJobs(const QString &dir, const QString &optionsJson = QString());
+		Q_INVOKABLE QString openInMPrintPro(const QString &dir, const QString &optionsJson = QString());
 		Q_INVOKABLE bool exportWiring(const QString &output);
 		Q_INVOKABLE bool exportNets(const QString &output);
 		Q_INVOKABLE bool exportLinks(const QString &output);

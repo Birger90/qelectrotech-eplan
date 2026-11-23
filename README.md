@@ -51,6 +51,28 @@
 >   manufacturers (e.g. igus chainflex, LAPP): cores with colours, cross section, outer diameter, voltage, article
 >   number.
 >
+> **Purchase list for purchasing and ERP**
+> - Project menu > *Export purchase list…*: one file dialog, nothing else. It writes an Excel workbook (`.xlsx`, or
+>   CSV) with one line per article, grouped by supplier (else manufacturer), a sum per group and a grand total, with
+>   quantity, packaging unit, order quantity (rounded up to it), price, price unit, total, delivery time, EAN/GTIN,
+>   lifecycle and price source. Devices without an article come last, marked "Article open". Prices can be filled in
+>   in Excel: order quantity, totals and sums are formulas.
+> - Beside it `<name>_ERP.csv`, a neutral import format: one record per article, fixed English column names
+>   (`line;supplier;manufacturer;order_number;description;references;quantity;order_quantity;unit;packaging_unit;
+>   unit_price;price_unit;currency;total_price;delivery_time;gtin;lifecycle;price_source;article_open`), `;`
+>   separator, `.` decimals, UTF-8 without BOM, no sum lines.
+> - Where the values come from (later overrides earlier): price and supplier on the element → article data from the
+>   EPLAN Data Portal and the EDZ packages in `herstellerdaten` (cache `einkauf/artikeldaten.csv`, 30 days) → the
+>   company price list `einkauf/preisliste.csv` in the data folder (`Bestellnummer;Preis;Lieferzeit;Lieferant`,
+>   optionally `Preiseinheit;VPE;EAN;Hersteller;Währung`; its header is written on the first export).
+> - Checked honestly: without a token the Data Portal gives EAN/GTIN and lifecycle, but no price, delivery time or
+>   packaging unit; the commercial data CSV with a token holds master data only. EDZ packages carry packaging unit and
+>   quantity unit, their price fields are 0. Prices and delivery times therefore come from the price list; anything
+>   missing stays empty.
+> - CLI: `--export-purchase <project> <list.xlsx|list.csv> [--online] [--erp]`, `--fetch-commercial <project>
+>   [--offline]`. Script API: `purchaseList()`, `exportPurchaseList(file, '{"online":true,"erp":true}')`,
+>   `fetchCommercialData()`, `purchasePriceListPath()`.
+>
 > **Cabinet layout and panel manufacturing** (menu *Cabinet layout*, the EPLAN Pro Panel 2D workflow)
 > - *Build cabinet...*: the whole layout in six guided steps with a tick each -- enclosure with mounting plate
 >   (Rittal by order number), DIN rails and ducts as a grid (ducts on the edges and between the rows, one rail per

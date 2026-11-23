@@ -440,6 +440,15 @@ class QetScriptApi : public QObject
 		Q_INVOKABLE bool exportBom(const QString &output, bool noSlaves = false,
 								   bool noJunctions = false);
 		Q_INVOKABLE bool exportCableList(const QString &output);
+			// the purchase list (articles by supplier with EAN, packaging
+			// unit, price, delivery time; devices without article): as JSON
+			// {summary, items[]}, or written as .xlsx/.csv with options JSON
+			// {online: ask the Data Portal, erp: also <name>_ERP.csv}; the
+			// lookup alone fills the article data cache (EDZ, Data Portal)
+		Q_INVOKABLE QString purchaseList();
+		Q_INVOKABLE QString exportPurchaseList(const QString &output, const QString &optionsJson = QString());
+		Q_INVOKABLE QString fetchCommercialData(bool online = true);
+		Q_INVOKABLE QString purchasePriceListPath() const;
 		Q_INVOKABLE bool exportWiring(const QString &output);
 		Q_INVOKABLE bool exportNets(const QString &output);
 		Q_INVOKABLE bool exportLinks(const QString &output);

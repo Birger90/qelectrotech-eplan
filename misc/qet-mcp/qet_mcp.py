@@ -80,6 +80,7 @@ EXPORT_FORMATS = {
     "svg": "--export-svg",
     "dxf": "--export-dxf",
     "bom": "--export-bom",
+    "purchase": "--export-purchase",
     "cables": "--export-cables",
     "wires": "--export-wires",
     "wiring": "--export-wiring",
@@ -1244,6 +1245,9 @@ def tool_export(binary: str, project: str, format: str, output: str,
         args.append("--no-slaves")
     if no_junctions:
         args.append("--no-junctions")
+    if format == "purchase":
+        # the purchase list always comes with its neutral ERP file beside it
+        args.append("--erp")
     result = _run_qet(binary, args, timeout, extra_env=extra_env)
     out = Path(output).expanduser()
     result["output"] = str(out)

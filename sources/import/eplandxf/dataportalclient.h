@@ -41,6 +41,8 @@ struct DataPortalPart
 	QString description;   ///< long description, e.g. with the sizes of a mounting plate
 	QString product_group;
 	QString picture_url;   ///< product picture, public, may be empty
+	QString identcode;     ///< EAN/GTIN with its kind, e.g. "4011209780774 EAN"
+	QString lifecycle;     ///< e.g. "Active", "Phase-out"
 	bool has_dxf = false;
 };
 

@@ -18,6 +18,10 @@
 #include "cli_export.h"
 #include "projectlock.h"
 #include "bomexport.h"
+#include "purchase/purchasefetch.h"
+#include "purchase/purchaselist.h"
+#include "qetapp.h"
+#include <QTranslator>
 
 #include "bordertitleblock.h"
 #include "conductornumexport.h"
@@ -104,6 +108,8 @@ const QHash<QString, QString> &exportFlags()
 		{"--export-cables", "cables"},
 		{"--export-wires", "wires"},
 		{"--export-bom", "bom"},
+		{"--export-purchase", "purchase"},
+		{"--fetch-commercial", "fetchcommercial"},
 		{"--export-wiring", "wiring"},
 		{"--export-nets", "nets"},
 		{"--export-links", "links"},
@@ -485,6 +491,74 @@ int exportBom(QETProject &project, const QString &output,
 	}
 	out << "Exported " << rows << " component(s) -> " << output << "\n";
 	return 0;
+}
+
+/// The purchase list (PurchaseList): articles grouped by supplier, sums,
+/// the devices without an article; .xlsx or CSV, with --erp also the
+/// neutral ERP CSV beside it. --online first asks the Data Portal for
+/// the articles the article data cache does not know.
+int exportPurchase(QETProject &project, const QString &output, bool online, bool erp)
+{
+		//The list is read by people in purchasing: its headings in the
+		//language of the settings, as the menu writes it (the other CLI
+		//outputs stay as they are)
+	static QTranslator translator;
+	const QString language = QETApp::langFromSetting();
+	bool loaded = false;
+	for (const QString &dir : {QETApp::languagesPath(),
+							   QCoreApplication::applicationDirPath() + QStringLiteral("/lang")}) {
+		for (const QString &name : {language, language.section(QLatin1Char('_'), 0, 0)}) {
+			if (!loaded && translator.load(QStringLiteral("qet_") + name, dir) && !translator.isEmpty())
+				loaded = true;
+		}
+	}
+	if (loaded) QCoreApplication::installTranslator(&translator);
+	else err << "No translation qet_" << language << " in " << QETApp::languagesPath() << "\n";
+	QString error;
+	QList<PurchaseList::Item> items = PurchaseList::collect(&project, &error);
+	if (!error.isEmpty()) {
+		err << "Purchase list failed: " << error << "\n";
+		return 1;
+	}
+	const PurchaseFetch::Result fetched = PurchaseFetch::fetch(items, online);
+	if (!fetched.error.isEmpty())
+		err << "Data Portal: " << fetched.error << "\n";
+	if (fetched.from_portal + fetched.from_edz + fetched.not_found > 0)
+		items = PurchaseList::collect(&project, &error);
+	QStringList written;
+	if (!PurchaseList::write(items, output, erp, &written, &error)) {
+		err << "Cannot write '" << output << "': " << error << "\n";
+		return 1;
+	}
+	QJsonObject summary = PurchaseList::summarize(items).toJson();
+	summary.insert(QStringLiteral("lookup"), fetched.toJson());
+	summary.insert(QStringLiteral("files"), QJsonArray::fromStringList(written));
+	summary.insert(QStringLiteral("price_list"), QDir::toNativeSeparators(PurchaseList::priceListPath()));
+	out << QJsonDocument(summary).toJson(QJsonDocument::Compact) << "\n";
+	return 0;
+}
+
+/// Fills the article data cache for the articles of a project (EDZ
+/// packages, and the Data Portal unless --offline) and prints what came
+/// of it as JSON.
+int fetchCommercial(QETProject &project, bool online)
+{
+	QString error;
+	const QList<PurchaseList::Item> items = PurchaseList::collect(&project, &error);
+	if (!error.isEmpty()) {
+		err << "Purchase list failed: " << error << "\n";
+		return 1;
+	}
+	const PurchaseFetch::Result result = PurchaseFetch::fetch(items, online,
+		[](int done, int total, const QString &part) {
+			if (!part.isEmpty()) err << "[" << (done + 1) << "/" << total << "] " << part << "\n";
+			err.flush();
+			return true;
+		});
+	QJsonObject o = result.toJson();
+	o.insert(QStringLiteral("cache"), QDir::toNativeSeparators(PurchaseList::cachePath()));
+	out << QJsonDocument(o).toJson(QJsonDocument::Indented);
+	return result.error.isEmpty() ? 0 : 1;
 }
 
 QString csvField(const QString &value)
@@ -1647,6 +1721,10 @@ int run(const QStringList &args)
 	// --no-slaves and --no-junctions leave rows out of --export-bom.
 	const bool includeSlaves = filtered.removeAll("--no-slaves") == 0;
 	const bool includeJunctions = filtered.removeAll("--no-junctions") == 0;
+	// --online, --offline and --erp belong to the purchase list.
+	const bool purchaseOnline = filtered.removeAll("--online") > 0;
+	const bool purchaseOffline = filtered.removeAll("--offline") > 0;
+	const bool purchaseErp = filtered.removeAll("--erp") > 0;
 	const bool ignoreLock = filtered.removeAll("--ignore-lock") > 0;
 	const bool json = filtered.removeAll("--json") > 0;
 	const bool grid = filtered.removeAll("--grid") > 0;
@@ -2097,6 +2175,9 @@ int run(const QStringList &args)
 	if (format == "simulate")
 		return simulateProject(project, rest.mid(1));
 
+	if (format == "fetchcommercial")
+		return fetchCommercial(project, !purchaseOffline);
+
 	// --info writes JSON to stdout, or to an optional output file.
 	if (format == "info")
 		return exportInfo(project, rest.value(1));
@@ -2115,6 +2196,8 @@ int run(const QStringList &args)
 		return exportCsv(project, format, output);
 	if (format == "bom")
 		return exportBom(project, output, includeSlaves, includeJunctions);
+	if (format == "purchase")
+		return exportPurchase(project, output, purchaseOnline, purchaseErp);
 	if (format == "wiring")
 		return exportWiring(project, output);
 	if (format == "nets")

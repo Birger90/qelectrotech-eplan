@@ -3,6 +3,21 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## Unveröffentlicht – Einkaufsliste
+
+Stückliste für Einkauf und ERP (Menü Projekt > *Einkaufsliste exportieren…*, CLI `--export-purchase`,
+`--fetch-commercial`, Skript-API `purchaseList`, `exportPurchaseList`, `fetchCommercialData`, `purchasePriceListPath`):
+
+- Eine Zeile je Artikel, gruppiert nach Lieferant (sonst Hersteller), Summe je Gruppe und Gesamtsumme; Geräte ohne
+  Artikel am Ende mit „Artikel offen“. Excel-Mappe (`.xlsx`, Preise nachtragbar, Bestellmenge/Gesamtpreis/Summen
+  als Formeln) oder CSV, dazu `<Name>_ERP.csv` als neutrales Importformat.
+- Kaufmännische Daten: EAN/GTIN und Lebenszyklus aus dem EPLAN Data Portal (ohne Token), VPE und Mengeneinheit aus
+  den EDZ-Paketen in `herstellerdaten`, zwischengespeichert in `einkauf/artikeldaten.csv`. Preise, Lieferzeiten und
+  Lieferanten aus der eigenen Preisliste `einkauf/preisliste.csv`, die alles andere überschreibt.
+- Geprüft am Live-Portal: Weder `/parts` noch die kaufmännische CSV mit Token (`/download/commercial_data`) liefern
+  Preis, Lieferzeit oder VPE; EDZ-Preisfelder stehen bei den Herstellern auf 0. Solche Werte bleiben leer.
+- `DataPortalPart` liest zusätzlich `identcode` und `lifecycle`.
+
 ## 1.47.0 – 20.11.2026
 
 FluidSIM-Bauteile, die bisher den Start verhinderten (FluidSIM-Gesamtlauf: 35 Schaltungen mit Modellfehler):

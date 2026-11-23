@@ -132,6 +132,12 @@ QElectroTech.exe), `QET_MCP` (Pfad zu `qet_mcp.py`), `QET_PROJEKTE` (Zielordner 
 
 ## Gelernt (fortschreiben)
 
+- 20.11.2026, Einkaufsliste: Für Einkauf/ERP `--export-purchase <plan> liste.xlsx --erp` (oder Menü Projekt >
+  *Einkaufsliste exportieren…*). Damit sie taugt, am Gerät `manufacturer`, `manufacturer_reference`, `description`
+  und ggf. `supplier`/`quantity` setzen; Preise/Lieferzeiten pflegt die Firma in `Daten\einkauf\preisliste.csv`
+  (`Bestellnummer;Preis;Lieferzeit;Lieferant`). Das Data Portal liefert nur EAN/GTIN und Lebenszyklus, keine Preise,
+  Lieferzeiten oder VPE (auch nicht mit Token) – nie Werte erfinden, leer lassen. Geräte ohne Artikel erscheinen als
+  „Artikel offen“; ein BMK, dessen anderes Element einen Artikel hat (SPS-Kanal neben Modul), gilt nicht als offen.
 - 03.11.2026, Blatt „Fußschalter“: erster Wurf hatte schräge/um das Gerät laufende Leitungen,
   überlappende Pin-Kennzeichen, „…“-Felder und abgeschnittene Kabelnamen – Ursachen und
   Abhilfen stehen oben. Vorlage mit dem fertigen Stand: `vorlagen/beispiel_fussschalter.py`.

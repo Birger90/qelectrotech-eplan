@@ -32,6 +32,8 @@
 #include "../dataBase/qetdbfile.h"
 #include "../diagram.h"
 #include "../bomexport.h"
+#include "../purchase/purchasefetch.h"
+#include "../purchase/purchaselist.h"
 #include "../cablelist/cablelistrows.h"
 #include "../cablelist/cablequerywidget.h"
 #include "../dataBase/ui/elementquerywidget.h"
@@ -854,6 +856,137 @@ bool QetScriptApi::exportCableList(const QString &output)
 		return false;
 	}
 	return true;
+}
+
+namespace {
+QJsonObject purchaseItemJson(const PurchaseList::Item &item)
+{
+	QJsonObject o;
+	o.insert(QStringLiteral("supplier"), item.supplier);
+	o.insert(QStringLiteral("manufacturer"), item.manufacturer);
+	o.insert(QStringLiteral("order_number"), item.part_number);
+	o.insert(QStringLiteral("name"), item.name);
+	o.insert(QStringLiteral("references"), QJsonArray::fromStringList(item.references));
+	o.insert(QStringLiteral("unit"), item.unit);
+	o.insert(QStringLiteral("quantity"), item.quantity);
+	o.insert(QStringLiteral("order_quantity"), item.orderQuantity());
+	if (item.packaging > 0) o.insert(QStringLiteral("packaging_unit"), item.packaging);
+	if (item.price >= 0) {
+		o.insert(QStringLiteral("price"), item.price);
+		o.insert(QStringLiteral("price_unit"), item.price_unit);
+		o.insert(QStringLiteral("currency"), item.currency);
+		o.insert(QStringLiteral("total"), item.total());
+		o.insert(QStringLiteral("price_source"), item.price_source);
+	}
+	if (!item.delivery_time.isEmpty()) o.insert(QStringLiteral("delivery_time"), item.delivery_time);
+	if (!item.gtin.isEmpty()) o.insert(QStringLiteral("gtin"), item.gtin);
+	if (!item.lifecycle.isEmpty()) o.insert(QStringLiteral("lifecycle"), item.lifecycle);
+	o.insert(QStringLiteral("article_open"), item.open);
+	return o;
+}
+
+QString compactJson(const QJsonObject &o)
+{
+	return QString::fromUtf8(QJsonDocument(o).toJson(QJsonDocument::Compact));
+}
+} // namespace
+
+/**
+	@brief QetScriptApi::purchaseList
+	The purchase list of the project in memory (PurchaseList::collect()),
+	from what the article data cache and the price list hold; no lookup.
+	@return JSON {summary, items[]}, or {error}
+*/
+QString QetScriptApi::purchaseList()
+{
+	QJsonObject o;
+	if (!m_project) {
+		o.insert(QStringLiteral("error"), QStringLiteral("no project"));
+		return compactJson(o);
+	}
+	QString error;
+	const QList<PurchaseList::Item> items = PurchaseList::collect(m_project, &error);
+	if (!error.isEmpty()) {
+		o.insert(QStringLiteral("error"), error);
+		return compactJson(o);
+	}
+	QJsonArray array;
+	for (const PurchaseList::Item &item : items) array.append(purchaseItemJson(item));
+	o.insert(QStringLiteral("summary"), PurchaseList::summarize(items).toJson());
+	o.insert(QStringLiteral("items"), array);
+	return compactJson(o);
+}
+
+/**
+	@brief QetScriptApi::exportPurchaseList
+	Write the purchase list of the project in memory to @p output: .xlsx
+	as an Excel workbook, else CSV. Options JSON: {online: true asks the
+	Data Portal for articles the cache does not know, erp: true writes
+	<name>_ERP.csv beside it}. The EDZ packages of the data folder are
+	always read.
+	@return JSON {articles, open, priced, with_gtin, total, currencies,
+	lookup, files[]}, or {error}
+*/
+QString QetScriptApi::exportPurchaseList(const QString &output, const QString &optionsJson)
+{
+	QJsonObject o;
+	if (!m_project) {
+		o.insert(QStringLiteral("error"), QStringLiteral("no project"));
+		return compactJson(o);
+	}
+	const QJsonObject options = QJsonDocument::fromJson(optionsJson.toUtf8()).object();
+	QString error;
+	QList<PurchaseList::Item> items = PurchaseList::collect(m_project, &error);
+	if (!error.isEmpty()) {
+		o.insert(QStringLiteral("error"), error);
+		return compactJson(o);
+	}
+	const PurchaseFetch::Result fetched =
+			PurchaseFetch::fetch(items, options.value(QStringLiteral("online")).toBool(false));
+	if (fetched.from_portal + fetched.from_edz + fetched.not_found > 0)
+		items = PurchaseList::collect(m_project, &error);
+	QStringList written;
+	if (!PurchaseList::write(items, output, options.value(QStringLiteral("erp")).toBool(false),
+							 &written, &error)) {
+		o.insert(QStringLiteral("error"), error);
+		log(QStringLiteral("qet.exportPurchaseList: %1").arg(error));
+		return compactJson(o);
+	}
+	o = PurchaseList::summarize(items).toJson();
+	o.insert(QStringLiteral("lookup"), fetched.toJson());
+	o.insert(QStringLiteral("files"), QJsonArray::fromStringList(written));
+	return compactJson(o);
+}
+
+/**
+	@brief QetScriptApi::fetchCommercialData
+	Fill the article data cache for the articles of the project: EDZ
+	packages of the data folder, and the Data Portal when @p online.
+	@return JSON {articles, cached, from_portal, from_edz, not_found, error?}
+*/
+QString QetScriptApi::fetchCommercialData(bool online)
+{
+	QJsonObject o;
+	if (!m_project) {
+		o.insert(QStringLiteral("error"), QStringLiteral("no project"));
+		return compactJson(o);
+	}
+	QString error;
+	const QList<PurchaseList::Item> items = PurchaseList::collect(m_project, &error);
+	if (!error.isEmpty()) {
+		o.insert(QStringLiteral("error"), error);
+		return compactJson(o);
+	}
+	return compactJson(PurchaseFetch::fetch(items, online).toJson());
+}
+
+/**
+	@return the company price list (Bestellnummer;Preis;Lieferzeit;Lieferant),
+	empty when no company data folder is set up
+*/
+QString QetScriptApi::purchasePriceListPath() const
+{
+	return QDir::toNativeSeparators(PurchaseList::priceListPath());
 }
 
 bool QetScriptApi::exportWiring(const QString &output)

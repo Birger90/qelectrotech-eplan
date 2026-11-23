@@ -105,6 +105,7 @@
 #include "shortcutmanager.h"
 #include "cablelist/cableexportdialog.h"
 #include "ui/bomexportdialog.h"
+#include "purchase/purchaseexport.h"
 #include "ui/conductorcolortoolbutton.h"
 #include "ui/diagrambgcolorbutton.h"
 #include "ui/duplicatelabelsdialog.h"
@@ -1414,6 +1415,16 @@ void QETDiagramEditor::setUpActions()
 		bom.exec();
 	});
 
+		//Purchase list: articles by supplier with prices, EAN, packaging
+		//unit, as an Excel workbook and an ERP file
+	m_purchase_export = new QAction(QET::Icons::DocumentSpreadsheet, tr("Export purchase list..."), this);
+	ShortcutManager::instance().registerAction(m_purchase_export, "diagrameditor.purchase_export", tr("Diagram editors"), QKeySequence());
+	m_purchase_export->setStatusTip(tr("Articles grouped by supplier with price, EAN and packaging unit, as Excel and ERP file"));
+	connect(m_purchase_export, &QAction::triggered, this, [this]() {
+		if (ProjectView *view = currentProjectView())
+			PurchaseExport::run(view->project(), this);
+	});
+
 		//Add a nomenclature item
 	m_add_nomenclature = new QAction(QET::Icons::TableOfContent, tr("Add a nomenclature"), this);
 	ShortcutManager::instance().registerAction(m_add_nomenclature, "diagrameditor.add_nomenclature", tr("Diagram editors"), QKeySequence());
@@ -2554,6 +2565,7 @@ void QETDiagramEditor::setUpMenu()
 	menu_project->addAction(m_project_languages);
 	menu_project -> addSeparator();
 	menu_project -> addAction(m_csv_export);
+	menu_project -> addAction(m_purchase_export);
 	menu_project -> addAction(m_cable_overview);
 	menu_project -> addAction(m_export_cable_list);
 	menu_project -> addAction(m_project_export_conductor_num);
@@ -4200,6 +4212,7 @@ void QETDiagramEditor::slot_updateActions()
 	m_add_summary                 -> setEnabled(editable_project);
 	m_add_nomenclature            -> setEnabled(editable_project);
 	m_csv_export                  -> setEnabled(editable_project);
+	m_purchase_export             -> setEnabled(opened_project);
 	m_project_export_conductor_num-> setEnabled(opened_project);
 	m_terminal_strip_dialog       -> setEnabled(editable_project);
 	m_project_export_wiring_list  -> setEnabled(opened_project);

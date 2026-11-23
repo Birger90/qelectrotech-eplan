@@ -209,7 +209,9 @@ GeneralConfigurationPage::GeneralConfigurationPage(QWidget *parent) :
 		QetSettings::stripCableCoreTargetsShown());
 	ui->m_strip_sort_by_label->setChecked(QetSettings::stripSortedByLabel());
 	ui->m_new_folio_group_cb->setChecked(QetSettings::newFolioTakesPreviousGroup());
+	ui->m_folios_by_group_cb->setChecked(QetSettings::foliosListedByGroup());
 	ui->m_macro_ask_labels_cb->setChecked(QetSettings::askLabelsPlacingMacro());
+	ui->m_symbol_ask_label_part_cb->setChecked(QetSettings::askLabelAndPartPlacingSymbol());
 	ui->m_conductor_properties_panel->setChecked(settings.value("diagrameditor/conductor_properties_panel", false).toBool());
 	ui->m_device_navigator_cb->setChecked(settings.value("diagrameditor/device_navigator", false).toBool());
 	ui->m_wiring_rules_cb->setChecked(WiringRules::masterEnabled());
@@ -230,6 +232,18 @@ GeneralConfigurationPage::GeneralConfigurationPage(QWidget *parent) :
 	ui->m_save_label_paste->setChecked(settings.value("diagramcommands/erase-label-on-copy", true).toBool());
 	ui->m_autonumber_pasted->setChecked(settings.value("diagramcommands/autonumber-pasted-elements", true).toBool());
 	ui->m_enable_chained_reports->setChecked(settings.value("project/enable-chained-reports", false).toBool());
+	ui->m_remember_last_dir_cb->setChecked(QetSettings::rememberLastDir());
+	const QString chained_key =
+			settings.value("project/chained-reports-key", "label").toString();
+	ui->m_chained_key_function_rb->setChecked(
+				QETProject::reportLinkKeyFromString(chained_key)
+				== QETProject::ReportLinkKey::Function);
+	ui->m_chained_key_label_rb->setChecked(!ui->m_chained_key_function_rb->isChecked());
+		//A key says nothing while nothing is chained
+	ui->m_chained_key_gb->setEnabled(ui->m_enable_chained_reports->isChecked());
+	connect(ui->m_enable_chained_reports, &QCheckBox::toggled,
+			ui->m_chained_key_gb, &QWidget::setEnabled,
+			Qt::UniqueConnection);
 	ui->m_enable_scripting->setChecked(QetSettings::scriptingEnabled());
 #ifdef QET_HAS_SCRIPTING
 	if (QetSettings::scriptingForcedByEnvironment()) {
@@ -479,6 +493,12 @@ void GeneralConfigurationPage::applyConf()
 	settings.setValue("diagramcommands/erase-label-on-copy", ui->m_save_label_paste->isChecked());
 	settings.setValue("diagramcommands/autonumber-pasted-elements", ui->m_autonumber_pasted->isChecked());
 	settings.setValue("project/enable-chained-reports", ui->m_enable_chained_reports->isChecked());
+	QetSettings::setRememberLastDir(ui->m_remember_last_dir_cb->isChecked());
+	settings.setValue("project/chained-reports-key",
+			QETProject::reportLinkKeyToString(
+				ui->m_chained_key_function_rb->isChecked()
+				? QETProject::ReportLinkKey::Function
+				: QETProject::ReportLinkKey::Label));
 
 		//SCRIPTING
 		//Left alone while the environment forces it on: the box is disabled
@@ -518,7 +538,9 @@ void GeneralConfigurationPage::applyConf()
 		editor->applyDeviceNavigatorSetting();
 	}
 	QetSettings::setNewFolioTakesPreviousGroup(ui->m_new_folio_group_cb->isChecked());
+	QetSettings::setFoliosListedByGroup(ui->m_folios_by_group_cb->isChecked());
 	QetSettings::setAskLabelsPlacingMacro(ui->m_macro_ask_labels_cb->isChecked());
+	QetSettings::setAskLabelAndPartPlacingSymbol(ui->m_symbol_ask_label_part_cb->isChecked());
 	if (ui->m_terminal_conductor_color->isChecked() != Terminal::takesConductorColor()) {
 		Terminal::setTakesConductorColor(ui->m_terminal_conductor_color->isChecked());
 		for (QETProject *project : QETApp::registeredProjects())
@@ -894,8 +916,9 @@ void GeneralConfigurationPage::on_m_common_elmt_path_cb_currentIndexChanged(int 
 {
 	if (index == 1)
 	{
-		QString path = QFileDialog::getExistingDirectory(this, tr("Path of the Common Collection"), QETApp::documentDir());
+		QString path = QFileDialog::getExistingDirectory(this, tr("Path of the Common Collection"), QETApp::lastFileDir(QETApp::documentDir()));
 		if (!path.isEmpty()) {
+			QETApp::rememberFileDir(path);
 			ui->m_common_elmt_path_cb->setItemData(1, path, Qt::DisplayRole);
 		}
 		else {
@@ -908,8 +931,9 @@ void GeneralConfigurationPage::on_m_company_elmt_path_cb_currentIndexChanged(int
 {
 	if (index == 1)
 	{
-		QString path = QFileDialog::getExistingDirectory(this, tr("Company collection path"), QETApp::documentDir());
+		QString path = QFileDialog::getExistingDirectory(this, tr("Company collection path"), QETApp::lastFileDir(QETApp::documentDir()));
 		if (!path.isEmpty()) {
+			QETApp::rememberFileDir(path);
 			ui->m_company_elmt_path_cb->setItemData(1, path, Qt::DisplayRole);
 		}
 		else {
@@ -922,8 +946,9 @@ void GeneralConfigurationPage::on_m_custom_elmt_path_cb_currentIndexChanged(int 
 {
 	if (index == 1)
 	{
-		QString path = QFileDialog::getExistingDirectory(this, tr("User Collection Path"), QETApp::documentDir());
+		QString path = QFileDialog::getExistingDirectory(this, tr("User Collection Path"), QETApp::lastFileDir(QETApp::documentDir()));
 		if (!path.isEmpty()) {
+			QETApp::rememberFileDir(path);
 			ui->m_custom_elmt_path_cb->setItemData(1, path, Qt::DisplayRole);
 		}
 		else {
@@ -936,8 +961,9 @@ void GeneralConfigurationPage::on_m_company_tbt_path_cb_currentIndexChanged(int 
 {
 	if (index == 1)
 	{
-		QString path = QFileDialog::getExistingDirectory(this, tr("Company title-blocks"), QETApp::documentDir());
+		QString path = QFileDialog::getExistingDirectory(this, tr("Company title-blocks"), QETApp::lastFileDir(QETApp::documentDir()));
 		if (!path.isEmpty()) {
+			QETApp::rememberFileDir(path);
 			ui->m_company_tbt_path_cb->setItemData(1, path, Qt::DisplayRole);
 		}
 		else {
@@ -950,8 +976,9 @@ void GeneralConfigurationPage::on_m_custom_tbt_path_cb_currentIndexChanged(int i
 {
 	if (index == 1)
 	{
-		QString path = QFileDialog::getExistingDirectory(this, tr("User Title blocks Path"), QETApp::documentDir());
+		QString path = QFileDialog::getExistingDirectory(this, tr("User Title blocks Path"), QETApp::lastFileDir(QETApp::documentDir()));
 		if (!path.isEmpty()) {
+			QETApp::rememberFileDir(path);
 			ui->m_custom_tbt_path_cb->setItemData(1, path, Qt::DisplayRole);
 		}
 		else {
@@ -964,8 +991,9 @@ void GeneralConfigurationPage::on_m_user_macros_path_cb_currentIndexChanged(int 
 {
 	if (index == 1)
 	{
-		QString path = QFileDialog::getExistingDirectory(this, tr("User macro path"), QETApp::documentDir());
+		QString path = QFileDialog::getExistingDirectory(this, tr("User macro path"), QETApp::lastFileDir(QETApp::documentDir()));
 		if (!path.isEmpty()) {
+			QETApp::rememberFileDir(path);
 			ui->m_user_macros_path_cb->setItemData(1, path, Qt::DisplayRole);
 		}
 		else {
@@ -1154,7 +1182,7 @@ void GeneralConfigurationPage::on_m_material_list_browse_pb_clicked()
 {
 	QString start_dir = ui->m_material_list_path_le->text();
 	start_dir = start_dir.isEmpty()
-			? QETApp::documentDir()
+			? QETApp::lastFileDir(QETApp::documentDir())
 			: QFileInfo(start_dir).absolutePath();
 
 	const QString path = QFileDialog::getOpenFileName(
@@ -1164,6 +1192,7 @@ void GeneralConfigurationPage::on_m_material_list_browse_pb_clicked()
 		tr("CSV files (*.csv)"));
 
 	if (!path.isEmpty()) {
+		QETApp::rememberFileDir(path);
 		ui->m_material_list_path_le->setText(path);
 	}
 }
@@ -1235,7 +1264,7 @@ void GeneralConfigurationPage::on_m_cable_type_list_browse_pb_clicked()
 {
 	QString start_dir = ui->m_cable_type_list_path_le->text();
 	start_dir = start_dir.isEmpty()
-			? QETApp::documentDir()
+			? QETApp::lastFileDir(QETApp::documentDir())
 			: QFileInfo(start_dir).absolutePath();
 
 	const QString path = QFileDialog::getOpenFileName(
@@ -1245,6 +1274,7 @@ void GeneralConfigurationPage::on_m_cable_type_list_browse_pb_clicked()
 		tr("CSV files (*.csv)"));
 
 	if (!path.isEmpty()) {
+		QETApp::rememberFileDir(path);
 		ui->m_cable_type_list_path_le->setText(path);
 	}
 }

@@ -81,11 +81,30 @@ class QetLabelsFile
 				///the syntax error for instance), so the caller can tell the
 				///user how to repair it instead of silently rebuilding it
 			QString brokenReason() const {return m_broken_reason;}
+				///true when the file on disk is not written the way the
+				///dialog reads it (no <labels> root element, or folders
+				///without their top-level folder) but could be read as if
+				///it were, every folder keeping its prefix : save() keeps
+				///a copy of it before writing it in that form
+			bool wasConverted() const {return m_converted;}
 		
 		private:
 			static bool parse(QIODevice &device, QDomDocument &document, QString *reason);
 			QDomElement categoryForPath(const QStringList &relative_path, bool create);
 			void createEmptyDocument();
+			static QString prefixForFolderInDocument(
+					const QDomDocument &document,
+					const QStringList &relative_path);
+			static bool convertForeignRoot(const QDomDocument &document,
+										   const QList<QStringList> &folders,
+										   QDomDocument &converted);
+			static bool placeShortPaths(const QDomDocument &document,
+										const QList<QStringList> &folders,
+										QDomDocument &converted);
+			static bool keepsEveryPrefix(const QDomDocument &before,
+										 const QDomDocument &after,
+										 const QList<QStringList> &folders,
+										 bool strict);
 			QString backupBrokenFile();
 			static void scanRec(const QString &path, const QStringList &relative_path, QList<QStringList> &out);
 			static QDomElement directChildCategory(const QDomElement &parent, const QString &name);
@@ -102,6 +121,7 @@ class QetLabelsFile
 			bool m_file_exists = false;
 			bool m_force_save = false;
 			bool m_broken = false;
+			bool m_converted = false;
 			QDomDocument m_document;
 };
 

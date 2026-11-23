@@ -30,6 +30,14 @@
 > **Data like EPLAN instead of typed text**
 > - PLC: a card (PLC master) keeps its I/O table (address, function text, comment, terminals); each channel is bound
 >   to its row (`group_index`) and shows those values through its fields — edit the table, the channels follow.
+> - Siemens TIA Portal: *Project > PLC tags and TIA Portal…* lists every channel as it goes to TIA (address, name,
+>   data type, comment) and writes it as PLC tag table — `.xlsx` in the format of the tag table editor's Import
+>   (sheets PLCTags/TagTableProperties, as the STEP 7 help describes it) or SimaticML `.xml` for Openness. Read back
+>   a table exported from TIA Portal and the window marks what differs (name, comment, address, missing, only in
+>   TIA); one click takes the TIA names and comments into the plan (one undo step). EPLAN addresses (E 50.0, PEW256)
+>   become %I50.0/%IW256; channels named only DI0/DQ3 are counted from the module start (element information
+>   `plc_start_address`/`plc_start_address_2`, else the next free bytes). Also `--export-tia-tags`,
+>   `--compare-tia-tags … [--apply out.qet]` and `qet.exportTiaTags/compareTiaTags/applyTiaTags` in scripts.
 > - Contacts: a placed coil can carry its own contact groups (11/12/14, 21/22/24 …), like the function template of
 >   an EPLAN article; the contacts take their terminal names from it and the contact mirror shows them.
 > - Cross reference formula `%=M`: the plant is shown only when it differs from the sheet's own (`/42/1`,

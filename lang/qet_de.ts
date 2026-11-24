@@ -21697,6 +21697,14 @@ Hier ist das Projekt ab sofort nur zum Lesen offen. Eigene Änderungen sichern S
         <source>Check project: duplicate labels, open terminals, devices without a part, terminals without a strip, contacts without a coil, cables, PLC channels and more, in one list with errors, warnings and notes. Double-click a finding to show it.</source>
         <translation>Projekt prüfen: doppelte Kennzeichen, offene Anschlüsse, Geräte ohne Artikel, Klemmen ohne Klemmleiste, Kontakte ohne Spule, Kabel, SPS-Kanäle und mehr in einer Liste mit Fehlern, Warnungen und Hinweisen. Doppelklick zeigt einen Befund.</translation>
     </message>
+    <message>
+        <source>Print THM labels...</source>
+        <translation type="unfinished">THM-Etiketten drucken…</translation>
+    </message>
+    <message>
+        <source>Print wire, cable, terminal and device markers directly on a Weidmüller THM printer</source>
+        <translation type="unfinished">Draht-, Kabel-, Klemmen- und Geräteschilder direkt auf einem Weidmüller-THM-Drucker drucken</translation>
+    </message>
 </context>
 <context>
     <name>QETElementEditor</name>
@@ -31438,6 +31446,932 @@ Strg+Eingabe gibt die Zelle zurück, Escape verwirft den Text.</translation>
     <message>
         <source>Installation folder</source>
         <translation>Installationsordner</translation>
+    </message>
+</context>
+<context>
+    <name>ThmCatalog</name>
+    <message>
+        <source>Not a Weidmüller catalog: the root element is &lt;%1&gt;, not &lt;multiprint_catalog&gt;.</source>
+        <translation type="unfinished">Kein Weidmüller-Katalog: Das Wurzelelement ist &lt;%1&gt;, nicht &lt;multiprint_catalog&gt;.</translation>
+    </message>
+    <message>
+        <source>The catalog cannot be read (line %1): %2</source>
+        <translation type="unfinished">Der Katalog ist nicht lesbar (Zeile %1): %2</translation>
+    </message>
+    <message>
+        <source>The catalog file is empty.</source>
+        <translation type="unfinished">Die Katalogdatei ist leer.</translation>
+    </message>
+    <message>
+        <source>The catalog has no entry &quot;MultiMark&quot;.</source>
+        <translation type="unfinished">Der Katalog hat keinen Eintrag „MultiMark“.</translation>
+    </message>
+    <message>
+        <source>The entry &quot;MultiMark&quot; of the catalog lists no material numbers.</source>
+        <translation type="unfinished">Der Eintrag „MultiMark“ des Katalogs enthält keine Materialnummern.</translation>
+    </message>
+    <message>
+        <source>Cannot open %1: %2</source>
+        <translation type="unfinished">%1 lässt sich nicht öffnen: %2</translation>
+    </message>
+</context>
+<context>
+    <name>ThmCli</name>
+    <message>
+        <source>Unknown --kinds; expected wires, terminals, devices, cables or all.</source>
+        <translation type="unfinished">Unbekanntes --kinds; erwartet wires, terminals, devices, cables oder all.</translation>
+    </message>
+    <message>
+        <source>--folios takes a folio number or a range such as 2-5.</source>
+        <translation type="unfinished">--folios erwartet eine Blattnummer oder einen Bereich wie 2-5.</translation>
+    </message>
+    <message>
+        <source>--copies takes a number of 1 or more.</source>
+        <translation type="unfinished">--copies erwartet eine Zahl ab 1.</translation>
+    </message>
+    <message>
+        <source>Unknown option %1</source>
+        <translation type="unfinished">Unbekannte Option %1</translation>
+    </message>
+    <message>
+        <source>No THM printer with the ID &quot;%1&quot; is set up (see --thm-printers).</source>
+        <translation type="unfinished">Kein THM-Drucker mit der ID „%1“ eingerichtet (siehe --thm-printers).</translation>
+    </message>
+    <message>
+        <source>Name the printer with --printer &lt;ID&gt; or the article loaded with --material &lt;number&gt;.</source>
+        <translation type="unfinished">Drucker mit --printer &lt;ID&gt; oder den gerüsteten Artikel mit --material &lt;Nummer&gt; angeben.</translation>
+    </message>
+    <message>
+        <source>Bad value for %1: %2</source>
+        <translation type="unfinished">Ungültiger Wert für %1: %2</translation>
+    </message>
+    <message>
+        <source>Project not found: %1</source>
+        <translation type="unfinished">Projekt nicht gefunden: %1</translation>
+    </message>
+    <message>
+        <source>Failed to open project: %1</source>
+        <translation type="unfinished">Projekt lässt sich nicht öffnen: %1</translation>
+    </message>
+    <message>
+        <source>Cannot write %1: %2</source>
+        <translation type="unfinished">%1 lässt sich nicht schreiben: %2</translation>
+    </message>
+    <message>
+        <source>%1 label(s), %2 text(s) -&gt; %3</source>
+        <translation type="unfinished">%1 Etikett(en), %2 Text(e) -&gt; %3</translation>
+    </message>
+    <message>
+        <source>Bad port in %1</source>
+        <translation type="unfinished">Ungültiger Port in %1</translation>
+    </message>
+    <message>
+        <source>Printer: %1</source>
+        <translation type="unfinished">Drucker: %1</translation>
+    </message>
+    <message>
+        <source>Status: %1</source>
+        <translation type="unfinished">Status: %1</translation>
+    </message>
+    <message>
+        <source>Material: %1</source>
+        <translation type="unfinished">Material: %1</translation>
+    </message>
+    <message>
+        <source>The label distance does not fit the profile of %1.</source>
+        <translation type="unfinished">Der Etikettenabstand passt nicht zum Profil von %1.</translation>
+    </message>
+    <message>
+        <source>Cannot open %1: %2</source>
+        <translation type="unfinished">%1 lässt sich nicht öffnen: %2</translation>
+    </message>
+    <message>
+        <source>file %1, %2 bytes</source>
+        <translation type="unfinished">Datei %1, %2 Bytes</translation>
+    </message>
+    <message>
+        <source>%1 label(s), %2 text(s)</source>
+        <translation type="unfinished">%1 Etikett(en), %2 Text(e)</translation>
+    </message>
+    <message>
+        <source>Target: %1 (%2:%3)</source>
+        <translation type="unfinished">Ziel: %1 (%2:%3)</translation>
+    </message>
+    <message>
+        <source>Article: %1</source>
+        <translation type="unfinished">Artikel: %1</translation>
+    </message>
+    <message>
+        <source>Quantity: %1</source>
+        <translation type="unfinished">Menge: %1</translation>
+    </message>
+    <message>
+        <source>Nothing sent. Add --yes to print.</source>
+        <translation type="unfinished">Nichts gesendet. Zum Drucken --yes angeben.</translation>
+    </message>
+    <message>
+        <source>Not sent: %1</source>
+        <translation type="unfinished">Nicht gesendet: %1</translation>
+    </message>
+    <message>
+        <source>Sent to %1.</source>
+        <translation type="unfinished">An %1 gesendet.</translation>
+    </message>
+    <message>
+        <source>No THM printer is set up.</source>
+        <translation type="unfinished">Kein THM-Drucker eingerichtet.</translation>
+    </message>
+</context>
+<context>
+    <name>ThmClient</name>
+    <message>
+        <source>Firmware version</source>
+        <translation type="unfinished">Firmwareversion</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation type="unfinished">Status</translation>
+    </message>
+    <message>
+        <source>Material</source>
+        <translation type="unfinished">Material</translation>
+    </message>
+    <message>
+        <source>Pause</source>
+        <translation type="unfinished">Pause</translation>
+    </message>
+    <message>
+        <source>Resume</source>
+        <translation type="unfinished">Fortsetzen</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">Abbruch</translation>
+    </message>
+    <message>
+        <source>Print job</source>
+        <translation type="unfinished">Druckauftrag</translation>
+    </message>
+    <message>
+        <source>No printer address is set.</source>
+        <translation type="unfinished">Keine Druckeradresse eingetragen.</translation>
+    </message>
+    <message>
+        <source>There is nothing to send.</source>
+        <translation type="unfinished">Es gibt nichts zu senden.</translation>
+    </message>
+    <message>
+        <source>A request is still running.</source>
+        <translation type="unfinished">Eine Anfrage läuft noch.</translation>
+    </message>
+    <message>
+        <source>The printer closed the connection.</source>
+        <translation type="unfinished">Der Drucker hat die Verbindung geschlossen.</translation>
+    </message>
+    <message>
+        <source>The printer %1:%2 cannot be reached (no connection within %3 s).</source>
+        <translation type="unfinished">Der Drucker %1:%2 ist nicht erreichbar (keine Verbindung innerhalb von %3 s).</translation>
+    </message>
+    <message>
+        <source>The printer did not answer within %1 s.</source>
+        <translation type="unfinished">Der Drucker hat nicht innerhalb von %1 s geantwortet.</translation>
+    </message>
+    <message>
+        <source>The printer&apos;s answer is incomplete: &quot;%1&quot;.</source>
+        <translation type="unfinished">Die Antwort des Druckers ist unvollständig: „%1“.</translation>
+    </message>
+    <message>
+        <source>Sending to the printer did not finish within %1 s.</source>
+        <translation type="unfinished">Das Senden an den Drucker wurde nicht innerhalb von %1 s fertig.</translation>
+    </message>
+    <message>
+        <source>Connection to the printer failed: %1</source>
+        <translation type="unfinished">Verbindung zum Drucker fehlgeschlagen: %1</translation>
+    </message>
+    <message>
+        <source>The printer %1:%2 cannot be reached: %3</source>
+        <translation type="unfinished">Der Drucker %1:%2 ist nicht erreichbar: %3</translation>
+    </message>
+</context>
+<context>
+    <name>ThmJob</name>
+    <message>
+        <source>The label width and height are not set.</source>
+        <translation type="unfinished">Breite und Höhe des Etiketts sind nicht eingetragen.</translation>
+    </message>
+    <message>
+        <source>The gap must not be negative.</source>
+        <translation type="unfinished">Die Lücke darf nicht negativ sein.</translation>
+    </message>
+    <message>
+        <source>At least one column is needed.</source>
+        <translation type="unfinished">Mindestens eine Spalte ist nötig.</translation>
+    </message>
+    <message>
+        <source>The column pitch is smaller than the label width.</source>
+        <translation type="unfinished">Der Spaltenabstand ist kleiner als die Etikettenbreite.</translation>
+    </message>
+    <message>
+        <source>The margins leave no room for the text.</source>
+        <translation type="unfinished">Die Ränder lassen keinen Platz für den Text.</translation>
+    </message>
+    <message>
+        <source>The text size is not set.</source>
+        <translation type="unfinished">Die Textgröße ist nicht eingetragen.</translation>
+    </message>
+    <message>
+        <source>The text baseline lies outside the label.</source>
+        <translation type="unfinished">Die Grundlinie des Textes liegt außerhalb des Etiketts.</translation>
+    </message>
+    <message>
+        <source>The print speed is not set.</source>
+        <translation type="unfinished">Die Druckgeschwindigkeit ist nicht eingetragen.</translation>
+    </message>
+    <message>
+        <source>The heat correction must lie between -20 and +20.</source>
+        <translation type="unfinished">Die Heizkorrektur muss zwischen -20 und +20 liegen.</translation>
+    </message>
+    <message>
+        <source>There is nothing to print.</source>
+        <translation type="unfinished">Es gibt nichts zu drucken.</translation>
+    </message>
+    <message>
+        <source>Endless material (e)</source>
+        <translation type="unfinished">Endlosmaterial (e)</translation>
+    </message>
+    <message>
+        <source>Reflective mark, top (l0)</source>
+        <translation type="unfinished">Reflexmarke oben (l0)</translation>
+    </message>
+    <message>
+        <source>Reflective mark, bottom (l2)</source>
+        <translation type="unfinished">Reflexmarke unten (l2)</translation>
+    </message>
+    <message>
+        <source>Labels with gap (l1)</source>
+        <translation type="unfinished">Etiketten mit Lücke (l1)</translation>
+    </message>
+    <message>
+        <source>No error</source>
+        <translation type="unfinished">kein Fehler</translation>
+    </message>
+    <message>
+        <source>Applicator did not reach the upper position</source>
+        <translation type="unfinished">Applikator hat die obere Position nicht erreicht</translation>
+    </message>
+    <message>
+        <source>Applicator did not reach the lower position</source>
+        <translation type="unfinished">Applikator hat die untere Position nicht erreicht</translation>
+    </message>
+    <message>
+        <source>Vacuum plate is empty</source>
+        <translation type="unfinished">Vakuumplatte ist leer</translation>
+    </message>
+    <message>
+        <source>Label not deposited</source>
+        <translation type="unfinished">Etikett nicht abgelegt</translation>
+    </message>
+    <message>
+        <source>Host stop/error</source>
+        <translation type="unfinished">Host-Stopp/-Fehler</translation>
+    </message>
+    <message>
+        <source>Reflective sensor blocked</source>
+        <translation type="unfinished">Reflexsensor blockiert</translation>
+    </message>
+    <message>
+        <source>Tamp pad 90° error</source>
+        <translation type="unfinished">Stempel-90°-Fehler</translation>
+    </message>
+    <message>
+        <source>Tamp pad 0° error</source>
+        <translation type="unfinished">Stempel-0°-Fehler</translation>
+    </message>
+    <message>
+        <source>Table not in front position</source>
+        <translation type="unfinished">Tisch nicht in vorderer Position</translation>
+    </message>
+    <message>
+        <source>Table not in rear position</source>
+        <translation type="unfinished">Tisch nicht in hinterer Position</translation>
+    </message>
+    <message>
+        <source>Head lifted</source>
+        <translation type="unfinished">Kopf angehoben</translation>
+    </message>
+    <message>
+        <source>Head down</source>
+        <translation type="unfinished">Kopf abgesenkt</translation>
+    </message>
+    <message>
+        <source>Scan result negative</source>
+        <translation type="unfinished">Scanergebnis negativ</translation>
+    </message>
+    <message>
+        <source>Global network error</source>
+        <translation type="unfinished">allgemeiner Netzwerkfehler</translation>
+    </message>
+    <message>
+        <source>Compressed air error</source>
+        <translation type="unfinished">Druckluftfehler</translation>
+    </message>
+    <message>
+        <source>RFID error</source>
+        <translation type="unfinished">RFID-Fehler</translation>
+    </message>
+    <message>
+        <source>System fault</source>
+        <translation type="unfinished">Systemfehler</translation>
+    </message>
+    <message>
+        <source>USB error</source>
+        <translation type="unfinished">USB-Fehler</translation>
+    </message>
+    <message>
+        <source>Stacker full, printer goes on pause</source>
+        <translation type="unfinished">Stapler voll, Drucker geht in Pause</translation>
+    </message>
+    <message>
+        <source>Applicator error</source>
+        <translation type="unfinished">Applikatorfehler</translation>
+    </message>
+    <message>
+        <source>Protocol error / invalid barcode data</source>
+        <translation type="unfinished">Protokollfehler / ungültige Barcodedaten</translation>
+    </message>
+    <message>
+        <source>Memory card error</source>
+        <translation type="unfinished">Speicherkartenfehler</translation>
+    </message>
+    <message>
+        <source>Printhead or pinch roller open</source>
+        <translation type="unfinished">Druckkopf oder Andruckrolle offen</translation>
+    </message>
+    <message>
+        <source>Synchronization error (no label found)</source>
+        <translation type="unfinished">Synchronisationsfehler (kein Etikett gefunden)</translation>
+    </message>
+    <message>
+        <source>Out of ribbon</source>
+        <translation type="unfinished">Farbband zu Ende</translation>
+    </message>
+    <message>
+        <source>PPP reload required</source>
+        <translation type="unfinished">PPP-Nachladen nötig</translation>
+    </message>
+    <message>
+        <source>Heating voltage problem</source>
+        <translation type="unfinished">Problem mit der Heizspannung</translation>
+    </message>
+    <message>
+        <source>Cutter jammed</source>
+        <translation type="unfinished">Schneidwerk blockiert</translation>
+    </message>
+    <message>
+        <source>Label material too thick (cutter)</source>
+        <translation type="unfinished">Etikettenmaterial zu dick (Schneidwerk)</translation>
+    </message>
+    <message>
+        <source>Out of memory</source>
+        <translation type="unfinished">Speicher voll</translation>
+    </message>
+    <message>
+        <source>Out of paper</source>
+        <translation type="unfinished">Papier zu Ende</translation>
+    </message>
+    <message>
+        <source>Ribbon detected in thermal direct mode</source>
+        <translation type="unfinished">Farbband im Thermodirektbetrieb erkannt</translation>
+    </message>
+    <message>
+        <source>Ribbon saver malfunction</source>
+        <translation type="unfinished">Störung der Farbbandsparautomatik</translation>
+    </message>
+    <message>
+        <source>User error</source>
+        <translation type="unfinished">Benutzerfehler</translation>
+    </message>
+    <message>
+        <source>Input buffer overflow</source>
+        <translation type="unfinished">Überlauf des Eingangspuffers</translation>
+    </message>
+    <message>
+        <source>Print head overheated</source>
+        <translation type="unfinished">Druckkopf überhitzt</translation>
+    </message>
+    <message>
+        <source>External I/O error</source>
+        <translation type="unfinished">Fehler der externen E/A</translation>
+    </message>
+    <message>
+        <source>Printhead error</source>
+        <translation type="unfinished">Druckkopffehler</translation>
+    </message>
+    <message>
+        <source>Printhead damaged</source>
+        <translation type="unfinished">Druckkopf beschädigt</translation>
+    </message>
+    <message>
+        <source>Error code %1 (not in the manual&apos;s table)</source>
+        <translation type="unfinished">Fehlercode %1 (nicht in der Tabelle des Handbuchs)</translation>
+    </message>
+    <message>
+        <source>Status reply not understood: &quot;%1&quot;</source>
+        <translation type="unfinished">Statusantwort nicht verstanden: „%1“</translation>
+    </message>
+    <message>
+        <source>online</source>
+        <translation type="unfinished">online</translation>
+    </message>
+    <message>
+        <source>offline</source>
+        <translation type="unfinished">offline</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n label(s) to print</source>
+        <translation type="unfinished">
+            <numerusform>%n Etikett zu drucken</numerusform>
+            <numerusform>%n Etiketten zu drucken</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>interpreter active</source>
+        <translation type="unfinished">Interpreter aktiv</translation>
+    </message>
+    <message>
+        <source>standby</source>
+        <translation type="unfinished">Bereitschaft</translation>
+    </message>
+    <message>
+        <source>Material reply not understood: &quot;%1&quot;</source>
+        <translation type="unfinished">Materialantwort nicht verstanden: „%1“</translation>
+    </message>
+    <message>
+        <source>synchronized</source>
+        <translation type="unfinished">synchronisiert</translation>
+    </message>
+    <message>
+        <source>not synchronized</source>
+        <translation type="unfinished">nicht synchronisiert</translation>
+    </message>
+    <message>
+        <source>%1, label distance unknown</source>
+        <translation type="unfinished">%1, Etikettenabstand unbekannt</translation>
+    </message>
+    <message>
+        <source>%1, label distance %2 mm</source>
+        <translation type="unfinished">%1, Etikettenabstand %2 mm</translation>
+    </message>
+</context>
+<context>
+    <name>ThmPrintDialog</name>
+    <message>
+        <source>Print THM labels</source>
+        <translation type="unfinished">THM-Etiketten drucken</translation>
+    </message>
+    <message>
+        <source>Markers</source>
+        <translation type="unfinished">Schilder</translation>
+    </message>
+    <message>
+        <source>Wires</source>
+        <translation type="unfinished">Drähte</translation>
+    </message>
+    <message>
+        <source>Cables</source>
+        <translation type="unfinished">Kabel</translation>
+    </message>
+    <message>
+        <source>Terminals</source>
+        <translation type="unfinished">Klemmen</translation>
+    </message>
+    <message>
+        <source>Devices</source>
+        <translation type="unfinished">Geräte</translation>
+    </message>
+    <message>
+        <source>Range</source>
+        <translation type="unfinished">Bereich</translation>
+    </message>
+    <message>
+        <source>to</source>
+        <translation type="unfinished">bis</translation>
+    </message>
+    <message>
+        <source>Folios:</source>
+        <translation type="unfinished">Blätter:</translation>
+    </message>
+    <message>
+        <source>Full reference designation (=plant+location-device)</source>
+        <translation type="unfinished">Vollständiges Kennzeichen (=Anlage+Ort-Gerät)</translation>
+    </message>
+    <message>
+        <source>A marker at each end of wires and cables</source>
+        <translation type="unfinished">Je Draht- und Kabelende ein Schild</translation>
+    </message>
+    <message>
+        <source>Merge equal texts</source>
+        <translation type="unfinished">Gleiche Texte zusammenfassen</translation>
+    </message>
+    <message>
+        <source>Copies of each marker:</source>
+        <translation type="unfinished">Kopien je Schild:</translation>
+    </message>
+    <message>
+        <source>Text</source>
+        <translation type="unfinished">Text</translation>
+    </message>
+    <message>
+        <source>Labels</source>
+        <translation type="unfinished">Etiketten</translation>
+    </message>
+    <message>
+        <source>Target</source>
+        <translation type="unfinished">Ziel</translation>
+    </message>
+    <message>
+        <source>Article variant:</source>
+        <translation type="unfinished">Artikelvariante:</translation>
+    </message>
+    <message>
+        <source>Catalog file...</source>
+        <translation type="unfinished">Katalogdatei…</translation>
+    </message>
+    <message>
+        <source>Catalog:</source>
+        <translation type="unfinished">Katalog:</translation>
+    </message>
+    <message>
+        <source>Printer:</source>
+        <translation type="unfinished">Drucker:</translation>
+    </message>
+    <message>
+        <source>Printers...</source>
+        <translation type="unfinished">Drucker…</translation>
+    </message>
+    <message>
+        <source>Printer state</source>
+        <translation type="unfinished">Druckerzustand</translation>
+    </message>
+    <message>
+        <source>Query status</source>
+        <translation type="unfinished">Status abfragen</translation>
+    </message>
+    <message>
+        <source>Query material</source>
+        <translation type="unfinished">Material abfragen</translation>
+    </message>
+    <message>
+        <source>Pause</source>
+        <translation type="unfinished">Pause</translation>
+    </message>
+    <message>
+        <source>Resume</source>
+        <translation type="unfinished">Fortsetzen</translation>
+    </message>
+    <message>
+        <source>Cancel job...</source>
+        <translation type="unfinished">Auftrag abbrechen…</translation>
+    </message>
+    <message>
+        <source>Save as .prn...</source>
+        <translation type="unfinished">Als .prn speichern…</translation>
+    </message>
+    <message>
+        <source>Print...</source>
+        <translation type="unfinished">Drucken…</translation>
+    </message>
+    <message>
+        <source>none chosen</source>
+        <translation type="unfinished">keine gewählt</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1 (%n variant(s))</source>
+        <translation type="unfinished">
+            <numerusform>%1 (%n Variante)</numerusform>
+            <numerusform>%1 (%n Varianten)</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Weidmüller catalog file</source>
+        <translation type="unfinished">Weidmüller-Katalogdatei</translation>
+    </message>
+    <message>
+        <source>Weidmüller catalog (my_cat*.mca *.mca);;All files (*)</source>
+        <translation type="unfinished">Weidmüller-Katalog (my_cat*.mca *.mca);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <source>Choose at least one kind of marker.</source>
+        <translation type="unfinished">Mindestens eine Schildart wählen.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n label(s)</source>
+        <translation type="unfinished">
+            <numerusform>%n Etikett</numerusform>
+            <numerusform>%n Etiketten</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n different text(s)</source>
+        <translation type="unfinished">
+            <numerusform>%n verschiedener Text</numerusform>
+            <numerusform>%n verschiedene Texte</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>(choose a printer)</source>
+        <translation type="unfinished">(Drucker wählen)</translation>
+    </message>
+    <message>
+        <source>Choose a printer first.</source>
+        <translation type="unfinished">Zuerst einen Drucker wählen.</translation>
+    </message>
+    <message>
+        <source>Asking %1 ...</source>
+        <translation type="unfinished">Frage %1 ab …</translation>
+    </message>
+    <message>
+        <source>%1: %2</source>
+        <translation type="unfinished">%1: %2</translation>
+    </message>
+    <message>
+        <source>Printer: %1</source>
+        <translation type="unfinished">Drucker: %1</translation>
+    </message>
+    <message>
+        <source>Status: %1</source>
+        <translation type="unfinished">Status: %1</translation>
+    </message>
+    <message>
+        <source>Material: %1</source>
+        <translation type="unfinished">Material: %1</translation>
+    </message>
+    <message>
+        <source>fits the profile (%1 mm)</source>
+        <translation type="unfinished">passt zum Profil (%1 mm)</translation>
+    </message>
+    <message>
+        <source>does NOT fit the profile (%1 mm)</source>
+        <translation type="unfinished">passt NICHT zum Profil (%1 mm)</translation>
+    </message>
+    <message>
+        <source>The job was sent.</source>
+        <translation type="unfinished">Der Auftrag wurde gesendet.</translation>
+    </message>
+    <message>
+        <source>%1 sent.</source>
+        <translation type="unfinished">%1 gesendet.</translation>
+    </message>
+    <message>
+        <source>The job was not sent completely.
+%1</source>
+        <translation type="unfinished">Der Auftrag wurde nicht vollständig gesendet.
+%1</translation>
+    </message>
+    <message>
+        <source>Cancel job</source>
+        <translation type="unfinished">Auftrag abbrechen</translation>
+    </message>
+    <message>
+        <source>Cancel the current job on &quot;%1&quot; and empty its buffer?
+Labels not yet printed are lost.</source>
+        <translation type="unfinished">Den laufenden Auftrag auf „%1“ abbrechen und den Puffer leeren?
+Noch nicht gedruckte Etiketten gehen verloren.</translation>
+    </message>
+    <message>
+        <source>project</source>
+        <translation type="unfinished">Projekt</translation>
+    </message>
+    <message>
+        <source>Save THM print job</source>
+        <translation type="unfinished">THM-Druckauftrag speichern</translation>
+    </message>
+    <message>
+        <source>Print job (*.prn)</source>
+        <translation type="unfinished">Druckauftrag (*.prn)</translation>
+    </message>
+    <message>
+        <source>The file could not be written: %1</source>
+        <translation type="unfinished">Die Datei ließ sich nicht schreiben: %1</translation>
+    </message>
+    <message>
+        <source>Material reported: %1</source>
+        <translation type="unfinished">Gemeldetes Material: %1</translation>
+    </message>
+    <message>
+        <source>WARNING: the label distance does not fit the profile.</source>
+        <translation type="unfinished">WARNUNG: Der Etikettenabstand passt nicht zum Profil.</translation>
+    </message>
+    <message>
+        <source>Material not queried.</source>
+        <translation type="unfinished">Material nicht abgefragt.</translation>
+    </message>
+    <message numerus="yes">
+        <source>Target: %1 (%2:%3)%4
+Article: %5
+Quantity: %n label(s)</source>
+        <translation type="unfinished">
+            <numerusform>Ziel: %1 (%2:%3)%4
+Artikel: %5
+Menge: %n Etikett</numerusform>
+            <numerusform>Ziel: %1 (%2:%3)%4
+Artikel: %5
+Menge: %n Etiketten</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Print now?</source>
+        <translation type="unfinished">Jetzt drucken?</translation>
+    </message>
+    <message>
+        <source>Sending to %1 ...</source>
+        <translation type="unfinished">Sende an %1 …</translation>
+    </message>
+</context>
+<context>
+    <name>ThmPrinters</name>
+    <message>
+        <source>The printer has no ID.</source>
+        <translation type="unfinished">Der Drucker hat keine ID.</translation>
+    </message>
+    <message>
+        <source>The printer has no name.</source>
+        <translation type="unfinished">Der Drucker hat keinen Namen.</translation>
+    </message>
+    <message>
+        <source>The printer &quot;%1&quot; has no address.</source>
+        <translation type="unfinished">Der Drucker „%1“ hat keine Adresse.</translation>
+    </message>
+    <message>
+        <source>The printer &quot;%1&quot; has no port.</source>
+        <translation type="unfinished">Der Drucker „%1“ hat keinen Port.</translation>
+    </message>
+    <message>
+        <source>No article variant is set for the printer &quot;%1&quot;.</source>
+        <translation type="unfinished">Für den Drucker „%1“ ist keine Artikelvariante eingetragen.</translation>
+    </message>
+    <message>
+        <source>Print profile of &quot;%1&quot;: %2</source>
+        <translation type="unfinished">Druckprofil von „%1“: %2</translation>
+    </message>
+    <message>
+        <source>No THM printer is set up. Add one under &quot;Printers...&quot;.</source>
+        <translation type="unfinished">Kein THM-Drucker eingerichtet. Unter „Drucker…“ einen anlegen.</translation>
+    </message>
+    <message>
+        <source>Choose the article variant to print on.</source>
+        <translation type="unfinished">Die Artikelvariante wählen, auf die gedruckt wird.</translation>
+    </message>
+    <message>
+        <source>No printer is loaded with article %1. Load it on a printer and enter it there under &quot;Printers...&quot;.</source>
+        <translation type="unfinished">Kein Drucker ist mit Artikel %1 gerüstet. Ihn auf einem Drucker rüsten und dort unter „Drucker…“ eintragen.</translation>
+    </message>
+    <message>
+        <source>Printer &quot;%1&quot; is loaded with article %2.</source>
+        <translation type="unfinished">Drucker „%1“ ist mit Artikel %2 gerüstet.</translation>
+    </message>
+    <message>
+        <source>%1 printers are loaded with article %2: choose one.</source>
+        <translation type="unfinished">%1 Drucker sind mit Artikel %2 gerüstet: einen wählen.</translation>
+    </message>
+</context>
+<context>
+    <name>ThmPrintersDialog</name>
+    <message>
+        <source>THM printers</source>
+        <translation type="unfinished">THM-Drucker</translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation type="unfinished">Hinzufügen</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Entfernen</translation>
+    </message>
+    <message>
+        <source>as the printer reports it</source>
+        <translation type="unfinished">wie der Drucker es meldet</translation>
+    </message>
+    <message>
+        <source>IP address or host name</source>
+        <translation type="unfinished">IP-Adresse oder Hostname</translation>
+    </message>
+    <message>
+        <source>ID:</source>
+        <translation type="unfinished">ID:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Name:</translation>
+    </message>
+    <message>
+        <source>Model:</source>
+        <translation type="unfinished">Modell:</translation>
+    </message>
+    <message>
+        <source>Address:</source>
+        <translation type="unfinished">Adresse:</translation>
+    </message>
+    <message>
+        <source>Port:</source>
+        <translation type="unfinished">Port:</translation>
+    </message>
+    <message>
+        <source>Article variant loaded:</source>
+        <translation type="unfinished">Gerüstete Artikelvariante:</translation>
+    </message>
+    <message>
+        <source>= label width</source>
+        <translation type="unfinished">= Etikettenbreite</translation>
+    </message>
+    <message>
+        <source>centred</source>
+        <translation type="unfinished">mittig</translation>
+    </message>
+    <message>
+        <source>Set speed and heat (H command)</source>
+        <translation type="unfinished">Geschwindigkeit und Heizung setzen (H-Befehl)</translation>
+    </message>
+    <message>
+        <source>Thermal transfer (with ribbon)</source>
+        <translation type="unfinished">Thermotransfer (mit Farbband)</translation>
+    </message>
+    <message>
+        <source>Turn the print by 180°</source>
+        <translation type="unfinished">Druck um 180° drehen</translation>
+    </message>
+    <message>
+        <source>Label width:</source>
+        <translation type="unfinished">Etikettenbreite:</translation>
+    </message>
+    <message>
+        <source>Label height:</source>
+        <translation type="unfinished">Etikettenhöhe:</translation>
+    </message>
+    <message>
+        <source>Gap:</source>
+        <translation type="unfinished">Lücke:</translation>
+    </message>
+    <message>
+        <source>Sensor:</source>
+        <translation type="unfinished">Sensor:</translation>
+    </message>
+    <message>
+        <source>Columns:</source>
+        <translation type="unfinished">Spalten:</translation>
+    </message>
+    <message>
+        <source>Column pitch:</source>
+        <translation type="unfinished">Spaltenabstand:</translation>
+    </message>
+    <message>
+        <source>Margin left:</source>
+        <translation type="unfinished">Rand links:</translation>
+    </message>
+    <message>
+        <source>Margin right:</source>
+        <translation type="unfinished">Rand rechts:</translation>
+    </message>
+    <message>
+        <source>Offset x:</source>
+        <translation type="unfinished">Verschiebung x:</translation>
+    </message>
+    <message>
+        <source>Offset y:</source>
+        <translation type="unfinished">Verschiebung y:</translation>
+    </message>
+    <message>
+        <source>Font number:</source>
+        <translation type="unfinished">Schriftnummer:</translation>
+    </message>
+    <message>
+        <source>Text size:</source>
+        <translation type="unfinished">Textgröße:</translation>
+    </message>
+    <message>
+        <source>Text baseline:</source>
+        <translation type="unfinished">Grundlinie des Textes:</translation>
+    </message>
+    <message>
+        <source>Speed:</source>
+        <translation type="unfinished">Geschwindigkeit:</translation>
+    </message>
+    <message>
+        <source>Heat correction:</source>
+        <translation type="unfinished">Heizkorrektur:</translation>
+    </message>
+    <message>
+        <source>Label sizes, font and heat are those of your material; QElectroTech fills none in. Try a new profile on one label first.</source>
+        <translation type="unfinished">Etikettenmaße, Schrift und Heizung sind die Ihres Materials; QElectroTech trägt keine ein. Ein neues Profil zuerst an einem Etikett ausprobieren.</translation>
+    </message>
+    <message>
+        <source>THM printer %1</source>
+        <translation type="unfinished">THM-Drucker %1</translation>
+    </message>
+    <message>
+        <source>Remove the printer &quot;%1&quot;?</source>
+        <translation type="unfinished">Den Drucker „%1“ entfernen?</translation>
     </message>
 </context>
 <context>

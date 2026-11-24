@@ -3,7 +3,7 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
-## Unveröffentlicht – Ein Prüfpanel
+## 1.49.1 – 24.11.2026 – Ein Prüfpanel
 
 „Plan prüfen“ des Forks und das Prüfpanel des Originals (#1878) sind jetzt ein einziges Panel.
 

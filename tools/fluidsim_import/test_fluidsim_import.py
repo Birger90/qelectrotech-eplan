@@ -244,5 +244,46 @@ class Werte(unittest.TestCase):
         self.assertEqual([w for w, _ in fp.sichtbare_werte(o, tf)], ["p0 = 6 bar"])
 
 
+class Logo(unittest.TestCase):
+    """Das LOGO-Programm (logo-box-ref) kommt auf ein eigenes Blatt, die Schaltung bleibt."""
+
+    def test_teilen(self):
+        w = ET.fromstring(
+            "<fluidtools2><section type='symbol-graphics'/><section type='circuit-objects'>"
+            "<component ident='O1' object-ref='Pneu.X' symbol-ref='s1'/>"
+            "<component ident='O9' object-ref='Digital.Logo.Logobox' symbol-ref='s2'>"
+            "<dki-data><designation value='-A1'/></dki-data></component>"
+            "<component ident='O2' logo-box-ref='9' object-ref='Digital.Logo.And' symbol-ref='s3'/>"
+            "<component ident='O3' logo-box-ref='9' object-ref='Digital.Logo.OutputQ' symbol-ref='s4'/>"
+            "<connect con1='O2.a' con2='O3.b'/><connect con1='O1.a' con2='O9.b'/>"
+            "</section></fluidtools2>")
+        teile = fp.logo_teilen(w)
+        self.assertEqual([n for n, _ in teile], ["LOGO -A1"])
+        haupt = [o.get("ident") for o in fp.objekte(w)]
+        logo = [o.get("ident") for o in fp.objekte(teile[0][1])]
+        self.assertEqual(haupt, ["O1", "O9"])
+        self.assertEqual(logo, ["O2", "O3"])
+        self.assertEqual(len(list(teile[0][1].iter("connect"))), 1)
+        self.assertEqual(len(list(w.iter("connect"))), 1)
+        self.assertIsNotNone(fp.abschnitt(teile[0][1], "symbol-graphics"))
+
+    def test_ohne_logo(self):
+        w = ET.fromstring("<fluidtools2><section type='circuit-objects'>"
+                          "<component ident='O1' symbol-ref='s1'/></section></fluidtools2>")
+        self.assertEqual(fp.logo_teilen(w), [])
+
+
+class Welle(unittest.TestCase):
+    def test_drehanschluss_ueber_con_ref(self):
+        symbole = {"s": ET.fromstring("<symbol ident='s'><symbol-layer ident='StaticLayer'>"
+                                      "<connector ident='1' type='rotational' cx='0' cy='0'/>"
+                                      "<connector ident='2' type='electric' cx='5' cy='0'/>"
+                                      "</symbol-layer></symbol>")}
+        o = ET.fromstring("<component ident='O1' symbol-ref='s'>"
+                          "<connector ident='MR' con-ref='StaticLayer.1'/>"
+                          "<connector ident='U1' con-ref='StaticLayer.2'/></component>")
+        self.assertEqual(fp.drehanschluesse(symbole, o), {"MR"})
+
+
 if __name__ == "__main__":
     unittest.main()

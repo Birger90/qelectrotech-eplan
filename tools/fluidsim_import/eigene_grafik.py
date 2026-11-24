@@ -1024,6 +1024,11 @@ def ersetzen(symbol, komponente, klasse="", stellungen=None):
     if not gezeichnet:
         # kein Textkasten mit (abgeschnittenem) Namen: Kasten mit Kennzeichen nach IEC 60617 oder leer
         _kasten_mit_name(s, anschl, u, kennzeichen(objekt))
-    _anschluesse_erreichen(s, anschl, u)
+    # Wellenanschluss (Motor, Belastungsmaschine): die Welle beginnt am Symbol, nicht im Leeren
+    welle = [(eb, c, _z(eb, "ref-x") + _z(eb, "scale-x", 1.0) * _z(c, "cx"),
+              _z(eb, "ref-y") + _z(eb, "scale-y", 1.0) * _z(c, "cy"))
+             for eb in symbol.findall("symbol-layer") if eb.get("visible") != "false"
+             for c in eb.iter("connector") if c.get("type") == "rotational"]
+    _anschluesse_erreichen(s, anschl + welle, u)
     neu.append(s.ebene)
     return neu

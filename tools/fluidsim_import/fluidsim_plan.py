@@ -75,6 +75,9 @@ import fluidsim_grafcet  # noqa: E402
 import eigene_grafik  # noqa: E402
 
 FLUIDSIM = Path("C:/Program Files (x86)/Didactic/FluidSIM6")
+# "default": QETs gerader Weg, danach nur die Leitungen durch Symbole herumführen (leitungen_nachfuehren);
+# "avoid": jede Leitung gleich um alle Symbole herum (mehr Umwege und Kreuzungen)
+LEITUNGSWEG = os.environ.get("FLUIDSIM_LEITUNGSWEG", "default")
 AUSLASSEN = ("Grafcet.",)  # Objektarten, die keine Bauteile sind (GRAFCET: fluidsim_grafcet.py)
 VERZWEIGUNG = ("Interface.MultiPin", "Digital.MultiPin")   # T-Verteiler: in QET kein Bauteil, nur Netz
 
@@ -92,6 +95,101 @@ def lesen(pfad: Path):
         if blatt is not None:
             return blatt
     return wurzel
+
+
+def drehanschluesse(symbole, objekt):
+    """Idents der Wellenanschlüsse (FluidSIM-Typ "rotational") eines Objekts."""
+    symbol = symbole.get(objekt.get("symbol-ref"))
+    if symbol is None:
+        return set()
+    dreh = {(eb.get("ident", ""), c.get("ident")) for eb in symbol.findall("symbol-layer")
+            for c in eb.findall("connector") if c.get("type") == "rotational"}
+    # Die Verbindungen nennen den Anschluss des Bauteils (MR); con-ref zeigt auf Ebene.Ident im Symbol
+    aus = {c.get("ident") for c in objekt.findall("connector")
+           if tuple(fs.anschluss_schluessel(objekt, c.get("ident"))) in dreh}
+    return aus or {i for _, i in dreh}
+
+
+def welle_ops(blatt, symbole, nach_id, verbindungen, hier, dx, dy):
+    """Mechanische Kopplungen (Welle Motor ↔ Belastungsmaschine) als Linie zwischen den Wellenanschlüssen.
+    QET kennt keinen Wellenanschluss; eine Leitung wäre ein elektrisches Netz."""
+    ops = []
+    for v in verbindungen:
+        enden = []
+        for bezug in (v.get("con1", ""), v.get("con2", "")):
+            oid, _, x = bezug.partition(".")
+            o = nach_id.get(oid)
+            if o is None or oid not in hier or x not in drehanschluesse(symbole, o):
+                break
+            lage = anschluss_lage(symbole, o, x)
+            if lage is None:
+                break
+            enden.append((round(lage[0] * fs.K + dx, 1), round(lage[1] * fs.K + dy, 1)))
+        if len(enden) == 2 and enden[0] != enden[1]:
+            (x1, y1), (x2, y2) = enden
+            ops.append({"op": "add_shape", "folio": blatt, "shape": "line", "x1": x1, "y1": y1, "x2": x2, "y2": y2})
+    return ops
+
+
+class Blatt:
+    """Ein QET-Blatt aus einer FluidSIM-Schaltung: das Hauptfenster oder ein LOGO-Programm."""
+
+    def __init__(self, pfad: Path, wurzel, zusatz=""):
+        self.pfad = pfad
+        self.name = pfad.name + (f" ({zusatz})" if zusatz else "")
+        self.stem = pfad.stem + (f" {zusatz}" if zusatz else "")
+        self.wurzel = wurzel
+
+
+def logo_teilen(wurzel):
+    """Das Programm eines LOGO-Moduls (Digital.Logo.Logobox) steht in FluidSIM in einem eigenen Fenster mit
+    eigenen Koordinaten; seine Objekte tragen logo-box-ref. Auf einem Blatt mit der Schaltung lägen sie über
+    Ventilen und Zylindern. @return [(Name, Wurzel)] je LOGO-Modul; die Objekte werden aus wurzel entfernt."""
+    co = abschnitt(wurzel, "circuit-objects")
+    if co is None:
+        return []
+    je_box = {}
+    for c in list(co):
+        if c.get("logo-box-ref"):
+            je_box.setdefault(c.get("logo-box-ref"), []).append(c)
+    if not je_box:
+        return []
+    boxen = {o.get("ident", "").lstrip("O"): o for o in co.iter("component")
+             if (o.get("object-ref") or "").endswith("Logobox")}
+    aus = []
+    for n, (ref, teile) in enumerate(sorted(je_box.items()), 1):
+        ids = {e.get("ident") for t in teile for e in t.iter() if e.get("ident")}
+        verb = [v for v in co.findall("connect")
+                if v.get("con1", "").partition(".")[0] in ids and v.get("con2", "").partition(".")[0] in ids]
+        neu = ET.Element(wurzel.tag, wurzel.attrib)
+        for sec in wurzel.findall("section"):
+            if sec is co:
+                sec2 = ET.SubElement(neu, "section", sec.attrib)
+                sec2.extend(teile + verb)
+            else:
+                neu.append(sec)
+        for t in teile + verb:
+            co.remove(t)
+        box = boxen.get(ref)
+        kennz = box.find("dki-data/designation") if box is not None else None
+        name = "LOGO"
+        if kennz is not None and kennz.get("value") and not kennz.get("value").startswith("?"):
+            name += " " + kennz.get("value")
+        elif len(je_box) > 1:
+            name += f" {n}"
+        aus.append((name, neu))
+    return aus
+
+
+def blaetter(circs):
+    """Die QET-Blätter zu den Schaltungen: je Schaltung das Hauptfenster, dahinter ihre LOGO-Programme."""
+    aus = []
+    for p in circs:
+        w = lesen(p)
+        logo = logo_teilen(w)
+        aus.append(Blatt(p, w))
+        aus += [Blatt(p, lw, name) for name, lw in logo]
+    return aus
 
 
 def abschnitt(wurzel, art):
@@ -479,23 +577,23 @@ def blatt_lage(alle, hier_ops):
 
 
 def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
-    """Bauteile in sammlung schreiben; @return die Operationen für qet_edit und eine Zusammenfassung."""
+    """circs: die Blätter (blaetter()). Bauteile in sammlung schreiben; @return die Operationen für qet_edit und eine Zusammenfassung."""
     ops = []
-    zahl = {"bauteile": 0, "leitungen": 0, "verknuepfungen": 0, "texte": 0, "ausgelassen": 0, "kennzeichnungen": 0,
+    zahl = {"bauteile": 0, "leitungen": 0, "verknuepfungen": 0, "texte": 0, "ausgelassen": 0, "ausgelassen_objekte": [], "kennzeichnungen": 0,
             "rollen": 0, "schritte": 0, "transitionen": 0, "aktionen": 0}
     offen = []
     taster, handventile, ventile = [], [], []
     # alle Kennzeichnungen aus FluidSIM vorab, damit eine vergebene keiner späteren gleicht
     vergeben = set()
     for circ in circs:
-        for o in objekte(lesen(circ)):
+        for o in objekte(circ.wurzel):
             k = o.find("dki-data/designation")
             if k is not None and k.get("value") and not k.get("value").startswith("?"):
                 vergeben.add(k.get("value"))
     bauteile = []   # dict: folio, id, label, link, klasse, ventil_ziele [(comp-ref, label)], ident
 
     for blatt, circ in enumerate(circs):
-        w = lesen(circ)
+        w = circ.wurzel
         grafik = abschnitt(w, "symbol-graphics")
         if grafik is None:
             continue
@@ -534,8 +632,11 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
                     symbole[o.get("symbol-ref")], o, fs.klasse(o), ventil_stellungen(symbole[o.get("symbol-ref")]))
             # Zwei Durchläufe: die UUIDs hängen am Inhalt, so werden gleiche Symbole ein Bauteil
             probe = fs.bauteil_umwandeln(quelle, o, alle, verbindungen, (de, en), circ.name, "probe", lage=True)
-            if probe is None or not probe["uuids"]:
+            if probe is None or (not probe["uuids"] and not drehanschluesse(symbole, o)):
+                # Bauteile ohne Fluid-/Elektroanschluss sind Animationen oder Hardware-Kopplungen (EasyPort);
+                # mit Wellenanschluss (Belastungsmaschine am Motor) bleiben sie, die Welle zeichnet welle_ops
                 zahl["ausgelassen"] += 1
+                zahl["ausgelassen_objekte"].append(objekt or o.tag)
                 continue
             saat = "plan/" + hashlib.sha1(probe["text"].encode("utf-8")).hexdigest()
             erg = fs.bauteil_umwandeln(quelle, o, alle, verbindungen, (de, en), circ.name, saat, lage=True)
@@ -752,6 +853,7 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
             for op in hier_ops:
                 op["x"] = round(op["x"] + dx, 1)
                 op["y"] = round(op["y"] + dy, 1)
+            ops += welle_ops(blatt, symbole, nach_id, verbindungen, hier, dx, dy)
 
         # Leitungen dieses Blatts
         def anschluss_uuid(bezug):
@@ -809,7 +911,7 @@ def plan(circs, sammlung: Path, sprache, fluidsim_grafik=False):
             if ea and eb and ta and tb:
                 ops.append({"op": "add_conductor", "folio": blatt, "from": "$" + ea,
                             "from_terminal": "{" + ta + "}", "to": "$" + eb, "to_terminal": "{" + tb + "}",
-                            "route": "avoid"})   # um die Symbole herum, nicht hindurch
+                            "route": LEITUNGSWEG})   # siehe leitungen_nachfuehren
                 zahl["leitungen"] += 1
 
     # Verknüpfungen, auch über Blattgrenzen: zuerst über den Verweis im selben Blatt, sonst über die Kennzeichnung
@@ -920,6 +1022,77 @@ qet.log(M + JSON.stringify({kind: 'frei', versetzt: versetzt, bleibt: bleibt, sa
 """
 
 
+def leitungen_durch_symbole(qet_mcp, binary, pfad: Path, sammlung: Path):
+    """Die Leitungen, die durch ein fremdes Symbol laufen, als Mengen ihrer beiden Bauteile (UUID ohne Klammern).
+    Der Layout-Datensatz nennt den Anschluss nur mit Nummer; mehrere Leitungen zwischen denselben zwei Bauteilen
+    werden darum gemeinsam umgelegt."""
+    js = qet_mcp._LAYOUT_JS.replace("@FOLIO@", "-1").replace("@MARKER@", json.dumps(qet_mcp._MARKER))
+    try:
+        r = qet_mcp._run_qet(str(binary), [str(pfad)], timeout=600, elements_dir=str(sammlung), script=js,
+                             tail=20_000_000)
+    except Exception:
+        return set()
+    aus = set()
+    for zeile in (r.get("stdout", "") + "\n" + r.get("stderr", "")).splitlines():
+        if qet_mcp._MARKER not in zeile:
+            continue
+        try:
+            rec = json.loads(zeile.split(qet_mcp._MARKER, 1)[1])
+        except ValueError:
+            continue
+        if rec.get("kind") != "layout":
+            continue
+        befund = qet_mcp._layout_folio(rec, 40.0)
+        durch = {x["conductor"] for x in befund["findings"] if x["rule"] == "wire_through_symbol"}
+        for w in rec.get("conductors") or []:
+            if w.get("uuid") in durch:
+                aus.add(frozenset(e.partition(" terminal ")[0].strip("{}") for e in w.get("ends") or []))
+    return aus
+
+
+def leitungen_nachfuehren(qet_mcp, binary, leer: Path, ops, erg, ausgabe: Path, sammlung: Path, runden=2):
+    """Nur die Leitungen, die durch ein fremdes Symbol laufen, um die Symbole herum führen.
+
+    Alle Leitungen mit "avoid" anzulegen hält Abstand zu jedem Symbol und macht Umwege und Kreuzungen, wo QETs
+    gerader Weg (zwei, drei Abschnitte) frei wäre. Deshalb zuerst der gerade Weg, dann der Layout-Check; die
+    Leitungen seiner Befunde „wire_through_symbol“ bekommen beim nächsten Durchlauf "avoid". route_conductor
+    allein reicht nicht: es erreicht keine Leitung, deren beide Anschlüsse weitere Leitungen tragen (Netze).
+    @return (erg, Zahl der Leitungen mit "avoid")"""
+    def ohne(u):
+        return (u or "").strip("{}")
+
+    umgelegt = 0
+    for _ in range(runden):
+        durch = leitungen_durch_symbole(qet_mcp, binary, ausgabe, sammlung)
+        if not durch:
+            break
+        # addConductor nennt keine UUID: die Leitung über ihre beiden Enden (Bauteil, Anschluss) finden
+        bauteil = {o.get("id"): ohne(o.get("result")) for o in erg.get("operations", [])
+                   if o.get("op") == "add_element" and o.get("succeeded")}
+        neu = []
+        for k, op in enumerate(ops):
+            if op["op"] != "add_conductor" or op.get("route") == "avoid":
+                continue
+            enden = frozenset((bauteil.get(op["from"][1:]), bauteil.get(op["to"][1:])))
+            if enden in durch:
+                neu.append(k)
+        if not neu:
+            break
+        for k in neu:
+            ops[k]["route"] = "avoid"
+        zwischen = ausgabe.with_name(ausgabe.stem + ".geführt.qet")
+        erg2 = qet_mcp.tool_edit(str(binary), str(leer), ops, str(zwischen), elements_dir=str(sammlung), timeout=600)
+        if not erg2.get("saved") or not zwischen.exists():
+            zwischen.unlink(missing_ok=True)
+            for k in neu:
+                ops[k]["route"] = LEITUNGSWEG
+            break
+        os.replace(zwischen, ausgabe)
+        erg = erg2
+        umgelegt += len(neu)
+    return erg, umgelegt
+
+
 def beschriftungen_freistellen(qet_mcp, binary, pfad: Path, sammlung: Path):
     """Kennzeichnungen von Leitungen, Bauteilen und anderen Kennzeichnungen wegsetzen; speichert das Projekt."""
     js = (BESCHRIFTUNG_JS.replace("@MARKER@", json.dumps(qet_mcp._MARKER))
@@ -976,7 +1149,8 @@ def main(argv=None):
         g_ziel.mkdir(parents=True)
         for f in g_quelle.glob("*.elmt"):
             (g_ziel / f.name).write_bytes(f.read_bytes())
-        ops, zahl = plan(circs, sammlung, sprache, a.fluidsim_grafik)
+        bl = blaetter(circs)
+        ops, zahl = plan(bl, sammlung, sprache, a.fluidsim_grafik)
         if a.nur_zeigen:
             print(json.dumps(ops, indent=1, ensure_ascii=False))
             print(zahl)
@@ -987,9 +1161,12 @@ def main(argv=None):
         except SyntaxError as e:
             sys.exit(f"misc/qet-mcp/qet_mcp.py lässt sich nicht laden: {e}")
         os.environ["QET_ENABLE_SCRIPTING"] = "1"
+        # QET bricht ein Skript nach 30 s ab; große Pläne (TP702_10: 119 Bauteile) brauchen beim Layout-Check,
+        # Nachführen und Freistellen unter Last länger, und ein abgebrochener Durchlauf meldet nur „0 versetzt“
+        os.environ.setdefault("QET_SCRIPT_TIMEOUT_MS", "600000")
         leer = Path(tmp) / "leer.qet"
         titel = a.titel or (circs[0].stem if len(circs) == 1 else circs[0].parent.name)
-        qet_mcp.tool_project_new(str(a.qet), str(leer), title=titel, folios=[c.stem for c in circs],
+        qet_mcp.tool_project_new(str(a.qet), str(leer), title=titel, folios=[b.stem for b in bl],
                                  elements_dir=str(sammlung))
         if ops:
             erg = qet_mcp.tool_edit(str(a.qet), str(leer), ops, str(ausgabe), elements_dir=str(sammlung),
@@ -999,8 +1176,10 @@ def main(argv=None):
             Path(ausgabe).write_bytes(leer.read_bytes())
             erg = {"saved": True, "operations": []}
             zahl["offen"].append("keine übernehmbaren Bauteile")
+        if ops and erg.get("saved") and LEITUNGSWEG == "default":
+            erg, zahl["nachgefuehrt"] = leitungen_nachfuehren(qet_mcp, a.qet, leer, ops, erg, Path(ausgabe), sammlung)
         fehler = [o for o in erg.get("operations", []) if not o.get("succeeded")]
-        print(f"{ausgabe}: {len(circs)} Blatt/Blätter, {zahl['bauteile']} Bauteile, {zahl['leitungen']} Leitungen, "
+        print(f"{ausgabe}: {len(bl)} Blatt/Blätter, {zahl['bauteile']} Bauteile, {zahl['leitungen']} Leitungen, "
               f"{zahl['verknuepfungen']} Verknüpfungen, {zahl['texte']} Werte als Text, "
               f"{zahl['kennzeichnungen']} Kennzeichnungen vergeben, {zahl['rollen']} Simulationsrollen, "
               f"GRAFCET {zahl['schritte']} Schritte/{zahl['transitionen']} Transitionen/{zahl['aktionen']} Aktionen, "
@@ -1011,6 +1190,8 @@ def main(argv=None):
             print("  nicht übernommen:", x)
         if not erg.get("saved"):
             sys.exit("Projekt nicht gespeichert: " + json.dumps(erg, ensure_ascii=False)[:2000])
+        if "nachgefuehrt" in zahl:
+            print(f"  Leitungen um Symbole geführt: {zahl['nachgefuehrt']}")
         if ops:
             frei = beschriftungen_freistellen(qet_mcp, a.qet, Path(ausgabe), sammlung)
             zahl["beschriftungen"] = frei

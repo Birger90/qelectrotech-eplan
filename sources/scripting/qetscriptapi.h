@@ -447,6 +447,11 @@ class QetScriptApi : public QObject
 									  const QString &format = QStringLiteral("phoenix"),
 									  const QString &optionsJson = QString());
 		Q_INVOKABLE QString markings(const QString &optionsJson = QString()) const;
+			/// The markers as a print job for a THM printer (.prn), the
+			/// profile of a printer set up or given; nothing is sent.
+			/// Returns the number of labels, -1 on failure
+		Q_INVOKABLE int exportThmJob(const QString &output,
+									 const QString &optionsJson = QString());
 			// the purchase list (articles by supplier with EAN, packaging
 			// unit, price, delivery time; devices without article): as JSON
 			// {summary, items[]}, or written as .xlsx/.csv with options JSON

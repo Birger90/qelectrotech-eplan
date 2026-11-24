@@ -22,6 +22,7 @@
 #include "../import/portals/manufacturerportals.h"
 #include "../import/portals/partfetcher.h"
 
+#include <QSaveFile>
 #include <QSettings>
 #include <QTemporaryDir>
 #include <QTimer>
@@ -36,6 +37,8 @@
 #include "../diagram.h"
 #include "../bomexport.h"
 #include "../marking/markingexport.h"
+#include "../marking/thmjob.h"
+#include "../marking/thmprinters.h"
 #include "../purchase/purchasefetch.h"
 #include "../purchase/purchaselist.h"
 #include "../cablelist/cablelistrows.h"
@@ -996,6 +999,90 @@ QString QetScriptApi::markings(const QString &optionsJson) const
 		rows.append(row);
 	}
 	return QString::fromUtf8(QJsonDocument(rows).toJson(QJsonDocument::Compact));
+}
+
+/**
+	@brief QetScriptApi::exportThmJob
+	Write the markers of this project as a print job for a THM printer
+	to @p output, the bytes Project > Print THM labels... sends
+	(docs/beschriftung-export.md). Nothing is sent to a printer.
+	@param optionsJson the choices of markingOptions() (kinds default to
+	"wires" here), and "printer" (ID) or "material" (article loaded) for
+	the profile of a printer set up, "copies", "merge", and "profile":
+	{"width", "height", "gap", "sensor", "columns", "pitch", "marginLeft",
+	 "marginRight", "textSize", "font", "baseline", "rotate"} over it
+	@return the number of labels, -1 when nothing was written
+*/
+int QetScriptApi::exportThmJob(const QString &output, const QString &optionsJson)
+{
+	if (!m_project) {
+		log(QStringLiteral("qet.exportThmJob: no project"));
+		return -1;
+	}
+	MarkingExport::Options o;
+	o.kinds = MarkingExport::Wire;
+	QString error;
+	if (!markingOptions(QString(), optionsJson, &o, &error)) {
+		log(QStringLiteral("qet.exportThmJob: %1").arg(error));
+		return -1;
+	}
+	const QJsonObject j = QJsonDocument::fromJson(optionsJson.toUtf8()).object();
+	ThmJob::Profile profile;
+	const QList<ThmPrinter> printers = ThmPrinters::load();
+	const QString id = j.value(QLatin1String("printer")).toString();
+	const QString material = j.value(QLatin1String("material")).toString();
+	if (!id.isEmpty()) {
+		const int i = ThmPrinters::indexOf(printers, id);
+		if (i < 0) {
+			log(QStringLiteral("qet.exportThmJob: no THM printer with the ID '%1'").arg(id));
+			return -1;
+		}
+		profile = printers.at(i).profile;
+	} else if (!material.isEmpty()) {
+		const ThmPrinters::Choice c = ThmPrinters::choose(printers, material);
+		if (c.outcome != ThmPrinters::Choice::Unique) {
+			log(QStringLiteral("qet.exportThmJob: ") + c.message);
+			return -1;
+		}
+		profile = printers.at(c.matches.first()).profile;
+	}
+	const QJsonObject p = j.value(QLatin1String("profile")).toObject();
+	profile.width = p.value(QLatin1String("width")).toDouble(profile.width);
+	profile.height = p.value(QLatin1String("height")).toDouble(profile.height);
+	profile.gap = p.value(QLatin1String("gap")).toDouble(profile.gap);
+	if (p.contains(QLatin1String("sensor"))
+			&& !ThmJob::sensorFromKey(p.value(QLatin1String("sensor")).toString(), &profile.sensor)) {
+		log(QStringLiteral("qet.exportThmJob: unknown sensor (l1, e, l0, l2)"));
+		return -1;
+	}
+	profile.columns = p.value(QLatin1String("columns")).toInt(profile.columns);
+	profile.column_pitch = p.value(QLatin1String("pitch")).toDouble(profile.column_pitch);
+	profile.margin_left = p.value(QLatin1String("marginLeft")).toDouble(profile.margin_left);
+	profile.margin_right = p.value(QLatin1String("marginRight")).toDouble(profile.margin_right);
+	profile.text_size = p.value(QLatin1String("textSize")).toDouble(profile.text_size);
+	profile.font = p.value(QLatin1String("font")).toInt(profile.font);
+	profile.baseline = p.value(QLatin1String("baseline")).toDouble(profile.baseline);
+	profile.rotate = p.value(QLatin1String("rotate")).toBool(profile.rotate);
+
+	const QList<ThmJob::Label> labels = ThmJob::toLabels(
+				MarkingExport::collect(m_project, o, &error),
+				j.value(QLatin1String("copies")).toInt(1),
+				j.value(QLatin1String("merge")).toBool(true));
+	if (!error.isEmpty()) {
+		log(QStringLiteral("qet.exportThmJob: %1").arg(error));
+		return -1;
+	}
+	const QByteArray job = ThmJob::build(labels, profile, &error);
+	if (job.isEmpty()) {
+		log(QStringLiteral("qet.exportThmJob: %1").arg(error));
+		return -1;
+	}
+	QSaveFile file(output);
+	if (!file.open(QIODevice::WriteOnly) || file.write(job) != job.size() || !file.commit()) {
+		log(QStringLiteral("qet.exportThmJob: %1").arg(file.errorString()));
+		return -1;
+	}
+	return ThmJob::labelCount(labels);
 }
 
 namespace {

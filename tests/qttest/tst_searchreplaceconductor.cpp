@@ -40,7 +40,8 @@ QSet<Conductor *> Conductor::functionSeparatedConductors(const bool) { notInThis
 DiagramContext Element::elementInformations() const { notInThisTest("Element::elementInformations"); }
 Diagram *Conductor::diagram() const { notInThisTest("Conductor::diagram"); }
 ConductorProperties Conductor::properties() const { notInThisTest("Conductor::properties"); }
-QSet<Conductor *> Conductor::relatedPotentialConductors(const bool, QList<Terminal *> *, const bool)
+QSet<Conductor *> Conductor::relatedPotentialConductors(const bool, QList<Terminal *> *, const bool,
+		const bool)
 { notInThisTest("relatedPotentialConductors"); }
 ChangeTitleBlockCommand::ChangeTitleBlockCommand(
 		Diagram *, const TitleBlockProperties &, const TitleBlockProperties &, QUndoCommand *)

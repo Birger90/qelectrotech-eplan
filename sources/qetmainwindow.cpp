@@ -27,6 +27,7 @@
 #include "qetmainwindow.h"
 #include "qeticons.h"
 #include "ui/aiassistantdialog.h"
+#include "distribution/companydistribution.h"
 #include "shortcutmanager.h"
 #include "qetapp.h"
 #include "qetdiagrameditor.h"
@@ -185,6 +186,19 @@ void QETMainWindow::initCommonActions()
 	connect(diagnostics_action_, &QAction::triggered, this, []() {
 		QETApp::instance()->showDiagnosticsReport();
 	});
+
+	report_action_ = new QAction(QET::Icons::DialogInformation, tr("Report a bug or a wish..."), this);
+	ShortcutManager::instance().registerAction(report_action_, "mainwindow.report_bug_wish", tr("General"), QKeySequence());
+	report_action_ -> setStatusTip(tr("Writes a bug report or a wish for the developers into the company distribution folder", "status bar tip"));
+	connect(report_action_, &QAction::triggered, this, [this]() {
+		ReportDialog dialog(this);
+		dialog.exec();
+	});
+
+	update_action_ = new QAction(QET::Icons::QETDownload, tr("Check for updates..."), this);
+	ShortcutManager::instance().registerAction(update_action_, "mainwindow.check_updates", tr("General"), QKeySequence());
+	update_action_ -> setStatusTip(tr("Looks for a newer version in the company distribution folder", "status bar tip"));
+	connect(update_action_, &QAction::triggered, this, []() { CompanyDistribution::checkForUpdate(false); });
 }
 
 /**
@@ -202,6 +216,8 @@ void QETMainWindow::initCommonMenus()
 	connect(settings_menu_, &QMenu::aboutToShow, this, &QETMainWindow::checkToolbarsmenu);
 
 	help_menu_ = new QMenu(tr("&Help", "window menu"), this);
+	help_menu_ -> addAction(report_action_);
+	help_menu_ -> addAction(update_action_);
 	help_menu_ -> addAction(diagnostics_action_);
 	help_menu_ -> addSeparator();
 	help_menu_ -> addAction(whatsthis_action_);

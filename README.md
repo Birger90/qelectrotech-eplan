@@ -223,6 +223,9 @@
 >   comparator, proportional amplifiers, position controlled proportional solenoids, pressure, flow and position
 >   sensors, proportional relief valve) with closed pressure and position loops are simulated too. Roadmap status: [tools/simulation/ROADMAP_STAND.md](tools/simulation/ROADMAP_STAND.md).
 >   Guide: [tools/simulation/README.md](tools/simulation/README.md).
+> - Company distribution without git: a SharePoint library synchronised by OneDrive -- install by double click,
+>   update check at start, Help > *Report a bug or a wish...*, company parts from the distribution folder.
+>   Guide (German): [tools/verteilung/README.md](tools/verteilung/README.md).
 > - File > *Import FluidSIM circuit (.circ)*: FluidSIM 6 circuits become a project that simulates at once -- parts,
 >   wires, coil and relay links, the flow paths of every valve position, all parameters with their units, the
 >   electric roles (supply, push buttons, limit switches from the distance rules, valve solenoids) and the GRAFCET

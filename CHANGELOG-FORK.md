@@ -3,13 +3,27 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.50.0 – 24.11.2026 – Weitergabe in der Firma, Simulation vollständig
 
-
-## Branch feature/closer03 (nicht in main)
+### Simulation: closer03
 
 - Druckwaage `closer03` = FluidSIM „2/2-Wege-Ventil, hydraulisch betätigt, in Ruhestellung geöffnet“: 2 → 3 offen, Druck an 1
   schließt über Solldruck (0,28 MPa) und Druckregelbereich (0,04 MPa), Widerstand 0,00362, Leckage 2 → 3; Formel V26, Prüfung
   „closer03“ mit Plan `closer03.qet`. Damit hat jede Funktion der FluidSIM-Bibliothek ein Rechenmodell.
+
+### Weitergabe in der Firma
+
+- Verteilordner (SharePoint-Bibliothek „QET-Fork“, per OneDrive synchronisiert) für Kollegen ohne Git: das
+  Programm findet ihn selbst (Einstellung, `QET_DISTRIBUTION_DIR` oder OneDrive-Ordner mit `version.json`).
+- Update-Prüfung beim Start und unter Hilfe > *Nach Updates suchen...*: neuere Version installieren (schließt
+  QElectroTech mit Rückfrage, installiert, startet neu), später oder überspringen.
+- Hilfe > *Fehler oder Wunsch melden...*: Art, Titel, Text, Bildschirmfoto und Diagnosebericht als Ordner in
+  `Meldungen\`; ohne Verbindung lokal und beim nächsten Start nachgereicht.
+- Firmensammlung aus `Bauteile\` des Verteilordners (bleibt dauerhaft auf dem Rechner); eine selbst gewählte
+  Firmensammlung bleibt eingestellt.
+- `tools/verteilung/`: `Installieren.cmd`/`.ps1` (ohne Adminrechte nach `%LOCALAPPDATA%\QET-Fork`, vorige
+  Version bleibt als `Programm.alt`, Verknüpfungen), `veroeffentlichen.ps1` (Programmpaket, Bauteile,
+  `version.json`), Anleitung `tools/verteilung/README.md`.
 
 ## 1.49.1 – 24.11.2026 – Ein Prüfpanel
 

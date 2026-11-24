@@ -279,7 +279,8 @@ Herkunft, Beleg und Grenze jeder Formel stehen im [Formelregister](FORMELN.md).
   12 den Schaltdruck `p0` erreicht (Übergang 0,1 bar); geschlossen ist 2 abgesperrt.
 - Prüfpläne `druckwaagen.qet` (LS-Druckwaage, vorgeschaltete Druckwaage vor einer Drossel, Schließer als Druckregler,
   Schockblock mit Begrenzung und Nachsaugen) und `folgeventil.qet`.
-- Weiter nicht gerechnet (Start abgewiesen): LS-/Mobilventilblöcke, Druckwaage `closer03` (ohne Kennwerte und Hilfeseite, in keinem FluidSIM-Beispiel),
+- Druckwaage `closer03` = 2/2-Wegeventil hydraulisch betätigt, in Ruhe offen (2 → 3, Steuerdruck 1, `p0`, `dpEnd`, `rT`, `GLeak`; Formel V26).
+- Weiter nicht gerechnet (Start abgewiesen): LS-/Mobilventilblöcke,
   Vorsteuergeber Joystick.
 
 ## Analoge Signale und Regler (R06)

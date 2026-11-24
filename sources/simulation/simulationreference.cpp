@@ -539,7 +539,8 @@ QList<Check> endToEnd(const QString &reference_dir)
 		QStringLiteral("Pneumatische Zeit-, Zähl- und Sicherheitsbausteine: Timer, Verzögerungsventil, Vorwahlzähler, Zweihandblock, Vakuumsaugventil"),
 		QStringLiteral("Taktstufen-Kette TAA, TAA, TAB: Grundstellung, Start, Weiterschalten mit Quittung, Rücksetzen über L"),
 		QStringLiteral("Muskel mit Führungszylindern (R12): Zylinderweg = xStart − Kontraktion, Muskel zieht ein, Zylinder strecken den Muskel"),
-		QStringLiteral("Leitungsabzweig (Upstream-Typ junction): ein Knoten, freier Anschluss offen, Lauf wie ohne Abzweig")};
+		QStringLiteral("Leitungsabzweig (Upstream-Typ junction): ein Knoten, freier Anschluss offen, Lauf wie ohne Abzweig"),
+		QStringLiteral("2/2-Wegeventil hydraulisch betätigt, in Ruhe offen (closer03): offen, im Druckregelbereich, geschlossen")};
 	if (dir.isEmpty() || !QFileInfo(dir).isDir()) {
 		for (const QString &n : names) out << skip(n, QStringLiteral("keine Testprojekte gefunden (referenz/plaene)"));
 		return out;
@@ -729,7 +730,7 @@ QList<Check> endToEnd(const QString &reference_dir)
 		struct Case { const char *from, *to, *expect; };
 		const QList<Case> cases{
 			{"supply.pump", "shutoff_valve.three_way_valve", "shutoff_valve.three_way_valve hat kein Rechenmodell"},
-			{"actuator.cyl_conf", "pressure_valve.pressure_compensator_closer03", "pressure_valve.pressure_compensator_closer03 hat kein Rechenmodell"},
+			{"actuator.cyl_conf", "other.misc", "other.misc hat kein Rechenmodell"},
 			{"supply.tank", "unbekannt.pruefling", "steht nicht im Modellkatalog"},
 			{"actuator.cyl_conf", "directional_valve.part", ""},
 		};
@@ -2077,6 +2078,40 @@ QList<Check> endToEnd(const QString &reference_dir)
 			else seen << QStringLiteral("x + xz = xStart; -MZ1 zieht %1 mm ein (Zylinder bei %2 mm, Restkraft %3 N im Haftreibband ± %4 N); -MZ2 um %5 mm gestreckt "
 										"(Zylinder bei %6 mm, Muskel %7 N gegen 2·p·A_k = %8 N)").arg(x1 * 1000, 0, 'f', 2).arg(z1 * 1000, 0, 'f', 2).arg(f1, 0, 'f', 1)
 							 .arg(fs, 0, 'f', 1).arg(-x2 * 1000, 0, 'f', 2).arg(z2 * 1000, 0, 'f', 2).arg(f2, 0, 'f', 1).arg(push, 0, 'f', 1);
+		}
+		c.passed = wrong.isEmpty();
+		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));
+		out << c;
+	}
+	{   // 35. closer03 (FORMELN.md V26, FluidSIM help "2/2-Wege-Ventil, hydraulisch betätigt, in Ruhestellung geöffnet"),
+		//     plan closer03.qet: pilot pump at 1 (2 / 3 / 3.5 bar), feed pump 60 bar at 2, 3 to the tank. Share
+		//     s = clamp(1 − (p1 − 0.28 MPa)/0.04 MPa, 0, 1): 1, 0.5, 0; the flow 2 → 3 follows the orifice rT/s² at the measured
+		//     pressures (H03); closed, the feed pump stands at its 60 bar
+		Check c{names.at(35)};
+		QStringList wrong, seen;
+		struct Case { const char *mpa; double share; };
+		for (const Case &k : {Case{"0.2", 1.0}, Case{"0.30", 0.5}, Case{"0.35", 0.0}}) {
+			const QString file = QString::fromLatin1(k.mpa) == QLatin1String("0.2") ? path("closer03.qet")
+				: textVariant(path("closer03.qet"), {{QStringLiteral("<parameter name=\"pMax\" unit=\"MPa\" value=\"0.2\"/>"),
+													  QStringLiteral("<parameter name=\"pMax\" unit=\"MPa\" value=\"%1\"/>").arg(QLatin1String(k.mpa))}},
+							  QStringLiteral("qet_sim_closer03_%1.qet").arg(QLatin1String(k.mpa)));
+			if (file.isEmpty()) { wrong << QStringLiteral("Variante %1 MPa nicht erzeugt").arg(QLatin1String(k.mpa)); continue; }
+			double p1 = std::nan(""), p2 = std::nan(""), p3 = std::nan(""), q = std::nan("");
+			ProjectRun r = runProject(file, 6.0, {}, 1.0001, [&](SimulationModel &m) {
+				if (std::abs(m.time() - 1.0) < 5e-6) {
+					p1 = m.signalValue(QStringLiteral("p:-V1.1")); p2 = m.signalValue(QStringLiteral("p:-V1.2"));
+					p3 = m.signalValue(QStringLiteral("p:-V1.3")); q = m.signalValue(QStringLiteral("q:-V1.2"));
+				}
+			}, true);
+			if (file != path("closer03.qet")) QFile::remove(file);
+			if (!r.error.isEmpty()) { wrong << r.error; continue; }
+			const double s = std::clamp(1.0 - (p1 - 0.28e6) / 0.04e6, 0.0, 1.0);
+			const double want = s > 0 ? SimPhysics::orificeFlow(p2 - p3, 1.0 / (60000.0 * std::sqrt(1e5 * 0.00362 / (s * s))), 0.3e5) : 0.0;
+			if (!(std::abs(s - k.share) < 1e-3) || !(std::abs(q - want) <= 1e-3 * std::max(std::abs(want), 1e-6)) || (k.share == 0.0 && !(p2 > 59e5)))
+				wrong << QStringLiteral("Steuerdruck %1 bar: Anteil %2 (soll %3), q %4 l/min (soll %5), p2 %6 bar").arg(p1 / 1e5).arg(s).arg(k.share)
+							 .arg(q * 60000).arg(want * 60000).arg(p2 / 1e5);
+			else seen << QStringLiteral("%1 bar an 1: Anteil %2, 2 → 3 %3 l/min bei %4 bar").arg(p1 / 1e5, 0, 'f', 2).arg(s, 0, 'f', 2)
+							 .arg(q * 60000, 0, 'f', 2).arg(p2 / 1e5, 0, 'f', 2);
 		}
 		c.passed = wrong.isEmpty();
 		c.detail = wrong.isEmpty() ? seen.join(QStringLiteral("; ")) : wrong.join(QStringLiteral("; "));

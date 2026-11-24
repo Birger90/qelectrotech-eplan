@@ -127,6 +127,12 @@ Seitenleiste *Anzeige > Funktionsvorlagen*, wie EPLAN-Makros mit Wertesätzen:
   Auswahl nach Art, Blättern und Anlage/Ort. Auch per `--export-marking` und `qet.exportMarking()`/`qet.markings()`.
   Kein Hersteller veröffentlicht ein festes Importschema; jede Datei ist eine CSV nach dem, was der jeweilige Import
   belegt liest. Spalten und Belege in [docs/beschriftung-export.md](docs/beschriftung-export.md).
+- Menü Projekt > *THM-Etiketten drucken…*: dieselben Schilder direkt auf einen Weidmüller-Thermotransferdrucker THM
+  (THM MMP, THM MultiMark), über TCP-Port 9100 in cabs Druckersprache JScript, ohne M-Print PRO. Drucker, gerüstete
+  Artikelvariante und Druckprofil richtet man im Dialog ein; die gewählte Artikelvariante bestimmt den Drucker.
+  Status und Material lassen sich abfragen; gedruckt wird erst nach einer Zusammenfassung von Ziel, Artikel und
+  Menge. Auch per `--thm-prn`, `--thm-status`, `--thm-send --yes`, `--thm-printers` und `qet.exportThmJob()`.
+  Befehle, Belege und was am Drucker noch zu prüfen ist: dasselbe Dokument.
 
 ## Einkaufsliste für Einkauf und ERP
 

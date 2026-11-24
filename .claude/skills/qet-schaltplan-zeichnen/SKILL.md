@@ -264,6 +264,12 @@ Funktionsvorlage einfügen – mit Artikeldaten, Klemmen, Kabel und Verknüpfung
   (wird die Materialreferenz), Kabel als echtes Kabel mit Bezeichnung. Export: `--export-marking <qet> <csv>
   --format phoenix|weidmueller|wago|neutral [--kinds …] [--folios N-M] [--plant/--location]` oder
   `qet.exportMarking()`. Spalten und Belege: `docs/beschriftung-export.md`.
+- THM-Druck (Fork, Unveröffentlicht): dieselben Schilder direkt an einen Weidmüller THM (cab-JScript, TCP 9100).
+  Für Skripte nur Dateien erzeugen: `qet.exportThmJob(<prn>, '{"printer": "<ID>", "kinds": "wires"}')` oder
+  `--thm-prn <qet> <prn> --printer <ID>`; ohne eingerichteten Drucker mit `--width/--height/--gap/--sensor`.
+  **Nie ohne ausdrückliche Zustimmung des Nutzers drucken**: `--thm-send` sendet nur mit `--yes`; `--thm-status
+  <ID>` fragt nur ab. Drucker/Material: `--thm-printers`. Belege und offene Punkte: `docs/beschriftung-export.md`,
+  Abschnitt „THM direkt drucken“.
 
 ## Data instead of hand-typed text: PLC channels and contacts like EPLAN
 

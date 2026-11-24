@@ -3,6 +3,26 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## Unveröffentlicht
+
+### THM-Etiketten direkt drucken
+
+- Menü Projekt > *THM-Etiketten drucken…*: Draht-, Kabel-, Klemmen- und Geräteschilder gehen ohne M-Print PRO
+  direkt an Weidmüller-Thermotransferdrucker THM (THM MMP, THM MultiMark) über TCP, Standardport 9100, in cabs
+  Druckersprache JScript. Auswahl mit Blattfilter, gleiche Texte zusammengefasst, Kopien je Schild, Vorschau;
+  Status (`ESC s`), Material (`ESC l`), Pause, Fortsetzen und Abbruch (nur nach Rückfrage); Druck erst nach einer
+  Zusammenfassung von Ziel, Artikel und Menge; Speichern als `.prn`.
+- Drucker unter *Drucker…* mit ID, Name, Modell, Adresse, Port, gerüsteter Artikelvariante und Druckprofil (Breite,
+  Höhe, Lücke, Sensor, Spalten, Ränder, Schrift, Heizung, Drehung) in den Einstellungen. Die Artikelvariante wählt
+  den Drucker: genau einer wird vorgewählt, bei mehreren entscheidet der Nutzer. Keine Adresse im Programm.
+- Materialkatalog zur Laufzeit aus einer selbst gewählten Weidmüller-Katalogdatei (`my_cat*.mca`, Eintrag
+  „MultiMark“).
+- CLI `--thm-prn`, `--thm-status`, `--thm-send` (sendet nur mit `--yes` und nach Statusabfrage), `--thm-printers`;
+  Skript `qet.exportThmJob()`.
+- Befehle und Antworten nach dem cab-Handbuch „JScript Programming Manual“ 07/2026; was am THM noch zu prüfen ist,
+  steht in [docs/beschriftung-export.md](docs/beschriftung-export.md#thm-direkt-drucken-projekt--thm-etiketten-drucken).
+  Test `tst_thmprint` mit lokalem `QTcpServer` als Drucker.
+
 ## 1.50.0 – 24.11.2026 – Weitergabe in der Firma, Simulation vollständig
 
 ### Simulation: closer03

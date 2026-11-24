@@ -265,8 +265,8 @@ TP102_02 (zwei Zylinder, Rollenventile, Zähler), TP601_14 (Elektrohydraulik mit
   60617-12 (&, ≥1, =1, 1 mit Negationskreis, TON/TOF/TP, RS, CTUD), Leitungen elektrisch – Medium `logic` verbindet
   im Fork nichts (`Fluid::canConnect`). (8) Texte mit „~“ verwirft der Symbolumwandler als FluidSIM-Übersetzungs-
   schlüssel; in der eigenen Ebene EIGEN sind sie erlaubt („3~“). Immer selbst als PNG prüfen, „0 Fehler“ reicht nicht.
-- Layout nach dem Import (17.11.2026, Birger: PE quer durch -P1/-P2, BMK auf Leitungen): Leitungen werden mit
-  `route: "avoid"` um die Symbole gelegt; danach setzt `beschriftungen_freistellen()` (fluidsim_plan.py) jede
+- Layout nach dem Import (17.11.2026, Birger: PE quer durch -P1/-P2, BMK auf Leitungen): Leitungen werden um die Symbole gelegt
+  (seit 24.11. nur die, die sonst durch ein Symbol liefen, siehe unten); danach setzt `beschriftungen_freistellen()` (fluidsim_plan.py) jede
   Kennzeichnung, die auf einer Leitung, einem Bauteil oder einer anderen Kennzeichnung liegt, mit
   `qet.placeElementTexts` an die erste freie der neun Stellen. Potentiale (L1…PE) liegen wie in FluidSIM (quer:
   Stich waagerecht), Name 8 hoch; Maschinenkreis mittig unter der Reihe der Wicklungsanschlüsse, kein Anschluss im
@@ -274,6 +274,18 @@ TP102_02 (zwei Zylinder, Rollenventile, Zähler), TP601_14 (Elektrohydraulik mit
   Plänen vorher 76/41/28, nachher 0/5/1. Ursache der meisten „durch Symbole“: die Kennzeichnung zählte zur
   Bauteilausdehnung (+30 px rechts), so überdeckten sich Nachbarkontakte; GRAFCET-Rücksprung ebenfalls mit avoid;
   Schrittnummern im eigenen Symbol bleiben stehen.
+
+- Vollzählung aller Beispielpläne (24.11.2026, `qet_layout_check` je Plan): Leitungen durch Symbole 511 → 48,
+  Texte auf Leitungen 414 → 138, Überlappungen 321 → 81, Umwege 1201 → 264, Kreuzungen 7042 → 4035.
+  (1) **LOGO-Programm auf eigenes Blatt**: Objekte mit `logo-box-ref` stehen in FluidSIM in einem eigenen Fenster
+  mit eigenen Koordinaten; auf dem Schaltungsblatt lägen sie über Ventilen. `logo_teilen()` legt je LOGO-Modul
+  ein Blatt an. (2) **Leitungen nicht pauschal mit avoid**: zuerst QETs gerader Weg, dann Layout-Check, nur die
+  Leitungen durch Symbole im zweiten Durchlauf mit avoid (`leitungen_nachfuehren`); `route_conductor` erreicht
+  keine Leitung, deren beide Anschlüsse weitere Leitungen tragen. (3) Objekte ohne Fluid-/Elektroanschluss
+  (Animationen, Hardware-Kopplung `ET.IO.MultiPin`) haben auch im Original keine Leitung und bleiben weg; die
+  Belastungsmaschine hat nur einen Wellenanschluss (`type="rotational"`) und bleibt, die Welle ist eine Linie.
+  (4) QET bricht Skripte nach 30 s ab (`QET_SCRIPT_TIMEOUT_MS`); große Pläne liefen unter Last stumm ins Leere –
+  der Importer setzt 10 min. Ergebnisse zählen, nicht „kein Fehler“ glauben.
 
 ## Offen
 

@@ -329,9 +329,15 @@ Die Zahl in Klammern ist der Beleg; so zeichnen, wenn der Hausstil oben nichts a
   Negationskreis; Regler: PID/PT1/Σ), nie einen Kasten mit (abgeschnittenem) Namen. Mehrpolige Schalter als
   einzelne Pole mit gestrichelter Wirkverbindung (Leitungsschutz: Kreuz am festen Kontakt; Motorschutz: Auslöser „I>“).
 - **Nach jedem Zeichnen/Import `qet_layout_check` und Treffer zählen**: `wires_through_symbols`,
-  `labels_on_wires` und `overlaps` sollen 0 sein. Leitungen mit `route: "avoid"` anlegen; eine Kennzeichnung auf
+  `labels_on_wires` und `overlaps` sollen 0 sein. Leitungen durch Symbole mit `route: "avoid"` neu anlegen; eine Kennzeichnung auf
   einer Leitung mit `placeElementTexts(folio, [uuid], "right"|"left"|…)` an eine freie Stelle setzen, nicht das
   Bauteil verschieben.
+- **Leitungen gerade, nur bei Bedarf herum** (24.11.2026, Vollzählung der FluidSIM-Beispiele): nicht jede Leitung
+  mit `route: "avoid"` anlegen – das hält Abstand zu allen Symbolen und macht Umwege und Kreuzungen. Erst den
+  geraden Weg, dann `qet_layout_check`; nur die Leitungen aus `wire_through_symbol` neu mit avoid anlegen
+  (`route_conductor` erreicht Leitungen in Netzen nicht). Ein getrenntes Programm (LOGO, SPS-Baustein) gehört auf
+  ein eigenes Blatt, nicht über die Schaltung. Eine mechanische Kopplung (Welle Motor ↔ Belastungsmaschine) ist
+  eine Linie, keine Leitung.
 - **Keine Simulationswerte im Plan**: angezeigte Messgrößen (P_out, I, U als Ergebnis) und Sollwerte 0 weglassen;
   nur Kennwerte (24 V, p = 6 bar, 47 kOhm) als Text am Bauteil.
 - **Endschalter** stehen im Steuerstromkreis als Schließer/Wechsler mit -BG-Kennzeichen; am Zylinder sind sie

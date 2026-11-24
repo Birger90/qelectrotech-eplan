@@ -1260,6 +1260,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/marking/thmclient.h
   ${QET_DIR}/sources/marking/thmjob.cpp
   ${QET_DIR}/sources/marking/thmjob.h
+  ${QET_DIR}/sources/marking/thmprintdialog.cpp
+  ${QET_DIR}/sources/marking/thmprintdialog.h
   ${QET_DIR}/sources/marking/thmprinters.cpp
   ${QET_DIR}/sources/marking/thmprinters.h
   ${QET_DIR}/sources/cablelist/cablelistmodel.cpp

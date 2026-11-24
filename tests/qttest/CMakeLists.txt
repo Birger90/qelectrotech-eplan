@@ -2386,6 +2386,9 @@ add_executable(
 add_test(NAME tst_thmprint COMMAND tst_thmprint)
 target_include_directories(tst_thmprint PRIVATE ${QET_DIR}/sources)
 target_link_libraries(tst_thmprint PRIVATE Qt::Network Qt::Xml Qt::Test)
+# Project > Print THM labels...: preview of the markers and the printer
+# chosen by the article loaded (one preselected, none among several).
+qet_add_app_test(tst_thmprintdialog tst_thmprintdialog.cpp)
 
 # A project split into the parts of a .qetz and joined back is the same
 # document, on every example (and QET_CONTAINER_CORPUS if set).

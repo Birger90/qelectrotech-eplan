@@ -264,6 +264,10 @@ Funktionsvorlage einfügen – mit Artikeldaten, Klemmen, Kabel und Verknüpfung
   (wird die Materialreferenz), Kabel als echtes Kabel mit Bezeichnung. Export: `--export-marking <qet> <csv>
   --format phoenix|weidmueller|wago|neutral [--kinds …] [--folios N-M] [--plant/--location]` oder
   `qet.exportMarking()`. Spalten und Belege: `docs/beschriftung-export.md`.
+- Weidmüller-Druck: `--export-marking <qet> <ordner> --printer printjet|thm --mprint [--open] [--print]` schreibt je
+  Material eine Datei für `MPrintPRO.exe <datei> -ImportFilter:CSV -MatNo:<nr>`. PrintJet CONNECT druckt nur MultiCards
+  (MC), THM MultiMark nur Rollen (MM) und THM-Etiketten – Material nie mischen. Ohne installiertes M-Print PRO mit
+  `--mprint-exe` auf ein Ersatzprogramm prüfen, das seine Argumente protokolliert.
 
 ## Data instead of hand-typed text: PLC channels and contacts like EPLAN
 

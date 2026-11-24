@@ -127,6 +127,10 @@ Seitenleiste *Anzeige > Funktionsvorlagen*, wie EPLAN-Makros mit Wertesätzen:
   Auswahl nach Art, Blättern und Anlage/Ort. Auch per `--export-marking` und `qet.exportMarking()`/`qet.markings()`.
   Kein Hersteller veröffentlicht ein festes Importschema; jede Datei ist eine CSV nach dem, was der jeweilige Import
   belegt liest. Spalten und Belege in [docs/beschriftung-export.md](docs/beschriftung-export.md).
+- Weidmüller-Drucker direkt: Drucker PrintJet CONNECT (MultiCard) oder THM MultiMark (Rollen, Etiketten) wählen, je
+  Art ist ein passendes Weidmüller-Material vorbelegt (änderbar). *In M-Print PRO öffnen* übergibt jedem Material eine
+  Datei über die Kommandozeile von M-Print PRO (`-ImportFilter:CSV -MatNo:…`, auf Wunsch `-p` zum Sofortdruck).
+  Auch per `--printer`, `--material`, `--mprint [--open] [--print]` und `qet.mprintJobs()`/`qet.openInMPrintPro()`.
 
 ## Einkaufsliste für Einkauf und ERP
 

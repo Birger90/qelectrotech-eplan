@@ -107,6 +107,10 @@
 >   kinds, folios and plant/location. Also `--export-marking` and `qet.exportMarking()`/`qet.markings()`. No maker
 >   publishes a fixed import layout, so each file is a CSV cut to what that import is documented to read; columns
 >   and sources in [docs/beschriftung-export.md](docs/beschriftung-export.md).
+> - Weidmüller printers directly: choose PrintJet CONNECT (MultiCard) or THM MultiMark (rolls, labels); every kind
+>   gets a fitting Weidmüller material (editable). *Open in M-Print PRO* hands each material a file through
+>   M-Print PRO's command line (`-ImportFilter:CSV -MatNo:…`, `-p` to print at once). Also `--printer`,
+>   `--material`, `--mprint [--open] [--print]` and `qet.mprintJobs()`/`qet.openInMPrintPro()`.
 
 > **Purchase list for purchasing and ERP**
 > - Project menu > *Export purchase list…*: one file dialog, nothing else. It writes an Excel workbook (`.xlsx`, or

@@ -12828,6 +12828,53 @@ Diese Einstellung finden Sie unter QElectroTech Einstellungen &gt; Allgemein &gt
     </message>
 </context>
 <context>
+    <name>MPrintPro</name>
+    <message>
+        <source>THM MultiMark (labels, continuous material)</source>
+        <translation>THM MultiMark (Etiketten, Endlosmaterial)</translation>
+    </message>
+    <message>
+        <source>PrintJet CONNECT (MultiCard)</source>
+        <translation>PrintJet CONNECT (MultiCard)</translation>
+    </message>
+    <message>
+        <source>Wires:</source>
+        <translation>Drähte:</translation>
+    </message>
+    <message>
+        <source>Terminals:</source>
+        <translation>Klemmen:</translation>
+    </message>
+    <message>
+        <source>Terminal strips:</source>
+        <translation>Klemmleisten:</translation>
+    </message>
+    <message>
+        <source>Cables:</source>
+        <translation>Kabel:</translation>
+    </message>
+    <message>
+        <source>Devices:</source>
+        <translation>Geräte:</translation>
+    </message>
+    <message>
+        <source>Bad material assignment &quot;%1&quot; (expected e.g. Klemme=1609801044)</source>
+        <translation>Ungültige Materialzuordnung „%1“ (erwartet z. B. Klemme=1609801044)</translation>
+    </message>
+    <message>
+        <source>Cannot create the folder %1</source>
+        <translation>Der Ordner %1 kann nicht angelegt werden</translation>
+    </message>
+    <message>
+        <source>M-Print PRO was not found. Choose MPrintPRO.exe in the export dialog.</source>
+        <translation>M-Print PRO wurde nicht gefunden. MPrintPRO.exe im Exportdialog wählen.</translation>
+    </message>
+    <message>
+        <source>M-Print PRO could not be started: %1</source>
+        <translation>M-Print PRO konnte nicht gestartet werden: %1</translation>
+    </message>
+</context>
+<context>
     <name>MacroLabelsDialog</name>
     <message>
         <source>Place the macro</source>
@@ -13031,6 +13078,73 @@ Mit dem MCP-Server qet: Lies es mit qet_recording_read, schreibe ein Skript, das
 <context>
     <name>MarkingExportDialog</name>
     <message>
+        <source>Weidmüller printer</source>
+        <translation>Weidmüller-Drucker</translation>
+    </message>
+    <message>
+        <source>Printer:</source>
+        <translation>Drucker:</translation>
+    </message>
+    <message>
+        <source>Weidmüller material number; type another one if your markers differ</source>
+        <translation>Weidmüller-Materialnummer; eine andere eintippen, wenn Ihre Markierer abweichen</translation>
+    </message>
+    <message>
+        <source>MPrintPRO.exe not found</source>
+        <translation>MPrintPRO.exe nicht gefunden</translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation>…</translation>
+    </message>
+    <message>
+        <source>M-Print PRO:</source>
+        <translation>M-Print PRO:</translation>
+    </message>
+    <message>
+        <source>Print at once (without showing M-Print PRO)</source>
+        <translation>Gleich drucken (ohne M-Print PRO anzuzeigen)</translation>
+    </message>
+    <message>
+        <source>Open in M-Print PRO</source>
+        <translation>In M-Print PRO öffnen</translation>
+    </message>
+    <message>
+        <source>M-Print PRO</source>
+        <translation>M-Print PRO</translation>
+    </message>
+    <message>
+        <source>M-Print PRO (MPrintPRO.exe)</source>
+        <translation>M-Print PRO (MPrintPRO.exe)</translation>
+    </message>
+    <message>
+        <source>Open in M-Print PRO hands every material its own file. Export... writes one file for the import filter &quot;VK Text Format&quot;: reference column &quot;Referenz&quot; (material numbers), quantity column &quot;Anzahl&quot;.</source>
+        <translation>In M-Print PRO öffnen übergibt jedem Material eine eigene Datei. Exportieren… schreibt eine Datei für den Importfilter „VK Text Format“: Referenzspalte „Referenz“ (Materialnummern), Anzahlspalte „Anzahl“.</translation>
+    </message>
+    <message>
+        <source>M-Print PRO was not found. Choose MPrintPRO.exe with &quot;...&quot;.</source>
+        <translation>M-Print PRO wurde nicht gefunden. MPrintPRO.exe mit „…“ wählen.</translation>
+    </message>
+    <message>
+        <source>No markers to print.</source>
+        <translation>Keine Schilder zum Drucken.</translation>
+    </message>
+    <message>
+        <source>own material</source>
+        <translation>eigenes Material</translation>
+    </message>
+    <message>
+        <source>Handed to M-Print PRO:</source>
+        <translation>An M-Print PRO übergeben:</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1 – %2: %n marker(s)</source>
+        <translation>
+            <numerusform>%1 – %2: %n Schild</numerusform>
+            <numerusform>%1 – %2: %n Schilder</numerusform>
+        </translation>
+    </message>
+    <message>
         <source>Export markers</source>
         <translation>Beschriftung exportieren</translation>
     </message>
@@ -13097,10 +13211,6 @@ Mit dem MCP-Server qet: Lies es mit qet_recording_read, schreibe ein Skript, das
     <message>
         <source>In PROJECT complete: File &gt; Data exchange, assign the column &quot;Material&quot; once in the material mapping.</source>
         <translation>In PROJECT complete: Datei &gt; Datenaustausch, die Spalte „Material“ einmal im Material-Mapping zuordnen.</translation>
-    </message>
-    <message>
-        <source>In M-Print PRO: File &gt; Import, filter &quot;VK Text Format&quot;, separator semicolon; reference column &quot;Referenz&quot;, quantity column &quot;Anzahl&quot;.</source>
-        <translation>In M-Print PRO: Datei &gt; Importieren, Filter „VK Text Format“, Trennzeichen Semikolon; Referenzspalte „Referenz“, Anzahlspalte „Anzahl“.</translation>
     </message>
     <message>
         <source>In Smart Script: import with a template and assign the column &quot;Beschriftung&quot;; choose the marker type there.</source>

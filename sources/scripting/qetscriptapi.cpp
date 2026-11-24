@@ -38,6 +38,7 @@
 #include "../marking/markingexport.h"
 #include "../purchase/purchasefetch.h"
 #include "../purchase/purchaselist.h"
+#include "../marking/mprintpro.h"
 #include "../cablelist/cablelistrows.h"
 #include "../cablelist/cablequerywidget.h"
 #include "../dataBase/ui/elementquerywidget.h"
@@ -958,6 +959,66 @@ int QetScriptApi::exportMarking(const QString &output, const QString &format,
 		return -1;
 	}
 	return markers;
+}
+
+/**
+	@brief mprintJobsJson
+	The files for M-Print PRO, one per material, of this project's markers.
+	Besides the keys of markingOptions(), @p options_json takes "printer"
+	(printjet, thm), "materials" ("Klemme=1609801044,Draht=..."), "print"
+	(true: -p) and "exe" (MPrintPRO.exe); the rest comes from the settings
+	the export dialog keeps.
+*/
+static QString mprintJobsJson(QETProject *project, const QString &dir,
+							  const QString &options_json, bool open, QString *error)
+{
+	MarkingExport::Options o;
+	if (!markingOptions(QString(), options_json, &o, error)) return QString();
+	MPrintPro::Settings s = MPrintPro::load();
+	const QJsonObject j = QJsonDocument::fromJson(options_json.toUtf8()).object();
+	if (j.contains(QLatin1String("printer"))) {
+		if (!MPrintPro::printerFromKey(j.value(QLatin1String("printer")).toString(), &s.printer)) {
+			*error = QStringLiteral("unknown printer (printjet, thm)");
+			return QString();
+		}
+		for (QString &m : s.materials) m.clear();
+	}
+	if (!MPrintPro::parseMaterials(j.value(QLatin1String("materials")).toString(), &s, error)) {
+		return QString();
+	}
+	s.print = j.value(QLatin1String("print")).toBool(s.print);
+	s.exe = j.value(QLatin1String("exe")).toString(s.exe);
+	const QList<MPrintPro::Job> jobs = MPrintPro::writeJobs(
+		MarkingExport::collect(project, o, error), s, dir,
+		QFileInfo(project->filePath()).completeBaseName(), error);
+	if (open && !jobs.isEmpty() && !MPrintPro::open(jobs, s, error)) return QString();
+	QJsonArray rows;
+	for (const MPrintPro::Job &job : jobs) {
+		QJsonObject row;
+		row.insert(QStringLiteral("file"), job.file);
+		row.insert(QStringLiteral("material"), job.material);
+		row.insert(QStringLiteral("name"), job.material_name);
+		row.insert(QStringLiteral("markers"), job.markers);
+		row.insert(QStringLiteral("arguments"), QJsonArray::fromStringList(MPrintPro::arguments(job, s.print)));
+		rows.append(row);
+	}
+	return QString::fromUtf8(QJsonDocument(rows).toJson(QJsonDocument::Compact));
+}
+
+QString QetScriptApi::mprintJobs(const QString &dir, const QString &optionsJson)
+{
+	QString error;
+	const QString json = m_project ? mprintJobsJson(m_project, dir, optionsJson, false, &error) : QString();
+	if (json.isEmpty()) log(QStringLiteral("qet.mprintJobs: %1").arg(m_project ? error : QStringLiteral("no project")));
+	return json.isEmpty() ? QStringLiteral("[]") : json;
+}
+
+QString QetScriptApi::openInMPrintPro(const QString &dir, const QString &optionsJson)
+{
+	QString error;
+	const QString json = m_project ? mprintJobsJson(m_project, dir, optionsJson, true, &error) : QString();
+	if (json.isEmpty()) log(QStringLiteral("qet.openInMPrintPro: %1").arg(m_project ? error : QStringLiteral("no project")));
+	return json.isEmpty() ? QStringLiteral("[]") : json;
 }
 
 /**

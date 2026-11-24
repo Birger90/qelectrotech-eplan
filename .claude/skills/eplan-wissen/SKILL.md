@@ -109,7 +109,8 @@ Quellen stehen in den Referenzdateien beim jeweiligen Abschnitt.
 ## Gefundene Fork-Baustellen (aus Code-Durchsicht, ungeprüft gegen echte Daten)
 
 - **PDF** (`sources/pdf_links.cpp`): Dreifachsprung vorhanden; es fehlen Lesezeichen (/Outlines), BM-Seiten,
-  Blinkrahmen und Auswertungseinträge in der Sprungfolge; Fork zoomt per /FitR, EPLAN zeigt die ganze Seite.
+  und Auswertungseinträge in der Sprungfolge; Fork zoomt per /FitR, EPLAN zeigt die ganze Seite. Der rote
+  Blinkrahmen am Ziel ist seit Fork 1.51.0 da (Aufbau in `referenz/pdf-export.md` Abschnitt 6).
 - **Makro-Import** (`eplanmacroreader.cpp`): liest nur die erste Variante mit `MacroFuncType="1"` (Übersicht,
   Kanäle, „Allpolig Fluid“ gehen verloren – deshalb scheitert z. B. das S7-1200-Makro mit „holds no drawing“);
   Funktionsdefinition der Objekte wird nicht ausgewertet. **Behoben (2026-11-05, nicht committet):** am O17 ist

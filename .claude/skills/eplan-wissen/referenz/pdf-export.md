@@ -246,10 +246,22 @@ Lücke „von welchem Eintrag zu welchem Ziel“:
 - Der Fork springt mit /FitR auf das Ziel (Rahmen mit 25 px Rand, mindestens 160 px). Das entspricht eher
   „Zoom verwenden = an“. Seit der Neuerung ist EPLANs Standard aber **ganze Seite** (Zoom aus) plus roter Rahmen.
   Quelle: Fork `sources/pdf_links.cpp` (`frameRectPdf`, `convertUriToGoTo`).
-- Den Blinkrahmen kennt der Fork nicht. Vermutung zur Technik bei EPLAN: JavaScript- oder
-  Anzeige-/Ausblende-Aktionen an Annotationen (daher bei PDF/A und Schreibschutz abgeschaltet und nach
-  Acrobat-Zusammenführung verloren). Nicht belegt; vor einem Nachbau ein EPLAN-PDF auf `/JavaScript`, `/Hide`
-  bzw. zusätzliche Annotationen am Ziel untersuchen.
+- Blinkrahmen im Fork seit 1.51.0 (Quelle: Fork `sources/pdf_links.cpp`, `convertUriToGoTo`, Test
+  `tests/qttest/tst_pdfjumpmark.cpp`). Wie EPLAN ihn technisch baut, ist weiter nicht belegt; der Fork macht es so:
+  - `injectCrossRefLinks` hängt an jeden Link auf ein Bauteil, einen Text oder einen Kabelabschnitt
+    `&mark=L_B_R_T` an (Ziel + 4 px, PDF-Punkte). Sprünge auf ganze Blätter bekommen keinen Rahmen.
+  - Je Ziel eine versteckte (`/F 2`), schreibgeschützte Schaltfläche `qetmarkN` (`/FT /Btn /Ff 65537`, rot
+    `/MK /BC [1 0 0]`, eigener `/AP`-Rahmen 2 pt) vorn in `/Annots` der Zielseite (unter den Links, fängt keine
+    Klicks ab), alle im `/AcroForm` des Katalogs, damit `getField()` sie findet.
+  - Link-Aktion: `/GoTo` (Seite + `/FitR` wie bisher) → `/Next [` gemeinsame Aktion „alle Rahmen verstecken“
+    (`/S /Hide /H true`, indirektes Objekt) `,` „Zielrahmen zeigen“ (`/S /Hide /H false`) `,` JavaScript `]`.
+    Das JavaScript (nur Acrobat/Reader) lässt den Rahmen sechsmal im 250-ms-Takt blinken, versteckt ihn nach 2 s
+    und löscht die Zeitgeber des vorigen Sprungs.
+  - Ohne JavaScript bleibt der Rahmen bis zum nächsten Sprung stehen, wenn der Viewer Hide-Aktionen und `/Next`
+    ausführt. Poppler (Okular) liest laut KDE-Fehlerbericht keine `/Next`-Ketten.
+  - PDF/A (`--export-pdf … --pdf-a`, erkannt an `pdfaid:part` im XMP): keine Rahmen, kein JavaScript, wie EPLAN.
+  - Prüfen: `--export-pdf` und je Link die Kette, Zielseite (`/P`, `/Annots`), Lage im `/FitR` und Inhalt
+    unter dem Rahmen kontrollieren (pypdf + pymupdf).
 - Optional im Fork: Schalter „Sprung = ganze Seite (/Fit) statt /FitR“, um EPLAN-Standard nachzubilden.
 
 ## 7. Lesezeichen, Seitenbaum und Texte im PDF
@@ -448,7 +460,7 @@ Vorhanden (Code-Durchsicht `sources/pdf_links.cpp`, `sources/cli_export.cpp`, `s
 
 Fehlt gegenüber EPLAN:
 - Lesezeichen (Seitenbaum, Betriebsmittelbaum).
-- Roter Blinkrahmen am Ziel; Standardsprung „ganze Seite“.
+- Standardsprung „ganze Seite“ (der rote Blinkrahmen am Ziel ist seit 1.51.0 da).
 - BM-Seiten.
 - Sternquerverweis an Abbruchstellen (QET nur 1:1).
 

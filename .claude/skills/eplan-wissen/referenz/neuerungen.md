@@ -41,7 +41,7 @@ Kurzform der Quellen im Text: `2.9:<seite>` = https://www.eplan.help/de-de/Infop
 - **2.9:** QR-Code als Grafik (*Einfügen > Grafik > QR-Code*) aus Text, Adresse oder Eigenschaften (Blockformat). Quelle: 2.9:grafeditor_qrcodeeinfuegen_205855
 - **2025:** Artikeleigenschaften (Bilddatei, Hyperlink externer Dokumente) als **Bild oder QR-Code direkt am Schaltzeichen** (Anzeigeeigenschaft „Darstellung“ im Positionsrahmen). **2026:** dasselbe für Platzhaltertexte in Formularen (Text / QR-Code / Bilddatei). Quellen: 2025:betriebsmittel_neueanzeigeeigenschaft_426135, 2026:plattform_notes
 
-**Bedeutung für QET:** Ab 2.9 ist der rote Blinkrahmen Teil des EPLAN-Verhaltens (Lücke im Fork, siehe SKILL.md); Zoom aus = Sprung auf ganze Seite. Ältere Original-PDFs (≤ 2.8) können noch ohne Rahmen und mit Zoom 50 mm erzeugt sein – das Original prüfen, bevor man den Fork angleicht. Hyperlinks/QR-Codes in Datenblattfeldern sollten im QET-PDF ebenfalls als Link ausgegeben werden.
+**Bedeutung für QET:** Ab 2.9 ist der rote Blinkrahmen Teil des EPLAN-Verhaltens (im Fork seit 1.51.0, siehe `pdf-export.md` Abschnitt 6); Zoom aus = Sprung auf ganze Seite. Ältere Original-PDFs (≤ 2.8) können noch ohne Rahmen und mit Zoom 50 mm erzeugt sein – das Original prüfen, bevor man den Fork angleicht. Hyperlinks/QR-Codes in Datenblattfeldern sollten im QET-PDF ebenfalls als Link ausgegeben werden.
 
 ## 3. Querverweise, Kennzeichnung, Seiten
 

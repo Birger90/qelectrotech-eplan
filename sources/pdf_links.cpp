@@ -62,8 +62,9 @@ void injectCrossRefLinks(QPdfEngine *engine, Diagram *diagram,
 	// The target is given as a rectangle in the scene of @p dg, since what
 	// is pointed at is not always an element: a cable section is a plain
 	// drawn line somewhere on another folio.
-	auto frameRectPdf = [&](Diagram *dg, const QRectF &targetScene) -> QRectF {
-		if (!dg || targetScene.width() <= 0.0 || targetScene.height() <= 0.0)
+	// A rectangle in the scene of @p dg, in PDF points on dg's own page.
+	auto sceneToPdf = [&](Diagram *dg, const QRectF &sceneRect) -> QRectF {
+		if (!dg || sceneRect.width() <= 0.0 || sceneRect.height() <= 0.0)
 			return QRectF();
 		const QRectF srcT = geom.sourceRectOf(dg);
 		if (srcT.width() <= 0.0 || srcT.height() <= 0.0) return QRectF();
@@ -74,6 +75,16 @@ void injectCrossRefLinks(QPdfEngine *engine, Diagram *diagram,
 		fitT.scale(sT, sT);
 		fitT.translate(-srcT.x(), -srcT.y());
 
+		const QRectF devT = fitT.mapRect(sceneRect);
+		const QPointF a = geom.devToPdf(devT.topLeft());
+		const QPointF b = geom.devToPdf(devT.bottomRight());
+		return QRectF(QPointF(qMin(a.x(), b.x()), qMin(a.y(), b.y())),
+					  QPointF(qMax(a.x(), b.x()), qMax(a.y(), b.y())));
+	};
+
+	auto frameRectPdf = [&](Diagram *dg, const QRectF &targetScene) -> QRectF {
+		if (targetScene.width() <= 0.0 || targetScene.height() <= 0.0)
+			return QRectF();
 		// Frame the target with a little context, and enforce a minimum
 		// framed size so tiny contacts don't zoom in extremely.
 		QRectF framed = targetScene;
@@ -86,12 +97,13 @@ void injectCrossRefLinks(QPdfEngine *engine, Diagram *diagram,
 		if (framed.height() < minSide)
 			framed.adjust(0, -(minSide - framed.height()) / 2.0,
 						  0,  (minSide - framed.height()) / 2.0);
+		return sceneToPdf(dg, framed);
+	};
 
-		const QRectF devT = fitT.mapRect(framed);
-		const QPointF a = geom.devToPdf(devT.topLeft());
-		const QPointF b = geom.devToPdf(devT.bottomRight());
-		return QRectF(QPointF(qMin(a.x(), b.x()), qMin(a.y(), b.y())),
-					  QPointF(qMax(a.x(), b.x()), qMax(a.y(), b.y())));
+	// The red frame which marks the target after the jump (EPLAN 2.9 and
+	// later): the target itself, with a few pixels to spare.
+	auto markRectPdf = [&](Diagram *dg, const QRectF &targetScene) -> QRectF {
+		return sceneToPdf(dg, targetScene.adjusted(-4.0, -4.0, 4.0, 4.0));
 	};
 
 	// The links are collected first and drawn sorted, not in the order the
@@ -103,9 +115,11 @@ void injectCrossRefLinks(QPdfEngine *engine, Diagram *diagram,
 	QList<Link> links;
 
 	// One clickable link: @p sceneRect on THIS folio leads to
-	// @p targetDiagram, framed around @p targetScene over there.
+	// @p targetDiagram, framed around @p targetScene over there. With
+	// @p mark, the target also gets the red frame of the jump (not when
+	// the target is a whole folio).
 	auto injectLinkTo = [&](const QRectF &sceneRect, Diagram *targetDiagram,
-							const QRectF &targetScene) {
+							const QRectF &targetScene, bool mark = true) {
 		if (!targetDiagram) return;
 		const int targetPage = pageMap.value(targetDiagram, -1);
 		if (targetPage < 1) return;
@@ -118,6 +132,11 @@ void injectCrossRefLinks(QPdfEngine *engine, Diagram *diagram,
 			frag += QString("&fitr=%1_%2_%3_%4")
 				.arg(qRound(d.left())).arg(qRound(d.top()))
 				.arg(qRound(d.right())).arg(qRound(d.bottom()));
+		const QRectF m = mark ? markRectPdf(targetDiagram, targetScene) : QRectF();
+		if (m.isValid())                                             // frame L_B_R_T
+			frag += QString("&mark=%1_%2_%3_%4")
+				.arg(qRound(m.left())).arg(qRound(m.top()))
+				.arg(qRound(m.right())).arg(qRound(m.bottom()));
 
 		QUrl url = QUrl::fromLocalFile(outputFileName);
 		url.setFragment(frag);
@@ -153,7 +172,8 @@ void injectCrossRefLinks(QPdfEngine *engine, Diagram *diagram,
 				if (u.isNull()) return;
 				const Element::JumpFound f = Element::findJump(diagram->project(), u);
 				if (f.diagram && f.element != elmt)
-					injectLinkTo(elmt->mapRectToScene(local), f.diagram, f.sceneRect);
+					injectLinkTo(elmt->mapRectToScene(local), f.diagram, f.sceneRect,
+								 f.element || f.text);
 			};
 			if (next.isNull() && prev.isNull()) {
 				link(r, main);
@@ -192,7 +212,7 @@ void injectCrossRefLinks(QPdfEngine *engine, Diagram *diagram,
 				for (Diagram *folio : folios) {
 					if (folio->uuid() == cable->cable()->destination()) {
 						injectLinkTo(cable->labelSceneRect(), folio,
-									 folio->border_and_titleblock.insideBorderRect());
+									 folio->border_and_titleblock.insideBorderRect(), false);
 						break;
 					}
 				}
@@ -216,7 +236,7 @@ void injectCrossRefLinks(QPdfEngine *engine, Diagram *diagram,
 			for (Diagram *folio : folios) {
 				if (folio->uuid() != text->destination()) continue;
 				injectLinkTo(text->mapRectToScene(text->boundingRect()), folio,
-							 folio->border_and_titleblock.insideBorderRect());
+							 folio->border_and_titleblock.insideBorderRect(), false);
 				found = true;
 				break;
 			}
@@ -308,6 +328,92 @@ static QByteArray trailerDictionary(const QByteArray &data, int xrefStart)
 	return data.mid(start, end - start).trimmed();
 }
 
+/// The highest object number "N 0 obj" in \a data.
+static int highestObjectNumber(const QByteArray &data)
+{
+	int highest = 0;
+	const QByteArray objMarker(" 0 obj");
+	int p = 0;
+	while ((p = data.indexOf(objMarker, p)) != -1) {
+		int numStart = p - 1;
+		while (numStart > 0 && data[numStart - 1] != '\n' && data[numStart - 1] != '\r')
+			--numStart;
+		bool ok = false;
+		const int num = data.mid(numStart, p - numStart).trimmed().toInt(&ok);
+		if (ok && num > highest)
+			highest = num;
+		++p;
+	}
+	return highest;
+}
+
+/// Where the object "\a num 0 obj" starts in \a data, -1 if absent.
+static int objectStart(const QByteArray &data, int num)
+{
+	const QByteArray head = QByteArray::number(num) + " 0 obj";
+	if (data.startsWith(head)) return 0;
+	const int p = data.indexOf("\n" + head);
+	return p == -1 ? -1 : p + 1;
+}
+
+/// \a text as a PDF literal string, with its brackets and backslashes
+/// escaped.
+static QByteArray pdfLiteral(const QByteArray &text)
+{
+	QByteArray out("(");
+	for (const char c : text) {
+		if (c == '(' || c == ')' || c == '\\') out += '\\';
+		out += c;
+	}
+	return out + ')';
+}
+
+/// The four integers of "\a key=A_B_C_D" in \a uri, or an empty list.
+static QList<int> fragmentNumbers(const QByteArray &uri, const QByteArray &key)
+{
+	const int at = uri.indexOf(key + '=');
+	if (at == -1) return {};
+	const QByteArray rest = uri.mid(at + key.size() + 1);
+	int end = 0;
+	while (end < rest.size()
+		   && ((rest[end] >= '0' && rest[end] <= '9')
+			   || rest[end] == '_' || rest[end] == '-'))
+		++end;
+	const QList<QByteArray> parts = rest.left(end).split('_');
+	if (parts.size() != 4) return {};
+	QList<int> numbers;
+	for (const QByteArray &part : parts) {
+		bool ok = false;
+		numbers << part.toInt(&ok);
+		if (!ok) return {};
+	}
+	return numbers;
+}
+
+/**
+	The JavaScript of a jump to the frame named \a name (Acrobat): let it
+	blink for a moment, then hide it again. The Hide action before it has
+	already shown the frame, which is all a viewer without JavaScript does;
+	there the frame stays until the next jump hides it. The timers of the
+	jump before are cleared, so they cannot hide this frame early.
+*/
+static QByteArray blinkScript(const QByteArray &name)
+{
+	const QByteArray set =
+		"try{this.getField('" + name + "').display=display.";
+	return
+		"try{var d=this;"
+		"if(d.qetMarkTimers)for(var i=0;i<d.qetMarkTimers.length;i++)"
+			"app.clearTimeOut(d.qetMarkTimers[i]);"
+		"d.qetMarkTimers=[];"
+		"var f=d.getField('" + name + "');"
+		"if(f){f.display=display.noPrint;"
+		"for(var k=1;k<=6;k++)d.qetMarkTimers.push(app.setTimeOut(\""
+			+ set + "\"+(k%2?'hidden':'noPrint')+\";}catch(e){}\",k*250));"
+		"d.qetMarkTimers.push(app.setTimeOut(\"" + set + "hidden;}catch(e){}\",2000));}"
+		"}catch(e){}";
+}
+
 void convertUriToGoTo(const QString &pdfPath)
 {
 	// --- 1. Read raw bytes ---
@@ -341,6 +447,22 @@ void convertUriToGoTo(const QString &pdfPath)
 	}
 
 	if (pageObjs.isEmpty()) return;  // nothing to do
+
+	// The red frames of the jump targets (EPLAN 2.9 and later): one hidden
+	// read-only push button per target, shown by the link that leads to it.
+	// Not in PDF/A, as in EPLAN: PDF/A allows no JavaScript, and a frame
+	// which never hides again would only be in the way.
+	struct Frame {
+		int page;          // 1-based
+		QList<int> rect;   // L B R T in points
+		int widget;        // object numbers
+		int appearance;
+		QByteArray name;
+	};
+	QList<Frame> frames;
+	QMap<QByteArray, int> frameOfTarget;   // "page:L_B_R_T" -> index
+	const bool marks = !data.contains("pdfaid:part");
+	const int hideAll = highestObjectNumber(data) + 1;   // first new object
 
 	// --- 3. Replace URI annotations with GoTo ---
 	// Pattern (Qt always writes exactly this):
@@ -417,25 +539,41 @@ void convertUriToGoTo(const QString &pdfPath)
 				// (integer PDF points). If present -> /FitR (frame the element);
 				// otherwise -> /Fit (whole page, top).
 				QByteArray dest = " /Fit]";
-				int fr = uriVal.indexOf("fitr=");
-				if (fr != -1) {
-					QByteArray rest = uriVal.mid(fr + 5);
-					// stop at first char that is not part of the number list
-					int end = 0;
-					while (end < rest.size()
-						   && ((rest[end] >= '0' && rest[end] <= '9')
-							   || rest[end] == '_' || rest[end] == '-'))
-						++end;
-					QList<QByteArray> parts = rest.left(end).split('_');
-					if (parts.size() == 4) {
-						dest = " /FitR " + parts[0] + " " + parts[1] + " "
-							   + parts[2] + " " + parts[3] + "]";
+				const QList<int> fitr = fragmentNumbers(uriVal, "fitr");
+				if (fitr.size() == 4) {
+					dest = " /FitR " + QByteArray::number(fitr[0]) + " "
+						   + QByteArray::number(fitr[1]) + " "
+						   + QByteArray::number(fitr[2]) + " "
+						   + QByteArray::number(fitr[3]) + "]";
+				}
+
+				// The jump, then: hide every frame, show the target's,
+				// let it blink (Acrobat).
+				QByteArray next;
+				const QList<int> mark = marks ? fragmentNumbers(uriVal, "mark")
+											  : QList<int>();
+				if (mark.size() == 4 && mark[2] > mark[0] && mark[3] > mark[1]) {
+					QByteArray key = QByteArray::number(pageNum) + ':';
+					for (int v : mark) key += QByteArray::number(v) + '_';
+					int index = frameOfTarget.value(key, -1);
+					if (index == -1) {
+						index = frames.size();
+						const int widget = hideAll + 1 + 2 * index;
+						frames.append({pageNum, mark, widget, widget + 1,
+									   "qetmark" + QByteArray::number(index + 1)});
+						frameOfTarget.insert(key, index);
 					}
+					const Frame &frame = frames.at(index);
+					next = "\n/Next [" + QByteArray::number(hideAll) + " 0 R"
+						+ " << /S /Hide /T " + QByteArray::number(frame.widget)
+						+ " 0 R /H false >>"
+						+ " << /S /JavaScript /JS " + pdfLiteral(blinkScript(frame.name))
+						+ " >>]";
 				}
 
 				QByteArray goTo = sGoTo
 					+ QByteArray::number(pageObjNum)
-					+ " 0 R" + dest;
+					+ " 0 R" + dest + next;
 				out.append(goTo);
 				changed = true;
 			} else {
@@ -460,6 +598,83 @@ void convertUriToGoTo(const QString &pdfPath)
 	++xrefStart;  // skip the leading '\n'
 
 	QByteArray body = data.left(xrefStart);
+
+	// --- 3b. The frames: their objects, each on its page's /Annots, and
+	// all of them as push buttons in the form, for the JavaScript ---
+	if (!frames.isEmpty()) {
+		QByteArray all;
+		for (const Frame &frame : std::as_const(frames))
+			all += QByteArray::number(frame.widget) + " 0 R ";
+		all = all.trimmed();
+
+		// Per page, the frames go first on /Annots: below the links, so a
+		// frame that is still showing never catches a click on a link.
+		QMap<int, QByteArray> refsOfPage;
+		for (const Frame &frame : std::as_const(frames))
+			refsOfPage[frame.page] += QByteArray::number(frame.widget) + " 0 R ";
+		for (auto it = refsOfPage.cbegin(); it != refsOfPage.cend(); ++it) {
+			const int pageObj = pageObjs.at(it.key() - 1);
+			const int start = objectStart(body, pageObj);
+			const int end = start == -1 ? -1 : body.indexOf("endobj", start);
+			if (end == -1) continue;
+			const int annots = body.indexOf("/Annots ", start);
+			if (annots != -1 && annots < end) {
+				int value = annots + 8;
+				// "/Annots 17 0 R" (Qt) or an inline "/Annots [ ... ]"
+				if (body.at(value) != '[') {
+					const int arrayObj = body.mid(value, 12).split(' ').value(0).toInt();
+					const int arrayStart = objectStart(body, arrayObj);
+					value = arrayStart == -1 ? -1 : body.indexOf('[', arrayStart);
+				}
+				if (value == -1) continue;
+				body.insert(value + 1, " " + it.value());
+			} else {
+				const int dict = body.indexOf("<<", start);
+				if (dict == -1 || dict > end) continue;
+				body.insert(dict + 2, "\n/Annots [" + it.value() + "]");
+			}
+		}
+
+		// The form, so that getField() finds the frames.
+		const int catalog = body.indexOf("/Type /Catalog");
+		if (catalog != -1) {
+			const int catalogEnd = body.indexOf(">>", catalog);
+			const int form = body.indexOf("/AcroForm", catalog);
+			if (form == -1 || form > catalogEnd)
+				body.insert(catalog + 14, "\n/AcroForm << /Fields [" + all + "] >>");
+		}
+
+		QByteArray objects;
+		objects += QByteArray::number(hideAll) + " 0 obj\n<<\n/Type /Action\n/S /Hide\n/T ["
+			+ all + "]\n/H true\n>>\nendobj\n";
+		for (const Frame &frame : std::as_const(frames)) {
+			const int w = frame.rect[2] - frame.rect[0];
+			const int h = frame.rect[3] - frame.rect[1];
+			const QByteArray rect = QByteArray::number(frame.rect[0]) + " "
+				+ QByteArray::number(frame.rect[1]) + " "
+				+ QByteArray::number(frame.rect[2]) + " "
+				+ QByteArray::number(frame.rect[3]);
+			objects += QByteArray::number(frame.widget) + " 0 obj\n<<\n"
+				"/Type /Annot\n/Subtype /Widget\n/FT /Btn\n/Ff 65537\n"
+				"/T " + pdfLiteral(frame.name) + "\n"
+				"/Rect [" + rect + "]\n"
+				"/F 2\n"
+				"/P " + QByteArray::number(pageObjs.at(frame.page - 1)) + " 0 R\n"
+				"/MK << /BC [1 0 0] >>\n"
+				"/BS << /W 2 /S /S >>\n"
+				"/AP << /N " + QByteArray::number(frame.appearance) + " 0 R >>\n"
+				">>\nendobj\n";
+			const QByteArray stroke = "1 0 0 RG 2 w 1 1 "
+				+ QByteArray::number(w - 2) + " " + QByteArray::number(h - 2)
+				+ " re S\n";
+			objects += QByteArray::number(frame.appearance) + " 0 obj\n<<\n"
+				"/Type /XObject\n/Subtype /Form\n"
+				"/BBox [0 0 " + QByteArray::number(w) + " " + QByteArray::number(h) + "]\n"
+				"/Length " + QByteArray::number(stroke.size()) + "\n"
+				">>\nstream\n" + stroke + "endstream\nendobj\n";
+		}
+		body += objects;
+	}
 
 	// Collect all object offsets from the body
 	QMap<int, int> offsets;  // objNum -> byte offset
@@ -497,7 +712,19 @@ void convertUriToGoTo(const QString &pdfPath)
 		}
 	}
 
-	const QByteArray trailer = trailerDictionary(data, xrefStart);
+	QByteArray trailer = trailerDictionary(data, xrefStart);
+	{
+		// /Size: one more than the highest object, the frames included
+		const int sizePos = trailer.indexOf("/Size ");
+		if (sizePos != -1) {
+			const int numStart = sizePos + 6;
+			int numEnd = numStart;
+			while (numEnd < trailer.size() && trailer[numEnd] >= '0' && trailer[numEnd] <= '9')
+				++numEnd;
+			if (numEnd > numStart)
+				trailer.replace(numStart, numEnd - numStart, QByteArray::number(maxObj + 1));
+		}
+	}
 
 	int newXrefOffset = body.size();
 

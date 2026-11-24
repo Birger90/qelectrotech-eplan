@@ -237,7 +237,7 @@ QDateTime sourceDateEpoch()
 }
 
 int exportPdf(QETProject &project, const QString &output,
-			 bool showTerminals = false)
+			 bool showTerminals = false, bool pdfA = false)
 {
 	const QList<Diagram *> diagrams = project.diagrams();
 	if (diagrams.isEmpty()) {
@@ -254,6 +254,8 @@ int exportPdf(QETProject &project, const QString &output,
 	QPdfWriter writer(output);
 	writer.setCreator("QElectroTech");
 	writer.setResolution(96);
+	if (pdfA)
+		writer.setPdfVersion(QPagedPaintDevice::PdfVersion_A1b);
 
 	// SOURCE_DATE_EPOCH (reproducible-builds.org) asks for the same file
 	// from the same input: the time it names instead of now, and a document
@@ -2010,6 +2012,7 @@ int run(const QStringList &args)
 	const bool dxfBlocks = filtered.removeAll("--dxf-blocks") > 0;
 	const bool dxfAttributes = filtered.removeAll("--dxf-attributes") > 0;
 	const bool svgSmallPictures = filtered.removeAll("--svg-small-pictures") > 0;
+	const bool pdfA = filtered.removeAll("--pdf-a") > 0;
 	// --no-slaves and --no-junctions leave rows out of --export-bom.
 	const bool includeSlaves = filtered.removeAll("--no-slaves") == 0;
 	const bool includeJunctions = filtered.removeAll("--no-junctions") == 0;
@@ -2571,7 +2574,7 @@ int run(const QStringList &args)
 		return 2;
 	}
 	if (format == "pdf")
-		return exportPdf(project, output, showTerminals);
+		return exportPdf(project, output, showTerminals, pdfA);
 	if (format == "dxf")
 		return exportDxf(project, output, showTerminals, dxfBlocks, dxfAttributes);
 	if (format == "cables" || format == "wires")

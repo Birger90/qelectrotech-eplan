@@ -3,6 +3,17 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.51.0 – 24.11.2026 – Sprungziel im PDF markiert
+
+- PDF-Export: Das Ziel eines Sprungs (Potentialpfeil, Querverweis, Kontaktspiegel, Dreifachsprung, Kabel- und
+  Klemmenverweis, Text mit Ziel-Bauteil) bekommt wie bei EPLAN ab 2.9 einen roten Rahmen. Je Ziel eine versteckte,
+  schreibgeschützte Schaltfläche `qetmarkN` auf der Zielseite; die Link-Aktion ist die Kette GoTo (Seite + /FitR wie
+  bisher) → alle Rahmen verstecken → Zielrahmen zeigen → JavaScript, das ihn blinken lässt und nach 2 s versteckt.
+- Ohne JavaScript bleibt der Rahmen bis zum nächsten Sprung stehen (wenn der Viewer Hide-Aktionen ausführt). Sprünge
+  auf ganze Blätter bekommen keinen Rahmen.
+- Neuer Schalter `--pdf-a` für `--export-pdf`: PDF/A-1b, dann wie bei EPLAN ohne Rahmen und ohne JavaScript.
+- Test `tst_pdfjumpmark` prüft die Aktionskette und den PDF/A-Fall.
+
 ## 1.50.0 – 24.11.2026 – Weitergabe in der Firma, Simulation vollständig
 
 ### Simulation: closer03

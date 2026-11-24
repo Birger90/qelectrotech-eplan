@@ -31,6 +31,9 @@ In QET und im exportierten PDF:
   Kabel- und Stücklisten springen zum Gerät; Strg+Klick folgt, der PDF-Link zoomt darauf.
 - Ein verknüpfter Folioverweis ist selbst ein Link zum Gegenpfeil, nicht nur sein Text. Gefüllte Verweispfeile im
   EPLAN-Aussehen.
+- Das PDF markiert das Sprungziel wie EPLAN 2.9: Nach einem Klick auf Potentialpfeil, Querverweis oder Gerätesprung
+  blinkt ein roter Rahmen um das Ziel (Adobe Acrobat/Reader); in Viewern ohne JavaScript bleibt er bis zum nächsten
+  Sprung stehen, sofern der Viewer Ausblende-Aktionen kann. Bei PDF/A keine Rahmen (`--export-pdf … --pdf-a`).
 
 ## Daten wie bei EPLAN statt Handtext
 

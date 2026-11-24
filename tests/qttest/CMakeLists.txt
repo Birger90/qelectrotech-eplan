@@ -1444,6 +1444,18 @@ target_compile_definitions(tst_pdflinkorder PRIVATE
   "QET_TEST_BINARY_PATH=\"$<TARGET_FILE:qelectrotech>\""
   "QET_EXAMPLES_DIR=\"${QET_DIR}/examples\"")
 
+# The red frame which marks a jump target (EPLAN 2.9): each link's action
+# chain GoTo -> Hide all -> show its frame -> JavaScript, and none in PDF/A.
+add_executable(
+  tst_pdfjumpmark
+  tst_pdfjumpmark.cpp)
+add_test(NAME tst_pdfjumpmark COMMAND tst_pdfjumpmark)
+add_dependencies(tst_pdfjumpmark qelectrotech)
+target_link_libraries(tst_pdfjumpmark PRIVATE Qt::Test)
+target_compile_definitions(tst_pdfjumpmark PRIVATE
+  "QET_TEST_BINARY_PATH=\"$<TARGET_FILE:qelectrotech>\""
+  "QET_EXAMPLES_DIR=\"${QET_DIR}/examples\"")
+
 # One text per potential: the number goes on the same conductor in every
 # run when two conductors tie for longest. Exports
 # fixtures/one_text_per_potential_tie.qet through the real binary, several

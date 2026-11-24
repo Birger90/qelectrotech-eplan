@@ -73,6 +73,14 @@ namespace PdfLinks {
 		annotation into a native internal "/S /GoTo" action (page + /FitR or
 		/Fit destination) and rebuild the xref table.  No-op if the file has no
 		such annotations.
+
+		A link whose fragment carries "mark=L_B_R_T" also marks its target,
+		as EPLAN does from 2.9 on: a hidden red frame (a read-only push
+		button "qetmarkN", one per target) on the target page, and the
+		action chain GoTo -> /Next [hide all frames, show this one,
+		JavaScript that lets it blink and hides it after 2 s].  A viewer
+		without JavaScript keeps the frame until the next jump.  A PDF/A
+		file (pdfaid:part in its XMP) gets no frames, as in EPLAN.
 	*/
 	void convertUriToGoTo(const QString &pdfPath);
 

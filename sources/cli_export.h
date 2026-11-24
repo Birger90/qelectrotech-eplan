@@ -44,7 +44,7 @@ namespace CLIExport {
 		@return process exit code (0 on success).
 
 		Usage:
-		  qelectrotech --export-pdf     <project.qet> <output.pdf> [--show-terminals]
+		  qelectrotech --export-pdf     <project.qet> <output.pdf> [--show-terminals] [--pdf-a]
 		  qelectrotech --export-png     <project.qet> <output_dir> [--show-terminals]
 		  qelectrotech --export-svg     <project.qet> <output_dir> [--show-terminals] [--svg-small-pictures]
 		  qelectrotech --export-dxf     <project.qet> <output_dir> [--show-terminals] [--dxf-blocks] [--dxf-attributes]
@@ -86,6 +86,9 @@ namespace CLIExport {
 		      does; off by default, matching the GUI export dialog's
 		      default. For DXF, draws the terminal markers. Has no effect on
 		      the list export modes.
+		--pdf-a: write the PDF as PDF/A-1b (for archiving). As in EPLAN,
+		      its links jump without the red frame that marks the target
+		      in an ordinary PDF.
 		--dxf-blocks: write each symbol as a DXF block, placed with one
 		      INSERT per use, so a CAD program selects it as one object.
 		--dxf-attributes: as --dxf-blocks, and a symbol's texts (its label,

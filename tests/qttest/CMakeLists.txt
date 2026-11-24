@@ -2368,6 +2368,25 @@ add_test(NAME tst_dataportalclient COMMAND tst_dataportalclient)
 target_include_directories(tst_dataportalclient PRIVATE ${QET_DIR}/sources)
 target_link_libraries(tst_dataportalclient PRIVATE Qt::Network Qt::Test)
 
+# The THM label print (sources/marking/thm*): job bytes, the replies to
+# ESC s and ESC l, the printer chosen by the article loaded, the printer
+# list in the settings, the catalog file, and the client against a local
+# QTcpServer standing in for the printer.
+add_executable(
+  tst_thmprint
+  tst_thmprint.cpp
+  ${QET_DIR}/sources/marking/thmcatalog.cpp
+  ${QET_DIR}/sources/marking/thmcatalog.h
+  ${QET_DIR}/sources/marking/thmclient.cpp
+  ${QET_DIR}/sources/marking/thmclient.h
+  ${QET_DIR}/sources/marking/thmjob.cpp
+  ${QET_DIR}/sources/marking/thmjob.h
+  ${QET_DIR}/sources/marking/thmprinters.cpp
+  ${QET_DIR}/sources/marking/thmprinters.h)
+add_test(NAME tst_thmprint COMMAND tst_thmprint)
+target_include_directories(tst_thmprint PRIVATE ${QET_DIR}/sources)
+target_link_libraries(tst_thmprint PRIVATE Qt::Network Qt::Xml Qt::Test)
+
 # A project split into the parts of a .qetz and joined back is the same
 # document, on every example (and QET_CONTAINER_CORPUS if set).
 add_executable(

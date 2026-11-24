@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Made up for the tests of the THM label print: only the shape of a
+     catalog file (multiprint_catalog > cat_item title="MultiMark" >
+     variants with materialno, name, description). No real article. -->
+<multiprint_catalog version="1">
+	<cat_item title="Other">
+		<item materialno="BSP-9000" name="Not MultiMark" description="Must not be read"/>
+	</cat_item>
+	<cat_item title="MultiMark">
+		<cat_item title="Example group">
+			<item materialno="BSP-1001" name="Example 12 x 6" description="Example card, 12 x 6 mm"/>
+			<item materialno="BSP-1002" name="Example 17 x 9" description="Example card, 17 x 9 mm"/>
+		</cat_item>
+		<item>
+			<materialno>BSP-1003</materialno>
+			<name>Example sleeve ÄÖÜ</name>
+			<description>Fields as child elements</description>
+		</item>
+		<item materialno="BSP-1001" name="Duplicate" description="Read once"/>
+	</cat_item>
+</multiprint_catalog>

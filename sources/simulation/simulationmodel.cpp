@@ -870,6 +870,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 		{QStringLiteral("proportional.pressure_relief_valve"), 200}, {QStringLiteral("proportional.flow_sensor"), 1000},
 		{QStringLiteral("sensor.flowmeter_2"), 1000},
 		{QStringLiteral("pressure_valve.pressure_compensator_closer01"), 300}, {QStringLiteral("pressure_valve.pressure_compensator_closer02"), 300},
+		{QStringLiteral("pressure_valve.pressure_compensator_closer03"), 300},
 		{QStringLiteral("pressure_valve.pressure_compensator_opener01"), 300}, {QStringLiteral("pressure_valve.pressure_compensator_opener02"), 300},
 		{QStringLiteral("pressure_valve.pressure_compensator_upstream_1"), 300}, {QStringLiteral("pressure_valve.pressure_compensator_upstream_2"), 300},
 		{QStringLiteral("pressure_valve.pressure_compensator_downstream_1"), 300}, {QStringLiteral("pressure_valve.pressure_compensator_downstream_2"), 300},
@@ -1578,6 +1579,14 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					}
 					fv->p0 = paramIn(f, QStringLiteral("p0"), 0.0, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
 					fv->dp_end = std::max(paramIn(f, QStringLiteral("dpEnd"), 0.05e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
+					if (fn == QLatin1String("pressure_valve.pressure_compensator_closer03")) {
+						// FORMELN.md V26: FluidSIM defaults of the hydraulically operated 2/2 valve, open at rest (QS05):
+						// Solldruck 0.28 MPa, Druckregelbereich 0.04 MPa, rT 0.00362 bar.min2/l2, leakage 2 → 3 0
+						fv->p0 = paramIn(f, QStringLiteral("p0"), 0.28e6, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+						fv->dp_end = std::max(paramIn(f, QStringLiteral("dpEnd"), 0.04e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
+						fv->rt = paramNative(f, QStringLiteral("rT"), 0.00362, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+						fv->gleak = paramIn(f, QStringLiteral("GLeak"), 0.0, QStringLiteral("m3/(s.Pa)"), &m_model_errors, who, Range::NonNegative);
+					}
 					fv->t_delay = paramIn(f, QStringLiteral("t_delay"), 1.0, QStringLiteral("s"), &m_model_errors, who, Range::NonNegative);
 					// FORMELN.md V20–V24: FluidSIM defaults delayTime 3 s, qNN_nozzle 10 l/min, vol 0.01 l, level 100 %, counterEnd 3,
 					// ps_min/ps_max 0.1/0.2 bar, q_min/q_max 1.9/4 l/min at p1 − p2 = 50 kPa
@@ -3457,7 +3466,14 @@ void SimulationModel::step(double dt)
 			int in = -1, out = -1;
 			double d = 0;
 			bool closer = false;
-			if (kind.startsWith(QLatin1String("closer")) || kind.startsWith(QLatin1String("opener0"))) {
+			if (kind == QLatin1String("closer03")) {
+				// FORMELN.md V26: 2 → 3 open at rest, the pressure at 1 against the vented spring chamber closes it
+				in = port("2", "C2"); out = port("3", "C3");
+				const int k1 = port("1", "C1");
+				d = k1 >= 0 ? p(k1) - P_ATM : 0.0;
+				closer = true;
+				if (s->gleak > 0 && (in >= 0 || out >= 0)) book(in, out, s->gleak * (p(in) - p(out)), s->e);
+			} else if (kind.startsWith(QLatin1String("closer")) || kind.startsWith(QLatin1String("opener0"))) {
 				in = port("B", "1"); out = port("A", "2");
 				d = p(port("X", "3")) - p(port("XS", "4"));
 				closer = kind.startsWith(QLatin1String("closer"));

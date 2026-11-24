@@ -3,6 +3,14 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+
+
+## Branch feature/closer03 (nicht in main)
+
+- Druckwaage `closer03` = FluidSIM „2/2-Wege-Ventil, hydraulisch betätigt, in Ruhestellung geöffnet“: 2 → 3 offen, Druck an 1
+  schließt über Solldruck (0,28 MPa) und Druckregelbereich (0,04 MPa), Widerstand 0,00362, Leckage 2 → 3; Formel V26, Prüfung
+  „closer03“ mit Plan `closer03.qet`. Damit hat jede Funktion der FluidSIM-Bibliothek ein Rechenmodell.
+
 ## 1.49.1 – 24.11.2026 – Ein Prüfpanel
 
 „Plan prüfen“ des Forks und das Prüfpanel des Originals (#1878) sind jetzt ein einziges Panel.

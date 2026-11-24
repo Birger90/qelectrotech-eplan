@@ -195,7 +195,10 @@ QList<Entry> build()
 		      "adjustmentLeft/adjustmentRight [%] (−100 … 100), pMax [Pa]; Projektwerte rT 0,1 bar.min2/l2, dpEnd 0,5 bar",
 		      "je Gruppe ein Druckminderventil P → X mit |Auslenkung|·pMax (+: X g.1, −: X g.2), Rest zu T; Auslenkung fest für den Lauf, ohne Dynamik",
 		      "Mobilhydraulik (R13)");
-	e << other("pressure_valve.pressure_compensator_closer03", Role::Unsupported, "", "Druckwaage ohne Kennwerte (closer03) (Roadmap R13)");
+	e << physical("pressure_valve.pressure_compensator_closer03", "pressure_compensator", "hydraulic", "2 → 3, Steuerdruck 1 (Federkammer entlüftet)",
+		      "p0 [Pa] Solldruck (0,28 MPa), dpEnd [Pa] Druckregelbereich (0,04 MPa), rT (0,00362), GLeak [m3/(s.Pa)] Leckage 2 → 3",
+		      "2/2-Wegeventil hydraulisch betätigt, in Ruhe offen: schließt ab p_1 = p0, zu bei p0 + dpEnd; ohne Kolbendynamik",
+		      "Druckwaage closer03 (2/2-Wegeventil, hydraulisch betätigt)");
 	// ---------------------------------------------------------- Versorgung
 	e << physical("supply.air_supply", "pressure_source", "pneumatic", "alle", "pNom [Pa] (sonst Versorgungsdruck des Laufs)", "ideale Quelle ohne Liefergrenze", "CylinderCycle");
 	e << physical("supply.tank", "tank", "hydraulic", "alle", "", "drucklos", "Hydraulik-CylinderCycle");

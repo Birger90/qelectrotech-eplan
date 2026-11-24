@@ -16,8 +16,15 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "cli_export.h"
+#include "revision/projectrevisions.h"
+#include "qetresult.h"
 #include "projectlock.h"
 #include "bomexport.h"
+#include "marking/markingexport.h"
+#include "purchase/purchasefetch.h"
+#include "purchase/purchaselist.h"
+#include "qetapp.h"
+#include <QTranslator>
 
 #include "bordertitleblock.h"
 #include "conductornumexport.h"
@@ -28,6 +35,7 @@
 #include "diagram.h"
 #include "diagramcontext.h"
 #include "devicetype/devicetypecheck.h"
+#include "projectcheck.h"
 #include "devicetype/devicetypelist.h"
 #include "editor/symbolgridcheck.h"
 #include "editor/terminalnamecheck.h"
@@ -36,6 +44,7 @@
 #include "simulation/simulationcatalog.h"
 #include "qetversion.h"
 #include <QCryptographicHash>
+#include <QElapsedTimer>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -55,7 +64,9 @@
 #include "qetgraphicsitem/terminal.h"
 #include "qetproject.h"
 #include "titleblockproperties.h"
+#include "wiringlistdb.h"
 #include "wiringlistexport.h"
+#include "plc/tiaplctags.h"
 
 // Private Qt PDF engine for drawHyperlink() — see pdf_links / projectprintwindow.
 #include <private/qpdf_p.h>
@@ -103,10 +114,16 @@ const QHash<QString, QString> &exportFlags()
 		{"--export-cables", "cables"},
 		{"--export-wires", "wires"},
 		{"--export-bom", "bom"},
+		{"--export-marking", "marking"},
+		{"--export-purchase", "purchase"},
+		{"--fetch-commercial", "fetchcommercial"},
 		{"--export-wiring", "wiring"},
 		{"--export-nets", "nets"},
 		{"--export-links", "links"},
+		{"--export-tia-tags", "tiaexport"},
+		{"--compare-tia-tags", "tiacompare"},
 		{"--check-device-types", "devicetypes"},
+		{"--check-project", "checkproject"},
 		{"--export-device-types", "devicetypelist"},
 		{"--export-device-types-brief", "devicetypebrief"},
 		{"--info", "info"},
@@ -118,6 +135,7 @@ const QHash<QString, QString> &exportFlags()
 		{"--portal-logout", "portallogout"},
 		{"--portal-request", "portalrequest"},
 		{"--resave", "resave"},
+		{"--lock-status", "lockstatus"},
 		{"--recover", "recover"},
 		{"--history", "history"},
 		{"--history-on", "historyon"},
@@ -134,6 +152,10 @@ const QHash<QString, QString> &exportFlags()
 		{"--simulate", "simulate"},
 		{"--simulate-reference", "simreference"},
 		{"--simulate-catalog", "simcatalog"},
+		{"--close-revision", "closerevision"},
+		{"--revisions", "revisions"},
+		{"--revision-marks", "revisionmarks"},
+		{"--compare-revisions", "comparerevisions"},
 	};
 	return flags;
 }
@@ -486,6 +508,147 @@ int exportBom(QETProject &project, const QString &output,
 	return 0;
 }
 
+/// Markers for the marking software of the terminal makers, the same file
+/// Project > Export markers... writes. @p rest: the project, the output and
+/// the options, in any order after the two files.
+int exportMarking(const QStringList &rest)
+{
+	QStringList positional;
+	MarkingExport::Options o;
+	const QString usage = QStringLiteral(
+		"Usage: qelectrotech --export-marking <project.qet> <output.csv> "
+		"[--format phoenix|weidmueller|wago|neutral] "
+		"[--kinds wires,terminals,devices,cables] [--folios N[-M]] "
+		"[--plant P] [--location L] [--short] [--one-end]\n");
+	for (int i = 0; i < rest.size(); ++i) {
+		const QString &a = rest.at(i);
+		const auto value = [&]() { return i + 1 < rest.size() ? rest.at(++i) : QString(); };
+		if (a == QLatin1String("--format")) {
+			if (!MarkingExport::formatFromKey(value(), &o.format)) {
+				err << "Unknown --format; expected phoenix, weidmueller, wago or neutral.\n";
+				return 2;
+			}
+		} else if (a == QLatin1String("--kinds")) {
+			if (!MarkingExport::kindsFromKeys(value(), &o.kinds)) {
+				err << "Unknown --kinds; expected wires, terminals, devices, cables or all.\n";
+				return 2;
+			}
+		} else if (a == QLatin1String("--folios")) {
+			const QStringList range = value().split(QLatin1Char('-'));
+			bool ok_from = false, ok_to = true;
+			o.folio_from = range.value(0).toInt(&ok_from);
+			o.folio_to = range.size() > 1 ? range.value(1).toInt(&ok_to) : o.folio_from;
+			if (!ok_from || !ok_to || o.folio_from < 1 || o.folio_to < o.folio_from) {
+				err << "--folios takes a folio number or a range such as 2-5.\n";
+				return 2;
+			}
+		} else if (a == QLatin1String("--plant")) {
+			o.plant = value();
+		} else if (a == QLatin1String("--location")) {
+			o.location = value();
+		} else if (a == QLatin1String("--short")) {
+			o.full_designation = false;
+		} else if (a == QLatin1String("--one-end")) {
+			o.both_ends = false;
+		} else if (a.startsWith(QLatin1String("--"))) {
+			err << "Unknown option " << a << "\n" << usage;
+			return 2;
+		} else {
+			positional << a;
+		}
+	}
+	if (positional.size() < 2) {
+		err << usage;
+		return 2;
+	}
+	if (!QFileInfo::exists(positional.at(0))) {
+		err << "Project not found: " << positional.at(0) << "\n";
+		return 2;
+	}
+	QETProject project(positional.at(0));
+	if (project.state() != QETProject::Ok) {
+		err << "Failed to open project: " << positional.at(0) << "\n";
+		return 1;
+	}
+	QString error;
+	int markers = 0;
+	if (!MarkingExport::exportFile(&project, positional.at(1), o, &error, &markers)) {
+		err << "Marking export failed: " << error << "\n";
+		return 1;
+	}
+	out << "Exported " << markers << " marker(s) ("
+		<< MarkingExport::formatKey(o.format) << ") -> " << positional.at(1) << "\n";
+	return 0;
+}
+
+/// The purchase list (PurchaseList): articles grouped by supplier, sums,
+/// the devices without an article; .xlsx or CSV, with --erp also the
+/// neutral ERP CSV beside it. --online first asks the Data Portal for
+/// the articles the article data cache does not know.
+int exportPurchase(QETProject &project, const QString &output, bool online, bool erp)
+{
+		//The list is read by people in purchasing: its headings in the
+		//language of the settings, as the menu writes it (the other CLI
+		//outputs stay as they are)
+	static QTranslator translator;
+	const QString language = QETApp::langFromSetting();
+	bool loaded = false;
+	for (const QString &dir : {QETApp::languagesPath(),
+							   QCoreApplication::applicationDirPath() + QStringLiteral("/lang")}) {
+		for (const QString &name : {language, language.section(QLatin1Char('_'), 0, 0)}) {
+			if (!loaded && translator.load(QStringLiteral("qet_") + name, dir) && !translator.isEmpty())
+				loaded = true;
+		}
+	}
+	if (loaded) QCoreApplication::installTranslator(&translator);
+	else err << "No translation qet_" << language << " in " << QETApp::languagesPath() << "\n";
+	QString error;
+	QList<PurchaseList::Item> items = PurchaseList::collect(&project, &error);
+	if (!error.isEmpty()) {
+		err << "Purchase list failed: " << error << "\n";
+		return 1;
+	}
+	const PurchaseFetch::Result fetched = PurchaseFetch::fetch(items, online);
+	if (!fetched.error.isEmpty())
+		err << "Data Portal: " << fetched.error << "\n";
+	if (fetched.from_portal + fetched.from_edz + fetched.not_found > 0)
+		items = PurchaseList::collect(&project, &error);
+	QStringList written;
+	if (!PurchaseList::write(items, output, erp, &written, &error)) {
+		err << "Cannot write '" << output << "': " << error << "\n";
+		return 1;
+	}
+	QJsonObject summary = PurchaseList::summarize(items).toJson();
+	summary.insert(QStringLiteral("lookup"), fetched.toJson());
+	summary.insert(QStringLiteral("files"), QJsonArray::fromStringList(written));
+	summary.insert(QStringLiteral("price_list"), QDir::toNativeSeparators(PurchaseList::priceListPath()));
+	out << QJsonDocument(summary).toJson(QJsonDocument::Compact) << "\n";
+	return 0;
+}
+
+/// Fills the article data cache for the articles of a project (EDZ
+/// packages, and the Data Portal unless --offline) and prints what came
+/// of it as JSON.
+int fetchCommercial(QETProject &project, bool online)
+{
+	QString error;
+	const QList<PurchaseList::Item> items = PurchaseList::collect(&project, &error);
+	if (!error.isEmpty()) {
+		err << "Purchase list failed: " << error << "\n";
+		return 1;
+	}
+	const PurchaseFetch::Result result = PurchaseFetch::fetch(items, online,
+		[](int done, int total, const QString &part) {
+			if (!part.isEmpty()) err << "[" << (done + 1) << "/" << total << "] " << part << "\n";
+			err.flush();
+			return true;
+		});
+	QJsonObject o = result.toJson();
+	o.insert(QStringLiteral("cache"), QDir::toNativeSeparators(PurchaseList::cachePath()));
+	out << QJsonDocument(o).toJson(QJsonDocument::Indented);
+	return result.error.isEmpty() ? 0 : 1;
+}
+
 QString csvField(const QString &value)
 {
 	if (value.contains(QLatin1Char(';')) || value.contains(QLatin1Char('"'))
@@ -722,6 +885,8 @@ int simulateProject(QETProject &project, const QStringList &args)
 	double duration = 2.0, pressure = 6.0, png_at = -1.0, raster = 0.005;
 	QString csv_path, png_dir, measure, meta_path;
 	bool list_signals = false;
+	bool until_change = false;   // R16
+	QString folios;               // R16: 1,3 or 2-4
 	struct Event { double t; QString label; int side; bool on; double value = 0.0; };   // side 2: setpoint (R07)
 	QList<Event> events;
 	static const QRegularExpression ev_re(QStringLiteral(
@@ -738,9 +903,19 @@ int simulateProject(QETProject &project, const QStringList &args)
 		else if (a == QLatin1String("--raster")) { raster = v.toDouble(); ++i; }
 		else if (a == QLatin1String("--meta")) { meta_path = v; ++i; }
 		else if (a == QLatin1String("--signals")) list_signals = true;
+		else if (a == QLatin1String("--until-change")) until_change = true;
+		else if (a == QLatin1String("--folios")) { folios = v; ++i; }
 		else if (a == QLatin1String("--event")) {
 			// R07: "0.5 -QM1 sollwert 5" sets the setpoint of a proportional valve (volts)
 			static const QRegularExpression sp_re(QStringLiteral("^\\s*([\\d.]+)\\s+(.+?)\\s+(?:sollwert|setpoint)\\s+(-?[\\d.]+)\\s*$"));
+			// R15: "1.2 -QM1 reparieren" repairs the faults of a part
+			static const QRegularExpression rep_re(QStringLiteral("^\\s*([\\d.]+)\\s+(.+?)\\s+(?:reparieren|repair)\\s*$"));
+			const auto rep = rep_re.match(v);
+			if (rep.hasMatch()) {
+				events << Event{rep.captured(1).toDouble(), rep.captured(2), 3, true};
+				++i;
+				continue;
+			}
 			const auto sp = sp_re.match(v);
 			if (sp.hasMatch()) {
 				events << Event{sp.captured(1).toDouble(), sp.captured(2), 2, true, sp.captured(3).toDouble()};
@@ -758,7 +933,23 @@ int simulateProject(QETProject &project, const QStringList &args)
 	}
 	// R03: events at the same time keep the order of the command line (stable), so a run is reproducible
 	std::stable_sort(events.begin(), events.end(), [](const Event &x, const Event &y) { return x.t < y.t; });
-	SimulationModel sim(project.diagrams(), pressure);
+	// R16: only some folios of the project (1-based, "1,3" or "2-4")
+	QList<Diagram *> chosen;
+	if (folios.isEmpty()) chosen = project.diagrams();
+	else {
+		const QList<Diagram *> all = project.diagrams();
+		for (const QString &part : folios.split(QLatin1Char(','), Qt::SkipEmptyParts)) {
+			const QStringList r = part.trimmed().split(QLatin1Char('-'));
+			bool ok1 = false, ok2 = true;
+			const int lo = r.value(0).toInt(&ok1), hi = r.size() > 1 ? r.value(1).toInt(&ok2) : lo;
+			if (!ok1 || !ok2 || lo < 1 || hi > all.size() || hi < lo) { err << "folios not understood: " << folios << "\n"; return 2; }
+			for (int k = lo; k <= hi; ++k)
+				if (!chosen.contains(all.at(k - 1))) chosen << all.at(k - 1);
+		}
+	}
+	QElapsedTimer wall;
+	wall.start();
+	SimulationModel sim(chosen, pressure);
 	if (!list_signals) out << sim.summary() << "\n";
 	for (const QString &e : sim.modelErrors()) err << "Model error: " << e << "\n";
 	if (sim.failed()) {
@@ -838,6 +1029,8 @@ int simulateProject(QETProject &project, const QStringList &args)
 			const Event &e = events.at(ei++);
 			if (e.side == 2) {
 				if (!sim.setSetpoint(e.label, e.value)) { err << "no proportional valve labelled " << e.label << "\n"; return 2; }
+			} else if (e.side == 3) {
+				if (!sim.repair(e.label)) { err << "no fault at " << e.label << "\n"; return 2; }
 			} else if (e.side < 0) sim.pressButton(e.label, e.on);
 			else if (!sim.actuateValve(e.label, e.side == 0, e.on)) {
 				err << "no valve labelled " << e.label << "\n";
@@ -861,9 +1054,17 @@ int simulateProject(QETProject &project, const QStringList &args)
 			png_done = true;
 		}
 		sim.step(dt);
-		for (const auto &m : sim.takeMessages())
+		bool changed = false;
+		for (const auto &m : sim.takeMessages()) {
 			out << QString::number(m.time, 'f', 3).rightJustified(8) << " s  " << m.text << "\n";
+			changed = changed || m.time > 1e-9;
+		}
 		if (sim.failed()) break;
+		// R16: --until-change ends the run at the first state change after the start
+		if (until_change && changed) {
+			out << "Halt bei der ersten Zustandsänderung\n";
+			break;
+		}
 	}
 	if (!png_done) write_png();
 	out << "Status: " << (sim.failed() ? "abgebrochen" : "ok") << ", Endzeit " << QString::number(sim.time(), 'f', 4) << " s\n";
@@ -879,11 +1080,18 @@ int simulateProject(QETProject &project, const QStringList &args)
 		meta.insert(QStringLiteral("supplyPressureBar"), pressure);
 		meta.insert(QStringLiteral("durationS"), duration);
 		meta.insert(QStringLiteral("integrationStepS"), dt);
+		// R16 performance figures: wall time of build and run, steps, problem size
+		const double seconds = wall.nsecsElapsed() / 1e9;
+		meta.insert(QStringLiteral("wallTimeS"), seconds);
+		meta.insert(QStringLiteral("steps"), static_cast<double>(sim.stepCount()));
+		meta.insert(QStringLiteral("stepsPerSecond"), seconds > 0 ? sim.stepCount() / seconds : 0.0);
+		meta.insert(QStringLiteral("fluidNets"), sim.netCount());
+		meta.insert(QStringLiteral("folios"), folios.isEmpty() ? QStringLiteral("alle") : folios);
 		meta.insert(QStringLiteral("outputRasterS"), raster);
 		meta.insert(QStringLiteral("integrator"), QStringLiteral("explicit Euler; oil nets with accumulator implicit (bisection)"));
 		QJsonArray evs;
 		for (const auto &e : events)
-			evs.append(QStringLiteral("%1 %2 %3%4").arg(e.t).arg(e.label)
+			evs.append(e.side == 3 ? QStringLiteral("%1 %2 reparieren").arg(e.t).arg(e.label) : QStringLiteral("%1 %2 %3%4").arg(e.t).arg(e.label)
 					   .arg(e.side < 0 ? QString() : (e.side == 0 ? QStringLiteral("links ") : QStringLiteral("rechts ")))
 					   .arg(e.on ? QStringLiteral("an") : QStringLiteral("aus")));
 		meta.insert(QStringLiteral("events"), evs);
@@ -985,38 +1193,24 @@ QHash<Element *, int> folioIndex(QETProject &project)
 /// GUI.
 int exportWiring(QETProject &project, const QString &output)
 {
-	// The project database is built lazily; force a (re)build before querying.
-	project.dataBase()->updateDB();
-
-	static const QStringList columns {
-		"wire_number", "from_element_label", "from_terminal",
-		"to_element_label", "to_terminal", "diagram_position", "conductor_uuid",
-		"from_terminal_index", "from_terminal_uuid", "to_terminal_index", "to_terminal_uuid"
-	};
-
-	QSqlQuery query = project.dataBase()->newQuery(
-		"SELECT " % columns.join(", ") %
-		" FROM wiring_list_view"
-		//Wire numbers are text, so a plain sort puts "10" before "9".
-		//Numeric ones first, ordered by value; anything non-numeric after,
-		//ordered as text. The trailing wire_number keeps ties stable.
-		" ORDER BY diagram_position,"
-		" CASE WHEN wire_number GLOB '[0-9]*' THEN 0 ELSE 1 END,"
-		" CAST(wire_number AS INTEGER),"
-		" wire_number");
-	if (!query.exec()) {
-		err << "Wiring list query failed: " << query.lastError().text() << "\n";
+	// Read from the project database, with every end which is a junction
+	// already resolved to where the junction's chain leads: the one rule
+	// this export and the CSV one share, so the two lists agree (#1500).
+	int unassigned_junctions = 0;
+	QString error;
+	const QVector<WiringListRow> rows =
+		wiringListRows(&project, &unassigned_junctions, &error);
+	if (!error.isEmpty()) {
+		err << "Wiring list query failed: " << error << "\n";
 		return 1;
 	}
 
-	QString csv = columns.join(";") % "\n";
-	int rows = 0;
-	while (query.next()) {
+	QString csv = WiringListRow::columns().join(";") % "\n";
+	for (const WiringListRow &row : rows) {
 		QStringList values;
-		for (int i = 0; i < columns.size(); ++i)
-			values << csvField(query.value(i).toString());
+		for (const QString &value : row.values())
+			values << csvField(value);
 		csv += values.join(";") % "\n";
-		++rows;
 	}
 
 		//Written through QSaveFile so a failure part-way leaves the previous
@@ -1036,7 +1230,13 @@ int exportWiring(QETProject &project, const QString &output)
 		err << "Cannot write '" << output << "': " << file.errorString() << "\n";
 		return 1;
 	}
-	out << "Exported " << rows << " conductor(s) -> " << output << "\n";
+	out << "Exported " << rows.size() << " conductor(s) -> " << output << "\n";
+		//Said rather than left out: those rows end at the junction, which
+		//is what the export would otherwise not tell anyone about
+	if (unassigned_junctions > 0)
+		out << unassigned_junctions << " junction(s) have rows that still "
+			   "end at a junction: no source connection set, or no way on "
+			   "to follow.\n";
 	return 0;
 }
 
@@ -1164,6 +1364,34 @@ int exportLinks(QETProject &project, const QString &output)
 	out << "Exported " << linkable << " linkable element(s), "
 		<< unresolved << " unresolved -> " << output << "\n";
 	return 0;
+}
+
+/// "Check project" headless: every check of the Check panel
+/// (ProjectCheck::runAll()) as JSON, to stdout or to @p output. Exit code 0
+/// when no finding is an error, 3 when at least one is (so a script can
+/// stop on it), 1 when the file cannot be written.
+int checkProject(QETProject &project, const QString &output)
+{
+	const QJsonObject report = ProjectCheck::toJson(ProjectCheck::runAll(&project), &project);
+	const QByteArray json = QJsonDocument(report).toJson(QJsonDocument::Indented);
+	const QJsonObject summary = report.value(QStringLiteral("summary")).toObject();
+	const int errors = summary.value(QStringLiteral("errors")).toInt();
+	const int warnings = summary.value(QStringLiteral("warnings")).toInt();
+	const int infos = summary.value(QStringLiteral("infos")).toInt();
+	if (output.isEmpty() || output == QLatin1String("-")) {
+		out << QString::fromUtf8(json);
+	} else {
+		QFile file(output);
+		if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+			err << "Cannot open '" << output << "' for writing.\n";
+			return 1;
+		}
+		file.write(json);
+		file.close();
+		out << "Checked plan: " << errors << " error(s), " << warnings
+			<< " warning(s), " << infos << " note(s) -> " << output << "\n";
+	}
+	return errors ? 3 : 0;
 }
 
 /// Each device with a device type: is it drawn the way its type says?
@@ -1576,9 +1804,193 @@ int queryProjects(const QString &sql, const QStringList &files, bool json)
 	return failed ? 1 : 0;
 }
 
+
+/// The changes as lines, or as a JSON array with --json
+void printChanges(const QList<QetRevision::Change> &changes, const QetRevision::Fingerprint &now,
+				  const QetRevision::Fingerprint &before, bool json)
+{
+	if (!json) {
+		for (const QString &line : QetRevision::describe(changes, now, before))
+			out << line << "\n";
+		out << changes.size() << " change(s)\n";
+		return;
+	}
+	QJsonArray rows;
+	for (const QetRevision::Change &c : changes) {
+		const QetRevision::Item &i = c.item();
+		QJsonObject row;
+		row[QStringLiteral("change")] = c.kind == QetRevision::Change::Added ? QStringLiteral("added")
+				: c.kind == QetRevision::Change::Removed ? QStringLiteral("removed") : QStringLiteral("changed");
+		static const QHash<QChar, QString> kinds{{QLatin1Char('e'), QStringLiteral("symbol")},
+			{QLatin1Char('c'), QStringLiteral("wire")}, {QLatin1Char('t'), QStringLiteral("text")},
+			{QLatin1Char('s'), QStringLiteral("shape")}, {QLatin1Char('i'), QStringLiteral("image")},
+			{QLatin1Char('f'), QStringLiteral("folio")}};
+		row[QStringLiteral("kind")] = kinds.value(i.kind);
+		row[QStringLiteral("folio")] = i.folio_index;
+		row[QStringLiteral("folio_name")] = (c.kind == QetRevision::Change::Removed ? before : now)
+				.folio_names.value(i.folio);
+		row[QStringLiteral("name")] = i.name;
+		row[QStringLiteral("uuid")] = i.uuid;
+		rows.append(row);
+	}
+	out << QJsonDocument(rows).toJson(QJsonDocument::Indented);
+}
+
+/// --close-revision <project> <index> [text...] [--no-pdf]
+int closeRevision(QETProject &project, const QStringList &rest, bool pdf)
+{
+	if (rest.size() < 2) {
+		err << "Usage: qelectrotech --close-revision <project> <index> [text...] [--no-pdf]\n";
+		return 2;
+	}
+	const ProjectRevisions::CloseResult r = project.revisions()->closeRevision(
+				rest.at(1), rest.mid(2).join(QLatin1Char(' ')), pdf, true);
+	if (!r.ok) {
+		err << "Revision not closed: " << r.error << "\n";
+		return 1;
+	}
+	out << "Revision " << rest.at(1).trimmed() << " closed: " << r.changes
+		<< " change(s) since the last revision\n";
+	if (!r.pdf.isEmpty()) out << "PDF: " << QDir::toNativeSeparators(r.pdf) << "\n";
+	out << "Snapshot: " << QDir::toNativeSeparators(r.snapshot) << "\n";
+	return 0;
+}
+
+/// --revisions <project>
+int listRevisions(QETProject &project, bool json)
+{
+	ProjectRevisions *revisions = project.revisions();
+	const QList<ProjectRevisions::Entry> entries = revisions->entries();
+	if (!json) {
+		if (entries.isEmpty()) out << "No revision closed yet; the next is " << revisions->proposedIndex() << "\n";
+		for (const ProjectRevisions::Entry &e : entries)
+			out << e.index << "\t" << e.date << "\t" << e.author << "\t" << e.text
+				<< (e.snapshot.isEmpty() ? QString() : QStringLiteral("\t") + e.snapshot) << "\n";
+		out << "Marks: " << (revisions->marksShown() ? "on" : "off") << "\n";
+	}
+	if (!revisions->hasBaseline()) return 0;
+	if (!json) out << "Since revision " << revisions->lastIndex() << ":\n";
+	const QetRevision::Fingerprint before = revisions->baseline();
+	const QetRevision::Fingerprint now = QetRevision::fingerprint(&project);
+	printChanges(QetRevision::compare(before, now), now, before, json);
+	return 0;
+}
+
+/// --compare-revisions <older> <newer> [<output.pdf>]
+int compareRevisions(const QStringList &rest, bool json)
+{
+	if (rest.size() < 2) {
+		err << "Usage: qelectrotech --compare-revisions <older> <newer> [<output.pdf>] [--json]\n";
+		return 2;
+	}
+	QETProject newer(rest.at(1));
+	if (newer.state() != QETProject::Ok) {
+		err << "Failed to open project: " << rest.at(1) << "\n";
+		return 1;
+	}
+	QString older_path = rest.at(0), label;
+	if (!QFileInfo::exists(older_path)) {
+			//A revision index of the newer project
+		for (const ProjectRevisions::Entry &e : newer.revisions()->entries())
+			if (e.index == rest.at(0)) older_path = newer.revisions()->snapshotPath(e);
+		if (!QFileInfo::exists(older_path)) {
+			err << "Neither a file nor a revision of " << rest.at(1) << ": " << rest.at(0) << "\n";
+			return 2;
+		}
+	}
+	QString error;
+	const QetRevision::Fingerprint before = QetRevision::fingerprintOfFile(older_path, &error);
+	if (!error.isEmpty()) {
+		err << error << "\n";
+		return 1;
+	}
+	const QetRevision::Fingerprint now = QetRevision::fingerprint(&newer);
+	printChanges(QetRevision::compare(before, now), now, before, json);
+	if (rest.size() >= 3) {
+			//The revision the changes belong to: the newer's own when it is
+			//a closed revision as it is (a snapshot), else the next one
+		ProjectRevisions *revisions = newer.revisions();
+		label = revisions->hasBaseline()
+				&& QetRevision::compare(revisions->baseline(), now).isEmpty()
+				? revisions->lastIndex() : revisions->proposedIndex();
+		newer.revisions()->beginComparison(before, label);
+		const int code = exportPdf(newer, rest.at(2));
+		newer.revisions()->endComparison();
+		return code;
+	}
+	return 0;
+}
+
 } // anonymous namespace
 
 namespace CLIExport {
+
+/// --export-tia-tags: the PLC channels of the project as tag table for
+/// TIA Portal (.xlsx for the tag table editor, .xml for Openness)
+int exportTiaTags(QETProject &project, const QString &output, const QHash<QString, QString> &opts)
+{
+	QStringList notes;
+	const QVector<TiaPlcTags::Channel> channels = TiaPlcTags::channels(&project, &notes);
+	QString error;
+	if (!TiaPlcTags::write(output, channels, opts.value("tia-table"), opts.value("tia-culture"), &error)) {
+		err << "Cannot write '" << output << "': " << error << "\n";
+		return 1;
+	}
+	int written = 0, counted = 0;
+	for (const auto &c : channels) {
+		if (c.address.isEmpty()) continue;
+		++written;
+		if (c.autoAddress) ++counted;
+	}
+	for (const QString &note : notes) err << "note: " << note << "\n";
+	out << "Exported " << written << " PLC tag(s) of " << channels.size() << " channel(s), "
+		<< counted << " with an address counted from the module start -> " << output << "\n";
+	return 0;
+}
+
+/// --compare-tia-tags: a TIA tag table against the PLC channels; the
+/// differences as CSV (stdout or a file), --apply OUT.qet takes the names
+/// and comments of the tags into the plan and saves it as OUT.qet
+int compareTiaTags(QETProject &project, const QString &tags_path, const QString &report,
+				   const QHash<QString, QString> &opts)
+{
+	QString error;
+	const QVector<TiaPlcTags::Tag> tags = TiaPlcTags::read(tags_path, &error);
+	if (tags.isEmpty() && !error.isEmpty()) {
+		err << "Cannot read '" << tags_path << "': " << error << "\n";
+		return 1;
+	}
+	QStringList notes;
+	const TiaPlcTags::Comparison cmp = TiaPlcTags::compare(TiaPlcTags::channels(&project, &notes), tags);
+	const QString csv = TiaPlcTags::reportCsv(cmp);
+	if (report.isEmpty() || report == "-") {
+		out << csv;
+	} else {
+		QSaveFile file(report);
+		if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+			err << "Cannot open '" << report << "' for writing.\n";
+			return 1;
+		}
+		file.write(csv.toUtf8());
+		file.commit();
+	}
+	using S = TiaPlcTags::Status;
+	err << "Compared " << cmp.channels.size() << " channel(s) with " << tags.size() << " tag(s): "
+		<< cmp.count(S::Same) << " same, "
+		<< cmp.count(S::NameDiffers) + cmp.count(S::BothDiffer) << " name differs, "
+		<< cmp.count(S::CommentDiffers) + cmp.count(S::BothDiffer) << " comment differs, "
+		<< cmp.count(S::AddressDiffers) << " address differs, "
+		<< cmp.count(S::MissingInTia) << " missing in TIA, "
+		<< cmp.count(S::OnlyInTia) << " only in TIA, "
+		<< cmp.otherTags << " other tag(s) (no I/Q address)\n";
+	const QString apply_to = opts.value("apply");
+	if (!apply_to.isEmpty()) {
+		const int changed = TiaPlcTags::apply(cmp);
+		err << "Took over " << changed << " name(s)/comment(s) from TIA.\n";
+		return resaveProject(project, apply_to);
+	}
+	return 0;
+}
 
 bool isExportRequest(const QStringList &args)
 {
@@ -1601,9 +2013,14 @@ int run(const QStringList &args)
 	// --no-slaves and --no-junctions leave rows out of --export-bom.
 	const bool includeSlaves = filtered.removeAll("--no-slaves") == 0;
 	const bool includeJunctions = filtered.removeAll("--no-junctions") == 0;
+	// --online, --offline and --erp belong to the purchase list.
+	const bool purchaseOnline = filtered.removeAll("--online") > 0;
+	const bool purchaseOffline = filtered.removeAll("--offline") > 0;
+	const bool purchaseErp = filtered.removeAll("--erp") > 0;
 	const bool ignoreLock = filtered.removeAll("--ignore-lock") > 0;
 	const bool json = filtered.removeAll("--json") > 0;
 	const bool grid = filtered.removeAll("--grid") > 0;
+	const bool noPdf = filtered.removeAll("--no-pdf") > 0;
 
 	QString flag;
 	QStringList rest;
@@ -1625,6 +2042,57 @@ int run(const QStringList &args)
 			return 2;
 		}
 		return checkElements(rest.at(0), grid);
+	}
+
+	// --lock-status tells who has a project open (its lock file beside it),
+	// whether that lock is left over (crash on this PC, or no heartbeat for
+	// ProjectLock::orphan_minutes) and which OneDrive/SharePoint conflict
+	// copies lie beside it. Reads only; the project itself is not opened.
+	// Exit code: 0 free, 1 held by a live session, 3 left over, 2 usage.
+	if (format == "lockstatus") {
+		if (rest.isEmpty()) {
+			err << "Usage: qelectrotech --lock-status <project> [--json]\n";
+			return 2;
+		}
+		const QString path = QFileInfo(rest.at(0)).absoluteFilePath();
+		const ProjectLock::Holder holder = ProjectLock::readHolder(path);
+		const ProjectLock::Holder live = ProjectLock::liveHolder(path);
+		const bool crashed = ProjectLock::isStale(holder);
+		const bool orphaned = live.valid && ProjectLock::isOrphaned(live);
+		const QString state = !holder.valid ? QStringLiteral("free")
+				: crashed ? QStringLiteral("crashed")
+				: !live.valid ? QStringLiteral("free")
+				: orphaned ? QStringLiteral("orphaned")
+				: QStringLiteral("held");
+		const QStringList copies = ProjectLock::conflictCopies(
+					path, holder.valid ? QStringList{holder.host} : QStringList());
+		if (json) {
+			QJsonObject o;
+			o.insert("project", path);
+			o.insert("lock_file", ProjectLock::lockPathFor(path));
+			o.insert("state", state);
+			if (holder.valid) {
+				o.insert("user", holder.user);
+				o.insert("host", holder.host);
+				o.insert("pid", double(holder.pid));
+				o.insert("app", holder.app);
+				o.insert("since", holder.since.toUTC().toString(Qt::ISODate));
+				o.insert("heartbeat", holder.heartbeat.toUTC().toString(Qt::ISODate));
+				o.insert("heartbeat_age_s", double(holder.heartbeat.secsTo(QDateTime::currentDateTimeUtc())));
+			}
+			o.insert("conflict_copies", QJsonArray::fromStringList(copies));
+			out << QJsonDocument(o).toJson(QJsonDocument::Indented);
+		} else {
+			out << "state: " << state << "\n";
+			if (holder.valid)
+				out << "held by: " << holder.user << " on " << holder.host << " (" << holder.app
+					<< ") since " << holder.since.toLocalTime().toString(Qt::ISODate)
+					<< ", heartbeat " << holder.heartbeat.secsTo(QDateTime::currentDateTimeUtc()) << " s ago\n";
+			for (const QString &c : copies) out << "conflict copy: " << c << "\n";
+		}
+		out.flush();
+		return state == QLatin1String("held") ? 1
+			 : (state == QLatin1String("orphaned") || state == QLatin1String("crashed")) ? 3 : 0;
 	}
 
 	// --import-eplan turns manufacturer EPLAN DXF data into elements of a
@@ -2030,6 +2498,14 @@ int run(const QStringList &args)
 		return queryProjects(rest.at(0), rest.mid(1), json);
 	}
 
+	// --compare-revisions opens two projects
+	if (format == "comparerevisions")
+		return compareRevisions(rest, json);
+	// --export-marking takes options with values, read before the
+	// project is opened
+	if (format == "marking")
+		return exportMarking(rest);
+
 	const QString input = rest.value(0);
 	if (input.isEmpty()) {
 		err << "Usage: qelectrotech " << flag << " <project.qet> <output>\n";
@@ -2051,6 +2527,39 @@ int run(const QStringList &args)
 	if (format == "simulate")
 		return simulateProject(project, rest.mid(1));
 
+	if (format == "revisions")
+		return listRevisions(project, json);
+	if (format == "closerevision" || format == "revisionmarks") {
+		if (!ignoreLock) {
+			const ProjectLock::Holder holder = ProjectLock::liveHolder(input);
+			if (holder.valid) {
+				err << "'" << input << "' is open by " << holder.user << " on " << holder.host
+					<< ". Not writing it; close it there or pass --ignore-lock.\n";
+				return 1;
+			}
+		}
+		if (format == "closerevision")
+			return closeRevision(project, rest, !noPdf);
+		const QString state = rest.value(1);
+		if (state != QLatin1String("on") && state != QLatin1String("off")) {
+			err << "Usage: qelectrotech --revision-marks <project> on|off\n";
+			return 2;
+		}
+		project.revisions()->setMarksShown(state == QLatin1String("on"));
+		const QETResult saved = project.write();
+		if (!saved.isOk()) {
+			err << saved.errorMessage() << "\n";
+			return 1;
+		}
+		out << "Revision marks " << state << "\n";
+		return 0;
+	}
+	// --check-project: JSON to stdout, or to an optional output file
+	if (format == "checkproject")
+		return checkProject(project, rest.value(1));
+	if (format == "fetchcommercial")
+		return fetchCommercial(project, !purchaseOffline);
+
 	// --info writes JSON to stdout, or to an optional output file.
 	if (format == "info")
 		return exportInfo(project, rest.value(1));
@@ -2069,12 +2578,28 @@ int run(const QStringList &args)
 		return exportCsv(project, format, output);
 	if (format == "bom")
 		return exportBom(project, output, includeSlaves, includeJunctions);
+	if (format == "purchase")
+		return exportPurchase(project, output, purchaseOnline, purchaseErp);
 	if (format == "wiring")
 		return exportWiring(project, output);
 	if (format == "nets")
 		return exportNets(project, output);
 	if (format == "links")
 		return exportLinks(project, output);
+	if (format == "tiaexport" || format == "tiacompare") {
+		QStringList positional;
+		QHash<QString, QString> opts;
+		for (int i = 1; i < rest.size(); ++i) {
+			const QString &a = rest.at(i);
+			if (a.startsWith("--") && i + 1 < rest.size())
+				opts.insert(a.mid(2), rest.at(++i));
+			else
+				positional << a;
+		}
+		if (format == "tiaexport")
+			return exportTiaTags(project, positional.value(0), opts);
+		return compareTiaTags(project, positional.value(0), positional.value(1), opts);
+	}
 	if (format == "devicetypes")
 		return exportDeviceTypeCheck(project, output);
 	if (format == "devicetypelist" || format == "devicetypebrief")
@@ -2098,6 +2623,11 @@ int run(const QStringList &args)
 		return setTitleBlock(project, output, rest.mid(2));
 	return exportImages(project, format, output, showTerminals,
 						svgSmallPictures);
+}
+
+int exportProjectPdf(QETProject &project, const QString &output)
+{
+	return exportPdf(project, output, false);
 }
 
 } // namespace CLIExport

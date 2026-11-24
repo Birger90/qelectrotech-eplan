@@ -20,6 +20,8 @@
 
 #include <QStringList>
 
+class QETProject;
+
 /**
 	@brief Headless command-line export.
 
@@ -49,10 +51,16 @@ namespace CLIExport {
 		  qelectrotech --export-cables  <project.qet> <output.csv>
 		  qelectrotech --export-wires   <project.qet> <output.csv>
 		  qelectrotech --export-bom     <project.qet> <output.csv> [--no-slaves] [--no-junctions]
+		  qelectrotech --export-purchase <project.qet> <output.xlsx|output.csv> [--online] [--erp]
+		  qelectrotech --fetch-commercial <project.qet> [--offline]
 		  qelectrotech --export-wiring  <project.qet> <output.csv>
+		  qelectrotech --export-marking <project.qet> <output.csv> [--format phoenix|weidmueller|wago|neutral] [--kinds wires,terminals,devices,cables] [--folios N[-M]] [--plant P] [--location L] [--short] [--one-end]
 		  qelectrotech --export-nets    <project.qet> <output.json>
 		  qelectrotech --export-links   <project.qet> <output.csv>
+		  qelectrotech --export-tia-tags  <project.qet> <tags.xlsx | tags.xml> [--tia-table NAME] [--tia-culture de-DE]
+		  qelectrotech --compare-tia-tags <project.qet> <tags.xlsx | tags.xml> [report.csv | -] [--apply output.qet]
 		  qelectrotech --check-device-types <project.qet> <output.csv>
+		  qelectrotech --check-project  <project.qet> [output.json]   (exit 3 when errors are found)
 		  qelectrotech --export-device-types <project.qet> <output.csv>
 		  qelectrotech --export-device-types-brief <project.qet> <output.csv>
 		  qelectrotech --info           <project.qet> [output.json]
@@ -65,6 +73,7 @@ namespace CLIExport {
 		  qelectrotech --portal-request 3dfindit <order number>
 		  qelectrotech --resave         <project.qet> <output.qet>
 		  qelectrotech --recover        <damaged.qetz> <output.qet>
+		  qelectrotech --lock-status    <project> [--json]   (who has it open, left-over lock, OneDrive conflict copies)
 		  qelectrotech --set-titleblock <project.qet> <output.qet> key=value...
 		  qelectrotech --query          <SQL> <project>... [--json]
 
@@ -93,6 +102,14 @@ namespace CLIExport {
 		--no-junctions: leave the junctions out of the bill of materials:
 		      terminal-type elements with no label, designation,
 		      manufacturer or manufacturer reference.
+		marking: wire, terminal, device and cable markers as a file for the
+		      marking software of Phoenix Contact (MARKING system / PROJECT
+		      complete), Weidmüller (M-Print PRO) or WAGO (Smart Script), or a
+		      neutral CSV; the columns of each are in docs/beschriftung-export.md.
+		      --kinds chooses what gets a marker (default all), --folios a
+		      folio or a range, --plant/--location a part of the structure,
+		      --short writes -K1 instead of =plant+location-K1, --one-end one
+		      marker per wire and cable instead of one per end.
 		wiring: from-to wiring list (one row per conductor) as CSV, read from
 		        the project database. Same logical list as `cables`, which
 		        reads the document XML instead; the two are meant to agree,
@@ -101,6 +118,19 @@ namespace CLIExport {
 		nets: electrical nets (connected-terminal groups) as JSON.
 		links: element cross-references (coil/contact) as CSV, with
 		       unresolved links flagged.
+		export-tia-tags: the PLC channels (IO tables of the PLC modules) as
+		      PLC tag table for Siemens TIA Portal: .xlsx in the format of
+		      the tag table editor's Import (sheets PLCTags and
+		      TagTableProperties), .xml as SimaticML for TIA Portal
+		      Openness. --tia-table names the tag table (default QET_EA),
+		      --tia-culture the language of the comments in the .xml.
+		compare-tia-tags: read a TIA tag table (.xlsx exported by TIA
+		      Portal, or SimaticML .xml) and list per channel whether
+		      address, name and comment agree, as CSV: same, name,
+		      comment, name+comment, address, missing, only_tia. With
+		      --apply the tag names become the symbolic addresses and the
+		      tag comments the function texts of the channels with the
+		      same address, saved as output.qet.
 		info: structural project summary as JSON (stdout, or a file) —
 		      per-page element / conductor counts and unconnected terminals.
 		check-elements: validate .elmt file(s) against the element schema.
@@ -136,8 +166,26 @@ namespace CLIExport {
 		      Keys: title, author, date (or date=today), plant, location,
 		      revision, version, filename; any other key becomes a custom
 		      field.  E.g. --set-titleblock in.qet out.qet revision=B date=today
+		Revisions (revision/projectrevisions.h, EPLAN's revision management):
+		  --close-revision <project> <index> [text...] [--no-pdf]
+		      close a revision: index in every title block, the row in the
+		      revision table (%{rev1_index}, %{rev1_date}, %{rev1_text},
+		      %{rev1_author}, newest first), a PDF with the changes since
+		      the last revision marked and a snapshot in
+		      <name>_Revisionen/, then the project saved in place.
+		  --revisions <project>  the revision table and what changed since
+		      the last revision.
+		  --revision-marks <project> on|off  show the marks or not (saved).
+		  --compare-revisions <older> <newer> [<output.pdf>] [--json]
+		      what changed from one state to another, one line each; with
+		      an output, a PDF of the newer with the changes marked.
+		      <older> is a project file or a revision index of <newer>.
 	*/
 	int run(const QStringList &args);
+
+		/// Write every folio of @p project to the PDF @p output, as
+		/// --export-pdf does. @return 0 on success
+	int exportProjectPdf(QETProject &project, const QString &output);
 
 }
 

@@ -80,6 +80,7 @@ EXPORT_FORMATS = {
     "svg": "--export-svg",
     "dxf": "--export-dxf",
     "bom": "--export-bom",
+    "purchase": "--export-purchase",
     "cables": "--export-cables",
     "wires": "--export-wires",
     "wiring": "--export-wiring",
@@ -1158,6 +1159,12 @@ def _run_qet(binary: str, args: list[str], timeout: int = 180,
             script_path.write_text(script, encoding="utf-8")
             args = ["--run", str(script_path), *args]
         env = _launch_env(dict(os.environ), home, os.name == "nt")
+        # The sandbox HOME hides the user's own templates (function templates,
+        # insert_template): name their folder, as qet-assistant.json gives it
+        macros = ((assistant_info() or {}).get("folders") or {}).get("macros")
+        if (isinstance(macros, str) and macros and Path(macros).is_dir()
+                and not env.get("QET_FUNCTION_TEMPLATES_DIR")):
+            env["QET_FUNCTION_TEMPLATES_DIR"] = macros
         env.update(extra_env or {})
         try:
             p = subprocess.run([str(exe), *args], env=env, timeout=timeout,
@@ -1182,7 +1189,7 @@ def _run_qet(binary: str, args: list[str], timeout: int = 180,
                 "QET_ENABLE_SCRIPTING=1 to the environment this server is "
                 "started in -- in an MCP client that is the \"env\" block of "
                 "its entry in the client configuration. Only qet_query, "
-                "qet_continuity, qet_check, qet_layout_check, qet_project_new, "
+                "qet_continuity, qet_check, qet_plan_check, qet_layout_check, qet_project_new, "
                 "qet_edit, "
                 "qet_script_api, qet_script_test, qet_script_install, "
                 "qet_script_remove and qet_recording_check need it; every "
@@ -1244,6 +1251,9 @@ def tool_export(binary: str, project: str, format: str, output: str,
         args.append("--no-slaves")
     if no_junctions:
         args.append("--no-junctions")
+    if format == "purchase":
+        # the purchase list always comes with its neutral ERP file beside it
+        args.append("--erp")
     result = _run_qet(binary, args, timeout, extra_env=extra_env)
     out = Path(output).expanduser()
     result["output"] = str(out)
@@ -1471,7 +1481,7 @@ TERMINAL_ORIENTATIONS = ("n", "s", "e", "w")
 # As used in the collection. "thumbnail" is included because it is the
 # second most common value, not because this tool can build a good one.
 LINK_TYPES = ("simple", "thumbnail", "master", "slave", "terminal",
-              "next_report", "previous_report")
+              "next_report", "previous_report", "junction")
 
 
 def _f(value, where: str) -> float:
@@ -1663,7 +1673,7 @@ def tool_element_build(output: str, names: dict, parts: list,
                              f"{', '.join(TERMINAL_ORIENTATIONS)}, got {t['orientation']!r}")
     # A master with no terminal cannot be wired, and a slave with none
     # cannot be placed on a rail -- both are silent failures at use time.
-    if link_type in ("master", "slave", "simple") and not terminals:
+    if link_type in ("master", "slave", "simple", "junction") and not terminals:
         raise ValueError(f"a {link_type} element with no terminals cannot be connected; "
                          "add terminals, or use link_type 'thumbnail' for a drawing-only element")
 
@@ -1776,6 +1786,15 @@ OPS = {
     "delete_conductor": ("deleteConductor",     [("folio", "folio"), ("element", "elmt"),
                                                  ("terminal", "term")]),
     "remove_folio":     ("removeFolio",         [("folio", "folio")]),
+    # A function template ("Motorabgang DOL", "DI-Sensor mit Kabel") with its
+    # placeholders filled from "values"; folio -1 puts it on a new folio, x/y
+    # left out keep where it was saved. Result: {ok, folio, elements, values, notes}.
+    "insert_template":  ("insertTemplate",      [("folio", "folio"), ("template", "str"),
+                                                 ("values", "obj"), ("x", "num"), ("y", "num")]),
+    # A folio (or options.elements) saved as a function template; options:
+    # category, description, parameters, tables, path. Result: the file.
+    "save_template":    ("saveTemplate",        [("folio", "folio"), ("name", "str"),
+                                                 ("options", "obj")]),
     "set_folio":        ("setFolioProperty",    [("folio", "folio"), ("property", "str"),
                                                  ("value", "str")]),
     # A cable drawn across conductors, as the cable tool draws it: every
@@ -1917,6 +1936,8 @@ OPS = {
 
 # Arguments those ops may leave out.
 OP_DEFAULTS = {
+    "insert_template": {"folio": -1, "values": {}, "x": float("nan"), "y": float("nan")},
+    "save_template": {"options": {}},
     "align_elements": {"to": ""},
     "distribute_elements": {"pitch": 0},
     "place_element": {"side": "", "gap": 40, "angle": 0},
@@ -2278,6 +2299,11 @@ def _build_script(operations: list, output: str) -> str:
                 raise ValueError(f"operation {op_index}: {key!r} must be a folio index, "
                                  f"its uuid, or a \"$name\" reference, got {value!r}")
             return _js(value)
+        if kind == "obj":
+            if not isinstance(value, dict):
+                raise ValueError(f"operation {op_index}: {key!r} must be an object, "
+                                 f"got {value!r}")
+            return _js(value)
         if kind == "bool":
             if not isinstance(value, bool):
                 raise ValueError(f"operation {op_index}: {key!r} must be true or false, "
@@ -2473,6 +2499,13 @@ def _build_script(operations: list, output: str) -> str:
                          f"JSON.stringify({{kind: 'op_note', index: {i}, note: 'no route "
                          f"around the symbols was found; the conductor keeps the default "
                          f"path'}})); }}")
+        if name == "insert_template":
+            # A map comes back either way: a refusal is ok false with its
+            # error, a placement says what it filled in and found
+            lines.append(f"  if (v{i} && v{i}.notes && v{i}.notes.length) qet.log({_js(_MARKER)} + "
+                         f"JSON.stringify({{kind: 'op_note', index: {i}, note: v{i}.notes.join(' ')}}));")
+            lines.append(f"  if (v{i} && v{i}.ok === false) {{ qet.log({_js(_MARKER)} + "
+                         f"JSON.stringify({{kind: 'op_note', index: {i}, note: v{i}.error}})); v{i} = false; }}")
         if name == "route_conductor":
             lines.append(f"  if (v{i} === 'no-route') qet.log({_js(_MARKER)} + "
                          f"JSON.stringify({{kind: 'op_note', index: {i}, note: 'no route "
@@ -3173,6 +3206,47 @@ def tool_check(binary: str, project: str, checks: list | None = None,
         answer["hint"] = result["hint"]
         answer["exit_code"] = result.get("exit_code")
     return answer
+
+
+def tool_plan_check(binary: str, project: str, folio: int = -1,
+                    elements_dir: str | None = None, timeout: int = 180) -> dict:
+    """Run QElectroTech's own check run (qet.checkProject()) in one launch.
+
+    Unlike qet_check, which asks the project database a handful of SQL
+    questions, this is the check run the GUI's Check panel shows:
+    the live object graph -- links, terminal strips, cables, PLC tables,
+    fluid ports, device types, cabinet layouts -- with EPLAN's message
+    numbers. folio is counted from 0, -1 for the whole project.
+    """
+    proj = Path(project).expanduser()
+    if not proj.is_file():
+        raise ValueError(f"no such project: {proj}")
+    script = ("var r = (typeof qet.checkProject === 'function') ? qet.checkProject(%d) : null;\n"
+              "qet.log(%s + JSON.stringify({kind: 'plancheck', findings: r}));\n"
+              % (int(folio), json.dumps(_MARKER)))
+    result = _run_qet(binary, [str(proj)], timeout=timeout,
+                      elements_dir=elements_dir, script=script, tail=2_000_000)
+    streams = result.get("stdout", "") + "\n" + result.get("stderr", "")
+    findings = None
+    for line in streams.splitlines():
+        idx = line.find(_MARKER)
+        if idx < 0:
+            continue
+        try:
+            rec = json.loads(line[idx + len(_MARKER):])
+        except json.JSONDecodeError:
+            continue
+        if rec.get("kind") == "plancheck":
+            findings = rec.get("findings")
+    if findings is None:
+        answer = {"ok": False, "error": "this QElectroTech has no qet.checkProject() "
+                  "(needs the fork's Check panel) or the run failed"}
+        if result.get("hint"):
+            answer["hint"] = result["hint"]
+        return answer
+    summary = {k: sum(f.get("severity") == k for f in findings)
+               for k in ("error", "warning", "info")}
+    return {"ok": summary["error"] == 0, "summary": summary, "findings": findings}
 
 
 # --------------------------------------------------------------------------
@@ -5593,7 +5667,7 @@ TOOLS = [
                 "project": {"type": "string"},
                 "events": {"type": "array", "items": {"type": "string"},
                            "description": "\"0.2 -SF1 an\", \"0.4 -SF1 aus\" (push button), "
-                                          "\"0.5 -QM1 links an\" (valve by hand)"},
+                                          "\"0.5 -QM1 links an\" (valve by hand), \"1.0 -QM1 reparieren\" (repairs the fault set in the element information sim_fault, R15)"},
                 "duration": {"type": "number", "default": 2.0, "description": "simulated seconds"},
                 "pressure": {"type": "number", "description": "air supply in bar (default 6)"},
                 "csv": {"type": "string", "description": "write the strokes and pressures over time to this file"},
@@ -6156,6 +6230,36 @@ TOOLS = [
                                         a.get("timeout", 180)),
     },
     {
+        "name": "qet_plan_check",
+        "description": "Run the Check panel (Project > Check project, qet.checkProject()) "
+                       "headless: every check the GUI panel lists, with severity "
+                       "(error/warning/info), rule (check), category, EPLAN message "
+                       "number, folio (from 0), label, text and the uuids of the items "
+                       "concerned -- duplicate labels and wire numbers, potential types, "
+                       "open wire ends, symbols with no wire, device types, wires per "
+                       "terminal, terminal names, open terminals and fluid ports, "
+                       "devices without a part or label, terminals without a strip, "
+                       "contacts without their coil, folio reports without a partner, "
+                       "cables without a target, PLC channels without an address, "
+                       "cabinet layout. One "
+                       "QElectroTech launch; read-only. Complements qet_check (SQL "
+                       "heuristics over the project database).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "binary": {"type": "string", "description": "the qelectrotech executable; leave it out to use the one this server is configured with. Any other is refused unless its configuration allows it"},
+                "project": {"type": "string"},
+                "folio": {"type": "integer", "default": -1,
+                          "description": "one folio counted from 0, -1 for the whole project"},
+                "elements_dir": {"type": "string"},
+                "timeout": {"type": "integer", "default": 180},
+            },
+            "required": ["project"],
+        },
+        "handler": lambda a: tool_plan_check(a["binary"], a["project"], a.get("folio", -1),
+                                             a.get("elements_dir"), a.get("timeout", 180)),
+    },
+    {
         "name": "qet_layout_check",
         "description": "Score how well a drawing reads, 0-100, and list what spoils it: "
                        "wires that jog because two symbols are a few pixels out of line "
@@ -6242,7 +6346,11 @@ TOOLS = [
                 "link_type": {"type": "string", "enum": list(LINK_TYPES),
                               "description": "simple for an ordinary symbol, master/slave "
                                              "for a cross-referenced pair, thumbnail for "
-                                             "a drawing with no terminals"},
+                                             "a drawing with no terminals, junction for a "
+                                             "wire branch point (never numbered, not in the "
+                                             "parts list; its roles are the informations "
+                                             "junction_source and junction_target_1..3, each "
+                                             "a terminal uuid)"},
                 "informations": {"type": "object",
                                  "description": "kindInformation entries, e.g. {\"type\": \"coil\"}"},
                 "uuid": {"type": "string", "description": "reuse an existing uuid; "
@@ -6708,6 +6816,7 @@ _DATA_PATHS = {
     "qet_query":          {"read": ("project",)},
     "qet_continuity":     {"read": ("project",)},
     "qet_check":          {"read": ("project",)},
+    "qet_plan_check":     {"read": ("project",)},
     "qet_layout_check":   {"read": ("project",)},
     "qet_project_new":    {"write": ("output",)},
     # QElectroTech writes this file, but where is the client's choice:
@@ -6731,7 +6840,7 @@ _DATA_PATHS = {
 
 # Tools that launch QElectroTech, and so take "binary" and "elements_dir".
 _LAUNCHES_QET = {"qet_simulate", "qet_simulate_reference", "qet_fluidsim_import", "qet_export", "qet_edit", "qet_query", "qet_continuity",
-                 "qet_check", "qet_layout_check", "qet_project_new", "qet_script_api",
+                 "qet_check", "qet_plan_check", "qet_layout_check", "qet_project_new", "qet_script_api",
                  "qet_script_test", "qet_recording_check", "qet_live_layout_check",
                  "qet_dataportal_import"}
 

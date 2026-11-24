@@ -30,16 +30,66 @@
 > **Data like EPLAN instead of typed text**
 > - PLC: a card (PLC master) keeps its I/O table (address, function text, comment, terminals); each channel is bound
 >   to its row (`group_index`) and shows those values through its fields — edit the table, the channels follow.
+> - Siemens TIA Portal: *Project > PLC tags and TIA Portal…* lists every channel as it goes to TIA (address, name,
+>   data type, comment) and writes it as PLC tag table — `.xlsx` in the format of the tag table editor's Import
+>   (sheets PLCTags/TagTableProperties, as the STEP 7 help describes it) or SimaticML `.xml` for Openness. Read back
+>   a table exported from TIA Portal and the window marks what differs (name, comment, address, missing, only in
+>   TIA); one click takes the TIA names and comments into the plan (one undo step). EPLAN addresses (E 50.0, PEW256)
+>   become %I50.0/%IW256; channels named only DI0/DQ3 are counted from the module start (element information
+>   `plc_start_address`/`plc_start_address_2`, else the next free bytes). Also `--export-tia-tags`,
+>   `--compare-tia-tags … [--apply out.qet]` and `qet.exportTiaTags/compareTiaTags/applyTiaTags` in scripts.
 > - Contacts: a placed coil can carry its own contact groups (11/12/14, 21/22/24 …), like the function template of
 >   an EPLAN article; the contacts take their terminal names from it and the contact mirror shows them.
 > - Cross reference formula `%=M`: the plant is shown only when it differs from the sheet's own (`/42/1`,
 >   `=DC/38/2`), as in EPLAN.
+>
+> **One Check panel, like EPLAN's check run**
+> - *Project > Check project* (also a toolbar button) runs every check at once and lists the findings in one panel,
+>   grouped by check, each with its severity (error, warning, note), folio and cell; the tooltip gives EPLAN's
+>   message number. A filter shows all findings, errors and warnings, or errors only; a double-click opens the folio
+>   and selects the device or wire. Checks: duplicate labels and wire numbers, potential types, open wire ends,
+>   symbols with no wire, device types, wires per terminal, terminal names, and the fork's rules: contacts, coils and
+>   folio reports without their partner, PLC channels without an address, cables without a target, terminals without
+>   a terminal strip, devices without a label or part, unconnected terminals and fluid ports, the cabinet layout.
+> - Script API `qet.checkProject(folio = -1)`, CLI `--check-project <project.qet> [report.json]` (the same rules;
+>   exit code 3 when errors are found).
 >
 > **Sheets and title block**
 > - Light grey stamps over the sheet like an EPLAN form: title block variables `watermark` (diagonal, e.g. the print
 >   date) and `watermark-side` (upright at the right edge); empty = off, per folio or as project default.
 > - New title block variables `%{printdate}` and `%{saveddate-de}` (DD.MM.YYYY).
 > - Script API: `outsideSheet(folio)` lists what lies outside the sheet.
+>
+> **Revisions like EPLAN**
+> - Menu Project > Revision > *Close revision…*: index (proposed A, B, … or 01, 02, …) and a short text. The index
+>   then stands in every title block (`%indexrev`), the revision table in `%{rev1_index}`, `%{rev1_date}`,
+>   `%{rev1_text}`, `%{rev1_author}` (rev1 = newest) – the title block *revision* shows the last three. Beside the
+>   project, `<name>_Revisionen/` gets the snapshot `<name>_Rev_<index>.qet` and a PDF with the changes since the
+>   previous revision marked; the project is saved.
+> - *Mark changes*: whatever changed since the last revision gets a red revision cloud with a triangle (symbols,
+>   texts, shapes), wires a broad stroke along their path; removed items dashed and crossed, a new sheet a note
+>   above the title block. On screen, in print and in PDF; switched on from the first revision.
+> - *Compare revisions…*: two states (current, a revision, any project file) as a list (double click jumps there)
+>   and as a PDF with the changes marked. Matched by uuid, else like EPLAN's "alternative identification" by sheet,
+>   type and device tag or the terminals joined – plans generated again can be compared too.
+> - CLI: `--close-revision <project> <index> [text] [--no-pdf]`, `--revisions <project>`,
+>   `--revision-marks <project> on|off`, `--compare-revisions <older|index> <newer> [out.pdf] [--json]`.
+>   Script API: `closeRevision`, `revisions`, `revisionChanges`, `nextRevisionIndex`, `setRevisionMarks`,
+>   `exportRevisionPdf`.
+
+> **Function templates** (side panel *Display > Function templates*, like EPLAN macros with value sets)
+> - Reusable circuit parts with placeholders: pick one in the side panel (with preview), enter a few values (device
+>   tag, power, PLC address), click to place it or put it on a new folio -- linked, with article data, terminals and
+>   cable, one undo step. Placing it again counts tags, terminals and cables on to the next free ones.
+> - Placeholders `{BMK}`, `{P_kW}`, `{ADR}`, `{XN+1}` in labels, texts, element information, wire numbers and cable
+>   types. A choice table picks the article by power (next bigger row: 3 kW takes the 4 kW breaker and contactor).
+>   A PLC channel is linked to the PLC module of the project that offers its address.
+> - Own templates from a selection: context menu *Save as function template…* (name, category, placeholders, a
+>   pasted Excel table). Stored as `.qetmak` in the user's template folder (with `--data-dir`: `Daten\macros\Funktionsvorlagen`);
+>   six examples without customer data in `funktionsvorlagen/` (regenerated by
+>   `tools/funktionsvorlagen/beispiele_erzeugen.py`).
+> - Script API `listTemplates()`, `templateInfo()`, `insertTemplate(folio, template, values, x, y)`,
+>   `saveTemplate(folio, name, options)`; MCP: `qet_edit` operations `insert_template` and `save_template`.
 >
 > **Cables**
 > - Menu Project > *Cable list (choose types)…*: every cable of the project with type, cores, colours, plant,
@@ -50,6 +100,35 @@
 > - `tools/kabelkatalog/kabelkatalog_eplan.py` builds such catalogues from the free EPLAN article data of the
 >   manufacturers (e.g. igus chainflex, LAPP): cores with colours, cross section, outer diameter, voltage, article
 >   number.
+>
+> **Markers**
+> - Menu Project > *Export markers…*: wire, terminal, device and cable markers as a file for Phoenix Contact
+>   MARKING system / PROJECT complete, Weidmüller M-Print PRO or WAGO Smart Script, or a neutral CSV; choose the
+>   kinds, folios and plant/location. Also `--export-marking` and `qet.exportMarking()`/`qet.markings()`. No maker
+>   publishes a fixed import layout, so each file is a CSV cut to what that import is documented to read; columns
+>   and sources in [docs/beschriftung-export.md](docs/beschriftung-export.md).
+
+> **Purchase list for purchasing and ERP**
+> - Project menu > *Export purchase list…*: one file dialog, nothing else. It writes an Excel workbook (`.xlsx`, or
+>   CSV) with one line per article, grouped by supplier (else manufacturer), a sum per group and a grand total, with
+>   quantity, packaging unit, order quantity (rounded up to it), price, price unit, total, delivery time, EAN/GTIN,
+>   lifecycle and price source. Devices without an article come last, marked "Article open". Prices can be filled in
+>   in Excel: order quantity, totals and sums are formulas.
+> - Beside it `<name>_ERP.csv`, a neutral import format: one record per article, fixed English column names
+>   (`line;supplier;manufacturer;order_number;description;references;quantity;order_quantity;unit;packaging_unit;
+>   unit_price;price_unit;currency;total_price;delivery_time;gtin;lifecycle;price_source;article_open`), `;`
+>   separator, `.` decimals, UTF-8 without BOM, no sum lines.
+> - Where the values come from (later overrides earlier): price and supplier on the element → article data from the
+>   EPLAN Data Portal and the EDZ packages in `herstellerdaten` (cache `einkauf/artikeldaten.csv`, 30 days) → the
+>   company price list `einkauf/preisliste.csv` in the data folder (`Bestellnummer;Preis;Lieferzeit;Lieferant`,
+>   optionally `Preiseinheit;VPE;EAN;Hersteller;Währung`; its header is written on the first export).
+> - Checked honestly: without a token the Data Portal gives EAN/GTIN and lifecycle, but no price, delivery time or
+>   packaging unit; the commercial data CSV with a token holds master data only. EDZ packages carry packaging unit and
+>   quantity unit, their price fields are 0. Prices and delivery times therefore come from the price list; anything
+>   missing stays empty.
+> - CLI: `--export-purchase <project> <list.xlsx|list.csv> [--online] [--erp]`, `--fetch-commercial <project>
+>   [--offline]`. Script API: `purchaseList()`, `exportPurchaseList(file, '{"online":true,"erp":true}')`,
+>   `fetchCommercialData()`, `purchasePriceListPath()`.
 >
 > **Cabinet layout and panel manufacturing** (menu *Cabinet layout*, the EPLAN Pro Panel 2D workflow)
 > - *Build cabinet...*: the whole layout in six guided steps with a tick each -- enclosure with mounting plate
@@ -100,6 +179,14 @@
 > - Manufacturer portals (Siemens, Rittal, 3Dfindit, SEW, WAGO, Keyence): accounts in the system key store, missing
 >   parts fetched automatically (`--fetch-parts`). Runs on Windows and macOS (workflow `macos-build.yml`).
 >
+> **Shared storage (SharePoint, OneDrive, network drive)**
+> - Project lock: opening a project a colleague has open says "open by … since …" and offers *Open read-only*,
+>   *Edit anyway* (with a warning) or *Cancel*. A lock without a heartbeat for 10 minutes (crash, PC off) is offered
+>   to take over; the lock of a crash on one's own PC is taken by itself. Headless: `--lock-status <project>`.
+> - Read-only prevents every save to the file (also autosave, scripts and MCP); changes go to another file with
+>   *Save As*.
+> - OneDrive/SharePoint conflict copies ("project-<PC name>.qetz") beside the project are reported on opening.
+>
 > **Pneumatics, hydraulics and simulation** -- unlike the upstream note further down, this fork simulates
 > - The 437 pneumatic and hydraulic symbols of the common collection carry simulation data (graphics unchanged):
 >   named ports with medium, function, positions and flow paths of every directional valve, actuation, cylinder data
@@ -108,7 +195,18 @@
 > - View > *Simulation*: pneumatics (ISO 6358 flow), hydraulics (orifices, pumps, relief, accumulators with gas
 >   law), cylinders with force balance and friction, the electric control (buttons, limit and pressure switches,
 >   relays, timers, counters, coils), PLC programs in Structured Text (IEC 61131-3 subset with step sequences) and
->   GRAFCET charts after IEC 60848 drawn with the GRAFCET symbols (redrawn on the grid, `bauteile/grafcet`).
+>   GRAFCET charts after IEC 60848 drawn with the GRAFCET symbols (redrawn on the grid, `bauteile/grafcet`), with
+>   partial grafcets, enclosing steps, macro steps and forcing orders. Faults after FluidSIM (stuck spool, open coil, leak,
+>   clogged part, check valve stuck, switch that never or always switches) are set per part (`sim_fault`) and repaired by an event. Stage 1 of analog electrics: R, C, L, sources
+>   and diodes solved by Kirchhoff's laws (`sim_role` circuit); stage 2 couples it to the switching logic: contacts switch
+>   in the circuit, relay and valve coils (R, L) pick up by their current, PLC analog inputs and outputs (AI, AQ);
+>   stage 3 adds bipolar transistors (Ebers-Moll) and operational amplifiers,
+>   stage 4 fuses, circuit breakers (B/C/D) and motor protection (class 10),
+>   stage 5 DC motors and squirrel-cage induction motors on a three-phase supply.
+>   Special drives (R12): fluidic muscle Festo DMSP from the catalogue force/displacement graphs and hydraulic pressure
+>   intensifier (bypass, pump piston, pilot check valve) from data sheet values.
+>   FluidSIM parts added in 1.47.0: proportional valve MPYE (Festo flow characteristic), pneumatic timers, delay valves,
+>   preset counter, two-hand control block, vacuum efficiency valve; 1.48.0: step modules TAA/TAB and muscle with guide cylinders.
 >   Lines under pressure turn blue/red, live wires red, active steps get a token; buttons and valves are operated in
 >   the window or by clicking the symbol; a live list shows the PLC and GRAFCET variables.
 > - Headless: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv out.csv --png folder`.
@@ -118,7 +216,9 @@
 >   model stop the run before it starts. `--signals/--measure` give pressures, directed flows, cylinder travel,
 >   speed and force, motor and swivel angles and suction cup holding force with SI units. Hydraulic motors, vacuum
 >   generators, suction cups, vacuum switches, semi-rotary drives, pipes with length and bore, quick couplings
->   (coupled/uncoupled), clogged filters, 4/3 proportional valves, counterbalance and sequence valves, and analog
+>   (coupled/uncoupled), clogged filters, 4/3 proportional valves, counterbalance and sequence valves, pressure
+>   compensators, shock and anti-cavitation blocks, the pneumatic sequence valve, cylinders with mounting angle,
+>   force profile, spring characteristic and FluidSIM friction, compressed air motors, multi-position cylinders, load sensing power units, 6/3 hand lever valves, load units, steering units, pilot joysticks, pilot operated double check valves, load sensing control blocks, priority valves, and analog
 >   signals and controllers (function generator, setpoint card, PID and state controller, PT2, integrator,
 >   comparator, proportional amplifiers, position controlled proportional solenoids, pressure, flow and position
 >   sensors, proportional relief valve) with closed pressure and position loops are simulated too. Roadmap status: [tools/simulation/ROADMAP_STAND.md](tools/simulation/ROADMAP_STAND.md).

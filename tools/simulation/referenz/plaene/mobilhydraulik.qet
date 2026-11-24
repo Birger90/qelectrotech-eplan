@@ -1,0 +1,421 @@
+<project title="Mobilhydraulik (R13)" uuid="{1d977504-c0db-50d9-98e9-fea2ff0f6336}" version="0.200.1">
+    <properties/>
+    <usage enabled="true" time_spent="0"/>
+    <symbol_texts upright="true"/>
+    <newdiagrams>
+        <border cols="17" colsize="60" displaycols="true" displayrows="true" rows="8" rowsize="80"/>
+        <inset author="" auto_page_num="" date="null" displayAt="bottom" filename="" folio="" indexrev="" locmach="" plant="" title="" version=""/>
+        <conductors bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <report label="%f-%l%c"/>
+        <xrefs>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="cable" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="coil" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="commutator" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="plc" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="protection" xrefpos="AlignBottom"/>
+        </xrefs>
+        <conductors_autonums auto_break_conductors="false" current_autonum="" freeze_new_conductors="false"/>
+        <folio_autonums/>
+        <element_autonums current_autonum="" freeze_new_elements="false"/>
+        <guides/>
+    </newdiagrams>
+    <diagram author="" auto_page_num="" cols="17" colsize="60" date="null" displayAt="bottom" displaycols="true" displayrows="true" filename="" folio="" freezeNewConductor="false" freezeNewElement="false" height="660" indexrev="" locmach="" order="1" plant="" rows="8" rowsize="80" title="" uuid="{8741048c-1e0f-42d4-a733-a4a871b467b4}" version="0.200.1-dev">
+        <defaultconductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <elements>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/belastungseinheit.elmt" uuid="{54b7d1bf-08a5-4899-a57a-01934156a536}" x="150" y="130" z="10">
+                <terminals>
+                    <terminal id="0" orientation="0" x="-60" y="-26"/>
+                    <terminal id="1" orientation="0" x="-20" y="-26"/>
+                    <terminal id="2" orientation="0" x="20" y="-26"/>
+                    <terminal id="3" orientation="0" x="60" y="-26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-MM1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{1e6a0a3f-4432-425e-a423-fa7f753fd567}" x="0" y="-45">
+                        <text>-MM1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="QM" type="embed://import/90_signal/handhebel63.elmt" uuid="{d9f03fbf-9e71-4cee-9e59-6e21d73a1993}" x="150" y="330" z="10">
+                <terminals>
+                    <terminal id="4" orientation="0" x="-40" y="-26"/>
+                    <terminal id="5" orientation="0" x="0" y="-26"/>
+                    <terminal id="6" orientation="0" x="40" y="-26"/>
+                    <terminal id="7" orientation="2" x="-40" y="26"/>
+                    <terminal id="8" orientation="2" x="0" y="26"/>
+                    <terminal id="9" orientation="2" x="40" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-QM1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{a63a8d2b-f55c-42ea-bf85-9ae76915996d}" x="0" y="-45">
+                        <text>-QM1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GZ" type="embed://import/90_signal/ls_aggregat_p1zu.elmt" uuid="{6b3c4e1c-9267-469f-a4b8-0515c31645a0}" x="150" y="520" z="10">
+                <terminals>
+                    <terminal id="10" orientation="2" x="-40" y="26"/>
+                    <terminal id="11" orientation="2" x="0" y="26"/>
+                    <terminal id="12" orientation="2" x="40" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-GZ1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{d18a9378-aa64-4114-a4d6-b8aeaaaaca92}" x="0" y="-45">
+                        <text>-GZ1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="RZ" type="embed://import/90_signal/drossel_rt1.elmt" uuid="{0d0a8037-479b-48c8-bb17-02bb17e4a11c}" x="560" y="330" z="10">
+                <terminals>
+                    <terminal id="13" orientation="2" x="-20" y="26"/>
+                    <terminal id="14" orientation="2" x="20" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-RZ1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{25d1bc71-3763-432c-96cd-c49aeeeecc04}" x="0" y="-45">
+                        <text>-RZ1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GZ" type="embed://import/90_signal/ls_aggregat_p2zu.elmt" uuid="{c29e4534-318b-4557-93be-797a7a470224}" x="600" y="520" z="10">
+                <terminals>
+                    <terminal id="15" orientation="2" x="-40" y="26"/>
+                    <terminal id="16" orientation="2" x="0" y="26"/>
+                    <terminal id="17" orientation="2" x="40" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-GZ2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{52ddff75-adf7-47ec-8d1d-48ad8625c59d}" x="0" y="-45">
+                        <text>-GZ2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="RZ" type="embed://import/90_signal/drossel_last.elmt" uuid="{bd1f1be1-2efa-4282-9dfa-b08b81637cfc}" x="760" y="330" z="10">
+                <terminals>
+                    <terminal id="18" orientation="2" x="-20" y="26"/>
+                    <terminal id="19" orientation="2" x="20" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-RZ2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{f9f9877e-01ef-405f-a057-6d701e296dd2}" x="0" y="-45">
+                        <text>-RZ2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+        </elements>
+        <conductors>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{54b7d1bf-08a5-4899-a57a-01934156a536}" element1_label="-MM1" element1_name="Belastungseinheit (test symbol)" element2="{d9f03fbf-9e71-4cee-9e59-6e21d73a1993}" element2_label="-QM1" element2_name="6/3-Handhebelventil (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{9bce5541-29b1-5c80-8fe1-990b37a28584}" terminal2="{72206303-7b4d-5fd4-a14f-e4f62964dc84}" terminalname1="A1.1" terminalname2="B" text_color="#000000" type="multi" uuid="{a0b38119-9afc-46eb-8a8b-1d5d006c95c7}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{54b7d1bf-08a5-4899-a57a-01934156a536}" element1_label="-MM1" element1_name="Belastungseinheit (test symbol)" element2="{d9f03fbf-9e71-4cee-9e59-6e21d73a1993}" element2_label="-QM1" element2_name="6/3-Handhebelventil (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{9e1e711f-c202-568c-bf01-3e64f54c7a6f}" terminal2="{ef15c305-4ba3-518b-b24b-ee8eaa63c688}" terminalname1="A1.2" terminalname2="A" text_color="#000000" type="multi" uuid="{31e17582-1cd2-495c-bfea-d076548f7760}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{d9f03fbf-9e71-4cee-9e59-6e21d73a1993}" element1_label="-QM1" element1_name="6/3-Handhebelventil (test symbol)" element2="{6b3c4e1c-9267-469f-a4b8-0515c31645a0}" element2_label="-GZ1" element2_name="LS-Aggregat (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{b3996f1a-ff04-50ce-99c6-73b86139d041}" terminal2="{644acc81-a57a-55f8-88dc-12e9f8a1a3ae}" terminalname1="P2" terminalname2="P2" text_color="#000000" type="multi" uuid="{b0174ff6-1ce7-447f-b136-5c80c3780349}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{0d0a8037-479b-48c8-bb17-02bb17e4a11c}" element1_label="-RZ1" element1_name="Drossel (test symbol)" element2="{c29e4534-318b-4557-93be-797a7a470224}" element2_label="-GZ2" element2_name="LS-Aggregat (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{eb09ea39-6ce4-5336-a307-5de99fac0d96}" terminal2="{e60fca43-c9a3-525b-af59-2a26dffa41c0}" terminalname1="1" terminalname2="P1" text_color="#000000" type="multi" uuid="{d26ea9f5-cbbd-4207-a335-5a16b29f7fd0}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{0d0a8037-479b-48c8-bb17-02bb17e4a11c}" element1_label="-RZ1" element1_name="Drossel (test symbol)" element2="{bd1f1be1-2efa-4282-9dfa-b08b81637cfc}" element2_label="-RZ2" element2_name="Lastdrossel (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{af227d9d-eb58-5c6d-b36b-6310206d5306}" terminal2="{ef329976-fd10-55bb-8c8a-dfdde5417a22}" terminalname1="2" terminalname2="1" text_color="#000000" type="multi" uuid="{853cdd7f-13bd-4d0f-a66b-8e36a75c3cec}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{c29e4534-318b-4557-93be-797a7a470224}" element1_label="-GZ2" element1_name="LS-Aggregat (test symbol)" element2="{bd1f1be1-2efa-4282-9dfa-b08b81637cfc}" element2_label="-RZ2" element2_name="Lastdrossel (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{b70bb4d9-3525-5acd-b865-ac797d72965b}" terminal2="{ef329976-fd10-55bb-8c8a-dfdde5417a22}" terminalname1="LS" terminalname2="1" text_color="#000000" type="multi" uuid="{c44cb199-fd97-442f-933c-134fb07ea2b8}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+        </conductors>
+    </diagram>
+    <collection>
+        <category name="import">
+            <names>
+                <name lang="ca">Elements importats</name>
+                <name lang="cs">Zavedené prvky</name>
+                <name lang="da">Importerede elementer</name>
+                <name lang="de">Importierte Elemente</name>
+                <name lang="el">Εισηγμένα στοιχεία</name>
+                <name lang="en">Imported elements</name>
+                <name lang="es">Elementos importados</name>
+                <name lang="fr">Éléments importés</name>
+                <name lang="hr">Uvezeni elementi</name>
+                <name lang="it">Elementi importati</name>
+                <name lang="ja">インバートされた要素</name>
+                <name lang="ko">전기 심볼 요소</name>
+                <name lang="ko_KR">전기 심볼 요소</name>
+                <name lang="lv">Importētie elementi</name>
+                <name lang="nl">Elementen geïmporteerd</name>
+                <name lang="nl_BE">Elementen geïmporteerd</name>
+                <name lang="pl">Elementy importowane</name>
+                <name lang="pt">Elementos importados</name>
+                <name lang="pt_BR">Elementos importados</name>
+                <name lang="ro">Elemente importate</name>
+                <name lang="ru">Импортированные элементы</name>
+                <name lang="sk">Importované prvky</name>
+                <name lang="sl">Uvoženi elementi</name>
+                <name lang="sv">Importerade element</name>
+                <name lang="tr">İthal öğeler</name>
+                <name lang="uk">Імпортовані елементи</name>
+                <name lang="zh">导入元件</name>
+            </names>
+        <category name="90_signal">
+                <element name="ls_aggregat_p1zu.elmt">
+                    <definition height="100" hotspot_x="90" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="180">
+                        <uuid uuid="{810652f0-30c4-584a-a9fc-8b326736a5ad}"/>
+                        <names>
+                            <name lang="de">LS-Aggregat (Prüfsymbol)</name>
+                            <name lang="en">LS-Aggregat (test symbol)</name>
+                        </names>
+                        <fluid function="supply.load_sensing_pump_unit" kind="other" prefix="GZ">
+                            <parameter name="rpm" unit="1/min" value="910"/>
+                            <parameter name="p0_prvLS" unit="MPa" value="5"/>
+                            <parameter name="p0_prvFixed" unit="MPa" value="5"/>
+                            <parameter name="displacementVP" unit="cm3" value="5.6044"/>
+                            <parameter name="displacementFP" unit="cm3" value="4.5055"/>
+                            <parameter name="p0" unit="MPa" value="1.17"/>
+                            <parameter name="GL_VP" unit="l/(min.bar)" value="0.028333"/>
+                            <parameter name="GL_FP" unit="l/(min.bar)" value="0.003333"/>
+                            <parameter name="dpEnd" value="0.8"/>
+                            <parameter name="rT_LS" value="2400"/>
+                            <parameter name="rT_prvFixed" value="0.08"/>
+                            <parameter name="dpEnd_prvFixed" value="35"/>
+                            <parameter name="rT_prvLS" value="0.08"/>
+                            <parameter name="dpEnd_prvLS" value="35"/>
+                            <parameter name="T_PT1" unit="s" value="0.02"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R13</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="140" x="-70" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="LS-Aggregat" x="-66" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{dfdda949-b289-54bd-9b14-9e2ae71aea4f}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-40" x2="-40" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="LS" x="-38" y="28"/>
+                            <terminal medium="hydraulic" name="LS" orientation="s" type="Generic" uuid="{5ce5f692-0b47-57e7-b903-79edbd7186e5}" x="-40" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="P1" x="2" y="28"/>
+                            <terminal medium="hydraulic" name="P1" orientation="s" port_end="plug" type="Generic" uuid="{f455744a-6460-5412-aa22-ba8ecfa6a661}" x="0" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="40" x2="40" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="P2" x="42" y="28"/>
+                            <terminal medium="hydraulic" name="P2" orientation="s" type="Generic" uuid="{644acc81-a57a-55f8-88dc-12e9f8a1a3ae}" x="40" y="30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="handhebel63.elmt">
+                    <definition height="100" hotspot_x="90" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="180">
+                        <uuid uuid="{71f198d7-4ccb-510e-a975-c78e8968349f}"/>
+                        <names>
+                            <name lang="de">6/3-Handhebelventil (Prüfsymbol)</name>
+                            <name lang="en">6/3-Handhebelventil (test symbol)</name>
+                        </names>
+                        <fluid function="proportional.directional_valve63_with_hand_lever" kind="other" prefix="QM">
+                            <parameter name="xStep" unit="%" value="100"/>
+                            <parameter name="rT_P1_T1" unit="bar.min2/l2" value="0.045"/>
+                            <parameter name="rT_P2_AB" unit="bar.min2/l2" value="0.051"/>
+                            <parameter name="rT_T2_AB" unit="bar.min2/l2" value="0.0362"/>
+                            <parameter name="GLeak" unit="l/(min.bar)" value="5E-06"/>
+                            <parameter name="rT_CV" unit="bar.min2/l2" value="0.01"/>
+                            <parameter name="T_2" unit="s" value="0.1"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R13</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="140" x="-70" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="6/3-Handhebelventil" x="-66" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{c2485292-11c8-5ced-a09e-047a55107c1c}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-40" x2="-40" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="P2" x="-38" y="28"/>
+                            <terminal medium="hydraulic" name="P2" orientation="s" type="Generic" uuid="{b3996f1a-ff04-50ce-99c6-73b86139d041}" x="-40" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="P1" x="2" y="28"/>
+                            <terminal medium="hydraulic" name="P1" orientation="s" type="Generic" uuid="{5d7ef838-6f99-5378-b3c5-185734f14815}" x="0" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="40" x2="40" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="T2" x="42" y="28"/>
+                            <terminal medium="hydraulic" name="T2" orientation="s" type="Generic" uuid="{4fac1311-5a01-5864-ac1d-af3080d03abf}" x="40" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-40" x2="-40" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="A" x="-38" y="-21"/>
+                            <terminal medium="hydraulic" name="A" orientation="n" type="Generic" uuid="{ef15c305-4ba3-518b-b24b-ee8eaa63c688}" x="-40" y="-30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="T1" x="2" y="-21"/>
+                            <terminal medium="hydraulic" name="T1" orientation="n" type="Generic" uuid="{af4035da-aec6-5889-bab3-2346a3c0e373}" x="0" y="-30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="40" x2="40" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="B" x="42" y="-21"/>
+                            <terminal medium="hydraulic" name="B" orientation="n" type="Generic" uuid="{72206303-7b4d-5fd4-a14f-e4f62964dc84}" x="40" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="belastungseinheit.elmt">
+                    <definition height="100" hotspot_x="110" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="220">
+                        <uuid uuid="{20fdbfa4-ed07-599e-bebe-e0f9cf62fc8e}"/>
+                        <names>
+                            <name lang="de">Belastungseinheit (Prüfsymbol)</name>
+                            <name lang="en">Belastungseinheit (test symbol)</name>
+                        </names>
+                        <fluid function="actuator.loading_unit_2" kind="other" prefix="MM">
+                            <parameter name="d_piston" unit="mm" value="16"/>
+                            <parameter name="d_rod" unit="mm" value="10"/>
+                            <parameter name="xStart" unit="mm" value="0"/>
+                            <parameter name="xMax" unit="mm" value="200"/>
+                            <parameter name="alpha" unit="deg" value="0"/>
+                            <parameter name="m" unit="kg" value="0.6"/>
+                            <parameter name="v_M" unit="m/s" value="0.01"/>
+                            <parameter name="F_V" unit="N.s/m" value="215"/>
+                            <parameter name="F_M" unit="N" value="55"/>
+                            <parameter name="F_B" unit="N" value="65"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R13</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="180" x="-90" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Belastungseinheit" x="-86" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{34f71ed1-8c46-5ffc-b698-ffa88f9e5624}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-60" x2="-60" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="A1.1" x="-58" y="-21"/>
+                            <terminal medium="hydraulic" name="A1.1" orientation="n" type="Generic" uuid="{9bce5541-29b1-5c80-8fe1-990b37a28584}" x="-60" y="-30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20" x2="-20" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="A1.2" x="-18" y="-21"/>
+                            <terminal medium="hydraulic" name="A1.2" orientation="n" type="Generic" uuid="{9e1e711f-c202-568c-bf01-3e64f54c7a6f}" x="-20" y="-30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="20" x2="20" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="A2.1" x="22" y="-21"/>
+                            <terminal medium="hydraulic" name="A2.1" orientation="n" type="Generic" uuid="{9dc114b7-76dc-5845-8a69-f88c02cb42c9}" x="20" y="-30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="60" x2="60" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="A2.2" x="62" y="-21"/>
+                            <terminal medium="hydraulic" name="A2.2" orientation="n" type="Generic" uuid="{2c4c4891-4f55-545a-881c-3611a9566c08}" x="60" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="ls_aggregat_p2zu.elmt">
+                    <definition height="100" hotspot_x="90" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="180">
+                        <uuid uuid="{e72071f8-d8ef-548f-b61b-2e939b4d6eb2}"/>
+                        <names>
+                            <name lang="de">LS-Aggregat (Prüfsymbol)</name>
+                            <name lang="en">LS-Aggregat (test symbol)</name>
+                        </names>
+                        <fluid function="supply.load_sensing_pump_unit" kind="other" prefix="GZ">
+                            <parameter name="rpm" unit="1/min" value="910"/>
+                            <parameter name="p0_prvLS" unit="MPa" value="5"/>
+                            <parameter name="p0_prvFixed" unit="MPa" value="5"/>
+                            <parameter name="displacementVP" unit="cm3" value="5.6044"/>
+                            <parameter name="displacementFP" unit="cm3" value="4.5055"/>
+                            <parameter name="p0" unit="MPa" value="1.17"/>
+                            <parameter name="GL_VP" unit="l/(min.bar)" value="0.028333"/>
+                            <parameter name="GL_FP" unit="l/(min.bar)" value="0.003333"/>
+                            <parameter name="dpEnd" value="0.8"/>
+                            <parameter name="rT_LS" value="2400"/>
+                            <parameter name="rT_prvFixed" value="0.08"/>
+                            <parameter name="dpEnd_prvFixed" value="35"/>
+                            <parameter name="rT_prvLS" value="0.08"/>
+                            <parameter name="dpEnd_prvLS" value="35"/>
+                            <parameter name="T_PT1" unit="s" value="0.02"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R13</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="140" x="-70" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="LS-Aggregat" x="-66" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{5b2cd89a-7086-5a38-9dec-5ff27968811b}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-40" x2="-40" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="LS" x="-38" y="28"/>
+                            <terminal medium="hydraulic" name="LS" orientation="s" type="Generic" uuid="{b70bb4d9-3525-5acd-b865-ac797d72965b}" x="-40" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="P1" x="2" y="28"/>
+                            <terminal medium="hydraulic" name="P1" orientation="s" type="Generic" uuid="{e60fca43-c9a3-525b-af59-2a26dffa41c0}" x="0" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="40" x2="40" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="P2" x="42" y="28"/>
+                            <terminal medium="hydraulic" name="P2" orientation="s" port_end="plug" type="Generic" uuid="{9d53fe84-ba36-5865-81f5-e95ae2f779cf}" x="40" y="30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="drossel_rt1.elmt">
+                    <definition height="100" hotspot_x="70" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="140">
+                        <uuid uuid="{80ded23d-8419-5c0b-bb43-1dbd5acb86a9}"/>
+                        <names>
+                            <name lang="de">Drossel (Prüfsymbol)</name>
+                            <name lang="en">Drossel (test symbol)</name>
+                        </names>
+                        <fluid function="flow_control_valve.throttle_valve" kind="other" prefix="RZ">
+                            <parameter name="rT" unit="bar.min2/l2" value="1"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R13</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="100" x="-50" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Drossel" x="-46" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{18c45b40-491b-5a5f-b090-5deee906042b}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20" x2="-20" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="1" x="-18" y="28"/>
+                            <terminal medium="hydraulic" name="1" orientation="s" type="Generic" uuid="{eb09ea39-6ce4-5336-a307-5de99fac0d96}" x="-20" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="20" x2="20" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="2" x="22" y="28"/>
+                            <terminal medium="hydraulic" name="2" orientation="s" type="Generic" uuid="{af227d9d-eb58-5c6d-b36b-6310206d5306}" x="20" y="30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="drossel_last.elmt">
+                    <definition height="100" hotspot_x="70" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="140">
+                        <uuid uuid="{e3d2aa82-be53-573f-9be5-5b6c6d81bd20}"/>
+                        <names>
+                            <name lang="de">Lastdrossel (Prüfsymbol)</name>
+                            <name lang="en">Lastdrossel (test symbol)</name>
+                        </names>
+                        <fluid function="flow_control_valve.throttle_valve" kind="other" prefix="RZ">
+                            <parameter name="rT" unit="bar.min2/l2" value="1.0"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R13</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="100" x="-50" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Lastdrossel" x="-46" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{91024f16-c0ce-5f6a-a61a-76f129ffee81}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20" x2="-20" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="1" x="-18" y="28"/>
+                            <terminal medium="hydraulic" name="1" orientation="s" type="Generic" uuid="{ef329976-fd10-55bb-8c8a-dfdde5417a22}" x="-20" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="20" x2="20" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="2" x="22" y="28"/>
+                            <terminal medium="hydraulic" name="2" orientation="s" type="Generic" uuid="{315eb289-d74e-58b1-99fd-a4203209f2c2}" x="20" y="30"/>
+                        </description>
+                    </definition>
+                </element>
+            </category>
+        </category>
+    </collection>
+</project>

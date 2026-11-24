@@ -23,6 +23,7 @@
 #include <QStringList>
 #include <QVariantList>
 #include <QVariantMap>
+#include <QtNumeric>
 
 #include <optional>
 
@@ -440,6 +441,28 @@ class QetScriptApi : public QObject
 		Q_INVOKABLE bool exportBom(const QString &output, bool noSlaves = false,
 								   bool noJunctions = false);
 		Q_INVOKABLE bool exportCableList(const QString &output);
+			/// Markers for Phoenix Contact, Weidmüller, WAGO marking software
+			/// (or neutral CSV); returns the number written, -1 on failure
+		Q_INVOKABLE int exportMarking(const QString &output,
+									  const QString &format = QStringLiteral("phoenix"),
+									  const QString &optionsJson = QString());
+		Q_INVOKABLE QString markings(const QString &optionsJson = QString()) const;
+			// the purchase list (articles by supplier with EAN, packaging
+			// unit, price, delivery time; devices without article): as JSON
+			// {summary, items[]}, or written as .xlsx/.csv with options JSON
+			// {online: ask the Data Portal, erp: also <name>_ERP.csv}; the
+			// lookup alone fills the article data cache (EDZ, Data Portal)
+		Q_INVOKABLE QString purchaseList();
+		Q_INVOKABLE QString exportPurchaseList(const QString &output, const QString &optionsJson = QString());
+		Q_INVOKABLE QString fetchCommercialData(bool online = true);
+		Q_INVOKABLE QString purchasePriceListPath() const;
+			/// PLC tags for Siemens TIA Portal (TiaPlcTags): the channels of
+			/// the PLC modules as tag table (.xlsx for the tag table editor,
+			/// .xml SimaticML for Openness), a TIA table compared with them
+			/// (CSV lines, header first), its names/comments taken over
+		Q_INVOKABLE bool exportTiaTags(const QString &output, const QString &table = QString());
+		Q_INVOKABLE QStringList compareTiaTags(const QString &tagFile);
+		Q_INVOKABLE int applyTiaTags(const QString &tagFile);
 		Q_INVOKABLE bool exportWiring(const QString &output);
 		Q_INVOKABLE bool exportNets(const QString &output);
 		Q_INVOKABLE bool exportLinks(const QString &output);
@@ -576,6 +599,16 @@ class QetScriptApi : public QObject
 		Q_INVOKABLE bool setFolioProperty(int folioIndex, const QString &property, const QString &value);
 		Q_INVOKABLE QString folioProperty(int folioIndex, const QString &property) const;
 
+		// -- revisions (revision/projectrevisions.h, EPLAN's revision management) --
+		Q_INVOKABLE QString closeRevision(const QString &index, const QString &text = QString(),
+										  bool pdf = true);
+		Q_INVOKABLE QStringList revisions() const;
+		Q_INVOKABLE QStringList revisionChanges(const QString &since = QString()) const;
+		Q_INVOKABLE QString nextRevisionIndex() const;
+		Q_INVOKABLE bool revisionMarks() const;
+		Q_INVOKABLE bool setRevisionMarks(bool on);
+		Q_INVOKABLE bool exportRevisionPdf(const QString &output, const QString &since = QString());
+
 		// -- terminal strips (borniers) --
 		Q_INVOKABLE QStringList terminalStrips() const;
 		Q_INVOKABLE int addTerminalStrip(const QString &installation, const QString &location,
@@ -678,6 +711,24 @@ class QetScriptApi : public QObject
 		Q_INVOKABLE int insertFolio(int position);
 		Q_INVOKABLE bool setFolioTitle(int folioIndex, const QString &title);
 
+		// -- function templates ("Motorabgang DOL"): circuits with
+		// placeholders, placed in one undo step, see FunctionTemplate --
+			/// Every template found: name, category, path, parameters
+		Q_INVOKABLE QVariantList listTemplates() const;
+			/// One template by path, file name or name, with its tables
+		Q_INVOKABLE QVariantMap templateInfo(const QString &templateName) const;
+			/// Place it on folio folioIndex (-1: a new folio at the end), its top
+			/// left corner at x, y (left out: where it was saved); returns ok,
+			/// error, folio, elements (uuids), values, notes
+		Q_INVOKABLE QVariantMap insertTemplate(int folioIndex, const QString &templateName,
+											   const QVariantMap &values = QVariantMap(),
+											   double x = qQNaN(), double y = qQNaN());
+			/// Save folio folioIndex (or options.elements, uuids) as a template;
+			/// options: category, description, parameters, tables, path.
+			/// Returns the file written, empty on failure
+		Q_INVOKABLE QString saveTemplate(int folioIndex, const QString &name,
+										 const QVariantMap &options = QVariantMap());
+
 		Q_INVOKABLE bool undo();
 		Q_INVOKABLE bool redo();
 		Q_INVOKABLE bool canUndo() const;
@@ -693,6 +744,9 @@ class QetScriptApi : public QObject
 		// against the live object graph rather than the XML -- see the
 		// .cpp doc comment for exactly what is and is not covered --
 		Q_INVOKABLE QVariantList checkContinuity(int folioIndex);
+		// -- "Check project": every check of the project at once
+		// (ProjectCheck::runAll), as the Check panel lists them --
+		Q_INVOKABLE QVariantList checkProject(int folioIndex = -1);
 
 		// -- navigate and message --
 		Q_INVOKABLE bool selectElement(const QString &elementUuid);

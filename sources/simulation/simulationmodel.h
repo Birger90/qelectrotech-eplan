@@ -27,6 +27,7 @@
 #include <QVector>
 #include <memory>
 
+#include "analogcircuit.h"
 #include "simulationphysics.h"
 
 class Diagram;
@@ -80,9 +81,18 @@ class SimulationModel
 
 		void step(double dt);
 		void runUntil(double time, double dt = 1e-5);
+			/// R16: runs until the next state change (a new message: valve, end position, relay, step …) or until
+			/// @a limit; true when a change happened
+		bool runUntilChange(double limit, double dt = 1e-5);
+			/// R16: integration steps so far (performance figures)
+		long long stepCount() const { return m_step_count; }
+			/// R16: number of fluid nets (problem size for the performance figures)
+		int netCount() const { return static_cast<int>(m_p.size()); }
 		double time() const { return m_time; }
 
 		void pressButton(const QString &label, bool pressed);
+			/// R15: repairs every fault of the part (FluidSIM repair mode); false: no fault there
+		bool repair(const QString &label);
 		bool actuateValve(const QString &label, bool left, bool on);
 			/// setpoint of a proportional valve in volts (-10 … 10, R07); false when there is none with @a label
 		bool setSetpoint(const QString &label, double volts);
@@ -146,6 +156,17 @@ class SimulationModel
 		struct PropValve;
 		struct SuctionCup;
 		struct Analog;
+		struct LsUnit;
+		struct Valve63;
+		struct Steering;
+		struct Fault;
+		enum class FaultKind { Stuck, CoilOpen, Leak, Clogged, CheckClosed, CheckOpen, Never, Always };
+		void buildFaults(const QList<Diagram *> &diagrams);
+		const Fault *fault(const Element *e, FaultKind kind) const;
+		struct Joystick;
+		struct LsBlock;
+		struct PriorityValve;
+		struct Intensifier;
 
 		int node(Terminal *t) const;
 		int node(Element *e, const QString &port) const;
@@ -154,9 +175,11 @@ class SimulationModel
 		void electrics();
 		void analog(double dt);
 		void linkAnalog(const QList<Diagram *> &diagrams);
+		void coupleCircuit();                      // R17 stage 2: contacts, coils in the analog circuit
 			/// potential of an electric net [V]: an analog output, else the supply it is connected to
 		double volt(int net) const;
 		void fail(const QString &why);
+		void multiStep(Cylinder *z, double dt, QVector<double> &vol, QVector<double> &dvdt);
 		QString netName(int net) const;
 		bool contactClosed(const Contact &c) const;
 
@@ -172,6 +195,14 @@ class SimulationModel
 		QList<Ejector *> m_ejectors;               // vacuum generators (R10)
 		QList<Pipe *> m_pipes;                     // lines with geometry (R05)
 		QList<PropValve *> m_prop_valves;          // proportional valves (R07)
+		QList<Intensifier *> m_intensifiers;      // R12 hydraulic pressure intensifiers
+		QList<LsUnit *> m_ls_units;                // R13 load sensing power units
+		QList<Valve63 *> m_valves63;               // R13 6/3 hand lever valves
+		QList<Steering *> m_steerings;             // R13 steering units (Orbitrol)
+		QList<Fault *> m_faults;                   // R15 defects (sim_fault)
+		QList<Joystick *> m_joysticks;             // R13 pilot valve joysticks
+		QList<LsBlock *> m_ls_blocks;              // R13 load sensing control blocks
+		QList<PriorityValve *> m_priority_valves;  // R13 priority valves LS
 		QList<SuctionCup *> m_cups;                // suction cups (R10)
 		QList<Analog *> m_analog;                  // analog signal blocks in their order of evaluation (R06)
 		QHash<int, double> m_volt;                 // nets driven by an analog output [V]
@@ -193,6 +224,9 @@ class SimulationModel
 		double m_vessel_c = 0.0;
 		QHash<QString, double> m_plc_vars;
 		std::unique_ptr<Grafcet> m_grafcet;
+		AnalogCircuit m_circuit;                   // R17 stage 1: analog electric circuit (sim_role circuit)
+		struct CircuitIo { int part = -1; QStringList names; double umin = 0.0, umax = 0.0, raw = 0.0; bool output = false; };
+		QList<CircuitIo> m_circuit_io;             // R17 stage 2: PLC analog inputs (AI) and outputs (AQ) of the circuit
 		QStringList m_program_errors;
 		QStringList m_model_errors;
 		bool m_failed = false;
@@ -202,6 +236,7 @@ class SimulationModel
 		QList<int> m_silenced;                      // free ports with a silencer
 		double m_silencer_c = 0.0;
 		double m_next_plc_cycle = 0.0;
+		long long m_step_count = 0;
 		QList<QPair<QList<int>, QList<int>>> m_sources;
 		QSet<int> m_plus_nets;
 		QSet<QString> m_pressed;

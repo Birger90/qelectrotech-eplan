@@ -101,6 +101,7 @@ set(QET_RES_FILES
   ${QET_DIR}/sources/ui/conductorpropertiesdialog.ui
   ${QET_DIR}/sources/ui/conductorpropertieswidget.ui
   ${QET_DIR}/sources/ui/configsaveloaderwidget.ui
+  ${QET_DIR}/sources/ui/definitionmarkstyleeditor.ui
   ${QET_DIR}/sources/ui/diagramcontextwidget.ui
   ${QET_DIR}/sources/ui/diagrameditorhandlersizewidget.ui
   ${QET_DIR}/sources/ui/dialogwaiting.ui
@@ -151,6 +152,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/import/eplandxf/eplanimportdialog.h
   ${QET_DIR}/sources/import/plcchannels.cpp
   ${QET_DIR}/sources/import/plcchannels.h
+  ${QET_DIR}/sources/plc/tiaplctags.cpp
+  ${QET_DIR}/sources/plc/tiaplctags.h
   ${QET_DIR}/sources/import/eplanproject/eplanprojectimportdialog.cpp
   ${QET_DIR}/sources/import/eplanproject/eplanprojectimportdialog.h
   ${QET_DIR}/sources/import/fluidsim/fluidsimimport.cpp
@@ -230,10 +233,24 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/cellruler.h
   ${QET_DIR}/sources/conductorautonumerotation.cpp
   ${QET_DIR}/sources/conductorautonumerotation.h
+  ${QET_DIR}/sources/plancheck/plancheck.h
+  ${QET_DIR}/sources/plancheck/plancheck.cpp
   ${QET_DIR}/sources/duplicatelabels.h
   ${QET_DIR}/sources/duplicatelabels.cpp
+  ${QET_DIR}/sources/projectcheck.h
+  ${QET_DIR}/sources/projectcheck.cpp
+  ${QET_DIR}/sources/ui/checkpaneldockwidget.h
+  ${QET_DIR}/sources/ui/checkpaneldockwidget.cpp
   ${QET_DIR}/sources/ui/duplicatelabelsdialog.h
   ${QET_DIR}/sources/ui/duplicatelabelsdialog.cpp
+  ${QET_DIR}/sources/ui/reportsdialog.h
+  ${QET_DIR}/sources/ui/reportsdialog.cpp
+  ${QET_DIR}/sources/ui/plantslocationsdialog.h
+  ${QET_DIR}/sources/ui/plantslocationsdialog.cpp
+  ${QET_DIR}/sources/reports/projectreports.h
+  ${QET_DIR}/sources/reports/projectreports.cpp
+  ${QET_DIR}/sources/placerename.h
+  ${QET_DIR}/sources/placerename.cpp
   ${QET_DIR}/sources/ui/devicetypecheckdialog.h
   ${QET_DIR}/sources/ui/devicetypeeditor.h
   ${QET_DIR}/sources/ui/devicetypeeditor.cpp
@@ -241,12 +258,20 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/ui/devicetypesdialog.cpp
   ${QET_DIR}/sources/ui/devicetypechooser.h
   ${QET_DIR}/sources/ui/devicetypechooser.cpp
+  ${QET_DIR}/sources/ui/placelabelpartdialog.h
+  ${QET_DIR}/sources/ui/placelabelpartdialog.cpp
   ${QET_DIR}/sources/ui/devicetypechangedialog.h
   ${QET_DIR}/sources/ui/devicetypechangedialog.cpp
+  ${QET_DIR}/sources/ui/parttypesdialog.h
+  ${QET_DIR}/sources/ui/parttypesdialog.cpp
+  ${QET_DIR}/sources/materiallist/parttypes.h
+  ${QET_DIR}/sources/materiallist/parttypes.cpp
   ${QET_DIR}/sources/ui/devicetypecheckdialog.cpp
   ${QET_DIR}/sources/conductornumexport.cpp
   ${QET_DIR}/sources/wiringlistexport.h
   ${QET_DIR}/sources/wiringlistexport.cpp
+  ${QET_DIR}/sources/wiringlistdb.h
+  ${QET_DIR}/sources/wiringlistdb.cpp
   ${QET_DIR}/sources/wirehops.h
   ${QET_DIR}/sources/wirehops.cpp
   ${QET_DIR}/sources/wiringrules.h
@@ -259,6 +284,12 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/conductornumexport.h
   ${QET_DIR}/sources/bomexport.cpp
   ${QET_DIR}/sources/bomexport.h
+  ${QET_DIR}/sources/purchase/purchaselist.cpp
+  ${QET_DIR}/sources/purchase/purchaselist.h
+  ${QET_DIR}/sources/purchase/purchasefetch.cpp
+  ${QET_DIR}/sources/purchase/purchasefetch.h
+  ${QET_DIR}/sources/purchase/purchaseexport.cpp
+  ${QET_DIR}/sources/purchase/purchaseexport.h
   ${QET_DIR}/sources/fluid/fluiddata.cpp
   ${QET_DIR}/sources/fluid/fluiddata.h
   ${QET_DIR}/sources/fluid/fluidtypes.cpp
@@ -274,9 +305,12 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/simulation/plcprogram.cpp
   ${QET_DIR}/sources/simulation/plcprogram.h
   ${QET_DIR}/sources/simulation/simulationphysics.h
+  ${QET_DIR}/sources/simulation/simulationmuscle.h
   ${QET_DIR}/sources/simulation/simulationsignals.h
   ${QET_DIR}/sources/simulation/grafcet.cpp
   ${QET_DIR}/sources/simulation/grafcet.h
+  ${QET_DIR}/sources/simulation/analogcircuit.cpp
+  ${QET_DIR}/sources/simulation/analogcircuit.h
   ${QET_DIR}/sources/simulation/simulationreference.cpp
   ${QET_DIR}/sources/simulation/simulationreference.h
   ${QET_DIR}/sources/conductordashpattern.cpp
@@ -383,6 +417,10 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/qetmessagebox.cpp
   ${QET_DIR}/sources/qetmessagebox.h
   ${QET_DIR}/sources/projectlock.cpp
+  ${QET_DIR}/sources/revision/projectrevisions.cpp
+  ${QET_DIR}/sources/revision/projectrevisions.h
+  ${QET_DIR}/sources/revision/revisionui.cpp
+  ${QET_DIR}/sources/revision/revisionui.h
   ${QET_DIR}/sources/projectlock.h
   ${QET_DIR}/sources/qetproject.cpp
   ${QET_DIR}/sources/qetproject.h
@@ -560,6 +598,14 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/diagramevent/diagrameventinterface.cpp
   ${QET_DIR}/sources/diagramevent/diagrameventinterface.h
   ${QET_DIR}/sources/diagramevent/diagrameventaddmacro.cpp
+  ${QET_DIR}/sources/functiontemplates/functiontemplate.cpp
+  ${QET_DIR}/sources/functiontemplates/functiontemplate.h
+  ${QET_DIR}/sources/functiontemplates/diagrameventaddfunctiontemplate.cpp
+  ${QET_DIR}/sources/functiontemplates/diagrameventaddfunctiontemplate.h
+  ${QET_DIR}/sources/functiontemplates/functiontemplatedock.cpp
+  ${QET_DIR}/sources/functiontemplates/functiontemplatedock.h
+  ${QET_DIR}/sources/functiontemplates/functiontemplatesavedialog.cpp
+  ${QET_DIR}/sources/functiontemplates/functiontemplatesavedialog.h
   ${QET_DIR}/sources/diagramevent/diagrameventaddmacro.h
   ${QET_DIR}/sources/diagramevent/diagrameventaddpaste.cpp
   ${QET_DIR}/sources/diagramevent/diagrameventaddpaste.h
@@ -729,6 +775,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/project/projectusagetracker.cpp
   ${QET_DIR}/sources/project/projectusagetracker.h
 
+  ${QET_DIR}/sources/properties/definitionmarkstyle.cpp
+  ${QET_DIR}/sources/properties/definitionmarkstyle.h
   ${QET_DIR}/sources/properties/deviceinformation.cpp
   ${QET_DIR}/sources/properties/deviceinformation.h
   ${QET_DIR}/sources/properties/elementdata.cpp
@@ -789,6 +837,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/qetgraphicsitem/structureboxitem.h
   ${QET_DIR}/sources/qetgraphicsitem/qgraphicsitemutility.cpp
   ${QET_DIR}/sources/qetgraphicsitem/qgraphicsitemutility.h
+  ${QET_DIR}/sources/qetgraphicsitem/junctionelement.cpp
+  ${QET_DIR}/sources/qetgraphicsitem/junctionelement.h
   ${QET_DIR}/sources/qetgraphicsitem/reportelement.cpp
   ${QET_DIR}/sources/qetgraphicsitem/reportelement.h
   ${QET_DIR}/sources/qetgraphicsitem/simpleelement.cpp
@@ -893,6 +943,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/TerminalStrip/terminalstripbridge.h
   ${QET_DIR}/sources/TerminalStrip/terminalstrip.cpp
   ${QET_DIR}/sources/TerminalStrip/terminalstrip.h
+  ${QET_DIR}/sources/TerminalStrip/connectorpinplan.cpp
+  ${QET_DIR}/sources/TerminalStrip/connectorpinplan.h
   ${QET_DIR}/sources/TerminalStrip/terminalstriplabels.cpp
   ${QET_DIR}/sources/TerminalStrip/terminalstriplabels.h
   ${QET_DIR}/sources/TerminalStrip/terminalstripautoimport.cpp
@@ -992,6 +1044,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/ui/conductorpropertieswidget.h
   ${QET_DIR}/sources/ui/configsaveloaderwidget.cpp
   ${QET_DIR}/sources/ui/configsaveloaderwidget.h
+  ${QET_DIR}/sources/ui/definitionmarkstyleeditor.cpp
+  ${QET_DIR}/sources/ui/definitionmarkstyleeditor.h
   ${QET_DIR}/sources/ui/diagramcontextwidget.cpp
   ${QET_DIR}/sources/ui/diagramcontextwidget.h
   ${QET_DIR}/sources/ui/diagrameditorhandlersizewidget.cpp
@@ -1066,6 +1120,12 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/ui/potentialcheckdialog.h
   ${QET_DIR}/sources/ui/fluidcheckdialog.cpp
   ${QET_DIR}/sources/ui/fluidcheckdialog.h
+  ${QET_DIR}/sources/ui/openwireendsdialog.cpp
+  ${QET_DIR}/sources/ui/openwireendsdialog.h
+  ${QET_DIR}/sources/projectcheck/openwireends.cpp
+  ${QET_DIR}/sources/projectcheck/openwireends.h
+  ${QET_DIR}/sources/ui/tiatagsdialog.cpp
+  ${QET_DIR}/sources/ui/tiatagsdialog.h
   ${QET_DIR}/sources/ui/potentialsourceswidget.cpp
   ${QET_DIR}/sources/ui/potentialsourceswidget.h
   ${QET_DIR}/sources/ui/potentialtypeswidget.cpp
@@ -1128,6 +1188,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/undocommand/changetitleblockcommand.h
   ${QET_DIR}/sources/undocommand/deleteqgraphicsitemcommand.cpp
   ${QET_DIR}/sources/undocommand/deleteqgraphicsitemcommand.h
+  ${QET_DIR}/sources/undocommand/dissolvereportlinkscommand.cpp
+  ${QET_DIR}/sources/undocommand/dissolvereportlinkscommand.h
   ${QET_DIR}/sources/undocommand/itemmodelcommand.cpp
   ${QET_DIR}/sources/undocommand/itemmodelcommand.h
   ${QET_DIR}/sources/undocommand/linkelementcommand.cpp
@@ -1136,6 +1198,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/undocommand/movediagramcommand.h
   ${QET_DIR}/sources/undocommand/removediagramcommand.cpp
   ${QET_DIR}/sources/undocommand/removediagramcommand.h
+  ${QET_DIR}/sources/undocommand/reportlinkkeycommand.cpp
+  ${QET_DIR}/sources/undocommand/reportlinkkeycommand.h
   ${QET_DIR}/sources/undocommand/setautonumcontextcommand.cpp
   ${QET_DIR}/sources/undocommand/setautonumcontextcommand.h
   ${QET_DIR}/sources/undocommand/groupitemscommand.cpp
@@ -1171,6 +1235,12 @@ set(QET_SRC_FILES
 
   ${QET_DIR}/sources/materiallist/materialentrydialog.cpp
   ${QET_DIR}/sources/materiallist/materialentrydialog.h
+  ${QET_DIR}/sources/materiallist/findpartdialog.cpp
+  ${QET_DIR}/sources/materiallist/findpartdialog.h
+  ${QET_DIR}/sources/materiallist/partcategory.cpp
+  ${QET_DIR}/sources/materiallist/partcategory.h
+  ${QET_DIR}/sources/materiallist/partsearch.cpp
+  ${QET_DIR}/sources/materiallist/partsearch.h
   ${QET_DIR}/sources/materiallist/materiallist.cpp
   ${QET_DIR}/sources/materiallist/materiallist.h
   ${QET_DIR}/sources/materiallist/materialselectiondialog.cpp
@@ -1180,6 +1250,10 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/cablelist/cabletypelist.h
   ${QET_DIR}/sources/cablelist/cableexportdialog.cpp
   ${QET_DIR}/sources/cablelist/cableexportdialog.h
+  ${QET_DIR}/sources/marking/markingexport.cpp
+  ${QET_DIR}/sources/marking/markingexport.h
+  ${QET_DIR}/sources/marking/markingexportdialog.cpp
+  ${QET_DIR}/sources/marking/markingexportdialog.h
   ${QET_DIR}/sources/cablelist/cablelistmodel.cpp
   ${QET_DIR}/sources/cablelist/cablelistmodel.h
   ${QET_DIR}/sources/cablelist/cablelistmodelpropertieswidget.cpp

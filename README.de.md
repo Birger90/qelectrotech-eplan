@@ -37,11 +37,33 @@ In QET und im exportierten PDF:
 - SPS: Die Karte (SPS-Master) führt ihre E/A-Tabelle (Adresse, Funktionstext, Kommentar, Klemmen); jeder Kanal ist
   an seine Zeile gebunden (`group_index`) und zeigt die Werte über seine Felder – Tabelle ändern, die Kanäle ziehen
   nach.
+- Siemens TIA Portal: *Projekt > SPS-Variablen und TIA Portal…* zeigt jeden Kanal so, wie er nach TIA geht (Adresse,
+  Name, Datentyp, Kommentar), und schreibt ihn als PLC-Variablentabelle – `.xlsx` im Format des Imports der
+  Variablentabelle (Blätter PLCTags/TagTableProperties, wie die STEP-7-Hilfe es beschreibt) oder SimaticML-`.xml` für
+  Openness. Eine aus TIA exportierte Tabelle wieder eingelesen, markiert das Fenster die Unterschiede (Name,
+  Kommentar, Adresse, fehlt, nur in TIA); ein Klick übernimmt Namen und Kommentare aus TIA in den Plan (ein
+  Rückgängig-Schritt). EPLAN-Adressen (E 50.0, PEW256) werden zu %I50.0/%IW256; Kanäle, die nur DI0/DQ3 heißen,
+  werden ab der Startadresse des Moduls gezählt (Elementinformation `plc_start_address`/`plc_start_address_2`,
+  sonst die nächsten freien Bytes). Auch per `--export-tia-tags`, `--compare-tia-tags … [--apply neu.qet]` und
+  `qet.exportTiaTags/compareTiaTags/applyTiaTags` in Skripten.
 - Kontakte: Eine platzierte Spule kann eigene Kontaktgruppen tragen (11/12/14, 21/22/24 …), wie die
   Funktionsschablone eines EPLAN-Artikels; die Kontakte übernehmen daraus ihre Anschlussbezeichnungen, der
   Kontaktspiegel zeigt sie.
 - Querverweisformel `%=M`: Die Anlage erscheint nur, wenn sie von der des eigenen Blatts abweicht (`/42/1`,
   `=DC/38/2`), wie bei EPLAN.
+
+## Ein Prüfpanel wie der EPLAN-Prüflauf
+
+- *Projekt > Projekt prüfen* (auch als Knopf in der Werkzeugleiste) führt alle Prüfungen auf einmal aus und zeigt die
+  Befunde in einem Panel, nach Prüfung gruppiert, jeder mit Schwere (Fehler, Warnung, Hinweis), Blatt und Feld; der
+  Tooltip nennt die EPLAN-Meldungsnummer. Eine Auswahl zeigt alle Befunde, nur Fehler und Warnungen oder nur Fehler;
+  Doppelklick öffnet das Blatt und markiert Gerät oder Leitung. Geprüft werden: doppelte Kennzeichen und
+  Leiternummern, Potenzialtypen, offene Leitungsenden, Symbole ohne Leitung, Gerätetypen, Leitungen je Anschluss,
+  Anschlussnamen und die Regeln des Forks: Kontakte, Spulen und Abbruchstellen ohne Gegenstück, SPS-Kanäle ohne
+  Adresse, Kabel ohne Ziel, Klemmen ohne Klemmleiste, Geräte ohne Kennzeichen oder Artikel, offene Anschlüsse und
+  Fluidanschlüsse, Schaltschrankaufbau.
+- Skript-API `qet.checkProject(folio = -1)`, CLI `--check-project <projekt.qet> [bericht.json]` (dieselben Regeln;
+  Rückgabewert 3 bei Fehlern).
 
 ## Blätter und Schriftfeld
 
@@ -49,6 +71,44 @@ In QET und im exportierten PDF:
   Druckdatum) und `watermark-side` (senkrecht am rechten Rand); leer = aus, je Blatt oder als Projektvorgabe.
 - Neue Schriftfeld-Variablen `%{printdate}` und `%{saveddate-de}` (TT.MM.JJJJ).
 - Skript-API: `outsideSheet(folio)` listet, was außerhalb des Blatts liegt.
+
+## Revisionen wie bei EPLAN
+
+- Menü Projekt > Revision > *Revision abschließen…*: Index (Vorschlag A, B, … bzw. 01, 02, …) und Kurztext. Der Index
+  steht danach in jedem Schriftfeld (`%indexrev`), die Revisionstabelle in `%{rev1_index}`, `%{rev1_date}`,
+  `%{rev1_text}`, `%{rev1_author}` (rev1 = neueste) – das Schriftfeld *revision* zeigt die letzten drei. Neben dem
+  Projekt entsteht `<Name>_Revisionen/` mit der Momentaufnahme `<Name>_Rev_<Index>.qet` und einem PDF, in dem die
+  Änderungen seit der vorigen Revision markiert sind; das Projekt wird gespeichert.
+- *Änderungen markieren*: Was sich seit der letzten Revision geändert hat, bekommt automatisch eine rote
+  Revisionswolke mit Dreieck (Symbole, Texte, Formen), Leitungen einen breiten Strich entlang ihres Wegs; Gelöschtes
+  gestrichelt und durchgekreuzt, ein neues Blatt einen Hinweis über dem Schriftfeld. Sichtbar am Bildschirm, im
+  Druck und im PDF; ab der ersten Revision eingeschaltet.
+- *Revisionen vergleichen…*: zwei Stände (aktueller Stand, eine Revision, eine beliebige Projektdatei) als Liste
+  mit Sprung per Doppelklick und als PDF mit markierten Änderungen. Zuordnung über UUID, sonst wie EPLANs
+  „alternative Identifizierung“ über Blatt, Typ und BMK bzw. die verbundenen Anschlüsse – auch neu erzeugte Pläne
+  lassen sich vergleichen.
+- CLI: `--close-revision <projekt> <index> [text] [--no-pdf]`, `--revisions <projekt>`,
+  `--revision-marks <projekt> on|off`, `--compare-revisions <alt|index> <neu> [ausgabe.pdf] [--json]`.
+  Skript-API: `closeRevision`, `revisions`, `revisionChanges`, `nextRevisionIndex`, `setRevisionMarks`,
+  `exportRevisionPdf`.
+
+## Funktionsvorlagen
+
+Seitenleiste *Anzeige > Funktionsvorlagen*, wie EPLAN-Makros mit Wertesätzen:
+
+- Wiederverwendbare Schaltungsteile mit Platzhaltern: Vorlage in der Seitenleiste wählen (mit Vorschau), wenige Werte
+  eingeben (Kennzeichen, Leistung, SPS-Adresse), per Klick einfügen oder auf ein neues Blatt legen – fertig verknüpft,
+  mit Artikeldaten, Klemmen und Kabel, ein Rückgängig-Schritt. Beim nächsten Einfügen zählen Kennzeichen, Klemmen und
+  Kabel auf die nächsten freien weiter.
+- Platzhalter `{BMK}`, `{P_kW}`, `{ADR}`, `{XN+1}` in Kennzeichen, Texten, Elementinformationen, Drahtnummern und
+  Kabeltypen. Eine Auswahltabelle wählt den Artikel nach Leistung (nächstgrößere Zeile: 3 kW bekommt Schutzschalter
+  und Schütz der 4-kW-Zeile). Ein SPS-Kanal wird mit dem SPS-Modul des Projekts verknüpft, das seine Adresse hat.
+- Eigene Vorlagen aus einer Auswahl: Kontextmenü *Als Funktionsvorlage speichern…* (Name, Kategorie, Platzhalter,
+  eingefügte Excel-Tabelle). Ablage als `.qetmak` im Vorlagenordner des Nutzers (mit `--data-dir`:
+  `Daten\macros\Funktionsvorlagen`); sechs Beispiele ohne Kundendaten in `funktionsvorlagen/` (neu erzeugt mit
+  `tools/funktionsvorlagen/beispiele_erzeugen.py`).
+- Skript-API `listTemplates()`, `templateInfo()`, `insertTemplate(folio, vorlage, werte, x, y)`,
+  `saveTemplate(folio, name, optionen)`; MCP: `qet_edit`-Operationen `insert_template` und `save_template`.
 
 ## Kabel
 
@@ -59,6 +119,37 @@ In QET und im exportierten PDF:
   (geschirmt, halogenfrei, UL/CSA, torsionsfest …).
 - `tools/kabelkatalog/kabelkatalog_eplan.py` erzeugt solche Kataloge aus den frei erhältlichen EPLAN-Artikeldaten der
   Hersteller (z. B. igus chainflex, LAPP): Adern mit Farben, Querschnitt, Außendurchmesser, Spannung, Artikelnummer.
+
+## Beschriftung
+
+- Menü Projekt > *Beschriftung exportieren…*: Draht-, Klemmen-, Geräte- und Kabelschilder als Datei für Phoenix
+  Contact MARKING system / PROJECT complete, Weidmüller M-Print PRO oder WAGO Smart Script, oder als neutrale CSV;
+  Auswahl nach Art, Blättern und Anlage/Ort. Auch per `--export-marking` und `qet.exportMarking()`/`qet.markings()`.
+  Kein Hersteller veröffentlicht ein festes Importschema; jede Datei ist eine CSV nach dem, was der jeweilige Import
+  belegt liest. Spalten und Belege in [docs/beschriftung-export.md](docs/beschriftung-export.md).
+
+## Einkaufsliste für Einkauf und ERP
+
+- Menü Projekt > *Einkaufsliste exportieren…*: eine Dateiauswahl, sonst nichts. Heraus kommt eine Excel-Mappe
+  (`.xlsx`, oder CSV) mit einer Zeile je Artikel, gruppiert nach Lieferant (sonst Hersteller), Summe je Gruppe und
+  Gesamtsumme, dazu Menge, VPE, Bestellmenge (auf VPE aufgerundet), Preis, Preiseinheit, Gesamtpreis, Lieferzeit,
+  EAN/GTIN, Lebenszyklus und Preisquelle. Geräte ohne Artikel stehen am Ende mit „Artikel offen“. Preise lassen sich
+  in Excel nachtragen: Bestellmenge, Gesamtpreis und Summen sind Formeln.
+- Daneben entsteht `<Name>_ERP.csv`, ein neutrales Importformat: eine Zeile je Artikel, feste englische
+  Spaltennamen (`line;supplier;manufacturer;order_number;description;references;quantity;order_quantity;unit;
+  packaging_unit;unit_price;price_unit;currency;total_price;delivery_time;gtin;lifecycle;price_source;article_open`),
+  `;` als Trenner, `.` als Dezimalzeichen, UTF-8 ohne BOM, keine Summenzeilen.
+- Woher die Werte kommen (später überschreibt früher): Preis und Lieferant am Gerät → Artikeldaten aus dem EPLAN
+  Data Portal und den EDZ-Paketen in `herstellerdaten` (Zwischenspeicher `einkauf/artikeldaten.csv`, 30 Tage) →
+  eigene Preisliste `einkauf/preisliste.csv` im Datenordner (`Bestellnummer;Preis;Lieferzeit;Lieferant`, optional
+  `Preiseinheit;VPE;EAN;Hersteller;Währung`; die Kopfzeile wird beim ersten Export angelegt).
+- Ehrlich geprüft: Das Data Portal liefert ohne Token EAN/GTIN und Lebenszyklus, aber weder Preis noch Lieferzeit
+  noch VPE; die kaufmännische CSV mit Token enthält nur Stammdaten. EDZ-Pakete haben VPE und Mengeneinheit, ihre
+  Preisfelder sind bei den Herstellern 0. Preise und Lieferzeiten kommen deshalb aus der eigenen Preisliste;
+  Fehlendes bleibt leer.
+- CLI: `--export-purchase <projekt> <liste.xlsx|liste.csv> [--online] [--erp]`, `--fetch-commercial <projekt>
+  [--offline]`. Skript-API: `purchaseList()`, `exportPurchaseList(datei, '{"online":true,"erp":true}')`,
+  `fetchCommercialData()`, `purchasePriceListPath()`.
 
 ## Schaltschrankaufbau und Tafelfertigung
 
@@ -117,6 +208,16 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
 - Herstellerportale (Siemens, Rittal, 3Dfindit, SEW, WAGO, Keyence): Konten im Schlüsselspeicher des Systems, fehlende
   Bauteile automatisch holen (`--fetch-parts`). Läuft unter Windows und macOS (Workflow `macos-build.yml`).
 
+## Gemeinsame Ablage (SharePoint, OneDrive, Netzlaufwerk)
+
+- Projektsperre: Wer ein Projekt öffnet, das ein Kollege offen hat, erfährt „seit … bei … geöffnet“ und wählt
+  *Nur lesen öffnen*, *Trotzdem bearbeiten* (mit Warnung) oder *Abbrechen*. Eine Sperre ohne Herzschlag seit
+  10 Minuten (Absturz, Rechner aus) wird zum Übernehmen angeboten; die eines Absturzes auf dem eigenen Rechner wird
+  von selbst übernommen. Ohne Oberfläche: `--lock-status <Projekt>`.
+- Nur lesen verhindert jedes Speichern auf die Datei (auch automatisch, per Skript oder MCP); Änderungen gehen mit
+  *Speichern unter* in eine andere Datei.
+- OneDrive-/SharePoint-Konfliktkopien („Projekt-<Rechnername>.qetz“) neben dem Projekt werden beim Öffnen gemeldet.
+
 ## Pneumatik, Hydraulik und Simulation
 
 Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser Fork.
@@ -128,7 +229,19 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
 - Anzeige > *Simulation*: Pneumatik (Durchfluss nach ISO 6358), Hydraulik (Blenden, Pumpen, Druckbegrenzung,
   Hydrospeicher mit Gasgesetz), Zylinder mit Kraftbilanz und Reibung, elektrische Steuerung (Taster, End- und
   Druckschalter, Relais, Zeitrelais, Zähler, Spulen), SPS-Programme in Strukturiertem Text (Teil von IEC 61131-3 mit
-  Schrittketten) und GRAFCET nach IEC 60848 mit den GRAFCET-Symbolen (im Raster neu gezeichnet, `bauteile/grafcet`).
+  Schrittketten) und GRAFCET nach IEC 60848 mit den GRAFCET-Symbolen (im Raster neu gezeichnet, `bauteile/grafcet`),
+  mit Teil-GRAFCETs, einschließenden Schritten, Makroschritten und Zwangssteuerung. Fehler wie in FluidSIM (Kolben klemmt,
+  Spule unterbrochen, Leckage, verstopft, Rückschlagventil gesperrt/offen, Schalter schaltet nicht/immer) stehen am Bauteil
+  (`sim_fault`) und werden per Ereignis repariert. Analoge Elektrik Stufe 1: R, C, L, Quellen und Dioden nach Kirchhoff
+  (`sim_role` circuit); Stufe 2 koppelt sie an die Schaltlogik: Kontakte schalten im Stromkreis, Relais- und Ventilspulen
+  (R, L) ziehen nach ihrem Strom an, SPS-Analogein- und -ausgänge (AI, AQ);
+  Stufe 3 ergänzt Bipolartransistoren (Ebers-Moll) und Operationsverstärker,
+  Stufe 4 Sicherungen, Leitungsschutzschalter (B/C/D) und Motorschutzschalter (Klasse 10),
+  Stufe 5 Gleichstrom- und Asynchronmotoren am Drehstromnetz.
+  Sonderantriebe (R12): pneumatischer Muskel Festo DMSP nach den Kraft-Weg-Kurven des Katalogs und hydraulischer
+  Druckübersetzer (Bypass, Pumpkolben, entsperrbares Rückschlagventil) nach Datenblattwerten.
+  FluidSIM-Bauteile seit 1.47.0: Proportionalventil MPYE (Festo-Kennlinie), pneumatische Timer, Verzögerungsventile,
+  Vorwahlzähler, Zweihandsteuerblock, Vakuumsaugventil; seit 1.48.0 Taktstufen TAA/TAB und Muskel mit Führungszylindern.
   Leitungen unter Druck werden blau bzw. rot, stromführende Drähte rot, aktive Schritte bekommen eine Marke; Taster und
   Ventile bedient man im Fenster oder per Klick auf das Symbol; eine Liste zeigt die SPS- und GRAFCET-Variablen.
 - Ohne Oberfläche: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv weg.csv --png ordner`.
@@ -138,7 +251,8 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
   Modell verhindern den Start. `--signals/--measure` liefern Drücke, gerichtete Durchflüsse, Zylinderweg,
   -geschwindigkeit und -kraft, Motor- und Schwenkwinkel, Haltekraft von Saugern in SI-Einheiten. Gerechnet werden auch
   Hydromotoren, Vakuumerzeuger, Sauger, Vakuumschalter, Schwenkantriebe, Rohrleitungen mit Länge und Durchmesser,
-  Schnellkupplungen (gekuppelt/getrennt), verstopfte Filter, 4/3-Stetigventile, Senkbrems- und Druckzuschaltventile,
+  Schnellkupplungen (gekuppelt/getrennt), verstopfte Filter, 4/3-Stetigventile, Senkbrems- und Druckzuschaltventile, Druckwaagen, Schock-/Nachsaugblock,
+  pneumatisches Folgeventil, Zylinder mit Einbauwinkel, Kraftprofil, Federkennlinie und FluidSIM-Reibung, Druckluftmotoren, Mehrstellungszylinder, LS-Aggregate, 6/3-Handhebelventile, Belastungseinheiten, Lenkventile, Vorsteuergeräte, Sperrblöcke, LS-Steuerblöcke, Prioritätsventile,
   analoge Signale und Regler (Funktionsgenerator, Sollwertkarte, PID- und Zustandsregler, PT2, I-Glied, Komparator,
   Proportional-Verstärker, lagegeregelte Proportionalmagnete, Druck-, Durchfluss- und Wegsensoren,
   Proportional-Druckbegrenzungsventil) – geschlossene Druck- und Lageregelkreise. Stand der Roadmap: [tools/simulation/ROADMAP_STAND.md](tools/simulation/ROADMAP_STAND.md).

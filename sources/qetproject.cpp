@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "revision/projectrevisions.h"
 #include "qetproject.h"
 #include "ElementsCollection/terminaluuids.h"
 #include "TerminalStrip/terminalstriplabels.h"
@@ -114,6 +115,20 @@ m_project_properties_handler{this}
 		//Read chained reports default from global settings (enabled for newly created projects when setting is on)
 	m_chained_reports = settings.value(QStringLiteral("project/enable-chained-reports"), false).toBool();
 	m_has_chained_reports_attribute = true;
+		//A new project chains its folio reports by the label each of them
+		//carries, or by the function of the wire its terminal holds, as
+		//the settings chose it. A project read keeps what its file says
+		//(readChainedReportsXml())
+	m_chained_reports_key = reportLinkKeyFromString(settings.value(
+				QStringLiteral("project/chained-reports-key"),
+				QStringLiteral("label")).toString());
+
+		//A new project draws its definition marks the way the last
+		//customized drawing chose it for new projects (the "Use for
+		//new projects" box of its editor), the standard drawing when
+		//nothing was ever chosen. Every project saved after that
+		//keeps its own style (readDefinitionMarkStyleXml())
+	m_definition_mark_style.fromSettings(settings, QStringLiteral("diagrameditor/default"));
 
 	int size = settings.beginReadArray(QStringLiteral("diagrameditor/defaultguides"));
 	for (int i = 0; i < size; ++i) {
@@ -350,6 +365,15 @@ projectDataBase *QETProject::dataBase()
 }
 
 /**
+	@return the revisions of this project, read from it when first asked
+*/
+ProjectRevisions *QETProject::revisions()
+{
+	if (!m_revisions) m_revisions = new ProjectRevisions(this);
+	return m_revisions;
+}
+
+/**
 	@brief QETProject::uuid
 	@return the uuid of this project
 */
@@ -470,6 +494,8 @@ void QETProject::init()
 		//no event loop runs during a --run script. The database is the
 		//context: it is gone before the stack's clear() in the teardown.
 	connect(m_undo_stack, &QUndoStack::indexChanged, &m_data_base, &projectDataBase::commitWorkingCopy);
+	connect(m_undo_stack, &QUndoStack::indexChanged,
+			this, &QETProject::undoStackIndexChanged);
 	connect(&m_titleblocks_collection, &TitleBlockTemplatesCollection::changed, this, backup_needed);
 	connect(&m_titleblocks_collection, &TitleBlockTemplatesCollection::aboutToRemove, this, backup_needed);
 	connect(m_elements_collection, &XmlElementCollection::elementAdded, this, backup_needed);
@@ -2490,8 +2516,12 @@ bool QETProject::autoConductor() const
 */
 void QETProject::setAutoConductor(bool ac)
 {
-	if (ac != m_auto_conductor)
-		m_auto_conductor = ac;
+	if (ac == m_auto_conductor) {
+		return;
+	}
+	m_auto_conductor = ac;
+		//Kept with the project, so that it is not back on at next opening
+	storeSettings();
 }
 
 /**
@@ -2583,6 +2613,39 @@ void QETProject::setPlantAndLocationInherited(bool inherited)
 	storeSettings();
 	for (Diagram *diagram : builtFolios()) {
 		StructureBoxItem::refreshSymbolTexts(diagram);
+	}
+}
+
+/**
+	@brief QETProject::designationDisplay
+	@return what the label field of a symbol shows: its label only, as
+	before the setting existed; or its IEC 81346 reference designation,
+	short (=plant+location-label without the parts its structure box or
+	folio already gives, as %{structure_id}) or full (as
+	%{structure_id_full}). A text written with %{label} keeps the label
+	only, so a text which builds the designation itself does not show it
+	twice. Label only unless the project says otherwise.
+*/
+QETProject::DesignationDisplay QETProject::designationDisplay() const {
+	return m_designation_display;
+}
+
+/**
+	@brief QETProject::setDesignationDisplay
+	Set what the label field of a symbol shows, and work out again the
+	texts of the built folios. A folio not built yet reads the setting
+	when its texts are made.
+	@param display
+*/
+void QETProject::setDesignationDisplay(DesignationDisplay display)
+{
+	if (display == m_designation_display) {
+		return;
+	}
+	m_designation_display = display;
+	storeSettings();
+	for (Diagram *diagram : builtFolios()) {
+		StructureBoxItem::refreshSymbolTexts(diagram, true);
 	}
 }
 
@@ -2960,13 +3023,16 @@ QDomDocument QETProject::toXml(QHash<int, QByteArray> *kept_folios, QStringList 
 	// local, non-transmitted usage tracking (time spent on this project)
 	writeUsageXml(project_root);
 	writeWireHopsXml(project_root);
+	writeAutoConductorXml(project_root);
 	writeSymbolTextsXml(project_root);
 	writePlantLocationXml(project_root);
+	writeDesignationDisplayXml(project_root);
 	writeDeviceTypeRulesXml(project_root);
 	writeLanguagesXml(project_root);
 	writePotentialTypesXml(project_root);
 	writeTerminalLabelSplitXml(project_root);
 	writeWiringRulesXml(project_root);
+	writeDefinitionMarkStyleXml(project_root);
 	writeChainedReportsXml(project_root);
 	writeConductorPlantCountersXml(project_root);
 	writeDeviceTypesXml(project_root);
@@ -3381,18 +3447,23 @@ QETResult QETProject::write(bool overwrite_changed)
 		return(QETResult(tr("Cannot save %1: %2").arg(m_file_path, error)));
 	};
 
-		// If the project was opened read-only, only refuse when the target
-		// really can't be written: an existing file that is not writable, or a
-		// new file (e.g. "Save As" to another location) whose directory is not
-		// writable.  A non-existent file reports isWritable() == false, so the
-		// old check wrongly blocked saving a read-only project elsewhere.
-	if (isReadOnly()) {
-		const QFileInfo file_info(m_file_path);
-		const bool can_write = file_info.exists()
-			? file_info.isWritable()
-			: QFileInfo(file_info.absolutePath()).isWritable();
-		if (!can_write)
-			return(QString("the file %1 was opened read-only and thus will not be written").arg(m_file_path));
+		//Read-only is read-only: the file it was opened read-only from is
+		//never written, whether or not the file system would let it (a
+		//project of a later version, a save of the history, one the user
+		//opened read-only). isReadOnly() is tied to that file: after Save
+		//As to another file it is false, so Save As still works.
+	if (isReadOnly())
+		return(tr("%1 is open read-only and is not saved. Use Save As to keep your changes in another file.").arg(m_file_path));
+
+		//Someone else took this file over ("Open anyway" on their PC) or
+		//holds it although this session could not take its lock: saving
+		//would wipe their work
+	if (ProjectLock::mayTake()) {
+		const ProjectLock::Holder other = ProjectLock::liveHolder(
+					m_file_path, m_lock ? m_lock->session() : QString());
+		if (other.valid && other.session != QLatin1String("?"))
+			return(tr("%1 is now open by %2 on %3, so it is not saved here. Use Save As to keep your changes in another file.")
+				   .arg(m_file_path, other.user, other.host));
 	}
 
 		//QET_QETDB_SAVE_TIMES=1: how long each step of the save took, in ms
@@ -3542,12 +3613,16 @@ void QETProject::setOpenedReadOnlyByLock(bool by_lock)
 */
 void QETProject::setReadOnly(bool read_only)
 {
-	if (m_read_only != read_only)
+		//Compared with what isReadOnly() says: after Save As the flag can
+		//still be set for the old file while the project is editable, and
+		//making it read-only again must then take the new file
+	if (isReadOnly() != read_only || m_read_only != read_only)
 	{
+		const bool was = isReadOnly();
 			//keep the file to which this project is read-only
 		read_only_file_path_ = m_file_path;
 		m_read_only = read_only;
-		emit readOnlyChanged(this, read_only);
+		if (was != isReadOnly()) emit readOnlyChanged(this, read_only);
 	}
 }
 
@@ -4191,13 +4266,16 @@ void QETProject::readProjectXml(QDomDocument &xml_project)
 		//Load the local, non-transmitted usage tracking
 	readUsageXml(xml_project);
 	readWireHopsXml(xml_project);
+	readAutoConductorXml(xml_project);
 	readSymbolTextsXml(xml_project);
 	readPlantLocationXml(xml_project);
+	readDesignationDisplayXml(xml_project);
 	readDeviceTypeRulesXml(xml_project);
 	readLanguagesXml(xml_project);
 	readPotentialTypesXml(xml_project);
 	readTerminalLabelSplitXml(xml_project);
 	readWiringRulesXml(xml_project);
+	readDefinitionMarkStyleXml(xml_project);
 	readChainedReportsXml(xml_project);
 	readConductorPlantCountersXml(xml_project);
 	readDeviceTypesXml(xml_project);
@@ -4206,6 +4284,8 @@ void QETProject::readProjectXml(QDomDocument &xml_project)
 		//What this QET does not know of the project, kept for every format
 	m_data_base.storeForeignBlocks(QString::fromLatin1(projectDataBase::project_owner),
 								   projectDataBase::foreignChildren(xml_project.documentElement(), false));
+		//Its revisions are in one of them
+	if (m_revisions) m_revisions->reload();
 
 		//Load the default properties for the new diagrams
 	readDefaultPropertiesXml(xml_project);
@@ -4802,6 +4882,20 @@ void QETProject::readWireHopsXml(QDomDocument &xml_project)
 }
 
 /**
+	@brief QETProject::readAutoConductorXml
+	Read the <auto_conductor> element of the project, if any.
+	A project without it keeps the automatic creation of conductors on.
+	@param xml_project : the xml description of the project
+*/
+void QETProject::readAutoConductorXml(QDomDocument &xml_project)
+{
+	const QDomElement auto_conductor = xml_project.documentElement()
+			.firstChildElement(QStringLiteral("auto_conductor"));
+	m_auto_conductor = auto_conductor.isNull()
+			|| auto_conductor.attribute(QStringLiteral("enabled"), QStringLiteral("1")) != QLatin1String("0");
+}
+
+/**
 	@brief QETProject::readOriginXml
 	Read the <style> element and "origin" attribute of the project, if any.
 	A project without it draws origin top-left.
@@ -4845,6 +4939,27 @@ void QETProject::readPlantLocationXml(QDomDocument &xml_project)
 			.firstChildElement(QStringLiteral("plant_location"));
 	m_plant_location_inherited = !place.isNull()
 			&& place.attribute(QStringLiteral("inherited")) == QLatin1String("true");
+}
+
+/**
+	@brief QETProject::readDesignationDisplayXml
+	Read the <designation_display> element of the project, if any. A
+	project without it was saved before the setting existed, or with the
+	label only, and its symbols show their label only.
+	@param xml_project : the xml description of the project
+*/
+void QETProject::readDesignationDisplayXml(QDomDocument &xml_project)
+{
+	const QString shown = xml_project.documentElement()
+			.firstChildElement(QStringLiteral("designation_display"))
+			.attribute(QStringLiteral("shown"));
+	if (shown == QLatin1String("full")) {
+		m_designation_display = DesignationDisplay::Full;
+	} else if (shown == QLatin1String("short")) {
+		m_designation_display = DesignationDisplay::Short;
+	} else {
+		m_designation_display = DesignationDisplay::Label;
+	}
 }
 
 /**
@@ -5235,6 +5350,23 @@ void QETProject::writeWireHopsXml(QDomElement &xml_element)
 }
 
 /**
+	@brief QETProject::writeAutoConductorXml
+	Export the automatic creation of conductors as an <auto_conductor> child
+	of \a xml_element. Written only when it is off, so a project that never
+	turned it off saves exactly as before.
+*/
+void QETProject::writeAutoConductorXml(QDomElement &xml_element)
+{
+	if (m_auto_conductor) {
+		return;
+	}
+	QDomElement auto_conductor = xml_element.ownerDocument()
+			.createElement(QStringLiteral("auto_conductor"));
+	auto_conductor.setAttribute(QStringLiteral("enabled"), QStringLiteral("0"));
+	xml_element.appendChild(auto_conductor);
+}
+
+/**
 	@brief QETProject::writeOriginXml
 	Export information regarding which corner is used as the origin (the reference
 	point for the coordinate system) as a child `<style>` element within
@@ -5459,6 +5591,54 @@ void QETProject::writeSymbolTextsXml(QDomElement &xml_element)
 }
 
 /**
+	@brief QETProject::readDefinitionMarkStyleXml
+	Read the <definition_mark_style> element of the project, if any. A
+	project without it was saved before the customized drawing existed:
+	its definition marks are drawn the way they always were.
+	@param xml_project : the xml description of the project
+*/
+void QETProject::readDefinitionMarkStyleXml(QDomDocument &xml_project)
+{
+	m_definition_mark_style.fromXml(xml_project.documentElement()
+			.firstChildElement(QStringLiteral("definition_mark_style")));
+}
+
+/**
+	@brief QETProject::writeDefinitionMarkStyleXml
+	Export how the definition marks are drawn, as a
+	<definition_mark_style> child of \a xml_element. Written only when
+	the project turned the customized drawing on, so a project that draws
+	them the standard way saves exactly as before.
+*/
+void QETProject::writeDefinitionMarkStyleXml(QDomElement &xml_element)
+{
+	if (m_definition_mark_style.isStandard()) {
+		return;
+	}
+	QDomDocument document = xml_element.ownerDocument();
+	QDomElement style = document.createElement(QStringLiteral("definition_mark_style"));
+	m_definition_mark_style.toXml(style);
+	xml_element.appendChild(style);
+}
+
+/**
+	@brief QETProject::setDefinitionMarkStyle
+	Set how the definition marks of this project's conductors are drawn,
+	and redraw them.
+	@param style
+*/
+void QETProject::setDefinitionMarkStyle(const DefinitionMarkStyle &style)
+{
+	if (style == m_definition_mark_style) {
+		return;
+	}
+	m_definition_mark_style = style;
+	storeSettings();
+	setModified(true);
+	emit definitionMarkStyleChanged();
+}
+
+/**
 	@brief QETProject::writePlantLocationXml
 	Export whether %{plant} and %{location} give the plant and location a
 	symbol takes, as a <plant_location> child of \a xml_element. Written
@@ -5473,6 +5653,25 @@ void QETProject::writePlantLocationXml(QDomElement &xml_element)
 			.createElement(QStringLiteral("plant_location"));
 	place.setAttribute(QStringLiteral("inherited"), QStringLiteral("true"));
 	xml_element.appendChild(place);
+}
+
+/**
+	@brief QETProject::writeDesignationDisplayXml
+	Export what the label field of a symbol shows, as a
+	<designation_display> child of \a xml_element. Written only when it is
+	not the label only, so such a project saves exactly as before.
+*/
+void QETProject::writeDesignationDisplayXml(QDomElement &xml_element)
+{
+	if (m_designation_display == DesignationDisplay::Label) {
+		return;
+	}
+	QDomElement display = xml_element.ownerDocument()
+			.createElement(QStringLiteral("designation_display"));
+	display.setAttribute(QStringLiteral("shown"),
+						 m_designation_display == DesignationDisplay::Full
+						 ? QStringLiteral("full") : QStringLiteral("short"));
+	xml_element.appendChild(display);
 }
 
 /**
@@ -5523,6 +5722,8 @@ void QETProject::writeWiringRulesXml(QDomElement &xml_element)
 	@brief QETProject::readChainedReportsXml
 	Read the <chained_reports> element of the project, if any.
 	A project without it was saved before this feature existed.
+	The key attribute, when it is missing, says the label of the reports:
+	a project saved before this choice chains as it always did.
 	@param xml_project : the xml description of the project
 */
 void QETProject::readChainedReportsXml(QDomDocument &xml_project)
@@ -5532,15 +5733,20 @@ void QETProject::readChainedReportsXml(QDomDocument &xml_project)
 	if (!cr_elmt.isNull()) {
 		m_has_chained_reports_attribute = true;
 		m_chained_reports = (cr_elmt.attribute(QStringLiteral("enabled"), QStringLiteral("false")) == QLatin1String("true"));
+		m_chained_reports_key = reportLinkKeyFromString(
+					cr_elmt.attribute(QStringLiteral("key")));
 	} else {
 		m_has_chained_reports_attribute = false;
 		m_chained_reports = false;
+		m_chained_reports_key = ReportLinkKey::Label;
 	}
 }
 
 /**
 	@brief QETProject::writeChainedReportsXml
 	Save the chained reports setting into the project XML.
+	The key is written only when it is not the label: a project which
+	chains by label keeps the element it always had.
 	@param xml_element : the root project element
 */
 void QETProject::writeChainedReportsXml(QDomElement &xml_element)
@@ -5551,6 +5757,10 @@ void QETProject::writeChainedReportsXml(QDomElement &xml_element)
 	QDomElement cr_elmt = xml_element.ownerDocument()
 			.createElement(QStringLiteral("chained_reports"));
 	cr_elmt.setAttribute(QStringLiteral("enabled"), m_chained_reports ? QStringLiteral("true") : QStringLiteral("false"));
+	if (m_chained_reports_key == ReportLinkKey::Function) {
+		cr_elmt.setAttribute(QStringLiteral("key"),
+							 reportLinkKeyToString(m_chained_reports_key));
+	}
 	xml_element.appendChild(cr_elmt);
 }
 
@@ -5722,6 +5932,130 @@ bool QETProject::hasChainedReportsAttribute() const
 }
 
 /**
+	@brief QETProject::chainedReportsKey
+	@return what two folio reports must share to be chained together
+	(ReportLinkKey)
+*/
+QETProject::ReportLinkKey QETProject::chainedReportsKey() const
+{
+	return m_chained_reports_key;
+}
+
+/**
+	@brief QETProject::setChainedReportsKey
+	Change what two folio reports must share to be chained together.
+	Only the choice is stored here: the chains it takes away and makes
+	again belong to ChangeReportLinkKeyCommand, which undoes them
+	together with it.
+	@param key the new key
+*/
+void QETProject::setChainedReportsKey(ReportLinkKey key)
+{
+	if (key == m_chained_reports_key) {
+		return;
+	}
+	m_chained_reports_key = key;
+	storeSettings();
+}
+
+/**
+	@brief QETProject::reportLinkKeyToString
+	@return what a project writes in the file for this key: "function",
+	or "label" for the key a project has when it says nothing
+*/
+QString QETProject::reportLinkKeyToString(ReportLinkKey key)
+{
+	return key == ReportLinkKey::Function ? QStringLiteral("function")
+										  : QStringLiteral("label");
+}
+
+/**
+	@brief QETProject::reportLinkKeyFromString
+	@return the key a project chains its folio reports by, read from the
+	word its file or the settings keep for it
+*/
+QETProject::ReportLinkKey QETProject::reportLinkKeyFromString(const QString &name)
+{
+	return name == QLatin1String("function") ? ReportLinkKey::Function
+											 : ReportLinkKey::Label;
+}
+
+/**
+	@brief QETProject::chainsByWireFunction
+	@return true when this project chains its folio reports by the
+	function of the wire each of them holds (ReportLinkKey::Function)
+*/
+bool QETProject::chainsByWireFunction() const
+{
+	return m_chained_reports && m_chained_reports_key == ReportLinkKey::Function;
+}
+
+/**
+	@brief QETProject::dissolveReportLinksOfPotential
+	Take away every folio report link of the potential @p conductor is
+	in. A name written over a potential (Conductor::setPropertyToPotential)
+	stays on the folio it is written on: the wires a folio report joins
+	are one wire, but they need not carry the same name, and the chaining
+	makes the links again with the new name once the name is written
+	(QETProject::reportKeySourceChanged).
+	Nothing in a project chaining by the label of its reports, or not at
+	all: the links of such a project are made by hand and are nobody's to
+	take away, and nothing would make them again.
+	@param conductor the wire whose potential is walked
+*/
+void QETProject::dissolveReportLinksOfPotential(Conductor *conductor)
+{
+	if (!chainsByWireFunction() || !conductor) {
+		return;
+	}
+	const auto links = reportLinksOfPotential({conductor});
+	for (const auto &link : links) {
+		if (link.first && !link.first->isFree()) {
+			link.first->unlinkAllElements();
+		}
+	}
+}
+
+/**
+	@brief QETProject::reportLinksOfPotential
+	@return the folio report links of the potentials of @p wires: each
+	pair of reports a link joins, once. A report keeps one partner, so a
+	pair is all a link is (ReportElement::linkToElement)
+*/
+QList<QPair<Element *, Element *>> QETProject::reportLinksOfPotential(
+		const QList<Conductor *> &wires) const
+{
+	QList<QPair<Element *, Element *>> links;
+	QSet<Conductor *> potential;
+	QSet<Element *> done;
+	for (Conductor *conductor : wires) {
+		if (!conductor) {
+			continue;
+		}
+		potential.insert(conductor);
+		potential.unite(conductor->relatedPotentialConductors());
+	}
+	for (Conductor *wire : std::as_const(potential))
+	{
+		for (Terminal *terminal : {wire->terminal1, wire->terminal2})
+		{
+			Element *elmt = terminal ? terminal->parentElement() : nullptr;
+			if (!elmt || done.contains(elmt)) {
+				continue;
+			}
+			done.insert(elmt);
+			if ((elmt->linkType() & ElementData::AllReport) && !elmt->isFree()) {
+				Element *partner = elmt->linkedElements().value(0);
+				if (partner) {
+					links.append(qMakePair(elmt, partner));
+				}
+			}
+		}
+	}
+	return links;
+}
+
+/**
 	@brief QETProject::writeDefaultPropertiesXml
 	Export all defaults properties used by a new diagram and his content
 	size of border
@@ -5820,13 +6154,16 @@ void QETProject::storeSettings()
 	writeProjectPropertiesXml(properties);
 	root.appendChild(properties);
 	writeWireHopsXml(root);
+	writeAutoConductorXml(root);
 	writeSymbolTextsXml(root);
 	writePlantLocationXml(root);
+	writeDesignationDisplayXml(root);
 	writeDeviceTypeRulesXml(root);
 	writeLanguagesXml(root);
 	writePotentialTypesXml(root);
 	writeTerminalLabelSplitXml(root);
 	writeWiringRulesXml(root);
+	writeDefinitionMarkStyleXml(root);
 	writeChainedReportsXml(root);
 	writeConductorPlantCountersXml(root);
 	writeDeviceTypesXml(root);
@@ -6483,6 +6820,39 @@ void QETProject::usedTitleBlockTemplateChanged(const QString &template_name) {
 #include "qetgraphicsitem/reportelement.h"
 #include "qetgraphicsitem/dynamicelementtextitem.h"
 #include "qetgraphicsitem/elementtextitemgroup.h"
+#include "qetgraphicsitem/terminal.h"
+#include "qetgraphicsitem/conductor.h"
+
+namespace {
+/**
+	@brief reportMatchKey
+	The string two folio reports must share to be chained together: the
+	label each of them carries, or the function of the wire its terminal
+	holds -- the wire the report reads its texts from
+	(DynamicElementTextItem::setPotentialConductor). A report without a
+	terminal, without a wire, or whose value is empty has no key and is
+	never chained.
+	@param report the report to read
+	@param key what this project chains by
+	@return the key of \a report, empty when it has none
+*/
+QString reportMatchKey(const ReportElement *report, QETProject::ReportLinkKey key)
+{
+	if (key == QETProject::ReportLinkKey::Label) {
+		return report->elementInformations()
+				.value(QStringLiteral("label")).toString().trimmed();
+	}
+	const QList<Terminal *> terminals = report->terminals();
+	if (terminals.isEmpty()) {
+		return QString();
+	}
+	const QList<Conductor *> conductors = terminals.first()->conductors();
+	if (conductors.isEmpty()) {
+		return QString();
+	}
+	return conductors.first()->properties().m_function.trimmed();
+}
+}
 
 void QETProject::scheduleAutoLink()
 {
@@ -6496,6 +6866,142 @@ void QETProject::scheduleAutoLink()
 	});
 }
 
+/**
+	@brief QETProject::reportKeySourceChanged
+	A wire of a folio report was added to its terminal, taken off it, or
+	the function of a wire took another value. When that function is what
+	chains this project (ReportLinkKey::Function) it is what holds a chain
+	together: a link whose two reports do not share it any more does not
+	describe the drawing and is made again -- what a changed label does in
+	a project chaining by the label (ChangeElementInformationCommand).
+	Only the reports @p conductor ends on are looked at: a link elsewhere
+	in the project is nobody's to take away. The chains of the names they
+	are in are made again: a report that took another name may sit between
+	two that were chained, and the chain has to go around it -- so every
+	link of those names goes, whoever made it.
+	@param conductor the wire that changed; every report is looked at when
+	it is null
+*/
+void QETProject::reportKeySourceChanged(Conductor *conductor)
+{
+	if (!chainsByWireFunction()) {
+		return;
+	}
+		//A project opening keeps the links its file has, whoever made
+		//them: the names of the wires say nothing about that until the
+		//user edits one of them
+	if (m_state == ProjectParsingRunning) {
+		return;
+	}
+		//The chains are looked over again at once: what the change leaves
+		//free is made again by the chaining in the next turn of the event
+		//loop, and an undo brings its links back after this has run
+	recheckReportKeys(conductor);
+}
+
+/**
+	@brief QETProject::recheckReportKeys
+	The chains of the names the changed wires carry are made again: a
+	report that took another name may sit between two that were chained,
+	and the chain has to go around it -- so every link of those names
+	goes, whoever made it.
+	@param conductor the wire that changed; every report is looked at when
+	it is null
+*/
+void QETProject::recheckReportKeys(Conductor *conductor)
+{
+	QList<ReportElement *> touched;
+	if (conductor) {
+		for (Terminal *terminal : {conductor->terminal1, conductor->terminal2}) {
+			ReportElement *report = terminal
+					? dynamic_cast<ReportElement*>(
+						  terminal->parentElement()) : nullptr;
+			if (report && !touched.contains(report)) {
+				touched << report;
+			}
+		}
+	} else {
+		ElementProvider ep(this);
+		for (const QPointer<Element> &elmt_ptr : ep.find(ElementData::AllReport)) {
+			ReportElement *report = dynamic_cast<ReportElement*>(elmt_ptr.data());
+			if (report && !touched.contains(report)) {
+				touched << report;
+			}
+		}
+	}
+		//The names the chains are made again for: what these reports are
+		//called now, and what the partner of a linked one is called --
+		//the name it left
+	QSet<QString> names;
+	for (ReportElement *report : std::as_const(touched)) {
+		names << reportMatchKey(report, m_chained_reports_key);
+		ReportElement *partner = dynamic_cast<ReportElement*>(
+				report->linkedElements().value(0));
+		if (partner) {
+			names << reportMatchKey(partner, m_chained_reports_key);
+		}
+	}
+	names.remove(QString());
+	if (names.isEmpty()) {
+		return;
+	}
+	ElementProvider ep(this);
+	for (const QPointer<Element> &elmt_ptr : ep.find(ElementData::AllReport)) {
+		ReportElement *report = dynamic_cast<ReportElement*>(elmt_ptr.data());
+		if (report && !report->isFree()
+				&& names.contains(reportMatchKey(report, m_chained_reports_key))) {
+			report->unlinkAllElements();
+		}
+	}
+	scheduleAutoLink();
+}
+
+/**
+	@brief QETProject::dissolveReportLinks
+	Take away every folio report link of this project. The chains a
+	project has were made with one key: when the project starts chaining
+	by another they do not describe what the new one pairs, so they go
+	and are made again from it.
+*/
+void QETProject::dissolveReportLinks()
+{
+	ElementProvider ep(this);
+	for (const QPointer<Element> &elmt_ptr : ep.find(ElementData::AllReport)) {
+		if (!elmt_ptr) {
+			continue;
+		}
+		if (!elmt_ptr->isFree()) {
+			elmt_ptr->unlinkAllElements();
+		}
+	}
+}
+
+/**
+	@brief QETProject::refreshReportTexts
+	Make sure every report shows the text matching its current link state.
+*/
+void QETProject::refreshReportTexts()
+{
+	ElementProvider ep(this);
+	for (const QPointer<Element> &elmt_ptr : ep.find(ElementData::AllReport)) {
+		if (!elmt_ptr) {
+			continue;
+		}
+		ReportElement *report = dynamic_cast<ReportElement*>(elmt_ptr.data());
+		if (!report) {
+			continue;
+		}
+		for (DynamicElementTextItem *deti : report->dynamicTextItems()) {
+			deti->refreshReportText();
+		}
+		for (ElementTextItemGroup *group : report->textGroups()) {
+			for (DynamicElementTextItem *deti : group->texts()) {
+				deti->refreshReportText();
+			}
+		}
+	}
+}
+
 void QETProject::autoLinkReportElements()
 {
 	if (!m_chained_reports) {
@@ -6505,29 +7011,26 @@ void QETProject::autoLinkReportElements()
 	ElementProvider ep(this);
 	const QVector<QPointer<Element>> all_report_elmts = ep.find(ElementData::AllReport);
 
-	QHash<QString, QList<ReportElement*>> freeReportsByLabel;
-	QList<ReportElement*> all_reports;
+	QHash<QString, QList<ReportElement*>> freeReports;
 
 	for (const auto &elmt_ptr : all_report_elmts) {
 		if (!elmt_ptr) continue;
 		ReportElement *report = dynamic_cast<ReportElement*>(elmt_ptr.data());
 		if (!report) continue;
 
-		all_reports.append(report);
-
 		// Only auto-link reports that are currently unlinked (isFree() == true)
-		// and have a non-empty label! Never overwrite existing or manual links.
+		// and have a non-empty key! Never overwrite existing or manual links.
 		if (report->isFree()) {
-			QString label = report->elementInformations().value(QStringLiteral("label")).toString().trimmed();
-			if (!label.isEmpty()) {
-				freeReportsByLabel[label].append(report);
+			const QString key = reportMatchKey(report, m_chained_reports_key);
+			if (!key.isEmpty()) {
+				freeReports[key].append(report);
 			}
 		}
 	}
 
 	bool linked_any = false;
 
-	for (auto it = freeReportsByLabel.begin(); it != freeReportsByLabel.end(); ++it) {
+	for (auto it = freeReports.begin(); it != freeReports.end(); ++it) {
 		QList<ReportElement*> &reports = it.value();
 		if (reports.size() < 2) continue;
 
@@ -6588,14 +7091,5 @@ void QETProject::autoLinkReportElements()
 	}
 
 	// Make sure every report shows the text matching its current link state.
-	for (ReportElement *report : std::as_const(all_reports)) {
-		for (DynamicElementTextItem *deti : report->dynamicTextItems()) {
-			deti->refreshReportText();
-		}
-		for (ElementTextItemGroup *group : report->textGroups()) {
-			for (DynamicElementTextItem *deti : group->texts()) {
-				deti->refreshReportText();
-			}
-		}
-	}
+	refreshReportTexts();
 }

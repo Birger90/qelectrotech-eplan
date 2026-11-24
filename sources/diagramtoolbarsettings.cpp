@@ -171,6 +171,7 @@ QStringList DiagramToolbarSettings::defaultIds(const QString &name)
 			QStringLiteral("diagrameditor.close_file"),
 			QStringLiteral("diagrameditor.print"),
 			QStringLiteral("diagrameditor.export_to_pdf"),
+			QStringLiteral("diagrameditor.check_project"),
 			sep,
 			QStringLiteral("diagrameditor.undo"),
 			QStringLiteral("diagrameditor.redo"),
@@ -294,6 +295,52 @@ void DiagramToolbarSettings::placeNewWidgets()
 		main_ids.prepend(separatorId());
 		main_ids.prepend(QStringLiteral("widget:claude"));
 		setIds(main_name, main_ids);
+	}();
+
+		//"Check plan" became "Check project" (one Check panel): saved
+		//toolbars keep their button
+	[&]() {
+		const QString old_check = QStringLiteral("diagrameditor.check_plan");
+		const QString check = QStringLiteral("diagrameditor.check_project");
+		QStringList all_names = builtInNames();
+		for (const Toolbar &toolbar : customToolbars()) all_names << toolbar.name;
+		for (const QString &name : all_names) {
+			if (!settings.contains(CONTENTS + name)) continue;
+			QStringList list = ids(name);
+			const int at = list.indexOf(old_check);
+			if (at < 0) continue;
+			list.removeAll(old_check);
+			if (!list.contains(check)) list.insert(at, check);
+			setIds(name, list);
+		}
+	}();
+
+		//"Check project" goes once next to "Export to PDF" (or at the end
+		//of the main toolbar), in a saved toolbar that has none yet
+	[&]() {
+		const QString check_done = QStringLiteral("diagrameditor/toolbars_placed/check_project");
+		if (settings.value(check_done).toBool()) return;
+		settings.setValue(check_done, true);
+		const QString check = QStringLiteral("diagrameditor.check_project");
+		const QString pdf = QStringLiteral("diagrameditor.export_to_pdf");
+		QStringList all_names = builtInNames();
+		for (const Toolbar &toolbar : customToolbars()) all_names << toolbar.name;
+		for (const QString &name : all_names)
+			if (settings.contains(CONTENTS + name) && ids(name).contains(check)) return;
+		for (const QString &name : all_names) {
+			if (!settings.contains(CONTENTS + name)) continue;	//the defaults have it
+			QStringList list = ids(name);
+			const int at = list.indexOf(pdf);
+			if (at < 0) continue;
+			list.insert(at + 1, check);
+			setIds(name, list);
+			return;
+		}
+		const QString main_name = QStringLiteral("toolbar");
+		if (!settings.contains(CONTENTS + main_name)) return;
+		QStringList list = ids(main_name);
+		list << check;
+		setIds(main_name, list);
 	}();
 
 		//"Draw terminal strip" goes once next to "Draw a cable", in

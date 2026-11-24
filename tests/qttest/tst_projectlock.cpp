@@ -275,7 +275,136 @@ class tst_projectlock : public QObject
 			ProjectLock::setHeadless(true);
 			QVERIFY(!ProjectLock::mayTake());
 		}
+
+			//No heartbeat for ProjectLock::orphan_minutes: offered to take
+			//over, never taken silently (a laptop that slept wakes up)
+		void orphanedAfterTenMinutesOnly()
+		{
+			const QDateTime now = QDateTime::currentDateTimeUtc();
+			writeLock(m_project, QStringLiteral("WORKSHOP-PC"), 4120, now.addSecs(-9 * 60));
+			QVERIFY(!ProjectLock::isOrphaned(ProjectLock::readHolder(m_project), now));
+			writeLock(m_project, QStringLiteral("WORKSHOP-PC"), 4120, now.addSecs(-11 * 60));
+			QVERIFY(ProjectLock::isOrphaned(ProjectLock::readHolder(m_project), now));
+			QVERIFY(ProjectLock::liveHolder(m_project).valid);
+			ProjectLock lock;
+			QCOMPARE(lock.acquire(m_project), ProjectLock::Result::Held);
+			QVERIFY(ProjectLock::isOrphaned(lock.blockingHolder()));
+				//"Take over the lock"
+			QCOMPARE(lock.acquire(m_project, true), ProjectLock::Result::Acquired);
+			QCOMPARE(readJson(m_project)["session"].toString(), lock.session());
+				//a lock being written ("?") is never called orphaned
+			ProjectLock::Holder writing;
+			writing.valid = true;
+			writing.session = QStringLiteral("?");
+			writing.heartbeat = now.addDays(-1);
+			QVERIFY(!ProjectLock::isOrphaned(writing, now));
+		}
+
+			//The lock of a crash on this PC is taken without a question, and
+			//acquire() says whose it was, so the user can be told
+		void crashedLockIsReported()
+		{
+			const qint64 dead = deadPid();
+			writeLock(m_project, ProjectLock::thisHost(), dead, QDateTime::currentDateTimeUtc());
+			ProjectLock lock;
+			QCOMPARE(lock.acquire(m_project), ProjectLock::Result::Acquired);
+			QVERIFY(lock.replacedStale().valid);
+			QCOMPARE(lock.replacedStale().pid, dead);
+			QCOMPARE(lock.replacedStale().user, QStringLiteral("alice"));
+			lock.release();
+			QCOMPARE(lock.acquire(m_project), ProjectLock::Result::Acquired);
+			QVERIFY(!lock.replacedStale().valid);
+		}
+
+			//"plant-<PC name>.qetz" beside plant.qetz, as OneDrive and
+			//SharePoint name the version of the other PC
+		void conflictCopiesOfOneDrive()
+		{
+			QTemporaryDir dir;
+			QVERIFY(dir.isValid());
+			const auto touch = [&dir](const QString &name, int age_s) {
+				QFile f(dir.filePath(name));
+				QVERIFY(f.open(QIODevice::WriteOnly));
+				f.write("x");
+				f.close();
+				QVERIFY(f.open(QIODevice::ReadWrite));
+				f.setFileTime(QDateTime::currentDateTime().addSecs(-age_s), QFileDevice::FileModificationTime);
+			};
+			const QString project = dir.filePath(QStringLiteral("plant.qetz"));
+			touch(QStringLiteral("plant.qetz"), 0);
+			touch(QStringLiteral("plant-DESKTOP-AB12CD3.qetz"), 300);   // yes
+			touch(QStringLiteral("plant-LAPTOP-7-1.qetz"), 100);        // yes, second copy of LAPTOP-7
+			touch(QStringLiteral("plant-workshop.qetz"), 200);          // yes: a known host
+			touch(QStringLiteral("plant-old.qetz"), 10);                // no: a name the user gave
+			touch(QStringLiteral("plant-2.qetz"), 10);                  // no: no PC name
+			touch(QStringLiteral("plant-DESKTOP-AB12CD3.qet"), 10);     // no: another format
+			touch(QStringLiteral("plant-with space.qetz"), 10);         // no: not one word
+			touch(QStringLiteral("other-DESKTOP-AB12CD3.qetz"), 10);    // no: another project
+			touch(QStringLiteral(".~plant-DESKTOP-AB12CD3.qetz"), 10);  // no: hidden helper file
+			const QStringList copies = ProjectLock::conflictCopies(project, {QStringLiteral("workshop.example.lan")});
+			QStringList names;
+			for (const QString &c : copies) names << QFileInfo(c).fileName();
+				//newest first
+			QCOMPARE(names, (QStringList{QStringLiteral("plant-LAPTOP-7-1.qetz"),
+										 QStringLiteral("plant-workshop.qetz"),
+										 QStringLiteral("plant-DESKTOP-AB12CD3.qetz")}));
+				//a .qet project has its own
+			touch(QStringLiteral("plant.qet"), 0);
+			QCOMPARE(ProjectLock::conflictCopies(dir.filePath(QStringLiteral("plant.qet"))).size(), 1);
+			QVERIFY(ProjectLock::conflictCopies(dir.filePath(QStringLiteral("none.qetz"))).isEmpty());
+		}
+
+			//Two programs: a second process holds the lock, this one sees it
+			//held with that process's number; once that process is killed
+			//(a crash) its lock is taken and reported
+		void twoProcesses()
+		{
+			QProcess holder;
+			QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+			env.insert(QStringLiteral("TST_PROJECTLOCK_HOLD"), m_project);
+			holder.setProcessEnvironment(env);
+			holder.start(QCoreApplication::applicationFilePath(), QStringList());
+			QVERIFY(holder.waitForStarted());
+			QVERIFY(holder.waitForReadyRead(10000));
+			QCOMPARE(holder.readAll().trimmed(), QByteArray("held"));
+
+			const ProjectLock::Holder live = ProjectLock::liveHolder(m_project);
+			QVERIFY(live.valid);
+			QCOMPARE(live.pid, holder.processId());
+			QVERIFY(!ProjectLock::isStale(live));
+			ProjectLock lock;
+			QCOMPARE(lock.acquire(m_project), ProjectLock::Result::Held);
+			QCOMPARE(lock.blockingHolder().pid, holder.processId());
+
+			const qint64 pid = holder.processId();
+			holder.kill();
+			QVERIFY(holder.waitForFinished(10000));
+			QVERIFY(QFileInfo::exists(ProjectLock::lockPathFor(m_project)));   // left behind
+			QVERIFY(ProjectLock::isStale(ProjectLock::readHolder(m_project)));
+			QCOMPARE(lock.acquire(m_project), ProjectLock::Result::Acquired);
+			QCOMPARE(lock.replacedStale().pid, pid);
+		}
 };
 
-QTEST_GUILESS_MAIN(tst_projectlock)
+	//The test program is also the second process of twoProcesses(): with
+	//TST_PROJECTLOCK_HOLD set it takes that lock, says so and waits to be
+	//killed
+int main(int argc, char *argv[])
+{
+	const QString hold = qEnvironmentVariable("TST_PROJECTLOCK_HOLD");
+	if (!hold.isEmpty()) {
+		QCoreApplication app(argc, argv);
+		QCoreApplication::setOrganizationName(QStringLiteral("QElectroTech-tst_projectlock"));
+		QCoreApplication::setApplicationName(QStringLiteral("tst_projectlock"));
+		ProjectLock lock;
+		if (lock.acquire(hold) != ProjectLock::Result::Acquired) return 1;
+		QTextStream(stdout) << "held" << Qt::endl;
+		QTimer::singleShot(60000, &app, &QCoreApplication::quit);
+		return app.exec();
+	}
+	QCoreApplication app(argc, argv);
+	tst_projectlock test;
+	QTEST_SET_MAIN_SOURCE_PATH
+	return QTest::qExec(&test, argc, argv);
+}
 #include "tst_projectlock.moc"

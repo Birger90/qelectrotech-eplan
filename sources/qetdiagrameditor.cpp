@@ -15,6 +15,7 @@
 	You should have received a copy of the GNU General Public License
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "revision/revisionui.h"
 #include "qetdiagrameditor.h"
 #include "itemdescription.h"
 #include "container/qetcontainer.h"
@@ -56,6 +57,7 @@
 #include "QWidgetAnimation/qwidgetanimation.h"
 #include "autoNum/ui/autonumberingdockwidget.h"
 #include "ui/devicenavigatordockwidget.h"
+#include "ui/checkpaneldockwidget.h"
 #include "ui/toolmenu.h"
 #include "conductornumexport.h"
 #include "diagramcommands.h"
@@ -104,14 +106,22 @@
 #include "textgrid.h"
 #include "shortcutmanager.h"
 #include "cablelist/cableexportdialog.h"
+#include "marking/markingexportdialog.h"
 #include "ui/bomexportdialog.h"
+#include "purchase/purchaseexport.h"
 #include "ui/conductorcolortoolbutton.h"
 #include "ui/diagrambgcolorbutton.h"
 #include "ui/duplicatelabelsdialog.h"
 #include "ui/devicetypecheckdialog.h"
 #include "ui/devicetypesdialog.h"
+#include "materiallist/materiallist.h"
+#include "ui/parttypesdialog.h"
+#include "ui/reportsdialog.h"
+#include "ui/plantslocationsdialog.h"
 #include "ui/potentialcheckdialog.h"
 #include "ui/fluidcheckdialog.h"
+#include "ui/openwireendsdialog.h"
+#include "ui/tiatagsdialog.h"
 #include "ui/duplicateoffsetdialog.h"
 #include "ui/jumptoelementdialog.h"
 #include "ui/diagrampropertieseditordockwidget.h"
@@ -141,6 +151,8 @@
 #include <QDebug>
 #include <QDir>
 #include <QDesktopServices>
+#include <QCryptographicHash>
+#include <QSettings>
 #include <QTimer>
 #include <QGuiApplication>
 #include <QPushButton>
@@ -165,6 +177,7 @@
 #include <QFileDialog>
 #include <QSpinBox>
 #include <QDockWidget>
+#include "functiontemplates/functiontemplatedock.h"
 #include <QJsonObject>
 #include <QTime>
 #include <QStatusBar>
@@ -350,6 +363,8 @@ QETDiagramEditor::QETDiagramEditor(const QStringList &files, QWidget *parent) :
 	setUpDeviceNavigatorDock();
 	setUpAssistantDock();
 	setUpSimulationDock();
+	setUpCheckPanelDock();
+	setUpFunctionTemplateDock();
 
 	setUpActions();
 	setUpToolBar();
@@ -576,6 +591,27 @@ void QETDiagramEditor::setUpSimulationDock()
 }
 
 /**
+	@brief QETDiagramEditor::setUpFunctionTemplateDock
+	The function templates ("Motorabgang DOL", "DI-Sensor mit Kabel"),
+	beside the collections, from the Display menu
+*/
+void QETDiagramEditor::setUpFunctionTemplateDock()
+{
+	m_function_template_dock = new FunctionTemplateDock(this);
+	m_function_template_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+	m_function_template_dock->setFeatures(
+		QDockWidget::DockWidgetClosable |
+		QDockWidget::DockWidgetMovable |
+		QDockWidget::DockWidgetFloatable);
+	addDockWidget(Qt::RightDockWidgetArea, m_function_template_dock);
+	if (m_qdw_elmt_collection)
+		tabifyDockWidget(m_qdw_elmt_collection, m_function_template_dock);
+	m_function_template_dock->toggleViewAction()->setStatusTip(
+		tr("Show or hide the function templates: circuits with placeholders to place in one go"));
+	if (m_qdw_elmt_collection) m_qdw_elmt_collection->raise();
+}
+
+/**
 	@brief QETDiagramEditor::setUpDeviceNavigatorDock
 	Set up the device navigator dock widget
 */
@@ -611,6 +647,29 @@ void QETDiagramEditor::applyDeviceNavigatorSetting()
 	if (enabled && currentProject()) {
 		m_device_navigator_dock->setProject(currentProject());
 	}
+}
+
+/**
+	@brief QETDiagramEditor::setUpCheckPanelDock
+	The Check panel (#1878 B1), below the folios, hidden until it is asked
+	for: Project > Check project, or the Display menu.
+*/
+void QETDiagramEditor::setUpCheckPanelDock()
+{
+	m_check_panel_dock = new CheckPanelDockWidget(this);
+	m_check_panel_dock->setAllowedAreas(Qt::AllDockWidgetAreas);
+	m_check_panel_dock->setFeatures(
+		QDockWidget::DockWidgetClosable |
+		QDockWidget::DockWidgetMovable |
+		QDockWidget::DockWidgetFloatable);
+	addDockWidget(Qt::BottomDockWidgetArea, m_check_panel_dock);
+	m_check_panel_dock->hide();
+
+	connect(m_check_panel_dock, &QDockWidget::visibilityChanged, this, [this](bool visible) {
+		if (visible && m_check_panel_dock) {
+			m_check_panel_dock->setProject(currentProject());
+		}
+	});
 }
 
 /**
@@ -1324,7 +1383,45 @@ void QETDiagramEditor::setUpActions()
 			dialog.exec();
 		}
 	});
+	// The project's lists: parts, wires, terminals, cables, PLC
+	m_reports = new QAction(QET::Icons::DocumentSpreadsheet, tr("Reports..."), this);
+	m_reports->setObjectName(QStringLiteral("projectReports"));
+	m_reports->setStatusTip(tr("Shows the project's lists and exports them to CSV or PDF", "status bar tip"));
+	ShortcutManager::instance().registerAction(m_reports, "diagrameditor.reports", tr("Diagram editors"), QKeySequence());
+	connect(m_reports, &QAction::triggered, this, [this]() {
+		if (ProjectView *view = currentProjectView()) {
+			auto *dialog = new ReportsDialog(view->project(), this);
+			dialog->setAttribute(Qt::WA_DeleteOnClose);
+			dialog->show();
+		}
+	});
+	// The project's plants and locations with their counts
+	m_plants_locations = new QAction(tr("Plants and locations..."), this);
+	m_plants_locations->setObjectName(QStringLiteral("plantsLocations"));
+	m_plants_locations->setStatusTip(tr("Lists the project's plants and locations with their symbol and folio counts", "status bar tip"));
+	ShortcutManager::instance().registerAction(m_plants_locations, "diagrameditor.plants_locations", tr("Diagram editors"), QKeySequence());
+	connect(m_plants_locations, &QAction::triggered, this, [this]() {
+		if (ProjectView *view = currentProjectView()) {
+			auto *dialog = new PlantsLocationsDialog(view->project(), this);
+			dialog->setAttribute(Qt::WA_DeleteOnClose);
+			connect(dialog, &PlantsLocationsDialog::showFolio, view, [view](int position) {
+				if (!view->project()) return;
+				view->showDiagram(view->project()->folios().value(position - 1));
+			});
+			dialog->show();
+		}
+	});
 	// Devices not drawn the way their device type says
+	m_part_types = new QAction(tr("Parts without a device type..."), this);
+	m_part_types->setObjectName(QStringLiteral("partTypes"));
+	m_part_types->setStatusTip(tr("Lists the parts of your material list which do not say their device type"));
+	ShortcutManager::instance().registerAction(m_part_types, "diagrameditor.part_types", tr("Diagram editors"), QKeySequence());
+	connect(m_part_types, &QAction::triggered, this, [this]() {
+		QString path = MaterialList::configuredPath();
+		if (path.isEmpty()) path = MaterialList::defaultPath();
+		PartTypesDialog dialog(currentProject(), path, this);
+		dialog.exec();
+	});
 	m_check_device_types = new QAction(tr("Check device types..."), this);
 	m_check_device_types->setObjectName(QStringLiteral("checkDeviceTypes"));
 	m_check_device_types->setStatusTip(tr("Lists the parts of each device's type which are not drawn, and the symbols beyond it", "status bar tip"));
@@ -1332,6 +1429,34 @@ void QETDiagramEditor::setUpActions()
 	connect(m_check_device_types, &QAction::triggered, this, [this]() {
 		if (ProjectView *view = currentProjectView()) {
 			auto *dialog = new DeviceTypeCheckDialog(view->project(), this);
+			dialog->setAttribute(Qt::WA_DeleteOnClose);
+			dialog->show();
+		}
+	});
+	// Every check at once, in the Check panel
+	m_check_project = new QAction(QET::Icons::DialogOk, tr("Check project"), this);
+	m_check_project->setObjectName(QStringLiteral("checkProject"));
+		// Fork: the rules of "Check plan" are in the same panel
+	m_check_project->setToolTip(tr("Check project: duplicate labels, open terminals, devices without a part, "
+				       "terminals without a strip, contacts without a coil, cables, PLC channels and more, "
+				       "in one list with errors, warnings and notes. Double-click a finding to show it."));
+	m_check_project->setStatusTip(tr("Runs every check on the project and lists the findings in the Check panel", "status bar tip"));
+	ShortcutManager::instance().registerAction(m_check_project, "diagrameditor.check_project", tr("Diagram editors"), QKeySequence());
+	connect(m_check_project, &QAction::triggered, this, [this]() {
+		if (!currentProject() || !m_check_panel_dock) return;
+		m_check_panel_dock->show();
+		m_check_panel_dock->raise();
+		m_check_panel_dock->setProject(currentProject());
+		m_check_panel_dock->run();
+	});
+	// Wires that lead nowhere (#1878 B2)
+	m_check_open_wire_ends = new QAction(tr("Check open wire ends..."), this);
+	m_check_open_wire_ends->setObjectName(QStringLiteral("checkOpenWireEnds"));
+	m_check_open_wire_ends->setStatusTip(tr("Lists the wires that run to an unlinked folio report, into a junction on one side only, or reach one symbol terminal", "status bar tip"));
+	ShortcutManager::instance().registerAction(m_check_open_wire_ends, "diagrameditor.check_open_wire_ends", tr("Diagram editors"), QKeySequence());
+	connect(m_check_open_wire_ends, &QAction::triggered, this, [this]() {
+		if (ProjectView *view = currentProjectView()) {
+			auto *dialog = new OpenWireEndsDialog(view->project(), this);
 			dialog->setAttribute(Qt::WA_DeleteOnClose);
 			dialog->show();
 		}
@@ -1355,6 +1480,18 @@ void QETDiagramEditor::setUpActions()
 	connect(m_check_fluid, &QAction::triggered, this, [this]() {
 		if (ProjectView *view = currentProjectView()) {
 			auto *dialog = new FluidCheckDialog(view->project(), this);
+			dialog->setAttribute(Qt::WA_DeleteOnClose);
+			dialog->show();
+		}
+	});
+		//PLC tags of the channels to Siemens TIA Portal and back
+	m_tia_tags = new QAction(QET::Icons::DocumentSpreadsheet, tr("PLC tags and TIA Portal..."), this);
+	m_tia_tags->setObjectName(QStringLiteral("tiaTags"));
+	m_tia_tags->setStatusTip(tr("Export the PLC channels as TIA Portal tag table, or compare them with one exported from TIA Portal"));
+	ShortcutManager::instance().registerAction(m_tia_tags, "diagrameditor.tia_tags", tr("Diagram editors"), QKeySequence());
+	connect(m_tia_tags, &QAction::triggered, this, [this]() {
+		if (ProjectView *view = currentProjectView()) {
+			auto *dialog = new TiaTagsDialog(view->project(), this);
 			dialog->setAttribute(Qt::WA_DeleteOnClose);
 			dialog->show();
 		}
@@ -1412,6 +1549,16 @@ void QETDiagramEditor::setUpActions()
 	connect(m_csv_export, &QAction::triggered, [this]() {
 		BOMExportDialog bom(currentProjectView()->project(), this);
 		bom.exec();
+	});
+
+		//Purchase list: articles by supplier with prices, EAN, packaging
+		//unit, as an Excel workbook and an ERP file
+	m_purchase_export = new QAction(QET::Icons::DocumentSpreadsheet, tr("Export purchase list..."), this);
+	ShortcutManager::instance().registerAction(m_purchase_export, "diagrameditor.purchase_export", tr("Diagram editors"), QKeySequence());
+	m_purchase_export->setStatusTip(tr("Articles grouped by supplier with price, EAN and packaging unit, as Excel and ERP file"));
+	connect(m_purchase_export, &QAction::triggered, this, [this]() {
+		if (ProjectView *view = currentProjectView())
+			PurchaseExport::run(view->project(), this);
 	});
 
 		//Add a nomenclature item
@@ -1476,6 +1623,19 @@ void QETDiagramEditor::setUpActions()
 			//The same dialog the material list is exported with, only
 			//with the columns of the cable list
 		CableExportDialog dialog(project, this);
+		dialog.exec();
+	});
+
+	//Markers for the marking software of the terminal makers
+	m_export_marking = new QAction(QET::Icons::DocumentSpreadsheet, tr("Export markers..."), this);
+	ShortcutManager::instance().registerAction(m_export_marking, "diagrameditor.export_marking", tr("Diagram editors"), QKeySequence());
+	m_export_marking->setStatusTip(tr("Wire, terminal, device and cable markers for Phoenix Contact, Weidmüller or WAGO marking software"));
+	connect(m_export_marking, &QAction::triggered, [this]() {
+		QETProject *project = this->currentProject();
+		if (!project) {
+			return;
+		}
+		MarkingExportDialog dialog(project, this);
 		dialog.exec();
 	});
 
@@ -2534,6 +2694,8 @@ void QETDiagramEditor::setUpMenu()
 	// menu Projet
 	menu_project -> addAction(m_project_edit_properties);
 	menu_project -> addAction(m_project_history);
+		//Close a revision, mark and compare its changes (EPLAN's revisions)
+	RevisionUi::addMenu(this, menu_project);
 	menu_project -> addAction(m_auto_conductor);
 		//Sits beside m_auto_conductor, the setting it pairs with. It was
 		//toolbar-only and so had no keyboard route at all.
@@ -2549,16 +2711,25 @@ void QETDiagramEditor::setUpMenu()
 	menu_project->addAction(m_find_duplicate_labels);
 	menu_project->addAction(m_check_potentials);
 	menu_project->addAction(m_check_fluid);
+	menu_project->addAction(m_check_open_wire_ends);
 	menu_project->addAction(m_device_types);
 	menu_project->addAction(m_check_device_types);
+	menu_project->addAction(m_part_types);
+		//Every check above at once, in the Check panel
+	menu_project->addAction(m_check_project);
 	menu_project->addAction(m_project_languages);
 	menu_project -> addSeparator();
 	menu_project -> addAction(m_csv_export);
+	menu_project -> addAction(m_purchase_export);
 	menu_project -> addAction(m_cable_overview);
 	menu_project -> addAction(m_export_cable_list);
+	menu_project -> addAction(m_export_marking);
+	menu_project -> addAction(m_tia_tags);
 	menu_project -> addAction(m_project_export_conductor_num);
 	menu_project -> addAction(m_project_export_wiring_list);
 	menu_project -> addAction(m_project_wiring_list_view);
+	menu_project -> addAction(m_reports);
+	menu_project -> addAction(m_plants_locations);
 	menu_project -> addAction(m_reload_element_drawings);
 	menu_project -> addAction(m_update_elements_from_collections);
 	menu_project -> addAction(m_reset_symbol_texts);
@@ -2603,6 +2774,9 @@ void QETDiagramEditor::setUpMenu()
 	if (m_device_navigator_dock) {
 		m_device_navigator_dock->toggleViewAction()->setStatusTip(tr("Show or hide the device navigator"));
 	}
+	if (m_check_panel_dock) {
+		m_check_panel_dock->toggleViewAction()->setStatusTip(tr("Show or hide the Check panel"));
+	}
 
 
 	// menu Affichage
@@ -2634,6 +2808,12 @@ void QETDiagramEditor::setUpMenu()
 	}
 	if (m_simulation_dock) {
 		menu_affichage -> addAction(m_simulation_dock->toggleViewAction());
+	}
+	if (m_check_panel_dock) {
+		menu_affichage -> addAction(m_check_panel_dock->toggleViewAction());
+	}
+	if (m_function_template_dock) {
+		menu_affichage -> addAction(m_function_template_dock->toggleViewAction());
 	}
 	menu_affichage -> addSeparator();
 	menu_affichage -> addActions(m_zoom_actions_group.actions());
@@ -2868,6 +3048,9 @@ QETDiagramEditor::LockChoice QETDiagramEditor::askAboutLock(
 		const ProjectLock::Holder &holder)
 {
 	const QString name = QFileInfo(filepath).fileName();
+		//No heartbeat for ProjectLock::orphan_minutes: that session is
+		//most likely gone, and taking its lock over is the offered answer
+	const bool orphaned = ProjectLock::isOrphaned(holder);
 	QString text;
 	if (holder.session == QLatin1String("?")) {
 		text = tr("%1 is being opened by another session of QElectroTech.").arg(name);
@@ -2884,21 +3067,105 @@ QETDiagramEditor::LockChoice QETDiagramEditor::askAboutLock(
 		} else {
 			text += QLatin1Char('.');
 		}
+		if (!holder.app.isEmpty())
+			text += QLatin1Char('\n') + tr("Program: %1").arg(holder.app);
 	}
 
 	QMessageBox box(QMessageBox::Warning, tr("Project in use", "message box title"), text, QMessageBox::NoButton, this);
-	box.setInformativeText(tr("Open it read-only to look at it without changing it. "
-							  "Open it anyway only if you know that session is not "
-							  "using it any more: both of you could then save over each other."));
-	QPushButton *read_only = box.addButton(tr("Open read-only"), QMessageBox::AcceptRole);
-	QPushButton *anyway = box.addButton(tr("Open anyway"), QMessageBox::DestructiveRole);
+	QPushButton *take_over = nullptr;
+	if (orphaned) {
+		box.setInformativeText(tr("There has been no sign of life from there for over %n minute(s): "
+								  "QElectroTech probably crashed there, or the PC was switched off "
+								  "or lost the network. Take the lock over to edit the project. "
+								  "Should that session come back, it can no longer save over your work.",
+								  nullptr, ProjectLock::orphan_minutes));
+		take_over = box.addButton(tr("Take over the lock"), QMessageBox::AcceptRole);
+	} else {
+		box.setInformativeText(tr("Open it read-only to look at it without changing it. "
+								  "Edit it anyway only if you know that session is not "
+								  "using it any more: both of you could then save over each other."));
+	}
+	QPushButton *read_only = box.addButton(tr("Open read-only"), orphaned ? QMessageBox::RejectRole : QMessageBox::AcceptRole);
+	QPushButton *anyway = orphaned ? nullptr : box.addButton(tr("Edit anyway"), QMessageBox::DestructiveRole);
 	box.addButton(QMessageBox::Cancel);
-	box.setDefaultButton(read_only);
+	box.setDefaultButton(orphaned ? take_over : read_only);
 	box.setEscapeButton(box.button(QMessageBox::Cancel));
 	box.exec();
+	if (take_over && box.clickedButton() == take_over) return LockChoice::OpenAnyway;
 	if (box.clickedButton() == read_only) return LockChoice::ReadOnly;
-	if (box.clickedButton() == anyway) return LockChoice::OpenAnyway;
+	if (anyway && box.clickedButton() == anyway) {
+			//The one choice that can lose someone's work: said once more,
+			//plainly, before it is done
+		const auto answer = QET::QetMessageBox::warning(
+					this, tr("Edit anyway?", "message box title"),
+					tr("%1 is still working on %2. If you both save, the one who saves last "
+					   "overwrites the other's changes, and %1 can no longer save to this file.\n\n"
+					   "Edit it anyway?").arg(holder.user, name),
+					QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+		return answer == QMessageBox::Yes ? LockChoice::OpenAnyway : LockChoice::ReadOnly;
+	}
 	return LockChoice::Cancel;
+}
+
+/**
+	@brief QETDiagramEditor::tellConflictCopies
+	OneDrive and SharePoint keep both versions when two PCs changed the
+	project before either was synchronised: the other one lands beside it
+	as "<name>-<PC name>.<ext>" (ProjectLock::conflictCopies()). Those
+	changes are not in the opened project, so the user is told: once for
+	each copy, in a message box; every time in the status bar while one is
+	there.
+*/
+void QETDiagramEditor::tellConflictCopies(const QString &filepath)
+{
+	QStringList hosts;
+	const ProjectLock::Holder holder = ProjectLock::readHolder(filepath);
+	if (holder.valid) hosts << holder.host;
+	const QStringList copies = ProjectLock::conflictCopies(filepath, hosts);
+	if (copies.isEmpty()) return;
+
+	const QString name = QFileInfo(filepath).fileName();
+	statusBar()->showMessage(tr("%n conflict copy(ies) of %1 from OneDrive/SharePoint lie beside it.",
+								nullptr, static_cast<int>(copies.size())).arg(name), 30000);
+
+		//Already told about: the same name with the same time of change
+	QSettings settings;
+	const QString key = QStringLiteral("projectlock/conflicts_told/")
+			+ QString::fromLatin1(QCryptographicHash::hash(QFileInfo(filepath).absoluteFilePath().toLower().toUtf8(),
+														  QCryptographicHash::Sha1).toHex());
+	const QStringList told = settings.value(key).toStringList();
+	QStringList now;
+	QStringList lines;
+	bool news = false;
+	for (const QString &copy : copies) {
+		const QFileInfo info(copy);
+		const QString id = info.fileName() + QLatin1Char('|')
+				+ QString::number(info.lastModified().toSecsSinceEpoch());
+		now << id;
+		if (!told.contains(id)) news = true;
+		lines << QStringLiteral("• %1  (%2)").arg(info.fileName(),
+					QLocale::system().toString(info.lastModified(), QLocale::ShortFormat));
+	}
+	settings.setValue(key, now);
+	if (!news) return;
+
+	QMessageBox box(QMessageBox::Information, tr("Conflict copies found", "message box title"),
+					tr("Beside %1 lie copies that OneDrive or SharePoint made because the "
+					   "project was changed on two PCs at the same time:\n\n%2")
+					.arg(name, lines.join(QLatin1Char('\n'))),
+					QMessageBox::NoButton, this);
+	box.setInformativeText(tr("Their changes are not in the project you opened. Open the copy, "
+							  "carry over what is missing, then delete the copy so that this "
+							  "notice does not come back."));
+	QPushButton *open_copy = box.addButton(tr("Open the newest copy"), QMessageBox::ActionRole);
+	QPushButton *open_folder = box.addButton(tr("Show folder"), QMessageBox::ActionRole);
+	box.addButton(QMessageBox::Ok);
+	box.setDefaultButton(QMessageBox::Ok);
+	box.exec();
+	if (box.clickedButton() == open_folder)
+		QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(filepath).absolutePath()));
+	else if (box.clickedButton() == open_copy)
+		QTimer::singleShot(0, this, [this, copy = copies.first()]() { openAndAddProject(copy); });
 }
 
 /**
@@ -3250,12 +3517,28 @@ bool QETDiagramEditor::openAndAddProject(
 	}
 
 	if (opened_read_only_by_lock) project->setOpenedReadOnlyByLock(true);
+		//The lock of a session of this PC that crashed: taken without a
+		//question, but said, since its unsaved work is gone
+	const ProjectLock::Holder crashed = lock ? lock->replacedStale() : ProjectLock::Holder();
 	if (lock && lock->isHeld()) {
 		connect(lock.get(), &ProjectLock::lockTaken, this, [this, project](const ProjectLock::Holder &by) {
+				//From now on the file is the other person's: this session
+				//no longer writes it (QETProject::write() refuses too)
+			const QString file_name = QFileInfo(project->filePath()).fileName();
+			project->setOpenedReadOnlyByLock(true);
 			statusBar()->showMessage(
 				tr("%1 on %2 has taken over %3. Save your changes with Save As to keep them.")
-					.arg(by.user, by.host, QFileInfo(project->filePath()).fileName()),
-				30000);
+					.arg(by.user, by.host, file_name),
+				0);
+			auto *box = new QMessageBox(QMessageBox::Warning, tr("Project taken over", "message box title"),
+										tr("%1 on %2 has taken over %3 and is editing it now.\n\n"
+										   "The project is read-only here from now on. "
+										   "If you have changes, keep them with Save As in another file.")
+										.arg(by.user, by.host, file_name),
+										QMessageBox::Ok, this);
+			box->setAttribute(Qt::WA_DeleteOnClose);
+			box->setModal(false);
+			box->show();
 		});
 		project->setLock(std::move(lock));
 	}
@@ -3263,6 +3546,15 @@ bool QETDiagramEditor::openAndAddProject(
 	QETApp::projectsRecentFiles() -> fileWasOpened(filepath);
 	addProject(project);
 	DialogWaiting::dropInstance();
+	if (interactive && crashed.valid) {
+		statusBar()->showMessage(
+			tr("%1 was still marked as open by QElectroTech on this PC since %2, which has "
+			   "ended (crash?). The lock was taken over.")
+				.arg(QFileInfo(filepath).fileName(),
+					 QLocale::system().toString(crashed.since.toLocalTime(), QLocale::ShortFormat)),
+			30000);
+	}
+	if (interactive) tellConflictCopies(filepath);
 	tellRepair(interactive ? project : nullptr);
 	if (!interactive) {
 		const QetDbFile::Repair repaired = project->qetdbRepair();
@@ -3412,6 +3704,9 @@ bool QETDiagramEditor::addProject(QETProject *project, bool update_panel)
 		if (m_device_navigator_dock && m_device_navigator_dock->isVisible()) {
 			m_device_navigator_dock->setProject(project);
 		}
+		if (m_check_panel_dock && m_check_panel_dock->isVisible()) {
+			m_check_panel_dock->setProject(project);
+		}
 	}
 
 	return(true);
@@ -3459,6 +3754,8 @@ void QETDiagramEditor::templateSaved(const ElementsLocation &location)
 {
 	if (m_element_collection_widget)
 		m_element_collection_widget->addTemplate(location);
+	if (m_function_template_dock)
+		m_function_template_dock->reload();
 }
 
 /**
@@ -4159,7 +4456,8 @@ void QETDiagramEditor::slot_updateActions()
 	updateItemInfo();
 
 	m_close_file->                  setEnabled(opened_project);
-	m_save_file->                   setEnabled(opened_project);
+		//Read-only: only Save As, to another file
+	m_save_file->                   setEnabled(editable_project);
 	m_save_file_as->                setEnabled(opened_project);
 	m_save_copy_for_older->         setEnabled(opened_project);
 	m_rotate_texts->                setEnabled(editable_project);
@@ -4189,8 +4487,13 @@ void QETDiagramEditor::slot_updateActions()
 	m_find_duplicate_labels->setEnabled(opened_project);
 	m_check_potentials->setEnabled(opened_project);
 	m_check_fluid->setEnabled(opened_project);
+	m_check_project->setEnabled(opened_project);
+	m_check_open_wire_ends->setEnabled(opened_project);
 	m_device_types->setEnabled(opened_project);
 	m_check_device_types->setEnabled(opened_project);
+	m_part_types->setEnabled(opened_project);
+	m_reports->setEnabled(opened_project);
+	m_plants_locations->setEnabled(opened_project);
 	m_project_languages->setEnabled(opened_project);
 	m_project_history             -> setEnabled(opened_project);
 	m_export_delivery             -> setEnabled(opened_project);
@@ -4200,6 +4503,7 @@ void QETDiagramEditor::slot_updateActions()
 	m_add_summary                 -> setEnabled(editable_project);
 	m_add_nomenclature            -> setEnabled(editable_project);
 	m_csv_export                  -> setEnabled(editable_project);
+	m_purchase_export             -> setEnabled(opened_project);
 	m_project_export_conductor_num-> setEnabled(opened_project);
 	m_terminal_strip_dialog       -> setEnabled(editable_project);
 	m_project_export_wiring_list  -> setEnabled(opened_project);
@@ -4208,6 +4512,8 @@ void QETDiagramEditor::slot_updateActions()
 	m_cable_numbering             -> setEnabled(editable_project);
 	m_add_cable_list              -> setEnabled(editable_project);
 	m_export_cable_list           -> setEnabled(editable_project);
+	m_export_marking              -> setEnabled(opened_project);
+	m_tia_tags                    -> setEnabled(editable_project);
 	m_cable_overview              -> setEnabled(editable_project);
 	if (auto *panel_menu = findChild<PanelMenu *>()) panel_menu->updateActions();
 	m_reload_element_drawings     -> setEnabled(opened_project);
@@ -5432,6 +5738,9 @@ void QETDiagramEditor::subWindowActivated(QMdiSubWindow *subWindows)
 	if (m_device_navigator_dock && m_device_navigator_dock->isVisible()) {
 		m_device_navigator_dock->setProject(currentProject());
 	}
+	if (m_check_panel_dock && m_check_panel_dock->isVisible()) {
+		m_check_panel_dock->setProject(currentProject());
+	}
 }
 
 /**
@@ -6078,10 +6387,11 @@ void QETDiagramEditor::slot_runScript() {
 	const QString script_path = QFileDialog::getOpenFileName(
 		this,
 		tr("Run a script"),
-		QString(),
+		QETApp::lastFileDir(QString()),
 		tr("JavaScript scripts (*.js);;All files (*)")
 	);
 	if (script_path.isEmpty()) return;
+	QETApp::rememberFileDir(script_path);
 
 	QetScripting::runOnProject(script_path, project, currentDiagramView());
 }

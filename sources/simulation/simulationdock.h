@@ -24,6 +24,7 @@
 #include <QPointer>
 #include <memory>
 
+class QCheckBox;
 class QComboBox;
 class QDoubleSpinBox;
 class QGraphicsItem;
@@ -63,6 +64,10 @@ class SimulationDock : public QDockWidget
 
 	private:
 		void start();
+		bool ensureModel();
+		void singleStep();
+		void toNextChange();
+		void afterRun();
 		void pause();
 		void stop();
 		void tick();
@@ -78,6 +83,8 @@ class SimulationDock : public QDockWidget
 		QTimer *m_timer;
 		QElapsedTimer m_clock;
 		QPushButton *m_start, *m_pause, *m_stop, *m_program;
+		QPushButton *m_step, *m_next;            // R16: single step (one control cycle), run to the next change
+		QCheckBox *m_folio_only;                 // R16: simulate the current folio only
 		QComboBox *m_speed;
 		QDoubleSpinBox *m_supply;
 		QLabel *m_time, *m_summary;

@@ -57,6 +57,8 @@ class AutoNumberingDockWidget;
 class DeviceNavigatorDockWidget;
 class AssistantDock;
 class SimulationDock;
+class CheckPanelDockWidget;
+class FunctionTemplateDock;
 class TerminalNumberingDialog;
 
 class KAutoSaveFile;
@@ -73,6 +75,7 @@ class QETDiagramEditor : public QETMainWindow
         friend class TerminalStripEditorWindow;
         friend class LiveServer;
         friend class MacroRecorder;
+        friend class FunctionTemplateDock;
 	
 	public:
 			/// Warn about what lies outside the sheet (Settings > General)
@@ -91,6 +94,7 @@ class QETDiagramEditor : public QETMainWindow
 		bool                 openAndAddProject (const QString &, bool = true);
 		enum class LockChoice {ReadOnly, OpenAnyway, Cancel};
 		LockChoice           askAboutLock (const QString &, const ProjectLock::Holder &);
+		void                 tellConflictCopies (const QString &);
 		QList<QString>       editedFiles       () const;
 		ProjectView         *viewForFile       (const QString &) const;
 		ProjectView *currentProjectView() const;
@@ -126,6 +130,8 @@ class QETDiagramEditor : public QETMainWindow
 		void setUpDeviceNavigatorDock();
 		void setUpAssistantDock();
 		void setUpSimulationDock();
+		void setUpCheckPanelDock();
+		void setUpFunctionTemplateDock();
 		void setUpActions       ();
 		void setUpToolBar       ();
 		void setUpMenu          ();
@@ -296,8 +302,13 @@ class QETDiagramEditor : public QETMainWindow
 		QAction* m_find_duplicate_labels = nullptr;
 		QAction* m_check_potentials = nullptr;
 		QAction* m_check_fluid = nullptr;
+		QAction *m_check_project = nullptr;
+		QAction* m_check_open_wire_ends = nullptr;
 		QAction *m_check_device_types = nullptr;
 		QAction *m_device_types = nullptr;
+		QAction *m_part_types = nullptr;
+		QAction *m_reports = nullptr;
+		QAction *m_plants_locations = nullptr;
 		QAction* m_project_languages = nullptr;
 
 		QAction
@@ -340,6 +351,7 @@ class QETDiagramEditor : public QETMainWindow
 		*m_remove_diagram_from_project,	///< Delete a diagram from the current project
 		*m_clean_project,		///< Clean the content of the current project by removing useless items
 		*m_csv_export,			///< generate nomenclature
+		*m_purchase_export,		///< purchase list for purchasing and ERP
 		*m_add_nomenclature,		///< Add nomenclature graphics item;
 		*m_add_summary,			///<Add summary graphics item
 		*m_terminal_strip_dialog = nullptr, ///<Launch terminal strip dialog
@@ -351,6 +363,8 @@ class QETDiagramEditor : public QETMainWindow
 		*m_cable_numbering,            ///< Action to open the cable numbering window (rule + numbering of every cable)
 		*m_add_cable_list,             ///< Add a cable list graphics item
 		*m_export_cable_list,          ///< Export the cable list of the project to CSV
+		*m_export_marking,             ///< Export the markers for marking software
+		*m_tia_tags,                   ///< PLC tags to TIA Portal and back (TiaTagsDialog)
 		*m_cable_overview,             ///< Window listing every cable, where its type is chosen
 		*m_reload_element_drawings,    ///< Action to redraw every placed element from its current definition
 		*m_update_elements_from_collections, ///< Action to replace embedded elements changed in their collection
@@ -466,6 +480,8 @@ class QETDiagramEditor : public QETMainWindow
 		DeviceNavigatorDockWidget *m_device_navigator_dock = nullptr;
 		AssistantDock *m_assistant_dock = nullptr;
 		SimulationDock *m_simulation_dock = nullptr;
+		CheckPanelDockWidget *m_check_panel_dock = nullptr;
+		FunctionTemplateDock *m_function_template_dock = nullptr;
 		int activeSubWindowIndex;
 		SearchAndReplaceWidget m_search_and_replace_widget;
 };

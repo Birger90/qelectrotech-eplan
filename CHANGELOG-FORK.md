@@ -17,6 +17,495 @@ Original-QElectroTech stehen in `ChangeLog*`.
   Version bleibt als `Programm.alt`, Verknüpfungen), `veroeffentlichen.ps1` (Programmpaket, Bauteile,
   `version.json`), Anleitung `tools/verteilung/README.md`.
 
+## 1.49.1 – 24.11.2026 – Ein Prüfpanel
+
+„Plan prüfen“ des Forks und das Prüfpanel des Originals (#1878) sind jetzt ein einziges Panel.
+
+- Grundlage ist das Prüfpanel des Originals (*Projekt > Projekt prüfen*, Knopf in der Werkzeugleiste neben
+  „PDF exportieren“). Die Regeln von „Plan prüfen“ stehen dort als weitere Kategorien: Kontakte, Spulen und
+  Abbruchstellen ohne Gegenstück, SPS-Kanäle ohne Adresse, Kabel ohne Ziel, Klemmen ohne Klemmleiste, Geräte ohne
+  Kennzeichen oder Artikel, offene Anschlüsse, Schaltschrankaufbau.
+- Jeder Befund hat eine Schwere (Fehler, Warnung, Hinweis) mit Symbol; der Tooltip nennt die EPLAN-Meldungsnummer.
+  Eine Auswahl über der Liste zeigt alle Befunde, nur Fehler und Warnungen oder nur Fehler. Doppelklick öffnet das
+  Blatt und markiert das Betroffene; „Prüfungen ausführen“ prüft neu.
+- Keine doppelten Meldungen mehr: doppelte Kennzeichen, Potenzialtypen und Gerätetypen kommen nur aus den Prüfungen
+  des Originals (Klemmen einer Leiste und Aufbau-Kopien eines Geräts zählen dort als Hinweis, nicht als Fehler). Ein
+  Symbol ganz ohne Leitung steht nur unter „Symbole ohne Leitung“, offene Anschlüsse nur an Symbolen mit Leitung.
+- Menüeintrag und Andockfenster „Plan prüfen“ entfallen. Gespeicherte Werkzeugleisten behalten ihren Knopf, er führt
+  jetzt zum gemeinsamen Panel.
+- `--check-project` und `qet.checkProject()` nutzen dieselben Regeln wie das Panel. Jeder Eintrag hat zusätzlich
+  `category` und `categoryTitle`; `check` bleibt der Regelname. Das Panel prüft nicht mehr nach jeder Änderung von
+  selbst (wie im Original): nach einer Änderung neu prüfen.
+- Die Meldungstexte der Fork-Regeln sind jetzt auf Deutsch übersetzt (vorher fand lupdate sie nicht und sie blieben
+  englisch).
+
+## 1.49.0 – 23.11.2026
+
+Sieben neue Funktionen für den Alltag und das Original-QElectroTech bis 23.11.2026. Alle ohne Oberfläche geprüft (Build, Referenzlauf 52/52, Befehle an Testprojekten); die Dialoge sind noch nicht von Hand angesehen. Hinweis: Das Original bringt jetzt ein eigenes Prüfpanel mit; „Plan prüfen“ des Forks steht vorerst daneben und wird zusammengelegt.
+
+### Upstream 20.11.2026 (nachgezogen bis 23.11.2026)
+
+Original-QElectroTech bis `64715e035` (20.11.2026) eingearbeitet, 32 Commits ohne Merges, ohne Textkonflikte:
+
+- Neuer Elementtyp **Leitungsabzweig** (`link_type="junction"`, #1500): Ecke, T-Abzweig, Kreuzung als reiner
+  Verbindungspunkt. Alle Anschlüsse liegen auf einem Potential, der Abzweig bekommt kein BMK, keine Infoseite und
+  erscheint nicht in der Stückliste und in keiner Klemmenleiste. Die Rollen (`junction_source`,
+  `junction_target_1..3`) stehen in der Symboldefinition; Verdrahtungsliste, Kabelzuordnung und Klemmenleisten
+  verfolgen die Leitung über die Kette bis zum echten Ende.
+- Gerätenavigator zeigt die freien Teile eines Geräts und platziert sie; Präfixdialog bearbeitet auch die
+  `qet_labels.xml` der Firmensammlung; die automatische Leitungserzeugung bleibt im Projekt gespeichert (#1920);
+  Eigenschaftsdialoge auf macOS verschiebbar.
+
+Danach bis `8d817fac8` (23.11.2026), 79 Commits ohne Merges: Prüfpanel, das alle Projektprüfungen auf einmal
+ausführt (#1878 B1), mit „Offene Leitungsenden“ und „Symbole ohne Leitung“; Projekt > Anlagen und Orte (mit
+Umbenennen); Projekt > Auswertungen mit Schrankplatzliste; Stecker als Kopf mit Pins, Pinplan und Gerätetyp;
+Klemmenleisten mit Art (Klemmenleiste, Stecker, Buchse); Hersteller und Bestellnummer an Kabeln; Fenster
+„Artikel suchen“, Abfrage von BMK und Artikel beim Platzieren; Strukturkasten-Namen als eigener Text;
+Ordnerbaum der Blätter; Seitenverweise mit Gegenstelle und wählbarer Verkettung; Kennzeichen-Anzeige einstellbar;
+Präfixdateien mit beliebiger Wurzel und Kurzpfaden; `elements` auf 661f5e9ce.
+Konflikte (alle „beides behalten“): `qet_compilation_vars.cmake` (Fluidprüfung + offene Leitungsenden),
+`cable.cpp` (Kabelziel `destination` des Fork + Hersteller/Bestellnummer), `qetdiagrameditor.{h,cpp}`
+(Assistent- und Simulationsfenster + Prüfpanel, Fluidprüfung + Leitungsenden-Prüfung im Menü Projekt);
+`qet_de.ts` aus Upstream übernommen, lupdate, 950 Texte aus der Fork-Fassung, 222 neue übersetzt.
+
+Anpassungen im Fork:
+
+- Simulation: ein Abzweig ist ein Knoten. Vorher hätte er das Netz an seinen Anschlüssen getrennt. Neue Prüfung
+  „Leitungsabzweig“ mit dem Plan `zylinder_abzweig.qet` (erzeugt von `referenz/erzeuge_abzweig.py`): Druck an
+  beiden Abzweiganschlüssen gleich dem der Quelle, Endlage wie ohne Abzweig.
+- `qet_mcp.py`: `junction` als `link_type` bei `qet_element_build` und `qet_element_search`.
+- `lang/qet_de.ts`: per lupdate auf Stand gebracht, alle 355 offenen Texte übersetzt (auch ältere, die bisher fehlten).
+
+### Projektsperre für SharePoint, OneDrive und Netzlaufwerke
+
+Baut auf der Sperrdatei aus Upstream auf (`.~<Projekt>.lock` neben dem Projekt, JSON mit Benutzer, Rechner,
+Prozess, Programmversion, „seit“ und Herzschlag jede Minute; wird beim Schließen gelöscht):
+
+- Meldung beim Öffnen „<Projekt> ist seit … bei <Benutzer> auf <Rechner> geöffnet (zuletzt aktiv vor n Minuten)“
+  mit Programmversion. Wahl: *Nur lesen öffnen* (Vorgabe), *Trotzdem bearbeiten* (fragt mit einer deutlichen
+  Warnung nach), *Abbrechen*.
+- Verwaiste Sperren: Kam seit 10 Minuten kein Herzschlag, bietet die Meldung *Sperre übernehmen* als Vorgabe an
+  (Absturz, Rechner aus, Netz weg). Die Sperre einer abgestürzten Sitzung auf dem eigenen Rechner wird wie bisher
+  ohne Frage übernommen, jetzt mit Hinweis in der Statuszeile.
+- Übernimmt jemand anderes das Projekt, wird es hier sofort schreibgeschützt (Meldung, Statuszeile); eigene
+  Änderungen gehen mit *Speichern unter* in eine andere Datei. Speichern auf eine Datei, die gerade jemand anderes
+  hält, verweigert das Programm auch beim automatischen Speichern.
+- OneDrive-/SharePoint-Konfliktkopien („Projekt-<Rechnername>.qetz“) neben dem Projekt werden beim Öffnen gemeldet:
+  einmal je Kopie als Meldung (*Neueste Kopie öffnen*, *Ordner zeigen*), solange sie da sind in der Statuszeile.
+- Nur lesen heißt jetzt wirklich nur lesen: *Speichern* ist bei schreibgeschützten Projekten aus, Strg+S und
+  Speichern beim Schließen führen zu *Speichern unter*, und `QETProject::write()` schreibt die Datei nie – auch
+  nicht beim automatischen Speichern, per Skript oder MCP, und auch dann nicht, wenn das Dateisystem es erlauben
+  würde (Projekt einer neueren Version, Stand aus dem Verlauf). Fehler behoben: Ein abgewiesenes Speichern hat den
+  Rückgängig-Stapel trotzdem als gespeichert markiert.
+- Ohne Oberfläche: `--lock-status <Projekt> [--json]` zeigt Zustand (frei, gehalten, verwaist, abgestürzt), Halter
+  und Konfliktkopien; Rückgabewert 0 frei, 1 gehalten, 3 verwaist/abgestürzt.
+- Tests: `tst_projectlock` um verwaiste Sperre, gemeldete Absturzsperre, Konfliktkopien und zwei echte Prozesse
+  erweitert (20 bestanden).
+
+### Revisionsverwaltung
+
+Einfache Revisionsverwaltung nach EPLAN-Vorbild (Skill `eplan-wissen`, `revision.md`):
+
+- Projekt > Revision > *Revision abschließen…* fragt nur Index (Vorschlag) und Kurztext. Danach: Index in jedem
+  Schriftfeld und in der Vorgabe für neue Blätter, Revisionstabelle als Projektvariablen `rev1_*`…`revN_*`
+  (neueste zuerst) und `rev_index`, `rev_date`, `rev_text`, `rev_count`, PDF mit den markierten Änderungen seit der
+  vorigen Revision und Momentaufnahme `.qet` in `<Name>_Revisionen/`, Projekt gespeichert.
+- Fingerabdruck jedes Symbols, jeder Leitung, jedes Textes, jeder Form und jedes Bildes (ohne UUIDs, Klemmen-IDs,
+  abgeleitete Beschriftungen) im Block `<revisions>` des Projekts; den behalten `.qet`, `.qetz` und `.qetdb` unverändert
+  (Fremdblöcke). Zuordnung über UUID, danach wie EPLANs alternative Identifizierung.
+- *Änderungen markieren* (an/aus, wird mitgespeichert): Revisionswolke mit Dreieck und Index, Strich entlang
+  geänderter Leitungen, Gelöschtes gestrichelt und durchgekreuzt, Hinweis „Neues Blatt“; gezeichnet im Hintergrund
+  des Blatts, also auch im Druck und PDF.
+- *Revisionen vergleichen…*: Liste mit Sprung und PDF mit Markierung für zwei beliebige Stände.
+- Neues Schriftfeld *revision* mit Tabelle der letzten drei Revisionen.
+- CLI `--close-revision`, `--revisions`, `--revision-marks`, `--compare-revisions`; Skript-API `closeRevision`,
+  `revisions`, `revisionChanges`, `nextRevisionIndex`, `revisionMarks`, `setRevisionMarks`, `exportRevisionPdf`.
+
+### Beschriftungsexport
+
+- Menü Projekt > *Beschriftung exportieren…*: Draht-, Klemmen-, Geräte- und Kabelschilder für die
+  Beschriftungsprogramme Phoenix Contact MARKING system / PROJECT complete, Weidmüller M-Print PRO und WAGO Smart
+  Script, dazu eine neutrale CSV mit allen Spalten. Auswahl nach Art, Blattbereich und Anlage/Ort; vollständiges
+  oder kurzes Kennzeichen; ein Schild je Draht-/Kabelende oder eines. Die Zahl der Schilder steht im Dialog, bevor
+  die Datei geschrieben wird.
+- Die Daten kommen aus den Datenbank-Sichten `qet_wires`, `qet_terminals`, `qet_device_list` und `qet_cables`
+  (Drahtnummern, Klemmleisten, Kennzeichen, Kabel), also aus denselben Zeilen wie Klemmenplan und Kabelliste.
+- Keiner der drei Hersteller veröffentlicht ein festes Spaltenschema. Jede Datei ist deshalb eine beschriebene CSV
+  nach dem belegten Import: bei Phoenix eine Spalte „Material“ für das Material mapping (bei Klemmen die
+  Artikelnummer); bei Weidmüller der VK-Import mit Spalte „Referenz“, die nie leer ist, und „Anzahl“, als
+  Windows-Text; bei WAGO eine Zeile je Schild für die Vorlagenzuordnung. Spalten und Belegstellen stehen in
+  `docs/beschriftung-export.md`.
+- CLI `--export-marking <projekt> <datei> [--format …] [--kinds …] [--folios N-M] [--plant …] [--location …]
+  [--short] [--one-end]`, Skript-API `qet.exportMarking(datei, format, optionen)` und `qet.markings(optionen)`.
+
+### Plan prüfen
+
+- Neuer Knopf **Plan prüfen** (Menü *Projekt* und Werkzeugleiste): ein Prüflauf wie in EPLAN, der alle Prüfungen
+  an einem Ort sammelt. Ein Andockfenster listet jede Meldung mit Schwere (Fehler, Warnung, Hinweis), Blatt,
+  Kennzeichen, Text und EPLAN-Meldungsnummer; Filter „Fehler und Warnungen“ / „Nur Fehler“; ein Klick öffnet das
+  Blatt und markiert Gerät, Leitung oder Kabeladern. Ist ein Lauf schnell (unter 0,8 s), prüft das Fenster nach
+  jeder Änderung von selbst neu, sonst über „Erneut prüfen“.
+- Geprüft wird: offene Anschlüsse (005026, an Klemmen 005053), offene Fluidanschlüsse, doppelte Kennzeichen
+  (017005) und Leiternummern, Geräte ohne Artikel (007017) oder Kennzeichen (017001), Klemmen ohne Klemmleiste
+  (001010, je Leiste zusammengefasst), Kontakte ohne Spule bzw. Hauptfunktion (007005), Spulen ohne Kontakt (007009),
+  Abbruchstellen ohne Gegenstück (011002) oder Anschluss (011003), Kabel ohne Ziel/ohne Kennzeichen/mit verwaister
+  Ader (003005), SPS-Kanäle ohne Karte oder Adresse (004023), Potenzialtypen (005016), Gerätetypen (007001/007002)
+  und auf Aufbaublättern die Aufbauprüfung. Wiederverwendet werden die vorhandenen Einzelprüfungen (doppelte
+  Kennzeichen, Fluid, Potenzialtypen, Gerätetypen, Aufbauprüfung); Aufbaublätter werden nicht als Schaltplan geprüft.
+- Skript-API `qet.checkProject(folio = -1)` (Liste mit severity, check, eplan, folio, folioTitle, label, text, items)
+  und CLI `--check-project <projekt.qet> [bericht.json]` (JSON; Rückgabewert 3, wenn Fehler gefunden wurden).
+
+### Funktionsvorlagen
+
+Wiederverwendbare Schaltungsteile mit Platzhaltern, ähnlich EPLAN-Makros mit Wertesätzen:
+
+- Seitenleiste *Anzeige > Funktionsvorlagen*: Vorlagen nach Kategorie mit Suche und Vorschau, ein Formular mit den
+  wenigen Werten der Vorlage, *Einfügen* (folgt der Maus, jeder Klick setzt eine weitere) und *Auf neues Blatt*. Die
+  Werte der Auswahltabelle (z. B. Artikel von Schutzschalter und Schütz) stehen vor dem Einfügen unter dem Formular.
+- Format: `.qetmak` mit Block `<function_template>` (Parameter mit Art `label`, `terminal`, `cable`, Text; Tabellen
+  mit Schlüssel). Platzhalter `{NAME}` und `{NAME+n}` in Kennzeichen, Texten, Elementinformationen, Drahtnummern,
+  Kabeltyp. Zahlen wählen die nächstgrößere Tabellenzeile, Texte die gleiche.
+- Einfügen wie Einfügen aus der Zwischenablage: ein Rückgängig-Schritt, neue Identitäten, Kabellinien mit Adern,
+  Verknüpfungen der Vorlage bleiben erhalten; feste Kennzeichen zählen weiter, Klemmen `X1:3` kommen sofort in ihre
+  Klemmleiste, ein SPS-Kanal mit `plc_address` wird mit dem SPS-Modul verknüpft, das die Adresse hat.
+- Kontextmenü *Als Funktionsvorlage speichern…* (ersetzt *Vorlage erstellen*): Name, Kategorie, Beschreibung, die
+  gefundenen Platzhalter mit Beschriftung, Art und Vorgabe, optional eine aus Excel eingefügte Auswahltabelle. Ablage
+  im Vorlagenordner des Nutzers (`<macros>/Funktionsvorlagen`). Eine Vorlage mit Parametern, die aus der Sammlung
+  gezogen wird, fragt ihre Werte im selben Formular ab.
+- Sechs Beispiele ohne Kundendaten in `funktionsvorlagen/`: Motorabgang DOL (Leistungstabelle 0,37–15 kW),
+  DI-Sensor mit Kabel, Ventil mit DQ-Kanal, Meldeleuchte DQ (Farbtabelle), Taster DI, Steckdose 230 V
+  (Absicherungstabelle). Neue Fork-Symbole: allgemeiner DI-/DQ-Kanal, 3-Leiter-Sensor mit Anschlüssen oben.
+- Skript-API: `listTemplates()`, `templateInfo()`, `insertTemplate()`, `saveTemplate()`. MCP: `qet_edit`-Operationen
+  `insert_template` und `save_template`; der Vorlagenordner des Nutzers wird an den Headless-Lauf weitergegeben.
+
+### Einkaufsliste
+
+Stückliste für Einkauf und ERP (Menü Projekt > *Einkaufsliste exportieren…*, CLI `--export-purchase`,
+`--fetch-commercial`, Skript-API `purchaseList`, `exportPurchaseList`, `fetchCommercialData`, `purchasePriceListPath`):
+
+- Eine Zeile je Artikel, gruppiert nach Lieferant (sonst Hersteller), Summe je Gruppe und Gesamtsumme; Geräte ohne
+  Artikel am Ende mit „Artikel offen“. Excel-Mappe (`.xlsx`, Preise nachtragbar, Bestellmenge/Gesamtpreis/Summen
+  als Formeln) oder CSV, dazu `<Name>_ERP.csv` als neutrales Importformat.
+- Kaufmännische Daten: EAN/GTIN und Lebenszyklus aus dem EPLAN Data Portal (ohne Token), VPE und Mengeneinheit aus
+  den EDZ-Paketen in `herstellerdaten`, zwischengespeichert in `einkauf/artikeldaten.csv`. Preise, Lieferzeiten und
+  Lieferanten aus der eigenen Preisliste `einkauf/preisliste.csv`, die alles andere überschreibt.
+- Geprüft am Live-Portal: Weder `/parts` noch die kaufmännische CSV mit Token (`/download/commercial_data`) liefern
+  Preis, Lieferzeit oder VPE; EDZ-Preisfelder stehen bei den Herstellern auf 0. Solche Werte bleiben leer.
+- `DataPortalPart` liest zusätzlich `identcode` und `lifecycle`.
+
+### SPS-Abgleich mit TIA Portal
+
+- Neues Fenster *Projekt > SPS-Variablen und TIA Portal…*: alle Kanäle der SPS-Module (E/A-Tabellen) so, wie sie nach
+  TIA Portal gehen – Adresse, Name, Datentyp (Bool für DI/DQ, Int für AI/AQ), Kommentar, Modul, Blatt; Klick auf eine
+  Zeile zeigt den Kanal.
+- *Für TIA exportieren…* schreibt eine PLC-Variablentabelle: `.xlsx` im Format, das der Import der Variablentabelle
+  erwartet (STEP-7-Hilfe V20/V21 „Format of the export file (*.xlsx)“: Blatt „PLCTags“ mit Name, Path, Data Type,
+  Logical Address, Comment, Hmi Visible/Accessible/Writeable, Typeobject ID, Version ID; Blatt „TagTableProperties“;
+  Dokumenteigenschaft TIA_Version = 1.0, ohne die TIA „Missing version ID“ meldet) oder SimaticML-`.xml`
+  (`SW.Tags.PlcTagTable`) für TIA Portal Openness.
+- Adressen: EPLAN-Adressen in deutscher oder internationaler Mnemonik (E 50.0, A1.3, PEW256, %QW64) werden zu
+  %I50.0, %Q1.3, %IW256 …; Kanäle, die nur ihren Kanal nennen (DI0, DQ3, AI1 wie die Module der Sammlung), werden ab
+  der Startadresse des Moduls gezählt – Elementinformation `plc_start_address` (Eingänge) bzw. `plc_start_address_2`
+  (Ausgänge) wie EPLANs Startadresse/Startadresse 2, sonst die nächsten freien Bytes in Blattreihenfolge.
+- Name = symbolische Adresse des Kanals, sonst Modul + Kanal (A3_DI0); doppelte Namen bekommen _2 (TIA verlangt
+  eindeutige Namen je CPU ohne Groß-/Kleinschreibung).
+- *Mit TIA-Tabelle abgleichen…* liest eine aus TIA exportierte Tabelle (`.xlsx`, auch ältere mit Blatt „PLC Tags“,
+  oder SimaticML-`.xml`) und zeigt je Kanal: gleich, Name abweichend, Kommentar abweichend, Adresse abweichend
+  (gleicher Name), fehlt in TIA, nur in TIA. Merker- und DB-Variablen werden gezählt, nicht verglichen.
+  *Namen und Kommentare übernehmen* schreibt TIA-Name als symbolische Adresse und TIA-Kommentar als Funktionstext in
+  die Kanäle mit gleicher Adresse (ein Rückgängig-Schritt). *Bericht speichern…* als CSV.
+- CLI: `--export-tia-tags <projekt> <datei.xlsx|.xml> [--tia-table NAME] [--tia-culture de-DE]`,
+  `--compare-tia-tags <projekt> <datei> [bericht.csv|-] [--apply neu.qet]`. Skript-API: `qet.exportTiaTags(datei,
+  tabelle)`, `qet.compareTiaTags(datei)` (CSV-Zeilen), `qet.applyTiaTags(datei)`.
+- Geprüft in TIA Portal V21 an einem leeren Testprojekt (S7-1511): der SimaticML-Export lässt sich per Openness
+  importieren (32 von 32 Variablen mit Name, Adresse, Datentyp, Kommentar), ein Openness-Export aus TIA wird
+  eingelesen und eine dort umbenannte Variable erkannt. Die `.xlsx` ist gegen die Formatbeschreibung der Hilfe
+  geprüft; ihr Import geht nur über die Oberfläche von TIA und ist noch nicht von Hand ausprobiert.
+
+## 1.48.0 – 20.11.2026
+
+Die letzten FluidSIM-Bauteile ohne Modell, in FluidSIM 6.3 selbst untersucht:
+
+- Taktstufen-Bausteine TAA und TAB: Innenschaltung aus dem FluidSIM-Symbol (Speicher-Impulsventil, UND über X, ODER mit
+  L), Grundstellung an TP102_04 beobachtet; Formel V25, Prüfung „Taktstufen-Kette“ (Plan `taktkette.qet`).
+- Muskel mit einem oder zwei Führungszylindern (FluidicMuscle2/3): Zylinderweg = xStart − Kontraktion, Zylinderdruck an
+  AC streckt den Muskel (an TP220_13 beobachtet); Messgröße `xz:`; Formel M16, Prüfung „Muskel mit Führungszylindern“
+  (Plan `muskel_zylinder.qet`).
+- Damit rechnen alle FluidSIM-Beispielschaltungen ohne Modellfehler.
+
+## 1.47.0 – 20.11.2026
+
+FluidSIM-Bauteile, die bisher den Start verhinderten (FluidSIM-Gesamtlauf: 35 Schaltungen mit Modellfehler):
+
+- Proportional-Wegeventil MPYE (pneumatisch 5/3, Sollwert 0 … 10 V über den lagegeregelten Proportionalmagneten):
+  Querschnitt nach der Festo-Kennlinie q(U), aus dem Katalog-PDF gelesen; Formel V19.
+- Pneumatische Timer (in Ruhe gesperrt/offen), Verzögerungsventile mit Speicher und Düse, pneumatischer Vorwahlzähler,
+  Zweihandsteuerblock (0,5-s-Fenster) und Vakuumsaugventil nach der FluidSIM-Hilfe; Formeln V20–V24.
+- Neue Prüfungen „Proportional-Wegeventil MPYE“ und „Pneumatische Zeit-, Zähl- und Sicherheitsbausteine“ (Pläne
+  `mpye.qet`, `pneu_logik.qet`). Weiter abgewiesen mit Begründung: Taktstufen TAA/TAB (Verschaltung nicht
+  dokumentiert), Druckwaage `closer03` (ohne Kennwerte und Hilfeseite, in keinem Beispiel), Muskel mit Zylinder.
+
+## 1.46.1 – 20.11.2026
+
+- Pneumatischer Muskel: Vorzeichen der externen Kraft wie in FluidSIM (in FluidSIM 6.3 an TP220_14 geprüft: −750 N
+  streckt den Muskel). In 1.46.0 wirkte eine negative Kraft fälschlich in Kontraktionsrichtung. Prüfplan `muskel.qet`
+  mit −674/−400/−2000 N; Befund und FluidSIM-Vergleich (FluidSIM 9,45 %, Festo-Katalogkurve 10,65 %) in FORMELN.md M15.
+
+## 1.46.0 – 19.11.2026
+
+Simulations-Roadmap R12 (Sonderantriebe) fertig: pneumatischer Muskel und hydraulischer Druckübersetzer mit
+Herstellerdaten:
+
+- Pneumatischer Muskel (FluidSIM `FluidicMuscle1`, Typ DMSP-10/20/40, Länge, externe Last): Zugkraft aus den
+  Kraft-Weg-Kurven des Festo-Katalogs DMSP (exakt aus den Vektorpfaden des PDFs gelesen), Volumen über virtuelle Arbeit,
+  Anschläge an Vorspanngrenze und max. Kontraktion; Messgrößen `x:` (Kontraktion), `h:` (%), `v:`, `F:`. MAS und Muskel
+  mit Zylinder bleiben mit Begründung abgewiesen.
+- Hydraulischer Druckübersetzer (FluidSIM `PressureIntensifier01`, IN/R/H, Kennwerte `r`, `p_max_in`, `q_max_in`,
+  `q_max_hi` aus dem Datenblatt Pflicht, `G_leak`): Bypass, Pumpkolben bis r·p_IN, entsperrbares Rückschlagventil;
+  Messgröße `qh:`.
+- Formeln M15, H13, Quellen QS17 (Festo DMSP), QS18 (Scanwill MP-F); neue Prüfungen „Pneumatischer Muskel (R12)“
+  (Festo-Auslegungsbeispiel 674 N/609 N → 10 mm, Vorspannung, Volumen gegen die Aufweitung laut Datenblatt) und
+  „Druckübersetzer (R12)“ (Bypass, Enddruck 4·p_IN, Druckaufbau nach der Kennlinie).
+- `tools/simulation/datenblaetter/`: Leser der Festo-Kennlinien und Erzeuger von `simulationmuscle.h`.
+
+## 1.45.0 – 19.11.2026
+
+Simulations-Roadmap R17 (analoge Elektrik), Stufe 5: elektrische Maschinen – damit ist R17 vollständig:
+
+- Gleichstrommotor (`sim_block` MDC, `sim_params` „Ra=…;La=…;k=…;J=…;b=…;ML=…“): Ankerkreis mit Gegenspannung und Welle
+  mit Trägheit, Reibung und Lastmoment im Kirchhoff-Stromkreis.
+- Asynchronmotor mit Käfigläufer (`sim_block` MASM, Anschlüsse U/V/W bzw. L1/L2/L3, „Rs=…;Rr=…;Lls=…;Llr=…;Lm=…;p=…;J=…;ML=…“):
+  Raumzeigermodell am Drehstromnetz (drei Sinusquellen), Hochlauf und Schlupf unter Last.
+- Messgrößen `omega:` (rad/s), `n:` (1/min), `tau:` (Moment) für beide Motoren; alle Kennwerte aus Datenblatt bzw.
+  Ersatzschaltbild (keine Vorgaben).
+- Formeln E12, E13; neue Prüfung „Elektrische Maschinen (R17, Stufe 5)“ mit `motoren.qet`: Gleichstrom-Hochlauf gegen
+  Runge-Kutta und den stationären Endwert, Asynchronmotor gegen das Strang-Ersatzschaltbild (Drehzahl, Moment, Strom).
+
+## 1.44.0 – 19.11.2026
+
+Simulations-Roadmap R17 (analoge Elektrik), Stufe 4: Schutzorgane:
+
+- Sicherung (`sim_block` F, `sim_params` „In=…;I2t=…“ mit dem Schmelzintegral aus dem Datenblatt), Leitungsschutzschalter
+  MCB_B, MCB_C, MCB_D (IEC 60898-1) und Motorschutzschalter MPCB (Klasse 10, IEC 60947-4-1) im Kirchhoff-Stromkreis:
+  thermisches Gedächtnis mit einer Zeitkonstante und magnetische Schnellauslösung; Kennwerte `tau`, `kf`, `Im`, `R`
+  überschreibbar. Meldung „Leitungsschutzschalter -Q1 löst aus (thermisch, … A)“, Signale `trip:` und `w:`.
+- Zurücksetzen (neue Sicherung, Schalter wieder ein) mit dem bestehenden Ereignis „-F1 reparieren“.
+- Formel E11; neue Prüfung „Schutzorgane (R17, Stufe 4)“ mit `schutz.qet` an den Normprüfpunkten (1,13 / 1,45 / 2,55·In,
+  Magnetgrenzen, Klasse 10 bei 7,2·Ir) und Sicherungstausch.
+- Offen in R17: Stufe 5 (Motoren).
+
+## 1.43.0 – 19.11.2026
+
+Simulations-Roadmap R17 (analoge Elektrik), Stufe 3: Transistor und Operationsverstärker:
+
+- Bipolartransistor im Kirchhoff-Stromkreis: `sim_block` QN (NPN) bzw. QP (PNP), Anschlüsse C, B, E, Ebers-Moll mit
+  `sim_params` „Is=1e-14;n=1;BF=100;BR=1“ (Vorgaben sind Projektfestlegungen, Datenblattwerte eintragen). Messgrößen
+  `u:` = U_CE, `i:` = I_C, neu `ib:` = I_B.
+- Operationsverstärker: `sim_block` OP, Anschlüsse +, −, OUT, `sim_params` „A=1e5;Rin=1M;Rout=1;Vmax=15;Vmin=-15“
+  (Leerlaufverstärkung mit weicher Begrenzung). `u:` = Ausgangsspannung.
+- Formeln E09, E10; neue Prüfung „Halbleiter (R17, Stufe 3)“ mit `halbleiter.qet`: NPN aktiv und gesättigt, PNP,
+  invertierender Verstärker linear und in der Begrenzung, jeweils gegen eine unabhängige Lösung der Bauteilgleichungen.
+- Offen in R17: Stufe 4 (Schutzorgane), 5 (Motoren).
+
+## 1.42.0 – 19.11.2026
+
+Simulations-Roadmap R17 (analoge Elektrik), Stufe 2: Kopplung an die Schaltlogik:
+
+- Kontakte im Stromkreis: liegen beide Anschlüsse eines Tasters, Grenztasters oder Relaiskontakts auf Netzen des
+  Kirchhoff-Stromkreises, schaltet der Kontakt dort einen Widerstand (R_on 10 mΩ, R_off 1 GΩ, änderbar mit `sim_contact`).
+  Messgrößen `u:`/`i:` unter „-K1/Schließer“ bzw. „-K1/14“.
+- Relais- und Ventilspulen im Stromkreis: R und L in Reihe aus `sim_coil` („R=240;L=2.4;Un=24“), Anzug und Abfall nach dem
+  Spulenstrom mit Hysterese (Vorgabe 0,8 bzw. 0,1 des Nennstroms oder „Ion/Ioff“), danach Ansprech- und Abfallzeit wie bisher.
+  Freilaufdioden verlängern den Abfall wie im echten Kreis.
+- SPS-Analogeingang `sim_block` AI (Eingangswiderstand Rin, Normierung „Umin/Umax/raw“, z. B. 0…10 V ↔ 0…27648) und
+  -ausgang AQ (Spannungsquelle aus einer Variablen), Variable aus `sim_var`. Neues Signal `plc:<Variable>`.
+- Formeln E06–E08; neue Prüfung „Kopplung Stromkreis (R17, Stufe 2)“ mit `kopplung.qet`: Anzugszeit gegen die e-Funktion,
+  Abfallzeit über die Freilaufdiode gegen eine unabhängige Runge-Kutta-Rechnung, Relaiskontakt im zweiten Kreis,
+  Analogeingang gegen den belasteten Teiler, Analogausgang.
+- Offen in R17: Stufe 3 (Transistor, Operationsverstärker), 4 (Schutzorgane), 5 (Motoren).
+
+## 1.41.0 – 19.11.2026
+
+Simulations-Roadmap R17 (analoge Elektrik), Stufe 1; R18 und R19 entschieden:
+
+- Analoger Stromkreis nach Kirchhoff (modifizierte Knotenanalyse, implizites Euler-Verfahren): Bauteile mit Elementinformation
+  `sim_role` = `circuit`, `sim_block` = R, C, L, V (Spannungsquelle), I (Stromquelle), D (Diode), GND (Masse) und
+  `sim_params` mit SI-Vorsätzen („R=1k“, „C=100u“, „V=10;f=50“, „Is=1e-12;n=1“). Messgrößen `u:`, `i:`, `pel:` je Bauteil.
+  Formeln E01–E05.
+- Neue Prüfung „Analoge Elektrik (R17, Stufe 1)“ mit `analog.qet`: RC- und RL-Glied gegen die e-Funktion, gedämpfter
+  Reihenschwingkreis gegen die geschlossene Lösung, Einweggleichrichter gegen die Shockley-Gleichung, Spannungsteiler mit
+  Leistungsbilanz.
+- Stufe 1 steht neben der Schaltlogik: der Stromkreis treibt noch keine Relais, Spulen oder SPS-Eingänge; Transistoren,
+  Verstärker, Schutzorgane und elektrische Maschinen folgen in eigenen Stufen (`tools/simulation/ROADMAP_STAND.md`).
+- R18 (OPC UA, echte E/A) für die lokale Offline-Simulation ausgeklammert, R19 (Zusatzphysik, FMI) ohne Umsetzungsauftrag,
+  solange kein Beleg oder Bedarf vorliegt – beides wie in der Roadmap vorgesehen, mit Begründung im Stand.
+
+## 1.40.0 – 19.11.2026
+
+Simulations-Roadmap R16 (Simulationsmodi, Messabgriffe, Leistung):
+
+- Simulationsfenster: „Schritt 10 ms“ (ein Steuerzyklus) und „Bis zur nächsten Änderung“ (höchstens 10 s), Ankreuzfeld „Nur
+  aktuelles Blatt“; Pause/Fortsetzen und Stop/Neustart (Rücksetzen) wie bisher.
+- Kommandozeile `--simulate`: `--folios 1,3` bzw. `2-4` rechnet nur diese Blätter, `--until-change` hält bei der ersten
+  Zustandsänderung; `--meta` nennt Rechenzeit, Schritte, Schritte je Sekunde, Zahl der Fluidnetze und die Blätter.
+- Kern: `runUntilChange()`, `stepCount()`, `netCount()`. Formel N10.
+- Neue Prüfung „Simulationsmodi (R16)“ mit `zwei_blaetter.qet`: Halt an der Ventilumschaltung, Endlage zur selben Zeit wie im
+  Dauerlauf, Einzelschritt 10 ms, Blatt 2 allein mit demselben Druck wie im ganzen Projekt.
+- Das Simulationsfenster selbst ist nicht im Programm durchgeklickt (Bedienung ungeprüft), der Kern dahinter ist geprüft.
+
+## 1.39.0 – 19.11.2026
+
+Simulations-Roadmap R15 (Fehlerszenarien und Reparatur, Fehlermodelle wie FluidSIM):
+
+- Elementinformation `sim_fault` am Bauteil: `kolben_klemmt`, `spule_unterbrochen`, `interne_leckage [l/(min·bar) bzw. l/min]`,
+  `verstopft [Restanteil]`, `immer_gesperrt`, `immer_geoeffnet`, `schaltet_nicht`, `schaltet_immer`, jeweils mit `ab t` und
+  `bis t` (Sekunden); mehrere durch „;“ getrennt. Unpassende Fehler (etwa „Kolben klemmt“ an einem Zylinder) halten den Lauf mit
+  Meldung an. Formel K16.
+- Reparatur: Ereignis `1.0 -QM1 reparieren` (Kommandozeile, MCP `qet_simulate`) hebt die Fehler des Bauteils auf; Meldungen
+  „Fehler -QM1: …“, „Fehler -QM1 aufgehoben“, „-QM1 repariert“; Messgröße `fault:-QM1`.
+- Neue Prüfung „Fehlerszenarien (R15)“ mit `fehler.qet` und Varianten von `hydraulik.qet`: Taster ohne Wirkung, Spule bis zur
+  Reparatur unterbrochen (0,7 s später vorne), klemmender Kolben bis 1,2 s (0,9 s später), gleicher Verlauf bei Wiederholung,
+  Rückschlagventil gesperrt (Pumpe auf Druckbegrenzung) und offen (rückwärts durchströmt), Drossel auf 80 % verstopft,
+  Leckage am Kolben vorbei aus der Strombilanz.
+- FluidSIM-Beispiele unverändert (1100 ohne Modellfehler, 1131 ohne Programmfehler, 296 bewegte Zylinder).
+
+## 1.38.0 – 18.11.2026
+
+Simulations-Roadmap R14 (GRAFCET-Struktur nach IEC 60848, Schreibweise wie FluidSIM):
+
+- Teil-GRAFCETs: Ketten mit derselben Elementinformation `sim_grafcet` (G1, G12 …) bilden einen Teil-GRAFCET, die übrigen den
+  globalen GRAFCET. Schrittnummern dürfen sich zwischen Teil-GRAFCETs wiederholen (Instanzen); `X3` meint den eigenen Schritt,
+  `G5.X3` den eines anderen, `XG5` ist 1, solange G5 einen aktiven Schritt hat. Formel N06.
+- Einschließender Schritt (`sim_encloses` = „G2 G3“): aktiviert die Aktivierungsschritte der eingeschlossenen Teil-GRAFCETs und
+  deaktiviert sie beim Verlassen. Formel N07.
+- Makroschritt `M3` mit Expansion `E3` … `S3`. Formel N08.
+- Zwangssteuernde Befehle `G5{8, 9}`, `G5{}`, `G5{*}`, `G5{INIT}` als kontinuierliche Aktion. Formel N09.
+- FluidSIM-Import übernimmt Teil-GRAFCET-Rahmen, einschließende Schritte, Aktivierungsverbindungen, Makroschritte,
+  zwangssteuernde Befehle und Sprungziele von Transitionen; die Beispiele Grafcet11, 12, 14, 15, 17 laufen jetzt ohne
+  Programmfehler.
+- Neue Prüfung „GRAFCET-Struktur (R14)“ mit `grafcet_r14.qet`.
+- FluidSIM-Beispiele: 1100 von 1136 ohne Modellfehler, 1131 ohne Programmfehler (vorher 1126); keine Schaltung verschlechtert.
+
+## 1.37.0 – 18.11.2026
+
+Simulations-Roadmap R13 (mobile Hydraulik) abgeschlossen:
+
+- Load-Sensing-Steuerblock (FluidSIM `MobileValveBlockLS`, zwei Scheiben): Schieberweg aus dem Vorsteuerdruck C/D zwischen
+  pS_min und pS_max (oder Handhebel), vorgeschaltete Druckwaage je Scheibe hält den Strom lastunabhängig, Wechselventile melden
+  den höchsten Lastdruck an LS. Formel V17.
+- Prioritätsventil LS: CF wird bevorzugt versorgt, der Rest geht nach EF. Formel V18.
+- Neue Prüfung „LS-Steuerblock und Prioritätsventil (R13)“ mit `lsblock.qet`: gleicher Strom bei 52,6 und 33,4 bar Pumpendruck
+  im Band der Druckwaage, LS = Lastdruck, Rückhub, Prioritätsventil gegen die Handrechnung.
+- FluidSIM-Beispiele: 1100 von 1136 rechnen (vorher 1095), alle 27 TP800-Übungen; keine Schaltung verschlechtert.
+
+## 1.36.0 – 18.11.2026
+
+Simulations-Roadmap R13 (mobile Hydraulik), zweiter Teil:
+
+- Lenkventil (Orbitrol, FluidSIM `SteeringUnit_1/2`): Drehventil öffnet mit dem Handmoment, neutral P → E, links P → L /
+  R → T, rechts überkreuzt; die Dosierpumpe dreht das Lenkrad (Signal `phi:`). Formel H10.
+- Vorsteuergerät 2×2 (Joystick): je Gruppe ein Druckminderventil mit |Auslenkung|·pMax am Steueranschluss. Formel H11.
+- Entsperrbares Doppelrückschlagventil (Sperrblock, Ausführungen 01 und 02): frei ab der Federvorspannung, Entsperren über
+  das Flächenverhältnis des Steuerkolbens. Formel V16.
+- Belastungseinheit 1 mit Querentlastung der Stangenräume über Druckbegrenzungs- und Rückschlagventil. Formel M14.
+- Membranspeicher mit Sicherheitsblock: Vorfülldruck `p0_accu`, Kugelhahn `x`, Druckbegrenzung zum Tank. Formel H12.
+- Behoben: Das vereinfachte FluidSIM-Antriebsaggregat (ein Anschluss P2) und die FluidSIM-Pumpe `Pump01` (A/B) lieferten
+  keinen Strom, weil die Pumpe nur die Anschlüsse P und T kannte; betroffen waren 11 TP800-Übungen und 5 weitere Beispiele.
+- Drucksignale an Anschlüssen mit Punkt im Namen (`p:-MM1.A1.2`, `p:-KH1.X1.1`) lassen sich jetzt abfragen.
+- Neue Prüfung „Lenkung und Sperrventile (R13)“ mit `lenkung.qet` (sieben Kreise, vier Varianten).
+- FluidSIM-Beispiele: 1095 von 1136 rechnen (vorher 1088), 22 von 27 TP800-Übungen; bewegte Zylinder 296 (vorher 291),
+  keine Schaltung verschlechtert. Die Lenkübungen stehen, weil FluidSIM sie mit Handmoment 0 speichert (gelenkt wird dort
+  im Lauf).
+- Noch abgewiesen: LS-Steuerblock (`MobileValveBlockLS`), Prioritätsventil LS.
+
+## 1.35.0 – 18.11.2026
+
+Simulations-Roadmap R13 (mobile Hydraulik), erster Teil:
+
+- Hydraulikaggregat mit LS-Verstell- und Konstantpumpe (FluidSIM `LoadSensingPumpUnit`, P1, P2, LS): der LS-Regler hält
+  die Druckdifferenz P1 − LS auf der Federvorspannung (11,7 bar, Regelbereich 0,8 bar, PT1 20 ms), Bereitschaftsdruck bei
+  geschlossenem P1, Druckbegrenzung je Pumpe, Leckage, LS-Leitung über rT_LS entlastet.
+- 6/3-Wege-Proportional-Handhebelventil (Open Center): Umlauf P1 → T1 in der Mitte, Auslenkung ±100 % öffnet P2 → B / A → T2
+  bzw. P2 → A / B → T2, Zulauf über das Lasthalte-Rückschlagventil, Schieber mit Zeitkonstante.
+- Belastungseinheit (`LoadingUnit_2`): zwei gegenüberliegende Zylinder auf einer Stange mit FluidSIM-Reibung.
+- Neue Prüfung „Mobilhydraulik (R13)“ mit `mobilhydraulik.qet`: Bereitschaftsdruck 12,44 bar, Druckbegrenzung der
+  Konstantpumpe, LS-Regelung bei doppeltem Lastwiderstand mit gleichem Volumenstrom, Belastungseinheit über das
+  Handhebelventil aus- und einfahrend mit q/A. Formelregister H08, V15, M13.
+- Durchflussmesser mit Schluckvolumen (FluidSIM `Flowmeter_2`) rechnet jetzt als Hydromotor mit Reibung und Leckage
+  (Δp = (2π/D)²·f·q, Formel H09) statt als fast widerstandslose Blende; die Blende machte LS-Kreise numerisch instabil.
+- Noch abgewiesen: Lenkventil (Orbitrol), LS-Steuerblock, Vorsteuergerät (Joystick), Belastungseinheit 1 mit Druckbegrenzung.
+- FluidSIM-Batch: 1088 von 1136 Beispielen starten (vorher 1071), davon 16 der 27 TP800-Übungen (Mobilhydraulik);
+  keine Schaltung verschlechtert, bewegte Zylinder unverändert 291.
+
+## 1.34.0 – 18.11.2026
+
+Simulations-Roadmap R12 (Sonderantriebe), zweiter Teil: Mehrstellungszylinder.
+
+- Mehrstellungszylinder (FluidSIM `MultiPositionCylinder`, Anschlüsse C1, C2, C3): zwei Kolben gleichen Durchmessers
+  hintereinander, der hintere schiebt den vorderen mit seiner Stange bis zur Zwischenstellung (`xMax2`, Standard halber
+  Gesamthub). Kontakt einseitig, Stoß plastisch, C2 wirkt auch auf das Stangenende des hinteren Kolbens; Startlagen
+  `xStart`/`xStart1`, externe Kraft `F_Extern`. Neue Messgröße `x1:` (hinterer Kolben), Meldung „Zwischenstellung“.
+- Neue Prüfung „Mehrstellungszylinder (R12)“ mit `mehrstellungszylinder.qet`: C1 → Zwischenstellung (C3 mit Blindstopfen als
+  Luftpolster; ohne Gegendruck läuft der vordere Kolben mit seinem Schwung darüber hinaus), C2 → vorne,
+  C1 + C3 → Halt im Rückhub in der Zwischenstellung, C3 → beide zurück. Formelregister M12.
+- Druckübersetzer bleibt abgewiesen, jetzt mit Grund: FluidSIM nennt nur die Datenblattgrößen (r, p_max, q_max, G_leak)
+  ohne Standardwerte und ohne Innenschaltung. Tandem- und Teleskopzylinder sind in FluidSIM keine Bauteile.
+- FluidSIM-Batch: kein Beispiel verwendet Mehrstellungszylinder oder Druckübersetzer; Ergebnis unverändert.
+
+## 1.33.0 – 18.11.2026
+
+Simulations-Roadmap R12 (Sonderantriebe), erster Teil: Druckluftmotoren.
+
+- Druckluftmotor mit Mittelauspuff (FluidSIM `MotorWithMidExhaust`): lineare Momentenkennlinie aus Nenndruck,
+  Nenndrehzahl, Nennmoment und n₀/n_N, Moment proportional zur Druckdifferenz, Luftverbrauch zum Auspuff, Fremdmoment
+  bremsend oder antreibend; einfacher Druckluftmotor aus Schluckvolumen, Reibung und Trägheit (vorher abgewiesen).
+- Neue Prüfung „Druckluftmotoren (R12)“ mit `druckluftmotor.qet`: Leerlauf bei 6 bar doppelt so schnell wie bei 3 bar,
+  Nennpunkt 3 bar mit 0,62 N·m bremsend genau 975 1/min, rechts- wie linksherum. Formelregister M11.
+- Muskeln und Belastungseinheit bleiben abgewiesen: die Muskelkennlinie braucht Herstellerdaten (DMSP), die
+  Belastungseinheit gekoppelte Zylinder (R13).
+- FluidSIM-Batch: 1071 von 1136 Beispielen starten (vorher 1064): sieben Übungen aus TP101/TP201 mit Druckluftmotor;
+  bewegte Zylinder unverändert 291.
+
+## 1.32.0 – 18.11.2026
+
+Simulations-Roadmap R11 (Standardventile und Zylinderkräfte):
+
+- Zylinder nach dem FluidSIM-Kräftegleichgewicht: Einbauwinkel (Gewicht m·g·sin α gegen das Ausfahren), äußere Masse
+  mit Haft- und Gleitreibung (µ·m·g·|cos α|), hydraulische Kolbenreibung aus Losbrechkraft, Coulomb'scher und viskoser
+  Reibung, Federkennlinie aus dem Federdruck bei x = 0 und x_max, Kraftprofil über den Kolbenweg getrennt für Aus- und
+  Einfahren. Zylinder ohne diese Kennwerte rechnen wie bisher.
+- Gleichzeitige Betätigung beider Ventilseiten: der im Symbol festgelegte Vorrang (`dominant`) gewinnt, ohne Vorrang
+  bleibt der Schieber stehen (vorher wurde der Vorrang nicht ausgewertet).
+- Neue Prüfung „Standardventile und Zylinderkräfte (R11)“: alle 172 Ventilsymbole der Sammlung (Wege nur zwischen
+  vorhandenen Anschlüssen, gültige Ruhestellung, Betätigung vorhanden), Stellungsfolge bei gleichzeitiger Betätigung
+  mit und ohne Vorrang, und als Kraftdifferenz beim Ausfahren gegen die Handrechnung: Gewicht 1000,6 N, Kraftprofil
+  1500,0 N, Feder 879,6 N, Kolbenreibung 324,4 N, Gleitreibung der Last 196,2 N. 32 Prüfungen, alle bestanden.
+  Formelregister M08–M10, V14.
+- FluidSIM-Batch: 1064 von 1136 Beispielen starten (wie 1.31.0), in 291 bewegen sich Zylinder (vorher 298). Die
+  Verschiebung kommt von der FluidSIM-Kolbenreibung: In 16 Übungen (z. B. TP501_07 mit offenem Umgehungs-Absperrventil,
+  0,47 bar am Kolben) reicht die Kraft nicht mehr für die Losbrechkraft von 21 N, wie in FluidSIM; vorher genügten die
+  zu kleinen Vorgabewerte (6 N). Neu bewegen sich 9 Übungen mit hängender Last oder Gewicht (z. B. TP501_16, α = 270°).
+
+## 1.31.0 – 18.11.2026
+
+Simulations-Roadmap R09 vervollständigt (Regel- und Lastventile):
+
+- Druckwaagen (FluidSIM `PressureCompensator*`, Öl und Luft): Schließer und Öffner 01/02 (Hauptstrom B ↔ A, Steuerung
+  X − XS; mit X an A ein Druckregler), vorgeschaltete Druckwaage (hält p_A − p_X), nachgeschaltete Druckwaage (öffnet
+  ab p_X + p0) und Open-Center-LS-Druckwaage (P → T ab p_X + p0); Solldruck, Regelbereich, Widerstand aus FluidSIM.
+- Schock- und Nachsaugblock: A1/A2 und B1/B2 durchgehend, Druckbegrenzung von A und B gegen T, Nachsaugen über die
+  Rückschlagventile.
+- Pneumatisches Folgeventil (1 → 2 ab Schaltdruck an 12).
+- FluidSIM-Import: diese Ventile übernehmen die Anschlussnamen des Bauteils (gespiegelte Symbole sind umbeschriftet).
+- Prüfung „Stetig-, Senkbrems- und Zuschaltventile (R07/R09)“ erweitert um die Pläne `druckwaagen.qet` und
+  `folgeventil.qet`: LS-Druckwaage 22,72 bar und Schockventil 48,00 bar wie das Gleichgewicht der
+  Handrechnung, vorgeschaltete Druckwaage hält 5,38 bar über der Drossel (Band 4 … 5,5), Schließer als Druckregler
+  11,69 bar (Band 10 … 12), Nachsaugen −0,728 bar wie der Druckabfall des Rückschlagventils, Folgeventil schaltet bei
+  3 bar durch und bleibt bei 7 bar zu. 31 Prüfungen, alle bestanden. Formelregister V10–V13.
+- FluidSIM-Batch: 1064 von 1136 Beispielen starten (vorher 1051), in 298 bewegen sich Zylinder (vorher 286): alle
+  Folgeventil-Übungen aus TP101, TP701_10 mit Druckwaage, die Druckwaagen-Shows; in TP800 bleiben nur LS-Pumpe,
+  Lenkung und 6/3-Handhebelventil ohne Modell (Roadmap R13).
+
 ## 1.30.0 – 17.11.2026
 
 Simulations-Roadmap R06 (analoge Signale und Regler):

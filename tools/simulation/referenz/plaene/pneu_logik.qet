@@ -1,0 +1,998 @@
+<project title="Pneumatische Zeit-, Zähl- und Sicherheitsbausteine" uuid="{65874209-2f9f-5b35-8349-d1cf2aaeb889}" version="0.200.1">
+    <properties/>
+    <usage enabled="true" time_spent="0"/>
+    <symbol_texts upright="true"/>
+    <newdiagrams>
+        <border cols="17" colsize="60" displaycols="true" displayrows="true" rows="8" rowsize="80"/>
+        <inset author="" auto_page_num="" date="null" displayAt="bottom" filename="" folio="" indexrev="" locmach="" plant="" title="" version=""/>
+        <conductors bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <report label="%f-%l%c"/>
+        <xrefs>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="cable" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="coil" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="commutator" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="plc" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="protection" xrefpos="AlignBottom"/>
+        </xrefs>
+        <conductors_autonums auto_break_conductors="false" current_autonum="" freeze_new_conductors="false"/>
+        <folio_autonums/>
+        <element_autonums current_autonum="" freeze_new_elements="false"/>
+        <guides/>
+    </newdiagrams>
+    <diagram author="" auto_page_num="" cols="17" colsize="60" date="null" displayAt="bottom" displaycols="true" displayrows="true" filename="" folio="" freezeNewConductor="false" freezeNewElement="false" height="660" indexrev="" locmach="" order="1" plant="" rows="8" rowsize="80" title="" uuid="{a1228bb1-a29e-4941-9b16-b2cd0ab08e04}" version="0.200.1-dev">
+        <defaultconductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <elements>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/messpunkt_r12.elmt" uuid="{85a97e03-d28d-4403-86e7-5cecfb57f293}" x="60" y="160" z="10">
+                <terminals>
+                    <terminal id="0" orientation="0" x="0" y="-26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-PG1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{d73dd245-5fc3-4db5-a665-d672d5b4aa07}" x="0" y="-45">
+                        <text>-PG1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/timer1_pruef.elmt" uuid="{247ccc26-9d29-4db1-96cb-d02b7d240693}" x="60" y="330" z="10">
+                <terminals>
+                    <terminal id="1" orientation="0" x="-20" y="-26"/>
+                    <terminal id="2" orientation="2" x="-20" y="26"/>
+                    <terminal id="3" orientation="2" x="20" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-KT1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{f63b7988-e8dd-4166-8f55-73f9c206371b}" x="0" y="-45">
+                        <text>-KT1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GP" type="embed://import/50_pneumatic/5010_compressed_air/501010_air_generation/50101000_compressed_air_source.elmt" uuid="{ca6d47b1-342f-412b-ac4d-9df0031bc5e1}" x="60" y="600" z="10">
+                <terminals>
+                    <terminal id="4" orientation="0" x="0" y="-6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-GP1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{d634bde8-dc1c-4882-9b01-343ea970c732}" x="-14" y="-20">
+                        <text>-GP1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{4d7f6648-acff-49c8-8d80-b5a961c64184}" x="-10" y="9">
+                        <text></text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/messpunkt_r12.elmt" uuid="{5b4ab622-3e94-4b8f-b2ee-868d1923f3d0}" x="200" y="160" z="10">
+                <terminals>
+                    <terminal id="5" orientation="0" x="0" y="-26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-PG2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{23d4ac58-4a70-4c89-b29f-40de7247c52d}" x="0" y="-45">
+                        <text>-PG2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/timer2_pruef.elmt" uuid="{f76a192f-6ad6-4693-a0bc-18ed67dd4cec}" x="200" y="330" z="10">
+                <terminals>
+                    <terminal id="6" orientation="0" x="-40" y="-26"/>
+                    <terminal id="7" orientation="2" x="-40" y="26"/>
+                    <terminal id="8" orientation="2" x="0" y="26"/>
+                    <terminal id="9" orientation="2" x="40" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-KT2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{3e0f48e8-1945-4f31-b8f4-bf3b6c84398f}" x="0" y="-45">
+                        <text>-KT2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/messpunkt_r12.elmt" uuid="{25ef3b81-d432-4a28-b019-46a8fba83486}" x="360" y="160" z="10">
+                <terminals>
+                    <terminal id="10" orientation="0" x="0" y="-26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-PG3</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{d54f8c67-d02f-4fad-826c-e3319d9f3f01}" x="0" y="-45">
+                        <text>-PG3</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/timer3_pruef.elmt" uuid="{0777b16d-507e-47db-8b38-6f8b7ac0f9e8}" x="360" y="330" z="10">
+                <terminals>
+                    <terminal id="11" orientation="0" x="-20" y="-26"/>
+                    <terminal id="12" orientation="2" x="-20" y="26"/>
+                    <terminal id="13" orientation="2" x="20" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-KT3</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{1d2e4a79-c88a-47e1-ac34-52716f60182b}" x="0" y="-45">
+                        <text>-KT3</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GP" type="embed://import/50_pneumatic/5010_compressed_air/501010_air_generation/50101000_compressed_air_source.elmt" uuid="{c6b2a745-44ff-4a62-8a8c-8eac3338c884}" x="380" y="600" z="10">
+                <terminals>
+                    <terminal id="14" orientation="0" x="0" y="-6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-GP2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{5cbb8555-582e-45f2-aeac-b0bf3f6972f1}" x="-14" y="-20">
+                        <text>-GP2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{254693fb-bec4-4dfd-94a1-35d6f549a316}" x="-10" y="9">
+                        <text></text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="QM" type="embed://import/50_pneumatic/5020_velves/502010_control/50201020_3_2_way/5020102010_pneu/502010201000_3_2_way.elmt" uuid="{1b204cc6-7a95-4b9f-8b1b-9ba5fff46ff3}" x="500" y="480" z="10">
+                <terminals>
+                    <terminal id="15" orientation="0" x="0" y="-16"/>
+                    <terminal id="16" orientation="3" x="-36" y="0"/>
+                    <terminal id="17" orientation="2" x="0" y="6"/>
+                    <terminal id="18" orientation="2" x="10" y="6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-QM1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{720e7f56-738b-422f-94ce-4d0203877db2}" x="-35" y="-40">
+                        <text>-QM1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{ecc54e69-d4a4-4903-bc10-78b115a537bd}" x="-35" y="-20">
+                        <text>12</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{702a7add-f4be-4afc-908d-950c18790677}" x="-7" y="1">
+                        <text>1</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{9b179c48-0a8b-4f04-ad05-fd58dc482c32}" x="-7" y="-24">
+                        <text>2</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{3cb547c4-576d-49ba-8597-b254790daa65}" x="12" y="-20">
+                        <text>10</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{8b4be899-aacd-4353-b9b9-9814f009b7f3}" x="3" y="1">
+                        <text>3</text>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/messpunkt_r12.elmt" uuid="{ed3b6db3-f885-4823-ab32-25154155619e}" x="560" y="160" z="10">
+                <terminals>
+                    <terminal id="19" orientation="0" x="0" y="-26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-PG4</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{1664af89-648f-498f-800b-3805db9276fa}" x="0" y="-45">
+                        <text>-PG4</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/zaehler_pruef.elmt" uuid="{631a19dc-29e5-4250-aa5b-a46be90e2442}" x="560" y="330" z="10">
+                <terminals>
+                    <terminal id="20" orientation="0" x="-40" y="-26"/>
+                    <terminal id="21" orientation="2" x="-40" y="26"/>
+                    <terminal id="22" orientation="2" x="0" y="26"/>
+                    <terminal id="23" orientation="2" x="40" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-BZ1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{c5e60242-5947-4f3a-a1f2-5259be025b1e}" x="0" y="-45">
+                        <text>-BZ1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="QM" type="embed://import/50_pneumatic/5020_velves/502010_control/50201020_3_2_way/5020102010_pneu/502010201000_3_2_way.elmt" uuid="{e184afcf-6235-4e4e-9c71-dc2f23b38500}" x="600" y="480" z="10">
+                <terminals>
+                    <terminal id="24" orientation="0" x="0" y="-16"/>
+                    <terminal id="25" orientation="3" x="-36" y="0"/>
+                    <terminal id="26" orientation="2" x="0" y="6"/>
+                    <terminal id="27" orientation="2" x="10" y="6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-QM2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{e397c12e-6213-4ff3-9767-0403e00ec1db}" x="-35" y="-40">
+                        <text>-QM2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{80b862c5-20e5-4e0a-b804-0d1f925032c6}" x="-35" y="-20">
+                        <text>12</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{2f5f0596-f91c-4f9e-aa8a-74bb0c9e489d}" x="-7" y="1">
+                        <text>1</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{d504129b-8354-4fb1-a52a-3f38db14783c}" x="-7" y="-24">
+                        <text>2</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{54c8b940-8bac-4c06-a142-a4e47fd0a92b}" x="12" y="-20">
+                        <text>10</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{94316d7f-43ae-4062-94d2-473486c9e12d}" x="3" y="1">
+                        <text>3</text>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GP" type="embed://import/50_pneumatic/5010_compressed_air/501010_air_generation/50101000_compressed_air_source.elmt" uuid="{9e06b00b-7387-4520-8b8f-1ad68a0f5792}" x="700" y="600" z="10">
+                <terminals>
+                    <terminal id="28" orientation="0" x="0" y="-6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-GP3</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{c1cb086f-097a-4cf5-89be-69a205f660dc}" x="-14" y="-20">
+                        <text>-GP3</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{01de2adc-59f9-4125-84d6-1332e88a8824}" x="-10" y="9">
+                        <text></text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="QM" type="embed://import/50_pneumatic/5020_velves/502010_control/50201020_3_2_way/5020102010_pneu/502010201000_3_2_way.elmt" uuid="{8abfb748-68d4-42f3-accf-f18709a98305}" x="720" y="480" z="10">
+                <terminals>
+                    <terminal id="29" orientation="0" x="0" y="-16"/>
+                    <terminal id="30" orientation="3" x="-36" y="0"/>
+                    <terminal id="31" orientation="2" x="0" y="6"/>
+                    <terminal id="32" orientation="2" x="10" y="6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-QM3</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{de2249f2-c05f-4cca-a25b-f3edbff7af90}" x="-35" y="-40">
+                        <text>-QM3</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{0a4eadce-ace3-47e1-9703-fa45d0ddb31f}" x="-35" y="-20">
+                        <text>12</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{2caf5622-bea5-4d78-b2ce-657d8c645921}" x="-7" y="1">
+                        <text>1</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{912edf63-bbdb-4bd2-8efb-865c9591ec9d}" x="-7" y="-24">
+                        <text>2</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{38f71bf1-3453-4e77-a42c-1fcae6cdd04c}" x="12" y="-20">
+                        <text>10</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{b1c31c2b-f380-4bda-b052-3589f9b89a45}" x="3" y="1">
+                        <text>3</text>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/messpunkt_r12.elmt" uuid="{a79748a1-ca38-408f-98e0-854b05f606f5}" x="770" y="160" z="10">
+                <terminals>
+                    <terminal id="33" orientation="0" x="0" y="-26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-PG5</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{06ce8e11-8e44-4881-bb9e-a84c8cd92161}" x="0" y="-45">
+                        <text>-PG5</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/zweihand_pruef.elmt" uuid="{0696b466-1ceb-4b5c-90df-252dfb778ace}" x="770" y="330" z="10">
+                <terminals>
+                    <terminal id="34" orientation="0" x="-20" y="-26"/>
+                    <terminal id="35" orientation="2" x="-20" y="26"/>
+                    <terminal id="36" orientation="2" x="20" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-ZH1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{3e5e6761-4cda-47fa-b9ad-3896e8e1261b}" x="0" y="-45">
+                        <text>-ZH1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="QM" type="embed://import/50_pneumatic/5020_velves/502010_control/50201020_3_2_way/5020102010_pneu/502010201000_3_2_way.elmt" uuid="{02a53d4d-7ee7-4fe2-910d-e089d6e230d7}" x="820" y="480" z="10">
+                <terminals>
+                    <terminal id="37" orientation="0" x="0" y="-16"/>
+                    <terminal id="38" orientation="3" x="-36" y="0"/>
+                    <terminal id="39" orientation="2" x="0" y="6"/>
+                    <terminal id="40" orientation="2" x="10" y="6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-QM4</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{2c566f0f-2ce6-4d57-8fd5-aa75539c7c9b}" x="-35" y="-40">
+                        <text>-QM4</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{8333cf37-e09e-42a0-9e68-a55a6bea3af9}" x="-35" y="-20">
+                        <text>12</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{0479110f-a3b5-43ef-8100-52b84b6c3129}" x="-7" y="1">
+                        <text>1</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{22369686-8ed0-45e2-95d8-50eff111a831}" x="-7" y="-24">
+                        <text>2</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="0" uuid="{8de2e831-9f7c-45b6-8d50-7f3f49449c07}" x="12" y="-20">
+                        <text>10</text>
+                    </dynamic_elmt_text>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{f0774f94-e99f-4e7e-8982-917661549df1}" x="3" y="1">
+                        <text>3</text>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/vakuumsaug_pruef.elmt" uuid="{edab894c-271e-4012-98a3-6c61974d67ab}" x="920" y="330" z="10">
+                <terminals>
+                    <terminal id="41" orientation="0" x="0" y="-26"/>
+                    <terminal id="42" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-UV1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{68119d3e-1dd2-450d-b638-9fac993cc662}" x="0" y="-45">
+                        <text>-UV1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/quelle_05bar.elmt" uuid="{20d256ae-bb18-4ad4-8744-8fa3c8e33afb}" x="920" y="600" z="10">
+                <terminals>
+                    <terminal id="43" orientation="0" x="0" y="-26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-GP4</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{6f89606e-112f-407b-948f-c6a191e5112e}" x="0" y="-45">
+                        <text>-GP4</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/vakuumsaug_pruef.elmt" uuid="{9bd37c69-6962-4fc9-986f-1d0fb83fe912}" x="1000" y="330" z="10">
+                <terminals>
+                    <terminal id="44" orientation="0" x="0" y="-26"/>
+                    <terminal id="45" orientation="2" x="0" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-UV2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{0908263a-9a2a-4fc5-be98-7e32e5b26196}" x="0" y="-45">
+                        <text>-UV2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/quelle_005bar.elmt" uuid="{418ed3db-4813-445e-88d6-b81ca244ee4f}" x="1000" y="600" z="10">
+                <terminals>
+                    <terminal id="46" orientation="0" x="0" y="-26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-GP5</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{c604f112-0f7e-4987-8105-1156d7e0a405}" x="0" y="-45">
+                        <text>-GP5</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+        </elements>
+        <conductors>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{85a97e03-d28d-4403-86e7-5cecfb57f293}" element1_label="-PG1" element1_name="Test point (test symbol)" element2="{247ccc26-9d29-4db1-96cb-d02b7d240693}" element2_label="-KT1" element2_name="Timer 1 (NC) (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{cff6b5d3-99cc-5720-9405-32256ee0dc72}" terminal2="{be2a4c26-de51-5d92-957a-20d9734b25e8}" terminalname1="1" terminalname2="C1" text_color="#000000" type="multi" uuid="{8e3eed0d-4eb5-4298-ab6f-d08115288686}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{247ccc26-9d29-4db1-96cb-d02b7d240693}" element1_label="-KT1" element1_name="Timer 1 (NC) (test symbol)" element2="{ca6d47b1-342f-412b-ac4d-9df0031bc5e1}" element2_label="-GP1" element2_name="compressed air source" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{e562b2ba-bde4-5da0-884f-28491960fb76}" terminal2="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminalname1="C2" terminalname2="1" text_color="#000000" type="multi" uuid="{61e75c14-2ea1-47eb-bb62-6644449a4d00}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{ca6d47b1-342f-412b-ac4d-9df0031bc5e1}" element1_label="-GP1" element1_name="compressed air source" element2="{f76a192f-6ad6-4693-a0bc-18ed67dd4cec}" element2_label="-KT2" element2_name="Timer 2 (NO) (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminal2="{178a30be-f5fc-587d-a0da-80649d3bab7f}" terminalname1="1" terminalname2="C2" text_color="#000000" type="multi" uuid="{045aad91-31c2-4be5-9741-c8c4e3ebb3d7}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{ca6d47b1-342f-412b-ac4d-9df0031bc5e1}" element1_label="-GP1" element1_name="compressed air source" element2="{f76a192f-6ad6-4693-a0bc-18ed67dd4cec}" element2_label="-KT2" element2_name="Timer 2 (NO) (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminal2="{fc2d888f-b1f2-5577-84dc-cb9c1cb23215}" terminalname1="1" terminalname2="PL" text_color="#000000" type="multi" uuid="{d4e06a48-d6f0-402e-b286-87cd95a65e9c}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{ca6d47b1-342f-412b-ac4d-9df0031bc5e1}" element1_label="-GP1" element1_name="compressed air source" element2="{0777b16d-507e-47db-8b38-6f8b7ac0f9e8}" element2_label="-KT3" element2_name="Delay valve (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminal2="{43583a40-9800-5c42-8907-77ac0073e083}" terminalname1="1" terminalname2="C2" text_color="#000000" type="multi" uuid="{dfb78f9f-5997-40ca-95e1-09cbcd407431}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{ca6d47b1-342f-412b-ac4d-9df0031bc5e1}" element1_label="-GP1" element1_name="compressed air source" element2="{0777b16d-507e-47db-8b38-6f8b7ac0f9e8}" element2_label="-KT3" element2_name="Delay valve (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminal2="{957a60bc-c499-50f3-b192-dd4c28fd3acb}" terminalname1="1" terminalname2="C3" text_color="#000000" type="multi" uuid="{90844702-08b6-46a2-ad3c-e0199ebd278a}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{5b4ab622-3e94-4b8f-b2ee-868d1923f3d0}" element1_label="-PG2" element1_name="Test point (test symbol)" element2="{f76a192f-6ad6-4693-a0bc-18ed67dd4cec}" element2_label="-KT2" element2_name="Timer 2 (NO) (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{cff6b5d3-99cc-5720-9405-32256ee0dc72}" terminal2="{1588dbef-9289-595e-a1a6-207b76f62053}" terminalname1="1" terminalname2="C1" text_color="#000000" type="multi" uuid="{59f5a208-c83d-48a2-ab49-256d90f95bea}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{25ef3b81-d432-4a28-b019-46a8fba83486}" element1_label="-PG3" element1_name="Test point (test symbol)" element2="{0777b16d-507e-47db-8b38-6f8b7ac0f9e8}" element2_label="-KT3" element2_name="Delay valve (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{cff6b5d3-99cc-5720-9405-32256ee0dc72}" terminal2="{fc5703f0-4086-599e-a790-76785fc57d89}" terminalname1="1" terminalname2="C1" text_color="#000000" type="multi" uuid="{3823c198-881d-4a90-b37b-a4de6006de3c}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{c6b2a745-44ff-4a62-8a8c-8eac3338c884}" element1_label="-GP2" element1_name="compressed air source" element2="{1b204cc6-7a95-4b9f-8b1b-9ba5fff46ff3}" element2_label="-QM1" element2_name="3/2p_nc [pneu]-[spring]" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminal2="{0d5afb67-53af-4352-927f-0f355bde32a3}" terminalname1="1" terminalname2="1" text_color="#000000" type="multi" uuid="{982c4822-8aff-48a3-a3f1-2379b1cadd2e}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{c6b2a745-44ff-4a62-8a8c-8eac3338c884}" element1_label="-GP2" element1_name="compressed air source" element2="{631a19dc-29e5-4250-aa5b-a46be90e2442}" element2_label="-BZ1" element2_name="Counter 3 (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminal2="{06198075-8012-53e0-aafb-2770a6a9fc4e}" terminalname1="1" terminalname2="C4" text_color="#000000" type="multi" uuid="{6db6c070-16c0-487e-a990-4c719af130a2}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{c6b2a745-44ff-4a62-8a8c-8eac3338c884}" element1_label="-GP2" element1_name="compressed air source" element2="{e184afcf-6235-4e4e-9c71-dc2f23b38500}" element2_label="-QM2" element2_name="3/2p_nc [pneu]-[spring]" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminal2="{0d5afb67-53af-4352-927f-0f355bde32a3}" terminalname1="1" terminalname2="1" text_color="#000000" type="multi" uuid="{500f22c6-2b3d-4e86-915a-5bd8defa4326}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{1b204cc6-7a95-4b9f-8b1b-9ba5fff46ff3}" element1_label="-QM1" element1_name="3/2p_nc [pneu]-[spring]" element2="{631a19dc-29e5-4250-aa5b-a46be90e2442}" element2_label="-BZ1" element2_name="Counter 3 (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{cd1228b7-ce2b-4176-b8ae-56e60a0ec85c}" terminal2="{f4b8fcdc-2501-56e7-aa1f-bd9016a2d66e}" terminalname1="2" terminalname2="C1" text_color="#000000" type="multi" uuid="{3a31907d-3b61-43ee-91a4-bc438a3c2ac4}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{ed3b6db3-f885-4823-ab32-25154155619e}" element1_label="-PG4" element1_name="Test point (test symbol)" element2="{631a19dc-29e5-4250-aa5b-a46be90e2442}" element2_label="-BZ1" element2_name="Counter 3 (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{cff6b5d3-99cc-5720-9405-32256ee0dc72}" terminal2="{c8756d83-6781-5797-b430-628e9083fca6}" terminalname1="1" terminalname2="C3" text_color="#000000" type="multi" uuid="{887a3993-daa2-47de-a884-e1a30dd017fb}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{631a19dc-29e5-4250-aa5b-a46be90e2442}" element1_label="-BZ1" element1_name="Counter 3 (test symbol)" element2="{e184afcf-6235-4e4e-9c71-dc2f23b38500}" element2_label="-QM2" element2_name="3/2p_nc [pneu]-[spring]" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{da028871-91f9-57b3-8b73-48d87be611b8}" terminal2="{cd1228b7-ce2b-4176-b8ae-56e60a0ec85c}" terminalname1="C2" terminalname2="2" text_color="#000000" type="multi" uuid="{c21f1e36-d622-4ea6-bcb6-2d3367215dd3}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{9e06b00b-7387-4520-8b8f-1ad68a0f5792}" element1_label="-GP3" element1_name="compressed air source" element2="{8abfb748-68d4-42f3-accf-f18709a98305}" element2_label="-QM3" element2_name="3/2p_nc [pneu]-[spring]" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminal2="{0d5afb67-53af-4352-927f-0f355bde32a3}" terminalname1="1" terminalname2="1" text_color="#000000" type="multi" uuid="{100cae64-112f-401e-b983-0107db831d07}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{9e06b00b-7387-4520-8b8f-1ad68a0f5792}" element1_label="-GP3" element1_name="compressed air source" element2="{02a53d4d-7ee7-4fe2-910d-e089d6e230d7}" element2_label="-QM4" element2_name="3/2p_nc [pneu]-[spring]" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" terminal2="{0d5afb67-53af-4352-927f-0f355bde32a3}" terminalname1="1" terminalname2="1" text_color="#000000" type="multi" uuid="{15f794bb-76b1-4560-a0a0-9ba357a59017}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{8abfb748-68d4-42f3-accf-f18709a98305}" element1_label="-QM3" element1_name="3/2p_nc [pneu]-[spring]" element2="{0696b466-1ceb-4b5c-90df-252dfb778ace}" element2_label="-ZH1" element2_name="Two-hand block (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{cd1228b7-ce2b-4176-b8ae-56e60a0ec85c}" terminal2="{8899a065-6f03-5569-887e-31fc9a121589}" terminalname1="2" terminalname2="C11" text_color="#000000" type="multi" uuid="{471a47de-c9e6-4c8d-8c71-fec38427582a}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{a79748a1-ca38-408f-98e0-854b05f606f5}" element1_label="-PG5" element1_name="Test point (test symbol)" element2="{0696b466-1ceb-4b5c-90df-252dfb778ace}" element2_label="-ZH1" element2_name="Two-hand block (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{cff6b5d3-99cc-5720-9405-32256ee0dc72}" terminal2="{c6238057-a82b-56c3-ba2f-913600b39c12}" terminalname1="1" terminalname2="C2" text_color="#000000" type="multi" uuid="{8354c2b5-6da5-4d8a-b874-0433f3c42273}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{0696b466-1ceb-4b5c-90df-252dfb778ace}" element1_label="-ZH1" element1_name="Two-hand block (test symbol)" element2="{02a53d4d-7ee7-4fe2-910d-e089d6e230d7}" element2_label="-QM4" element2_name="3/2p_nc [pneu]-[spring]" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{67a6ac67-45fd-5069-9ffa-aee8f072fa93}" terminal2="{cd1228b7-ce2b-4176-b8ae-56e60a0ec85c}" terminalname1="C12" terminalname2="2" text_color="#000000" type="multi" uuid="{dd972f1d-6cb4-4434-a5bf-30c075555241}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{edab894c-271e-4012-98a3-6c61974d67ab}" element1_label="-UV1" element1_name="Vacuum efficiency valve (test symbol)" element2="{20d256ae-bb18-4ad4-8744-8fa3c8e33afb}" element2_label="-GP4" element2_name="Source 0.5 bar (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{46b4bfb5-fe77-598a-b244-d1afcb936013}" terminal2="{3f56f1e6-9ed1-5d32-b83d-207e35c0805d}" terminalname1="C1" terminalname2="1" text_color="#000000" type="multi" uuid="{382c7ee9-47f0-49b1-b340-e6bcdf2c1417}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{9bd37c69-6962-4fc9-986f-1d0fb83fe912}" element1_label="-UV2" element1_name="Vacuum efficiency valve (test symbol)" element2="{418ed3db-4813-445e-88d6-b81ca244ee4f}" element2_label="-GP5" element2_name="Source 0.05 bar (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{46b4bfb5-fe77-598a-b244-d1afcb936013}" terminal2="{cd7cd620-79ae-5cc3-92a0-25f85abf4269}" terminalname1="C1" terminalname2="1" text_color="#000000" type="multi" uuid="{33d4b6b8-f0eb-4e98-a9df-e3f29f806717}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+        </conductors>
+    </diagram>
+    <collection>
+        <category name="import">
+            <names>
+                <name lang="ca">Elements importats</name>
+                <name lang="cs">Zavedené prvky</name>
+                <name lang="da">Importerede elementer</name>
+                <name lang="de">Importierte Elemente</name>
+                <name lang="el">Εισηγμένα στοιχεία</name>
+                <name lang="en">Imported elements</name>
+                <name lang="es">Elementos importados</name>
+                <name lang="fr">Éléments importés</name>
+                <name lang="hr">Uvezeni elementi</name>
+                <name lang="it">Elementi importati</name>
+                <name lang="ja">インバートされた要素</name>
+                <name lang="ko">전기 심볼 요소</name>
+                <name lang="ko_KR">전기 심볼 요소</name>
+                <name lang="lv">Importētie elementi</name>
+                <name lang="nl">Elementen geïmporteerd</name>
+                <name lang="nl_BE">Elementen geïmporteerd</name>
+                <name lang="pl">Elementy importowane</name>
+                <name lang="pt">Elementos importados</name>
+                <name lang="pt_BR">Elementos importados</name>
+                <name lang="ro">Elemente importate</name>
+                <name lang="ru">Импортированные элементы</name>
+                <name lang="sk">Importované prvky</name>
+                <name lang="sl">Uvoženi elementi</name>
+                <name lang="sv">Importerade element</name>
+                <name lang="tr">İthal öğeler</name>
+                <name lang="uk">Імпортовані елементи</name>
+                <name lang="zh">导入元件</name>
+            </names>
+        <category name="50_pneumatic">
+                <category name="5010_compressed_air">
+                    <category name="501010_air_generation">
+                        <element name="50101000_compressed_air_source.elmt">
+                            <definition height="30" hotspot_x="10" hotspot_y="18" link_type="simple" type="element" version="0.100.0" width="20">
+                                <uuid uuid="{e42b889b-269e-7e99-beb4-fb660c417716}"/>
+                                <names>
+                                    <name lang="ar">مصدر الهواء المضغوط</name>
+                                    <name lang="ca">font d'aire comprimit</name>
+                                    <name lang="cs">zdroj stlačeného vzduchu</name>
+                                    <name lang="da">trykluftkilde</name>
+                                    <name lang="de">Qruckluftquelle</name>
+                                    <name lang="el">πηγή πεπιεσμένου αέρα</name>
+                                    <name lang="en">compressed air source</name>
+                                    <name lang="es">fuente de aire comprimido</name>
+                                    <name lang="fi">paineilman lähde</name>
+                                    <name lang="fr">source d'air comprimé</name>
+                                    <name lang="hr">izvor komprimiranog zraka</name>
+                                    <name lang="hu">sűrített levegő forrás</name>
+                                    <name lang="it">fonte di aria compressa</name>
+                                    <name lang="ja">圧縮空気源</name>
+                                    <name lang="ko">압축 공기 공급원</name>
+                                    <name lang="mn">шахсан агаарын эх үүсвэр</name>
+                                    <name lang="nb">trykkluftkilde</name>
+                                    <name lang="nl">persluchtbron</name>
+                                    <name lang="nl_BE">persluchtbron</name>
+                                    <name lang="pl">źródło sprężonego powietrza</name>
+                                    <name lang="pt">fonte de ar comprimido</name>
+                                    <name lang="pt_BR">fonte de ar comprimido</name>
+                                    <name lang="ro">sursa de aer comprimat</name>
+                                    <name lang="ru">источник сжатого воздуха</name>
+                                    <name lang="sk">Zdroj stlačeného vzduchu</name>
+                                    <name lang="sl">vir stisnjenega zraka</name>
+                                    <name lang="sr">извор компримованог ваздуха</name>
+                                    <name lang="sv">Tryckluftskälla</name>
+                                    <name lang="tr">basınçlı hava kaynağı</name>
+                                    <name lang="uk">джерело стисненого повітря</name>
+                                    <name lang="zh">压缩空气源</name>
+                                </names>
+                                <fluid function="supply.pump" kind="source" prefix="GP">
+                                    <parameter name="displacement" unit="cm3" value="8"/>
+                                    <parameter name="rpm" unit="1/min" value="1450"/>
+                                    <parameter name="pMax" unit="MPa" value="6"/>
+                                </fluid>
+                                <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                <description>
+                                    <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{84c5a282-673b-da78-5176-09a611b3de1d}" x="-14" y="-20" z="1">
+                                        <text/>
+                                        <info_name>label</info_name>
+                                    </dynamic_text>
+                                    <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,5,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="-1" uuid="{30a02494-8600-035e-2a99-e496813c8136}" x="-10" y="9" z="1">
+                                        <text/>
+                                        <info_name>label</info_name>
+                                    </dynamic_text>
+                                    <polygon antialias="true" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-4" x2="4" x3="0" y1="8" y2="8" y3="0"/>
+                                    <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-10" y2="0"/>
+                                    <terminal medium="pneumatic" name="1" orientation="n" type="Generic" uuid="{8c314fc9-c749-4ab9-93f4-1c85f676afdd}" x="0" y="-10"/>
+                                </description>
+                            </definition>
+                        </element>
+                    </category>
+                </category>
+                <category name="5020_velves">
+                    <category name="502010_control">
+                        <category name="50201020_3_2_way">
+                            <category name="5020102010_pneu">
+                                <element name="502010201000_3_2_way.elmt">
+                                    <definition height="50" hotspot_x="50" hotspot_y="31" link_type="simple" type="element" version="0.90" width="80">
+                                        <uuid uuid="{f13bf19b-a728-9142-17a4-ffa150d60d5c}"/>
+                                        <names>
+                                            <name lang="ar">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="ca">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="cs">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="da">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="de">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="el">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="en">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="es">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="fi">3/2p_nc [pneu]-[jousi]</name>
+                                            <name lang="fr">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="hr">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="hu">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="it">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="ja">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="ko">3/2p_nc [공압]-[스프링]</name>
+                                            <name lang="mn">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="nb">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="nl">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="nl_BE">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="pl">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="pt">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="pt_BR">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="ro">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="ru">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="sk">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="sl">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="sr">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="sv">3/2p_nc [pneu]-[fjäder]</name>
+                                            <name lang="tr">3/2p_nc [pneu]-[spring]</name>
+                                            <name lang="uk">3/2p_nc [пневм.]-[пружина]</name>
+                                            <name lang="zh">3/2通阀000</name>
+                                        </names>
+                                        <fluid function="directional_valve.three_pins" kind="valve" prefix="QM">
+                                            <positions initial="2">
+                                                <position>
+                                                    <path from="1" to="2"/>
+                                                    <path from="3"/>
+                                                </position>
+                                                <position>
+                                                    <path from="2" to="3"/>
+                                                    <path from="1"/>
+                                                </position>
+                                            </positions>
+                                            <actuation pilot="true" side="left" spring="false" types=""/>
+                                            <actuation side="right" spring="true" types=""/>
+                                            <parameter name="qNN" unit="l/min" value="60"/>
+                                            <parameter name="onDelay" unit="s" value="0.02"/>
+                                            <parameter name="offDelay" unit="s" value="0.03"/>
+                                            <parameter name="F_spring" unit="N" value="20"/>
+                                            <parameter name="F_EL" unit="N" value="70"/>
+                                            <parameter name="F_ER" unit="N" value="70"/>
+                                            <parameter name="areaPilotL" unit="cm2" value="1.4"/>
+                                            <parameter name="areaPilotR" unit="cm2" value="1.4"/>
+                                            <parameter name="posNoMax" value="2"/>
+                                            <parameter name="posNoInit" value="2"/>
+                                        </fluid>
+                                        <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                                        <description>
+                                            <line antialias="false" end1="none" end2="none" length1="0" length2="0" style="line-style:normal;line-weight:normal;filling:black;color:black" x1="8" x2="0" y1="1" y2="-15"/>
+                                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-10" x2="-10" y1="5" y2="0"/>
+                                            <polygon antialias="true" style="line-style:normal;line-weight:thin;filling:black;color:black" x1="7.82" x2="6.69" x3="9.94" x4="9" y1="0.36" y2="1.29" y3="4.66" y4="0"/>
+                                            <polygon antialias="true" style="line-style:normal;line-weight:thin;filling:black;color:black" x1="-19.95" x2="-21.95" x3="-17.95" y1="-14.95" y2="-9.95" y3="-9.95"/>
+                                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-12" x2="-8" y1="0" y2="0"/>
+                                            <rect antialias="false" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="20" x="-25" y="-15"/>
+                                            <line antialias="false" end1="none" end2="none" length1="0" length2="0" style="line-style:normal;line-weight:normal;filling:black;color:black" x1="-20" x2="-20" y1="4" y2="-11"/>
+                                            <rect antialias="false" height="20" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="20" x="-5" y="-15"/>
+                                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="5" y2="0"/>
+                                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-2" x2="2" y1="0" y2="0"/>
+                                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-26" x2="-29" y1="0" y2="0"/>
+                                            <polygon antialias="false" closed="false" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="15.11" x2="17" x3="18" x4="20" x5="21" x6="23" x7="24.17" y1="-2.7" y2="3" y3="-3" y4="3" y5="-3" y6="3" y7="-2.58"/>
+                                            <polygon antialias="false" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-36" x2="-36" x3="-29" y1="3" y2="-3" y3="0"/>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{3156b439-dba3-7c87-66dc-50c993946a47}" x="-35" y="-40" z="31">
+                                                <text/>
+                                                <info_name>label</info_name>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="0" uuid="{9ce0dc61-9f16-750b-bda7-2ab38e3087f4}" x="-35" y="-20" z="32">
+                                                <text>12</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="-1" uuid="{a30d453e-8643-e9d6-e6ce-b7d72be1e299}" x="-7" y="1" z="32">
+                                                <text>1</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="0" uuid="{9d9b031a-266a-22a0-4f98-ace8156b9efb}" x="-7" y="-24" z="32">
+                                                <text>2</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="0" uuid="{f4179f91-a831-49aa-ce54-95ac5986b3d6}" x="12" y="-20" z="32">
+                                                <text>10</text>
+                                            </dynamic_text>
+                                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,3,-1,5,0,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="UserText" text_width="-1" uuid="{54d0987f-1e63-e2d5-b002-8d2531b01c1e}" x="3" y="1" z="32">
+                                                <text>3</text>
+                                            </dynamic_text>
+                                            <terminal medium="pneumatic" name="2" orientation="n" type="Generic" uuid="{cd1228b7-ce2b-4176-b8ae-56e60a0ec85c}" x="0" y="-20"/>
+                                            <terminal medium="pneumatic" name="3" orientation="s" type="Generic" uuid="{96cd18ff-c198-4c40-b5bf-6b7994c06dc9}" x="10" y="10"/>
+                                            <terminal medium="pneumatic" name="1" orientation="s" type="Generic" uuid="{0d5afb67-53af-4352-927f-0f355bde32a3}" x="0" y="10"/>
+                                            <terminal medium="pneumatic" name="14" orientation="w" type="Generic" uuid="{77c5a2d7-5799-41e5-ba1e-4ec1bed48155}" x="-40" y="0"/>
+                                        </description>
+                                    </definition>
+                                </element>
+                            </category>
+                        </category>
+                    </category>
+                </category>
+            </category>
+            <category name="90_signal">
+                <element name="timer1_pruef.elmt">
+                    <definition height="100" hotspot_x="80" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="160">
+                        <uuid uuid="{07e8d972-cc05-553e-b2ff-bc70dadf17b7}"/>
+                        <names>
+                            <name lang="de">Timer 1 (zu) (Prüfsymbol)</name>
+                            <name lang="en">Timer 1 (NC) (test symbol)</name>
+                        </names>
+                        <fluid function="shutoff_valve.timer1" kind="other" prefix="MM">
+                            <parameter name="delayTime" unit="s" value="0.5"/>
+                            <parameter name="qNN" unit="l/min" value="50"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R12 (Muskel, Druckübersetzer)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="120" x="-60" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Timer 1 (zu)" x="-56" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{f40e75aa-29e2-576a-accb-6527e5aebd0a}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20" x2="-20" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C2" x="-18" y="28"/>
+                            <terminal medium="pneumatic" name="C2" orientation="s" type="Generic" uuid="{e562b2ba-bde4-5da0-884f-28491960fb76}" x="-20" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="20" x2="20" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C3" x="22" y="28"/>
+                            <terminal medium="pneumatic" name="C3" orientation="s" type="Generic" uuid="{5932d8f6-6dc9-5d6c-aa8c-505f9a69f3c7}" x="20" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20" x2="-20" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C1" x="-18" y="-21"/>
+                            <terminal medium="pneumatic" name="C1" orientation="n" type="Generic" uuid="{be2a4c26-de51-5d92-957a-20d9734b25e8}" x="-20" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="timer2_pruef.elmt">
+                    <definition height="100" hotspot_x="100" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="200">
+                        <uuid uuid="{97844760-a623-5600-843d-d9c84be3605a}"/>
+                        <names>
+                            <name lang="de">Timer 2 (offen) (Prüfsymbol)</name>
+                            <name lang="en">Timer 2 (NO) (test symbol)</name>
+                        </names>
+                        <fluid function="shutoff_valve.timer2" kind="other" prefix="MM">
+                            <parameter name="delayTime" unit="s" value="0.5"/>
+                            <parameter name="qNN" unit="l/min" value="50"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R12 (Muskel, Druckübersetzer)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="160" x="-80" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Timer 2 (offen)" x="-76" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{2c4d1c74-5ad4-52b8-9e24-1cc3da8263e8}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-40" x2="-40" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C2" x="-38" y="28"/>
+                            <terminal medium="pneumatic" name="C2" orientation="s" type="Generic" uuid="{178a30be-f5fc-587d-a0da-80649d3bab7f}" x="-40" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C3" x="2" y="28"/>
+                            <terminal medium="pneumatic" name="C3" orientation="s" type="Generic" uuid="{f1cda58a-44ac-5317-92b8-0ebf14a7dd86}" x="0" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="40" x2="40" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="PL" x="42" y="28"/>
+                            <terminal medium="pneumatic" name="PL" orientation="s" type="Generic" uuid="{fc2d888f-b1f2-5577-84dc-cb9c1cb23215}" x="40" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-40" x2="-40" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C1" x="-38" y="-21"/>
+                            <terminal medium="pneumatic" name="C1" orientation="n" type="Generic" uuid="{1588dbef-9289-595e-a1a6-207b76f62053}" x="-40" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="timer3_pruef.elmt">
+                    <definition height="100" hotspot_x="80" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="160">
+                        <uuid uuid="{4c0d53e4-a218-53e7-af46-4baf64093e33}"/>
+                        <names>
+                            <name lang="de">Verzögerungsventil (Prüfsymbol)</name>
+                            <name lang="en">Delay valve (test symbol)</name>
+                        </names>
+                        <fluid function="valve_group.timer3" kind="other" prefix="MM">
+                            <parameter name="level" unit="%" value="100"/>
+                            <parameter name="qNN_nozzle" unit="l/min" value="10"/>
+                            <parameter name="vol" unit="l" value="0.01"/>
+                            <parameter name="qNN" unit="l/min" value="50"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R12 (Muskel, Druckübersetzer)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="120" x="-60" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Verzögerungsventil" x="-56" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{de236b54-d7c5-571f-aaae-804b1eda7a6e}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20" x2="-20" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C2" x="-18" y="28"/>
+                            <terminal medium="pneumatic" name="C2" orientation="s" type="Generic" uuid="{43583a40-9800-5c42-8907-77ac0073e083}" x="-20" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="20" x2="20" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C3" x="22" y="28"/>
+                            <terminal medium="pneumatic" name="C3" orientation="s" type="Generic" uuid="{957a60bc-c499-50f3-b192-dd4c28fd3acb}" x="20" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20" x2="-20" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C1" x="-18" y="-21"/>
+                            <terminal medium="pneumatic" name="C1" orientation="n" type="Generic" uuid="{fc5703f0-4086-599e-a790-76785fc57d89}" x="-20" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="zaehler_pruef.elmt">
+                    <definition height="100" hotspot_x="100" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="200">
+                        <uuid uuid="{69382a77-c108-5b77-894e-f7bbcc276c59}"/>
+                        <names>
+                            <name lang="de">Vorwahlzähler 3 (Prüfsymbol)</name>
+                            <name lang="en">Counter 3 (test symbol)</name>
+                        </names>
+                        <fluid function="shutoff_valve.pneumatic_counter" kind="other" prefix="MM">
+                            <parameter name="counterEnd" unit="" value="3"/>
+                            <parameter name="qNN" unit="l/min" value="60"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R12 (Muskel, Druckübersetzer)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="160" x="-80" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Vorwahlzähler 3" x="-76" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{65739c73-025d-56cb-aef8-0fc4937e2b00}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-40" x2="-40" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C4" x="-38" y="28"/>
+                            <terminal medium="pneumatic" name="C4" orientation="s" type="Generic" uuid="{06198075-8012-53e0-aafb-2770a6a9fc4e}" x="-40" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C1" x="2" y="28"/>
+                            <terminal medium="pneumatic" name="C1" orientation="s" type="Generic" uuid="{f4b8fcdc-2501-56e7-aa1f-bd9016a2d66e}" x="0" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="40" x2="40" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C2" x="42" y="28"/>
+                            <terminal medium="pneumatic" name="C2" orientation="s" type="Generic" uuid="{da028871-91f9-57b3-8b73-48d87be611b8}" x="40" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-40" x2="-40" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C3" x="-38" y="-21"/>
+                            <terminal medium="pneumatic" name="C3" orientation="n" type="Generic" uuid="{c8756d83-6781-5797-b430-628e9083fca6}" x="-40" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="zweihand_pruef.elmt">
+                    <definition height="100" hotspot_x="80" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="160">
+                        <uuid uuid="{3fddcdf2-c43b-5386-9c4b-823fa4d3fa01}"/>
+                        <names>
+                            <name lang="de">Zweihandblock (Prüfsymbol)</name>
+                            <name lang="en">Two-hand block (test symbol)</name>
+                        </names>
+                        <fluid function="valve_group.control_block_for_two_hand_start" kind="other" prefix="MM">
+                            <parameter name="level" unit="%" value="100"/>
+                            <parameter name="qNN" unit="l/min" value="50"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R12 (Muskel, Druckübersetzer)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="120" x="-60" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Zweihandblock" x="-56" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{2f965a76-c50a-51ea-8a7c-3ac4ffc1c6b9}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20" x2="-20" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C11" x="-18" y="28"/>
+                            <terminal medium="pneumatic" name="C11" orientation="s" type="Generic" uuid="{8899a065-6f03-5569-887e-31fc9a121589}" x="-20" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="20" x2="20" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C12" x="22" y="28"/>
+                            <terminal medium="pneumatic" name="C12" orientation="s" type="Generic" uuid="{67a6ac67-45fd-5069-9ffa-aee8f072fa93}" x="20" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20" x2="-20" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C2" x="-18" y="-21"/>
+                            <terminal medium="pneumatic" name="C2" orientation="n" type="Generic" uuid="{c6238057-a82b-56c3-ba2f-913600b39c12}" x="-20" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="messpunkt_r12.elmt">
+                    <definition height="100" hotspot_x="60" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="120">
+                        <uuid uuid="{36c3c6a5-f5d0-58aa-8aaf-05ab4bc0d18f}"/>
+                        <names>
+                            <name lang="de">Messpunkt (Prüfsymbol)</name>
+                            <name lang="en">Test point (test symbol)</name>
+                        </names>
+                        <fluid function="sensor.manometer" kind="other" prefix="MM"/>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R12 (Muskel, Druckübersetzer)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="80" x="-40" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Messpunkt" x="-36" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{e71dd6fb-0baa-5acb-91a1-b4c28c371ed9}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="1" x="2" y="-21"/>
+                            <terminal medium="pneumatic" name="1" orientation="n" type="Generic" uuid="{cff6b5d3-99cc-5720-9405-32256ee0dc72}" x="0" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="quelle_05bar.elmt">
+                    <definition height="100" hotspot_x="60" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="120">
+                        <uuid uuid="{271f9189-05df-523c-ad84-e8d9758f6fef}"/>
+                        <names>
+                            <name lang="de">Quelle 0,5 bar (Prüfsymbol)</name>
+                            <name lang="en">Source 0.5 bar (test symbol)</name>
+                        </names>
+                        <fluid function="supply.pump" kind="source" prefix="MM">
+                            <parameter name="pNom" unit="MPa" value="0.05"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R12 (Muskel, Druckübersetzer)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="80" x="-40" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Quelle 0,5 bar" x="-36" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{416758a9-dad0-5e40-8615-7d367a38555d}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="1" x="2" y="-21"/>
+                            <terminal medium="pneumatic" name="1" orientation="n" type="Generic" uuid="{3f56f1e6-9ed1-5d32-b83d-207e35c0805d}" x="0" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="vakuumsaug_pruef.elmt">
+                    <definition height="100" hotspot_x="60" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="120">
+                        <uuid uuid="{63b58b8d-164c-5d36-b0fd-37188f1ff767}"/>
+                        <names>
+                            <name lang="de">Vakuumsaugventil (Prüfsymbol)</name>
+                            <name lang="en">Vacuum efficiency valve (test symbol)</name>
+                        </names>
+                        <fluid function="vacuum.vacuum_efficiency_valve" kind="other" prefix="MM">
+                            <parameter name="ps_min" unit="bar" value="0.1"/>
+                            <parameter name="ps_max" unit="bar" value="0.2"/>
+                            <parameter name="q_min" unit="l/min" value="1.9"/>
+                            <parameter name="q_max" unit="l/min" value="4"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R12 (Muskel, Druckübersetzer)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="80" x="-40" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Vakuumsaugventil" x="-36" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{984eaee2-30d4-55fa-b218-7806125db64e}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C1" x="2" y="28"/>
+                            <terminal medium="pneumatic" name="C1" orientation="s" type="Generic" uuid="{46b4bfb5-fe77-598a-b244-d1afcb936013}" x="0" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="C2" x="2" y="-21"/>
+                            <terminal medium="pneumatic" name="C2" orientation="n" type="Generic" uuid="{47e0ecc0-b6ba-55e3-928e-157dbcf2ada5}" x="0" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="quelle_005bar.elmt">
+                    <definition height="100" hotspot_x="60" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="120">
+                        <uuid uuid="{cba346f1-5724-5106-b807-106571c85c09}"/>
+                        <names>
+                            <name lang="de">Quelle 0,05 bar (Prüfsymbol)</name>
+                            <name lang="en">Source 0.05 bar (test symbol)</name>
+                        </names>
+                        <fluid function="supply.pump" kind="source" prefix="MM">
+                            <parameter name="pNom" unit="MPa" value="0.005"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R12 (Muskel, Druckübersetzer)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="80" x="-40" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Quelle 0,05 bar" x="-36" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{665b9c1a-d7ee-57aa-b6a3-fb166eaec47f}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="1" x="2" y="-21"/>
+                            <terminal medium="pneumatic" name="1" orientation="n" type="Generic" uuid="{cd7cd620-79ae-5cc3-92a0-25f85abf4269}" x="0" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+            </category>
+        </category>
+    </collection>
+</project>

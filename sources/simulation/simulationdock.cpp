@@ -17,6 +17,9 @@
 */
 #include "simulationdock.h"
 
+#include "../diagramview.h"
+#include "../projectview.h"
+
 #include "simulationmodel.h"
 #include "simulationoverlay.h"
 #include "plcprogram.h"
@@ -29,6 +32,7 @@
 #include "../qetgraphicsitem/terminal.h"
 #include "../qetproject.h"
 
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
@@ -69,6 +73,18 @@ SimulationDock::SimulationDock(QETDiagramEditor *editor) :
 	buttons->addWidget(m_pause);
 	buttons->addWidget(m_stop);
 	layout->addLayout(buttons);
+	// R16: step through the run
+	auto *steps = new QHBoxLayout();
+	m_step = new QPushButton(tr("Step 10 ms"), content);
+	m_step->setToolTip(tr("Run one control cycle (10 ms) and stop"));
+	m_next = new QPushButton(tr("To next change"), content);
+	m_next->setToolTip(tr("Run until the next state change (valve, end position, relay, step …), at most 10 s"));
+	steps->addWidget(m_step);
+	steps->addWidget(m_next);
+	layout->addLayout(steps);
+	m_folio_only = new QCheckBox(tr("Current folio only"), content);
+	m_folio_only->setToolTip(tr("Simulate only the folio shown in the editor (used at the next start)"));
+	layout->addWidget(m_folio_only);
 	m_program = new QPushButton(tr("PLC program..."), content);
 	m_program->setToolTip(tr("Write the program a PLC of the project runs in the simulation"));
 	layout->addWidget(m_program);
@@ -128,6 +144,8 @@ SimulationDock::SimulationDock(QETDiagramEditor *editor) :
 	m_pause->setEnabled(false);
 	m_stop->setEnabled(false);
 	connect(m_start, &QPushButton::clicked, this, &SimulationDock::start);
+	connect(m_step, &QPushButton::clicked, this, &SimulationDock::singleStep);
+	connect(m_next, &QPushButton::clicked, this, &SimulationDock::toNextChange);
 	connect(m_pause, &QPushButton::clicked, this, &SimulationDock::pause);
 	connect(m_stop, &QPushButton::clicked, this, &SimulationDock::stop);
 	connect(m_program, &QPushButton::clicked, this, &SimulationDock::editProgram);
@@ -142,22 +160,27 @@ SimulationDock::~SimulationDock()
 	clearOverlay();
 }
 
-void SimulationDock::start()
+bool SimulationDock::ensureModel()
 {
 	if (m_model && m_model->failed()) {
 		// a run that stopped on a computing fault cannot continue: only Stop and a new start
 		m_summary->setStyleSheet(QStringLiteral("color: #c00000"));
 		m_summary->setText(tr("Simulation stopped: %1").arg(m_model->failure()));
-		return;
+		return false;
 	}
 	if (!m_model) {
 		QETProject *project = m_editor->currentProject();
 		if (!project) {
 			m_summary->setText(tr("Open a project first."));
-			return;
+			return false;
 		}
 		m_project = project;
-		m_model = std::make_unique<SimulationModel>(project->diagrams(), m_supply->value());
+		QList<Diagram *> diagrams = project->diagrams();
+		// R16: the folio shown in the editor only
+		ProjectView *pv = m_editor->currentProjectView();
+		DiagramView *dv = pv ? pv->currentDiagram() : nullptr;
+		if (m_folio_only->isChecked() && dv && dv->diagram()) diagrams = {dv->diagram()};
+		m_model = std::make_unique<SimulationModel>(diagrams, m_supply->value());
 		const QStringList problems = m_model->modelErrors() + m_model->programErrors();
 		m_summary->setStyleSheet(problems.isEmpty() ? QStringLiteral("color: gray") : QStringLiteral("color: #c00000"));
 		m_summary->setText(problems.isEmpty() ? m_model->summary()
@@ -167,7 +190,7 @@ void SimulationDock::start()
 			m_summary->setText(tr("Simulation stopped: %1").arg(m_model->failure()));
 			m_model.reset();
 			m_project.clear();
-			return;
+			return false;
 		}
 		m_log->clear();
 		rebuildControls();
@@ -177,6 +200,47 @@ void SimulationDock::start()
 			m_watched << QPointer<QObject>(d);
 		}
 	}
+	m_stop->setEnabled(true);
+	m_supply->setEnabled(false);
+	m_folio_only->setEnabled(false);
+	return true;
+}
+
+void SimulationDock::singleStep()
+{
+	if (!ensureModel()) return;
+	if (m_timer->isActive()) pause();
+	m_model->runUntil(m_model->time() + 0.010);
+	afterRun();
+}
+
+void SimulationDock::toNextChange()
+{
+	if (!ensureModel()) return;
+	if (m_timer->isActive()) pause();
+	if (!m_model->runUntilChange(m_model->time() + 10.0))
+		m_log->addItem(tr("%1 s  no state change within 10 s").arg(m_model->time(), 0, 'f', 3));
+	afterRun();
+}
+
+void SimulationDock::afterRun()
+{
+	if (m_model->failed()) {
+		m_summary->setStyleSheet(QStringLiteral("color: #c00000"));
+		m_summary->setText(tr("Simulation stopped: %1").arg(m_model->failure()));
+	}
+	for (const auto &m : m_model->takeMessages())
+		m_log->addItem(QStringLiteral("%1 s  %2").arg(m.time, 0, 'f', 3).arg(m.text));
+	m_log->scrollToBottom();
+	m_time->setText(QStringLiteral("%1 s").arg(m_model->time(), 0, 'f', 2));
+	m_start->setText(tr("Continue"));
+	updateVariables();
+	updateOverlay();
+}
+
+void SimulationDock::start()
+{
+	if (!ensureModel()) return;
 	m_clock.restart();
 	m_timer->start(30);
 	m_start->setEnabled(false);
@@ -214,6 +278,7 @@ void SimulationDock::stop()
 	m_pause->setEnabled(false);
 	m_stop->setEnabled(false);
 	m_supply->setEnabled(true);
+	m_folio_only->setEnabled(true);
 	m_time->setText(tr("stopped"));
 	m_vars->clear();
 	m_var_items.clear();

@@ -16,6 +16,9 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "qetscriptapi.h"
+#include "../revision/projectrevisions.h"
+#include "../projectcheck.h"
+#include "../plc/tiaplctags.h"
 #include "../import/portals/manufacturerportals.h"
 #include "../import/portals/partfetcher.h"
 
@@ -32,6 +35,9 @@
 #include "../dataBase/qetdbfile.h"
 #include "../diagram.h"
 #include "../bomexport.h"
+#include "../marking/markingexport.h"
+#include "../purchase/purchasefetch.h"
+#include "../purchase/purchaselist.h"
 #include "../cablelist/cablelistrows.h"
 #include "../cablelist/cablequerywidget.h"
 #include "../dataBase/ui/elementquerywidget.h"
@@ -137,6 +143,8 @@
 #include <QPixmap>
 #include <QTextStream>
 #include <QUndoCommand>
+#include "../functiontemplates/functiontemplate.h"
+#include <QtMath>
 
 QetScriptApi::QetScriptApi(QETProject *project, DiagramView *view, QObject *parent) :
 	QObject(parent),
@@ -854,6 +862,322 @@ bool QetScriptApi::exportCableList(const QString &output)
 		return false;
 	}
 	return true;
+}
+
+/**
+	@brief QetScriptApi::markingOptions
+	The options of the marking export from a script's JSON:
+	{"format": "phoenix"|"weidmueller"|"wago"|"neutral",
+	 "kinds": "wires,terminals,devices,cables" (or "all"),
+	 "folioFrom": 1, "folioTo": 3, "plant": "A1", "location": "S1",
+	 "fullDesignation": true, "bothEnds": true}; every key may be left out.
+	@return false, with the reason in @p error, for a key with a bad value
+*/
+static bool markingOptions(const QString &format, const QString &options_json,
+						   MarkingExport::Options *o, QString *error)
+{
+	if (!format.isEmpty() && !MarkingExport::formatFromKey(format, &o->format)) {
+		*error = QStringLiteral("unknown format '%1' (phoenix, weidmueller, wago, neutral)").arg(format);
+		return false;
+	}
+	if (options_json.trimmed().isEmpty()) return true;
+	QJsonParseError parse;
+	const QJsonObject j = QJsonDocument::fromJson(options_json.toUtf8(), &parse).object();
+	if (parse.error != QJsonParseError::NoError) {
+		*error = QStringLiteral("options are not JSON: %1").arg(parse.errorString());
+		return false;
+	}
+	if (j.contains(QLatin1String("format"))
+			&& !MarkingExport::formatFromKey(j.value(QLatin1String("format")).toString(), &o->format)) {
+		*error = QStringLiteral("unknown format");
+		return false;
+	}
+	if (j.contains(QLatin1String("kinds"))
+			&& !MarkingExport::kindsFromKeys(j.value(QLatin1String("kinds")).toString(), &o->kinds)) {
+		*error = QStringLiteral("unknown kinds (wires, terminals, devices, cables, all)");
+		return false;
+	}
+	o->folio_from = j.value(QLatin1String("folioFrom")).toInt(o->folio_from);
+	o->folio_to = j.value(QLatin1String("folioTo")).toInt(o->folio_to);
+	o->plant = j.value(QLatin1String("plant")).toString(o->plant);
+	o->location = j.value(QLatin1String("location")).toString(o->location);
+	o->full_designation = j.value(QLatin1String("fullDesignation")).toBool(o->full_designation);
+	o->both_ends = j.value(QLatin1String("bothEnds")).toBool(o->both_ends);
+	return true;
+}
+
+/**
+	@brief QetScriptApi::exportTiaTags
+	Write the PLC channels of this project as PLC tag table for Siemens
+	TIA Portal: .xlsx (tag table editor > Import) or .xml (SimaticML, TIA
+	Portal Openness), by the suffix of @p output. Same file as
+	--export-tia-tags and Project > Export PLC tags for TIA Portal.
+	@param table name of the tag table, default QET_EA
+*/
+bool QetScriptApi::exportTiaTags(const QString &output, const QString &table)
+{
+	if (!m_project) {
+		log(QStringLiteral("qet.exportTiaTags: no project"));
+		return false;
+	}
+	QStringList notes;
+	const auto channels = TiaPlcTags::channels(m_project, &notes);
+	for (const QString &note : notes) log(QStringLiteral("qet.exportTiaTags: ") + note);
+	QString error;
+	if (!TiaPlcTags::write(output, channels, table, QString(), &error)) {
+		log(QStringLiteral("qet.exportTiaTags: %1").arg(error));
+		return false;
+	}
+	return true;
+}
+
+/**
+	@brief QetScriptApi::exportMarking
+	Write the markers of this project for a marking software to @p output:
+	the file Project > Export markers... writes (docs/beschriftung-export.md).
+	@param format phoenix, weidmueller, wago or neutral
+	@param optionsJson the choices, see markingOptions(); empty for all
+	@return the number of markers written, -1 when nothing was written
+*/
+int QetScriptApi::exportMarking(const QString &output, const QString &format,
+								const QString &optionsJson)
+{
+	if (!m_project) {
+		log(QStringLiteral("qet.exportMarking: no project"));
+		return -1;
+	}
+	MarkingExport::Options o;
+	QString error;
+	if (!markingOptions(format, optionsJson, &o, &error)) {
+		log(QStringLiteral("qet.exportMarking: %1").arg(error));
+		return -1;
+	}
+	int markers = 0;
+	if (!MarkingExport::exportFile(m_project, output, o, &error, &markers)) {
+		log(QStringLiteral("qet.exportMarking: %1").arg(error));
+		return -1;
+	}
+	return markers;
+}
+
+/**
+	@brief QetScriptApi::markings
+	The markers export Marking would write, as JSON: an array of
+	{kind, text, target, group, plant, location, folio, folioNumber,
+	 manufacturer, article, reference, count}, for a script to check or
+	print them its own way.
+*/
+QString QetScriptApi::markings(const QString &optionsJson) const
+{
+	MarkingExport::Options o;
+	QString error;
+	if (!m_project || !markingOptions(QString(), optionsJson, &o, &error)) {
+		return QStringLiteral("[]");
+	}
+	QJsonArray rows;
+	for (const MarkingExport::Item &i : MarkingExport::collect(m_project, o)) {
+		QJsonObject row;
+		row.insert(QStringLiteral("kind"), i.kind == MarkingExport::Wire ? QStringLiteral("wire")
+					   : i.kind == MarkingExport::Terminal ? (i.strip_marker ? QStringLiteral("strip")
+																			 : QStringLiteral("terminal"))
+					   : i.kind == MarkingExport::Cable ? QStringLiteral("cable")
+														: QStringLiteral("device"));
+		row.insert(QStringLiteral("text"), i.text);
+		row.insert(QStringLiteral("target"), i.target);
+		row.insert(QStringLiteral("group"), i.group);
+		row.insert(QStringLiteral("plant"), i.plant);
+		row.insert(QStringLiteral("location"), i.location);
+		row.insert(QStringLiteral("folio"), i.folio);
+		row.insert(QStringLiteral("folioNumber"), i.folio_number);
+		row.insert(QStringLiteral("manufacturer"), i.manufacturer);
+		row.insert(QStringLiteral("article"), i.article);
+		row.insert(QStringLiteral("reference"), MarkingExport::materialReference(i));
+		row.insert(QStringLiteral("count"), i.count);
+		rows.append(row);
+	}
+	return QString::fromUtf8(QJsonDocument(rows).toJson(QJsonDocument::Compact));
+}
+
+namespace {
+QJsonObject purchaseItemJson(const PurchaseList::Item &item)
+{
+	QJsonObject o;
+	o.insert(QStringLiteral("supplier"), item.supplier);
+	o.insert(QStringLiteral("manufacturer"), item.manufacturer);
+	o.insert(QStringLiteral("order_number"), item.part_number);
+	o.insert(QStringLiteral("name"), item.name);
+	o.insert(QStringLiteral("references"), QJsonArray::fromStringList(item.references));
+	o.insert(QStringLiteral("unit"), item.unit);
+	o.insert(QStringLiteral("quantity"), item.quantity);
+	o.insert(QStringLiteral("order_quantity"), item.orderQuantity());
+	if (item.packaging > 0) o.insert(QStringLiteral("packaging_unit"), item.packaging);
+	if (item.price >= 0) {
+		o.insert(QStringLiteral("price"), item.price);
+		o.insert(QStringLiteral("price_unit"), item.price_unit);
+		o.insert(QStringLiteral("currency"), item.currency);
+		o.insert(QStringLiteral("total"), item.total());
+		o.insert(QStringLiteral("price_source"), item.price_source);
+	}
+	if (!item.delivery_time.isEmpty()) o.insert(QStringLiteral("delivery_time"), item.delivery_time);
+	if (!item.gtin.isEmpty()) o.insert(QStringLiteral("gtin"), item.gtin);
+	if (!item.lifecycle.isEmpty()) o.insert(QStringLiteral("lifecycle"), item.lifecycle);
+	o.insert(QStringLiteral("article_open"), item.open);
+	return o;
+}
+
+QString compactJson(const QJsonObject &o)
+{
+	return QString::fromUtf8(QJsonDocument(o).toJson(QJsonDocument::Compact));
+}
+} // namespace
+
+/**
+	@brief QetScriptApi::purchaseList
+	The purchase list of the project in memory (PurchaseList::collect()),
+	from what the article data cache and the price list hold; no lookup.
+	@return JSON {summary, items[]}, or {error}
+*/
+QString QetScriptApi::purchaseList()
+{
+	QJsonObject o;
+	if (!m_project) {
+		o.insert(QStringLiteral("error"), QStringLiteral("no project"));
+		return compactJson(o);
+	}
+	QString error;
+	const QList<PurchaseList::Item> items = PurchaseList::collect(m_project, &error);
+	if (!error.isEmpty()) {
+		o.insert(QStringLiteral("error"), error);
+		return compactJson(o);
+	}
+	QJsonArray array;
+	for (const PurchaseList::Item &item : items) array.append(purchaseItemJson(item));
+	o.insert(QStringLiteral("summary"), PurchaseList::summarize(items).toJson());
+	o.insert(QStringLiteral("items"), array);
+	return compactJson(o);
+}
+
+/**
+	@brief QetScriptApi::exportPurchaseList
+	Write the purchase list of the project in memory to @p output: .xlsx
+	as an Excel workbook, else CSV. Options JSON: {online: true asks the
+	Data Portal for articles the cache does not know, erp: true writes
+	<name>_ERP.csv beside it}. The EDZ packages of the data folder are
+	always read.
+	@return JSON {articles, open, priced, with_gtin, total, currencies,
+	lookup, files[]}, or {error}
+*/
+QString QetScriptApi::exportPurchaseList(const QString &output, const QString &optionsJson)
+{
+	QJsonObject o;
+	if (!m_project) {
+		o.insert(QStringLiteral("error"), QStringLiteral("no project"));
+		return compactJson(o);
+	}
+	const QJsonObject options = QJsonDocument::fromJson(optionsJson.toUtf8()).object();
+	QString error;
+	QList<PurchaseList::Item> items = PurchaseList::collect(m_project, &error);
+	if (!error.isEmpty()) {
+		o.insert(QStringLiteral("error"), error);
+		return compactJson(o);
+	}
+	const PurchaseFetch::Result fetched =
+			PurchaseFetch::fetch(items, options.value(QStringLiteral("online")).toBool(false));
+	if (fetched.from_portal + fetched.from_edz + fetched.not_found > 0)
+		items = PurchaseList::collect(m_project, &error);
+	QStringList written;
+	if (!PurchaseList::write(items, output, options.value(QStringLiteral("erp")).toBool(false),
+							 &written, &error)) {
+		o.insert(QStringLiteral("error"), error);
+		log(QStringLiteral("qet.exportPurchaseList: %1").arg(error));
+		return compactJson(o);
+	}
+	o = PurchaseList::summarize(items).toJson();
+	o.insert(QStringLiteral("lookup"), fetched.toJson());
+	o.insert(QStringLiteral("files"), QJsonArray::fromStringList(written));
+	return compactJson(o);
+}
+
+/**
+	@brief QetScriptApi::fetchCommercialData
+	Fill the article data cache for the articles of the project: EDZ
+	packages of the data folder, and the Data Portal when @p online.
+	@return JSON {articles, cached, from_portal, from_edz, not_found, error?}
+*/
+QString QetScriptApi::fetchCommercialData(bool online)
+{
+	QJsonObject o;
+	if (!m_project) {
+		o.insert(QStringLiteral("error"), QStringLiteral("no project"));
+		return compactJson(o);
+	}
+	QString error;
+	const QList<PurchaseList::Item> items = PurchaseList::collect(m_project, &error);
+	if (!error.isEmpty()) {
+		o.insert(QStringLiteral("error"), error);
+		return compactJson(o);
+	}
+	return compactJson(PurchaseFetch::fetch(items, online).toJson());
+}
+
+/**
+	@return the company price list (Bestellnummer;Preis;Lieferzeit;Lieferant),
+	empty when no company data folder is set up
+*/
+QString QetScriptApi::purchasePriceListPath() const
+{
+	return QDir::toNativeSeparators(PurchaseList::priceListPath());
+}
+
+/**
+	@brief QetScriptApi::compareTiaTags
+	Compare a TIA tag table (.xlsx or SimaticML .xml) with the PLC channels.
+	@return CSV lines as --compare-tia-tags writes them, the header first:
+	status;address_plan;address_tia;name_plan;name_tia;comment_plan;
+	comment_tia;module;row;folio. Empty if the file cannot be read.
+*/
+QStringList QetScriptApi::compareTiaTags(const QString &tagFile)
+{
+	if (!m_project) return {};
+	QString error;
+	const auto tags = TiaPlcTags::read(tagFile, &error);
+	if (!error.isEmpty()) {
+		log(QStringLiteral("qet.compareTiaTags: %1").arg(error));
+		if (tags.isEmpty()) return {};
+	}
+	QStringList lines = TiaPlcTags::reportCsv(
+		TiaPlcTags::compare(TiaPlcTags::channels(m_project), tags)).split(QLatin1Char('\n'));
+	while (!lines.isEmpty() && lines.last().isEmpty()) lines.removeLast();
+	return lines;
+}
+
+/**
+	@brief QetScriptApi::applyTiaTags
+	Take the names and comments of a TIA tag table into the IO tables of
+	the PLC modules: for every channel with the same address the tag name
+	becomes its symbolic address, the tag comment (if any) its function
+	text. One undo step (qet.undo()).
+	@return number of IO rows changed, -1 on error
+*/
+int QetScriptApi::applyTiaTags(const QString &tagFile)
+{
+	if (!m_project) return -1;
+	if (m_project->isReadOnly()) {
+		log(QStringLiteral("qet.applyTiaTags: project is read-only"));
+		return -1;
+	}
+	QString error;
+	const auto tags = TiaPlcTags::read(tagFile, &error);
+	if (tags.isEmpty()) {
+		log(QStringLiteral("qet.applyTiaTags: %1").arg(error.isEmpty() ? QStringLiteral("no tags") : error));
+		return -1;
+	}
+	const auto cmp = TiaPlcTags::compare(TiaPlcTags::channels(m_project), tags);
+	auto *undo = new QUndoCommand(QObject::tr("Take over PLC tags from TIA Portal"));
+	const int changed = TiaPlcTags::apply(cmp, undo);
+	if (undo->childCount() > 0) m_project->undoStack()->push(undo);
+	else delete undo;
+	return changed;
 }
 
 bool QetScriptApi::exportWiring(const QString &output)
@@ -1766,7 +2090,8 @@ QString QetScriptApi::conductorProperty(int folioIndex, const QString &elementUu
 	produce a file no GUI action could have produced.
 
 	One thing stops at a terminal element with its function separation
-	enabled: every property but the voltage / protocol, which still
+	enabled: every property but what the node itself describes -- the
+	voltage / protocol and the drawing of the wire -- which still
 	crosses it (@see Conductor::functionSeparatedConductors).
 	@return true if anything was changed, or if it already held that value
 */
@@ -1821,17 +2146,17 @@ bool QetScriptApi::applyConductorProperties(Conductor *conductor, const Conducto
 		new_value.setValue(properties);
 		m_project->undoStack()->push(new QPropertyUndoCommand(c, "properties", old_value, new_value));
 	}
-		//The other side of a function separated terminal element gets the
-		//voltage / protocol only: it is the one property that still
-		//describes the electrical node rather than one side of it. And it
-		//only arrives when this call really changed it -- before / after
-		//is the edit, not the far wire's own value, which differs from it
-		//just as often as not and would then be overwritten by every call,
-		//colour included.
+		//The other side of a function separated terminal element gets
+		//only what the separation lets through -- the voltage / protocol
+		//and the drawing of the wire, the properties of the node rather
+		//than of one side of it. And they only arrive when this call
+		//really changed them -- before / after is the edit, not the far
+		//wire's own value, which differs from it just as often as not and
+		//would then be overwritten by every call, colour included.
 	for (Conductor *c : conductor->functionSeparatedConductors(true))
 	{
 		ConductorProperties separated_properties = c->properties();
-		separated_properties.applyTensionProtocolChange(before, properties);
+		separated_properties.applyNodePropertiesChange(before, properties);
 		if (separated_properties == c->properties())
 			continue;
 
@@ -2225,6 +2550,7 @@ QString QetScriptApi::elementLinkType(int folioIndex, const QString &elementUuid
 		case Element::Master:         return QStringLiteral("master");
 		case Element::Slave:          return QStringLiteral("slave");
 		case Element::Terminale:      return QStringLiteral("terminal");
+		case Element::Junction:       return QStringLiteral("junction");
 		default:                      return QStringLiteral("unknown");
 	}
 }
@@ -3642,6 +3968,107 @@ bool QetScriptApi::setFolioProperty(int folioIndex, const QString &property, con
 	*field = value;
 	m_project->undoStack()->push(new ChangeTitleBlockCommand(diagram, old_p, new_p));
 	return true;
+}
+
+/**
+	@brief QetScriptApi::closeRevision
+	Close revision @p index with @p text: the index in every title block,
+	the row of the revision table (%{rev1_index} ...), with @p pdf a PDF of
+	the changes since the last revision marked, a snapshot beside the
+	project, and the project saved.
+	@return the snapshot's path, or "" when it was not closed (logged)
+*/
+QString QetScriptApi::closeRevision(const QString &index, const QString &text, bool pdf)
+{
+	if (!m_project) return QString();
+	const ProjectRevisions::CloseResult r = m_project->revisions()->closeRevision(index, text, pdf, true);
+	if (!r.ok) {
+		log(QStringLiteral("qet.closeRevision: %1").arg(r.error));
+		return QString();
+	}
+	return r.snapshot;
+}
+
+/// The revision table, oldest first: "A<tab>2026-11-20<tab>author<tab>text"
+QStringList QetScriptApi::revisions() const
+{
+	QStringList lines;
+	if (!m_project) return lines;
+	for (const ProjectRevisions::Entry &e : m_project->revisions()->entries())
+		lines << QStringList{e.index, e.date, e.author, e.text}.join(QLatin1Char('\t'));
+	return lines;
+}
+
+namespace {
+/// The fingerprint of @p since: "" the last revision, else a revision index or a project file
+QetRevision::Fingerprint stateSince(QETProject *project, const QString &since, QString *error)
+{
+	ProjectRevisions *revisions = project->revisions();
+	if (since.isEmpty() || since == revisions->lastIndex()) return revisions->baseline();
+	for (const ProjectRevisions::Entry &e : revisions->entries())
+		if (e.index == since) return QetRevision::fingerprintOfFile(revisions->snapshotPath(e), error);
+	return QetRevision::fingerprintOfFile(since, error);
+}
+}
+
+/**
+	@brief QetScriptApi::revisionChanges
+	What changed since the last revision, or since revision or project
+	file @p since: one line each, "Folio 3 - Title: Symbol -K1 changed"
+*/
+QStringList QetScriptApi::revisionChanges(const QString &since) const
+{
+	if (!m_project) return {};
+	QString error;
+	const QetRevision::Fingerprint before = stateSince(m_project, since, &error);
+	if (!error.isEmpty()) {
+		const_cast<QetScriptApi *>(this)->log(QStringLiteral("qet.revisionChanges: %1").arg(error));
+		return {};
+	}
+	if (before.isEmpty()) return {};
+	const QetRevision::Fingerprint now = QetRevision::fingerprint(m_project);
+	return QetRevision::describe(QetRevision::compare(before, now), now, before);
+}
+
+QString QetScriptApi::nextRevisionIndex() const
+{
+	return m_project ? m_project->revisions()->proposedIndex() : QString();
+}
+
+bool QetScriptApi::revisionMarks() const
+{
+	return m_project && m_project->revisions()->marksShown();
+}
+
+/// Show the marks of what changed since the last revision, or not (saved with the project)
+bool QetScriptApi::setRevisionMarks(bool on)
+{
+	if (!m_project || m_project->isReadOnly()) return false;
+	m_project->revisions()->setMarksShown(on);
+	return true;
+}
+
+/**
+	@brief QetScriptApi::exportRevisionPdf
+	A PDF of the project with what changed since @p since (the last
+	revision, a revision index or a project file) marked
+*/
+bool QetScriptApi::exportRevisionPdf(const QString &output, const QString &since)
+{
+	if (!m_project) return false;
+	QString error;
+	const QetRevision::Fingerprint before = stateSince(m_project, since, &error);
+	if (!error.isEmpty() || before.isEmpty()) {
+		log(QStringLiteral("qet.exportRevisionPdf: %1").arg(error.isEmpty()
+				? QStringLiteral("no revision to compare with") : error));
+		return false;
+	}
+	ProjectRevisions *revisions = m_project->revisions();
+	revisions->beginComparison(before, revisions->proposedIndex());
+	const bool ok = ProjectRevisions::exportPdf(m_project, output, &error);
+	revisions->endComparison();
+	if (!ok) log(QStringLiteral("qet.exportRevisionPdf: %1").arg(error));
+	return ok;
 }
 
 QStringList QetScriptApi::terminalStrips() const
@@ -6039,6 +6466,33 @@ int QetScriptApi::searchAndReplace(const QString &kind, const QString &field,
 }
 
 /**
+	@brief QetScriptApi::checkProject
+	"Check project" for scripts: every check of the Check panel
+	(ProjectCheck::runAll()) -- duplicate labels and wire numbers,
+	potential types, open wire ends, symbols with no wire, device types,
+	wires per terminal, terminal names, and the fork's rules: contacts,
+	coils and folio reports without their partner, PLC channels without an
+	address, cables without a target, terminals without a strip, devices
+	without a label or part, open terminals and fluid ports, the cabinet
+	layout -- as a list of {severity ("error", "warning", "info"), check
+	(the rule), category, categoryTitle, eplan (EPLAN's message number, may
+	be empty), folio (from 0, -1 if none), folioTitle, label, text, items
+	(uuids of the elements or conductors)}. Read only.
+	@param folioIndex a single folio, or -1 (the default) for the project
+*/
+QVariantList QetScriptApi::checkProject(int folioIndex)
+{
+	QVariantList list;
+	if (!m_project) return list;
+	if (folioIndex >= m_project->diagrams().count()) {
+		log(QStringLiteral("qet.checkProject: folio %1 does not exist (%2 folio(s))")
+			.arg(folioIndex).arg(m_project->diagrams().count()));
+		return list;
+	}
+	return ProjectCheck::toVariantList(ProjectCheck::runAll(m_project), m_project, folioIndex);
+}
+
+/**
 	@brief QetScriptApi::checkContinuity
 	Structural electrical checks against the live scene graph -- Terminal/
 	Conductor/relatedPotentialConductors() -- rather than a heuristic read
@@ -6324,4 +6778,182 @@ void QetScriptApi::showMessage(const QString &text)
 		return;
 	}
 	QET::QetMessageBox::information(nullptr, QObject::tr("Script"), text);
+}
+
+// ---------------------------------------------------------------------------
+// Function templates
+// ---------------------------------------------------------------------------
+
+namespace
+{
+	QVariantMap templateMap(const FunctionTemplate &tpl, bool with_tables)
+	{
+		QVariantMap map;
+		map.insert(QStringLiteral("name"), tpl.name());
+		map.insert(QStringLiteral("category"), tpl.category());
+		map.insert(QStringLiteral("description"), tpl.description());
+		map.insert(QStringLiteral("path"), tpl.path());
+		map.insert(QStringLiteral("example"), tpl.isExample());
+		QVariantList parameters;
+		for (const FunctionTemplate::Parameter &p : tpl.parameters()) {
+			QVariantMap parameter;
+			parameter.insert(QStringLiteral("name"), p.name);
+			parameter.insert(QStringLiteral("label"), p.label);
+			parameter.insert(QStringLiteral("kind"), p.kind);
+			parameter.insert(QStringLiteral("default"), p.defaultValue);
+			if (!p.unit.isEmpty()) parameter.insert(QStringLiteral("unit"), p.unit);
+			if (!p.of.isEmpty()) parameter.insert(QStringLiteral("of"), p.of);
+			const QStringList choices = tpl.choicesFor(p);
+			if (!choices.isEmpty()) parameter.insert(QStringLiteral("choices"), choices);
+			parameters << parameter;
+		}
+		map.insert(QStringLiteral("parameters"), parameters);
+		if (with_tables) {
+			QVariantList tables;
+			for (const FunctionTemplate::Table &t : tpl.tables()) {
+				QVariantMap table;
+				table.insert(QStringLiteral("key"), t.key);
+				table.insert(QStringLiteral("columns"), t.columns);
+				QVariantList rows;
+				for (const auto &row : t.rows) {
+					QVariantMap r;
+					for (auto it = row.cbegin() ; it != row.cend() ; ++it) r.insert(it.key(), it.value());
+					rows << r;
+				}
+				table.insert(QStringLiteral("rows"), rows);
+				tables << table;
+			}
+			map.insert(QStringLiteral("tables"), tables);
+			map.insert(QStringLiteral("placeholders"),
+					   FunctionTemplate::placeholdersIn(tpl.document().documentElement()));
+		}
+		return map;
+	}
+}
+
+QVariantList QetScriptApi::listTemplates() const
+{
+	QVariantList list;
+	for (const FunctionTemplate &tpl : FunctionTemplate::available())
+		list << templateMap(tpl, false);
+	return list;
+}
+
+QVariantMap QetScriptApi::templateInfo(const QString &templateName) const
+{
+	const FunctionTemplate tpl = FunctionTemplate::find(templateName);
+	if (!tpl.isValid()) return QVariantMap();
+	return templateMap(tpl, true);
+}
+
+QVariantMap QetScriptApi::insertTemplate(int folioIndex, const QString &templateName,
+										 const QVariantMap &values, double x, double y)
+{
+	QVariantMap result;
+	result.insert(QStringLiteral("ok"), false);
+	const auto fail = [&](const QString &error) {
+		result.insert(QStringLiteral("error"), error);
+		log(QStringLiteral("qet.insertTemplate: ") + error);
+		return result;
+	};
+	if (!m_project) return fail(QStringLiteral("no project"));
+	if (m_project->isReadOnly()) return fail(QStringLiteral("project is read-only"));
+	const FunctionTemplate tpl = FunctionTemplate::find(templateName);
+	if (!tpl.isValid())
+		return fail(QStringLiteral("'%1' is no template (qet.listTemplates() lists them)").arg(templateName));
+
+	QMap<QString, QString> given;
+	for (auto it = values.cbegin() ; it != values.cend() ; ++it)
+		given.insert(it.key(), it.value().toString());
+
+	FunctionTemplate::Placed placed;
+	if (folioIndex < 0) {
+		placed = tpl.placeOnNewFolio(m_project, given);
+	} else {
+		const QList<Diagram *> folios = m_project->folios();
+		if (folioIndex >= folios.count())
+			return fail(QStringLiteral("there is no folio %1").arg(folioIndex));
+		QPointF pos;
+		if (!qIsNaN(x) && !qIsNaN(y)) {
+			pos = QPointF(x, y);
+				//A null position keeps the places it was saved at
+			if (pos.isNull()) pos = QPointF(0.1, 0.1);
+		}
+		placed = tpl.place(built(folios.at(folioIndex)), given, pos);
+	}
+	if (!placed.ok) return fail(placed.error);
+
+	QStringList uuids;
+	for (Element *element : std::as_const(placed.elements)) uuids << element->uuid().toString();
+	QVariantMap filled;
+	for (auto it = placed.values.cbegin() ; it != placed.values.cend() ; ++it)
+		filled.insert(it.key(), it.value());
+	result.insert(QStringLiteral("ok"), true);
+	result.insert(QStringLiteral("folio"), m_project->folioIndex(placed.folio));
+	result.insert(QStringLiteral("elements"), uuids);
+	result.insert(QStringLiteral("values"), filled);
+	result.insert(QStringLiteral("notes"), placed.notes);
+	return result;
+}
+
+QString QetScriptApi::saveTemplate(int folioIndex, const QString &name, const QVariantMap &options)
+{
+	if (!m_project) return QString();
+	const QList<Diagram *> folios = m_project->folios();
+	if (folioIndex < 0 || folioIndex >= folios.count()) {
+		log(QStringLiteral("qet.saveTemplate: there is no folio %1").arg(folioIndex));
+		return QString();
+	}
+	Diagram *folio = built(folios.at(folioIndex));
+
+	FunctionTemplate::SaveOptions save;
+	save.name = name;
+	save.category = options.value(QStringLiteral("category")).toString();
+	save.description = options.value(QStringLiteral("description")).toString();
+	save.path = options.value(QStringLiteral("path")).toString();
+	for (const QVariant &v : options.value(QStringLiteral("parameters")).toList()) {
+		const QVariantMap m = v.toMap();
+		FunctionTemplate::Parameter p;
+		p.name = m.value(QStringLiteral("name")).toString();
+		if (p.name.isEmpty()) continue;
+		p.label = m.value(QStringLiteral("label")).toString();
+		p.kind = m.value(QStringLiteral("kind"), QStringLiteral("text")).toString();
+		p.defaultValue = m.value(QStringLiteral("default")).toString();
+		p.unit = m.value(QStringLiteral("unit")).toString();
+		p.of = m.value(QStringLiteral("of")).toString();
+		p.help = m.value(QStringLiteral("help")).toString();
+		p.choices = m.value(QStringLiteral("choices")).toStringList();
+		save.parameters << p;
+	}
+	for (const QVariant &v : options.value(QStringLiteral("tables")).toList()) {
+		const QVariantMap m = v.toMap();
+		FunctionTemplate::Table t;
+		t.name = m.value(QStringLiteral("name")).toString();
+		t.key = m.value(QStringLiteral("key")).toString();
+		t.columns = m.value(QStringLiteral("columns")).toStringList();
+		for (const QVariant &r : m.value(QStringLiteral("rows")).toList()) {
+			QMap<QString, QString> row;
+			const QVariantMap rm = r.toMap();
+			for (auto it = rm.cbegin() ; it != rm.cend() ; ++it) row.insert(it.key(), it.value().toString());
+			t.rows << row;
+		}
+		if (!t.key.isEmpty()) save.tables << t;
+	}
+
+	QList<QGraphicsItem *> items;
+	for (const QVariant &v : options.value(QStringLiteral("elements")).toList())
+		if (Element *element = findElement(folioIndex, v.toString())) items << element;
+	if (!items.isEmpty()) {
+			//The wires between the elements chosen go with them
+		for (QGraphicsItem *item : folio->items())
+			if (auto *conductor = qgraphicsitem_cast<Conductor *>(item))
+				if (items.contains(conductor->terminal1->parentElement())
+						&& items.contains(conductor->terminal2->parentElement()))
+					items << conductor;
+	}
+
+	QString error;
+	const QString path = FunctionTemplate::save(folio, items, save, &error);
+	if (path.isEmpty()) log(QStringLiteral("qet.saveTemplate: ") + error);
+	return path;
 }

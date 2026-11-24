@@ -22,6 +22,7 @@
 #include "simulationunits.h"
 #include "grafcet.h"
 #include "simulationcatalog.h"
+#include "simulationmuscle.h"
 
 #include "plcprogram.h"
 
@@ -60,6 +61,20 @@ constexpr double DP_LAMINAR = 0.3e5;    // Pa
 constexpr double P_CAVITATION = P_ATM - 0.9e5;   // Pa abs: lowest oil pressure the model allows
 constexpr double T_PULL_IN = 0.010;     // s relay
 constexpr double T_DROP_OUT = 0.008;    // s relay
+
+// FORMELN.md V19: Festo MPYE-5-…-010-B, "Durchfluss q bei 6 > 5 bar in Abhängigkeit der Sollwertspannung U" (catalogue
+// MPYE 2006/03, p. 1.5-5), read from the vector paths: setpoint [V], flow [% of the normal nominal flow]; below 5 V
+// 1→2, above 5 V 1→4
+constexpr double MPYE_Q[][2] = {{0, 102.904}, {0.36, 97.488}, {1.056, 86.269}, {1.38, 80.66}, {1.704, 74.664}, {2.005, 68.668}, {2.317, 62.672}, {2.605, 56.482}, {2.881, 50.099}, {3.157, 43.523}, {3.421, 36.946}, {3.673, 30.176}, {4.202, 13.542}, {4.285, 10.834}, {4.37, 7.933}, {4.466, 5.225}, {4.49, 4.451}, {4.514, 3.484}, {4.562, 2.71}, {4.658, 1.55}, {4.754, 0.776}, {4.814, 0.486}, {4.91, 0.196}, {5.006, 0.002}, {5.21, 0.196}, {5.426, 0.583}, {5.462, 0.776}, {5.486, 0.776}, {5.558, 1.55}, {5.582, 2.226}, {6.999, 42.169}, {7.107, 45.263}, {7.215, 48.165}, {7.335, 50.873}, {7.551, 56.095}, {7.779, 61.318}, {8.019, 66.347}, {8.523, 76.792}, {9.075, 87.236}, {9.364, 92.265}, {9.676, 97.488}, {10, 102.904}};
+double mpyeShare(double u)
+{
+	constexpr int n = static_cast<int>(sizeof(MPYE_Q) / sizeof(MPYE_Q[0]));
+	if (u <= MPYE_Q[0][0]) return MPYE_Q[0][1] / 100.0;
+	for (int i = 1; i < n; ++i)
+		if (u <= MPYE_Q[i][0])
+			return (MPYE_Q[i - 1][1] + (MPYE_Q[i][1] - MPYE_Q[i - 1][1]) * (u - MPYE_Q[i - 1][0]) / (MPYE_Q[i][0] - MPYE_Q[i - 1][0])) / 100.0;
+	return MPYE_Q[n - 1][1] / 100.0;
+}
 
 // ISO 6358 ellipse, b = B_CRIT (tools/simulation/FORMELN.md P02)
 double massFlow(double p1, double p2, double c)
@@ -264,6 +279,7 @@ struct SimulationModel::Valve {
 	// Each press switches between the rest position and the actuated one and the valve stays there.
 	int toggle_side = -1;
 	bool latched = false;
+	int dominant = -1;          // R11: side that wins when both are actuated (FluidSIM/QET "dominant"), -1: none, the valve stays
 	// roller lever / plunger: actuated by a cylinder inside a stroke range (FluidSIM distance rule)
 	QString trigger_cylinder;
 	double trigger_lo = 0, trigger_hi = -1;
@@ -279,7 +295,7 @@ struct SimulationModel::Valve {
 		const bool l = actuated[0] || forced[0], r = actuated[1] || forced[1];
 		if (l && !r) return 0;
 		if (r && !l) return static_cast<int>(positions.size()) - 1;
-		if (l && r) return position;
+		if (l && r) return dominant == 0 ? 0 : dominant == 1 ? last() : position;
 		const bool spring = side[0].spring || side[1].spring || side[0].air_spring || side[1].air_spring;
 		return spring ? rest : position;
 	}
@@ -291,11 +307,74 @@ struct SimulationModel::Cylinder {
 	double a_k = 0, a_r = 0, stroke = 0.1, m = 0.1, f_static = 0, f_slide = 0, damping = 20;
 	double stop_k = 0, stop_c = 0;   // elastic end stop (R02); 0: hard stop
 	double f_spring = 0, f_load = 0, x = 0, v = 0;
+	// R11 (FORMELN.md M08–M10): weight m·g·sin(alpha) against extending, spring characteristic, force profile
+	double weight = 0;                          // N, against extending
+	int spring_dir = 0;                         // characteristic: +1 pushes out (left), -1 pushes back (right), 0 constant f_spring
+	double spring_f0 = 0, spring_f1 = 0;        // spring force at x = 0 and at the stroke [N]
+	QVector<QPair<double, double>> load_ex, load_re;   // force profile (x [m], F [N]) extending / retracting, against extending
+	static double profileAt(const QVector<QPair<double, double>> &pts, double x) {
+		if (pts.isEmpty()) return 0.0;
+		if (x <= pts.first().first) return pts.first().second;
+		for (int i = 1; i < pts.size(); ++i)
+			if (x <= pts.at(i).first) {
+				const auto &a = pts.at(i - 1), &b = pts.at(i);
+				return b.first > a.first ? a.second + (b.second - a.second) * (x - a.first) / (b.first - a.first) : b.second;
+			}
+		return pts.last().second;
+	}
+		/// all forces in the direction against extending except friction: load (constant or profile), spring, weight
+	double opposing() const {
+		const auto &pts = v >= 0 ? load_ex : load_re;
+		const double load = pts.isEmpty() ? f_load : profileAt(pts, x);
+		double spring = f_spring;
+		if (spring_dir != 0) spring = -spring_dir * (spring_f0 + (spring_f1 - spring_f0) * std::clamp(x / stroke, 0.0, 1.0));
+		return load + spring + weight;
+	}
 	// R10 semi-rotary drive: x, stroke in rad, v in rad/s, a_k = a_r displacement per radian [m³/rad]
 	// (= torque per pascal), m the moment of inertia [kg·m²], forces are torques [N·m]
 	bool rotary = false;
+	// R12 multi-position cylinder (FluidSIM Pneu.Actuator.MultiPositionCylinder, FORMELN.md M12): a second piston
+	// behind this one (chamber C1, stroke stroke1) pushes it with its rod through the partition; C2 drives this
+	// piston, C3 is its rod side. x1, v1 the rear piston; it has the same mass and friction as this piston
+	bool multi = false;
+	double x1 = 0, v1 = 0, stroke1 = 0, a_rod = 0;
+	// R13 load unit (FluidSIM Hyd.Actuator.LoadingUnit_2, FORMELN.md M13): two opposed cylinders on one rod, ports
+	// A1.1 (piston side 1), A1.2 (rod side 1), A2.1 (rod side 2), A2.2 (piston side 2); x positive towards cylinder 2
+	bool loading = false;
+	// R13 load unit 1 (FORMELN.md M14): the rod chambers A1.2 and A2.1 relieve into each other (relief valve p0 over
+	// dpEnd with rT_prv, then the check valve rT_cv into the other chamber)
+	bool cross = false;
+	double xr_p0 = 120e5, xr_dp = 35.3e5, xr_rt = 0.09, xr_cv = 0.07;
+	// R12 fluidic muscle (FluidSIM Pneu.Actuator.FluidicMuscle1, FORMELN.md M15): x is the contraction [m] (0 = nominal
+	// length, negative = pretensioned), stroke the max. contraction; force and volume from the Festo DMSP data
+	int muscle = -1;                            // index into SimMuscle::types(), -1: no muscle
+	// FORMELN.md M16: guide cylinders on the free end (FluidicMuscle2/3): count, start and maximum stroke [m], piston and
+	// annulus area [m²]; cylinder position = mc_start − contraction, pressure at AC pushes out (stretches the muscle)
+	int mcyl = 0;
+	double mc_start = 0.0, mc_max = 0.2, mc_ak = 0.0, mc_ar = 0.0;
+	double muscle_len = 0.25;                   // nominal length [m]
+	double muscle_h0 = 0.0;                     // contraction [%] of the first entry of muscle_vol / muscle_area
+	std::vector<double> muscle_vol, muscle_area;   // per 0.05 % contraction: volume [m³], effective area [m²]
+	double muscleTable(const std::vector<double> &tab, double x) const {
+		const double s = (100.0 * x / muscle_len - muscle_h0) / 0.05;
+		const int i = std::clamp(static_cast<int>(std::floor(s)), 0, static_cast<int>(tab.size()) - 2);
+		return tab[i] + (tab[i + 1] - tab[i]) * (s - i);
+	}
 	/// position compared with a marker "-MM1 lo..hi": metres, for a rotary drive degrees / 1000
 	double markPos() const { return rotary ? x * 180.0 / M_PI / 1000.0 : x; }
+};
+
+	/// R12 hydraulic pressure intensifier (FluidSIM Hyd.Actuator.PressureIntensifier01, FORMELN.md H13): bypass check
+	/// valve IN → H, oscillating pump piston IN → H with the return R, pilot operated check valve H → IN (pilot R)
+struct SimulationModel::Intensifier {
+	Element *e = nullptr;
+	QString label;
+	double r = 4.0;          // intensification ratio
+	double k = 0.0;          // pump characteristic [m³/(s·Pa)]: q_H = k·(p_stall - p_H)
+	double q_in_max = 0.0;   // max. supply flow [m³/s]
+	double rt_cv = 0.1;      // check valves [bar.min2/l2]
+	double gleak = 0.0;      // internal leakage IN → R [m³/(s·Pa)]
+	double q_h = 0.0;        // pumped flow into H of the last step [m³/s]
 };
 
 	/// line with geometry (R05): Darcy/Hagen-Poiseuille between two ports
@@ -309,6 +388,80 @@ struct SimulationModel::PropValve {
 	double rt = 1.0;                       // resistance of one fully open edge [bar.min2/l2]
 	double gleak = 0.0;                    // leakage of each edge [m3/(s.Pa)]
 	bool triangular = false;               // notch: triangular (area ∝ x²) or rectangular (∝ x)
+	// FluidSIM Pneu.Proportional.MPYE (FORMELN.md V19): pneumatic 5/3 valve, s = (u − 5 V)/5 V, s > 0 opens 1→4 and 2→3,
+	// s < 0 opens 1→2 and 4→5; the opening follows the Festo flow characteristic, c_max from qNN
+	bool mpye = false;
+	double c_max = 0.0;
+};
+
+/// R13 (FORMELN.md H08): FluidSIM power unit with a load sensing variable pump (P1) and a fixed pump (P2) on one
+/// motor; the LS controller keeps p_P1 - p_LS at the spring setting p0 (displacement share 1 - (dp - p0)/dpEnd as a
+/// PT1 with T_PT1), each pump has its relief valve and its leakage to the tank, the LS line drains through rT_LS
+struct SimulationModel::LsUnit {
+	Element *e = nullptr;
+	QString label;
+	double q_vp = 0, q_fp = 0, gl_vp = 0, gl_fp = 0;          // geometric flows [m3/s], leakages [m3/(s.Pa)]
+	double margin = 11.7e5, band = 0.8e5, tau = 0.02, alpha = 1.0;
+	double p0_vp = 50e5, dp_vp = 35e5, rt_vp = 0.08, p0_fp = 50e5, dp_fp = 35e5, rt_fp = 0.08, rt_drain = 2400;
+	double last_q1 = 0, last_q2 = 0;
+};
+
+/// R13 (FORMELN.md V15): FluidSIM 6/3 proportional hand lever valve (open centre): neutral P1 -> T1, deflected
+/// x > 0 P2 -> B and A -> T2, x < 0 P2 -> A and B -> T2; P2 through the load holding check valve
+struct SimulationModel::Valve63 {
+	Element *e = nullptr;
+	QString label;
+	double x = 0, x_set = 0, tau = 0.1;
+	double rt_n = 0.045, rt_p = 0.051, rt_t = 0.0362, rt_cv = 0.01, gleak = 0;
+};
+
+/// R13 (FORMELN.md H10): FluidSIM steering unit (Orbitrol): the rotary valve opens with the hand torque,
+/// share a = M_user/M_userMax; neutral P -> E, a > 0 (left) P -> L and R -> T, a < 0 (right) P -> R and L -> T;
+/// the metering pump turns the steering wheel by the flow it passes (angle = volume / displacement · 2π)
+struct SimulationModel::Steering {
+	Element *e = nullptr;
+	QString label;
+	double a = 0, rt = 0.1, d = 32e-6, phi = 0, last_q = 0;
+};
+
+/// R13 (FORMELN.md V17): FluidSIM load sensing control block, two sections; each a proportional directional valve
+/// (pilot C (X g.1) / D (X g.2) between pS_min and pS_max, or the hand lever xStep) behind an upstream pressure
+/// compensator (p0_pc over dpEnd_pc, rT_pc), shuttle valves feed the highest load pressure to LS
+struct SimulationModel::LsBlock {
+	Element *e = nullptr;
+	QString label;
+	double rt_m = 0.1, rt_t = 0.21, ps_min = 2e5, ps_max = 15e5, p0 = 10.5, dp = 0.5, rt_pc = 0.2, rt_sv = 0.08;   // p0, dp in bar
+	double man[2] = {0, 0};
+	double x[2] = {0, 0};
+};
+
+/// R13 (FORMELN.md V18): FluidSIM priority valve LS: the spool feeds CF first, s = clamp(1 − (p_CF − p_LS − p0)/dpEnd),
+/// P -> CF with rT_CF/s², the rest P -> EF with rT_EF/(1 − s)²
+struct SimulationModel::PriorityValve {
+	Element *e = nullptr;
+	QString label;
+	double p0 = 8e5, dp = 2.4e5, rt_cf = 0.9, rt_ef = 0.9;
+};
+
+/// R13 (FORMELN.md H11): FluidSIM pilot valve joystick 2x2: per group the lever deflection a (−1 … 1) sets the pilot
+/// pressure |a|·pMax at X g.1 (a > 0) or X g.2 (a < 0) as a pressure reducing valve from P (relief to T); the other
+/// port of the group and both ports at rest are open to T
+struct SimulationModel::Joystick {
+	Element *e = nullptr;
+	QString label;
+	double a[2] = {0, 0};
+	double pmax = 15e5, band = 0.5e5, rt = 0.1;
+};
+
+/// R15 (FORMELN.md K16): a defect of a part, FluidSIM fault models, from the element information sim_fault
+/// ("kolben_klemmt ab 0.5 bis 2"); active inside its time window until it is repaired
+struct SimulationModel::Fault {
+	Element *e = nullptr;
+	QString label, text;
+	FaultKind kind = FaultKind::Stuck;
+	double from = 0.0, to = std::numeric_limits<double>::infinity(), value = std::nan("");
+	bool repaired = false, was_active = false;
+	bool active(double t) const { return !repaired && t >= from - 1e-12 && t < to - 1e-12; }
 };
 
 struct SimulationModel::Pipe {
@@ -345,6 +498,7 @@ struct SimulationModel::Pump {
 	double q = 0, p_max = 0, band = 1e5;          // relief characteristic: full flow up to p_max - band
 	double alpha = 1.0, cleak = 0.0;              // setting of a variable pump, leakage P -> T (R08)
 	double last_q = 0.0, last_dp = 0.0;           // delivered flow and pressure rise of the last step
+	QString p_port = QStringLiteral("P"), t_port = QStringLiteral("T");   // outlet, suction (empty: from outside)
 };
 
 struct SimulationModel::Motor {
@@ -353,6 +507,8 @@ struct SimulationModel::Motor {
 	SimPhysics::Shaft shaft;
 	double tau_load = 0.0;                        // constant load torque against positive rotation
 	double last_dp = 0.0;
+	bool air = false;                             // R12: compressed air motor (mass flow from the inlet)
+	QString exhaust;                              // mid exhaust port (EX), empty: the air leaves at the other port
 };
 
 struct SimulationModel::FlowValve {
@@ -364,13 +520,21 @@ struct SimulationModel::FlowValve {
 	double c = 0, c_free = 0, rt = 0.1, rt_free = 0.05, p0 = 0, dp_end = 0.5e5;
 	double t_delay = 1.0, since = -1.0;         // time delay valve
 	double ratio = 3.0, gleak = 0.0;            // counterbalance valve: pilot area ratio, leakage P -> T (R09)
+	double gmeter = 0.0;                        // R13 flowmeter as a hydraulic motor: conductance D²/(4π²·f) [m³/(s·Pa)]
 	double u = 0.0, p_lo = 0.0, p_hi = 0.0;     // proportional relief valve: setpoint [V], opening at 0 and 10 V (R06)
 	double last_q = 0.0;                        // flow sensor: flow A -> B of the last step [m3/s] (R06)
+	double p0_b = 0.0, dp_end_b = 0.5e5, rt_b = 0.1;   // shock valve: relief of side B (R09)
+	double clog = 1.0;                          // R15 fault "Bauteil verstopft": remaining share of the flow
+	// FORMELN.md V20–V24: pneumatic timers and delay valves (reservoir pv [Pa abs], volume vol [m³], nozzle c_aux),
+	// preset counter (count, preset), two-hand block (t_first, latched), vacuum efficiency valve (c_aux = minimum flow)
+	double c_aux = 0.0, vol = 1e-5, pv = 1.013e5, t_first = -1.0;
+	int count = 0, preset = 0;
+	bool last_a = false, last_b = false, latched = false;
 
 	double flow(double pa, double pb, double share = 1.0, bool free = false) const {
 		if (share <= 0) return 0.0;
-		if (hydraulic) return volumeFlow(pa, pb, (free ? rt_free : rt) / std::pow(std::max(share, 1e-3), 2));
-		return massFlow(pa, pb, (free ? c_free : c) * share);
+		if (hydraulic) return clog * volumeFlow(pa, pb, (free ? rt_free : rt) / std::pow(std::max(share, 1e-3), 2));
+		return clog * massFlow(pa, pb, (free ? c_free : c) * share);
 	}
 };
 
@@ -381,6 +545,8 @@ struct SimulationModel::Relay {
 	bool on = false, target = false;
 	double switch_at = -1, on_since = -1, off_since = -1, delay = 1.0;
 	QString mode;          // "on", "off" or empty
+	int circuit = -1;      // R17 stage 2: its coil in the analog circuit (part index)
+	double i_on = 0.0, i_off = 0.0;   // pick-up and drop-out current [A] (E07)
 };
 
 struct SimulationModel::Contact {
@@ -392,6 +558,7 @@ struct SimulationModel::Contact {
 	Relay *relay = nullptr;
 	QString mode;
 	bool latching = false; // selector switch: each press switches it over and it stays
+	int circuit = -1;      // R17 stage 2: the switch it is in the analog circuit (part index)
 };
 
 struct SimulationModel::Coil {
@@ -401,6 +568,8 @@ struct SimulationModel::Coil {
 	bool on = false, known = false;
 	Valve *valve = nullptr;   // the valve it is linked to (master), if not found by its label
 	int side = -1;            // 0 left, 1 right, -1 the valve's only solenoid
+	int circuit = -1;         // R17 stage 2: the coil in the analog circuit (part index)
+	double i_on = 0.0, i_off = 0.0;
 };
 
 	/// the inputs and outputs of a GRAFCET controller (FluidSIM "GRAFCET-SPS"): each input is true
@@ -426,6 +595,10 @@ struct SimulationModel::Accumulator {
 	QString label;
 	int node = -1;
 	double v0 = 1e-3, p_pre = 0.0, n = 1.4;    // gas volume at precharge, precharge absolute, exponent
+	// R13 (FORMELN.md H12): FluidSIM diaphragm accumulator with safety block: relief valve accumulator -> T
+	bool block = false;
+	int node_t = -1;
+	double prv_p0 = 80e5, prv_dp = 38e5, prv_rt = 0.17;
 };
 
 struct SimulationModel::PressureSwitch {
@@ -515,6 +688,14 @@ SimulationModel::~SimulationModel()
 	qDeleteAll(m_ejectors);
 	qDeleteAll(m_pipes);
 	qDeleteAll(m_prop_valves);
+	qDeleteAll(m_ls_units);
+	qDeleteAll(m_intensifiers);
+	qDeleteAll(m_valves63);
+	qDeleteAll(m_steerings);
+	qDeleteAll(m_faults);
+	qDeleteAll(m_joysticks);
+	qDeleteAll(m_ls_blocks);
+	qDeleteAll(m_priority_valves);
 	qDeleteAll(m_cups);
 	qDeleteAll(m_analog);
 }
@@ -556,6 +737,17 @@ void SimulationModel::buildNets(const QList<Diagram *> &diagrams)
 				}
 		}
 	}
+	// a junction (upstream 20.11.2026, #1500) is one node: all its terminals share one potential,
+	// so a wire through it stays one net; an unwired terminal of it stays open
+	for (Diagram *d : diagrams)
+		for (Element *e : sortedElements(d)) {
+			if (!(e->linkType() & Element::Junction)) continue;
+			Terminal *first = nullptr;
+			for (Terminal *t : e->terminals()) {
+				if (!connected.contains(t)) continue;
+				if (!first) first = t; else join(first, t);
+			}
+		}
 	// ideal connections (catalog role) and in-line measuring points join all their fluid ports
 	for (Diagram *d : diagrams)
 		for (Element *e : sortedElements(d)) {
@@ -576,6 +768,21 @@ void SimulationModel::buildNets(const QList<Diagram *> &diagrams)
 			if (any)
 				for (Terminal *t : e->terminals())
 					if (t->medium() == Fluid::Medium::Pneumatic || t->medium() == Fluid::Medium::Hydraulic) connected << t;
+		}
+	// R09: the shock and anti-cavitation block sits in the work lines: A1 = A2 and B1 = B2 are one net each
+	for (Diagram *d : diagrams)
+		for (Element *e : sortedElements(d)) {
+			if (e->elementData().m_fluid.m_function != QLatin1String("pressure_valve.shock_and_anti_cavitation_valve")) continue;
+			for (const auto &pr : {qMakePair(QStringLiteral("A1"), QStringLiteral("A2")), qMakePair(QStringLiteral("B1"), QStringLiteral("B2"))}) {
+				Terminal *a = nullptr, *b = nullptr;
+				for (Terminal *t : e->terminals()) {
+					if (t->name().trimmed() == pr.first) a = t;
+					if (t->name().trimmed() == pr.second) b = t;
+				}
+				if (!a || !b) continue;
+				join(a, b);
+				if (connected.contains(a) || connected.contains(b)) connected << a << b;
+			}
 		}
 	QHash<Terminal *, int> index;
 	for (auto it = parent.constBegin(); it != parent.constEnd(); ++it) {
@@ -652,11 +859,23 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 		{QStringLiteral("flow_control_valve.flow_divider"), 100},
 		{QStringLiteral("logic.shuttle_valve"), 150}, {QStringLiteral("logic.dual_pressure_valve"), 150},
 		{QStringLiteral("logic.time_delay_valve"), 100},
+		{QStringLiteral("shutoff_valve.timer1"), 50}, {QStringLiteral("shutoff_valve.timer2"), 50},
+		{QStringLiteral("valve_group.timer3"), 50}, {QStringLiteral("valve_group.timer4"), 50},
+		{QStringLiteral("shutoff_valve.pneumatic_counter"), 60}, {QStringLiteral("valve_group.control_block_for_two_hand_start"), 50},
+		{QStringLiteral("vacuum.vacuum_efficiency_valve"), 4},
+		{QStringLiteral("valve_group.taa_01"), 60}, {QStringLiteral("valve_group.tab_01"), 60},
 		{QStringLiteral("pressure_valve.counterbalance_valve"), 200},
 		{QStringLiteral("pressure_valve.pressure_sequence_valve01"), 200},
 		{QStringLiteral("pressure_valve.pressure_sequence_valve02"), 200},
 		{QStringLiteral("proportional.pressure_relief_valve"), 200}, {QStringLiteral("proportional.flow_sensor"), 1000},
-		{QStringLiteral("sensor.flowmeter_2"), 1000}};
+		{QStringLiteral("sensor.flowmeter_2"), 1000},
+		{QStringLiteral("pressure_valve.pressure_compensator_closer01"), 300}, {QStringLiteral("pressure_valve.pressure_compensator_closer02"), 300},
+		{QStringLiteral("pressure_valve.pressure_compensator_opener01"), 300}, {QStringLiteral("pressure_valve.pressure_compensator_opener02"), 300},
+		{QStringLiteral("pressure_valve.pressure_compensator_upstream_1"), 300}, {QStringLiteral("pressure_valve.pressure_compensator_upstream_2"), 300},
+		{QStringLiteral("pressure_valve.pressure_compensator_downstream_1"), 300}, {QStringLiteral("pressure_valve.pressure_compensator_downstream_2"), 300},
+		{QStringLiteral("pressure_valve.pressure_compensator_opener_ls_1"), 300}, {QStringLiteral("pressure_valve.pressure_compensator_opener_ls_2"), 300},
+		{QStringLiteral("pressure_valve.shock_and_anti_cavitation_valve"), 300}, {QStringLiteral("pressure_valve.pressure_sequence_valve"), 100},
+		{QStringLiteral("shutoff_valve.double_non_return_valve01"), 300}, {QStringLiteral("shutoff_valve.double_non_return_valve02"), 300}};
 
 	for (Diagram *d : diagrams) {
 		for (Element *e : sortedElements(d)) {
@@ -732,6 +951,130 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						continue;
 					}
 				}
+				if (model == QLatin1String("ls_pump_unit") || model == QLatin1String("mobile_valve63")
+					|| model == QLatin1String("steering_unit") || model == QLatin1String("pilot_joystick")
+					|| model == QLatin1String("ls_valve_block") || model == QLatin1String("priority_valve_ls")) {
+					if (!hyd) {
+						m_model_errors << QStringLiteral("%1: nur hydraulisch gerechnet").arg(part);
+						continue;
+					}
+					const QString pa = QStringLiteral("Pa"), barU = QStringLiteral("bar"), rtU = QStringLiteral("bar.min2/l2");
+					// FluidSIM writes some pressure bands without a unit: they are bar (dpEnd_prv is 3.5 MPa = 35 bar elsewhere)
+					auto barIn = [&](const char *n, double fallback_bar) {
+						return 1e5 * paramNative(f, QLatin1String(n), fallback_bar, barU, &m_model_errors, part, Range::NonNegative);
+					};
+					auto rtIn = [&](const char *n, double fallback) {
+						return paramNative(f, QLatin1String(n), fallback, rtU, &m_model_errors, part, Range::Positive);
+					};
+					if (model == QLatin1String("steering_unit")) {
+						auto *s = new Steering;
+						s->e = e;
+						s->label = part;
+						const QString nm = QStringLiteral("N.m");
+						const double mu = paramNative(f, QStringLiteral("M_user"), 0.0, nm, &m_model_errors, part, Range::Any);
+						const double mmax = paramNative(f, QStringLiteral("M_userMax"), 10.0, nm, &m_model_errors, part, Range::Positive);
+						s->a = mmax > 0 ? std::clamp(mu / mmax, -1.0, 1.0) : 0.0;
+						s->rt = rtIn("rT", 0.1);
+						s->d = paramIn(f, QStringLiteral("displacement"), 32e-6, QStringLiteral("m3"), &m_model_errors, part, Range::Positive);
+						m_steerings << s;
+						continue;
+					}
+					if (model == QLatin1String("ls_valve_block")) {
+						auto *b = new LsBlock;
+						b->e = e;
+						b->label = part;
+						b->rt_m = rtIn("rT_PAB", 0.1);
+						b->rt_t = rtIn("rT_TAB", 0.21);
+						b->ps_min = paramIn(f, QStringLiteral("pS_min"), 2e5, pa, &m_model_errors, part, Range::NonNegative);
+						b->ps_max = paramIn(f, QStringLiteral("pS_max"), 15e5, pa, &m_model_errors, part, Range::Positive);
+						if (!(b->ps_max > b->ps_min))
+							m_model_errors << QStringLiteral("%1: pS_max muss größer als pS_min sein").arg(part);
+						b->p0 = paramIn(f, QStringLiteral("p0_pc"), 10.5e5, pa, &m_model_errors, part, Range::NonNegative) / 1e5;
+						b->dp = std::max(paramIn(f, QStringLiteral("dpEnd_pc"), 0.5e5, pa, &m_model_errors, part, Range::Positive) / 1e5, 0.01);
+						b->rt_pc = rtIn("rT_pc", 0.2);
+						b->rt_sv = rtIn("rT_SV", 0.08);
+						const QString pc = QStringLiteral("%");
+						b->man[0] = std::clamp(paramNative(f, QStringLiteral("xStepLeft"), 0.0, pc, &m_model_errors, part, Range::Any) / 100.0, -1.0, 1.0);
+						b->man[1] = std::clamp(paramNative(f, QStringLiteral("xStepRight"), 0.0, pc, &m_model_errors, part, Range::Any) / 100.0, -1.0, 1.0);
+						m_ls_blocks << b;
+						continue;
+					}
+					if (model == QLatin1String("priority_valve_ls")) {
+						auto *v = new PriorityValve;
+						v->e = e;
+						v->label = part;
+						v->p0 = paramIn(f, QStringLiteral("p0"), 8e5, pa, &m_model_errors, part, Range::NonNegative);
+						v->dp = std::max(paramIn(f, QStringLiteral("dpEnd"), 2.4e5, pa, &m_model_errors, part, Range::Positive), 0.01e5);
+						v->rt_cf = rtIn("rT_CF", 0.9);
+						v->rt_ef = rtIn("rT_EF", 0.9);
+						m_priority_valves << v;
+						continue;
+					}
+					if (model == QLatin1String("pilot_joystick")) {
+						auto *j = new Joystick;
+						j->e = e;
+						j->label = part;
+						const QString pc = QStringLiteral("%");
+						j->a[0] = std::clamp(paramNative(f, QStringLiteral("adjustmentLeft"), 0.0, pc, &m_model_errors, part, Range::Any) / 100.0, -1.0, 1.0);
+						j->a[1] = std::clamp(paramNative(f, QStringLiteral("adjustmentRight"), 0.0, pc, &m_model_errors, part, Range::Any) / 100.0, -1.0, 1.0);
+						j->pmax = paramIn(f, QStringLiteral("pMax"), 15e5, pa, &m_model_errors, part, Range::NonNegative);
+						// FluidSIM names no resistance and no control band: project values (FORMELN.md H11)
+						j->rt = rtIn("rT", 0.1);
+						j->band = std::max(paramIn(f, QStringLiteral("dpEnd"), 0.5e5, pa, &m_model_errors, part, Range::Positive), 0.01e5);
+						m_joysticks << j;
+						continue;
+					}
+					if (model == QLatin1String("ls_pump_unit")) {
+						auto *u = new LsUnit;
+						u->e = e;
+						u->label = label(e);
+						const double n = paramIn(f, QStringLiteral("rpm"), 910.0 / 60.0, QStringLiteral("1/s"), &m_model_errors, part, Range::NonNegative);
+						u->q_vp = n * paramIn(f, QStringLiteral("displacementVP"), 5.6044e-6, QStringLiteral("m3"), &m_model_errors, part, Range::NonNegative);
+						u->q_fp = n * paramIn(f, QStringLiteral("displacementFP"), 4.5055e-6, QStringLiteral("m3"), &m_model_errors, part, Range::NonNegative);
+						u->gl_vp = paramIn(f, QStringLiteral("GL_VP"), 0.028333 / 60000.0 / 1e5, QStringLiteral("m3/(s.Pa)"), &m_model_errors, part, Range::NonNegative);
+						u->gl_fp = paramIn(f, QStringLiteral("GL_FP"), 0.003333 / 60000.0 / 1e5, QStringLiteral("m3/(s.Pa)"), &m_model_errors, part, Range::NonNegative);
+						u->margin = paramIn(f, QStringLiteral("p0"), 11.7e5, pa, &m_model_errors, part, Range::NonNegative);
+						u->band = std::max(barIn("dpEnd", 0.8), 0.01e5);
+						u->tau = paramIn(f, QStringLiteral("T_PT1"), 0.02, QStringLiteral("s"), &m_model_errors, part, Range::NonNegative);
+						u->p0_vp = paramIn(f, QStringLiteral("p0_prvLS"), 50e5, pa, &m_model_errors, part, Range::NonNegative);
+						u->dp_vp = std::max(barIn("dpEnd_prvLS", 35.0), 0.1e5);
+						u->rt_vp = rtIn("rT_prvLS", 0.08);
+						u->p0_fp = paramIn(f, QStringLiteral("p0_prvFixed"), 50e5, pa, &m_model_errors, part, Range::NonNegative);
+						u->dp_fp = std::max(barIn("dpEnd_prvFixed", 35.0), 0.1e5);
+						u->rt_fp = rtIn("rT_prvFixed", 0.08);
+						u->rt_drain = rtIn("rT_LS", 2400.0);
+						m_ls_units << u;
+					} else {
+						auto *v = new Valve63;
+						v->e = e;
+						v->label = label(e);
+						v->x_set = std::clamp(paramNative(f, QStringLiteral("xStep"), 0.0, QStringLiteral("%"), &m_model_errors, part, Range::Any) / 100.0, -1.0, 1.0);
+						v->x = v->x_set;
+						v->tau = paramIn(f, QStringLiteral("T_2"), 0.1, QStringLiteral("s"), &m_model_errors, part, Range::NonNegative);
+						v->rt_n = rtIn("rT_P1_T1", 0.045);
+						v->rt_p = rtIn("rT_P2_AB", 0.051);
+						v->rt_t = rtIn("rT_T2_AB", 0.0362);
+						v->rt_cv = rtIn("rT_CV", 0.01);
+						v->gleak = paramIn(f, QStringLiteral("GLeak"), 0.0, QStringLiteral("m3/(s.Pa)"), &m_model_errors, part, Range::NonNegative);
+						m_valves63 << v;
+					}
+					continue;
+				}
+				if (model == QLatin1String("proportional_valve") && fn == QLatin1String("proportional.mpye")) {
+					// FORMELN.md V19: pneumatic 5/3 proportional valve MPYE, setpoint 0 … 10 V (5 V mid position closed) from
+					// the linked position controlled solenoid (R06, "C=-QM1/S"), the value u or a setpoint event
+					auto *v = new PropValve;
+					v->e = e;
+					v->label = label(e);
+					v->mpye = true;
+					v->u = paramIn(f, QStringLiteral("u"), 5.0, QStringLiteral("V"), &m_model_errors, part);
+					// spool lag: PT1 with the 3 dB frequency of the data sheet (G1/8: 100 Hz → 1.6 ms; FluidSIM: travel typ. 5 ms)
+					v->tau = paramIn(f, QStringLiteral("tau"), 1.0 / (2 * M_PI * 100.0), QStringLiteral("s"), &m_model_errors, part, Range::NonNegative);
+					v->c_max = conductanceFromQnn(paramIn(f, QStringLiteral("qNN"), 773.0, QStringLiteral("l/min"), &m_model_errors, part, Range::Positive));
+					v->s = qBound(-1.0, (v->u - 5.0) / 5.0, 1.0);
+					m_prop_valves << v;
+					continue;
+				}
 				if (model == QLatin1String("proportional_valve")) {
 					// R07 (FORMELN.md V05, V06): FluidSIM 4/3 proportional valve; a linked solenoid or amplifier (R06,
 					// linkAnalog) sets u every step, else the setpoint is the value u or a setpoint event
@@ -773,9 +1116,54 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					p->alpha = paramNative(f, QStringLiteral("alpha"), 1.0, QString(), &m_model_errors, who, Range::NonNegative);
 					if (p->alpha > 1.0) m_model_errors << QStringLiteral("%1: Verstellgrad alpha %2 größer als 1").arg(who).arg(p->alpha);
 					p->cleak = paramIn(f, QStringLiteral("GL"), 0.0, QStringLiteral("m3/(s.Pa)"), &m_model_errors, who, Range::NonNegative);
+					// FluidSIM simplified power unit: one outlet P2, takes from the tank inside; FluidSIM Pump01: outlet A
+					// (arrow), suction B
+					QStringList names;
+					for (Terminal *t : e->terminals()) names << t->name().trimmed();
+					if (!names.contains(QStringLiteral("P"))) {
+						if (names.contains(QStringLiteral("P2"))) {
+							p->p_port = QStringLiteral("P2");
+							p->t_port.clear();
+						} else if (names.contains(QStringLiteral("A"))) {
+							p->p_port = QStringLiteral("A");
+							p->t_port = names.contains(QStringLiteral("B")) ? QStringLiteral("B") : QString();
+						} else if (names.size() == 1) {
+							p->p_port = names.first();
+							p->t_port.clear();
+						}
+					}
 					m_pumps << p;
-				} else if (model == QLatin1String("hydraulic_motor") && !hyd) {
-					m_model_errors << QStringLiteral("%1: Druckluftmotor hat kein Rechenmodell (nur Hydromotoren, Roadmap R12)").arg(part);
+				} else if ((model == QLatin1String("hydraulic_motor") && !hyd) || model == QLatin1String("air_motor")) {
+					// R12 (FORMELN.md M11): compressed air motor as a shaft (M01/M06 family). With FluidSIM rated values
+					// (p_N, rpm_N, M_N, n0_nN = k) a linear characteristic: stall torque M_N·k/(k − 1), no-load speed
+					// k·n_N at p_N; displacement per radian = stall torque / p_N, viscous friction = stall torque / ω₀
+					auto *mo = new Motor;
+					mo->e = e;
+					mo->label = part;
+					mo->air = true;
+					const QString who = part;
+					auto &s = mo->shaft;
+					s.alpha = 1.0;
+					if (fn == QLatin1String("actuator.motor_with_mid_exhaust")) {
+						const double pn = paramIn(f, QStringLiteral("p_N"), 0.3e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive);
+						const double nn = paramIn(f, QStringLiteral("rpm_N"), 975.0 / 60.0, QStringLiteral("1/s"), &m_model_errors, who, Range::Positive);
+						const double mn = paramIn(f, QStringLiteral("M_N"), 0.62, QStringLiteral("N.m"), &m_model_errors, who, Range::Positive);
+						const double k = paramNative(f, QStringLiteral("n0_nN"), 2.0, QString(), &m_model_errors, who, Range::Positive);
+						if (!(k > 1.0)) m_model_errors << QStringLiteral("%1: n0_nN %2 muss größer als 1 sein").arg(who).arg(k);
+						const double stall = mn * k / std::max(k - 1.0, 1e-3);
+						s.D = 2.0 * M_PI * stall / pn;
+						s.b = stall / (k * 2.0 * M_PI * nn);
+						mo->exhaust = QStringLiteral("EX");
+					} else {
+						s.D = paramIn(f, QStringLiteral("displacement"), 1e-4, QStringLiteral("m3"), &m_model_errors, who, Range::Positive);
+						s.b = paramIn(f, QStringLiteral("f"), 3.0, QStringLiteral("N.m.s/rad"), &m_model_errors, who, Range::NonNegative);
+					}
+					s.J = paramIn(f, QStringLiteral("I"), 2e-3, QStringLiteral("kg.m2"), &m_model_errors, who, Range::Positive);
+					const double mext = paramIn(f, QStringLiteral("M_ext"), 0.0, QStringLiteral("N.m"), &m_model_errors, who);
+					// FluidSIM torqueType 1: braking (against the rotation, like dry friction), 2: driving
+					if (paramNative(f, QStringLiteral("torqueType"), 1.0, QString(), &m_model_errors, who, Range::Any) > 1.5) mo->tau_load = -mext;
+					else s.tau_c = std::abs(mext);
+					m_motors << mo;
 				} else if (model == QLatin1String("hydraulic_motor")) {
 					auto *mo = new Motor;
 					mo->e = e;
@@ -803,14 +1191,29 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					const double v0 = paramIn(f, QStringLiteral("V0"), 1e-3, QStringLiteral("m3"), &m_model_errors, who, Range::Positive);
 					const double p0 = paramIn(f, QStringLiteral("p0"), 0.4e6, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
 					if (ks.isEmpty()) continue;
+					// R13 (FORMELN.md H12): FluidSIM AccumulatorWithShutoffBlock (precharge p0_accu, relief p0_prv, ball
+					// valve x: 2 open to P, 1 shut, 0 drained to T): only open it acts on P
+					const bool block = hyd && !f.parameter(QStringLiteral("p0_accu")).isEmpty();
+					if (block) {
+						const double x = paramNative(f, QStringLiteral("x"), 2.0, QString(), &m_model_errors, who, Range::NonNegative);
+						if (x < 1.5 || node(e, QStringLiteral("P")) < 0) continue;
+					}
 					if (hyd) {
 						auto *a = new Accumulator;
 						a->e = e;
 						a->label = label(e);
-						a->node = ks.first();
+						a->node = block ? node(e, QStringLiteral("P")) : ks.first();
 						a->v0 = v0;
-						a->p_pre = P_ATM + p0;
+						a->p_pre = P_ATM + (block ? paramIn(f, QStringLiteral("p0_accu"), 1e6, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative) : p0);
 						a->n = paramNative(f, QStringLiteral("k"), 1.4, QString(), &m_model_errors, who, Range::Positive);
+						if (block) {
+							// FluidSIM names only the opening pressure: band and resistance of its relief valve 01 (3.8 MPa, 0.17)
+							a->block = true;
+							a->node_t = node(e, QStringLiteral("T"));
+							a->prv_p0 = paramIn(f, QStringLiteral("p0_prv"), 80e5, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+							a->prv_dp = std::max(paramIn(f, QStringLiteral("dpEnd_prv"), 38e5, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
+							a->prv_rt = paramNative(f, QStringLiteral("rT_prv"), 0.17, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+						}
 						m_accumulators << a;
 					} else {
 						m_extra_volume[ks.first()] += v0;
@@ -843,6 +1246,7 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						= qBound(0, f.m_initial_position - 1, static_cast<int>(f.m_positions.size()) - 1);
 					v->side[0] = f.m_left;
 					v->side[1] = f.m_right;
+					v->dominant = f.m_dominant == QLatin1String("left") ? 0 : f.m_dominant == QLatin1String("right") ? 1 : -1;
 					{
 						const auto handOnly = [](const FluidData::Actuation &a) {
 							return a.types == QStringList{QStringLiteral("manual")} && !a.spring && !a.air_spring && !a.pilot;
@@ -939,6 +1343,94 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					s->object = paramNative(f, QStringLiteral("object"), 1.0, QString(), &m_model_errors, who, Range::NonNegative) > 0.5;
 					if (s->node >= 0) m_extra_volume[s->node] += s->area * 0.005;   // cup volume: 5 mm deep
 					m_cups << s;
+				} else if (model == QLatin1String("muscle")) {
+					// R12 fluidic muscle (FORMELN.md M15): type and nominal length as in FluidSIM (muscleType 1 … 3 =
+					// DMSP-10/20/40, 4 … 6 MAS-10/20/40), force and volume from the Festo DMSP catalogue
+					auto *c = new Cylinder;
+					c->e = e;
+					c->label = label(e);
+					const QString who = c->label.isEmpty() ? e->name() : c->label;
+					const int type = static_cast<int>(std::lround(paramNative(f, QStringLiteral("muscleType"), 1.0, QString(), &m_model_errors, who, Range::Positive)));
+					if (type >= 4 && type <= 6)
+						m_model_errors << QStringLiteral("%1: Muskel MAS-%2 hat keine hinterlegte Kennlinie (Baureihe ersetzt durch DMSP; "
+														 "Kraft-Weg-Diagramm aus dem Festo-Katalog DMSP nur für DMSP-10/20/40)").arg(who).arg(type == 4 ? 10 : type == 5 ? 20 : 40);
+					else if (type < 1 || type > 3)
+						m_model_errors << QStringLiteral("%1: Muskeltyp %2 unbekannt (1 DMSP-10, 2 DMSP-20, 3 DMSP-40)").arg(who).arg(type);
+					c->muscle = std::clamp(type - 1, 0, 2);
+					const SimMuscle::Type &mt = SimMuscle::types().at(c->muscle);
+					c->muscle_len = paramIn(f, QStringLiteral("len"), 0.25, QStringLiteral("m"), &m_model_errors, who, Range::Positive);
+					if (!std::isfinite(c->muscle_len) || c->muscle_len <= 0) c->muscle_len = 0.25;
+					c->stroke = mt.h_max / 100.0 * c->muscle_len;
+					const QString kg = QStringLiteral("kg"), newton = QStringLiteral("N");
+					const double m_ext = paramIn(f, QStringLiteral("m_ext"), 0.0, kg, &m_model_errors, who, Range::NonNegative);
+					// moving mass: the load plus the kinetic equivalent of the muscle (one end fixed): the free fitting
+					// (half the weight at 0 m) and a third of the tube (FORMELN.md M15, weights from the data sheet)
+					c->m = m_ext + mt.m0 / 2 + mt.m_per_m * c->muscle_len / 3;
+					// FluidSIM sign (checked in FluidSIM 6.3 with TP220_14: -750 N stretches the muscle): a negative external
+					// force pulls against the contraction; f_load is the force against the contraction
+					c->f_load = -paramIn(f, QStringLiteral("F_extern_const"), 0.0, newton, &m_model_errors, who);
+					const double alpha = paramIn(f, QStringLiteral("alpha"), 0.0, QStringLiteral("rad"), &m_model_errors, who);
+					c->weight = c->m * 9.81 * std::sin(alpha);
+					const double normal = m_ext * 9.81 * std::abs(std::cos(alpha));
+					c->f_slide = paramNative(f, QStringLiteral("mu_M_ext"), 0.0, QString(), &m_model_errors, who, Range::NonNegative) * normal;
+					c->f_static = std::max(c->f_slide, paramNative(f, QStringLiteral("mu_B_ext"), 0.0, QString(), &m_model_errors, who, Range::NonNegative) * normal);
+					c->damping = paramIn(f, QStringLiteral("F_V"), 20.0, QStringLiteral("N.s/m"), &m_model_errors, who, Range::NonNegative);
+					// volume and effective area per 0.05 % from the max. pretension to the max. contraction (virtual work)
+					c->muscle_h0 = -mt.pre;
+					const int nh = static_cast<int>(std::lround((mt.h_max + mt.pre) / 0.05)) + 1;
+					c->muscle_area.resize(nh);
+					c->muscle_vol.resize(nh);
+					for (int i = 0; i < nh; ++i) c->muscle_area[i] = SimMuscle::area(mt, c->muscle_h0 + 0.05 * i);
+					const int i0 = static_cast<int>(std::lround(mt.pre / 0.05));
+					c->muscle_vol[i0] = M_PI / 4 * mt.id * mt.id * c->muscle_len;
+					for (int i = i0 + 1; i < nh; ++i)
+						c->muscle_vol[i] = c->muscle_vol[i - 1] + 0.5 * (c->muscle_area[i - 1] + c->muscle_area[i]) * 0.0005 * c->muscle_len;
+					for (int i = i0 - 1; i >= 0; --i)
+						c->muscle_vol[i] = c->muscle_vol[i + 1] - 0.5 * (c->muscle_area[i + 1] + c->muscle_area[i]) * 0.0005 * c->muscle_len;
+					c->x = 0.0;
+					if (fn == QLatin1String("actuator.fluidic_muscle2") || fn == QLatin1String("actuator.fluidic_muscle3")) {
+						// FORMELN.md M16 (checked in FluidSIM 6.3 with TP220_13): the rods of one or two double acting cylinders hold the
+						// free end; x_cyl = xStart − contraction; each cylinder adds its mass and the friction of a standard cylinder
+						c->mcyl = fn.endsWith(QLatin1Char('3')) ? 2 : 1;
+						const QString m = QStringLiteral("m");
+						const double dp = paramIn(f, QStringLiteral("d_piston"), 0.02, m, &m_model_errors, who, Range::Positive);
+						const double dr = paramIn(f, QStringLiteral("d_rod"), 0.008, m, &m_model_errors, who, Range::NonNegative);
+						if (std::isfinite(dp) && std::isfinite(dr) && dr >= dp)
+							m_model_errors << QStringLiteral("%1: Kolbenstange Ø %2 mm nicht kleiner als Kolben Ø %3 mm").arg(who).arg(dr * 1000).arg(dp * 1000);
+						c->mc_ak = M_PI * dp * dp / 4;
+						c->mc_ar = c->mc_ak - M_PI * dr * dr / 4;
+						c->mc_max = paramIn(f, QStringLiteral("xMax"), 0.2, m, &m_model_errors, who, Range::Positive);
+						c->mc_start = std::clamp(paramIn(f, QStringLiteral("xStart"), 0.0, m, &m_model_errors, who, Range::NonNegative), 0.0, c->mc_max);
+						c->m += c->mcyl * 0.1;
+						c->f_static += c->mcyl * 0.05 * c->mc_ak * 6e5;
+						c->f_slide += c->mcyl * 0.7 * 0.05 * c->mc_ak * 6e5;
+					}
+					m_cylinders << c;
+					m_end_position.insert(c->label, QString());
+				} else if (model == QLatin1String("pressure_intensifier")) {
+					// R12 (FORMELN.md H13): FluidSIM gives no defaults, all values from the data sheet
+					auto *b = new Intensifier;
+					b->e = e;
+					b->label = label(e);
+					const QString who = b->label.isEmpty() ? e->name() : b->label;
+					for (const char *need : {"r", "p_max_in", "q_max_in", "q_max_hi"})
+						if (f.parameter(QLatin1String(need)).trimmed().isEmpty())
+							m_model_errors << QStringLiteral("%1: Druckübersetzer ohne Kennwert %2 (aus dem Herstellerdatenblatt, FluidSIM gibt keine Vorgabe)")
+												  .arg(who, QLatin1String(need));
+					const QString lmin = QStringLiteral("l/min");
+					b->r = paramNative(f, QStringLiteral("r"), 4.0, QString(), &m_model_errors, who, Range::Positive);
+					if (std::isfinite(b->r) && b->r <= 1.0)
+						m_model_errors << QStringLiteral("%1: Übersetzungsverhältnis r %2 muss größer als 1 sein").arg(who).arg(b->r);
+					const double pmax = paramIn(f, QStringLiteral("p_max_in"), 100e5, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive);
+					const double qin = paramIn(f, QStringLiteral("q_max_in"), 10.0, lmin, &m_model_errors, who, Range::Positive);
+					const double qhi = paramIn(f, QStringLiteral("q_max_hi"), 0.5, lmin, &m_model_errors, who, Range::Positive);
+					b->q_in_max = qin / 60000.0;
+					// linear characteristic through q_max_hi at 60 % of the max. outlet pressure r·p_max_in (FluidSIM definition)
+					b->k = qhi / 60000.0 / (0.4 * b->r * pmax);
+					// check valves (bypass, POV): the max. supply flow at 5 bar (project definition, FORMELN.md H13)
+					b->rt_cv = 5.0 / (qin * qin);
+					b->gleak = paramIn(f, QStringLiteral("G_leak"), 0.0, QStringLiteral("m3/(s.Pa)"), &m_model_errors, who, Range::NonNegative);
+					m_intensifiers << b;
 				} else if (model == QLatin1String("linear_cylinder")) {
 					auto *c = new Cylinder;
 					c->e = e;
@@ -956,6 +1448,20 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					const QString kg = QStringLiteral("kg"), newton = QStringLiteral("N");
 					c->m = paramIn(f, QStringLiteral("m_cyl"), hyd ? 2.0 : 0.1, kg, &m_model_errors, who, Range::NonNegative)
 						 + paramIn(f, QStringLiteral("m_ext"), 0.0, kg, &m_model_errors, who, Range::NonNegative);
+					// R13 load unit: FluidSIM names the moved mass m (default 0.6 kg)
+					if (fn == QLatin1String("actuator.loading_unit_2") || fn == QLatin1String("actuator.loading_unit_1")) {
+						c->loading = true;
+						c->m = paramIn(f, QStringLiteral("m"), 0.6, kg, &m_model_errors, who, Range::Positive);
+					}
+					if (fn == QLatin1String("actuator.loading_unit_1")) {
+						// R13 (FORMELN.md M14): FluidSIM defaults p0_prv 12 MPa, dpEnd_prv 3.53 MPa, rT_prv 0.09, rT_cv 0.07
+						const QString pa = QStringLiteral("Pa"), rtU = QStringLiteral("bar.min2/l2");
+						c->cross = true;
+						c->xr_p0 = paramIn(f, QStringLiteral("p0_prv"), 120e5, pa, &m_model_errors, who, Range::NonNegative);
+						c->xr_dp = std::max(paramIn(f, QStringLiteral("dpEnd_prv"), 35.3e5, pa, &m_model_errors, who, Range::Positive), 0.1e5);
+						c->xr_rt = paramNative(f, QStringLiteral("rT_prv"), 0.09, rtU, &m_model_errors, who, Range::Positive);
+						c->xr_cv = paramNative(f, QStringLiteral("rT_cv"), 0.07, rtU, &m_model_errors, who, Range::Positive);
+					}
 					c->f_static = paramIn(f, QStringLiteral("F_stat"), 0.05 * c->a_k * 6e5, newton, &m_model_errors, who, Range::NonNegative);
 					c->f_slide = 0.7 * c->f_static;
 					c->f_spring = f.m_spring != FluidData::SpringSide::None ? 0.15 * c->a_k * 6e5 : 0.0;
@@ -971,9 +1477,69 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						const double vr = paramIn(f, QStringLiteral("v_ref"), 1.0, QStringLiteral("m/s"), &m_model_errors, who, Range::Positive);
 						if (fr > 0 && vr > 0) c->damping = fr / vr;
 					}
+					// R11 (FORMELN.md M08–M10): the FluidSIM cylinder model. Weight m·g·sin(alpha) against extending; friction
+					// of the external mass mu·m_ext·g·|cos(alpha)|; hydraulic piston friction F_B (breakaway), F_M (Coulomb),
+					// F_V (viscous); spring pressure p_spring_min at x = 0 … p_spring_max at the stroke on the piston area;
+					// force profile F_var_ex/F_var_re {x [mm], F [N], …} instead of the constant force (use_F_const False)
+					{
+						const auto yes = [&](const char *n) { return f.parameter(QLatin1String(n)).trimmed().compare(QLatin1String("true"), Qt::CaseInsensitive) == 0; };
+						const double alpha = paramIn(f, QStringLiteral("alpha"), 0.0, QStringLiteral("rad"), &m_model_errors, who);
+						const double g = 9.81;
+						const double m_ext = paramIn(f, QStringLiteral("m_ext"), 0.0, kg, &m_model_errors, who, Range::NonNegative);
+						c->weight = c->m * g * std::sin(alpha);
+						if (!f.parameter(QStringLiteral("F_B")).isEmpty()) {
+							c->f_static = paramIn(f, QStringLiteral("F_B"), c->f_static, newton, &m_model_errors, who, Range::NonNegative);
+							c->f_slide = paramIn(f, QStringLiteral("F_M"), 0.7 * c->f_static, newton, &m_model_errors, who, Range::NonNegative);
+							c->damping = paramIn(f, QStringLiteral("F_V"), c->damping, QStringLiteral("N.s/m"), &m_model_errors, who, Range::NonNegative);
+						}
+						const double normal = m_ext * g * std::abs(std::cos(alpha));
+						c->f_static += paramNative(f, QStringLiteral("mu_B_ext"), 0.0, QString(), &m_model_errors, who, Range::NonNegative) * normal;
+						c->f_slide += paramNative(f, QStringLiteral("mu_M_ext"), 0.0, QString(), &m_model_errors, who, Range::NonNegative) * normal;
+						c->f_static = std::max(c->f_static, c->f_slide);
+						if (!f.parameter(QStringLiteral("spring_left")).isEmpty() || !f.parameter(QStringLiteral("spring_right")).isEmpty()) {
+							c->f_spring = 0.0;
+							c->spring_dir = yes("spring_left") ? 1 : yes("spring_right") ? -1 : 0;
+							c->spring_f0 = c->a_k * paramIn(f, QStringLiteral("p_spring_min"), 0.4e5, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+							c->spring_f1 = c->a_k * paramIn(f, QStringLiteral("p_spring_max"), 1e5, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+						}
+						if (f.parameter(QStringLiteral("use_F_const")).trimmed().compare(QLatin1String("false"), Qt::CaseInsensitive) == 0) {
+							auto profile = [&](const char *n, QVector<QPair<double, double>> *out) {
+								QString s = f.parameter(QLatin1String(n));
+								s.remove(QLatin1Char('{')).remove(QLatin1Char('}'));
+								const QStringList v = s.split(QLatin1Char(','), Qt::SkipEmptyParts);
+								for (int i = 0; i + 1 < v.size(); i += 2) {
+									bool ok1 = false, ok2 = false;
+									const double x = v.at(i).trimmed().toDouble(&ok1) / 1000.0, F = v.at(i + 1).trimmed().toDouble(&ok2);
+									if (!ok1 || !ok2) {
+										m_model_errors << QStringLiteral("%1: Kraftprofil %2 „%3“ ist keine Zahlenliste").arg(who, QLatin1String(n), f.parameter(QLatin1String(n)));
+										out->clear();
+										return;
+									}
+									*out << qMakePair(x, F);
+								}
+								std::sort(out->begin(), out->end(), [](const QPair<double, double> &a, const QPair<double, double> &b) { return a.first < b.first; });
+							};
+							profile("F_var_ex", &c->load_ex);
+							profile("F_var_re", &c->load_re);
+							if (c->load_re.isEmpty()) c->load_re = c->load_ex;
+						}
+					}
 					// R10 gripper: substitute model, a single-acting cylinder with return spring; the jaw
 					// force is the piston force (signal F:)
 					if (fn == QLatin1String("actuator.gripper") && c->f_spring <= 0) c->f_spring = 0.15 * c->a_k * 6e5;
+					// R12 multi-position cylinder: rear cylinder with the shorter stroke xMax2 (FluidSIM: half the
+					// total stroke), "Zwischenstellung" xStart1 its start; the front piston never stands behind it
+					if (fn == QLatin1String("actuator.multi_position_cylinder")) {
+						c->multi = true;
+						c->a_rod = M_PI * dr * dr / 4;
+						c->stroke1 = paramIn(f, QStringLiteral("xMax2"), c->stroke / 2, m, &m_model_errors, who, Range::Positive);
+						if (std::isfinite(c->stroke1) && c->stroke1 >= c->stroke)
+							m_model_errors << QStringLiteral("%1: Zwischenhub xMax2 %2 mm nicht kleiner als Gesamthub %3 mm")
+												  .arg(who).arg(c->stroke1 * 1000).arg(c->stroke * 1000);
+						c->x1 = std::clamp(paramIn(f, QStringLiteral("xStart1"), 0.0, m, &m_model_errors, who, Range::NonNegative), 0.0, c->stroke1);
+						c->x = std::clamp(std::max(c->x, c->x1), 0.0, c->stroke);
+						c->f_load = paramIn(f, QStringLiteral("F_Extern"), c->f_load, newton, &m_model_errors, who);
+					}
 					m_cylinders << c;
 					m_end_position.insert(c->label, QString());
 				} else if (model == QLatin1String("pressure_switch")) {
@@ -1013,6 +1579,52 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					fv->p0 = paramIn(f, QStringLiteral("p0"), 0.0, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
 					fv->dp_end = std::max(paramIn(f, QStringLiteral("dpEnd"), 0.05e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
 					fv->t_delay = paramIn(f, QStringLiteral("t_delay"), 1.0, QStringLiteral("s"), &m_model_errors, who, Range::NonNegative);
+					// FORMELN.md V20–V24: FluidSIM defaults delayTime 3 s, qNN_nozzle 10 l/min, vol 0.01 l, level 100 %, counterEnd 3,
+					// ps_min/ps_max 0.1/0.2 bar, q_min/q_max 1.9/4 l/min at p1 − p2 = 50 kPa
+					if (fn == QLatin1String("shutoff_valve.timer1") || fn == QLatin1String("shutoff_valve.timer2"))
+						fv->t_delay = paramIn(f, QStringLiteral("delayTime"), 3.0, QStringLiteral("s"), &m_model_errors, who, Range::NonNegative);
+					if (fn == QLatin1String("valve_group.timer3") || fn == QLatin1String("valve_group.timer4")) {
+						const double level = paramNative(f, QStringLiteral("level"), 100.0, QStringLiteral("%"), &m_model_errors, who, Range::NonNegative) / 100.0;
+						fv->c_aux = conductanceFromQnn(paramIn(f, QStringLiteral("qNN_nozzle"), 10.0, QStringLiteral("l/min"), &m_model_errors, who, Range::Positive)) * level;
+						fv->vol = paramIn(f, QStringLiteral("vol"), 1e-5, QStringLiteral("m3"), &m_model_errors, who, Range::Positive);
+						fv->pv = P_ATM;
+					}
+					if (fn == QLatin1String("valve_group.control_block_for_two_hand_start"))
+						fv->c *= paramNative(f, QStringLiteral("level"), 100.0, QStringLiteral("%"), &m_model_errors, who, Range::NonNegative) / 100.0;
+					if (fn == QLatin1String("shutoff_valve.pneumatic_counter")) {
+						fv->preset = static_cast<int>(std::lround(paramNative(f, QStringLiteral("counterEnd"), 3.0, QString(), &m_model_errors, who, Range::NonNegative)));
+						fv->count = fv->preset;
+					}
+					if (fn == QLatin1String("valve_group.taa_01") || fn == QLatin1String("valve_group.tab_01")) {
+						// FORMELN.md V25: initialPosNo 1 = memory set (FluidSIM default of TAB), 2 = reset (TAA); posNoWanted 1/2 overrides
+						const int init = static_cast<int>(std::lround(paramNative(f, QStringLiteral("initialPosNo"),
+							fn.endsWith(QLatin1String("tab_01")) ? 1.0 : 2.0, QString(), &m_model_errors, who, Range::NonNegative)));
+						const int wanted = static_cast<int>(std::lround(paramNative(f, QStringLiteral("posNoWanted"), 0.0, QString(), &m_model_errors, who, Range::NonNegative)));
+						fv->latched = (wanted > 0 ? wanted : init) == 1;
+						fv->c_aux = conductanceFromQnn(1000.0);   // internal through lines P and L, Zn = A (project definition)
+					}
+					if (fn == QLatin1String("vacuum.vacuum_efficiency_valve")) {
+						const QString bar = QStringLiteral("Pa"), lmin = QStringLiteral("l/min");
+						fv->p0 = paramIn(f, QStringLiteral("ps_min"), 0.1e5, bar, &m_model_errors, who, Range::NonNegative);
+						fv->dp_end = std::max(paramIn(f, QStringLiteral("ps_max"), 0.2e5, bar, &m_model_errors, who, Range::Positive) - fv->p0, 100.0);
+						fv->c = conductanceAt(paramIn(f, QStringLiteral("q_max"), 4.0, lmin, &m_model_errors, who, Range::Positive), P_ATM, P_ATM - 0.5e5);
+						fv->c_aux = conductanceAt(paramIn(f, QStringLiteral("q_min"), 1.9, lmin, &m_model_errors, who, Range::Positive), P_ATM, P_ATM - 0.5e5);
+					}
+					if (fn == QLatin1String("pressure_valve.pressure_sequence_valve")) {
+						// R09 (FORMELN.md V13): FluidSIM pneumatic sequence valve, switching pressure p0 at 12 (default 3 bar)
+						fv->p0 = paramIn(f, QStringLiteral("p0"), 3e5, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+						fv->dp_end = std::max(paramIn(f, QStringLiteral("dpEnd"), 0.1e5, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
+					}
+					if (fn == QLatin1String("pressure_valve.shock_and_anti_cavitation_valve")) {
+						// R09 (FORMELN.md V12): two reliefs A → T and B → T, check valves T → A and T → B (FluidSIM defaults)
+						fv->p0 = paramIn(f, QStringLiteral("p0_prvA"), 3e6, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+						fv->dp_end = std::max(paramIn(f, QStringLiteral("dpEndA"), 3.8e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
+						fv->rt = paramNative(f, QStringLiteral("rT_prvA"), 0.08, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+						fv->p0_b = paramIn(f, QStringLiteral("p0_prvB"), 3e6, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
+						fv->dp_end_b = std::max(paramIn(f, QStringLiteral("dpEndB"), 3.8e6, QStringLiteral("Pa"), &m_model_errors, who, Range::Positive), 0.1e5);
+						fv->rt_b = paramNative(f, QStringLiteral("rT_prvB"), 0.08, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+						fv->rt_free = paramNative(f, QStringLiteral("rT_cv"), 0.06, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+					}
 					if (fn == QLatin1String("proportional.pressure_relief_valve")) {
 						// R06 (FORMELN.md V09): opening pressure p_start at 0 V … p_end at 10 V, FluidSIM default 0 … 10 MPa
 						fv->p_lo = paramIn(f, QStringLiteral("p_start"), 0.0, QStringLiteral("Pa"), &m_model_errors, who, Range::NonNegative);
@@ -1022,12 +1634,27 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 					}
 					if (isFlowSensor(fn))
 						fv->rt = paramNative(f, QStringLiteral("rT"), 0.001, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+					// R13 (FORMELN.md H09): FluidSIM flowmeter (sensor.flowmeter_2) is a hydraulic motor with a speed meter;
+					// quasi-static (inertia I not taken) the motor passes q = D²/(4π²·f)·Δp, the leakage GLeak bypasses it
+					if (fn == QLatin1String("sensor.flowmeter_2") && !f.parameter(QStringLiteral("displacement")).isEmpty()) {
+						const double d = paramIn(f, QStringLiteral("displacement"), 8.2e-6, QStringLiteral("m3"), &m_model_errors, who, Range::Positive);
+						const double fr = paramIn(f, QStringLiteral("f"), 0.0108, QStringLiteral("N.m.s/rad"), &m_model_errors, who, Range::Positive);
+						fv->gmeter = d * d / (4 * M_PI * M_PI * fr);
+						fv->gleak = paramIn(f, QStringLiteral("GLeak"), 0.0, QStringLiteral("m3/(s.Pa)"), &m_model_errors, who, Range::NonNegative);
+					}
 					if (fn == QLatin1String("pressure_valve.counterbalance_valve")) {
 						// R09 (FORMELN.md V07): FluidSIM names the resistances rT_cb (valve) and rT_cv (check valve)
 						fv->rt = paramNative(f, QStringLiteral("rT_cb"), fv->rt, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
 						fv->rt_free = paramNative(f, QStringLiteral("rT_cv"), 0.1, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
 						fv->ratio = paramNative(f, QStringLiteral("ratio"), 3.0, QString(), &m_model_errors, who, Range::NonNegative);
 						fv->gleak = paramIn(f, QStringLiteral("GLeak"), 0.0, QStringLiteral("m3/(s.Pa)"), &m_model_errors, who, Range::NonNegative);
+					}
+					if (fn.startsWith(QLatin1String("shutoff_valve.double_non_return_valve"))) {
+						// R13 (FORMELN.md V16): FluidSIM defaults rT 0.093, ratio 3.3, valve 02 with the spring p0 0.2 MPa
+						fv->rt = paramNative(f, QStringLiteral("rT"), 0.093, QStringLiteral("bar.min2/l2"), &m_model_errors, who, Range::Positive);
+						fv->ratio = paramNative(f, QStringLiteral("ratio"), 3.3, QString(), &m_model_errors, who, Range::NonNegative);
+						fv->p0 = paramIn(f, QStringLiteral("p0"), fn.endsWith(QLatin1String("02")) ? 2e5 : 0.0, QStringLiteral("Pa"),
+										 &m_model_errors, who, Range::NonNegative);
 					}
 					m_flow_valves << fv;
 				}
@@ -1114,6 +1741,177 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 						if (eq > 0) a->links << qMakePair(item.left(eq).trimmed().toUpper(), item.mid(eq + 1).trimmed());
 					}
 					m_analog << a;
+				} else if (role == QLatin1String("circuit")) {
+					// R17 (FORMELN.md E01–E05): part of the analog circuit; sim_block R, C, L, V, I, D, GND;
+					// sim_params "R=1k", "C=100u", "V=10;f=50", "Is=1e-12;n=1" (SI prefixes p n u µ m k M G)
+					AnalogCircuit::Part pt;
+					pt.label = label(e).isEmpty() ? e->name() : label(e);
+					const QString blk = info(e, "sim_block").trimmed().toUpper();
+					static const QHash<QString, AnalogCircuit::Kind> kinds {
+						{QStringLiteral("R"), AnalogCircuit::Kind::Resistor}, {QStringLiteral("C"), AnalogCircuit::Kind::Capacitor},
+						{QStringLiteral("L"), AnalogCircuit::Kind::Inductor}, {QStringLiteral("V"), AnalogCircuit::Kind::VoltageSource},
+						{QStringLiteral("I"), AnalogCircuit::Kind::CurrentSource}, {QStringLiteral("D"), AnalogCircuit::Kind::Diode},
+						{QStringLiteral("GND"), AnalogCircuit::Kind::Ground},
+						{QStringLiteral("AI"), AnalogCircuit::Kind::Resistor}, {QStringLiteral("AQ"), AnalogCircuit::Kind::VoltageSource},
+						{QStringLiteral("Q"), AnalogCircuit::Kind::Transistor}, {QStringLiteral("QN"), AnalogCircuit::Kind::Transistor},
+						{QStringLiteral("QP"), AnalogCircuit::Kind::Transistor}, {QStringLiteral("OP"), AnalogCircuit::Kind::OpAmp},
+						{QStringLiteral("F"), AnalogCircuit::Kind::Protection}, {QStringLiteral("MCB_B"), AnalogCircuit::Kind::Protection},
+						{QStringLiteral("MCB_C"), AnalogCircuit::Kind::Protection}, {QStringLiteral("MCB_D"), AnalogCircuit::Kind::Protection},
+						{QStringLiteral("MPCB"), AnalogCircuit::Kind::Protection},
+						{QStringLiteral("MDC"), AnalogCircuit::Kind::DcMotor}, {QStringLiteral("MASM"), AnalogCircuit::Kind::InductionMotor}};
+					if (!kinds.contains(blk)) {
+						m_model_errors << QStringLiteral("%1: sim_block „%2“ unbekannt (R, C, L, V, I, D, GND, AI, AQ, QN, QP, OP, F, MCB_B, "
+														 "MCB_C, MCB_D, MPCB, MDC, MASM)").arg(pt.label, blk);
+						continue;
+					}
+					QHash<QString, double> io_par;    // AI/AQ (E08): Rin, Umin, Umax, raw
+					pt.kind = kinds.value(blk);
+					auto si = [&](const QString &text, bool *ok) {
+						static const QHash<QChar, double> prefix {{QLatin1Char('p'), 1e-12}, {QLatin1Char('n'), 1e-9}, {QLatin1Char('u'), 1e-6},
+							{QChar(0x00B5), 1e-6}, {QLatin1Char('m'), 1e-3}, {QLatin1Char('k'), 1e3}, {QLatin1Char('M'), 1e6}, {QLatin1Char('G'), 1e9}};
+						QString s = text.trimmed();
+						s.replace(QLatin1Char(','), QLatin1Char('.'));
+						double f = 1.0;
+						if (!s.isEmpty() && prefix.contains(s.back())) { f = prefix.value(s.back()); s.chop(1); }
+						const double v = s.toDouble(ok);
+						return v * f;
+					};
+					for (const QString &item : info(e, "sim_params").split(QLatin1Char(';'), Qt::SkipEmptyParts)) {
+						const int eq = static_cast<int>(item.indexOf(QLatin1Char('=')));
+						if (eq <= 0) continue;
+						const QString key = item.left(eq).trimmed();
+						bool ok = false;
+						const double v = si(item.mid(eq + 1).section(QLatin1Char(' '), 0, 0), &ok);
+						if (!ok) {
+							m_model_errors << QStringLiteral("%1: Kennwert %2 ist keine Zahl").arg(pt.label, item.trimmed());
+							continue;
+						}
+						if (key.compare(QLatin1String("f"), Qt::CaseInsensitive) == 0) pt.freq = v;
+						else if (key.compare(QLatin1String("offset"), Qt::CaseInsensitive) == 0) pt.offset = v;
+						else if (key.compare(QLatin1String("phase"), Qt::CaseInsensitive) == 0) pt.phase = v;
+						else if (key.compare(QLatin1String("Is"), Qt::CaseInsensitive) == 0) pt.is = v;
+						else if (key == QLatin1String("n") || key == QLatin1String("N")) pt.n = v;
+						else if (blk == QLatin1String("AI") || blk == QLatin1String("AQ") || pt.kind == AnalogCircuit::Kind::Transistor
+								 || pt.kind == AnalogCircuit::Kind::OpAmp || pt.kind == AnalogCircuit::Kind::Protection
+								 || pt.kind == AnalogCircuit::Kind::DcMotor || pt.kind == AnalogCircuit::Kind::InductionMotor) io_par.insert(key.toLower(), v);
+						else pt.value = v;     // R, C, L, V, I
+					}
+					if (pt.kind == AnalogCircuit::Kind::Transistor) {
+						// R17 stage 3 (E09): Ebers-Moll; Is and n as for the diode, BF, BR; QP is a PNP transistor
+						pt.sign = blk == QLatin1String("QP") ? -1.0 : 1.0;
+						pt.bf = io_par.value(QStringLiteral("bf"), pt.bf);
+						pt.br = io_par.value(QStringLiteral("br"), pt.br);
+					} else if (pt.kind == AnalogCircuit::Kind::DcMotor || pt.kind == AnalogCircuit::Kind::InductionMotor) {
+						// R17 stage 5 (E12, E13): all values from the motor datasheet or its equivalent circuit (no defaults
+						// except b = 0 and ML = 0); DC: Ra, La, k [V·s/rad], J; induction: Rs, Rr, Lls, Llr, Lm, p, J
+						pt.r = io_par.value(QStringLiteral("ra"), 0.0);
+						pt.la = io_par.value(QStringLiteral("la"), 0.0);
+						pt.km = io_par.value(QStringLiteral("k"), 0.0);
+						pt.rs = io_par.value(QStringLiteral("rs"), 0.0);
+						pt.rr = io_par.value(QStringLiteral("rr"), 0.0);
+						pt.lls = io_par.value(QStringLiteral("lls"), 0.0);
+						pt.llr = io_par.value(QStringLiteral("llr"), 0.0);
+						pt.lm = io_par.value(QStringLiteral("lm"), 0.0);
+						pt.poles = io_par.value(QStringLiteral("p"), 0.0);
+						pt.jm = io_par.value(QStringLiteral("j"), 0.0);
+						pt.bm = io_par.value(QStringLiteral("b"), 0.0);
+						pt.ml = io_par.value(QStringLiteral("ml"), 0.0);
+					} else if (pt.kind == AnalogCircuit::Kind::Protection) {
+						// R17 stage 4 (E11): F fuse (I2t melting integral from the datasheet, fusing factor kf, gG 1.6 per
+						// IEC 60269); MCB_B/C/D circuit breaker (IEC 60898-1: conventional tripping 1.45·In, magnetic
+						// release at the upper limit 5/10/20·In); MPCB motor protection class 10 (IEC 60947-4-1: between
+						// 1.05 and 1.2·Ir, 7.2·Ir in 4…10 s; magnetic 13·Ir). τ and Im are project definitions, datasheet
+						// values go into sim_params "In=…;R=…;I2t=…;kf=…;tau=…;Im=…"
+						pt.inom = io_par.value(QStringLiteral("in"), 0.0);
+						pt.r = io_par.value(QStringLiteral("r"), 0.01);
+						pt.roff = 1e9;
+						const bool fuse = blk == QLatin1String("F");
+						pt.trip_kind = fuse ? QStringLiteral("Sicherung") : blk == QLatin1String("MPCB") ? QStringLiteral("Motorschutzschalter")
+									 : QStringLiteral("Leitungsschutzschalter");
+						const double kf_def = fuse ? 1.6 : blk == QLatin1String("MPCB") ? 1.125 : 1.45;
+						const double im_def = fuse ? 0.0 : blk == QLatin1String("MCB_B") ? 5.0 : blk == QLatin1String("MCB_C") ? 10.0
+											: blk == QLatin1String("MCB_D") ? 20.0 : 13.0;
+						pt.kf = io_par.value(QStringLiteral("kf"), kf_def);
+						pt.im = io_par.value(QStringLiteral("im"), im_def);
+						if (fuse) {
+							const double i2t = io_par.value(QStringLiteral("i2t"), 0.0);
+							if (!(i2t > 0))
+								m_model_errors << QStringLiteral("%1: Sicherung braucht das Schmelzintegral I2t (Datenblatt)").arg(pt.label);
+							pt.wth = i2t;
+							pt.tau = pt.inom > 0 ? i2t / (pt.kf * pt.inom * pt.kf * pt.inom) : 0.0;
+						} else {
+							pt.tau = io_par.value(QStringLiteral("tau"), blk == QLatin1String("MPCB") ? 280.0 : 60.0);
+							pt.wth = pt.kf * pt.inom * pt.kf * pt.inom * pt.tau;
+						}
+						if (!(pt.inom > 0))
+							m_model_errors << QStringLiteral("%1: Schutzorgan braucht den Bemessungsstrom In").arg(pt.label);
+					} else if (pt.kind == AnalogCircuit::Kind::OpAmp) {
+						// R17 stage 3 (E10): open-loop gain A, Rin, Rout, output limits Vmax/Vmin
+						pt.gain = io_par.value(QStringLiteral("a"), pt.gain);
+						pt.rin = io_par.value(QStringLiteral("rin"), pt.rin);
+						pt.rout = io_par.value(QStringLiteral("rout"), pt.rout);
+						pt.vmax = io_par.value(QStringLiteral("vmax"), pt.vmax);
+						pt.vmin = io_par.value(QStringLiteral("vmin"), pt.vmin);
+					}
+					CircuitIo io;
+					if (blk == QLatin1String("AI") || blk == QLatin1String("AQ")) {
+						// R17 stage 2 (E08): PLC analog input = input resistance Rin, its voltage scaled into a PLC
+						// variable; output = ideal voltage source driven by the variable. Scale Umin…Umax ↔ 0…raw
+						// (Siemens nominal range 0…27648); without raw the variable is the voltage in V
+						io.output = blk == QLatin1String("AQ");
+						io.umin = io_par.value(QStringLiteral("umin"), 0.0);
+						io.umax = io_par.value(QStringLiteral("umax"), 10.0);
+						io.raw = io_par.value(QStringLiteral("raw"), 0.0);
+						if (!io.output) {
+							pt.value = io_par.value(QStringLiteral("rin"), 0.0);
+							if (!(pt.value > 0))
+								m_model_errors << QStringLiteral("%1: Analogeingang braucht den Eingangswiderstand Rin (Datenblatt)").arg(pt.label);
+						} else pt.value = io.umin;
+						if (io.raw > 0 && !(io.umax > io.umin))
+							m_model_errors << QStringLiteral("%1: Umax muss größer als Umin sein").arg(pt.label);
+						for (const QString &nm : info(e, "sim_var").split(QRegularExpression(QStringLiteral("[;,]")), Qt::SkipEmptyParts))
+							io.names << PlcProgram::normalized(nm.trimmed());
+						if (io.names.isEmpty()) io.names << PlcProgram::normalized(pt.label);
+					}
+					// terminals: "+", "P", "A" (anode), "1" first; else the order of the symbol
+					QList<Terminal *> ts = e->terminals();
+					std::stable_sort(ts.begin(), ts.end(), [](Terminal *x, Terminal *y) {
+						auto first = [](Terminal *t) { const QString n = t->name().trimmed().toUpper();
+							return n == QLatin1String("+") || n == QLatin1String("P") || n == QLatin1String("A") || n == QLatin1String("1"); };
+						return first(x) && !first(y);
+					});
+					pt.a = ts.value(0) ? node(ts.value(0)) : -1;
+					pt.b = ts.size() > 1 ? node(ts.value(1)) : -1;
+					if (pt.kind == AnalogCircuit::Kind::InductionMotor) {
+						// three phases by name: U/U1/L1/1, V/V1/L2/2, W/W1/L3/3
+						pt.a = pt.b = pt.c = -1;
+						for (Terminal *t : e->terminals()) {
+							const QString tn = t->name().trimmed().toUpper();
+							int *slot = tn == QLatin1String("U") || tn == QLatin1String("U1") || tn == QLatin1String("L1") || tn == QLatin1String("1") ? &pt.a
+									  : tn == QLatin1String("V") || tn == QLatin1String("V1") || tn == QLatin1String("L2") || tn == QLatin1String("2") ? &pt.b
+									  : tn == QLatin1String("W") || tn == QLatin1String("W1") || tn == QLatin1String("L3") || tn == QLatin1String("3") ? &pt.c
+									  : nullptr;
+							if (slot) *slot = node(t);
+						}
+					}
+					if (pt.kind == AnalogCircuit::Kind::Transistor || pt.kind == AnalogCircuit::Kind::OpAmp) {
+						// three terminals by name: C, B, E or +, −, output (OUT, A, Q, O)
+						pt.a = pt.b = pt.c = -1;
+						for (Terminal *t : e->terminals()) {
+							const QString tn = t->name().trimmed().toUpper();
+							int *slot = nullptr;
+							if (pt.kind == AnalogCircuit::Kind::Transistor)
+								slot = tn == QLatin1String("C") ? &pt.a : tn == QLatin1String("B") ? &pt.b : tn == QLatin1String("E") ? &pt.c : nullptr;
+							else
+								slot = tn == QLatin1String("+") || tn == QLatin1String("IN+") ? &pt.a
+									 : tn == QLatin1String("-") || tn == QString(QChar(0x2212)) || tn == QLatin1String("IN-") ? &pt.b
+									 : tn == QLatin1String("OUT") || tn == QLatin1String("A") || tn == QLatin1String("Q") || tn == QLatin1String("O") ? &pt.c
+									 : nullptr;
+							if (slot) *slot = node(t);
+						}
+					}
+					io.part = m_circuit.add(pt);
+					if (!io.names.isEmpty()) m_circuit_io << io;
 				} else if (role == QLatin1String("grafcet_io")) {
 					auto *io = new GrafcetIo;
 					io->e = e;
@@ -1326,6 +2124,11 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 	m_silencer_c = conductanceFromQnn(300);
 	for (const Cylinder *z : std::as_const(m_cylinders)) {
 		const QString who = z->label.isEmpty() ? z->e->name() : z->label;
+		if (z->muscle >= 0) {
+			if (!(z->m > 0) || !std::isfinite(z->f_load) || !(z->muscle_len > 0))
+				m_model_errors << QStringLiteral("%1: ungültige Muskeldaten (Länge %2 mm, Masse %3 kg)").arg(who).arg(z->muscle_len * 1000).arg(z->m);
+			continue;
+		}
 		if (z->rotary) {
 			if (!(z->stroke > 0) || !(z->m > 0) || !(z->a_k > 0) || !std::isfinite(z->x) || z->x < 0 || z->x > z->stroke
 				|| !std::isfinite(z->f_load) || !(z->f_static >= 0))
@@ -1351,15 +2154,143 @@ void SimulationModel::buildComponents(const QList<Diagram *> &diagrams, double s
 		m_failed = true;
 		m_failure = m_model_errors.join(QStringLiteral("; "));
 	}
+	coupleCircuit();
 	linkAnalog(diagrams);
 	if (!m_model_errors.isEmpty() && !m_failed) {
 		m_failed = true;
 		m_failure = m_model_errors.join(QStringLiteral("; "));
 	}
+	buildFaults(diagrams);
+	if (const QString why = m_circuit.check(); !why.isEmpty()) m_model_errors << QStringLiteral("Stromkreis: %1").arg(why);
 	m_grafcet = std::make_unique<Grafcet>(diagrams, [this](Terminal *t) { return node(t); });
 	if (m_grafcet->isEmpty()) m_grafcet.reset();
 	else m_program_errors << m_grafcet->errors();
 	electrics();
+}
+
+// ------------------------------------------------------------------------- faults (R15)
+void SimulationModel::buildFaults(const QList<Diagram *> &diagrams)
+{
+	// FluidSIM fault models (QS05 „Fehlermodelle und Fehlerkonfigurationen“), written as element information
+	// sim_fault: "<Fehler> [Wert] [ab t] [bis t]", several separated by ";"
+	static const QList<QPair<QStringList, FaultKind>> names {
+		{{QStringLiteral("kolben_klemmt"), QStringLiteral("schieber_klemmt")}, FaultKind::Stuck},
+		{{QStringLiteral("spule_unterbrochen"), QStringLiteral("relaisspule_unterbrochen")}, FaultKind::CoilOpen},
+		{{QStringLiteral("interne_leckage"), QStringLiteral("leckage")}, FaultKind::Leak},
+		{{QStringLiteral("bauteil_verstopft"), QStringLiteral("verstopft")}, FaultKind::Clogged},
+		{{QStringLiteral("rueckschlagventil_immer_gesperrt"), QStringLiteral("immer_gesperrt")}, FaultKind::CheckClosed},
+		{{QStringLiteral("rueckschlagventil_immer_geoeffnet"), QStringLiteral("immer_geoeffnet")}, FaultKind::CheckOpen},
+		{{QStringLiteral("bauteil_schaltet_nicht"), QStringLiteral("schaltet_nicht")}, FaultKind::Never},
+		{{QStringLiteral("bauteil_schaltet_immer"), QStringLiteral("schaltet_immer")}, FaultKind::Always}};
+	for (Diagram *d : diagrams)
+		for (Element *e : sortedElements(d)) {
+			const QString spec = info(e, "sim_fault").trimmed();
+			if (spec.isEmpty()) continue;
+			const QString who = label(e).isEmpty() ? e->name() : label(e);
+			for (const QString &one : spec.split(QLatin1Char(';'), Qt::SkipEmptyParts)) {
+				QString s = one.trimmed().toLower();
+				s.replace(QStringLiteral("ä"), QStringLiteral("ae")).replace(QStringLiteral("ö"), QStringLiteral("oe"))
+				 .replace(QStringLiteral("ü"), QStringLiteral("ue")).replace(QStringLiteral("ß"), QStringLiteral("ss"));
+				const QStringList tok = s.split(QRegularExpression(QStringLiteral("\\s+")), Qt::SkipEmptyParts);
+				auto *f = new Fault;
+				f->e = e;
+				f->label = who;
+				f->text = one.trimmed();
+				QStringList words;
+				bool ok = true;
+				for (int i = 0; i < tok.size(); ++i) {
+					const QString &w = tok.at(i);
+					bool num = false;
+					const double v = QString(w).replace(QLatin1Char(','), QLatin1Char('.')).toDouble(&num);
+					if ((w == QLatin1String("ab") || w == QLatin1String("from") || w == QLatin1String("bis") || w == QLatin1String("until"))
+						&& i + 1 < tok.size()) {
+						bool tn = false;
+						const double tv = QString(tok.at(i + 1)).remove(QLatin1Char('s')).replace(QLatin1Char(','), QLatin1Char('.')).toDouble(&tn);
+						if (!tn) ok = false;
+						(w == QLatin1String("ab") || w == QLatin1String("from") ? f->from : f->to) = tv;
+						++i;
+					} else if (num) {
+						f->value = v;
+					} else {
+						words << w;
+					}
+				}
+				const QString key = words.join(QLatin1Char('_'));
+				bool found = false;
+				for (const auto &n : names)
+					if (n.first.contains(key)) { f->kind = n.second; found = true; }
+				if (!found || !ok) {
+					m_model_errors << QStringLiteral("%1: Fehler „%2“ nicht verstanden (kolben_klemmt, spule_unterbrochen, interne_leckage, "
+													 "verstopft, immer_gesperrt, immer_geoeffnet, schaltet_nicht, schaltet_immer; ab/bis in s)")
+										  .arg(who, one.trimmed());
+					delete f;
+					continue;
+				}
+				// the fault must fit the part
+				bool fits = false;
+				switch (f->kind) {
+					case FaultKind::Stuck:
+						for (const Valve *v : std::as_const(m_valves)) fits = fits || v->e == e;
+						break;
+					case FaultKind::CoilOpen:
+						for (const Coil *c : std::as_const(m_coils)) fits = fits || c->e == e;
+						for (const Relay *r : std::as_const(m_relays)) fits = fits || r->e == e;
+						break;
+					case FaultKind::Leak: {
+						// two fluid ports, at least one connected (an open port is the atmosphere)
+						int ports = 0, connected = 0;
+						for (Terminal *x : e->terminals())
+							if (isFluid(x)) { ++ports; connected += node(x) >= 0 ? 1 : 0; }
+						fits = ports >= 2 && connected >= 1;
+						break;
+					}
+					case FaultKind::Clogged:
+						for (const FlowValve *v : std::as_const(m_flow_valves)) fits = fits || v->e == e;
+						break;
+					case FaultKind::CheckClosed:
+					case FaultKind::CheckOpen:
+						for (const FlowValve *v : std::as_const(m_flow_valves))
+							fits = fits || (v->e == e && (v->function == QLatin1String("shutoff_valve.check_valve")
+														  || v->function == QLatin1String("flow_control_valve.one_way_flow_control_valve")));
+						break;
+					case FaultKind::Never:
+					case FaultKind::Always:
+						for (const Contact *c : std::as_const(m_contacts)) fits = fits || c->e == e;
+						for (const PressureSwitch *p : std::as_const(m_pressure_switches)) fits = fits || p->e == e;
+						break;
+				}
+				if (!fits) {
+					m_model_errors << QStringLiteral("%1: Fehler „%2“ passt nicht zu diesem Bauteil").arg(who, one.trimmed());
+					delete f;
+					continue;
+				}
+				m_faults << f;
+			}
+		}
+}
+
+const SimulationModel::Fault *SimulationModel::fault(const Element *e, FaultKind kind) const
+{
+	for (const Fault *f : m_faults)
+		if (f->e == e && f->kind == kind && f->active(m_time)) return f;
+	return nullptr;
+}
+
+bool SimulationModel::repair(const QString &lbl)
+{
+	bool any = false;
+	for (Fault *f : m_faults)
+		if (f->label == lbl && !f->repaired) {
+			f->repaired = true;
+			any = true;
+		}
+	if (any) m_messages << Message{m_time, QStringLiteral("%1 repariert").arg(lbl)};
+	// R17 stage 4: a tripped fuse is replaced, a tripped breaker switched on again
+	if (m_circuit.reset(lbl)) {
+		m_messages << Message{m_time, QStringLiteral("%1 zurückgesetzt").arg(lbl)};
+		any = true;
+	}
+	return any;
 }
 
 // ------------------------------------------------------------------------- electrics
@@ -1382,7 +2313,8 @@ bool SimulationModel::contactClosed(const Contact &c) const
 		}
 		if (parts.size() == 1)          // function text "-BP1": contact of that pressure switch
 			for (const PressureSwitch *s : m_pressure_switches)
-				if (s->label == parts.at(0)) actuated = s->on;
+				if (s->label == parts.at(0))
+					actuated = fault(s->e, FaultKind::Never) ? false : (fault(s->e, FaultKind::Always) ? true : s->on);
 	} else if (c.kind == QLatin1String("counter")) {
 		for (const Counter *z : m_counters)
 			if (!z->reset_coil && z->label == c.trigger) actuated = z->count >= z->preset;
@@ -1396,12 +2328,88 @@ bool SimulationModel::contactClosed(const Contact &c) const
 		else
 			actuated = r->on;
 	}
+	// R15: a switch that never or always switches
+	if (fault(c.e, FaultKind::Never)) actuated = false;
+	if (fault(c.e, FaultKind::Always)) actuated = true;
 	return actuated != c.nc;
+}
+
+void SimulationModel::coupleCircuit()
+{
+	// R17 stage 2 (FORMELN.md E06, E07): a contact whose two terminals are nets of the analog circuit is a switch of
+	// the circuit; a relay coil or valve solenoid there is an R-L branch whose current decides pick-up and drop-out
+	if (m_circuit.isEmpty()) return;
+	QSet<int> nets;
+	for (const AnalogCircuit::Part &p : m_circuit.parts()) {
+		if (p.a >= 0) nets << p.a;
+		if (p.b >= 0) nets << p.b;
+	}
+	auto params = [&](Element *e, const char *key) {
+		QHash<QString, double> out;
+		for (const QString &item : info(e, key).split(QLatin1Char(';'), Qt::SkipEmptyParts)) {
+			const int eq = static_cast<int>(item.indexOf(QLatin1Char('=')));
+			if (eq <= 0) continue;
+			QString s = item.mid(eq + 1).trimmed().section(QLatin1Char(' '), 0, 0);
+			s.replace(QLatin1Char(','), QLatin1Char('.'));
+			double f = 1.0;
+			static const QHash<QChar, double> prefix {{QLatin1Char('u'), 1e-6}, {QChar(0x00B5), 1e-6}, {QLatin1Char('m'), 1e-3},
+				{QLatin1Char('k'), 1e3}, {QLatin1Char('M'), 1e6}, {QLatin1Char('G'), 1e9}};
+			if (!s.isEmpty() && prefix.contains(s.back())) { f = prefix.value(s.back()); s.chop(1); }
+			bool ok = false;
+			const double v = s.toDouble(&ok) * f;
+			if (ok) out.insert(item.left(eq).trimmed().toLower(), v);
+			else m_model_errors << QStringLiteral("%1: %2 „%3“ ist keine Zahl")
+								   .arg(label(e).isEmpty() ? e->name() : label(e), QString::fromLatin1(key), item.trimmed());
+		}
+		return out;
+	};
+	auto inCircuit = [&](int a, int b) { return a >= 0 && b >= 0 && nets.contains(a) && nets.contains(b); };
+	for (Contact *c : m_contacts) {
+		if (!inCircuit(c->n1, c->n2)) continue;
+		AnalogCircuit::Part sw;
+		sw.kind = AnalogCircuit::Kind::Switch;
+		QString side;
+		for (Terminal *t : c->e->terminals())
+			if (node(t) == c->n2 && !t->name().trimmed().isEmpty()) side = t->name().trimmed();
+		const QString base = label(c->e).isEmpty() ? c->e->name() : label(c->e);
+		sw.label = base + QLatin1Char('/') + (side.isEmpty() ? (c->nc ? QStringLiteral("Öffner") : QStringLiteral("Schließer")) : side);
+		sw.a = c->n1;
+		sw.b = c->n2;
+		const auto par = params(c->e, "sim_contact");
+		sw.ron = par.value(QStringLiteral("ron"), sw.ron);
+		sw.roff = par.value(QStringLiteral("roff"), sw.roff);
+		sw.closed = contactClosed(*c);
+		c->circuit = m_circuit.add(sw);
+	}
+	auto coil = [&](Element *e, const QString &lbl, int a, int b, double *i_on, double *i_off) {
+		const auto par = params(e, "sim_coil");
+		AnalogCircuit::Part k;
+		k.kind = AnalogCircuit::Kind::Coil;
+		k.label = lbl.isEmpty() ? e->name() : lbl;
+		k.a = a;
+		k.b = b;
+		k.r = par.value(QStringLiteral("r"), 0.0);
+		k.value = par.value(QStringLiteral("l"), 0.0);
+		const double un = par.value(QStringLiteral("un"), 0.0);
+		// pick-up and drop-out as currents (Ion, Ioff) or as fractions of the rated current Un/R (on, off: E07)
+		*i_on = par.contains(QStringLiteral("ion")) ? par.value(QStringLiteral("ion"))
+			  : (un > 0 && k.r > 0 ? par.value(QStringLiteral("on"), 0.8) * un / k.r : 0.0);
+		*i_off = par.contains(QStringLiteral("ioff")) ? par.value(QStringLiteral("ioff"))
+			   : (un > 0 && k.r > 0 ? par.value(QStringLiteral("off"), 0.1) * un / k.r : 0.0);
+		if (!(k.r > 0) || !(*i_on > 0) || !(*i_off >= 0) || !(*i_off < *i_on))
+			m_model_errors << QStringLiteral("%1: Spule im Stromkreis braucht sim_coil mit R, L und Un (oder Ion/Ioff) aus dem "
+				"Datenblatt; Ansprechstrom größer als Abfallstrom").arg(k.label);
+		return m_circuit.add(k);
+	};
+	for (Relay *r : m_relays)
+		if (inCircuit(r->n1, r->n2)) r->circuit = coil(r->e, r->label, r->n1, r->n2, &r->i_on, &r->i_off);
+	for (Coil *c : m_coils)
+		if (inCircuit(c->n1, c->n2)) c->circuit = coil(c->e, c->label, c->n1, c->n2, &c->i_on, &c->i_off);
 }
 
 void SimulationModel::electrics()
 {
-	if (m_sources.isEmpty() && m_plc_channels.isEmpty() && !m_grafcet) return;
+	if (m_sources.isEmpty() && m_plc_channels.isEmpty() && !m_grafcet && m_circuit.isEmpty()) return;
 	QHash<int, int> parent;
 	std::function<int(int)> root = [&](int a) {
 		while (parent.value(a, a) != a) {
@@ -1479,6 +2487,7 @@ void SimulationModel::electrics()
 			for (const Coil *c : std::as_const(m_coils)) {
 				if (!c->valve || c->label.isEmpty()) continue;
 				if (m_plc_vars.value(Grafcet::labelVariable(c->label), 0.0) == 0.0) continue;
+				if (fault(c->e, FaultKind::CoilOpen)) continue;
 				Valve *v = c->valve;
 				const int single = v->side[1].types.contains(QLatin1String("solenoid"))
 								   && !v->side[0].types.contains(QLatin1String("solenoid")) ? 1 : 0;
@@ -1507,8 +2516,14 @@ void SimulationModel::electrics()
 		return a >= 0 && b >= 0 && ((plus.contains(root(a)) && minus.contains(root(b)))
 									|| (minus.contains(root(a)) && plus.contains(root(b))));
 	};
+	// R17 stage 2 (E07): a coil of the analog circuit picks up at |i| >= Ion and drops out at |i| <= Ioff
+	auto byCurrent = [&](int part, bool now, double i_on, double i_off) {
+		const double i = std::abs(m_circuit.parts().at(part).i);
+		return now ? i > i_off : i >= i_on;
+	};
 	for (Relay *r : m_relays) {
-		const bool want = powered(r->n1, r->n2);
+		const bool want = (r->circuit >= 0 ? byCurrent(r->circuit, r->target, r->i_on, r->i_off) : powered(r->n1, r->n2))
+						  && !fault(r->e, FaultKind::CoilOpen);
 		if (want != r->target) {
 			r->target = want;
 			r->switch_at = m_time + (want ? T_PULL_IN : T_DROP_OUT);
@@ -1543,7 +2558,8 @@ void SimulationModel::electrics()
 		z->last = on;
 	}
 	for (Coil *c : m_coils) {
-		const bool on = powered(c->n1, c->n2);
+		const bool on = (c->circuit >= 0 ? byCurrent(c->circuit, c->on, c->i_on, c->i_off) : powered(c->n1, c->n2))
+						&& !fault(c->e, FaultKind::CoilOpen);
 		if (c->known && on != c->on)
 			m_messages << Message{m_time, QStringLiteral("Spule %1 %2").arg(c->label,
 				on ? QStringLiteral("an") : QStringLiteral("aus"))};
@@ -1879,9 +2895,60 @@ double SimulationModel::cavity(Terminal *t) const
 	return m_cavity.value(node(t), 0.0);
 }
 
+/// R12 multi-position cylinder (FORMELN.md M12): the rear piston (C1, x1) pushes the front piston (C2, C3, x) with
+/// its rod. In contact both move as one body (mass, friction and damping added, the rear stroke stroke1 as limit)
+/// unless one of them alone would run away from the other; apart each moves alone, a collision is plastic.
+/// C2 acts on the front piston face and on the end of the rear rod in the partition
+void SimulationModel::multiStep(Cylinder *z, double dt, QVector<double> &vol, QVector<double> &dvdt)
+{
+	auto p = [&](int k) { return k >= 0 ? m_p.at(k) : P_ATM; };
+	const int k1 = node(z->e, QStringLiteral("C1")), k2 = node(z->e, QStringLiteral("C2")), k3 = node(z->e, QStringLiteral("C3"));
+	const double g1 = k1 >= 0 ? p(k1) - P_ATM : 0.0, g2 = k2 >= 0 ? p(k2) - P_ATM : 0.0, g3 = k3 >= 0 ? p(k3) - P_ATM : 0.0;
+	const double f1 = g1 * z->a_k - g2 * z->a_rod;
+	const double f2 = g2 * z->a_k - g3 * z->a_r - z->opposing();
+	if (m_record_flows) m_cylinder_force.insert(z->e, g2 * z->a_k - g3 * z->a_r);
+	Cylinder front = *z, rear = *z;
+	front.load_ex.clear(); front.load_re.clear();
+	rear.x = z->x1; rear.v = z->v1; rear.stroke = z->stroke1;
+	SimPhysics::pistonStep(front, f2, dt);
+	SimPhysics::pistonStep(rear, f1, dt);
+	const bool contact = z->x - z->x1 <= 1e-9;
+	bool together = false;
+	if (contact) {
+		Cylinder both = *z;
+		both.load_ex.clear(); both.load_re.clear();
+		both.m = 2 * z->m; both.f_static = 2 * z->f_static; both.f_slide = 2 * z->f_slide; both.damping = 2 * z->damping;
+		both.stroke = z->stroke1;
+		SimPhysics::pistonStep(both, f1 + f2, dt);
+		// apart only if the front piston alone runs ahead or the rear one alone falls back
+		together = !(front.x > both.x + 1e-12 || rear.x < both.x - 1e-12);
+		if (together) { z->x = z->x1 = both.x; z->v = z->v1 = both.v; }
+	}
+	if (!together) {
+		z->x = front.x; z->v = front.v; z->x1 = rear.x; z->v1 = rear.v;
+		if (z->x < z->x1) {     // collision: plastic impact of two equal masses
+			const double xc = std::clamp(0.5 * (z->x + z->x1), 0.0, z->stroke1), vc = 0.5 * (z->v + z->v1);
+			z->x = z->x1 = xc; z->v = z->v1 = vc;
+		}
+	}
+	if (k1 >= 0) { vol[k1] += V_DEAD + z->a_k * z->x1; dvdt[k1] += z->a_k * z->v1; }
+	if (k2 >= 0) { vol[k2] += V_DEAD + z->a_k * z->x - z->a_rod * z->x1; dvdt[k2] += z->a_k * z->v - z->a_rod * z->v1; }
+	if (k3 >= 0) { vol[k3] += V_DEAD + z->a_r * (z->stroke - z->x); dvdt[k3] -= z->a_r * z->v; }
+	const QString end = z->x <= 0.0005 ? QStringLiteral("hinten")
+		: z->x >= z->stroke - 0.0005 ? QStringLiteral("vorne")
+		: std::abs(z->x - z->stroke1) <= 0.0005 && std::abs(z->v) < 1e-4 ? QStringLiteral("Zwischenstellung") : QString();
+	if (end != m_end_position.value(z->label)) {
+		m_end_position.insert(z->label, end);
+		if (!end.isEmpty())
+			m_messages << Message{m_time, end == QLatin1String("Zwischenstellung") ? QStringLiteral("%1 Zwischenstellung").arg(z->label)
+															 : QStringLiteral("%1 Endlage %2").arg(z->label, end)};
+	}
+}
+
 void SimulationModel::step(double dt)
 {
 	if (m_failed) return;
+	++m_step_count;
 	const int n = static_cast<int>(m_p.size());
 	QVector<double> flow(n, 0.0), dvdt(n, 0.0), vol(n, V_LINE);
 	for (int k = 0; k < n; ++k)
@@ -1904,7 +2971,7 @@ void SimulationModel::step(double dt)
 	analog(dt);
 
 	for (Pump *pu : m_pumps) {
-		const int kp = node(pu->e, QStringLiteral("P")), kt = node(pu->e, QStringLiteral("T"));
+		const int kp = node(pu->e, pu->p_port), kt = pu->t_port.isEmpty() ? -1 : node(pu->e, pu->t_port);
 		if (kp < 0) continue;
 		const double share = qBound(0.0, (pu->p_max - m_p.at(kp)) / pu->band, 1.0);
 		// R08: setting alpha and leakage back from P to T (q = alpha·D·n - Cleak·dp)
@@ -1920,10 +2987,177 @@ void SimulationModel::step(double dt)
 		}
 	}
 
+	// R13 load sensing power unit (FORMELN.md H08): returns and leakage go to the tank (outside the nets)
+	for (LsUnit *u : m_ls_units) {
+		const int k1 = node(u->e, QStringLiteral("P1")), k2 = node(u->e, QStringLiteral("P2")), kl = node(u->e, QStringLiteral("LS"));
+		const double d = p(k1) - (kl >= 0 ? p(kl) : P_ATM);
+		const double set = std::clamp(1.0 - (d - u->margin) / u->band, 0.0, 1.0);
+		u->alpha += u->tau > 0 ? (set - u->alpha) * std::min(1.0, dt / u->tau) : set - u->alpha;
+		auto relief = [&](int k, double p0, double band, double rt) {
+			const double s = std::clamp((p(k) - P_ATM - p0) / band, 0.0, 1.0);
+			return s > 0 ? volumeFlow(p(k), P_ATM, rt / (s * s)) : 0.0;
+		};
+		if (k1 >= 0) {
+			const double q = u->alpha * u->q_vp - u->gl_vp * (p(k1) - P_ATM);
+			u->last_q1 = q;
+			book(-1, k1, q, u->e);
+			book(k1, -1, relief(k1, u->p0_vp, u->dp_vp, u->rt_vp), u->e);
+		}
+		if (k2 >= 0) {
+			const double q = u->q_fp - u->gl_fp * (p(k2) - P_ATM);
+			u->last_q2 = q;
+			book(-1, k2, q, u->e);
+			book(k2, -1, relief(k2, u->p0_fp, u->dp_fp, u->rt_fp), u->e);
+		}
+		if (kl >= 0) book(kl, -1, volumeFlow(p(kl), P_ATM, u->rt_drain), u->e);
+	}
+	// R13 6/3 hand lever valve (FORMELN.md V15): orifices rT/share^2, spool PT1 towards the lever deflection
+	for (Valve63 *v : m_valves63) {
+		v->x += v->tau > 0 ? (v->x_set - v->x) * std::min(1.0, dt / v->tau) : v->x_set - v->x;
+		const int kp1 = node(v->e, QStringLiteral("P1")), kt1 = node(v->e, QStringLiteral("T1"));
+		const int kp2 = node(v->e, QStringLiteral("P2")), kt2 = node(v->e, QStringLiteral("T2"));
+		const int ka = node(v->e, QStringLiteral("A")), kb = node(v->e, QStringLiteral("B"));
+		const double s = std::abs(v->x), open = 1.0 - s;
+		if (open > 1e-6 && (kp1 >= 0 || kt1 >= 0)) book(kp1, kt1, volumeFlow(p(kp1), p(kt1), v->rt_n / (open * open)), v->e);
+		const int kin = v->x > 0 ? kb : ka, kout = v->x > 0 ? ka : kb;
+		if (s > 1e-6) {
+			// supply P2 -> check valve -> metering edge: series orifices, their rT add; nothing flows back to P2
+			if ((kp2 >= 0 || kin >= 0) && p(kp2) > p(kin))
+				book(kp2, kin, volumeFlow(p(kp2), p(kin), v->rt_cv + v->rt_p / (s * s)), v->e);
+			if (kout >= 0 || kt2 >= 0) book(kout, kt2, volumeFlow(p(kout), p(kt2), v->rt_t / (s * s)), v->e);
+		}
+		if (v->gleak > 0) {
+			if (ka >= 0 || kt2 >= 0) book(ka, kt2, v->gleak * (p(ka) - p(kt2)), v->e);
+			if (kb >= 0 || kt2 >= 0) book(kb, kt2, v->gleak * (p(kb) - p(kt2)), v->e);
+		}
+	}
+
+	// R13 steering unit (FORMELN.md H10): neutral P -> E, deflected the metering path and the return edge
+	for (Steering *s : m_steerings) {
+		const int kp = node(s->e, QStringLiteral("P")), kt = node(s->e, QStringLiteral("T"));
+		const int kl = node(s->e, QStringLiteral("L")), kr = node(s->e, QStringLiteral("R")), ke = node(s->e, QStringLiteral("E"));
+		const double a = std::abs(s->a), open = 1.0 - a;
+		if (open > 1e-6 && (kp >= 0 || ke >= 0)) book(kp, ke, volumeFlow(p(kp), p(ke), s->rt / (open * open)), s->e);
+		s->last_q = 0.0;
+		if (a > 1e-6) {
+			const int kin = s->a > 0 ? kl : kr, kout = s->a > 0 ? kr : kl;
+			if (kp >= 0 || kin >= 0) {
+				s->last_q = volumeFlow(p(kp), p(kin), s->rt / (a * a));
+				book(kp, kin, s->last_q, s->e);
+			}
+			if (kout >= 0 || kt >= 0) book(kout, kt, volumeFlow(p(kout), p(kt), s->rt / (a * a)), s->e);
+			s->phi += (s->a > 0 ? 1.0 : -1.0) * s->last_q / s->d * 2.0 * M_PI * dt;
+		}
+	}
+	// R13 load sensing control block (FORMELN.md V17)
+	for (LsBlock *b : m_ls_blocks) {
+		const int kp = node(b->e, QStringLiteral("P")), kt = node(b->e, QStringLiteral("T")), kls = node(b->e, QStringLiteral("LS"));
+		int kload = -2;
+		for (int g = 0; g < 2; ++g) {
+			const QString n = QString::number(g + 1);
+			// FluidSIM names the pilot ports C g / D g (symbol text "C (X g.1)", "D (X g.2)")
+			auto either = [&](const QString &x, const QString &y) { const int k = node(b->e, x); return k >= 0 ? k : node(b->e, y); };
+			const int kc = either(QStringLiteral("C") + n, QStringLiteral("C (X%1.1)").arg(n));
+			const int kd = either(QStringLiteral("D") + n, QStringLiteral("D (X%1.2)").arg(n));
+			const int ka = node(b->e, QStringLiteral("A") + n), kb = node(b->e, QStringLiteral("B") + n);
+			auto stroke = [&](int k) { return std::clamp((p(k) - P_ATM - b->ps_min) / (b->ps_max - b->ps_min), 0.0, 1.0); };
+			const double x = std::abs(b->man[g]) > 1e-9 ? b->man[g] : stroke(kc) - stroke(kd);
+			b->x[g] = x;
+			const double a = std::abs(x);
+			if (a < 1e-6) continue;
+			const int kin = x > 0 ? ka : kb, kout = x > 0 ? kb : ka;
+			if (kload == -2 || p(kin) > p(kload)) kload = kin;
+			const double dp = (p(kp) - p(kin)) / 1e5;   // bar
+			if (dp > 0 && (kp >= 0 || kin >= 0)) {
+				// compensator and metering edge in series: q from Δp = q²·(rT_pc/s(q)² + rT/x²), s = clamp(1 − (q²·rT/x² − p0)/dpEnd)
+				const double rm = b->rt_m / (a * a);
+				auto total = [&](double q) {
+					const double s = std::clamp(1.0 - (q * q * rm - b->p0) / b->dp, 1e-3, 1.0);
+					return q * q * (b->rt_pc / (s * s) + rm);
+				};
+				double lo = 0.0, hi = std::sqrt(dp / rm);
+				for (int i = 0; i < 60; ++i) { const double mid = 0.5 * (lo + hi); (total(mid) > dp ? hi : lo) = mid; }
+				const double q = 0.5 * (lo + hi);
+				if (q > 1e-9) book(kp, kin, volumeFlow(p(kp), p(kin), dp / (q * q)), b->e);
+			}
+			if (kout >= 0 || kt >= 0) book(kout, kt, volumeFlow(p(kout), p(kt), b->rt_t / (a * a)), b->e);
+		}
+		// shuttle valves: the highest load pressure reaches LS, nothing flows back from LS into a work port
+		if (kload != -2 && (kload >= 0 || kls >= 0) && p(kload) > p(kls))
+			book(kload, kls, volumeFlow(p(kload), p(kls), b->rt_sv), b->e);
+	}
+	// R13 priority valve LS (FORMELN.md V18)
+	for (PriorityValve *v : m_priority_valves) {
+		const int kp = node(v->e, QStringLiteral("P")), kcf = node(v->e, QStringLiteral("CF"));
+		const int kef = node(v->e, QStringLiteral("EF")), kls = node(v->e, QStringLiteral("LS"));
+		const double s = std::clamp(1.0 - (p(kcf) - p(kls) - v->p0) / v->dp, 0.0, 1.0);
+		if (s > 1e-6 && (kp >= 0 || kcf >= 0)) book(kp, kcf, volumeFlow(p(kp), p(kcf), v->rt_cf / (s * s)), v->e);
+		if (1.0 - s > 1e-6 && (kp >= 0 || kef >= 0)) book(kp, kef, volumeFlow(p(kp), p(kef), v->rt_ef / ((1.0 - s) * (1.0 - s))), v->e);
+	}
+	// R13 pilot valve joystick (FORMELN.md H11): pressure reducing valves P -> X, relief X -> T
+	for (Joystick *j : m_joysticks) {
+		const int kp = node(j->e, QStringLiteral("P")), kt = node(j->e, QStringLiteral("T"));
+		for (int g = 0; g < 2; ++g) {
+			const double a = j->a[g], set = std::abs(a) * j->pmax;
+			for (int i = 1; i <= 2; ++i) {
+				const int k = node(j->e, QStringLiteral("X%1.%2").arg(g + 1).arg(i));
+				if (k < 0) continue;
+				const bool active = std::abs(a) > 1e-6 && (a > 0) == (i == 1);
+				if (!active) {
+					book(k, kt, volumeFlow(p(k), p(kt), j->rt), j->e);
+					continue;
+				}
+				const double gx = p(k) - p(kt);
+				const double s_in = std::clamp((set - gx) / j->band, 0.0, 1.0), s_out = std::clamp((gx - set) / j->band, 0.0, 1.0);
+				if (s_in > 0 && p(kp) > p(k)) book(kp, k, volumeFlow(p(kp), p(k), j->rt / (s_in * s_in)), j->e);
+				if (s_out > 0) book(k, kt, volumeFlow(p(k), p(kt), j->rt / (s_out * s_out)), j->e);
+			}
+		}
+	}
+
+	// R13 accumulator safety block (FORMELN.md H12): relief valve from the accumulator (P) to T
+	for (Accumulator *a : m_accumulators) {
+		if (!a->block || a->node < 0) continue;
+		const double s = std::clamp((p(a->node) - p(a->node_t) - a->prv_p0) / a->prv_dp, 0.0, 1.0);
+		if (s > 0) book(a->node, a->node_t, volumeFlow(p(a->node), p(a->node_t), a->prv_rt / (s * s)), a->e);
+	}
+
+	// R15 "Interne Leckage" between the first two fluid ports of the part: oil G·Δp (default 0.1 l/(min·bar)),
+	// air through the conductance of a normal flow qNN (default 10 l/min)
+	for (Fault *f : m_faults) {
+		const bool on = f->active(m_time);
+		if (on != f->was_active) {
+			m_messages << Message{m_time, on ? QStringLiteral("Fehler %1: %2").arg(f->label, f->text)
+											 : QStringLiteral("Fehler %1 aufgehoben").arg(f->label)};
+			f->was_active = on;
+		}
+		if (!on || f->kind != FaultKind::Leak) continue;
+		QList<int> ks;     // the first two fluid ports; -1 is an open port (atmosphere)
+		for (Terminal *x : f->e->terminals())
+			if (isFluid(x) && ks.size() < 2) ks << node(x);
+		if (ks.size() < 2 || (ks.at(0) < 0 && ks.at(1) < 0) || ks.at(0) == ks.at(1)) continue;
+		if (m_hydraulic.contains(ks.at(0) >= 0 ? ks.at(0) : ks.at(1))) {
+			const double g = (std::isfinite(f->value) ? f->value : 0.1) / 60000.0 / 1e5;
+			book(ks.at(0), ks.at(1), g * (p(ks.at(0)) - p(ks.at(1))), f->e);
+		} else {
+			book(ks.at(0), ks.at(1), massFlow(p(ks.at(0)), p(ks.at(1)), conductanceFromQnn(std::isfinite(f->value) ? f->value : 10.0)), f->e);
+		}
+	}
+
 	// R08: hydraulic motors, flow from A to B turns the shaft forward
 	for (Motor *mo : m_motors) {
 		const int ka = node(mo->e, QStringLiteral("A")), kb = node(mo->e, QStringLiteral("B"));
 		const double dp = p(ka) - p(kb);
+		if (mo->air) {
+			// R12 (FORMELN.md M11): air from the port with the higher pressure, mass flow = inlet density ·
+			// displacement · speed, out through the mid exhaust (open or silenced) or the other port
+			const int in = p(ka) >= p(kb) ? ka : kb;
+			const int out = mo->exhaust.isEmpty() ? (in == ka ? kb : ka) : node(mo->e, mo->exhaust);
+			if (in >= 0) book(in, out, p(in) / (R_AIR * T_AIR) * mo->shaft.D * std::abs(mo->shaft.omega) / (2.0 * M_PI), mo->e);
+			mo->shaft.step(dp, mo->tau_load, dt);
+			mo->last_dp = dp;
+			continue;
+		}
 		book(ka, kb, mo->shaft.flow(dp), mo->e);
 		mo->shaft.step(dp, mo->tau_load, dt);
 		mo->last_dp = dp;
@@ -1944,7 +3178,8 @@ void SimulationModel::step(double dt)
 				if (k >= 0) v->actuated[s] = m_p.at(k) - P_ATM > P_PILOT;
 			}
 		}
-		const int want = v->wanted();
+		// R15 "Kolben klemmt": the spool keeps its position
+		const int want = fault(v->e, FaultKind::Stuck) ? v->target : v->wanted();
 		if (want != v->target) {
 			v->target = want;
 			v->switch_start = m_time;
@@ -1982,6 +3217,9 @@ void SimulationModel::step(double dt)
 		QHash<QString, int> kn;
 		for (const QString &port : s->ports) kn.insert(port, node(s->e, port));
 		const QString &fn = s->function;
+		// R15 "Bauteil verstopft": the remaining share of the flow (FORMELN.md K16, default 1 %)
+		const Fault *clog = fault(s->e, FaultKind::Clogged);
+		s->clog = clog ? (std::isfinite(clog->value) ? std::clamp(clog->value, 0.0, 1.0) : 0.01) : 1.0;
 		if (fn == QLatin1String("supply.silencer")) {
 			for (int k : kn) book(k, -1, s->flow(p(k), P_ATM), s->e);
 		} else if (fn == QLatin1String("flow_control_valve.throttle_valve")
@@ -1994,6 +3232,15 @@ void SimulationModel::step(double dt)
 				   || fn == QLatin1String("flow_control_valve.one_way_flow_control_valve")) {
 			if (!kn.contains(s->free_from) || !kn.contains(s->free_to)) continue;
 			const int a = kn.value(s->free_from), b = kn.value(s->free_to);
+			// R15: check valve always closed (no flow at all) or always open (free both ways)
+			if (fault(s->e, FaultKind::CheckClosed)) {
+				if (fn == QLatin1String("flow_control_valve.one_way_flow_control_valve")) book(a, b, s->flow(p(a), p(b)), s->e);
+				continue;
+			}
+			if (fault(s->e, FaultKind::CheckOpen)) {
+				book(a, b, s->flow(p(a), p(b), 1.0, true), s->e);
+				continue;
+			}
 			if (fn == QLatin1String("flow_control_valve.one_way_flow_control_valve"))
 				book(a, b, s->flow(p(a), p(b)), s->e);
 			bool unlocked = false;
@@ -2035,6 +3282,122 @@ void SimulationModel::step(double dt)
 			if (out < 0) continue;
 			if (open) book(in, out, s->flow(p(in), p(out)), s->e);
 			else book(out, -1, s->flow(p(out), P_ATM), s->e);
+		} else if (fn == QLatin1String("shutoff_valve.timer1") || fn == QLatin1String("shutoff_valve.timer2")
+				   || fn == QLatin1String("valve_group.timer3") || fn == QLatin1String("valve_group.timer4")) {
+			// FORMELN.md V20/V21: 3/2 valve 1 → 2 (open) or 2 → 3/air (closed). Timer 1/2: the signal (1 resp. 10) has held
+			// at least 1.6 bar for delayTime (FluidSIM: Einschaltdruck 160 kPa); timer 3/4: the reservoir behind the nozzle
+			// (filled through c_aux, emptied freely through the check valve) reaches the pilot pressure
+			auto pn = [&](const char *a, const char *b) { return kn.value(QLatin1String(a), kn.value(QLatin1String(b), -1)); };
+			const int in = pn("1", "C2"), out = pn("2", "C1"), ex = pn("3", "C3");
+			const bool nc = fn.endsWith(QLatin1Char('1')) || fn.endsWith(QLatin1Char('3'));
+			bool pilot = false;
+			if (fn.startsWith(QLatin1String("shutoff_valve"))) {
+				const int ctl = nc ? in : pn("10", "PL");
+				const bool on = ctl >= 0 && p(ctl) - P_ATM >= 1.6e5;
+				if (on && s->since < 0) s->since = m_time;
+				if (!on) s->since = -1;
+				pilot = on && m_time - s->since >= s->t_delay - 1e-12;
+			} else {
+				const int ctl = nc ? pn("12", "C3") : pn("10", "C3");
+				const double pc = p(ctl);
+				// nozzle into the reservoir, the check valve back to the control line when it falls below the reservoir
+				const double m = pc >= s->pv ? massFlow(pc, s->pv, s->c_aux) : massFlow(pc, s->pv, s->c_aux + s->c_free);
+				if (ctl >= 0) book(ctl, -1, m, s->e);
+				s->pv = std::max(1.0, s->pv + m * R_AIR * T_AIR / s->vol * dt);
+				pilot = s->pv - P_ATM > P_PILOT;
+			}
+			const bool open = nc ? pilot : !pilot;
+			const int vent = fn.startsWith(QLatin1String("shutoff_valve")) ? ex : -1;
+			if (out < 0) continue;
+			if (open) book(in, out, s->flow(p(in), p(out)), s->e);
+			else book(out, vent, s->flow(p(out), p(vent)), s->e);
+		} else if (fn == QLatin1String("shutoff_valve.pneumatic_counter")) {
+			// FORMELN.md V22: counts the rising signals at 12 down from counterEnd; at zero 1 → 2, else 2 exhausts; a rising
+			// signal at 10 sets the preset again
+			auto pn = [&](const char *a, const char *b) { return kn.value(QLatin1String(a), kn.value(QLatin1String(b), -1)); };
+			const int in = pn("1", "C4"), out = pn("2", "C3"), rst = pn("10", "C2"), cnt = pn("12", "C1");
+			const bool a = cnt >= 0 && p(cnt) - P_ATM > P_PILOT, b = rst >= 0 && p(rst) - P_ATM > P_PILOT;
+			if (b && !s->last_b) {
+				s->count = s->preset;
+				m_messages << Message{m_time, QStringLiteral("%1 zurückgesetzt auf %2").arg(label(s->e)).arg(s->preset)};
+			} else if (a && !s->last_a && s->count > 0) {
+				--s->count;
+				m_messages << Message{m_time, QStringLiteral("%1 Zählerstand %2").arg(label(s->e)).arg(s->count)};
+			}
+			s->last_a = a;
+			s->last_b = b;
+			if (out < 0) continue;
+			if (s->count == 0) book(in, out, s->flow(p(in), p(out)), s->e);
+			else book(out, -1, s->flow(p(out), P_ATM), s->e);
+		} else if (fn == QLatin1String("valve_group.control_block_for_two_hand_start")) {
+			// FORMELN.md V23: AND of 11 and 12 when both came within 0.5 s; output 2 from the lower input, else 2 exhausts;
+			// after a miss or a release both inputs must be released first
+			auto pn = [&](const char *a, const char *b) { return kn.value(QLatin1String(a), kn.value(QLatin1String(b), -1)); };
+			const int k11 = pn("11", "C11"), k12 = pn("12", "C12"), out = pn("2", "C2");
+			const bool a = k11 >= 0 && p(k11) - P_ATM > P_PILOT, b = k12 >= 0 && p(k12) - P_ATM > P_PILOT;
+			if (!a && !b) { s->t_first = -1; s->latched = false; }
+			else if (a != b) { if (s->t_first < 0) s->t_first = m_time; s->latched = false; }
+			else {
+				if (s->t_first < 0) s->t_first = m_time;
+				if (!s->latched && !s->last_a && m_time - s->t_first <= 0.5 + 1e-9) s->latched = true;
+			}
+			// last_a marks a missed window or a release until both inputs are released
+			if (a && b && !s->latched) s->last_a = true;
+			if (a != b && s->t_first >= 0 && m_time - s->t_first > 0.5 + 1e-9) s->last_a = true;
+			if (!a && !b) s->last_a = false;
+			if (out < 0) continue;
+			if (s->latched) {
+				const int in = p(k11) <= p(k12) ? k11 : k12;
+				book(in, out, s->flow(p(in), p(out)), s->e);
+			} else {
+				book(out, -1, s->flow(p(out), P_ATM), s->e);
+			}
+		} else if (fn == QLatin1String("valve_group.taa_01") || fn == QLatin1String("valve_group.tab_01")) {
+			// FORMELN.md V25 (circuit inside the FluidSIM symbol): impulse 3/2 memory P → A; TAA set by Yn, reset by Zn+1 or L;
+			// TAB set by Yn or L, reset by Zn+1; with both pilots it keeps its state. Zn carries A to the previous step; a
+			// spring 3/2 valve piloted by X passes A to Yn+1; P and L run through
+			int kp1 = -1, kp2 = -1, kl1 = -1, kl2 = -1, ka = -1, kx = -1, kyn = -1, kyn1 = -1, kz = -1, kz1 = -1;
+			for (auto it = kn.constBegin(); it != kn.constEnd(); ++it) {
+				const QString &nm = it.key();
+				if (nm == QLatin1String("P.1") || nm == QLatin1String("C4")) kp1 = it.value();
+				else if (nm == QLatin1String("P.2") || nm == QLatin1String("C5")) kp2 = it.value();
+				else if (nm == QLatin1String("L.1") || nm == QLatin1String("C8")) kl1 = it.value();
+				else if (nm == QLatin1String("L.2") || nm == QLatin1String("C9")) kl2 = it.value();
+				else if (nm == QLatin1String("Yn") || nm == QLatin1String("C2")) kyn = it.value();
+				else if (nm == QLatin1String("Yn+1") || nm == QLatin1String("C3")) kyn1 = it.value();
+				else if (nm == QLatin1String("Zn") || nm == QLatin1String("C6")) kz = it.value();
+				else if (nm == QLatin1String("Zn+1") || nm == QLatin1String("C7")) kz1 = it.value();
+				else if (nm.startsWith(QLatin1Char('A')) || nm == QLatin1String("C1")) ka = it.value();
+				else if (nm.startsWith(QLatin1Char('X')) || nm == QLatin1String("C10")) kx = it.value();
+			}
+			auto sig = [&](int k) { return k >= 0 && p(k) - P_ATM > P_PILOT; };
+			const bool tab = fn.endsWith(QLatin1String("tab_01"));
+			const bool l = sig(kl1) || sig(kl2);
+			const bool set = tab ? (sig(kyn) || l) : sig(kyn), reset = tab ? sig(kz1) : (sig(kz1) || l);
+			if (set != reset && set != s->latched) {
+				s->latched = set;
+				m_messages << Message{m_time, QStringLiteral("%1 %2").arg(label(s->e), set ? QStringLiteral("Taktstufe gesetzt") : QStringLiteral("Taktstufe rückgesetzt"))};
+			}
+			if (kp1 >= 0 && kp2 >= 0 && kp1 != kp2) book(kp1, kp2, massFlow(p(kp1), p(kp2), s->c_aux), s->e);
+			if (kl1 >= 0 && kl2 >= 0 && kl1 != kl2) book(kl1, kl2, massFlow(p(kl1), p(kl2), s->c_aux), s->e);
+			const int kp = kp1 >= 0 ? kp1 : kp2;
+			if (ka >= 0) {
+				if (s->latched) book(kp, ka, s->flow(p(kp), p(ka)), s->e);
+				else book(ka, -1, s->flow(p(ka), P_ATM), s->e);
+				if (kz >= 0 && kz != ka) book(ka, kz, massFlow(p(ka), p(kz), s->c_aux), s->e);
+			}
+			if (kyn1 >= 0) {
+				if (sig(kx) && ka >= 0) book(ka, kyn1, s->flow(p(ka), p(kyn1)), s->e);
+				else book(kyn1, -1, s->flow(p(kyn1), P_ATM), s->e);
+			}
+		} else if (fn == QLatin1String("vacuum.vacuum_efficiency_valve")) {
+			// FORMELN.md V24: the float closes over the spring band ps_min … ps_max of |p1 − p2|: conductance from the
+			// maximum to the minimum flow (both at 50 kPa)
+			const int k1 = kn.value(QStringLiteral("1"), kn.value(QStringLiteral("C1"), -1));
+			const int k2 = kn.value(QStringLiteral("2"), kn.value(QStringLiteral("C2"), -1));
+			if (k1 < 0 && k2 < 0) continue;
+			const double sh = qBound(0.0, (std::abs(p(k1) - p(k2)) - s->p0) / s->dp_end, 1.0);
+			book(k1, k2, massFlow(p(k1), p(k2), s->c * (1.0 - sh) + s->c_aux * sh), s->e);
 		} else if (fn == QLatin1String("shutoff_valve.quick_exhaust_valve")) {
 			const int in = kn.value(QStringLiteral("1"), -1), out = kn.value(QStringLiteral("2"), -1);
 			if (p(in) >= p(out)) book(in, out, s->flow(p(in), p(out), 1.0, true), s->e);
@@ -2058,8 +3421,13 @@ void SimulationModel::step(double dt)
 		} else if (isFlowSensor(fn)) {
 			// R06: orifice rT between A and B, its flow is the measured value
 			const int a = kn.value(QStringLiteral("A"), -1), b = kn.value(QStringLiteral("B"), -1);
-			s->last_q = (a >= 0 || b >= 0) ? s->flow(p(a), p(b)) : 0.0;
-			book(a, b, s->last_q, s->e);
+			if (s->gmeter > 0) {   // R13 (FORMELN.md H09): motor flow is the measured value, leakage passes beside it
+				s->last_q = s->gmeter * (p(a) - p(b));
+				book(a, b, s->last_q + s->gleak * (p(a) - p(b)), s->e);
+			} else {
+				s->last_q = (a >= 0 || b >= 0) ? s->flow(p(a), p(b)) : 0.0;
+				book(a, b, s->last_q, s->e);
+			}
 		} else if (fn == QLatin1String("pressure_valve.counterbalance_valve")) {
 			// R09 (FORMELN.md V07): opens P -> T when (pP - pT) + ratio·(pX - pT) reaches p0, fully over dpEnd;
 			// the check valve lets T -> P pass freely, leakage P -> T
@@ -2078,6 +3446,70 @@ void SimulationModel::step(double dt)
 			const int kx = kn.value(QStringLiteral("X"), -1);
 			const double pilot = (kx >= 0 ? p(kx) : p(kp)) - P_ATM;
 			if (kp >= 0 || ka >= 0) book(kp, ka, s->flow(p(kp), p(ka), qBound(0.0, (pilot - s->p0) / s->dp_end, 1.0)), s->e);
+		} else if (fn.startsWith(QLatin1String("pressure_valve.pressure_compensator_"))) {
+			// R09 (FORMELN.md V10, V11): pressure compensator = resistance whose share follows a pressure difference d;
+			// a closer is fully open up to d = p0 and closed at p0 + dpEnd, an opener closed up to p0, open at p0 + dpEnd
+			auto port = [&](const char *a, const char *b = nullptr) {
+				const int k = kn.value(QLatin1String(a), -1);
+				return k >= 0 || !b ? k : kn.value(QLatin1String(b), -1);
+			};
+			const QString kind = fn.mid(static_cast<int>(qstrlen("pressure_valve.pressure_compensator_")));
+			int in = -1, out = -1;
+			double d = 0;
+			bool closer = false;
+			if (kind.startsWith(QLatin1String("closer")) || kind.startsWith(QLatin1String("opener0"))) {
+				in = port("B", "1"); out = port("A", "2");
+				d = p(port("X", "3")) - p(port("XS", "4"));
+				closer = kind.startsWith(QLatin1String("closer"));
+			} else if (kind.startsWith(QLatin1String("upstream"))) {
+				in = port("P"); out = port("A");
+				d = p(out) - p(port("X"));
+				closer = true;
+			} else if (kind.startsWith(QLatin1String("downstream"))) {
+				in = port("P"); out = port("A");
+				d = p(in) - p(port("X"));
+			} else {   // opener_ls: P -> T
+				in = port("P"); out = port("T");
+				d = p(in) - p(port("X"));
+			}
+			const double share = closer ? qBound(0.0, 1.0 - (d - s->p0) / s->dp_end, 1.0) : qBound(0.0, (d - s->p0) / s->dp_end, 1.0);
+			if (in >= 0 || out >= 0) book(in, out, s->flow(p(in), p(out), share), s->e);
+		} else if (fn == QLatin1String("pressure_valve.shock_and_anti_cavitation_valve")) {
+			// R09 (FORMELN.md V12): A (= A1 = A2) and B relieve to T above their opening pressure, T feeds A or B
+			// through a check valve when the work line falls below the tank pressure (anti-cavitation)
+			const int ka = kn.value(QStringLiteral("A1"), kn.value(QStringLiteral("A2"), -1));
+			const int kb = kn.value(QStringLiteral("B1"), kn.value(QStringLiteral("B2"), -1));
+			const int kt = kn.value(QStringLiteral("T"), -1);
+			auto relief = [&](int k, double p0, double band, double rt) {
+				if (k < 0) return;
+				const double share = qBound(0.0, (p(k) - p(kt) - p0) / band, 1.0);
+				if (share > 0) book(k, kt, volumeFlow(p(k), p(kt), rt / std::pow(std::max(share, 1e-3), 2)), s->e);
+				if (p(kt) > p(k)) book(kt, k, volumeFlow(p(kt), p(k), s->rt_free), s->e);
+			};
+			relief(ka, s->p0, s->dp_end, s->rt);
+			relief(kb, s->p0_b, s->dp_end_b, s->rt_b);
+		} else if (fn.startsWith(QLatin1String("shutoff_valve.double_non_return_valve"))) {
+			// R13 (FORMELN.md V16): A1 -> A2 and B1 -> B2 free above the spring p0; the pilot piston (area ratio) opens
+			// the other ball when ratio·(p_pilot − p_in) ≥ (p_out − p_in) + p0, fully over dpEnd; A is unlocked by B1
+			const int ka1 = kn.value(QStringLiteral("A1"), -1), ka2 = kn.value(QStringLiteral("A2"), -1);
+			const int kb1 = kn.value(QStringLiteral("B1"), -1), kb2 = kn.value(QStringLiteral("B2"), -1);
+			auto side = [&](int in, int out, int pilot) {
+				if (in < 0 && out < 0) return;
+				const double drive = s->ratio * (p(pilot) - p(in)) - (p(out) - p(in)) - s->p0;
+				const double share = qBound(0.0, drive / s->dp_end, 1.0);
+				double q = share > 0 ? s->flow(p(in), p(out), share) : 0.0;
+				if (p(in) - p(out) > s->p0) q = std::max(q, s->flow(p(in) - s->p0, p(out)));
+				if (q != 0.0) book(in, out, q, s->e);
+			};
+			side(ka1, ka2, kb1);
+			side(kb1, kb2, ka1);
+		} else if (fn == QLatin1String("pressure_valve.pressure_sequence_valve")) {
+			// R09 (FORMELN.md V13): pneumatic sequence valve opens 1 -> 2 when the pilot 12 (gauge) reaches p0
+			const int k1 = kn.value(QStringLiteral("1"), kn.value(QStringLiteral("C1"), -1));
+			const int k2 = kn.value(QStringLiteral("2"), kn.value(QStringLiteral("C2"), -1));
+			const int k12 = kn.value(QStringLiteral("12"), kn.value(QStringLiteral("C12"), -1));
+			const double share = k12 >= 0 ? qBound(0.0, (p(k12) - P_ATM - s->p0) / s->dp_end, 1.0) : 0.0;
+			if (k1 >= 0 || k2 >= 0) book(k1, k2, s->flow(p(k1), p(k2), share), s->e);
 		} else if (fn == QLatin1String("pressure_valve.pressure_regulator")) {
 			const int in = kn.value(QStringLiteral("1"), kn.value(QStringLiteral("P"), -1));
 			const int out = kn.value(QStringLiteral("2"), kn.value(QStringLiteral("A"), -1));
@@ -2088,7 +3520,21 @@ void SimulationModel::step(double dt)
 		}
 	}
 
-	for (PropValve *v : m_prop_valves) {   // FORMELN.md V05, V06
+	for (PropValve *v : m_prop_valves) {   // FORMELN.md V05, V06, V19
+		if (v->mpye) {
+			v->s = SimPhysics::pt1(v->s, qBound(-1.0, (v->u - 5.0) / 5.0, 1.0), v->tau, dt);
+			// ports by number or by the FluidSIM connector (C1 = 4, C2 = 2, C3 = 5, C4 = 1, C5 = 3)
+			auto port = [&](const char *num, const char *con) {
+				const int k = node(v->e, QLatin1String(num));
+				return k >= 0 ? k : node(v->e, QLatin1String(con));
+			};
+			const int k1 = port("1", "C4"), k2 = port("2", "C2"), k3 = port("3", "C5"), k4 = port("4", "C1"), k5 = port("5", "C3");
+			const double c = v->c_max * mpyeShare(5.0 + 5.0 * v->s);
+			auto edge = [&](int a, int b) { if ((a >= 0 || b >= 0) && c > 0) book(a, b, massFlow(p(a), p(b), c), v->e); };
+			if (v->s > 0) { edge(k1, k4); edge(k2, k3); }
+			else if (v->s < 0) { edge(k1, k2); edge(k4, k5); }
+			continue;
+		}
 		v->s = SimPhysics::pt1(v->s, qBound(-1.0, v->u / 10.0, 1.0), v->tau, dt);
 		const int kp = node(v->e, QStringLiteral("P")), ka = node(v->e, QStringLiteral("A"));
 		const int kb = node(v->e, QStringLiteral("B")), kt = node(v->e, QStringLiteral("T"));
@@ -2131,9 +3577,109 @@ void SimulationModel::step(double dt)
 		if (c > 0) book(s->node, -1, massFlow(p(s->node), P_ATM, c), s->e);
 	}
 
+	for (Intensifier *b : m_intensifiers) {   // FORMELN.md H13
+		const int ki = node(b->e, QStringLiteral("IN")), kr = node(b->e, QStringLiteral("R")), kh = node(b->e, QStringLiteral("H"));
+		b->q_h = 0.0;
+		if (ki < 0 || kh < 0) continue;
+		const double pi = p(ki), pr = p(kr), ph = p(kh);
+		// bypass check valve IN → H; pilot operated check valve H → IN, opened by the return R above IN
+		if (pi > ph) book(ki, kh, volumeFlow(pi, ph, b->rt_cv), b->e);
+		else if (pr - pi >= P_PILOT) book(kh, ki, volumeFlow(ph, pi, b->rt_cv), b->e);
+		// pump piston: stall at r·p_IN - (r - 1)·p_R (gauge), the supply r·q_H, the return (r - 1)·q_H
+		const double stall = P_ATM + b->r * (pi - P_ATM) - (b->r - 1.0) * (pr - P_ATM);
+		const double q = std::clamp(b->k * (stall - ph), 0.0, b->q_in_max / b->r);
+		b->q_h = q;
+		if (q > 0) {
+			book(ki, kh, q, b->e);
+			book(ki, kr, (b->r - 1.0) * q, b->e);
+		}
+		if (b->gleak > 0) book(ki, kr, b->gleak * (pi - pr), b->e);
+	}
+
 	for (Cylinder *z : m_cylinders) {
+		if (z->muscle >= 0) {
+			// R12 fluidic muscle (FORMELN.md M15): tensile force from the data sheet curves, load against the contraction;
+			// velocity semi-implicit in the muscle stiffness and the damping (stable for a light free end)
+			const SimMuscle::Type &mt = SimMuscle::types().at(z->muscle);
+			int ka = node(z->e, QStringLiteral("AM"));
+			if (ka < 0 && z->mcyl == 0)
+				for (Terminal *t : z->e->terminals())
+					if (node(t) >= 0) { ka = node(t); break; }
+			const double bar = ka >= 0 ? (p(ka) - P_ATM) / 1e5 : 0.0;
+			auto hx = [&](double x) { return 100.0 * x / z->muscle_len; };
+			const double fm = SimMuscle::force(mt, hx(z->x), bar);
+			const double dx = 1e-5 * z->muscle_len;
+			const double stiff = std::max(0.0, (SimMuscle::force(mt, hx(z->x - dx), bar) - SimMuscle::force(mt, hx(z->x + dx), bar)) / (2 * dx));
+			double total = fm - z->f_load - z->weight;
+			// FORMELN.md M16: the cylinders push out (against the contraction) with p_AC·A_k − p_BC·A_r each
+			int kac[2] = {-1, -1}, kbc[2] = {-1, -1};
+			if (z->mcyl > 0) {
+				kac[0] = node(z->e, QStringLiteral("AC")); kbc[0] = node(z->e, QStringLiteral("BC"));
+				if (z->mcyl > 1) { kac[1] = node(z->e, QStringLiteral("AC2")); kbc[1] = node(z->e, QStringLiteral("BC2")); }
+				for (int i = 0; i < z->mcyl; ++i)
+					total -= (kac[i] >= 0 ? p(kac[i]) - P_ATM : 0.0) * z->mc_ak - (kbc[i] >= 0 ? p(kbc[i]) - P_ATM : 0.0) * z->mc_ar;
+			}
+			if (m_record_flows) m_cylinder_force.insert(z->e, fm);
+			if (std::abs(z->v) < 1e-4 && std::abs(total) <= z->f_static) {
+				z->v = 0.0;
+			} else {
+				const double dir = std::abs(z->v) >= 1e-4 ? z->v : total;
+				const double f_net = total - std::copysign(z->f_slide, dir);
+				z->v = (z->v + dt / z->m * f_net) / (1.0 + dt * z->damping / z->m + dt * dt * stiff / z->m);
+				z->x += z->v * dt;
+			}
+			double lo = -mt.pre / 100.0 * z->muscle_len, hi = z->stroke;
+			if (z->mcyl > 0) {   // the cylinder strokes limit the contraction: x_cyl = mc_start − x within 0 … mc_max
+				lo = std::max(lo, z->mc_start - z->mc_max);
+				hi = std::min(hi, z->mc_start);
+			}
+			QString end;
+			if (z->x <= lo) { z->x = lo; z->v = std::max(z->v, 0.0); end = QStringLiteral("Vorspanngrenze"); }
+			else if (z->x >= hi) { z->x = hi; z->v = std::min(z->v, 0.0); end = QStringLiteral("maximale Kontraktion"); }
+			for (int i = 0; i < z->mcyl; ++i) {
+				const double xc = z->mc_start - z->x;
+				if (kac[i] >= 0) { vol[kac[i]] += V_DEAD + z->mc_ak * xc; dvdt[kac[i]] -= z->mc_ak * z->v; }
+				if (kbc[i] >= 0) { vol[kbc[i]] += V_DEAD + z->mc_ar * (z->mc_max - xc); dvdt[kbc[i]] += z->mc_ar * z->v; }
+			}
+			if (ka >= 0) {
+				vol[ka] += z->muscleTable(z->muscle_vol, z->x);
+				dvdt[ka] += z->muscleTable(z->muscle_area, z->x) * z->v;
+			}
+			if (end != m_end_position.value(z->label)) {
+				m_end_position.insert(z->label, end);
+				if (!end.isEmpty()) m_messages << Message{m_time, QStringLiteral("%1 %2").arg(z->label, end)};
+			}
+			continue;
+		}
+		if (z->multi) { multiStep(z, dt, vol, dvdt); continue; }
+		if (z->loading) {
+			const int k11 = node(z->e, QStringLiteral("A1.1")), k12 = node(z->e, QStringLiteral("A1.2"));
+			const int k21 = node(z->e, QStringLiteral("A2.1")), k22 = node(z->e, QStringLiteral("A2.2"));
+			auto g = [&](int k) { return k >= 0 ? p(k) - P_ATM : 0.0; };
+			const double fp = g(k11) * z->a_k - g(k12) * z->a_r + g(k21) * z->a_r - g(k22) * z->a_k;
+			if (m_record_flows) m_cylinder_force.insert(z->e, fp);
+			SimPhysics::pistonStep(*z, fp - z->opposing(), dt);
+			if (k11 >= 0) { vol[k11] += V_DEAD + z->a_k * z->x; dvdt[k11] += z->a_k * z->v; }
+			if (k12 >= 0) { vol[k12] += V_DEAD + z->a_r * (z->stroke - z->x); dvdt[k12] -= z->a_r * z->v; }
+			if (k21 >= 0) { vol[k21] += V_DEAD + z->a_r * z->x; dvdt[k21] += z->a_r * z->v; }
+			if (k22 >= 0) { vol[k22] += V_DEAD + z->a_k * (z->stroke - z->x); dvdt[k22] -= z->a_k * z->v; }
+			if (z->cross && (k12 >= 0 || k21 >= 0)) {
+				// R13 (FORMELN.md M14): relief valve and check valve in series between the rod chambers
+				const double d = p(k12) - p(k21);
+				const int hi = d >= 0 ? k12 : k21, lo = d >= 0 ? k21 : k12;
+				const double s = std::clamp((std::abs(d) - z->xr_p0) / z->xr_dp, 0.0, 1.0);
+				if (s > 0) book(hi, lo, volumeFlow(p(hi), p(lo), z->xr_rt / (s * s) + z->xr_cv), z->e);
+			}
+			const QString end = z->x <= 0.0005 ? QStringLiteral("hinten")
+				: (z->x >= z->stroke - 0.0005 ? QStringLiteral("vorne") : QString());
+			if (end != m_end_position.value(z->label)) {
+				m_end_position.insert(z->label, end);
+				if (!end.isEmpty()) m_messages << Message{m_time, QStringLiteral("%1 Endlage %2").arg(z->label, end)};
+			}
+			continue;
+		}
 		const int ka = node(z->e, QStringLiteral("A")), kb = node(z->e, QStringLiteral("B"));
-		const double f = (p(ka) - P_ATM) * z->a_k - (p(kb) - P_ATM) * z->a_r - z->f_load - z->f_spring;
+		const double f = (p(ka) - P_ATM) * z->a_k - (p(kb) - P_ATM) * z->a_r - z->opposing();
 		if (m_record_flows) m_cylinder_force.insert(z->e, (p(ka) - P_ATM) * z->a_k - (p(kb) - P_ATM) * z->a_r);
 		SimPhysics::pistonStep(*z, f, dt);
 		if (ka >= 0) { vol[ka] += V_DEAD + z->a_k * z->x; dvdt[ka] += z->a_k * z->v; }
@@ -2227,6 +3773,27 @@ void SimulationModel::step(double dt)
 					  .arg(s->force, 0, 'f', 2).arg(s->safety * s->weight, 0, 'f', 2)};
 		}
 	}
+	// R17: the analog circuit, one implicit Euler step to the end of this step; stage 2: contacts and PLC outputs
+	// of this step go in, PLC analog inputs come out (E06, E08)
+	if (!m_circuit.isEmpty() && !m_failed) {
+		for (const Contact *c : std::as_const(m_contacts))
+			if (c->circuit >= 0) m_circuit.setClosed(c->circuit, contactClosed(*c));
+		for (const CircuitIo &io : std::as_const(m_circuit_io)) {
+			if (!io.output) continue;
+			double x = 0.0;
+			for (const QString &nm : io.names) x = m_plc_vars.value(nm, x);
+			m_circuit.setSource(io.part, io.raw > 0 ? io.umin + x / io.raw * (io.umax - io.umin) : x);
+		}
+		if (!m_circuit.step(m_time + dt, dt)) fail(QStringLiteral("Stromkreis: %1").arg(m_circuit.failure()));
+		for (const QString &text : m_circuit.takeTrips()) m_messages << Message{m_time + dt, text};
+		if (!m_failed)
+			for (const CircuitIo &io : std::as_const(m_circuit_io)) {
+				if (io.output) continue;
+				const double u = m_circuit.parts().at(io.part).v;
+				const double x = io.raw > 0 ? (u - io.umin) / (io.umax - io.umin) * io.raw : u;
+				for (const QString &nm : io.names) m_plc_vars.insert(nm, x);
+			}
+	}
 	m_time += dt;
 }
 
@@ -2235,6 +3802,16 @@ void SimulationModel::runUntil(double time, double dt)
 	// a failed run does not advance the time: stop instead of looping
 	while (!m_failed && m_time + dt <= time + 1e-12)
 		step(dt);
+}
+
+bool SimulationModel::runUntilChange(double limit, double dt)
+{
+	const auto before = m_messages.size();
+	while (!m_failed && m_time + dt <= limit + 1e-12) {
+		step(dt);
+		if (m_messages.size() > before) return true;
+	}
+	return false;
 }
 
 // ------------------------------------------------------------------------- input / state
@@ -2269,6 +3846,7 @@ bool SimulationModel::setSetpoint(const QString &lbl, double volts)
 		}
 	for (PropValve *v : m_prop_valves)
 		if (v->label == lbl) {
+			if (v->mpye) volts = qBound(0.0, volts, 10.0);
 			if (v->u != volts) m_messages << Message{m_time, QStringLiteral("%1 Sollwert %2 V").arg(lbl).arg(volts, 0, 'g', 4)};
 			v->u = volts;
 			return true;
@@ -2319,6 +3897,12 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 	for (const Pump *pu : m_pumps) fluid_parts << pu->e;
 	for (const FlowValve *s : m_flow_valves) fluid_parts << s->e;
 	for (const PropValve *v : m_prop_valves) fluid_parts << v->e;
+	for (const LsUnit *u : m_ls_units) fluid_parts << u->e;
+	for (const Valve63 *v : m_valves63) fluid_parts << v->e;
+	for (const Steering *s : m_steerings) fluid_parts << s->e;
+	for (const Joystick *j : m_joysticks) fluid_parts << j->e;
+	for (const LsBlock *b : m_ls_blocks) fluid_parts << b->e;
+	for (const PriorityValve *v : m_priority_valves) fluid_parts << v->e;
 	for (const Pipe *pi : m_pipes) fluid_parts << pi->e;
 	for (const Ejector *v : m_ejectors) fluid_parts << v->e;
 	QSet<Element *> seen;
@@ -2368,7 +3952,24 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 		out << Signal{QStringLiteral("hold:") + s->label, QStringLiteral("state"), QStringLiteral("1"),
 					  QStringLiteral("1 = hält (Haltekraft ≥ s·m·g)"), s->label, QString()};
 	}
+	for (const Intensifier *b : m_intensifiers)
+		out << Signal{QStringLiteral("qh:") + b->label, QStringLiteral("volume_flow"), QStringLiteral("m3/s"),
+					  QStringLiteral("vom Pumpkolben nach H gefördert (ohne Bypass)"), b->label, QString()};
 	for (const Cylinder *z : m_cylinders) {
+		if (z->muscle >= 0) {
+			out << Signal{QStringLiteral("x:") + z->label, QStringLiteral("position"), QStringLiteral("m"),
+						  QStringLiteral("Kontraktion, 0 = Nennlänge, negativ = vorgespannt"), z->label, QString()};
+			out << Signal{QStringLiteral("h:") + z->label, QStringLiteral("ratio"), QStringLiteral("%"),
+						  QStringLiteral("Kontraktion in % der Nennlänge"), z->label, QString()};
+			out << Signal{QStringLiteral("v:") + z->label, QStringLiteral("velocity"), QStringLiteral("m/s"),
+						  QStringLiteral("positiv: kontrahierend"), z->label, QString()};
+			out << Signal{QStringLiteral("F:") + z->label, QStringLiteral("force"), QStringLiteral("N"),
+						  QStringLiteral("Zugkraft des Muskels nach dem Datenblatt (ohne Last und Reibung)"), z->label, QString()};
+			if (z->mcyl > 0)
+				out << Signal{QStringLiteral("xz:") + z->label, QStringLiteral("position"), QStringLiteral("m"),
+							  QStringLiteral("Weg der Führungszylinder (xStart − Kontraktion), wie FluidSIMs x"), z->label, QString()};
+			continue;
+		}
 		if (z->rotary) {
 			out << Signal{QStringLiteral("x:") + z->label, QStringLiteral("angle"), QStringLiteral("rad"),
 						  QStringLiteral("0 = Ausgangslage"), z->label, QString()};
@@ -2384,6 +3985,9 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 					  QStringLiteral("positiv: ausfahrend"), z->label, QString()};
 		out << Signal{QStringLiteral("F:") + z->label, QStringLiteral("force"), QStringLiteral("N"),
 					  QStringLiteral("Druckkraft auf den Kolben, positiv: ausfahrend (ohne Reibung, Last, Feder)"), z->label, QString()};
+		if (z->multi)
+			out << Signal{QStringLiteral("x1:") + z->label, QStringLiteral("position"), QStringLiteral("m"),
+						  QStringLiteral("hinterer Kolben des Mehrstellungszylinders, 0 = eingefahren"), z->label, QString()};
 	}
 	for (const Motor *mo : m_motors) {
 		out << Signal{QStringLiteral("omega:") + mo->label, QStringLiteral("angular_velocity"), QStringLiteral("rad/s"),
@@ -2395,6 +3999,21 @@ QList<SimulationModel::Signal> SimulationModel::signalList() const
 		out << Signal{QStringLiteral("P:") + mo->label, QStringLiteral("power"), QStringLiteral("W"),
 					  QStringLiteral("Wellenleistung tau·omega"), mo->label, QString()};
 	}
+	for (const AnalogCircuit::Part &cp : m_circuit.parts()) {
+		if (cp.kind == AnalogCircuit::Kind::Ground) continue;
+		out << Signal{QStringLiteral("u:") + cp.label, QStringLiteral("voltage"), QStringLiteral("V"),
+					  QStringLiteral("Spannung am Bauteil (erster gegen zweiten Anschluss)"), cp.label, QString()};
+		out << Signal{QStringLiteral("i:") + cp.label, QStringLiteral("current"), QStringLiteral("A"),
+					  QStringLiteral("Strom durch das Bauteil vom ersten zum zweiten Anschluss"), cp.label, QString()};
+		out << Signal{QStringLiteral("pel:") + cp.label, QStringLiteral("power"), QStringLiteral("W"),
+					  QStringLiteral("aufgenommene elektrische Leistung u·i (Quellen negativ)"), cp.label, QString()};
+	}
+	for (const Fault *f : m_faults)
+		out << Signal{QStringLiteral("fault:") + f->label, QStringLiteral("state"), QStringLiteral("1"),
+					  QStringLiteral("Fehler „%1“ wirksam (1) oder nicht (0)").arg(f->text), f->label, QString()};
+	for (const Steering *s : m_steerings)
+		out << Signal{QStringLiteral("phi:") + s->label, QStringLiteral("angle"), QStringLiteral("rad"),
+					  QStringLiteral("Lenkradwinkel aus der Dosierpumpe, 0 beim Start"), s->label, QString()};
 	for (const Pump *pu : m_pumps) {
 		const QString l = label(pu->e).isEmpty() ? pu->e->name() : label(pu->e);
 		out << Signal{QStringLiteral("P:") + l, QStringLiteral("power"), QStringLiteral("W"),
@@ -2412,6 +4031,77 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 	const int colon = static_cast<int>(id.indexOf(QLatin1Char(':')));
 	if (colon <= 0) return std::nan("");
 	const QString kind = id.left(colon), rest = id.mid(colon + 1);
+	if (kind == QLatin1String("u") || kind == QLatin1String("i") || kind == QLatin1String("pel")) {
+		// a part of the analog circuit; u: of proportional valves and analog blocks follows below
+		if (const AnalogCircuit::Part *cp = m_circuit.part(rest)) {
+			if (ok) *ok = true;
+			return kind == QLatin1String("u") ? cp->v : kind == QLatin1String("i") ? cp->i : cp->v * cp->i;
+		}
+		if (kind != QLatin1String("u")) return std::nan("");
+	}
+	if (kind == QLatin1String("omega") || kind == QLatin1String("tau") || kind == QLatin1String("n")) {
+		// R17 stage 5: shaft of an electric motor of the circuit (rad/s, N·m, 1/min); else the hydraulic motors below
+		const AnalogCircuit::Part *cp = m_circuit.part(rest);
+		if (cp && (cp->kind == AnalogCircuit::Kind::DcMotor || cp->kind == AnalogCircuit::Kind::InductionMotor)) {
+			if (ok) *ok = true;
+			return kind == QLatin1String("tau") ? cp->i2 : kind == QLatin1String("n") ? cp->omega * 60.0 / (2.0 * M_PI) : cp->omega;
+		}
+	}
+	if (kind == QLatin1String("trip") || kind == QLatin1String("w")) {   // R17 stage 4: tripped (1/0), thermal state [A²s]
+		const AnalogCircuit::Part *cp = m_circuit.part(rest);
+		const bool prot = cp && cp->kind == AnalogCircuit::Kind::Protection;
+		if (ok) *ok = prot;
+		return !prot ? std::nan("") : kind == QLatin1String("w") ? cp->w : (cp->tripped ? 1.0 : 0.0);
+	}
+	if (kind == QLatin1String("ib")) {      // R17 stage 3: base current of a transistor, input current of an op-amp
+		const AnalogCircuit::Part *cp = m_circuit.part(rest);
+		if (ok) *ok = cp != nullptr;
+		return cp ? cp->i2 : std::nan("");
+	}
+	if (kind == QLatin1String("plc")) {     // a PLC variable (R17 stage 2: analog values of AI/AQ)
+		const QString nm = PlcProgram::normalized(rest);
+		if (ok) *ok = m_plc_vars.contains(nm);
+		return m_plc_vars.contains(nm) ? m_plc_vars.value(nm) : std::nan("");
+	}
+	if (kind == QLatin1String("fault")) {
+		bool any = false, on = false;
+		for (const Fault *f : m_faults)
+			if (f->label == rest) { any = true; on = on || f->active(m_time); }
+		if (ok) *ok = any;
+		return any ? (on ? 1.0 : 0.0) : std::nan("");
+	}
+	if (kind == QLatin1String("h")) {      // R12 muscle contraction [%]
+		for (const Cylinder *z : m_cylinders)
+			if (z->label == rest && z->muscle >= 0) {
+				if (ok) *ok = true;
+				return 100.0 * z->x / z->muscle_len;
+			}
+		return std::nan("");
+	}
+	if (kind == QLatin1String("xz")) {     // FORMELN.md M16: position of the guide cylinders [m]
+		for (const Cylinder *z : m_cylinders)
+			if (z->label == rest && z->mcyl > 0) {
+				if (ok) *ok = true;
+				return z->mc_start - z->x;
+			}
+		return std::nan("");
+	}
+	if (kind == QLatin1String("qh")) {     // R12 pressure intensifier: pumped flow into H [m³/s]
+		for (const Intensifier *b : m_intensifiers)
+			if (b->label == rest) {
+				if (ok) *ok = true;
+				return b->q_h;
+			}
+		return std::nan("");
+	}
+	if (kind == QLatin1String("x1")) {
+		for (const Cylinder *z : m_cylinders)
+			if (z->label == rest && z->multi) {
+				if (ok) *ok = true;
+				return z->x1;
+			}
+		return std::nan("");
+	}
 	if (kind == QLatin1String("x") || kind == QLatin1String("v") || kind == QLatin1String("F")) {
 		for (const Cylinder *z : m_cylinders)
 			if (z->label == rest) {
@@ -2429,6 +4119,12 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 				return kind == QLatin1String("omega") ? mo->shaft.omega : kind == QLatin1String("phi") ? mo->shaft.phi
 					 : kind == QLatin1String("tau") ? tau : tau * mo->shaft.omega;
 			}
+		if (kind == QLatin1String("phi"))
+			for (const Steering *s : m_steerings)
+				if (s->label == rest) {
+					if (ok) *ok = true;
+					return s->phi;
+				}
 		if (kind == QLatin1String("P"))
 			for (const Pump *pu : m_pumps)
 				if ((label(pu->e).isEmpty() ? pu->e->name() : label(pu->e)) == rest) {
@@ -2468,27 +4164,30 @@ double SimulationModel::signalValue(const QString &id, bool *ok) const
 			if (v->label == rest) { if (ok) *ok = true; return v->position + 1; }
 		return std::nan("");
 	}
-	const int dot = static_cast<int>(rest.lastIndexOf(QLatin1Char('.')));
-	if (dot <= 0) return std::nan("");
-	const QString part = rest.left(dot), port = rest.mid(dot + 1);
-	QSet<Element *> seen;
-	for (auto it = m_node_of.constBegin(); it != m_node_of.constEnd(); ++it) {
-		Element *e = it.key()->parentElement();
-		if (!e || seen.contains(e) || partName(e) != part) continue;
-		seen << e;
-		const QList<Terminal *> ts = e->terminals();
-		for (int i = 0; i < ts.size(); ++i) {
-			Terminal *u = ts.at(i);
-			const int k = node(u);
-			if (!isFluid(u) || k < 0 || portName(u, i) != port) continue;
-			if (kind == QLatin1String("p")) { if (ok) *ok = true; return m_p.at(k) - P_ATM; }
-			if (kind == QLatin1String("pa")) { if (ok) *ok = true; return m_p.at(k); }
-			if (kind == QLatin1String("q")) {
-				if (!m_record_flows) return std::nan("");     // not recorded: no invented 0
-				if (ok) *ok = true;
-				return m_port_flow.value(qMakePair(e, k), 0.0);
+	// part and port split at a dot; port names may hold dots themselves (A1.2, X1.1): try every split, last first
+	for (int dot = static_cast<int>(rest.lastIndexOf(QLatin1Char('.'))); dot > 0;
+		 dot = static_cast<int>(rest.lastIndexOf(QLatin1Char('.'), dot - 1))) {
+		const QString part = rest.left(dot), port = rest.mid(dot + 1);
+		QSet<Element *> seen;
+		for (auto it = m_node_of.constBegin(); it != m_node_of.constEnd(); ++it) {
+			Element *e = it.key()->parentElement();
+			if (!e || seen.contains(e) || partName(e) != part) continue;
+			seen << e;
+			const QList<Terminal *> ts = e->terminals();
+			for (int i = 0; i < ts.size(); ++i) {
+				Terminal *u = ts.at(i);
+				const int k = node(u);
+				if (!isFluid(u) || k < 0 || portName(u, i) != port) continue;
+				if (kind == QLatin1String("p")) { if (ok) *ok = true; return m_p.at(k) - P_ATM; }
+				if (kind == QLatin1String("pa")) { if (ok) *ok = true; return m_p.at(k); }
+				if (kind == QLatin1String("q")) {
+					if (!m_record_flows) return std::nan("");     // not recorded: no invented 0
+					if (ok) *ok = true;
+					return m_port_flow.value(qMakePair(e, k), 0.0);
+				}
 			}
 		}
+		if (dot == 0) break;
 	}
 	return std::nan("");
 }

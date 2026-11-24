@@ -135,9 +135,15 @@ double seconds(const QString &value, const QString &unit)
 
 struct Grafcet::Step {
 	Element *e = nullptr;
-	QString number, var;
+	QString number, var, shown;
 	int in = 0, out = 0, act = 0;       // net keys
 	bool initial = false, active = false;
+	bool enclosing = false, macro = false;
+	int part = -1;                      // partial grafcet (by name; the unnamed chains form the global grafcet)
+	int comp = -1;                      // connected chain
+	QStringList encloses;               // R14: names of the partial grafcets this enclosing step encloses
+	Step *macro_in = nullptr, *macro_out = nullptr;   // R14: input step E… and output step S… of a macro step
+	int expansion = -1;                 // R14: chain of the macro expansion
 	double since = 0.0;
 };
 
@@ -155,9 +161,23 @@ struct Grafcet::Action {
 	Kind kind = Kind::Action;
 	int key = 0;
 	Step *step = nullptr;
+	QString text;
 	QStringList outputs;                 // continuous actions
 	std::shared_ptr<PlcProgram> program;  // stored actions
 	std::shared_ptr<PlcProgram> condition;
+	QString condition_text;
+	// R14 forcing order G…{…}: target partial grafcet, mode and the step numbers of the forced situation
+	QString force_target;
+	enum class Force { None, Situation, Freeze, Init } force = Force::None;
+	QStringList force_steps;
+};
+
+struct Grafcet::Partial {
+	QString name;
+	QList<Step *> steps;
+	Step *encloser = nullptr;            // R14: the enclosing step, if this partial grafcet is enclosed
+	bool frozen = false;                 // R14: forced in this cycle, it does not evolve
+	QString forced_as;                   // last forced situation, for the message
 };
 
 namespace {
@@ -168,6 +188,11 @@ QList<Element *> sortedElements(Diagram *d)
 	QList<Element *> out = d->elements();
 	std::sort(out.begin(), out.end(), [](const Element *a, const Element *b) { return a->uuid() < b->uuid(); });
 	return out;
+}
+
+QString info(const Element *e, const char *key)
+{
+	return e->elementInformations()[QLatin1String(key)].toString().trimmed();
 }
 }
 
@@ -216,6 +241,30 @@ QString Grafcet::toStructuredText(const QString &text)
 		return m.captured(1) + labelVariable(QStringLiteral("-") + m.captured(2));
 	});
 	return s;
+}
+
+QString Grafcet::localized(const QString &structured, int part) const
+{
+	// R14: a step number used in more than one partial grafcet is a variable of its own per partial grafcet;
+	// inside a partial grafcet X3 means its own step 3
+	// a step of another partial grafcet: G1.X2 (FluidSIM notation)
+	static const QRegularExpression cross(QStringLiteral("(?<![A-Za-z0-9_.])[Gg]([A-Za-z0-9_]+)\\.[Xx]([A-Za-z0-9]+)(?![A-Za-z0-9_])"));
+	const QString crossed = replaceAll(structured, cross, [&](const QRegularExpressionMatch &m) {
+		const QString g = QStringLiteral("G") + m.captured(1).toUpper(), n = m.captured(2).toUpper();
+		for (const Partial *p : m_parts)
+			if (p->name == g)
+				for (const Step *s : p->steps)
+					if (s->number == n) return s->var;
+		return m.captured(0);
+	});
+	if (part < 0 || part >= m_parts.size()) return crossed;
+	static const QRegularExpression step_ref(QStringLiteral("(?<![A-Za-z0-9_.])[Xx]([A-Za-z0-9]+)(?![A-Za-z0-9_])"));
+	return replaceAll(crossed, step_ref, [&](const QRegularExpressionMatch &m) {
+		const QString n = m.captured(1).toUpper();
+		for (const Step *s : m_parts.at(part)->steps)
+			if (s->number == n) return s->var;
+		return m.captured(0);
+	});
 }
 
 Grafcet::Grafcet(const QList<Diagram *> &diagrams, const std::function<int(Terminal *)> &node)
@@ -272,7 +321,6 @@ Grafcet::Grafcet(const QList<Diagram *> &diagrams, const std::function<int(Termi
 
 	struct Jump { int in; QString target; };
 	QList<Jump> jumps;
-	QHash<QString, Step *> by_number;
 	for (const auto &ek : elements) {
 		Element *e = ek.first;
 		switch (ek.second) {
@@ -280,16 +328,18 @@ Grafcet::Grafcet(const QList<Diagram *> &diagrams, const std::function<int(Termi
 			case Kind::Step: {
 				auto *s = new Step;
 				s->e = e;
-				s->initial = ek.second == Kind::InitialStep;
+				s->initial = ek.second == Kind::InitialStep || info(e, "sim_initial") == QLatin1String("1")
+							 || info(e, "sim_activation") == QLatin1String("1");
+				const QString file = QFileInfo(e->location().toString()).fileName();
+				s->enclosing = file.startsWith(QLatin1String("20202002"));
+				s->macro = file.startsWith(QLatin1String("20202003"));
 				s->number = stepNumber(firstText(e));
 				if (s->number.isEmpty()) {
 					s->number = QStringLiteral("?%1").arg(m_steps.size() + 1);
 					m_errors << QStringLiteral("GRAFCET: Schritt ohne Nummer (Kennzeichen)");
 				}
-				s->var = PlcProgram::normalized(QStringLiteral("X") + s->number);
-				if (by_number.contains(s->number))
-					m_errors << QStringLiteral("GRAFCET: Schritt %1 gibt es mehrmals").arg(s->number);
-				by_number.insert(s->number, s);
+				const QString enc = info(e, "sim_encloses");
+				if (!enc.isEmpty()) s->encloses = enc.split(QRegularExpression(QStringLiteral("[,; ]+")), Qt::SkipEmptyParts);
 				s->in = terminalKey(e, Qet::North);
 				s->out = terminalKey(e, Qet::South);
 				s->act = terminalKey(e, Qet::East);
@@ -302,14 +352,8 @@ Grafcet::Grafcet(const QList<Diagram *> &diagrams, const std::function<int(Termi
 				t->text = firstText(e);
 				t->in = terminalKey(e, Qet::North);
 				t->out = terminalKey(e, Qet::South);
-				t->condition = std::make_shared<PlcProgram>();
-				QString error;
 				if (t->text.isEmpty())
 					m_errors << QStringLiteral("GRAFCET: Transition ohne Weiterschaltbedingung (gilt als 1)");
-				if (!t->condition->compileExpression(toStructuredText(t->text), &error)) {
-					m_errors << QStringLiteral("GRAFCET: Transition „%1“: %2").arg(t->text, error);
-					t->condition.reset();
-				}
 				m_transitions << t;
 				break;
 			}
@@ -322,35 +366,24 @@ Grafcet::Grafcet(const QList<Diagram *> &diagrams, const std::function<int(Termi
 				a->e = e;
 				a->kind = ek.second;
 				a->key = terminalKey(e, Qet::West);
-				const QString text = boxText(e);
-				QString error;
-				if (a->kind == Kind::Action || a->kind == Kind::ConditionalAction) {
-					const QStringList parts = text.split(QRegularExpression(QStringLiteral("[,;\\n]")), Qt::SkipEmptyParts);
-					for (const QString &raw : parts) {
-						const QString part = toStructuredText(raw).trimmed();
-						if (part.contains(QLatin1String(":=")))
-							m_errors << QStringLiteral("GRAFCET: kontinuierliche Aktion „%1“ nennt nur Variablen; "
-													   "Zuweisungen gehören in eine speichernde Aktion").arg(text);
-						else if (!part.isEmpty())
-							a->outputs << PlcProgram::normalized(part);
-					}
-				} else {
-					a->program = std::make_shared<PlcProgram>();
-					QString source = toStructuredText(text);
-					if (!source.trimmed().endsWith(QLatin1Char(';'))) source += QLatin1Char(';');
-					if (!a->program->compile(source, &error)) {
-						m_errors << QStringLiteral("GRAFCET: Aktion „%1“: %2").arg(text, error);
-						a->program.reset();
-					}
-				}
+				a->text = boxText(e);
 				if (a->kind == Kind::ConditionalAction || a->kind == Kind::ActionOnEvent) {
-					const QString cond = textAbove(e);
-					a->condition = std::make_shared<PlcProgram>();
-					if (cond.isEmpty())
-						m_errors << QStringLiteral("GRAFCET: Aktion „%1“ ohne Bedingung über dem Kasten").arg(text);
-					if (!a->condition->compileExpression(toStructuredText(cond), &error)) {
-						m_errors << QStringLiteral("GRAFCET: Bedingung „%1“: %2").arg(cond, error);
-						a->condition.reset();
+					a->condition_text = textAbove(e);
+					if (a->condition_text.isEmpty())
+						m_errors << QStringLiteral("GRAFCET: Aktion „%1“ ohne Bedingung über dem Kasten").arg(a->text);
+				}
+				// R14 forcing order: G5{8, 9}, G5{}, G5{*} (freeze), G5{INIT}
+				static const QRegularExpression forcing(QStringLiteral("^\\s*(G[A-Za-z0-9_]+)\\s*\\{([^}]*)\\}\\s*$"));
+				const auto fm = forcing.match(a->text);
+				if (a->kind == Kind::Action && fm.hasMatch()) {
+					a->force_target = fm.captured(1).toUpper();
+					const QString inner = fm.captured(2).trimmed();
+					if (inner == QLatin1String("*")) a->force = Action::Force::Freeze;
+					else if (inner.compare(QLatin1String("INIT"), Qt::CaseInsensitive) == 0) a->force = Action::Force::Init;
+					else {
+						a->force = Action::Force::Situation;
+						for (const QString &n : inner.split(QRegularExpression(QStringLiteral("[,; ]+")), Qt::SkipEmptyParts))
+							a->force_steps << stepNumber(n);
 					}
 				}
 				m_actions << a;
@@ -364,24 +397,147 @@ Grafcet::Grafcet(const QList<Diagram *> &diagrams, const std::function<int(Termi
 		}
 	}
 
-	// the chart: steps before and after every transition
-	for (Transition *t : m_transitions) {
+	// the chart: steps before and after every transition (jumps later, inside their partial grafcet)
+	for (Transition *t : m_transitions)
 		for (Step *s : m_steps) {
 			if (s->out == t->in) t->before << s;
 			if (s->in == t->out) t->after << s;
 		}
-		for (const Jump &j : jumps)
-			if (j.in == t->out) {
-				if (Step *s = by_number.value(j.target)) {
-					if (!t->after.contains(s)) t->after << s;
-				} else {
-					m_errors << QStringLiteral("GRAFCET: Sprung zu Schritt %1, den es nicht gibt").arg(j.target);
+
+	// R14 partial grafcets: the connected parts of the chart (steps joined by transitions); a jump stays inside the
+	// partial grafcet of its transition
+	QHash<Step *, Step *> up;
+	std::function<Step *(Step *)> top = [&](Step *s) { while (up.value(s, s) != s) s = up.value(s, s); return s; };
+	auto unite = [&](Step *a, Step *b) { Step *ra = top(a), *rb = top(b); if (ra != rb) up.insert(ra, rb); };
+	for (Transition *t : m_transitions) {
+		QList<Step *> both = t->before + t->after;
+		for (int i = 1; i < both.size(); ++i) unite(both.at(0), both.at(i));
+	}
+	auto partOfTransition = [&](Transition *t) { return !t->before.isEmpty() ? top(t->before.first()) : nullptr; };
+	// a jump: the step of that number in the partial grafcet of its transition, else the only one in the project
+	for (Transition *t : m_transitions)
+		for (const Jump &j : jumps) {
+			if (j.in != t->out) continue;
+			Step *found = nullptr;
+			int count = 0;
+			for (Step *s : m_steps)
+				if (s->number == j.target) {
+					++count;
+					if (!found || (partOfTransition(t) && top(s) == partOfTransition(t))) found = s;
 				}
+			if (count > 1 && !(found && partOfTransition(t) && top(found) == partOfTransition(t))) found = nullptr;
+			if (found) {
+				if (!t->after.contains(found)) t->after << found;
+				if (!t->before.isEmpty()) unite(t->before.first(), found);
+			} else {
+				m_errors << QStringLiteral("GRAFCET: Sprung zu Schritt %1, den es nicht gibt").arg(j.target);
 			}
+		}
+	// chains, then partial grafcets: all chains with the same name sim_grafcet (FluidSIM: the steps inside one
+	// Teil-GRAFCET frame) form one partial grafcet; the chains without a name form the global grafcet (name empty)
+	QHash<Step *, int> index;
+	QList<QString> comp_name;
+	for (Step *s : m_steps) {
+		Step *r = top(s);
+		if (!index.contains(r)) {
+			index.insert(r, static_cast<int>(comp_name.size()));
+			comp_name << QString();
+		}
+		s->comp = index.value(r);
+		const QString n = info(s->e, "sim_grafcet").toUpper();
+		if (n.isEmpty()) continue;
+		if (!comp_name.at(s->comp).isEmpty() && comp_name.at(s->comp) != n)
+			m_errors << QStringLiteral("GRAFCET: Kette mit zwei Teilgrafcet-Namen (%1, %2)").arg(comp_name.at(s->comp), n);
+		comp_name[s->comp] = n;
+	}
+	for (Step *s : m_steps) {
+		const QString n = comp_name.at(s->comp);
+		int p = -1;
+		for (int i = 0; i < m_parts.size(); ++i)
+			if (m_parts.at(i)->name == n) p = i;
+		if (p < 0) {
+			p = static_cast<int>(m_parts.size());
+			m_parts << new Partial;
+			m_parts.last()->name = n;
+		}
+		s->part = p;
+		m_parts.at(p)->steps << s;
+	}
+	auto partByName = [&](const QString &n) {
+		for (int i = 0; i < m_parts.size(); ++i)
+			if (!n.isEmpty() && m_parts.at(i)->name.compare(n, Qt::CaseInsensitive) == 0) return i;
+		return -1;
+	};
+	// step variables: X<n> in the global grafcet and when the number is unique, else <G>_X<n> (instances, R14)
+	QHash<QString, int> uses;
+	for (Step *s : m_steps) ++uses[s->number];
+	for (Step *s : m_steps) {
+		const bool unique = uses.value(s->number) == 1 || m_parts.at(s->part)->name.isEmpty();
+		s->var = PlcProgram::normalized(unique ? QStringLiteral("X") + s->number
+											   : m_parts.at(s->part)->name + QStringLiteral("_X") + s->number);
+		s->shown = unique ? s->number : m_parts.at(s->part)->name + QLatin1Char('.') + s->number;
+	}
+	for (Partial *p : m_parts) {
+		QSet<QString> seen;
+		for (const Step *s : p->steps) {
+			if (seen.contains(s->number))
+				m_errors << QStringLiteral("GRAFCET: Schritt %1 gibt es mehrmals in %2")
+								.arg(s->number, p->name.isEmpty() ? QStringLiteral("dem globalen GRAFCET") : p->name);
+			seen << s->number;
+		}
+	}
+	// R14 enclosing steps: sim_encloses names the enclosed partial grafcets (default G<number of the step>);
+	// in an enclosed partial grafcet the initial steps are its activation steps (IEC 60848: marked *)
+	for (Step *s : m_steps) {
+		if (!s->enclosing) continue;
+		if (s->encloses.isEmpty()) s->encloses << QStringLiteral("G") + s->number;
+		for (const QString &n : std::as_const(s->encloses)) {
+			const int p = partByName(n);
+			if (p < 0 || p == s->part) {
+				m_errors << QStringLiteral("GRAFCET: einschließender Schritt %1 – Teilgrafcet %2 fehlt").arg(s->shown, n);
+				continue;
+			}
+			if (m_parts.at(p)->encloser)
+				m_errors << QStringLiteral("GRAFCET: Teilgrafcet %1 ist zweimal eingeschlossen").arg(n);
+			m_parts.at(p)->encloser = s;
+			bool any = false;
+			for (const Step *x : m_parts.at(p)->steps) any = any || x->initial;
+			if (!any) m_errors << QStringLiteral("GRAFCET: eingeschlossener Teilgrafcet %1 ohne Aktivierungsschritt (Anfangsschritt-Symbol)").arg(n);
+		}
+	}
+	// R14 macro steps M<n>: expansion from the input step E<n> to the output step S<n>
+	for (Step *s : m_steps) {
+		if (!s->macro) continue;
+		QString digits = s->number;
+		if (digits.startsWith(QLatin1Char('M'))) digits.remove(0, 1);
+		for (Step *x : m_steps) {
+			if (x->number == QStringLiteral("E") + digits) s->macro_in = x;
+			if (x->number == QStringLiteral("S") + digits) s->macro_out = x;
+		}
+		if (!s->macro_in || !s->macro_out || s->macro_in->comp != s->macro_out->comp) {
+			m_errors << QStringLiteral("GRAFCET: Makroschritt %1 ohne Expansion E%2 … S%2").arg(s->shown, digits);
+			s->macro_in = s->macro_out = nullptr;
+			continue;
+		}
+		s->expansion = s->macro_in->comp;
+		for (const Step *x : std::as_const(m_steps))
+			if (x->comp == s->expansion && x->initial)
+				m_errors << QStringLiteral("GRAFCET: Expansion von %1 hat einen Anfangsschritt").arg(s->shown);
+	}
+
+	// receptivities and actions, each in its partial grafcet
+	for (Transition *t : m_transitions) {
 		if (t->before.isEmpty())
 			m_errors << QStringLiteral("GRAFCET: Transition „%1“ hat keinen Schritt davor").arg(t->text);
 		if (t->after.isEmpty())
 			m_errors << QStringLiteral("GRAFCET: Transition „%1“ hat keinen Schritt danach").arg(t->text);
+		const int part = t->before.isEmpty() ? -1 : t->before.first()->part;
+		t->condition = std::make_shared<PlcProgram>();
+		QString error;
+		if (!t->condition->compileExpression(localized(toStructuredText(t->text), part), &error)) {
+			m_errors << QStringLiteral("GRAFCET: Transition „%1“: %2").arg(t->text, error);
+			t->condition.reset();
+		}
 	}
 	for (Action *a : m_actions) {
 		for (Step *s : m_steps)
@@ -399,12 +555,50 @@ Grafcet::Grafcet(const QList<Diagram *> &diagrams, const std::function<int(Termi
 				}
 			}
 		}
-		if (!a->step) m_errors << QStringLiteral("GRAFCET: Aktion „%1“ gehört zu keinem Schritt").arg(boxText(a->e));
+		if (!a->step) m_errors << QStringLiteral("GRAFCET: Aktion „%1“ gehört zu keinem Schritt").arg(a->text);
+		const int part = a->step ? a->step->part : -1;
+		QString error;
+		if (a->force != Action::Force::None) {
+			const int p = partByName(a->force_target);
+			if (p < 0) m_errors << QStringLiteral("GRAFCET: Zwangssteuerung „%1“ – Teilgrafcet %2 fehlt").arg(a->text, a->force_target);
+			else if (p == part) m_errors << QStringLiteral("GRAFCET: Zwangssteuerung „%1“ zwingt den eigenen Teilgrafcet").arg(a->text);
+			else
+				for (const QString &n : std::as_const(a->force_steps)) {
+					bool ok = false;
+					for (const Step *s : m_parts.at(p)->steps) ok = ok || s->number == n;
+					if (!ok) m_errors << QStringLiteral("GRAFCET: Zwangssteuerung „%1“ – Schritt %2 nicht in %3").arg(a->text, n, a->force_target);
+				}
+		} else if (a->kind == Kind::Action || a->kind == Kind::ConditionalAction) {
+			const QStringList parts = a->text.split(QRegularExpression(QStringLiteral("[,;\\n]")), Qt::SkipEmptyParts);
+			for (const QString &raw : parts) {
+				const QString item = toStructuredText(raw).trimmed();
+				if (item.contains(QLatin1String(":=")))
+					m_errors << QStringLiteral("GRAFCET: kontinuierliche Aktion „%1“ nennt nur Variablen; "
+											   "Zuweisungen gehören in eine speichernde Aktion").arg(a->text);
+				else if (!item.isEmpty())
+					a->outputs << PlcProgram::normalized(item);
+			}
+		} else {
+			a->program = std::make_shared<PlcProgram>();
+			QString source = localized(toStructuredText(a->text), part);
+			if (!source.trimmed().endsWith(QLatin1Char(';'))) source += QLatin1Char(';');
+			if (!a->program->compile(source, &error)) {
+				m_errors << QStringLiteral("GRAFCET: Aktion „%1“: %2").arg(a->text, error);
+				a->program.reset();
+			}
+		}
+		if (a->kind == Kind::ConditionalAction || a->kind == Kind::ActionOnEvent) {
+			a->condition = std::make_shared<PlcProgram>();
+			if (!a->condition->compileExpression(localized(toStructuredText(a->condition_text), part), &error)) {
+				m_errors << QStringLiteral("GRAFCET: Bedingung „%1“: %2").arg(a->condition_text, error);
+				a->condition.reset();
+			}
+		}
 		for (const QString &o : std::as_const(a->outputs))
 			if (!m_continuous.contains(o)) m_continuous << o;
 	}
 	bool any_initial = false;
-	for (Step *s : m_steps) any_initial = any_initial || s->initial;
+	for (Step *s : m_steps) any_initial = any_initial || (s->initial && !m_parts.at(s->part)->encloser);
 	if (!m_steps.isEmpty() && !any_initial)
 		m_errors << QStringLiteral("GRAFCET: kein Anfangsschritt (Doppelquadrat)");
 }
@@ -414,26 +608,73 @@ Grafcet::~Grafcet()
 	qDeleteAll(m_steps);
 	qDeleteAll(m_transitions);
 	qDeleteAll(m_actions);
+	qDeleteAll(m_parts);
 }
 
 void Grafcet::activate(Step *s, double time, QHash<QString, double> &vars, QStringList *messages)
 {
+	if (s->active) return;
 	s->active = true;
 	s->since = time;
 	vars.insert(s->var, 1.0);
+	if (!m_parts.at(s->part)->name.isEmpty()) vars.insert(PlcProgram::normalized(QStringLiteral("X") + m_parts.at(s->part)->name), 1.0);
 	vars.insert(s->var + QStringLiteral(".T"), 0.0);
-	if (messages) *messages << QStringLiteral("GRAFCET Schritt %1 aktiv").arg(s->number);
+	if (messages) *messages << QStringLiteral("GRAFCET Schritt %1 aktiv").arg(s->shown);
 	for (Action *a : std::as_const(m_actions))
 		if (a->step == s && a->kind == Kind::ActionOnActivation && a->program) a->program->cycle(time, vars);
+	// R14: an enclosing step activates the activation steps of its enclosed partial grafcets, a macro step its input step
+	for (Partial *p : std::as_const(m_parts))
+		if (p->encloser == s)
+			for (Step *x : std::as_const(p->steps))
+				if (x->initial) activate(x, time, vars, messages);
+	if (s->macro_in) activate(s->macro_in, time, vars, messages);
 }
 
 void Grafcet::deactivate(Step *s, double time, QHash<QString, double> &vars)
 {
+	if (!s->active) return;
 	s->active = false;
 	vars.insert(s->var, 0.0);
+	bool any = false;
+	for (const Step *x : std::as_const(m_parts.at(s->part)->steps)) any = any || x->active;
+	if (!m_parts.at(s->part)->name.isEmpty()) vars.insert(PlcProgram::normalized(QStringLiteral("X") + m_parts.at(s->part)->name), any ? 1.0 : 0.0);
 	vars.insert(s->var + QStringLiteral(".T"), 0.0);
 	for (Action *a : std::as_const(m_actions))
 		if (a->step == s && a->kind == Kind::ActionOnDeactivation && a->program) a->program->cycle(time, vars);
+	// R14: leaving an enclosing step deactivates everything it encloses, leaving a macro step its expansion
+	for (Partial *p : std::as_const(m_parts))
+		if (p->encloser == s)
+			for (Step *x : std::as_const(p->steps)) deactivate(x, time, vars);
+	if (s->expansion >= 0)
+		for (Step *x : std::as_const(m_steps))
+			if (x->comp == s->expansion) deactivate(x, time, vars);
+}
+
+bool Grafcet::force(double time, QHash<QString, double> &vars, QStringList *messages)
+{
+	// R14 forcing orders of the active steps, applied before the evolution: the forced partial grafcet takes the
+	// given situation and does not evolve in this cycle (IEC 60848 forcing: G5{8}, G5{}, G5{*}, G5{INIT})
+	bool changed = false;
+	for (Action *a : std::as_const(m_actions)) {
+		if (a->force == Action::Force::None || !a->step || !a->step->active) continue;
+		Partial *target = nullptr;
+		for (Partial *p : std::as_const(m_parts))
+			if (p->name == a->force_target) target = p;
+		if (!target) continue;
+		target->frozen = true;
+		if (a->force == Action::Force::Freeze) continue;
+		QSet<Step *> want;
+		for (Step *s : std::as_const(target->steps))
+			if (a->force == Action::Force::Init ? s->initial : a->force_steps.contains(s->number)) want << s;
+		const QString as = a->text.trimmed();
+		if (target->forced_as != as && messages) *messages << QStringLiteral("GRAFCET %1 erzwungen: %2").arg(target->name, as);
+		target->forced_as = as;
+		for (Step *s : std::as_const(target->steps))
+			if (s->active && !want.contains(s)) { deactivate(s, time, vars); changed = true; }
+		for (Step *s : std::as_const(target->steps))
+			if (!s->active && want.contains(s)) { activate(s, time, vars, messages); changed = true; }
+	}
+	return changed;
 }
 
 void Grafcet::cycle(double time, QHash<QString, double> &vars, QStringList *messages)
@@ -445,32 +686,56 @@ void Grafcet::cycle(double time, QHash<QString, double> &vars, QStringList *mess
 			vars.insert(s->var, 0.0);
 			vars.insert(s->var + QStringLiteral(".T"), 0.0);
 		}
+		for (const Partial *p : std::as_const(m_parts))
+			if (!p->name.isEmpty()) vars.insert(PlcProgram::normalized(QStringLiteral("X") + p->name), 0.0);
+		// enclosed partial grafcets and macro expansions start with their enclosing (macro) step only
 		for (Step *s : std::as_const(m_steps))
-			if (s->initial) activate(s, time, vars, messages);
+			if (s->initial && !m_parts.at(s->part)->encloser) activate(s, time, vars, messages);
 	}
 	for (Step *s : std::as_const(m_steps))
 		if (s->active) vars.insert(s->var + QStringLiteral(".T"), time - s->since);
 
 	bool stable = false;
 	for (int round = 0; round < 100 && !stable; ++round) {
+		for (Partial *p : std::as_const(m_parts)) p->frozen = false;
+		const bool forced = force(time, vars, messages);
 		// every receptivity is evaluated each cycle, so edges are seen even before the transition is enabled
 		for (Transition *t : std::as_const(m_transitions))
 			t->value = t->condition ? t->condition->evaluate(time, vars) : 0.0;
 		QList<Transition *> fire;
 		for (Transition *t : std::as_const(m_transitions)) {
 			if (t->before.isEmpty() || t->value == 0.0) continue;
+			if (m_parts.at(t->before.first()->part)->frozen) continue;
 			bool enabled = true;
-			for (Step *s : std::as_const(t->before)) enabled = enabled && s->active;
+			// a macro step lets its transition fire only when the output step of its expansion is active
+			for (Step *s : std::as_const(t->before))
+				enabled = enabled && s->active && (!s->macro_out || s->macro_out->active);
 			if (enabled) fire << t;
 		}
-		if (fire.isEmpty()) {
+		if (fire.isEmpty() && !forced) {
 			stable = true;
 			break;
+		}
+		// R14: a transition inside a partial grafcet whose enclosing (macro) step is left in this round does not fire
+		QSet<Step *> leaving;
+		for (Transition *t : std::as_const(fire))
+			for (Step *s : std::as_const(t->before)) leaving << s;
+		for (Transition *t : std::as_const(fire))
+			for (Step *s : std::as_const(t->after)) leaving.remove(s);
+		for (int i = static_cast<int>(fire.size()) - 1; i >= 0; --i) {
+			const Step *first = fire.at(i)->before.first();
+			bool drop = m_parts.at(first->part)->encloser && leaving.contains(m_parts.at(first->part)->encloser);
+			for (const Step *m : std::as_const(leaving))
+				drop = drop || (m->expansion >= 0 && m->expansion == first->comp && !fire.at(i)->before.contains(m->macro_out));
+			if (drop) fire.removeAt(i);
 		}
 		// all fireable transitions fire at once; a step both left and entered stays active
 		QSet<Step *> off, on;
 		for (Transition *t : std::as_const(fire)) {
-			for (Step *s : std::as_const(t->before)) off << s;
+			for (Step *s : std::as_const(t->before)) {
+				off << s;
+				if (s->macro_out) off << s->macro_out;
+			}
 			for (Step *s : std::as_const(t->after)) on << s;
 		}
 		for (Step *s : std::as_const(m_steps))
@@ -498,6 +763,9 @@ void Grafcet::cycle(double time, QHash<QString, double> &vars, QStringList *mess
 		for (const QString &o : std::as_const(a->outputs)) want.insert(o, true);
 	}
 	for (auto it = want.constBegin(); it != want.constEnd(); ++it) vars.insert(it.key(), it.value() ? 1.0 : 0.0);
+	// forced partial grafcets that are free again
+	for (Partial *p : std::as_const(m_parts))
+		if (!p->frozen) p->forced_as.clear();
 }
 
 QList<Element *> Grafcet::activeSteps() const

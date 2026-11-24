@@ -55,7 +55,7 @@ QList<Entry> build()
 	for (const char *f : {"motor.fixed_motor", "motor.variable_motor", "actuator.rotary_motor"})
 		e << physical(f, "hydraulic_motor", "hydraulic", "A (Zulauf), B (Ablauf)",
 			      "displacement [m3/U], alpha (-1 … 1), GLeak [m3/(s.Pa)], I bzw. J [kg.m2], f [N.m.s/rad], M_fric [N.m], M_load bzw. M_ext [N.m]",
-			      "Welle mit Trägheit, viskoser und geglätteter trockener Reibung, Leckage A→B; Druckluftmotoren nicht (abgewiesen)",
+			      "Welle mit Trägheit, viskoser und geglätteter trockener Reibung, Leckage A→B; als Druckluftmotor (R12): Luftverbrauch ρ·D·ω/2π, ohne Leckage",
 			      "Hydromotor (R08)");
 	for (const char *f : {"actuator.semi_rotary", "actuator.semi_rotary_motor2"})
 		e << physical(f, "rotary_actuator", "both", "A, B",
@@ -66,9 +66,40 @@ QList<Entry> build()
 		      "d_piston, xMax [m], m_cyl [kg], F_stat [N] wie Zylinder",
 		      "Ersatzmodell: einfachwirkender Zylinder mit Rückstellfeder, Greifkraft = Kolbenkraft (F:); keine Backenkinematik, kein Werkstückanschlag",
 		      "Vakuum und Schwenk-/Greiferantriebe (R10)");
-	for (const char *f : {"actuator.fluidic_muscle1", "actuator.fluidic_muscle3",
-			       "actuator.loading_unit_2", "actuator.motor_with_mid_exhaust"})
-		e << other(f, Role::Unsupported, "", "Muskel-, Lade- und Druckluftmotorantriebe brauchen eigene Mechanik (Roadmap R12); kein Linearkolben als Ersatz");
+	e << physical("actuator.multi_position_cylinder", "linear_cylinder", "pneumatic", "C1 (hinterer Kolben), C2 (vorderer Kolben), C3 (Stangenseite)",
+		      "d_piston, d_rod, xMax (Gesamthub), xMax2 (Zwischenhub, Standard xMax/2), xStart, xStart1 [m]; F_Extern [N]; Masse und Reibung wie Zylinder",
+		      "zwei Kolben gleichen Durchmessers hintereinander, der hintere schiebt den vorderen mit seiner Stange (Kontakt einseitig, Stoß plastisch); "
+		      "C2 wirkt auch auf das Stangenende des hinteren Kolbens; Stangenraum des hinteren Kolbens entlüftet; beide Kolben gleiche Masse und Reibung",
+		      "Mehrstellungszylinder (R12)");
+	e << physical("actuator.pressure_intensifier01", "pressure_intensifier", "hydraulic", "IN (Zulauf), R (Rücklauf), H (Hochdruck)",
+		      "r, p_max_in [Pa], q_max_in, q_max_hi [l/min] (alle Pflicht, aus dem Datenblatt), G_leak [m3/(s.Pa)]",
+		      "Mittelwertmodell des oszillierenden Pumpkolbens: q_H linear bis zum Stillstand bei r·p_IN − (r − 1)·p_R, Zulauf r·q_H, "
+		      "Rücklauf (r − 1)·q_H; Bypass IN→H und entsperrbares Rückschlagventil H→IN (Steuerdruck an R) als Rückschlagventile; "
+		      "keine Hubpulsation, keine Umsteuerverluste",
+		      "Druckübersetzer (R12)");
+	e << physical("actuator.motor_with_mid_exhaust", "air_motor", "pneumatic", "A, B (Zulauf je Drehrichtung), EX Mittelauspuff",
+		      "p_N [Pa], rpm_N [1/min], M_N [N.m], n0_nN, I [kg.m2], M_ext [N.m], torqueType (1 bremsend, 2 antreibend)",
+		      "lineare Momentenkennlinie aus den Nennwerten, Moment ∝ Druckdifferenz, Luftverbrauch ρ·D·ω/2π zum Auspuff; ohne Leckage und Anlaufverhalten der Lamellen",
+		      "Druckluftmotoren (R12)");
+	e << physical("actuator.loading_unit_2", "linear_cylinder", "hydraulic", "A1.1, A1.2 (Zylinder 1 Kolben-/Stangenseite), A2.1, A2.2 (Zylinder 2 Stangen-/Kolbenseite)",
+		      "d_piston, d_rod, xMax, xStart [m]; m [kg]; alpha; F_B, F_M [N], F_V [N.s/m] wie Zylinder (R11)",
+		      "zwei gegenüberliegende Zylinder auf einer Stange und einer Masse; Reibung nach R11, keine Endlagendämpfung; v_M (Stribeck) nicht gerechnet",
+		      "Mobilhydraulik (R13)");
+	e << physical("actuator.loading_unit_1", "linear_cylinder", "hydraulic", "A1.1, A1.2 (Zylinder 1 Kolben-/Stangenseite), A2.1, A2.2 (Zylinder 2 Stangen-/Kolbenseite)",
+		      "wie Belastungseinheit 2; Druckbegrenzung zwischen den Stangenseiten p0_prv, dpEnd_prv [Pa], rT_prv, Rückschlagventil rT_cv [bar.min2/l2]",
+		      "wie Belastungseinheit 2; Stangenräume A1.2 und A2.1 entlasten sich über Druckbegrenzungs- und Rückschlagventil in Reihe ineinander (Zwischenknoten nicht eigens gerechnet)",
+		      "Mobilhydraulik (R13)");
+	e << physical("actuator.fluidic_muscle1", "muscle", "pneumatic", "A",
+		      "muscleType (1 DMSP-10, 2 DMSP-20, 3 DMSP-40), len [m], F_extern_const [N] (negativ streckt), m_ext [kg], mu_B_ext, mu_M_ext, alpha; F_V [N.s/m]",
+		      "Kraft-Weg-Kennlinien aus dem Festo-Katalog DMSP (linear zwischen den Druckkurven), Volumen über virtuelle Arbeit; "
+		      "negative Last streckt (Vorzeichen wie FluidSIM); Anschläge an Vorspanngrenze und max. Kontraktion; keine Hysterese, MAS ohne Kennlinie",
+		      "Muskel (R12)");
+	for (const char *f : {"actuator.fluidic_muscle2", "actuator.fluidic_muscle3"})
+		e << physical(f, "muscle", "pneumatic", "AM (Muskel), AC, BC (Zylinder 1), AC2, BC2 (Zylinder 2)",
+			      "wie Muskel; d_piston, d_rod, xMax, xStart [m] der Führungszylinder",
+			      "Kolbenstangen am freien Muskelende: Zylinderweg = xStart − Kontraktion, Druck an AC streckt den Muskel (in FluidSIM 6.3 "
+			      "an TP220_13 geprüft); Zylindermasse und -reibung wie ein Standardzylinder; keine Endlagendämpfung",
+			      "Muskel (R12)");
 	// ---------------------------------------------------------- Wegeventile
 	for (const char *f : {"directional_valve.two_pins", "directional_valve.three_pins", "directional_valve.four_pins",
 			       "directional_valve.five_pins"})
@@ -80,9 +111,23 @@ QList<Entry> build()
 			      "u [V] Sollwert -10 … 10, tau [s], lap bzw. lapP/lapT [%] Überdeckung, notchType (1 Rechteck, 2 Dreieck), rT [bar.min2/l2] je Kante, GLeak [l/(min.bar)] je Kante",
 			      "Schieber PT1 ohne Hysterese und Strömungskraft; Kanten als Blenden mit Fläche ∝ x bzw. x²; Sollwert aus dem Signalpfad (R06: positiver Sollwert, Y2 bzw. S → P→A; Y1 → P→B), sonst Kennwert u oder Ereignis",
 			      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
-	for (const char *f : {"proportional.directional_valve63_with_hand_lever", "proportional.mobile_valve_block_ls",
-			       "proportional.mpye"})
-		e << other(f, Role::Unsupported, "", "Mobil-/LS-Ventilblöcke und pneumatisches Stetigventil (Roadmap R07, R13)");
+	e << physical("proportional.directional_valve63_with_hand_lever", "mobile_valve63", "hydraulic", "P1, T1 (Umlauf), P2 (über Rückschlagventil), T2, A, B",
+		      "xStep [%] Auslenkung (−100 … 100), rT_P1_T1, rT_P2_AB, rT_T2_AB, rT_CV [bar.min2/l2], GLeak [l/(min.bar)], T_2 [s]",
+		      "Umlauf P1→T1 mit Öffnung 1 − |x|, Arbeitskanten mit |x| (Blenden rT/Anteil²), Rückschlagventil in Reihe; Schieber PT1, Auslenkung fest für den Lauf",
+		      "Mobilhydraulik (R13)");
+	e << physical("proportional.mobile_valve_block_ls", "ls_valve_block", "hydraulic",
+		      "P, T, LS; je Scheibe g: A g, B g, Vorsteuerung C g (X g.1) → P→A, D g (X g.2) → P→B",
+		      "rT_PAB, rT_TAB, rT_pc, rT_SV [bar.min2/l2]; pS_min, pS_max [Pa] Vorsteuerbereich; p0_pc, dpEnd_pc [Pa] Druckwaage; xStepLeft/xStepRight [%] Handhebel",
+		      "Schieberweg aus dem Vorsteuerdruck (bzw. Handhebel), Druckwaage quasistatisch in Reihe zur Messkante, geschlossene Mitte, Wechselventile melden den höchsten Lastdruck an LS; ohne Schieberdynamik, F_manual nicht ausgewertet",
+		      "Mobilhydraulik LS (R13)");
+	e << physical("proportional.priority_valve_ls", "priority_valve_ls", "hydraulic", "P, CF (bevorzugt), EF (Überschuss), LS",
+		      "p0 [Pa] Federvorspannung, dpEnd [Pa], rT_CF, rT_EF [bar.min2/l2]",
+		      "Kolben quasistatisch aus p_CF − p_LS gegen die Feder; Dämpfungsdrosseln rT_L, rT_R (dynamisch) nicht gerechnet",
+		      "Mobilhydraulik LS (R13)");
+	e << physical("proportional.mpye", "proportional_valve", "pneumatic", "1 (C4) Zuluft, 2 (C2), 4 (C1) Arbeitsanschlüsse, 3 (C5), 5 (C3) Abluft; Sollwert über S",
+		      "qNN [l/min] (FluidSIM 773), u [V] 0 … 10 (5 = Mitte), tau [s] (Vorgabe 1,6 ms)",
+		      "Querschnitt nach der Festo-Kennlinie q(U) bei 6 → 5 bar (unter 5 V 1→2, über 5 V 1→4), Abluftkante gleich weit offen; "
+		      "Schieber PT1, keine Hysterese, keine Mittelstellungsleckage", "Stetigventil MPYE");
 	// ---------------------------------------------------------- Strom-, Sperr-, Logikventile
 	e << physical("flow_control_valve.throttle_valve", "orifice", "both", "erste zwei Anschlüsse", "qNN [l/min] bzw. rT", "kein druckkompensierter Stromregler", "Orifice");
 	e << physical("shutoff_valve.shutoff_valve", "orifice", "both", "erste zwei Anschlüsse", "qNN bzw. rT", "Stellung fest (Öffnung über qNN/rT)", "Orifice");
@@ -94,9 +139,20 @@ QList<Entry> build()
 	e << physical("logic.dual_pressure_valve", "dual_pressure_valve", "pneumatic", "Eingänge, Ausgang 2", "qNN", "", "Projekt Speicher");
 	e << physical("logic.time_delay_valve", "time_delay_valve", "pneumatic", "1, 2, Steuerung 3", "t_delay [s], qNN", "Verzögerung als feste Zeit, kein Speichervolumen", "");
 	e << physical("shutoff_valve.quick_exhaust_valve", "quick_exhaust_valve", "pneumatic", "1, 2", "qNN", "", "");
-	for (const char *f : {"shutoff_valve.double_non_return_valve02", "shutoff_valve.pneumatic_counter",
-			       "shutoff_valve.timer1", "shutoff_valve.timer2", "shutoff_valve.three_way_valve"})
-		e << other(f, Role::Unsupported, "", "kein eigenes Modell");
+	for (const char *f : {"shutoff_valve.double_non_return_valve01", "shutoff_valve.double_non_return_valve02"})
+		e << physical(f, "double_check_valve", "hydraulic", "A1 → A2, B1 → B2 (frei), A2 → A1 entsperrt über B1, B2 → B1 über A1",
+			      "rT [bar.min2/l2], ratio Flächenverhältnis des Entsperrkolbens, p0 [Pa] Federvorspannung (02), dpEnd [Pa] Öffnungsbereich (Vorgabe 0,5 bar)",
+			      "entsperrt bei ratio·(p_Steuer − p_ein) ≥ (p_aus − p_ein) + p0, voll offen über dpEnd; ohne Kolbendynamik und Leckage",
+			      "Mobilhydraulik (R13)");
+	for (const char *f : {"shutoff_valve.timer1", "shutoff_valve.timer2"})
+		e << physical(f, "flow_valve", "pneumatic", "1 (C2), 2 (C1), 3 (C3); Timer 2: Signal 10 (PL)",
+			      "delayTime [s] (3), qNN [l/min] (50)",
+			      "Timer 1 schaltet 1 → 2, wenn 1 mindestens delayTime ≥ 1,6 bar führt, Timer 2 sperrt 1 → 2 nach delayTime an 10; "
+			      "Rückstellung sofort (FluidSIM: < 200 ms)", "Pneumatische Zeit-, Zähl- und Sicherheitsbausteine");
+	e << physical("shutoff_valve.pneumatic_counter", "flow_valve", "pneumatic", "1 (C4), 2 (C3), Rücksetzen 10 (C2), Zählen 12 (C1)",
+		      "counterEnd (3), qNN [l/min] (60)", "zählt steigende Signale an 12 rückwärts, bei 0: 1 → 2 bis zum Signal an 10; Rücksetzen von Hand nicht",
+		      "Pneumatische Zeit-, Zähl- und Sicherheitsbausteine");
+	e << other("shutoff_valve.three_way_valve", Role::Unsupported, "", "kein eigenes Modell");
 	// ---------------------------------------------------------- Druckventile
 	e << physical("pressure_valve.pressure_relief_valve01", "pressure_relief_valve", "both", "1/P → 2/T/3", "p0, dpEnd [Pa], rT/qNN", "direktgesteuert, ohne Dynamik", "Projekt Druckbegrenzung");
 	e << physical("pressure_valve.pressure_regulator", "pressure_regulator", "both", "1/P → 2/A, Entlüftung", "p0, dpEnd [Pa], qNN/rT", "ohne Dynamik und Pilotdrain", "");
@@ -107,12 +163,39 @@ QList<Entry> build()
 		e << physical(f, "sequence_valve", "hydraulic", "P, A, X (ohne X: Vorsteuerung aus P)",
 			      "p0 [Pa] Öffnungsdruck, dpEnd [Pa], rT", "öffnet P→A ab Steuerdruck p0, ohne Leckölanschluss und Dynamik",
 			      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
-	for (const char *f : {"pressure_valve.pilot_valves_joystick",
-			       "pressure_valve.pressure_compensator_closer01", "pressure_valve.pressure_compensator_closer02",
-			       "pressure_valve.pressure_compensator_downstream_1", "pressure_valve.pressure_compensator_opener_ls_1",
-			       "pressure_valve.pressure_compensator_upstream_1", "pressure_valve.pressure_compensator_upstream_2",
-			       "pressure_valve.pressure_sequence_valve", "pressure_valve.shock_and_anti_cavitation_valve"})
-		e << other(f, Role::Unsupported, "", "Druckwaagen, Schock-/Nachsaugblock, pneumatisches Folgeventil (Roadmap R09, R13)");
+	// R09 (FORMELN.md V10–V13): Druckwaagen als druckabhängige Widerstände, Schock-/Nachsaugblock, pneumatisches Folgeventil
+	for (const char *f : {"pressure_valve.pressure_compensator_closer01", "pressure_valve.pressure_compensator_closer02"})
+		e << physical(f, "pressure_compensator", "both", "A ↔ B, Steuerung X − XS",
+			      "p0 [Pa] Solldruck, dpEnd [Pa] Druckregelbereich, rT (Öl) bzw. qNN (Luft)",
+			      "Schließer: voll offen bis p_X − p_XS = p0, zu bei p0 + dpEnd; ohne Kolbendynamik", "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	for (const char *f : {"pressure_valve.pressure_compensator_opener01", "pressure_valve.pressure_compensator_opener02"})
+		e << physical(f, "pressure_compensator", "both", "A ↔ B, Steuerung X − XS",
+			      "p0 [Pa] Solldruck, dpEnd [Pa] Druckregelbereich, rT (Öl) bzw. qNN (Luft)",
+			      "Öffner: zu bis p_X − p_XS = p0, voll offen bei p0 + dpEnd; ohne Kolbendynamik", "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	for (const char *f : {"pressure_valve.pressure_compensator_upstream_1", "pressure_valve.pressure_compensator_upstream_2"})
+		e << physical(f, "pressure_compensator", "hydraulic", "P → A, Steuerung A − X",
+			      "p0 [Pa] Regeldifferenz, dpEnd [Pa], rT", "vorgeschaltete Druckwaage (Schließer): hält p_A − p_X bei p0; ohne Dynamik",
+			      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	for (const char *f : {"pressure_valve.pressure_compensator_downstream_1", "pressure_valve.pressure_compensator_downstream_2"})
+		e << physical(f, "pressure_compensator", "hydraulic", "P → A, Steuerung P − X",
+			      "p0 [Pa], dpEnd [Pa], rT", "nachgeschaltete Druckwaage (Öffner): öffnet, wenn p_P den Lastmeldedruck X um p0 übersteigt; ohne Dynamik",
+			      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	for (const char *f : {"pressure_valve.pressure_compensator_opener_ls_1", "pressure_valve.pressure_compensator_opener_ls_2"})
+		e << physical(f, "pressure_compensator", "hydraulic", "P → T, Steuerung P − X",
+			      "p0 [Pa] Öffnungsdruck, dpEnd [Pa], rT", "Open-Center-LS-Druckwaage: öffnet P→T bei p_P ≥ p_X + p0; ohne Dynamik",
+			      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	e << physical("pressure_valve.shock_and_anti_cavitation_valve", "shock_valve", "hydraulic", "A1 = A2, B1 = B2 (durchgehend), T",
+		      "p0_prvA/p0_prvB [Pa], dpEndA/dpEndB [Pa], rT_prvA/rT_prvB, rT_cv [bar.min2/l2]",
+		      "begrenzt A und B gegen T wie ein Druckbegrenzungsventil, saugt über Rückschlagventile von T nach; ohne Dynamik",
+		      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	e << physical("pressure_valve.pressure_sequence_valve", "sequence_valve", "pneumatic", "1 → 2, Steuerung 12",
+		      "p0 [Pa] Schaltdruck an 12, qNN [l/min]", "öffnet 1→2 ab p12 ≥ p0 (Übergang 0,1 bar), sonst 2 abgesperrt; ohne Rückstellhysterese",
+		      "Stetig-, Senkbrems- und Zuschaltventile (R07/R09)");
+	e << physical("pressure_valve.pilot_valves_joystick", "pilot_joystick", "hydraulic", "P, T, X1.1, X1.2 (linke Gruppe), X2.1, X2.2 (rechte Gruppe)",
+		      "adjustmentLeft/adjustmentRight [%] (−100 … 100), pMax [Pa]; Projektwerte rT 0,1 bar.min2/l2, dpEnd 0,5 bar",
+		      "je Gruppe ein Druckminderventil P → X mit |Auslenkung|·pMax (+: X g.1, −: X g.2), Rest zu T; Auslenkung fest für den Lauf, ohne Dynamik",
+		      "Mobilhydraulik (R13)");
+	e << other("pressure_valve.pressure_compensator_closer03", Role::Unsupported, "", "Druckwaage ohne Kennwerte (closer03) (Roadmap R13)");
 	// ---------------------------------------------------------- Versorgung
 	e << physical("supply.air_supply", "pressure_source", "pneumatic", "alle", "pNom [Pa] (sonst Versorgungsdruck des Laufs)", "ideale Quelle ohne Liefergrenze", "CylinderCycle");
 	e << physical("supply.tank", "tank", "hydraulic", "alle", "", "drucklos", "Hydraulik-CylinderCycle");
@@ -120,11 +203,14 @@ QList<Entry> build()
 		e << physical(f, "fixed_displacement_pump", "hydraulic", "P, T",
 			      "displacement [m3], rpm [1/s], alpha (0 … 1), GL [m3/(s.Pa)], pMax [Pa]",
 			      "Verstellgrad als fester Kennwert (kein Stellregler), eingebaute Begrenzung, Leckage P→T", "Hydromotor (R08)");
-	e << physical("supply.pump", "fixed_displacement_pump", "both", "P, T (Hydraulik); alle (Pneumatik)",
+	e << physical("supply.pump", "fixed_displacement_pump", "both", "P, T (Hydraulik; vereinfachtes FluidSIM-Aggregat nur P2, FluidSIM Pump01 A Druck, B Saugen); alle (Pneumatik)",
 		      "Hydraulik: displacement [m3], rpm [1/s], alpha, GL [m3/(s.Pa)], pMax [Pa]; Pneumatik (Verdichter): pNom [Pa]",
 		      "Hydraulik: eingebaute Begrenzung (1 bar Band), keine Leckage, kein Antriebsmoment; Pneumatik: Verdichter als ideale Druckquelle",
 		      "PumpFill, Hydraulik-CylinderCycle, CylinderCycle");
-	e << physical("supply.accumulator", "accumulator", "both", "erster Anschluss", "V0 [m3], p0 [Pa], k", "Gasgesetz polytrop; Luft: Behälter", "AccumulatorCharge, Projekt Speicher");
+	e << physical("supply.accumulator", "accumulator", "both", "erster Anschluss; Speicher mit Sicherheitsblock: P, T",
+		      "V0 [m3], p0 [Pa], k; mit Sicherheitsblock p0_accu [Pa] Vorfülldruck, p0_prv [Pa] Druckbegrenzung, x (2 offen, 1 abgesperrt, 0 entleert)",
+		      "Gasgesetz polytrop; Luft: Behälter; Sicherheitsblock: Druckbegrenzung zum Tank mit Band und Widerstand des FluidSIM-Druckbegrenzungsventils (3,8 MPa, 0,17), Kugelhahn fest für den Lauf",
+		      "AccumulatorCharge, Projekt Speicher, Lenkung und Sperrventile (R13)");
 	for (const char *f : {"supply.filter", "supply.dryer", "supply.lubricator", "supply.water_separator", "supply.service_unit",
 			       "supply.cooler", "supply.heater", "supply.temperature_control", "supply.startup_valve"})
 		e << physical(f, "passthrough", "both", "erste zwei Anschlüsse",
@@ -140,11 +226,34 @@ QList<Entry> build()
 		      "Zustand fest für den Lauf; getrennt und selbstdichtend: beide Hälften zu; getrennt ohne Dichtung: beide Hälften entlüften",
 		      "Leitungen, Kupplungen, Aufbereitung (R05)");
 	e << other("supply.manifold_c8", Role::Ideal, "ideal_connection", "verlustfreier Verteiler");
-	for (const char *f : {"supply.load_sensing_pump_unit", "supply.steering_unit_1",
-			       "vacuum.vacuum_efficiency_valve",
-			       "valve_group.control_block_for_two_hand_start", "valve_group.taa_01", "valve_group.tab_01",
-			       "valve_group.timer3", "valve_group.timer4", "other.misc"})
-		e << other(f, Role::Unsupported, "", "kein Modell (Load-Sensing, Lenkung, Vakuum-Sparventil, Ventilgruppen); keine Überdruckquelle als Ersatz");
+	e << physical("supply.load_sensing_pump_unit", "ls_pump_unit", "hydraulic", "P1 (LS-Verstellpumpe), P2 (Konstantpumpe), LS; T, L, LA zum Tank",
+		      "rpm, displacementVP/FP [cm3], p0 [MPa] Federvorspannung (Regeldruckdifferenz), dpEnd [bar] Regelbereich, T_PT1 [s], p0_prvLS/p0_prvFixed, dpEnd_prv* [bar], rT_prv*, rT_LS, GL_VP/GL_FP [l/(min.bar)]",
+		      "LS-Regler proportional mit PT1 (kein Schwenkwinkelmodell), je Pumpe Druckbegrenzung als stetige Blende und Leckage zum Tank, LS-Leitung über rT_LS entlastet; Drehzahl fest",
+		      "Mobilhydraulik (R13)");
+	for (const char *f : {"supply.steering_unit_1", "supply.steering_unit_2"})
+		e << physical(f, "steering_unit", "hydraulic", "P, T, L, R, E (Neutralumlauf)",
+			      "M_user [N.m] Handmoment (+: links), M_userMax [N.m], rT [bar.min2/l2], displacement [m3] Dosierpumpe",
+			      "Drehventil öffnet mit M_user/M_userMax (Kanten rT/Anteil²), Neutral P → E; Lenkradwinkel aus dem Dosierstrom; Moment fest für den Lauf, revolutionMax und xStep nicht ausgewertet",
+			      "Mobilhydraulik (R13)");
+	for (const char *f : {"valve_group.timer3", "valve_group.timer4"})
+		e << physical(f, "flow_valve", "pneumatic", "1 (C2), 2 (C1), Steuerung 12 bzw. 10 (C3)",
+			      "level [%] (100), qNN_nozzle [l/min] (10), vol [l] (0,01), qNN [l/min] (50)",
+			      "Drossel mit Rückschlagventil füllt den Speicher, das 3/2-Ventil schaltet bei 1,5 bar Speicherdruck (isotherm)",
+			      "Pneumatische Zeit-, Zähl- und Sicherheitsbausteine");
+	e << physical("valve_group.control_block_for_two_hand_start", "flow_valve", "pneumatic", "11 (C11), 12 (C12), 2 (C2)",
+		      "level [%] (100), qNN [l/min] (50)", "UND-Glied mit 0,5-s-Fenster, Ausgang aus dem niedrigeren Eingang, sonst 2 entlüftet",
+		      "Pneumatische Zeit-, Zähl- und Sicherheitsbausteine");
+	e << physical("vacuum.vacuum_efficiency_valve", "flow_valve", "pneumatic", "1 (C1), 2 (C2)",
+		      "ps_min, ps_max [Pa] (0,1/0,2 bar), q_min, q_max [l/min] bei 50 kPa (1,9/4)",
+		      "Schwimmer schließt über dem Federband von |p1 − p2|: Leitwert von q_max auf q_min; ohne Schwimmerdynamik",
+		      "Pneumatische Zeit-, Zähl- und Sicherheitsbausteine");
+	for (const char *f : {"valve_group.taa_01", "valve_group.tab_01"})
+		e << physical(f, "flow_valve", "pneumatic", "Yn, Zn, P, L, X (links/unten), A, Yn+1, Zn+1, P, L (oben/rechts)",
+			      "initialPosNo (TAA 2 = rückgesetzt, TAB 1 = gesetzt), posNoWanted, qNN [l/min] (60)",
+			      "Speicher-Impulsventil P → A (TAA: Yn setzt, Zn+1 oder L setzt zurück; TAB: Yn oder L setzt, Zn+1 setzt zurück), "
+			      "Zn = A, Yn+1 = A UND X; Innenschaltung aus dem FluidSIM-Symbol; ohne Handhilfsbetätigung",
+			      "Pneumatische Zeit-, Zähl- und Sicherheitsbausteine");
+	e << other("other.misc", Role::Unsupported, "", "Sammelfunktion ohne Modell");
 	// ---------------------------------------------------------- Vakuum (R10)
 	for (const char *f : {"vacuum.vacuum_generator", "vacuum.vacuum_generator_05_h", "vacuum.vacuum_generator_05_l"})
 		e << physical(f, "vacuum_generator", "pneumatic", "1 (Versorgung), 2 (Vakuum)",
@@ -169,7 +278,7 @@ QList<Entry> build()
 	for (const char *f : {"proportional.flow_sensor", "sensor.flowmeter_2"})
 		e << physical(f, "flow_sensor", "hydraulic", "A → B",
 		      "rT [bar.min2/l2] (Standard 0,001), mode (1 Richtung ignorieren, 2 berücksichtigen), q_start, q_end [l/min], U_start, U_end [V]",
-		      "Blende rT zwischen A und B, gemessen wird ihr Durchfluss; Spannung über den elektrischen Teil (R06)",
+		      "Blende rT zwischen A und B, gemessen wird ihr Durchfluss; Durchflussmesser mit Schluckvolumen (displacement, f, GLeak) als Hydromotor ohne Trägheit (R13, H09); Spannung über den elektrischen Teil (R06)",
 		      "Analoge Signale und Regler (R06)");
 	e << physical("proportional.pressure_relief_valve", "prop_relief_valve", "hydraulic", "A (P) → B (T), Sollwert über Verstärker",
 		      "p_start, p_end [Pa] Öffnungsdruck bei 0 und 10 V, dpEnd [Pa] Druckregelbereich, rT [bar.min2/l2], u [V] ohne Verstärker",

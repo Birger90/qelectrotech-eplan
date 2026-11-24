@@ -492,6 +492,8 @@ install(DIRECTORY bauteile/fluid/ DESTINATION ${QET_DATA_PATH}elements)
 install(DIRECTORY bauteile/grafcet/ DESTINATION ${QET_DATA_PATH}elements)
 # Reference runs for QElectroTech --simulate-reference (and the MCP tool qet_simulate_reference)
 install(DIRECTORY tools/simulation/referenz DESTINATION ${QET_DATA_PATH}simulation)
+# Example function templates (side panel "Function templates", qet.insertTemplate)
+install(DIRECTORY funktionsvorlagen DESTINATION ${QET_DATA_PATH})
 install(DIRECTORY examples    DESTINATION ${QET_DATA_PATH})
 install(DIRECTORY titleblocks DESTINATION ${QET_DATA_PATH})
 # The MCP server (misc/qet-mcp) finds this QElectroTech and its elements

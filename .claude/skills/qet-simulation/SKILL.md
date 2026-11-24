@@ -57,6 +57,10 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
   jeder Fehler landet in `modelErrors()`, der Lauf startet nicht. `runUntil` hört bei `failed()` auf.
 - Pumpe: volle Förderung bis 1 bar unter `pMax`, bei `pMax` null. Rückschlagventil öffnet stetig ab `p0`.
 - Zylinder: Kraftbilanz, Haft-/Gleitreibung, harte Endanschläge; Unterdruck im Öl wird gemeldet, nicht gerechnet.
+  R11: alles, was dem Ausfahren entgegenwirkt (Last/Kraftprofil, Feder, Gewicht), liefert `Cylinder::opposing()`;
+  FluidSIM-Kennwerte alpha, m_ext, mu_B_ext/mu_M_ext, F_B/F_M/F_V, spring_left/right, p_spring_min/max, F_var_ex/re.
+  Prüfung per Kraftdifferenz ΔpA·A_K − ΔpB·A_R bei x = 100 mm gegen den Grundfall (`hydraulik.qet`, textVariant).
+  `valveAudit` prüft Wege/Ruhestellung/Betätigung aller Ventilsymbole; Vorrang `dominant` in `Valve::wanted`.
 - Hydromotor (R08) über `SimPhysics::Shaft`; Schwenkantrieb (R10) ist ein `Cylinder` mit `rotary` (Winkel in rad,
   Flächen = M_6bar/6 bar, Masse = Trägheit, Wegmarken in Grad über `markPos()`).
 - Leitungen (R05): `lineMode` wählt ideal / Widerstand / Rohr nach den Kennwerten; ideale Leitungen werden in
@@ -64,8 +68,9 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
   nicht `t->pos()`, das ist immer 0). Prüfpläne `rohr.qet` (Bauteil -HQ1 per `textVariant` austauschbar) und
   `kupplung_drehdurchfuehrung.qet`.
 - Stetigventile (R07): `PropValve`, Schieber per `SimPhysics::pt1`, Kanten per `edgeOpening`; Sollwert über
-  `setSetpoint` (CLI `sollwert`, Prüfstand `Input` kind 3 mit value). Senkbrems-/Zuschaltventil laufen als
-  `FlowValve`-Zweige. Prüfpläne `stetig.qet` (Ventil per `textVariant` zum Stetigventil) und `lastventil.qet`
+  `setSetpoint` (CLI `sollwert`, Prüfstand `Input` kind 3 mit value). Senkbrems-/Zuschaltventil, Druckwaagen (gemeinsamer Zweig
+  `pressure_compensator_*`, Schließer/Öffner über die Steuerdifferenz), Schockblock (A1 = A2 in `buildNets`) und
+  pneumatisches Folgeventil laufen als `FlowValve`-Zweige; Prüfpläne `druckwaagen.qet`, `folgeventil.qet`. Prüfpläne `stetig.qet` (Ventil per `textVariant` zum Stetigventil) und `lastventil.qet`
   (Anschlüsse per eindeutigem Terminal-Tag mit UUID umbenannt, nicht per erstem Treffer).
 - Analoge Signale (R06): Bausteine in `simulationsignals.h` (reine Funktionen, testbar ohne Plan), im Modell
   `Analog` mit `linkAnalog` (Kennwerte, Kopplung, Auswertereihenfolge) und `analog(dt)` direkt nach `electrics()`;
@@ -73,6 +78,25 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
   (nicht S…, das sind Paketquellen). Prüfpläne `druckregelung.qet`, `lageregelung.qet` aus eigenen Prüfsymbolen
   (Testsammlung `90_signal`, Erzeuger `erzeuge_r06.py` im Scratchpad-Muster); Reset-Variante per `textVariant`
   auf `vMin=21.6 V` → `vMin=30 V`.
+- Druckluftmotoren (R12): `Motor` mit `air` = true, gleiche `SimPhysics::Shaft`; Massenstrom ρ·D·|ω|/2π vom höheren
+  Anschluss zu EX; Prüfplan `druckluftmotor.qet`, Nennpunkt per textVariant auf M_ext.
+- Mehrstellungszylinder (R12, 1.34.0): normaler `Cylinder` mit `multi` = true, Schritt in `multiStep` (zwei Kolben,
+  in Kontakt ein Körper, sonst getrennt, Stoß plastisch); Anschlüsse C1/C2/C3, Messgröße `x1:`; Prüfplan
+  `mehrstellungszylinder.qet` mit drei Prüfsymbolen (Startlagen 0/0, 200/0, 200/100).
+- Mobilhydraulik (R13, 1.35.0): `LsUnit` (LS-Aggregat, Pumpen als Quellen in P1/P2, Rücklauf/Leckage nach außen, LS-Regler als PT1), `Valve63` (6/3-Handhebelventil, Kanten rT/Anteil²), Belastungseinheit als `Cylinder` mit `loading` (vier Kammern). Prüfplan `mobilhydraulik.qet`, Varianten per textVariant auf Lastdrossel rT 1.0 → 2.0 und xStep/xStart.
+- 1.48.0: Taktstufen TAA/TAB als FlowValve (latched = Speicher, Anschlüsse über Namen/Präfix A, X), Muskel mit Zylindern über `mcyl`/`mc_start` (x_Z = xStart − x, Signal `xz:`); beides in FluidSIM 6.3 abgelesen (TP102_04, TP220_13). FluidSIM-Bedienung per Computer-Use nur bei entsperrtem PC.
+- FluidSIM-Ergänzungen (1.47.0): MPYE als PropValve mit `mpye` (s = (u − 5)/5, Kennlinie MPYE_Q aus dem Festo-Katalog 2006, C4/C2/C5/C1/C3 = 1/2/3/4/5); Timer, Verzögerungsventile (Speicher pv im FlowValve), Zähler, Zweihandblock, Vakuumsaugventil als FlowValve-Zweige; Pläne `mpye.qet`, `pneu_logik.qet`. TAA/TAB und closer03 abgewiesen.
+- Muskel/Druckübersetzer (R12, 1.46.0): Muskel als Cylinder mit `muscle` (Typindex in SimMuscle::types(), x = Kontraktion, Kraft aus `simulationmuscle.h`, generiert aus dem Festo-PDF mit `tools/simulation/datenblaetter/`), Volumen/Fläche je 0,05 % tabelliert; Druckübersetzer struct Intensifier (IN/R/H, Kennwerte Pflicht). Signale `h:`, `qh:`. Prüfpläne `muskel.qet`, `druckuebersetzer.qet`. Datenblattkurven nie abschätzen: Vektorpfade lesen. F_extern_const negativ = streckend (FluidSIM 6.3, TP220_14: h 9,451 %); FluidSIMs x ist die Länge, unser x: die Kontraktion.
+- Maschinen (R17 Stufe 5, 1.45.0): Kind DcMotor (MDC, Ra/La/k/J/b/ML, Welle implizit im selben Schritt) und InductionMotor (MASM, U/V/W, Raumzeiger in `asmStamp()` → 3×3-Leitwert, ψ in Part.psi, Drehzahl explizit); Signale `omega:`/`n:`/`tau:` (vor den Hydromotor-Signalen geprüft). Prüfplan `motoren.qet`. R17 damit komplett.
+- Schutzorgane (R17 Stufe 4, 1.44.0): Kind Protection (sim_block F/MCB_B/MCB_C/MCB_D/MPCB, Parameter In, I2t, kf, tau, Im, R), W-Gedächtnis in AnalogCircuit::step nach dem Schritt, Auslösung ab dem nächsten Schritt offen; `takeTrips()` → Meldungen, `reset()` über `repair(label)`; Signale `trip:`, `w:`. Prüfplan `schutz.qet` (Prüfung mit dt 1 ms über 300 s).
+- Halbleiter (R17 Stufe 3, 1.43.0): Kind Transistor (sim_block QN/QP, Anschlüsse C/B/E, Part.c = dritter Anschluss, Ebers-Moll, Newton über den Helfer `device()` in AnalogCircuit::step) und OpAmp (OP, +/−/OUT, tanh-Begrenzung); Signal `ib:`. Prüfplan `halbleiter.qet`; Sollwerte per Bisektion der Bauteilgleichungen, nicht per MNA.
+- Kopplung (R17 Stufe 2, 1.42.0): `coupleCircuit()` macht Kontakte mit beiden Anschlüssen auf Stromkreisnetzen zu Schaltern (Kind Switch, R_on/R_off, `sim_contact`), Relais-/Ventilspulen dort zu R-L-Zweigen (Kind Coil, `sim_coil` R/L/Un/on/off oder Ion/Ioff, Anzug/Abfall in `electrics()` nach |i|); `sim_block` AI/AQ mit `sim_var` und Umin/Umax/raw; Signal `plc:`. Achtung: `electrics()` läuft jetzt auch ohne Versorgung, wenn ein Stromkreis da ist. Prüfplan `kopplung.qet` (Generator-Muster: Normsymbole bobine3/con_simple mit link_elements).
+- Analoge Elektrik (R17 Stufe 1, 1.41.0): `AnalogCircuit` (sources/simulation/analogcircuit.*, MNA implizit Euler, Diode mit Newton), Bauteile `sim_role` circuit mit `sim_block` R/C/L/V/I/D/GND und `sim_params`, Signale `u:`/`i:`/`pel:` (u: fällt auf Stetigventile/Analogbausteine durch, wenn kein Stromkreisbauteil). Prüfplan `analog.qet`. R18 ausgeklammert, R19 ohne Auftrag.
+- Modi (R16, 1.40.0): `runUntilChange(limit)` (bis zur nächsten Meldung), `stepCount()`, `netCount()`; CLI `--folios`, `--until-change`, `--meta` mit Laufkennzahlen; Dock-Knöpfe Schritt 10 ms / bis zur Änderung / nur aktuelles Blatt. Prüfplan `zwei_blaetter.qet`.
+- Fehler (R15, 1.39.0): `sim_fault` am Bauteil (kolben_klemmt, spule_unterbrochen, interne_leckage G, verstopft Anteil, immer_gesperrt/immer_geoeffnet, schaltet_nicht/immer; ab/bis), `fault()` in Ventil-, Spulen-, Relais-, Kontakt-, Rückschlag- und Drosselcode, `repair()` per Ereignis „reparieren“ (Input kind 4), Prüfplan `fehler.qet`, Varianten mit `withFault()`.
+- GRAFCET-Struktur (R14, 1.38.0): Teil-GRAFCET = Ketten mit gleichem `sim_grafcet`, sonst global; Instanzen über `localized` (X3 eigen, G5.X3 fremd, intern G5_X3 nur bei doppelter Nummer), `XG5`; einschließender Schritt `sim_encloses`, Aktivierungsschritte = Anfangsschritt-Symbol/`sim_activation`; Makro M/E/S (Expansion = Kette); Zwang `G5{…}` in `force()` vor dem Schalten. Prüfplan `grafcet_r14.qet`.
+- LS-Steuerblock (R13, 1.37.0): `LsBlock` (zwei Scheiben, Vorsteuerung C g/D g oder „C (X g.1)“, Druckwaage quasistatisch per Bisektion in Reihe zur Messkante, Wechselventile → LS), `PriorityValve`. Prüfplan `lsblock.qet`. Achtung bei Prüffällen: jedes Hydrauliknetz hat V_HYD = 0,1 l, Gegendrücke bauen sich langsam auf – lange Hübe und späte Abtastung.
+- Lenkung und Sperrventile (R13, 1.36.0): `Steering` (Orbitrol, M_user > 0 = links, Lenkrad `phi:`), `Joystick` (Druckminderventile an X g.1/X g.2), Sperrblock als FlowValve (`shutoff_valve.double_non_return_valve01/02`), Belastungseinheit 1 (`cross`), Speicher mit Sicherheitsblock (`Accumulator::block`, erkannt an `p0_accu`). Pumpe sucht P, sonst P2 (vereinfachtes Aggregat) bzw. A/B (Pump01). Signale `p:Teil.Anschluss` dürfen Punkte im Anschlussnamen haben. Prüfplan `lenkung.qet`.
 - Vakuum (R10): Ejektor mit stetiger linearer Saugkennlinie, Sauger mit Haltekraft gegen s·m·g, Vakuumschalter =
   Druckschalter mit negativem p0. Prüfplan `referenz/plaene/vakuum.qet`; Varianten im Prüfstand per `textVariant`
   (Parameter in den eingebetteten `<fluid>`-Block schreiben, selbstschließendes Tag beachten).

@@ -33,7 +33,7 @@ Betätigung, Kennwerte) und der elektrischen Steuerung.
 | Rückschlag-, Drosselrückschlagventil | freie Richtung `free_from` → `free_to` (aus der Zeichnung); öffnet stetig ab dem Öffnungsdruck `p0`; entsperrbar über Steueranschluss |
 | Drossel, Absperrventil, Schalldämpfer, Schnellentlüftung | Leitwert aus `qNN` bzw. `rT` |
 | Druckbegrenzung, Druckregler | Einstelldruck `p0`, Öffnungsbereich `dpEnd`; Druckbegrenzung von Eingang 1 (P) in den Rücklauf 2 (T), ohne Rücklaufleitung ins Freie, öffnet nach dem Unterschied Eingang – Rücklauf |
-| Zylinder | Endanschlag hart oder elastisch (`stop_k` N/m, `stop_c` N·s/m: Feder mit einseitiger Dämpfung wie die OpenModelica-Referenz, Kolben darf eindringen und prellen); Kraftbilanz: Drücke × Flächen, Masse, Haft-/Gleitreibung (mit `F_ref`/`v_ref` aus FluidSIM viskos F_ref/v_ref, sonst 20 N·s/m), Feder, Last, Endanschläge; meldet Unterdruck im Öl (Kavitation wird nicht gerechnet) |
+| Zylinder | Endanschlag hart oder elastisch (`stop_k` N/m, `stop_c` N·s/m: Feder mit einseitiger Dämpfung wie die OpenModelica-Referenz, Kolben darf eindringen und prellen); Kraftbilanz: Drücke × Flächen, Masse, Haft-/Gleitreibung (mit `F_ref`/`v_ref` aus FluidSIM viskos F_ref/v_ref, sonst 20 N·s/m), Feder, Last, Endanschläge; meldet Unterdruck im Öl (Kavitation wird nicht gerechnet) ; R11: Einbauwinkel `alpha` (Gewicht m·g·sin α gegen das Ausfahren), äußere Masse `m_ext` mit Haft-/Gleitreibung `mu_B_ext`/`mu_M_ext`, hydraulische Kolbenreibung `F_B`/`F_M`/`F_V`, Federkennlinie `p_spring_min`/`p_spring_max` mit `spring_left`/`spring_right`, Kraftprofil `F_var_ex`/`F_var_re` {x mm, F N, …} bei `use_F_const` False; gleichzeitige Betätigung eines Ventils: Vorrang `dominant`, sonst bleibt es stehen |
 | Spannungsquelle | oberer Anschluss Plus, unterer Minus |
 | Taster, Endschalter | Schließer/Öffner aus dem Symbol; Wahlschalter (Rastung, `sim_role` `switch`) schaltet bei jedem Druck um; Endschalter auch über einen Hubbereich „`-MM1 0..2`“ (mm) |
 | Handventil mit Wahlschalter | nur auf einer Seite von Hand betätigt, ohne Feder: jeder Druck schaltet um, das Ventil bleibt stehen |
@@ -90,6 +90,91 @@ Programme aller SPS-Baugruppen eines Projekts teilen sich die Variablen. Das Sim
 während des Laufs in der Liste *SPS-Variablen* (Ein- und Ausgänge, Merker, Schritt, Bausteinausgänge);
 `--simulate` gibt am Ende die Werte aus.
 
+## Analoge Elektrik (R17 Stufe 1, Fork 1.41.0)
+
+Ein Stromkreis aus Bauteilen mit `sim_role` = `circuit` wird nach Kirchhoff gerechnet (modifizierte Knotenanalyse, implizites
+Euler-Verfahren, Formeln E01–E05). Je Bauteil `sim_block` und `sim_params` (SI-Vorsätze p n u µ m k M G):
+
+| sim_block | Bauteil | sim_params |
+|---|---|---|
+| `R`, `C`, `L` | Widerstand, Kondensator, Spule | `R=1k`, `C=100u`, `L=100m` |
+| `V`, `I` | Spannungs-, Stromquelle (erster Anschluss + bzw. „+“, „P“, „1“) | `V=10` (Gleich), `V=10;f=50;offset=0;phase=0` (Sinus) |
+| `D` | Diode (Anode = erster Anschluss bzw. „A“) | `Is=1e-12;n=1` |
+| `GND` | Masse (0 V), mindestens eine je Stromkreis | – |
+
+Messgrößen `u:-R1` (Spannung erster gegen zweiten Anschluss), `i:-R1` (Strom vom ersten zum zweiten), `pel:-R1` (aufgenommene
+Leistung, Quellen negativ).
+
+**Stufe 2 (Fork 1.42.0): Kopplung an die Schaltlogik** (Formeln E06–E08, Prüfplan `kopplung.qet`):
+
+| Teil | wird im Stromkreis | Angaben |
+|---|---|---|
+| Taster, Grenztaster, Relaiskontakt mit beiden Anschlüssen auf Stromkreisnetzen | Schalter R_on / R_off | `sim_contact` „Ron=10m;Roff=1G“ (Vorgabe) |
+| Relaisspule, Ventilmagnet mit beiden Anschlüssen auf Stromkreisnetzen | R und L in Reihe; Anzug bei I_an, Abfall bei I_ab | `sim_coil` „R=240;L=2.4;Un=24;on=0.8;off=0.1“ oder „Ion=…;Ioff=…“ – R, L, Un aus dem Datenblatt |
+| `sim_block` `AI` | Eingangswiderstand, Spannung → Variable | `sim_params` „Rin=100k;Umin=0;Umax=10;raw=27648“, `sim_var` „Messwert“ |
+| `sim_block` `AQ` | Spannungsquelle aus der Variable | `sim_params` „Umin=0;Umax=10;raw=27648“, `sim_var` |
+
+Kontakte heißen im Stromkreis „-K1/14“ (Anschluss der Schaltseite) bzw. „-K1/Schließer“; `plc:Messwert` liest die Variable.
+Die Schaltlogik sieht den Spulenstrom des vorigen Rechenschritts (10 µs bei der Referenz).
+
+**Stufe 3 (Fork 1.43.0): Halbleiter** (Formeln E09, E10, Prüfplan `halbleiter.qet`):
+
+| sim_block | Bauteil | Anschlüsse | sim_params (Vorgabe = Projektfestlegung) | Messgrößen |
+|---|---|---|---|---|
+| `QN`, `QP` | NPN-, PNP-Transistor (Ebers-Moll) | C, B, E | `Is=1e-12;n=1;BF=100;BR=1` | `u:` U_CE, `i:` I_C, `ib:` I_B |
+| `OP` | Operationsverstärker | +, −, OUT | `A=1e5;Rin=1M;Rout=1;Vmax=15;Vmin=-15` | `u:` Ausgang gegen Masse, `i:` Ausgangsstrom, `ib:` Eingangsstrom |
+
+Ohne Frequenzgang, Anstiegsrate, Early-Effekt und Kapazitäten; die Begrenzung des OPV ist ein Kennwert, keine Versorgung.
+
+**Stufe 4 (Fork 1.44.0): Schutzorgane** (Formel E11, Prüfplan `schutz.qet`):
+
+| sim_block | Bauteil | Vorgaben (Projektfestlegung im Normband) | Pflicht |
+|---|---|---|---|
+| `F` | Sicherung gG | kf = 1,6, τ = I²t/(kf·In)² | `In`, `I2t` (Schmelzintegral, Datenblatt) |
+| `MCB_B`, `MCB_C`, `MCB_D` | Leitungsschutzschalter | kf = 1,45, τ = 60 s, Im = 5 / 10 / 20 | `In` |
+| `MPCB` | Motorschutzschalter Klasse 10 | kf = 1,125, τ = 280 s, Im = 13 | `In` (Einstellstrom Ir) |
+
+Alle mit `R` (Vorgabe 10 mΩ), überschreibbar `kf`, `tau`, `Im`. Ausgelöst: 1 GΩ, Meldung „… löst aus (thermisch|magnetisch, … A)“;
+`trip:-F1` (1/0), `w:-F1` (thermischer Zustand A²s). Zurücksetzen mit dem Ereignis „-F1 reparieren“.
+
+**Stufe 5 (Fork 1.45.0): elektrische Maschinen** (Formeln E12, E13, Prüfplan `motoren.qet`):
+
+| sim_block | Bauteil | Anschlüsse | sim_params (alle aus Datenblatt/Ersatzschaltbild) |
+|---|---|---|---|
+| `MDC` | Gleichstrommotor | 2 (Anker, erster = +) | `Ra`, `La`, `k` (V·s/rad = N·m/A), `J`, optional `b`, `ML` |
+| `MASM` | Asynchronmotor (Käfig, Stern) | U, V, W bzw. L1, L2, L3 | `Rs`, `Rr`, `Lls`, `Llr`, `Lm`, `p` (Polpaare), `J`, optional `b`, `ML` |
+
+Messgrößen `omega:` (rad/s), `n:` (1/min), `tau:` (Moment N·m), `i:` (Ankerstrom bzw. Strom L1), `u:` (Ankerspannung bzw.
+Leiterspannung L1–L2). Drehstrom: drei `V`-Quellen „V=325;f=50;phase=0 / -120 / -240“ gegen Masse.
+Prüfplan `analog.qet`.
+
+## Simulationsmodi und Leistung (R16, Fork 1.40.0)
+
+- Simulationsfenster: **Start**, **Pause**/**Fortsetzen**, **Stop** (Ende; der nächste Start beginnt von vorn), **Schritt 10 ms**
+  (ein Steuerzyklus), **Bis zur nächsten Änderung** (bis Ventil, Endlage, Relais, Schritt … umschalten, höchstens 10 s),
+  **Nur aktuelles Blatt**.
+- Kommandozeile: `--folios 2` bzw. `1,3` oder `2-4` (nur diese Blätter), `--until-change` (Halt bei der ersten Zustandsänderung),
+  `--measure`/`--csv`/`--raster` (Messabgriffe wie bisher), `--meta` mit `wallTimeS`, `steps`, `stepsPerSecond`, `fluidNets`, `folios`.
+- Formel N10, Prüfplan `zwei_blaetter.qet`.
+
+## Fehlerszenarien (R15, Fork 1.39.0)
+
+Ein Defekt steht als Elementinformation `sim_fault` am Bauteil, Schreibweise „`<Fehler> [Wert] [ab t] [bis t]`“, mehrere durch
+`;` getrennt (Fehlermodelle wie in FluidSIM, Formel K16):
+
+| Fehler | Bauteil | Wirkung |
+|---|---|---|
+| `kolben_klemmt` | Wegeventil | behält seine Stellung |
+| `spule_unterbrochen` | Ventil- oder Relaisspule | ohne Wirkung |
+| `interne_leckage 0.5` | Teil mit zwei Fluidanschlüssen (Zylinder …) | Öl G·Δp in l/(min·bar), Luft Normalstrom in l/min, zwischen den ersten beiden Anschlüssen |
+| `verstopft 0.2` | Drossel, Filter, Ventil mit Widerstand | Strom × Restanteil (ohne Wert 1 %) |
+| `immer_gesperrt`, `immer_geoeffnet` | Rückschlag-, Drosselrückschlagventil | sperrt immer bzw. ist in beide Richtungen offen |
+| `schaltet_nicht`, `schaltet_immer` | Taster, Grenztaster, Druckschalter | Kontakt nie bzw. immer betätigt |
+
+`ab 0.5 bis 2` begrenzt den Fehler zeitlich; das Ereignis `1.0 -QM1 reparieren` (`--event`, MCP `qet_simulate`) hebt alle
+Fehler des Bauteils auf. Meldungen „Fehler -QM1: kolben_klemmt“, „Fehler -QM1 aufgehoben“, „-QM1 repariert“; Messgröße
+`fault:-QM1` (1 wirksam). Prüfplan `fehler.qet`.
+
 ## GRAFCET (IEC 60848)
 
 Ein GRAFCET wird mit den GRAFCET-Symbolen der Standardsammlung gezeichnet (*Logik → Ablaufplan → GRAFCET*; die Fork
@@ -113,6 +198,18 @@ Ablauf nach der Norm: Eine Transition ist freigegeben, wenn alle Schritte davor 
 ihre Bedingung erfüllt ist. Alle schaltbaren Transitionen schalten gleichzeitig (Aktivieren hat Vorrang vor
 Deaktivieren), das wiederholt sich bis zur stabilen Situation. Kontinuierliche Aktionen wirken nur in der stabilen
 Situation, speichernde auch auf flüchtigen Schritten. ODER-Verzweigungen sind einfache Leitungsabzweige.
+
+Gliederung (R14, Fork 1.38.0; Schreibweise wie FluidSIM):
+
+| Mittel | Eintrag | Wirkung |
+|---|---|---|
+| Teil-GRAFCET | Elementinformation `sim_grafcet` = `G5` an einem Schritt jeder Kette | gleich benannte Ketten bilden G5; ohne Namen: globaler GRAFCET |
+| Schrittnamen | `X3` im eigenen Teil-GRAFCET, `G5.X3` von außen, `XG5` (G5 hat einen aktiven Schritt) | gleiche Nummern in verschiedenen Teil-GRAFCETs sind erlaubt |
+| Einschließender Schritt | Symbol „Einschließender Schritt“, `sim_encloses` = `G2 G3` (ohne Angabe `G<Nummer>`) | aktiviert die Aktivierungsschritte (Anfangsschritt-Symbol oder `sim_activation` = 1), deaktiviert beim Verlassen alles darin |
+| Makroschritt | Symbol „Makro Schritt“, Kennzeichen `M3`; Expansion mit Schritten `E3` … `S3` | Transition nach M3 erst mit aktivem S3 |
+| Zwangssteuerung | kontinuierliche Aktion `G5{8, 9}`, `G5{}`, `G5{*}`, `G5{INIT}` | G5 in dieser Situation, entwickelt sich nicht, solange der Schritt aktiv ist |
+
+Prüfplan `grafcet_r14.qet`.
 
 Namen in Bedingungen und Aktionen:
 
@@ -151,7 +248,7 @@ Filterwirkung). Ein pneumatischer „pump“ ist ein Verdichter und damit ideale
 - **Filter, Wartungseinheit, Öler …**: Durchgangswiderstand; `clogged` 1 mit `qNN_clogged` (Vorgabe 10 l/min) bzw.
   `rT_clogged` (Vorgabe 1000·rT). Keine Filter-, Kühl- oder Heizwirkung.
 
-Nicht unterstützt (Start abgewiesen): Stetig-/Proportionalventile, Muskel-, Lade- und Druckluftmotorantriebe,
+Nicht unterstützt (Start abgewiesen): Stetig-/Proportionalventile, Lade- und Druckluftmotorantriebe,
 Load-Sensing-Pumpen, Folge-, Senkbrems- und Kompensatorventile, Vakuum-Sparventil, Ventilgruppen und pneumatische
 Zeitglieder/Zähler – siehe Roadmap (R07–R13).
 
@@ -170,7 +267,20 @@ Herkunft, Beleg und Grenze jeder Formel stehen im [Formelregister](FORMELN.md).
   (`rT_cv`), Leckage `GLeak`.
 - **Druckzuschaltventil** (`pressure_valve.pressure_sequence_valve01/02`, P, A, X): öffnet P→A ab Steuerdruck `p0`
   an X (ohne X an P).
-- Weiter nicht gerechnet (Start abgewiesen): Druckwaagen, Schock-/Nachsaugblock, LS-/Mobilventilblöcke, MPYE.
+- **Druckwaagen** (R09, `pressure_valve.pressure_compensator_*`): druckabhängiger Widerstand im Hauptstrom (`rT` Öl,
+  `qNN` Luft), Solldruck `p0`, Regelbereich `dpEnd`. Schließer 01/02 (Strom B ↔ A, Steuerung X − XS; mit X an A ein
+  Druckregler) schließen ab p0 und sind bei p0 + dpEnd zu, Öffner 01/02 öffnen ab p0. Vorgeschaltet (P → A) hält
+  p_A − p_X, nachgeschaltet (P → A) öffnet, wenn p_P den Lastmeldedruck X um p0 übersteigt, Open Center LS öffnet
+  P → T ab p_X + p0.
+- **Schock- und Nachsaugblock** (`pressure_valve.shock_and_anti_cavitation_valve`): A1 = A2 und B1 = B2 sind
+  durchgehend; A und B werden gegen T begrenzt (`p0_prvA/B`, `dpEndA/B`, `rT_prvA/B`), fällt A oder B unter den
+  Tankdruck, saugt das Rückschlagventil (`rT_cv`) nach.
+- **Pneumatisches Folgeventil** (`pressure_valve.pressure_sequence_valve`, 1, 2, 12): öffnet 1 → 2, sobald der Druck an
+  12 den Schaltdruck `p0` erreicht (Übergang 0,1 bar); geschlossen ist 2 abgesperrt.
+- Prüfpläne `druckwaagen.qet` (LS-Druckwaage, vorgeschaltete Druckwaage vor einer Drossel, Schließer als Druckregler,
+  Schockblock mit Begrenzung und Nachsaugen) und `folgeventil.qet`.
+- Weiter nicht gerechnet (Start abgewiesen): LS-/Mobilventilblöcke, Druckwaage `closer03` (ohne Kennwerte und Hilfeseite, in keinem FluidSIM-Beispiel),
+  Vorsteuergeber Joystick.
 
 ## Analoge Signale und Regler (R06)
 
@@ -211,6 +321,75 @@ Elektrische Teile mit reellen Werten. Sie tragen die Bauteilinformationen `sim_r
   Prüfsymbole darin sind eigene Kästen mit benannten Anschlüssen.
 - Nicht gerechnet: Potentiometer, Oszilloskop, Strom- und Widerstandsmesser (ohne Wirkung), MPYE und
   Proportional-Verstellpumpe, analoge SPS-Ein-/Ausgänge.
+
+## Druckluftmotoren (R12)
+
+- **Druckluftmotor mit Mittelauspuff** (`actuator.motor_with_mid_exhaust`, A, B, EX): aus den FluidSIM-Nennwerten
+  `p_N`, `rpm_N`, `M_N`, `n0_nN` eine lineare Momentenkennlinie (Stillstandsmoment M_N·k/(k − 1), Leerlauf k·n_N bei
+  p_N), Moment proportional zur Druckdifferenz A − B, Trägheit `I`, Fremdmoment `M_ext` bremsend (`torqueType` 1) oder
+  antreibend (2). Die Luft strömt vom höheren der Anschlüsse A/B zum Auspuff EX (Verbrauch Dichte · Schluckvolumen ·
+  Drehzahl). Messgrößen wie beim Hydromotor: `omega:`, `phi:`, `tau:`, `P:`.
+- **Druckluftmotor** (`actuator.rotary_motor` pneumatisch): Schluckvolumen `displacement` je Umdrehung, viskose
+  Reibung `f`, Trägheit `I`; Luft von A nach B.
+- Prüfplan `druckluftmotor.qet` (eigenes Prüfsymbol, Motor rechts- und linksherum).
+- **Mehrstellungszylinder** (`actuator.multi_position_cylinder`, C1, C2, C3; Fork 1.34.0): zwei Kolben gleichen
+  Durchmessers hintereinander. Der hintere (C1, Hub `xMax2`, Standard `xMax`/2) schiebt den vorderen mit seiner Stange in
+  die Zwischenstellung, C2 fährt den vorderen allein bis `xMax`, C3 ist seine Stangenseite. Kontakt einseitig, Stoß
+  plastisch; Startlagen `xStart`, `xStart1`; Messgrößen `x:` (vorderer Kolben) und `x1:` (hinterer). Prüfplan
+  `mehrstellungszylinder.qet` (Formel M12).
+- **Pneumatischer Muskel** (`actuator.fluidic_muscle1`, A; Fork 1.46.0, Formel M15): `muscleType` 1/2/3 = DMSP-10/20/40,
+  `len` Nennlänge, `F_extern_const` (negativ = streckende Last, wie in FluidSIM), `m_ext`, `mu_B_ext`, `mu_M_ext`, `alpha`, optional
+  `F_V` (Dämpfung, Vorgabe 20 N·s/m). Kraft aus den Festo-Kurven (`simulationmuscle.h`), Volumen über virtuelle Arbeit.
+  Messgrößen `x:` (Kontraktion in m, negativ vorgespannt), `h:` (%), `v:`, `F:` (Zugkraft). Prüfplan `muskel.qet`.
+  MAS-Typen werden mit Begründung abgewiesen; Muskel mit Zylinder siehe FluidSIM-Ergänzungen.
+- **Druckübersetzer** (`actuator.pressure_intensifier01`, IN, R, H; Fork 1.46.0, Formel H13): `r`, `p_max_in`, `q_max_in`,
+  `q_max_hi` aus dem Herstellerdatenblatt (Pflicht, FluidSIM gibt keine Vorgabe), `G_leak`. Bypass IN → H, Pumpkolben
+  bis r·p_IN − (r − 1)·p_R, Rückschlag H → IN bei Druck an R. Messgröße `qh:` (Förderstrom). Prüfplan
+  `druckuebersetzer.qet` (Scanwill MP-F-4.0).
+- Kennlinien neu lesen: `python -I tools/simulation/datenblaetter/dmsp_kennlinien.py DMSP_EN.PDF dmsp.json`, dann
+  `erzeuge_muskelkopf.py dmsp.json sources/simulation/simulationmuscle.h`.
+- Nicht gerechnet: Belastungseinheit 1 siehe R13. Tandem- und Teleskopzylinder gibt es in FluidSIM nicht als Bauteil.
+
+## FluidSIM-Ergänzungen (Fork 1.47.0)
+
+- **MPYE** (`proportional.mpye`, 1 … 5 bzw. FluidSIM C4/C2/C5/C1/C3): Sollwert 0 … 10 V (5 V Mitte) über den
+  lagegeregelten Proportionalmagneten („C=-QM1/S“), den Kennwert `u` oder ein Sollwert-Ereignis; Querschnitt nach der
+  Festo-Kennlinie (Formel V19), `qNN` (FluidSIM 773 l/min), `tau` (1,6 ms). Messgrößen `u:`, `s:` ((u − 5)/5).
+- **Timer** (`shutoff_valve.timer1/2`), **Verzögerungsventile** (`valve_group.timer3/4`), **Vorwahlzähler**
+  (`shutoff_valve.pneumatic_counter`), **Zweihandsteuerblock**, **Vakuumsaugventil**: Kennwerte wie in FluidSIM
+  (Formeln V20–V24), Prüfplan `pneu_logik.qet`.
+- **Taktstufen TAA/TAB** (Fork 1.48.0, Formel V25): Anschlüsse Yn, Zn, P.1, L.1, X…, A…, Yn+1, Zn+1, P.2, L.2 wie der Import; TAA setzt mit Yn, TAB mit Yn oder L; Prüfplan `taktkette.qet`.
+- **Muskel mit Führungszylindern** (`actuator.fluidic_muscle2/3`, AM, AC, BC, AC2, BC2; Fork 1.48.0, Formel M16): `d_piston`, `d_rod`, `xMax`, `xStart`; Messgröße `xz:` (Zylinderweg wie FluidSIMs x); Prüfplan `muskel_zylinder.qet`.
+
+## Mobilhydraulik (R13, Fork 1.35.0)
+
+- **LS-Aggregat** (`supply.load_sensing_pump_unit`, P1 Verstellpumpe, P2 Konstantpumpe, LS): Verdrängung `displacementVP`/
+  `displacementFP` · `rpm`; LS-Regler α = 1 − (p_P1 − p_LS − `p0`)/`dpEnd` als PT1 (`T_PT1`), Druckbegrenzung je Pumpe
+  (`p0_prvLS`/`p0_prvFixed`, Band `dpEnd_prv*` in bar, `rT_prv*`), Leckage `GL_VP`/`GL_FP`, LS-Entlastung `rT_LS`. Tank-,
+  Leck- und Lüftungsanschlüsse (T, L, LA) dürfen offen bleiben. Formel H08.
+- **6/3-Handhebelventil** (`proportional.directional_valve63_with_hand_lever`): `xStep` in % (+: P2 → B, A → T2; −: P2 → A,
+  B → T2; 0: Umlauf P1 → T1), Widerstände `rT_P1_T1`, `rT_P2_AB`, `rT_T2_AB`, Rückschlagventil `rT_CV`, Schieber `T_2`.
+  Formel V15.
+- **Belastungseinheit** (`actuator.loading_unit_2`, A1.1, A1.2, A2.1, A2.2): zwei gegenüberliegende Zylinder, Masse `m`,
+  Reibung `F_B`/`F_M`/`F_V`, Einbauwinkel `alpha`. Formel M13.
+- Prüfplan `mobilhydraulik.qet`.
+- **Lenkventil** (`supply.steering_unit_1/2`, Fork 1.36.0; P, T, L, R, E): Handmoment `M_user` (+ links) gegen `M_userMax`
+  öffnet das Drehventil (Kanten `rT`/Anteil²), neutral P → E; Lenkradwinkel `phi:` aus dem Dosierstrom und `displacement`.
+  Formel H10.
+- **Vorsteuergerät** (`pressure_valve.pilot_valves_joystick`; P, T, X1.1, X1.2, X2.1, X2.2): `adjustmentLeft`/`adjustmentRight`
+  in %, + regelt X g.1, − X g.2 auf |Auslenkung|·`pMax`. Formel H11.
+- **Sperrblock** (`shutoff_valve.double_non_return_valve01/02`; A1 → A2, B1 → B2): `p0` Feder, `ratio` Entsperrkolben, `rT`.
+  Formel V16.
+- **Belastungseinheit 1** (`actuator.loading_unit_1`): wie Belastungseinheit 2, Stangenräume entlasten sich über `p0_prv`,
+  `dpEnd_prv`, `rT_prv`, `rT_cv` ineinander. Formel M14.
+- **Membranspeicher mit Sicherheitsblock** (`supply.accumulator` mit `p0_accu`; P, T): Kugelhahn `x` (2 offen), Druckbegrenzung
+  `p0_prv` zum Tank. Formel H12.
+- Prüfplan `lenkung.qet`.
+- **LS-Steuerblock** (`proportional.mobile_valve_block_ls`, Fork 1.37.0; P, T, LS, je Scheibe A g, B g, Vorsteuerung C g, D g):
+  Vorsteuerdruck zwischen `pS_min` und `pS_max` (C → P→A, D → P→B) oder Handhebel `xStepLeft`/`xStepRight`, Druckwaage `p0_pc`,
+  `dpEnd_pc`, `rT_pc`, Kanten `rT_PAB`, `rT_TAB`, Wechselventil `rT_SV`. Formel V17.
+- **Prioritätsventil LS** (`proportional.priority_valve_ls`; P, CF, EF, LS): `p0`, `dpEnd`, `rT_CF`, `rT_EF`. Formel V18.
+- Prüfplan `lsblock.qet`.
 
 ## Vakuum, Schwenk- und Greiferantriebe (R10)
 

@@ -265,7 +265,9 @@ bool ProjectView::tryClosing()
 		return(true);
 	}
 
-	if (m_project -> filePath().isEmpty()) {
+	if (m_project -> filePath().isEmpty() || m_project -> isReadOnly()) {
+			//No file yet, or a read-only one that is not written: the
+			//changes go to another file
 		QString filepath = askUserForFilePath();
 		if (filepath.isEmpty()) return(false); // users may cancel the closing
 	}
@@ -778,6 +780,10 @@ QETResult ProjectView::saveAs()
 
 	QString filepath = askUserForFilePath();
 	if (filepath.isEmpty()) return(QETResult());
+		//The same read-only file chosen again: it stays unwritten
+	if (m_project -> isReadOnly())
+		return(QETResult(tr("%1 is open read-only. Choose another file name to keep your changes.")
+						 .arg(QFileInfo(filepath).fileName())));
 	return(doSave());
 }
 
@@ -867,15 +873,22 @@ QETResult ProjectView::doSave()
 		return(saveAs());
 	}
 
+		//A read-only project is never written to its file: saving it
+		//means keeping the changes in another one
+	if (m_project -> isReadOnly()) {
+		return(saveAs());
+	}
+
 	// write to file
 	bool cancelled = false;
 	QETResult result = writeProject(&cancelled);
 	if (cancelled) return(QETResult());
 	updateWindowTitle();
 	// This marks the stack's current index as the new "saved" point (so isClean()/cleanChanged() correctly
-	// resume tracking unsaved changes from here) without discarding the undo history. Edits made before this save 
-	// stay undoable for the rest of the session.
-	project()->undoStack()->setClean();
+	// resume tracking unsaved changes from here) without discarding the undo history. Edits made before this save
+	// stay undoable for the rest of the session. Only when the save worked: a refused one (read-only, taken
+	// over by someone else) must leave the project modified.
+	if (result.isOk()) project()->undoStack()->setClean();
 	return(result);
 }
 

@@ -178,7 +178,7 @@ class ToolRegistry(unittest.TestCase):
             "qet_project_info", "qet_elements", "qet_conductors", "qet_diff",
             "qet_scan", "qet_element_info", "qet_export", "qet_simulate",
             "qet_simulate_reference", "qet_fluidsim_import", "qet_edit", "qet_query",
-            "qet_project_new", "qet_element_search", "qet_check", "qet_element_build",
+            "qet_project_new", "qet_element_search", "qet_check", "qet_plan_check", "qet_element_build",
             "qet_continuity", "qet_items", "qet_script_api", "qet_script_test",
         "qet_script_install", "qet_script_list", "qet_script_read",
         "qet_script_remove", "qet_live_status", "qet_live_run_script",
@@ -539,6 +539,8 @@ class EditValidation(unittest.TestCase):
         two = el + [{"op": "add_element", "id": "e2", "folio": "$f", "path": "p", "x": 1, "y": 2}]
         samples.update({
             "set_position": el + [{"op": "set_position", "folio": "$f", "element": "$e", "x": 1, "y": 1}],
+            "insert_template": [{"op": "insert_template", "template": "Motorabgang DOL", "values": {"P_kW": "4"}}],
+            "save_template": [f, {"op": "save_template", "folio": "$f", "name": "Vorlage"}],
             "move_element": el + [{"op": "move_element", "folio": "$f", "element": "$e", "dx": 1, "dy": 1}],
             "rotate_element": el + [{"op": "rotate_element", "folio": "$f", "element": "$e", "angle": 90}],
             "mirror_element": el + [{"op": "mirror_element", "folio": "$f", "element": "$e", "vertical": False}],

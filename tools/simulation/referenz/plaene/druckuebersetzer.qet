@@ -1,0 +1,368 @@
+<project title="Hydraulischer Druckübersetzer Scanwill MP-F-4.0 (R12)" uuid="{e9061488-b0dd-56d2-ad56-2330b8f256ed}" version="0.200.1">
+    <properties/>
+    <usage enabled="true" time_spent="0"/>
+    <symbol_texts upright="true"/>
+    <newdiagrams>
+        <border cols="17" colsize="60" displaycols="true" displayrows="true" rows="8" rowsize="80"/>
+        <inset author="" auto_page_num="" date="null" displayAt="bottom" filename="" folio="" indexrev="" locmach="" plant="" title="" version=""/>
+        <conductors bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <report label="%f-%l%c"/>
+        <xrefs>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="cable" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="coil" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="commutator" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="plc" xrefpos="AlignBottom"/>
+            <xref delayprefix="" displayhas="cross" master_label="%f-%l%c" offset="0" powerprefix="" showallconfiguredslaves="false" showpowerctc="true" showterminalname="true" slave_label="(%f-%l%c)" slave_offset="0" snapto="label" stackoverlapping="true" switchprefix="" type="protection" xrefpos="AlignBottom"/>
+        </xrefs>
+        <conductors_autonums auto_break_conductors="false" current_autonum="" freeze_new_conductors="false"/>
+        <folio_autonums/>
+        <element_autonums current_autonum="" freeze_new_elements="false"/>
+        <guides/>
+    </newdiagrams>
+    <diagram author="" auto_page_num="" cols="17" colsize="60" date="null" displayAt="bottom" displaycols="true" displayrows="true" filename="" folio="" freezeNewConductor="false" freezeNewElement="false" height="660" indexrev="" locmach="" order="1" plant="" rows="8" rowsize="80" title="" uuid="{ebf8046e-47f0-43a8-a64c-3e3684275580}" version="0.200.1-dev">
+        <defaultconductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" formula="" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" text_color="#000000" type="multi" vertical-alignment="AlignRight" vertirotatetext="270"/>
+        <elements>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="GP" type="embed://import/30_hydraulic/61_pumps/pompe_debit_fixe.elmt" uuid="{eaf5eaef-c302-4199-b72d-bbd94171b330}" x="120" y="480" z="10">
+                <terminals>
+                    <terminal id="0" orientation="0" x="0" y="-20"/>
+                    <terminal id="1" orientation="3" x="-20" y="0"/>
+                    <terminal id="2" orientation="2" x="0" y="20"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-GP1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{63069ff8-011e-4902-a95f-27e5f143fb9f}" x="24" y="-25.67">
+                        <text>-GP1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="CM" type="embed://import/30_hydraulic/21_tanks/bache_a_l_air_libre.elmt" uuid="{eeecad0f-77bc-4899-9de6-5d04203e2f1a}" x="120" y="600" z="10">
+                <terminals>
+                    <terminal id="3" orientation="0" x="0" y="-6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-CM1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{4a310a19-844f-404a-a8a2-741d9ea2282b}" x="15" y="-2.5">
+                        <text>-CM1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/hochdruckzylinder.elmt" uuid="{a5ebc789-5aee-47f8-a465-d3ba8e26a961}" x="300" y="130" z="10">
+                <terminals>
+                    <terminal id="4" orientation="2" x="-20" y="26"/>
+                    <terminal id="5" orientation="2" x="20" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-MM1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{88300b0f-9e41-4c95-ab2e-07b7e07f7ead}" x="0" y="-45">
+                        <text>-MM1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="MM" type="embed://import/90_signal/druckuebersetzer_mpf40.elmt" uuid="{09c7b3b7-f509-4712-855b-19bee2705f35}" x="300" y="330" z="10">
+                <terminals>
+                    <terminal id="6" orientation="0" x="-20" y="-26"/>
+                    <terminal id="7" orientation="2" x="-20" y="26"/>
+                    <terminal id="8" orientation="2" x="20" y="26"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-GZ1</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{d32533a1-2e00-4aa8-8c24-73d1b177738d}" x="0" y="-45">
+                        <text>-GZ1</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="CM" type="embed://import/30_hydraulic/21_tanks/bache_a_l_air_libre.elmt" uuid="{fb677d27-8041-4a45-87ed-8ae2840b37a9}" x="340" y="480" z="10">
+                <terminals>
+                    <terminal id="9" orientation="0" x="0" y="-6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-CM2</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{c3a3409f-8f74-42a7-b15d-8d41636531d5}" x="15" y="-2.5">
+                        <text>-CM2</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+            <element freezeLabel="false" is_movable="1" orientation="0" prefix="CM" type="embed://import/30_hydraulic/21_tanks/bache_a_l_air_libre.elmt" uuid="{5f803428-174e-45b3-8f66-e577c26dda27}" x="480" y="240" z="10">
+                <terminals>
+                    <terminal id="10" orientation="0" x="0" y="-6"/>
+                </terminals>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="label" show="1">-CM3</elementInformation>
+                </elementInformations>
+                <dynamic_texts>
+                    <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{3b68e498-b354-4941-a9a3-5748753a60c4}" x="15" y="-2.5">
+                        <text>-CM3</text>
+                        <info_name>label</info_name>
+                    </dynamic_elmt_text>
+                </dynamic_texts>
+                <texts_groups/>
+            </element>
+        </elements>
+        <conductors>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{eaf5eaef-c302-4199-b72d-bbd94171b330}" element1_label="-GP1" element1_name="Fixed Displacement hydraulic pump" element2="{eeecad0f-77bc-4899-9de6-5d04203e2f1a}" element2_label="-CM1" element2_name="Pipings under level" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{5a114086-7948-4d66-ad56-859d4ea42cbf}" terminal2="{1a7d7aea-53a4-42e0-bded-b81825b13808}" terminalname1="T" terminalname2="P" text_color="#000000" type="multi" uuid="{330a4064-831a-45fa-b266-713b06f31867}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{eaf5eaef-c302-4199-b72d-bbd94171b330}" element1_label="-GP1" element1_name="Fixed Displacement hydraulic pump" element2="{eeecad0f-77bc-4899-9de6-5d04203e2f1a}" element2_label="-CM1" element2_name="Pipings under level" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{d9d04591-bdb6-4154-90ef-2674ec497353}" terminal2="{1a7d7aea-53a4-42e0-bded-b81825b13808}" terminalname1="L" terminalname2="P" text_color="#000000" type="multi" uuid="{7d23e034-9999-4e50-8791-433a93278b7a}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{eaf5eaef-c302-4199-b72d-bbd94171b330}" element1_label="-GP1" element1_name="Fixed Displacement hydraulic pump" element2="{09c7b3b7-f509-4712-855b-19bee2705f35}" element2_label="-GZ1" element2_name="Pressure intensifier MP-F-4.0 (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{b31ade34-5793-4ce2-898a-5900631aa6d4}" terminal2="{843ab812-bb9b-5a04-a412-bc26ee224546}" terminalname1="P" terminalname2="IN" text_color="#000000" type="multi" uuid="{4e3d249e-62c2-40f1-9a10-1133e2554f8f}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{a5ebc789-5aee-47f8-a465-d3ba8e26a961}" element1_label="-MM1" element1_name="Cylinder 20/10-20 (test symbol)" element2="{09c7b3b7-f509-4712-855b-19bee2705f35}" element2_label="-GZ1" element2_name="Pressure intensifier MP-F-4.0 (test symbol)" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{bac3242d-4a60-5b02-a5c8-407c59352625}" terminal2="{3e5fc032-e59d-55ab-9cdf-433bc6b92536}" terminalname1="A" terminalname2="H" text_color="#000000" type="multi" uuid="{a9eb1cce-3ffd-4bed-90a3-7b811947c762}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{a5ebc789-5aee-47f8-a465-d3ba8e26a961}" element1_label="-MM1" element1_name="Cylinder 20/10-20 (test symbol)" element2="{5f803428-174e-45b3-8f66-e577c26dda27}" element2_label="-CM3" element2_name="Pipings under level" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{b73d5015-111e-52cc-b358-15f3cc73f0e6}" terminal2="{1a7d7aea-53a4-42e0-bded-b81825b13808}" terminalname1="B" terminalname2="P" text_color="#000000" type="multi" uuid="{fca59462-57f3-46c5-a0ae-b7543d0797d0}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+            <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="0" element1="{09c7b3b7-f509-4712-855b-19bee2705f35}" element1_label="-GZ1" element1_name="Pressure intensifier MP-F-4.0 (test symbol)" element2="{fb677d27-8041-4a45-87ed-8ae2840b37a9}" element2_label="-CM2" element2_name="Pipings under level" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="_" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{44950a25-c130-5df0-bc8b-e46d563425c5}" terminal2="{1a7d7aea-53a4-42e0-bded-b81825b13808}" terminalname1="R" terminalname2="P" text_color="#000000" type="multi" uuid="{18a9363c-d704-47db-90ec-66fe0ec2aa9d}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <sequentialNumbers/>
+            </conductor>
+        </conductors>
+    </diagram>
+    <collection>
+        <category name="import">
+            <names>
+                <name lang="ca">Elements importats</name>
+                <name lang="cs">Zavedené prvky</name>
+                <name lang="da">Importerede elementer</name>
+                <name lang="de">Importierte Elemente</name>
+                <name lang="el">Εισηγμένα στοιχεία</name>
+                <name lang="en">Imported elements</name>
+                <name lang="es">Elementos importados</name>
+                <name lang="fr">Éléments importés</name>
+                <name lang="hr">Uvezeni elementi</name>
+                <name lang="it">Elementi importati</name>
+                <name lang="ja">インバートされた要素</name>
+                <name lang="ko">전기 심볼 요소</name>
+                <name lang="ko_KR">전기 심볼 요소</name>
+                <name lang="lv">Importētie elementi</name>
+                <name lang="nl">Elementen geïmporteerd</name>
+                <name lang="nl_BE">Elementen geïmporteerd</name>
+                <name lang="pl">Elementy importowane</name>
+                <name lang="pt">Elementos importados</name>
+                <name lang="pt_BR">Elementos importados</name>
+                <name lang="ro">Elemente importate</name>
+                <name lang="ru">Импортированные элементы</name>
+                <name lang="sk">Importované prvky</name>
+                <name lang="sl">Uvoženi elementi</name>
+                <name lang="sv">Importerade element</name>
+                <name lang="tr">İthal öğeler</name>
+                <name lang="uk">Імпортовані елементи</name>
+                <name lang="zh">导入元件</name>
+            </names>
+        <category name="30_hydraulic">
+                <category name="61_pumps">
+                    <element name="pompe_debit_fixe.elmt">
+                        <definition height="70" hotspot_x="34" hotspot_y="34" link_type="simple" type="element" version="0.100.0" width="60">
+                            <uuid uuid="{c4c35a46-2dc2-679e-500c-278e48ce4f4e}"/>
+                            <names>
+                                <name lang="ar">مضخّة بتدفق ثابت</name>
+                                <name lang="ca">Bomba hidràulica de desplaçament fix</name>
+                                <name lang="cs">Vodní čerpadlo se stálým výkonem</name>
+                                <name lang="da">Hydraulikpumpe med fast slagvolumen</name>
+                                <name lang="de">Hydraulikpumpe mit fester Verdrängung</name>
+                                <name lang="el">Υδραυλική αντλία σταθερής μετατόπισης</name>
+                                <name lang="en">Fixed Displacement hydraulic pump</name>
+                                <name lang="es">Bomba hidráulica de desplazamiento fijo</name>
+                                <name lang="fi">Kiinteätilavuuksinen hydraulipumppu</name>
+                                <name lang="fr">Pompe debit fixe</name>
+                                <name lang="hr">Hidraulička pumpa fiksnog pomaka</name>
+                                <name lang="hu">Állandó térfogatáramú hidraulikus szivattyú</name>
+                                <name lang="it">Pompa a portata fissa</name>
+                                <name lang="ja">固定容量油圧ポンプ</name>
+                                <name lang="ko">정용량 유압 펌프</name>
+                                <name lang="mn">Тогтмол шилжилттэй гидравлик насос</name>
+                                <name lang="nb">Hydraulisk pumpe med fast slagvolum</name>
+                                <name lang="nl">Pomp vast</name>
+                                <name lang="nl_BE">Hydraulische pomp met vaste opbrengst</name>
+                                <name lang="pl">Pompa o stałej wydajności i jednym kierunku tłoczenia</name>
+                                <name lang="pt">Bomba hidráulica de cilindrada fixa</name>
+                                <name lang="pt_BR">Bomba hidraulica de deslocamento fixo</name>
+                                <name lang="ro">Pompă hidraulică cu deplasare fixă</name>
+                                <name lang="ru">Гидравлический насос постоянной производительности</name>
+                                <name lang="sk">Hydraulické čerpadlo s pevným zdvihovým objemom</name>
+                                <name lang="sl">Hidravlična črpalka s fiksno iztisnino</name>
+                                <name lang="sr">Хидраулична пумпа фиксне запремине</name>
+                                <name lang="sv">Hydraulpump med fast deplacement</name>
+                                <name lang="tr">Sabit deplasmanlı hidrolik pompa</name>
+                                <name lang="uk">Гідравлічний насос фіксованої продуктивності</name>
+                                <name lang="zh">定量泵</name>
+                            </names>
+                            <fluid function="supply.pump" kind="source" prefix="GP">
+                                <parameter name="displacement" unit="cm3" value="8"/>
+                                <parameter name="rpm" unit="1/min" value="1450"/>
+                                <parameter name="pMax" unit="MPa" value="6"/>
+                            </fluid>
+                            <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                            <description>
+                                <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{9ff5b6eb-b60a-4bca-be46-ab51730b62ff}" x="24" y="-25.67" z="1">
+                                    <text/>
+                                    <info_name>label</info_name>
+                                </dynamic_text>
+                                <ellipse antialias="true" height="40" style="line-style:normal;line-weight:normal;filling:none;color:black" width="40" x="-20" y="-20"/>
+                                <polygon antialias="true" style="line-style:normal;line-weight:normal;filling:black;color:black" x1="0.24" x2="-2.25" x3="2.25" x4="4.16" x5="4.16" y1="-19.93" y2="-15" y3="-15" y4="-19.58" y5="-19.46"/>
+                                <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="20" y2="24.5"/>
+                                <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="-20.4" y2="-24.5"/>
+                                <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20.5" x2="-24.5" y1="0" y2="0"/>
+                                <terminal medium="hydraulic" name="P" orientation="n" type="Generic" uuid="{b31ade34-5793-4ce2-898a-5900631aa6d4}" x="0" y="-24"/>
+                                <terminal medium="hydraulic" name="T" orientation="s" type="Generic" uuid="{5a114086-7948-4d66-ad56-859d4ea42cbf}" x="0" y="24"/>
+                                <terminal medium="hydraulic" name="L" orientation="w" type="Generic" uuid="{d9d04591-bdb6-4154-90ef-2674ec497353}" x="-24" y="0"/>
+                            </description>
+                        </definition>
+                    </element>
+                </category>
+                <category name="21_tanks">
+                    <element name="bache_a_l_air_libre.elmt">
+                        <definition height="40" hotspot_x="20" hotspot_y="21" link_type="simple" type="element" version="0.100.0" width="40">
+                            <uuid uuid="{1dc29989-614c-13b7-3cde-7c44d91de71a}"/>
+                            <names>
+                                <name lang="ar">حاوية في الهواء الطلق</name>
+                                <name lang="ca">Conductes sota nivell</name>
+                                <name lang="cs">Otevřená nádrž</name>
+                                <name lang="da">Rørføring under niveau</name>
+                                <name lang="de">Leitungen unterhalb des Flüssigkeitsspiegels</name>
+                                <name lang="el">Σωληνώσεις κάτω από τη στάθμη</name>
+                                <name lang="en">Pipings under level</name>
+                                <name lang="es">Tuberia debajo de nivel</name>
+                                <name lang="fi">Putkistot tason alapuolella</name>
+                                <name lang="fr">Bâche à l'air libre</name>
+                                <name lang="hr">Cjevovodi ispod razine</name>
+                                <name lang="hu">Szint alatti csővezetékek</name>
+                                <name lang="it">Tubazioni sotto livello</name>
+                                <name lang="ja">液面下の配管</name>
+                                <name lang="ko">레벨 아래 배관</name>
+                                <name lang="mn">Түвшний доорх хоолой</name>
+                                <name lang="nb">Rørføring under nivå</name>
+                                <name lang="nl">Onder niveau</name>
+                                <name lang="nl_BE">Leidingen onder niveau</name>
+                                <name lang="pl">Zbiornik otwarty</name>
+                                <name lang="pt">Tubagens sob o nível</name>
+                                <name lang="pt_BR">Tubulações abaixo do nível</name>
+                                <name lang="ro">Conducte sub nivel</name>
+                                <name lang="ru">Трубопроводы под уровнем</name>
+                                <name lang="sk">Potrubie pod hladinou</name>
+                                <name lang="sl">Cevovodi pod nivojem</name>
+                                <name lang="sr">Цевоводи испод нивоа</name>
+                                <name lang="sv">Rörledningar under nivå</name>
+                                <name lang="tr">Seviye altı boru tesisatı</name>
+                                <name lang="uk">Трубопроводи під рівнем</name>
+                                <name lang="zh">开放式油箱</name>
+                            </names>
+                            <fluid function="supply.tank" kind="source" prefix="CM">
+                                <parameter name="V0" unit="l" value="10"/>
+                            </fluid>
+                            <informations>Author: The QElectroTech team
+License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
+                            <description>
+                                <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="0" x2="0" y1="10" y2="-10"/>
+                                <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="13.92" x2="13.92" y1="13.37" y2="0.08"/>
+                                <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-13.76" x2="13.92" y1="13.45" y2="13.37"/>
+                                <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-13.76" x2="-13.76" y1="0.08" y2="13.45"/>
+                                <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{3b764a17-fab6-41db-8727-14dd0064a525}" x="15" y="-2.5" z="5">
+                                    <text/>
+                                    <info_name>label</info_name>
+                                </dynamic_text>
+                                <terminal medium="hydraulic" name="P" orientation="n" type="Generic" uuid="{1a7d7aea-53a4-42e0-bded-b81825b13808}" x="0" y="-10"/>
+                            </description>
+                        </definition>
+                    </element>
+                </category>
+            </category>
+            <category name="90_signal">
+                <element name="druckuebersetzer_mpf40.elmt">
+                    <definition height="100" hotspot_x="80" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="160">
+                        <uuid uuid="{60c7eb2f-7a1c-566a-8dad-7f7c8b7e8d27}"/>
+                        <names>
+                            <name lang="de">Druckübersetzer MP-F-4.0 (Prüfsymbol)</name>
+                            <name lang="en">Pressure intensifier MP-F-4.0 (test symbol)</name>
+                        </names>
+                        <fluid function="actuator.pressure_intensifier01" kind="other" prefix="MM">
+                            <parameter name="r" unit="" value="4"/>
+                            <parameter name="p_max_in" unit="MPa" value="17.5"/>
+                            <parameter name="q_max_in" unit="l/min" value="14"/>
+                            <parameter name="q_max_hi" unit="l/min" value="0.4"/>
+                            <parameter name="G_leak" unit="m3/(s.Pa)" value="0"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R12 (Muskel, Druckübersetzer)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="120" x="-60" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Druckübersetzer MP-F-4.0" x="-56" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{08002ee7-004d-53a6-86a2-541e54c99460}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20" x2="-20" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="IN" x="-18" y="28"/>
+                            <terminal medium="hydraulic" name="IN" orientation="s" type="Generic" uuid="{843ab812-bb9b-5a04-a412-bc26ee224546}" x="-20" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="20" x2="20" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="R" x="22" y="28"/>
+                            <terminal medium="hydraulic" name="R" orientation="s" type="Generic" uuid="{44950a25-c130-5df0-bc8b-e46d563425c5}" x="20" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20" x2="-20" y1="-20" y2="-30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="H" x="-18" y="-21"/>
+                            <terminal medium="hydraulic" name="H" orientation="n" type="Generic" uuid="{3e5fc032-e59d-55ab-9cdf-433bc6b92536}" x="-20" y="-30"/>
+                        </description>
+                    </definition>
+                </element>
+                <element name="hochdruckzylinder.elmt">
+                    <definition height="100" hotspot_x="80" hotspot_y="50" link_type="simple" type="element" version="0.100.0" width="160">
+                        <uuid uuid="{41d4d52e-4ff3-571e-bd5b-e89772a130e5}"/>
+                        <names>
+                            <name lang="de">Zylinder 20/10-20 (Prüfsymbol)</name>
+                            <name lang="en">Cylinder 20/10-20 (test symbol)</name>
+                        </names>
+                        <fluid function="actuator.cyl_conf" kind="cylinder" prefix="MM">
+                            <parameter name="d_piston" unit="mm" value="20"/>
+                            <parameter name="d_rod" unit="mm" value="10"/>
+                            <parameter name="xMax" unit="mm" value="20"/>
+                            <parameter name="xStart" unit="mm" value="0"/>
+                            <parameter name="F_extern_const" unit="N" value="0"/>
+                            <parameter name="m_ext" unit="kg" value="0"/>
+                        </fluid>
+                        <informations>Eigenes Prüfsymbol der Simulationsreferenz R12 (Muskel, Druckübersetzer)</informations>
+                        <description>
+                            <rect antialias="false" height="40" rx="0" ry="0" style="line-style:normal;line-weight:normal;filling:none;color:black" width="120" x="-60" y="-20"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="Zylinder 20/10-20" x="-56" y="4"/>
+                            <dynamic_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" text_from="ElementInfo" text_width="-1" uuid="{23e8a42d-43b7-5655-8cdc-08f05b858871}" x="0" y="-45" z="5">
+                                <text/>
+                                <info_name>label</info_name>
+                            </dynamic_text>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="-20" x2="-20" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="A" x="-18" y="28"/>
+                            <terminal medium="hydraulic" name="A" orientation="s" type="Generic" uuid="{bac3242d-4a60-5b02-a5c8-407c59352625}" x="-20" y="30"/>
+                            <line antialias="false" end1="none" end2="none" length1="1.5" length2="1.5" style="line-style:normal;line-weight:normal;filling:none;color:black" x1="20" x2="20" y1="20" y2="30"/>
+                            <text color="#000000" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" rotation="0" text="B" x="22" y="28"/>
+                            <terminal medium="hydraulic" name="B" orientation="s" type="Generic" uuid="{b73d5015-111e-52cc-b358-15f3cc73f0e6}" x="20" y="30"/>
+                        </description>
+                    </definition>
+                </element>
+            </category>
+        </category>
+    </collection>
+</project>

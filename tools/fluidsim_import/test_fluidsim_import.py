@@ -109,5 +109,47 @@ class Magnete(unittest.TestCase):
                          [("right", "-MB1"), ("left", "-MB2")])
 
 
+SAMMLUNG = HIER.parents[1] / "build" / "deploy" / "elements"
+
+
+@unittest.skipUnless((SAMMLUNG / fg.DATEI["einschl"]).exists(), "verteilte GRAFCET-Symbole fehlen")
+class GrafcetGliederung(unittest.TestCase):
+    """R14: Teil-GRAFCET-Rahmen, einschließender Schritt, Makroschritt, zwangssteuernder Befehl"""
+
+    def objekt(self, ident, ref, x, y, **werte):
+        o = ET.Element("component", {"ident": ident, "object-ref": ref, "x1": str(x), "y1": str(y),
+                                     "width": "20", "height": "20"})
+        for k, v in werte.items():
+            ET.SubElement(o, "const", {"ident": k, "value": v})
+        return o
+
+    def test_gliederung(self):
+        objekte = [
+            self.objekt("1", "Grafcet.Step", 0, 0, name="1", flags="initial"),
+            self.objekt("2", "Grafcet.Step", 0, 100, name="2", flags="enclosing", enclosedSubs=" 7 "),
+            self.objekt("3", "Grafcet.Step", 0, 200, name="5", flags="macro"),
+            self.objekt("4", "Grafcet.Step", 0, 300, name="5", flags="mentry"),
+            self.objekt("5", "Grafcet.Step", 300, 0, name="1", flags="alink"),
+            self.objekt("6", "Grafcet.SubGrafcet", 250, -50, name="7"),
+            self.objekt("7", "Grafcet.Action", 40, 100, actionType="6", **{"sub-grafcet": "7", "steps": "INIT"}),
+        ]
+        objekte[5].set("width", "200")
+        objekte[5].set("height", "200")
+        ops, zahl, offen = fg.umwandeln(0, objekte, [], SAMMLUNG, 1.0, lambda o: (float(o.get("x1")), float(o.get("y1"))))
+        labels = [o["label"] for o in ops if o["op"] == "set_label"]
+        infos = {(o["element"], o["key"]): o["value"] for o in ops if o["op"] == "set_info"}
+        pfade = {o["id"]: o["path"] for o in ops if o["op"] == "add_element"}
+        self.assertIn("M5", labels)
+        self.assertIn("E5", labels)
+        self.assertIn("G7{INIT}", labels)
+        self.assertTrue(pfade["g0_2"].endswith("20202002_step.elmt"))
+        self.assertTrue(pfade["g0_3"].endswith("20202003_step.elmt"))
+        self.assertEqual(infos[("$g0_2", "sim_encloses")], "G7")
+        self.assertEqual(infos[("$g0_5", "sim_grafcet")], "G7")
+        self.assertEqual(infos[("$g0_5", "sim_activation")], "1")
+        self.assertNotIn(("$g0_1", "sim_grafcet"), infos)
+        self.assertEqual(offen, [])
+
+
 if __name__ == "__main__":
     unittest.main()

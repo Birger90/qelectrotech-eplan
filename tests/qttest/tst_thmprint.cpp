@@ -76,6 +76,56 @@ class FakePrinter : public QObject
 		QTcpServer m_server;
 };
 
+	/// An LPD queue as RFC 1179 describes it: confirms the queue, each
+	/// subcommand line and each file with a zero byte; @p refuse_at
+	/// answers 1 to that step (1-based) instead
+class FakeLpd : public QObject
+{
+	public:
+		QByteArray received;
+		int refuse_at = 0;
+		int steps = 0;
+
+		FakeLpd()
+		{
+			m_server.listen(QHostAddress::LocalHost, 0);
+			connect(&m_server, &QTcpServer::newConnection, this, [this]() {
+				while (QTcpSocket *s = m_server.nextPendingConnection()) {
+					connect(s, &QTcpSocket::readyRead, this, [this, s]() {
+						m_buffer += s->readAll();
+						for (;;) {
+							int used = 0;
+							if (m_file > 0) {
+								if (m_buffer.size() < m_file) return;
+								used = m_file;
+								m_file = 0;
+							} else {
+								const int end = m_buffer.indexOf('\n');
+								if (end < 0) return;
+								used = end + 1;
+									//A subcommand announces a file of that many bytes plus its zero
+								if (m_open) m_file = m_buffer.mid(1, end).split(' ').value(0).toInt() + 1;
+								m_open = true;
+							}
+							received += m_buffer.left(used);
+							m_buffer.remove(0, used);
+							++steps;
+							s->write(QByteArray(1, steps == refuse_at ? '\1' : '\0'));
+						}
+					});
+					connect(s, &QTcpSocket::disconnected, s, &QObject::deleteLater);
+				}
+			});
+		}
+		quint16 port() const { return m_server.serverPort(); }
+
+	private:
+		QTcpServer m_server;
+		QByteArray m_buffer;
+		int m_file = 0;
+		bool m_open = false;
+};
+
 QString localHost()
 {
 	return QHostAddress(QHostAddress::LocalHost).toString();
@@ -449,6 +499,55 @@ class TestThmPrint : public QObject
 			QVERIFY(client.run(ThmClient::Request::Cancel).ok);
 			QTRY_COMPARE_WITH_TIMEOUT(fake.received, QByteArray("\x1bp1\x1bp0\x1bt"),
 									  QetTest::timeout(2000));
+		}
+
+		void lpdSteps()
+		{
+			const QList<QByteArray> steps = ThmClient::lpdSteps(QStringLiteral("lp"), QByteArray("A 1\r"), 7);
+			QCOMPARE(steps.size(), 5);
+			QCOMPARE(steps.at(0), QByteArray("\x02lp\n"));
+			QCOMPARE(steps.at(1), QByteArray("\x03" "4 dfA007qet\n"));
+			QCOMPARE(steps.at(2), QByteArray("A 1\r\0", 5));
+			const QByteArray control("Hqet\nPqet\nldfA007qet\nNdfA007qet\n");
+			QCOMPARE(steps.at(3), QByteArray("\x02") + QByteArray::number(control.size()) + " cfA007qet\n");
+			QCOMPARE(steps.at(4), control + QByteArray(1, '\0'));
+			QCOMPARE(ThmClient::transportFromKey(QStringLiteral("LPD")), ThmClient::Transport::Lpd);
+			QCOMPARE(ThmClient::transportFromKey(QStringLiteral("anything")), ThmClient::Transport::RawIp);
+		}
+
+		void clientSendsByLpd()
+		{
+			FakeLpd lpd;
+			FakePrinter raw;
+			ThmClient client;
+			client.setTarget(localHost(), raw.port());
+			client.setJobTransport(ThmClient::Transport::Lpd, QStringLiteral("lp"), lpd.port());
+			client.setTimeouts(QetTest::timeout(2000), QetTest::timeout(2000));
+			const QByteArray job = ThmJob::build({{QStringLiteral("101"), 2}}, smallProfile());
+			const ThmClient::Reply r = client.run(ThmClient::Request::Job, job);
+			QVERIFY2(r.ok, qPrintable(r.error));
+			QCOMPARE(lpd.steps, 5);
+			QVERIFY(lpd.received.startsWith("\x02lp\n\x03"));
+			QVERIFY(lpd.received.contains(job + QByteArray(1, '\0')));
+			QVERIFY(lpd.received.contains("\nldfA"));
+				//Nothing of the job on the RawIP port; queries still go there
+			QCOMPARE(raw.received, QByteArray());
+			QVERIFY(client.run(ThmClient::Request::Status).ok);
+			QCOMPARE(raw.received, QByteArray("\x1bs"));
+		}
+
+		void clientLpdRefused()
+		{
+			FakeLpd lpd;
+			lpd.refuse_at = 3;  // the data file
+			ThmClient client;
+			client.setTarget(localHost(), 9100);
+			client.setJobTransport(ThmClient::Transport::Lpd, QStringLiteral("lp"), lpd.port());
+			client.setTimeouts(QetTest::timeout(2000), QetTest::timeout(2000));
+			const ThmClient::Reply r = client.run(ThmClient::Request::Job, QByteArray("A 1\r"));
+			QVERIFY(!r.ok);
+			QVERIFY2(r.error.contains(QStringLiteral("LPD")), qPrintable(r.error));
+			QCOMPARE(lpd.steps, 3);
 		}
 
 		void clientWaitsBetweenStatusQueries()

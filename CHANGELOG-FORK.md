@@ -35,6 +35,10 @@ Original-QElectroTech stehen in `ChangeLog*`.
   wechseln…* im Druckdialog zeigt Artikel, Farbband und Trägerplatte und übernimmt den Wechsel erst nach der
   Bestätigung „eingelegt“. CLI `--thm-load <Drucker> <Artikel> [--usual] [--roller …]`; `--thm-send` sendet nur an
   einen Drucker, dessen aktuelle Rüstung zum Artikel passt.
+- **Sendeweg LPD** je Drucker (*Drucker…* > *Aufträge senden über*, CLI `--thm-transport <Drucker> lpd|rawip`):
+  RFC 1179 auf Port 515, Warteschlange `lp`, jeder Schritt vom Drucker bestätigt. Für Geräte, die auf Port 9100 die
+  Verbindung annehmen, aber nichts verarbeiten; an einem THM MultiMark belegt (Zähler stieg nur über LPD). Status und
+  Material weiter über RawIP. Test `tst_thmprint` mit nachgebauter LPD-Gegenstelle.
 - **Material auswählen** wie in M-Print PRO: *Auswählen…* im Druckdialog (und *…* in der Druckerverwaltung) zeigt
   alle Varianten als Tabelle mit Suche und Filtern nach Kategorie, Maß, Farbe, ein-/zweiseitig, „nur druckbar“ und
   „nur gerüstet“; Doppelklick übernimmt das Material.

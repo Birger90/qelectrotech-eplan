@@ -18,6 +18,7 @@
 #ifndef THMPRINTERS_H
 #define THMPRINTERS_H
 
+#include "thmclient.h"
 #include "thmjob.h"
 
 #include <QDateTime>
@@ -43,6 +44,10 @@ struct ThmPrinter
 	QString model;       ///< as the user calls it, e.g. what v answers
 	QString host;
 	quint16 port = 9100;
+		/// How jobs go: RawIP on port, or LPD (port 515, queue lpd_queue)
+		/// for printers whose RawIP port reads nothing; queries use RawIP
+	ThmClient::Transport transport = ThmClient::Transport::RawIp;
+	QString lpd_queue = QStringLiteral("lp");
 		/// The article variant loaded now, as last confirmed (material
 		/// number, or number/layout when an article has several layouts)
 	QString material_no;

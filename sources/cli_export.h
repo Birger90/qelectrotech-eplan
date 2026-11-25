@@ -59,6 +59,8 @@ namespace CLIExport {
 		  qelectrotech --thm-status     <printer ID | host[:port]> [--json]   (exit 3 offline or error reported, 1 no answer)
 		  qelectrotech --thm-send       <project.qet | job.prn> (--printer ID | --material NO) [options of --thm-prn] [--yes]   (exit 4 without --yes: nothing sent)
 		  qelectrotech --thm-printers   [--json]
+		  qelectrotech --thm-load       <printer ID> <article> [--usual] [--roller TEXT] [--layouts FILE]
+		  qelectrotech --thm-transport  <printer ID> rawip|lpd [--queue NAME]   (how jobs go; lpd = port 515)
 		  qelectrotech --export-nets    <project.qet> <output.json>
 		  qelectrotech --export-links   <project.qet> <output.csv>
 		  qelectrotech --export-tia-tags  <project.qet> <tags.xlsx | tags.xml> [--tia-table NAME] [--tia-culture de-DE]

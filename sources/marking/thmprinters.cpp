@@ -38,6 +38,11 @@ QList<ThmPrinter> ThmPrinters::load(QSettings &s)
 		p.model = s.value("model").toString();
 		p.host = s.value("host").toString();
 		p.port = quint16(s.value("port", 9100).toUInt());
+			//Same keys as ThmClient::transportKey(); spelled out here so the
+			//printer list needs no network code
+		p.transport = s.value("transport", "rawip").toString().compare(QLatin1String("lpd"), Qt::CaseInsensitive) == 0
+				? ThmClient::Transport::Lpd : ThmClient::Transport::RawIp;
+		p.lpd_queue = s.value("lpdQueue", "lp").toString();
 		p.material_no = s.value("materialNo").toString();
 		p.material_name = s.value("materialName").toString();
 		p.loaded_at = QDateTime::fromString(s.value("loadedAt").toString(), Qt::ISODate);
@@ -87,6 +92,8 @@ void ThmPrinters::save(QSettings &s, const QList<ThmPrinter> &printers)
 		s.setValue("model", p.model);
 		s.setValue("host", p.host);
 		s.setValue("port", p.port);
+		s.setValue("transport", p.transport == ThmClient::Transport::Lpd ? QStringLiteral("lpd") : QStringLiteral("rawip"));
+		s.setValue("lpdQueue", p.lpd_queue);
 		s.setValue("materialNo", p.material_no);
 		s.setValue("materialName", p.material_name);
 		s.setValue("loadedAt", p.loaded_at.isValid() ? p.loaded_at.toString(Qt::ISODate) : QString());

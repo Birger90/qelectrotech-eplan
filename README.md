@@ -108,7 +108,7 @@
 >   publishes a fixed import layout, so each file is a CSV cut to what that import is documented to read; columns
 >   and sources in [docs/beschriftung-export.md](docs/beschriftung-export.md).
 > - Menu Project > *Print THM labels…*: the same markers printed straight on a Weidmüller THM thermal transfer
->   printer (THM MMP, THM MultiMark) over TCP port 9100 in cab's printer language JScript, without M-Print PRO.
+>   printer (THM MMP, THM MultiMark) over TCP port 9100 or LPD (port 515, per printer) in cab's printer language JScript, without M-Print PRO.
 >   Printers, the article variant each is loaded with and its print profile are set up in the dialog; the article
 >   chosen picks the printer. Status and material can be queried; nothing prints before a summary of target,
 >   article and quantity is confirmed. Also `--thm-prn`, `--thm-status`, `--thm-send --yes`, `--thm-printers` and

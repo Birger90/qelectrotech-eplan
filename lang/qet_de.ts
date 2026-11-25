@@ -31727,6 +31727,22 @@ Strg+Eingabe gibt die Zelle zurück, Escape verwirft den Text.</translation>
         <source>usually %1</source>
         <translation>üblich %1</translation>
     </message>
+    <message>
+        <source>%1 now gets its jobs by LPD (port 515, queue %2).</source>
+        <translation>%1 bekommt seine Aufträge jetzt über LPD (Port 515, Warteschlange %2).</translation>
+    </message>
+    <message>
+        <source>%1 now gets its jobs by RawIP on port %2.</source>
+        <translation>%1 bekommt seine Aufträge jetzt über RawIP auf Port %2.</translation>
+    </message>
+    <message>
+        <source>No status by RawIP (%1); sending by LPD all the same.</source>
+        <translation>Kein Status über RawIP (%1); es wird trotzdem über LPD gesendet.</translation>
+    </message>
+    <message>
+        <source>Sent to %1 by LPD; the printer confirmed the job.</source>
+        <translation>Über LPD an %1 gesendet; der Drucker hat den Auftrag bestätigt.</translation>
+    </message>
 </context>
 <context>
     <name>ThmClient</name>
@@ -31797,6 +31813,18 @@ Strg+Eingabe gibt die Zelle zurück, Escape verwirft den Text.</translation>
     <message>
         <source>The printer %1:%2 cannot be reached: %3</source>
         <translation type="unfinished">Der Drucker %1:%2 ist nicht erreichbar: %3</translation>
+    </message>
+    <message>
+        <source>The printer closed the LPD connection before the job was taken over.</source>
+        <translation>Der Drucker hat die LPD-Verbindung geschlossen, bevor der Auftrag übernommen war.</translation>
+    </message>
+    <message>
+        <source>The printer did not confirm the LPD job within %1 s.</source>
+        <translation>Der Drucker hat den LPD-Auftrag nicht innerhalb von %1 s bestätigt.</translation>
+    </message>
+    <message>
+        <source>The printer refused the LPD job (answer %1 in step %2).</source>
+        <translation>Der Drucker hat den LPD-Auftrag abgelehnt (Antwort %1 in Schritt %2).</translation>
     </message>
 </context>
 <context>
@@ -32884,6 +32912,22 @@ Menge: %n Etiketten</numerusform>
     <message>
         <source>Choose the material from the catalog, filtered by category, size and colour</source>
         <translation>Material aus dem Katalog wählen, gefiltert nach Kategorie, Maß und Farbe</translation>
+    </message>
+    <message>
+        <source>Choose LPD when the printer takes the connection on its RawIP port but prints nothing; status and material are still asked by RawIP.</source>
+        <translation>LPD wählen, wenn der Drucker auf seinem RawIP-Port die Verbindung annimmt, aber nichts druckt; Status und Material werden weiter über RawIP abgefragt.</translation>
+    </message>
+    <message>
+        <source>LPD (port 515, queue lp)</source>
+        <translation>LPD (Port 515, Warteschlange lp)</translation>
+    </message>
+    <message>
+        <source>RawIP on the port above</source>
+        <translation>RawIP auf dem Port oben</translation>
+    </message>
+    <message>
+        <source>Send jobs by:</source>
+        <translation>Aufträge senden über:</translation>
     </message>
 </context>
 <context>

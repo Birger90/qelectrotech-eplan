@@ -722,7 +722,8 @@ void ThmPrintDialog::print()
 	}
 	const QString summary = tr("Target: %1 (%2:%3)%4\nArticle: %5\nQuantity: %n label(s)", nullptr,
 							   ThmJob::labelCount(list))
-			.arg(p->name, p->host).arg(p->port)
+			.arg(p->name, p->host)
+			.arg(p->transport == ThmClient::Transport::Lpd ? QStringLiteral("515, LPD") : QString::number(p->port))
 			.arg(p->model.isEmpty() ? QString() : QStringLiteral(", ") + p->model, article)
 			+ QStringLiteral("\n") + tr("%n different text(s)", nullptr, int(list.size()))
 			+ QStringLiteral("\n") + tr("Profile: %1").arg(source)
@@ -731,6 +732,7 @@ void ThmPrintDialog::print()
 	if (QMessageBox::question(this, tr("Print THM labels"), summary) != QMessageBox::Yes) return;
 	remember();
 	m_client->setTarget(p->host, p->port);
+	m_client->setJobTransport(p->transport, p->lpd_queue);
 	m_queue.clear();
 	m_lines.clear();
 	m_device_state->setText(tr("Sending to %1 ...").arg(p->name));
@@ -795,6 +797,11 @@ ThmPrintersDialog::ThmPrintersDialog(const QList<ThmPrinter> &printers,
 	m_host->setPlaceholderText(tr("IP address or host name"));
 	m_port = new QSpinBox(m_form);
 	m_port->setRange(1, 65535);
+	m_transport = new QComboBox(m_form);
+	m_transport->addItem(tr("RawIP on the port above"), ThmClient::transportKey(ThmClient::Transport::RawIp));
+	m_transport->addItem(tr("LPD (port 515, queue lp)"), ThmClient::transportKey(ThmClient::Transport::Lpd));
+	m_transport->setToolTip(tr("Choose LPD when the printer takes the connection on its RawIP port but prints nothing; "
+							   "status and material are still asked by RawIP."));
 	m_material = new QComboBox(m_form);
 	m_material->setEditable(true);
 	m_material->setInsertPolicy(QComboBox::NoInsert);
@@ -821,6 +828,7 @@ ThmPrintersDialog::ThmPrintersDialog(const QList<ThmPrinter> &printers,
 	form->addRow(tr("Model:"), m_model);
 	form->addRow(tr("Address:"), m_host);
 	form->addRow(tr("Port:"), m_port);
+	form->addRow(tr("Send jobs by:"), m_transport);
 		//A combo of articles with a button opening the filtered choice
 	const auto with_choice = [this](QComboBox *combo) {
 		auto *box = new QWidget(m_form);
@@ -936,6 +944,7 @@ void ThmPrintersDialog::showPrinter(int row)
 	m_model->setText(p.model);
 	m_host->setText(p.host);
 	m_port->setValue(p.port);
+	m_transport->setCurrentIndex(qMax(0, m_transport->findData(ThmClient::transportKey(p.transport))));
 	const int known = m_material->findData(p.material_no);
 	if (known >= 0) m_material->setCurrentIndex(known);
 	else m_material->setCurrentText(p.material_no);
@@ -975,6 +984,7 @@ void ThmPrintersDialog::store()
 	p.model = m_model->text().trimmed();
 	p.host = m_host->text().trimmed();
 	p.port = quint16(m_port->value());
+	p.transport = ThmClient::transportFromKey(m_transport->currentData().toString());
 	const auto chosen = [](const QComboBox *combo) {
 		const int i = combo->findText(combo->currentText());
 		if (i >= 0 && !combo->itemData(i).toString().isEmpty()) return combo->itemData(i).toString();

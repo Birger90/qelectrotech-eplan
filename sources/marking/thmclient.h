@@ -19,6 +19,7 @@
 #define THMCLIENT_H
 
 #include <QByteArray>
+#include <QList>
 #include <QElapsedTimer>
 #include <QObject>
 #include <QPointer>
@@ -43,6 +44,13 @@ class QTimer;
 	ESC t (p. 31). The manual asks for at least 0.5 s between two status
 	queries and 1 s after ESC t before more data: the client waits so long
 	before it starts the next request.
+
+	A print job can go by LPD instead (RFC 1179, port 515, queue "lp" on
+	cab printers): some printers keep their RawIP port taken by another
+	connection, accept a connection there and read nothing, while LPD
+	prints. LPD confirms every step with a zero byte, so a job sent that
+	way is known to be taken over. Queries and control commands always
+	use RawIP.
 */
 class ThmClient : public QObject
 {
@@ -58,6 +66,11 @@ class ThmClient : public QObject
 			Job        ///< the bytes of a print job
 		};
 
+		enum class Transport {
+			RawIp,  ///< the job on the RawIP port
+			Lpd     ///< the job as an LPD print file, raw ("l")
+		};
+
 		struct Reply
 		{
 			Request request = Request::Status;
@@ -70,6 +83,10 @@ class ThmClient : public QObject
 		~ThmClient() override;
 
 		void setTarget(const QString &host, quint16 port);
+			/// How a Job is sent; LPD on @p lpd_port into @p queue
+		void setJobTransport(Transport transport, const QString &queue = QStringLiteral("lp"),
+							 quint16 lpd_port = 515);
+		Transport jobTransport() const { return m_transport; }
 		QString host() const { return m_host; }
 		quint16 port() const { return m_port; }
 			/// Time limits in milliseconds: to connect, for the reply
@@ -90,6 +107,12 @@ class ThmClient : public QObject
 		static int replyLength(Request request);
 		static bool expectsReply(Request request);
 		static QString requestTitle(Request request);
+			/// The LPD conversation for one job (RFC 1179): open the queue,
+			/// data file, control file; each part waits for a zero byte
+		static QList<QByteArray> lpdSteps(const QString &queue, const QByteArray &job,
+										  int number, const QString &host = QStringLiteral("qet"));
+		static QString transportKey(Transport transport);
+		static Transport transportFromKey(const QString &key);
 
 	signals:
 		void finished(const ThmClient::Reply &reply);
@@ -120,6 +143,12 @@ class ThmClient : public QObject
 		QTimer *m_timer = nullptr;
 		QElapsedTimer m_last_status;
 		QElapsedTimer m_last_cancel;
+		Transport m_transport = Transport::RawIp;
+		QString m_lpd_queue = QStringLiteral("lp");
+		quint16 m_lpd_port = 515;
+		bool m_lpd = false;           ///< this request goes by LPD
+		QList<QByteArray> m_steps;    ///< LPD parts still to send
+		int m_lpd_number = 0;
 };
 
 #endif // THMCLIENT_H

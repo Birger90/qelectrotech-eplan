@@ -155,6 +155,7 @@ class ThmPrintersDialog : public QDialog
 		QLineEdit *m_model = nullptr;
 		QLineEdit *m_host = nullptr;
 		QSpinBox *m_port = nullptr;
+		QComboBox *m_transport = nullptr;
 		QComboBox *m_material = nullptr;
 		QComboBox *m_usual = nullptr;
 		QLineEdit *m_roller = nullptr;

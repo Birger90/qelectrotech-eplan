@@ -283,7 +283,15 @@ Ohne Drucker geprüft sind die Bytes des Auftrags, die Auswertung der Antworten 
 | Geschwindigkeit | 30, 40, 50, 75, 100, 125 mm/s | 30, 40, 50, 75, 100, 125, 150 mm/s |
 | Druckkopf | 105,7 mm bei 11,8 Punkt/mm | 106 mm bei 12 Punkt/mm |
 
-Breitere Etiketten (die ganze Reihe, `wd` des `S`-Befehls) weist QET ab. Auf `v`, `ESC s` und `ESC l` antworteten ein MMP (`4.29 Jan 03, 2017 (THM MMP)`, `Y-000000N`/`Y-000000Y`, `Y0037`) und ein MultiMark (`5.36 Feb 23, 2021 (THM MultiMark)`, `Y-000000Y`, `Y0023`) wie beschrieben. Drei weitere MultiMark nahmen die TCP-Verbindung an, antworteten aber nicht (vermutlich hielt eine andere Verbindung den RawIP-Port); QET meldet das als „keine Antwort“. Ein Druckbild ist noch nicht geprüft.
+Breitere Etiketten (die ganze Reihe, `wd` des `S`-Befehls) weist QET ab. Auf `v`, `ESC s` und `ESC l` antworteten ein MMP (`4.29 Jan 03, 2017 (THM MMP)`, `Y-000000N`/`Y-000000Y`, `Y0037`) und ein MultiMark (`5.36 Feb 23, 2021 (THM MultiMark)`, `Y-000000Y`, `Y0023`) wie beschrieben. Drei weitere MultiMark nahmen die TCP-Verbindung auf Port 9100 an, antworteten aber nicht und verarbeiteten auch einen Auftrag nicht: Der Etikettenzähler der Weboberfläche (`cmd=3`, `labels`) blieb stehen, das Ereignisprotokoll (`cmd=4`) zeigte nichts. Über LPD druckten dieselben Geräte (siehe *Sendeweg LPD*). Ein Druckbild ist noch nicht begutachtet.
+
+### Sendeweg LPD
+
+Jeder Drucker hat unter *Drucker…* die Einstellung *Aufträge senden über*: **RawIP** (der Port oben, Standard 9100) oder **LPD** (RFC 1179, Port 515, Warteschlange `lp`, Druckdatei unverändert mit Format `l`). Die cab-Geräte haben LPD ab Werk eingeschaltet und geben LPD-Daten an denselben JScript-Interpreter. LPD bestätigt jeden Schritt (Warteschlange, Kopf und Inhalt der Druckdatei, Kopf und Inhalt der Steuerdatei) mit einem Nullbyte. QET meldet den Auftrag deshalb erst als gesendet, wenn alle fünf Bestätigungen da sind, und nennt sonst den abgelehnten Schritt.
+
+Wann LPD: wenn ein Drucker auf Port 9100 die Verbindung annimmt, aber weder auf `ESC s` antwortet noch druckt. Belegt an einem THM MultiMark (Firmware 5.36): Ein QET-Auftrag über RawIP ließ den Etikettenzähler stehen, derselbe Auftrag über LPD erhöhte ihn um eins. Status und Material fragt QET weiter über RawIP ab; antwortet der Drucker dort nicht, sendet `--thm-send` bei LPD trotzdem und sagt das, bei RawIP bricht es ab.
+
+Kommandozeile: `qelectrotech --thm-transport <Drucker> lpd` (zurück mit `rawip`, andere Warteschlange mit `--queue NAME`); `--thm-printers` zeigt den Sendeweg.
 
 ## Layoutdatei (Druckprofil je Artikel aus M-Print PRO)
 

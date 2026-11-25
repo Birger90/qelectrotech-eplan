@@ -367,10 +367,10 @@ projectDataBase *QETProject::dataBase()
 /**
 	@return the revisions of this project, read from it when first asked
 */
-ProjectRevisions *QETProject::revisions()
+ProjectRevisions *QETProject::revisionManager()
 {
-	if (!m_revisions) m_revisions = new ProjectRevisions(this);
-	return m_revisions;
+	if (!m_revision_manager) m_revision_manager = new ProjectRevisions(this);
+	return m_revision_manager;
 }
 
 /**
@@ -3030,6 +3030,7 @@ QDomDocument QETProject::toXml(QHash<int, QByteArray> *kept_folios, QStringList 
 	writeDeviceTypeRulesXml(project_root);
 	writeLanguagesXml(project_root);
 	writePotentialTypesXml(project_root);
+	writeRevisionsXml(project_root);
 	writeTerminalLabelSplitXml(project_root);
 	writeWiringRulesXml(project_root);
 	writeDefinitionMarkStyleXml(project_root);
@@ -4114,6 +4115,9 @@ Diagram *QETProject::addNewDiagram(int pos)
 					m_diagrams_list.at(before)->border_and_titleblock;
 			titleblock.folio_group = previous.folioGroup();
 			titleblock.folio_subgroup = previous.folioSubgroup();
+				//The == and ++ levels span many folios, as groups do
+			titleblock.higher_plant = previous.higherPlant();
+			titleblock.higher_location = previous.higherLocation();
 		}
 	}
 	diagram->border_and_titleblock.importTitleBlock(titleblock);
@@ -4273,6 +4277,7 @@ void QETProject::readProjectXml(QDomDocument &xml_project)
 	readDeviceTypeRulesXml(xml_project);
 	readLanguagesXml(xml_project);
 	readPotentialTypesXml(xml_project);
+	readRevisionsXml(xml_project);
 	readTerminalLabelSplitXml(xml_project);
 	readWiringRulesXml(xml_project);
 	readDefinitionMarkStyleXml(xml_project);
@@ -4285,7 +4290,7 @@ void QETProject::readProjectXml(QDomDocument &xml_project)
 	m_data_base.storeForeignBlocks(QString::fromLatin1(projectDataBase::project_owner),
 								   projectDataBase::foreignChildren(xml_project.documentElement(), false));
 		//Its revisions are in one of them
-	if (m_revisions) m_revisions->reload();
+	if (m_revision_manager) m_revision_manager->reload();
 
 		//Load the default properties for the new diagrams
 	readDefaultPropertiesXml(xml_project);
@@ -5504,6 +5509,52 @@ void QETProject::writePotentialTypesXml(QDomElement &xml_element)
 }
 
 /**
+	@brief QETProject::readRevisionsXml
+	Read the <revisions> element of the project, if any: its revision
+	history (#1295, rule 2)
+*/
+void QETProject::readRevisionsXml(QDomDocument &xml_project)
+{
+		//Not the fork's old <revisions marks="…"> (revision/projectrevisions.cpp)
+	QDomElement list = xml_project.documentElement().firstChildElement(QStringLiteral("revisions"));
+	while (!list.isNull() && list.hasAttribute(QStringLiteral("marks")))
+		list = list.nextSiblingElement(QStringLiteral("revisions"));
+	m_revisions = RevisionList::fromXml(list);
+}
+
+/**
+	@brief QETProject::writeRevisionsXml
+	Write the <revisions> element, only when the project has revisions,
+	so any other project saves exactly as before
+	@param xml_element : the <project> element
+*/
+void QETProject::writeRevisionsXml(QDomElement &xml_element)
+{
+	if (m_revisions.isEmpty()) {
+		return;
+	}
+	QDomDocument document = xml_element.ownerDocument();
+	xml_element.appendChild(m_revisions.toXml(document));
+}
+
+/**
+	@brief QETProject::setRevisions
+	Set the project's revision history
+*/
+void QETProject::setRevisions(const RevisionList &revisions)
+{
+	if (revisions == m_revisions) {
+		return;
+	}
+	m_revisions = revisions;
+	storeSettings();
+	setModified(true);
+		//A revision table on a folio reads qet_revisions: tell it, as
+		//nothing else changed in the database to do so
+	emit m_data_base.dataBaseUpdated();
+}
+
+/**
 	@brief QETProject::setPotentialTypes
 	Set the potential types and whether conductors are drawn from them,
 	and redraw the folios built.
@@ -6161,6 +6212,7 @@ void QETProject::storeSettings()
 	writeDeviceTypeRulesXml(root);
 	writeLanguagesXml(root);
 	writePotentialTypesXml(root);
+	writeRevisionsXml(root);
 	writeTerminalLabelSplitXml(root);
 	writeWiringRulesXml(root);
 	writeDefinitionMarkStyleXml(root);

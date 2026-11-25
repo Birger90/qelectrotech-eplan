@@ -3,6 +3,30 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.53.0 – 26.11.2026 – Upstream-Abgleich: IEC 61355, Etikettenlisten
+
+Übernommen aus dem Original-QElectroTech (74 Commits bis 26.11.2026, `83968442f`):
+
+- **Kennzeichnung nach IEC 81346/61355**: höhere Ebene `==` und Einbauort `++` an Blatt, Symbol und
+  Strukturkasten, in Klemmleisten- und Kabelkennzeichen, Ortsliste und Stückliste; Dokumentart je Blatt und
+  voller Blattname `=Anlage+Ort&Art/Nummer`.
+- **Revisionsliste des Projekts** (IEC 61355) mit Revisionstabelle auf einem Blatt (Projekt > Eigenschaften >
+  Revisionen). Sie steht neben der EPLAN-artigen Revisionsverwaltung des Forks (Revision abschließen,
+  Änderungsmarken, Revisions-PDF); deren Block im Projekt heißt jetzt `<eplan_revisions>`, der alte Name
+  `<revisions marks="…">` wird weiter gelesen (die IEC-Liste überspringt ihn) und beim nächsten Abschließen
+  einer Revision unter dem neuen Namen geschrieben.
+- Tests an den Fork angepasst: Werkzeugleiste mit Claude-Knopf und „Projekt prüfen“, Speicherstempel
+  `saveddate-de`.
+- **Etikettenlisten zum Drucken**: Geräte, Klemmen, Kabel und Adern als CSV (`--export-labels … devices|terminals|
+  cables|wires [--full-designation]`), Adern in natürlicher Reihenfolge.
+- **Symbolliste eines Bibliotheksordners** (`--export-library <Ordner> <Datei.csv>`), etwa für die Firmensammlung.
+- Prüfpanel: Abzweige zwischen Klemmen einer Leiste.
+- Makros: `?name`-Werte werden beim Platzieren einmal abgefragt.
+- Anlagen und Orte: Vorschläge beim Tippen; Umbenennen auch per Skript (`qet.renamePlant`, `qet.renameLocation`).
+- Klemmleistenzeichnung: Seite je Kabel wählbar, Aderbeschriftung bündig.
+- Fehlerbehebungen: Absturz beim Öffnen eines zweiten Projekts während des Ladens, abgeschnittener Druck unter
+  macOS, Formen speicherten ihre Lage nach dem Verschieben falsch.
+
 ## 1.52.0 – 25.11.2026 – Weidmüller-Drucker direkt, Pneumatik
 
 ### THM-Etiketten direkt drucken

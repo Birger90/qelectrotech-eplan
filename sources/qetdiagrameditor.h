@@ -357,11 +357,13 @@ class QETDiagramEditor : public QETMainWindow
 		*m_terminal_strip_dialog = nullptr, ///<Launch terminal strip dialog
 		*m_project_terminalBloc,	///< generate terminal block
 		*m_project_export_conductor_num,///<Export the wire num to csv
+		*m_project_export_label_lists,///<Export device, terminal, cable or wire labels for a printer
 		*m_project_export_wiring_list, ///< Action to export the wiring list
 		*m_project_wiring_list_view,   ///< Action to show the wiring list read from the project database
 		*m_terminal_numbering,         ///< Action to launch terminal numbering
 		*m_cable_numbering,            ///< Action to open the cable numbering window (rule + numbering of every cable)
 		*m_add_cable_list,             ///< Add a cable list graphics item
+		*m_add_revision_table,         ///< Add a table of the project's revision history
 		*m_export_cable_list,          ///< Export the cable list of the project to CSV
 		*m_export_marking,             ///< Export the markers for marking software
 		*m_thm_print,                  ///< Print the markers on a THM printer (ThmPrintDialog)

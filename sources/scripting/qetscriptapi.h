@@ -28,6 +28,7 @@
 #include <optional>
 
 #include <diagramcontext.h>
+#include <placerename.h>
 
 class QETProject;
 class Diagram;
@@ -618,6 +619,11 @@ class QetScriptApi : public QObject
 		Q_INVOKABLE bool revisionMarks() const;
 		Q_INVOKABLE bool setRevisionMarks(bool on);
 		Q_INVOKABLE bool exportRevisionPdf(const QString &output, const QString &since = QString());
+		// -- plants and locations: renamed in the whole project --
+		Q_INVOKABLE bool renamePlant(const QString &plant, const QString &newName,
+									 bool merge, const QString &counters);
+		Q_INVOKABLE bool renameLocation(const QString &plant, const QString &location,
+										const QString &newName, bool merge);
 
 		// -- terminal strips (borniers) --
 		Q_INVOKABLE QStringList terminalStrips() const;
@@ -778,6 +784,8 @@ class QetScriptApi : public QObject
 		void setLive(QStringList *log);
 
 	private:
+		bool rename(const QString &name, const PlaceRename::Request &request,
+					bool merge, PlaceRename::CounterPolicy policy);
 		bool runFlag(const QString &flag, const QStringList &args);
 		Diagram *built(Diagram *folio) const;
 		Conductor *findConductorByUuid(int folioIndex, const QString &conductorUuid, const QString &caller);

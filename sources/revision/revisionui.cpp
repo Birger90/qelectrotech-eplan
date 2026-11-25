@@ -73,7 +73,7 @@ void closeRevision(QETDiagramEditor *editor)
 											 "of the revision is kept beside it."));
 		return;
 	}
-	ProjectRevisions *revisions = project->revisions();
+	ProjectRevisions *revisions = project->revisionManager();
 	QDialog dialog(editor);
 	dialog.setWindowTitle(QObject::tr("Close revision"));
 	auto *form = new QFormLayout(&dialog);
@@ -137,7 +137,7 @@ void compareRevisions(QETDiagramEditor *editor)
 {
 	QETProject *project = editor->currentProject();
 	if (!project) return;
-	ProjectRevisions *revisions = project->revisions();
+	ProjectRevisions *revisions = project->revisionManager();
 	const QList<ProjectRevisions::Entry> entries = revisions->entries();
 
 	QList<State> states;
@@ -270,7 +270,7 @@ void compareRevisions(QETDiagramEditor *editor)
 		} else {
 			QETProject other(newer_state.path);
 			if (other.state() == QETProject::Ok) {
-				other.revisions()->beginComparison(before, label);
+				other.revisionManager()->beginComparison(before, label);
 				ok = ProjectRevisions::exportPdf(&other, path, &error);
 			} else {
 				error = QObject::tr("%1 could not be opened").arg(newer_state.path);
@@ -312,7 +312,7 @@ void RevisionUi::addMenu(QETDiagramEditor *editor, QMenu *project_menu)
 	ShortcutManager::instance().registerAction(marks, "diagrameditor.revision_marks",
 											   QObject::tr("Diagram editors"), QKeySequence());
 	QObject::connect(marks, &QAction::triggered, editor, [editor](bool on) {
-		if (QETProject *project = editor->currentProject()) project->revisions()->setMarksShown(on);
+		if (QETProject *project = editor->currentProject()) project->revisionManager()->setMarksShown(on);
 	});
 
 	auto *compare = menu->addAction(QObject::tr("Compare revisions..."));
@@ -324,7 +324,7 @@ void RevisionUi::addMenu(QETDiagramEditor *editor, QMenu *project_menu)
 	auto *folder = menu->addAction(QObject::tr("Open revision folder"));
 	QObject::connect(folder, &QAction::triggered, editor, [editor]() {
 		if (QETProject *project = editor->currentProject()) {
-			const QString path = project->revisions()->folder();
+			const QString path = project->revisionManager()->folder();
 			if (QFileInfo::exists(path)) QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 		}
 	});
@@ -333,10 +333,10 @@ void RevisionUi::addMenu(QETDiagramEditor *editor, QMenu *project_menu)
 		QETProject *project = editor->currentProject();
 		const bool writable = project && !project->isReadOnly();
 		close->setEnabled(writable);
-		marks->setEnabled(writable && project->revisions()->hasBaseline());
-		marks->setChecked(project && project->revisions()->marksShown());
+		marks->setEnabled(writable && project->revisionManager()->hasBaseline());
+		marks->setChecked(project && project->revisionManager()->marksShown());
 		compare->setEnabled(project != nullptr);
 		folder->setEnabled(project && !project->filePath().isEmpty()
-						   && QFileInfo::exists(project->revisions()->folder()));
+						   && QFileInfo::exists(project->revisionManager()->folder()));
 	});
 }

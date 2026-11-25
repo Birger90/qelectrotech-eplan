@@ -130,10 +130,15 @@ private slots:
 		QToolBar toolbar;
 		DiagramToolbarSettings::fill(&toolbar, DiagramToolbarSettings::defaultIds(QStringLiteral("toolbar")),
 					     [this](const QString &id) { return resolve(id); });
-		QCOMPARE(toolbar.actions().size(), 18);
-		QCOMPARE(shape(&toolbar).mid(6, 2),
-			 (QStringList{QStringLiteral("diagrameditor.export_to_pdf"), QStringLiteral("|")}));
-		QCOMPARE(shape(&toolbar).count(QStringLiteral("|")), 3);
+			//Fork: the Claude button and its separator first, "Check project"
+			//after the PDF export (diagramtoolbarsettings.cpp)
+		QCOMPARE(toolbar.actions().size(), 21);
+		QCOMPARE(shape(&toolbar).mid(0, 2),
+			 (QStringList{QStringLiteral("widget:claude"), QStringLiteral("|")}));
+		QCOMPARE(shape(&toolbar).mid(8, 3),
+			 (QStringList{QStringLiteral("diagrameditor.export_to_pdf"),
+				      QStringLiteral("diagrameditor.check_project"), QStringLiteral("|")}));
+		QCOMPARE(shape(&toolbar).count(QStringLiteral("|")), 4);
 	}
 
 		/// The structure box is drawn like the other shapes, so its tool
@@ -218,7 +223,8 @@ private slots:
 		page.findChild<QPushButton *>(QStringLiteral("separatorButton"))->click();
 		page.applyConf();
 		QCOMPARE(DiagramToolbarSettings::ids(QStringLiteral("toolbar")),
-			 (QStringList{QStringLiteral("diagrameditor.new_file"), DiagramToolbarSettings::separatorId()}));
+			 (QStringList{DiagramToolbarSettings::defaultIds(QStringLiteral("toolbar")).first(),
+				      DiagramToolbarSettings::separatorId()}));
 		QCOMPARE(marked.rebuilds, 2);
 	}
 

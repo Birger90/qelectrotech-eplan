@@ -72,7 +72,7 @@ class tst_stableqet : public QObject
 	static QStringList unexpected(const QString &xml, const QString &uuid, const QSet<QString> &others)
 	{
 		static const QRegularExpression stamp(QStringLiteral(
-			"<property [^>]*name=\"saved(filename|filepath|filenamedir|date|date-us|date-eu|time)\""));
+			"<property [^>]*name=\"saved(filename|filepath|filenamedir|date|date-us|date-eu|date-de|time)\""));
 		QStringList out;
 		bool in_wire = false;
 		for (const QString &line : xml.split(QLatin1Char('\n'))) {

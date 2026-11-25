@@ -60,6 +60,7 @@
 #include "ui/checkpaneldockwidget.h"
 #include "ui/toolmenu.h"
 #include "conductornumexport.h"
+#include "labellistexport.h"
 #include "diagramcommands.h"
 #include "diagramcontent.h"
 #include "diagramevent/diagrameventaddimage.h"
@@ -1595,6 +1596,14 @@ void QETDiagramEditor::setUpActions()
 	ShortcutManager::instance().registerAction(m_project_terminalBloc, "diagrameditor.terminal_strip_plugin", tr("Diagram editors"), QKeySequence());
 	connect(m_project_terminalBloc, &QAction::triggered, this, &QETDiagramEditor::generateTerminalBlock);
 
+		//Add a table of the project's revision history (#1295 rule 2)
+	m_add_revision_table = new QAction(QET::Icons::TableOfContent, tr("Add a revision table"), this);
+	connect(m_add_revision_table, &QAction::triggered, this, [this]() {
+		if (this->currentDiagramView()) {
+			QetGraphicsTableFactory::createAndAddRevisionTable(this->currentDiagramView()->diagram());
+		}
+	});
+
 		//Add a cable list
 	m_add_cable_list = new QAction(QET::Icons::TableOfContent, tr("Add a cable list"), this);
 	connect(m_add_cable_list, &QAction::triggered, this, [this]() {
@@ -1661,6 +1670,18 @@ void QETDiagramEditor::setUpActions()
 		{
 			ConductorNumExport wne(project, this);
 			wne.toCsv();
+		}
+	});
+		//Device tags, terminal markers, cable and wire numbers, one per
+		//line, for label printer software (#1878 A7)
+	m_project_export_label_lists = new QAction(QET::Icons::DocumentSpreadsheet, tr("Export labels for printing..."), this);
+	ShortcutManager::instance().registerAction(m_project_export_label_lists, "diagrameditor.export_label_lists", tr("Diagram editors"), QKeySequence());
+	connect(m_project_export_label_lists, &QAction::triggered, [this]() {
+		QETProject *project = this->currentProject();
+		if (project)
+		{
+			LabelListExportDialog dialog(project, this);
+			dialog.exec();
 		}
 	});
 	// Export wiring list to CSV
@@ -2740,6 +2761,7 @@ void QETDiagramEditor::setUpMenu()
 	menu_project -> addAction(m_thm_print);
 	menu_project -> addAction(m_tia_tags);
 	menu_project -> addAction(m_project_export_conductor_num);
+	menu_project -> addAction(m_project_export_label_lists);
 	menu_project -> addAction(m_project_export_wiring_list);
 	menu_project -> addAction(m_project_wiring_list_view);
 	menu_project -> addAction(m_reports);
@@ -2779,6 +2801,7 @@ void QETDiagramEditor::setUpMenu()
 	menu_lists -> addAction(m_project_terminalBloc);
 	menu_lists -> addSeparator();
 	menu_lists -> addAction(m_add_cable_list);
+	menu_lists -> addAction(m_add_revision_table);
 
 	main_tool_bar         -> toggleViewAction() -> setStatusTip(tr("Display or hide the main toolbar"));
 	view_tool_bar         -> toggleViewAction() -> setStatusTip(tr("Display or hide the Display toolbar"));
@@ -3470,6 +3493,10 @@ bool QETDiagramEditor::openAndAddProject(
 	}
 
 	//Create the project
+		//A project opened while another is read (its progress dialog lets
+		//events through) shares that one's dialog and leaves it up:
+		//closing it crashed the other reading (#1978)
+	const bool own_waiting = !DialogWaiting::hasInstance();
 	DialogWaiting::instance(this);
 
 		//Per-project window for the font counters reported below; the folios
@@ -3507,7 +3534,7 @@ bool QETDiagramEditor::openAndAddProject(
 				&& offerToRecover(filepath, project->openError()))
 		{
 			delete project;
-			DialogWaiting::dropInstance();
+			if (own_waiting) DialogWaiting::dropInstance();
 			return(true);
 		}
 		if (interactive && project -> state() != QETProject::FileOpenDiscard
@@ -3526,7 +3553,7 @@ bool QETDiagramEditor::openAndAddProject(
 			);
 		}
 		delete project;
-		DialogWaiting::dropInstance();
+		if (own_waiting) DialogWaiting::dropInstance();
 		return(false);
 	}
 
@@ -3559,7 +3586,7 @@ bool QETDiagramEditor::openAndAddProject(
 
 	QETApp::projectsRecentFiles() -> fileWasOpened(filepath);
 	addProject(project);
-	DialogWaiting::dropInstance();
+	if (own_waiting) DialogWaiting::dropInstance();
 	if (interactive && crashed.valid) {
 		statusBar()->showMessage(
 			tr("%1 was still marked as open by QElectroTech on this PC since %2, which has "
@@ -4519,12 +4546,14 @@ void QETDiagramEditor::slot_updateActions()
 	m_csv_export                  -> setEnabled(editable_project);
 	m_purchase_export             -> setEnabled(opened_project);
 	m_project_export_conductor_num-> setEnabled(opened_project);
+	m_project_export_label_lists  -> setEnabled(opened_project);
 	m_terminal_strip_dialog       -> setEnabled(editable_project);
 	m_project_export_wiring_list  -> setEnabled(opened_project);
 	m_project_wiring_list_view    -> setEnabled(opened_project);
 	m_terminal_numbering          -> setEnabled(editable_project);
 	m_cable_numbering             -> setEnabled(editable_project);
 	m_add_cable_list              -> setEnabled(editable_project);
+	m_add_revision_table          -> setEnabled(editable_project);
 	m_export_cable_list           -> setEnabled(editable_project);
 	m_export_marking              -> setEnabled(opened_project);
 	m_thm_print                   -> setEnabled(opened_project);
@@ -5120,6 +5149,7 @@ void QETDiagramEditor::openBackupFiles(QList<KAutoSaveFile *> backup_files)
 	for (KAutoSaveFile *file : backup_files)
 	{
 			//Create the project
+		const bool own_waiting = !DialogWaiting::hasInstance();
 		DialogWaiting::instance(this);
 
 			//QETProject takes ownership of file and deletes it, whether or not it opens
@@ -5137,11 +5167,11 @@ void QETDiagramEditor::openBackupFiles(QList<KAutoSaveFile *> backup_files)
 						"message box content")).arg(file_name));
 			}
 			delete project;
-			DialogWaiting::dropInstance();
+			if (own_waiting) DialogWaiting::dropInstance();
 			continue;
 		}
 		addProject(project);
-		DialogWaiting::dropInstance();
+		if (own_waiting) DialogWaiting::dropInstance();
 	}
 }
 /**
@@ -5156,6 +5186,7 @@ void QETDiagramEditor::openWorkingCopies(const QList<WorkingCopyRecovery::LeftWo
 {
 	for (const auto &copy : copies)
 	{
+		const bool own_waiting = !DialogWaiting::hasInstance();
 		DialogWaiting::instance(this);
 		QETProject *project = nullptr;
 		QTemporaryDir dir;
@@ -5173,7 +5204,7 @@ void QETDiagramEditor::openWorkingCopies(const QList<WorkingCopyRecovery::LeftWo
 			qWarning() << "Working copy" << copy.path << "not recovered:" << error;
 		}
 		WorkingCopyRecovery::remove(copy.path);
-		DialogWaiting::dropInstance();
+		if (own_waiting) DialogWaiting::dropInstance();
 		if (!project)
 		{
 			QET::QetMessageBox::warning(

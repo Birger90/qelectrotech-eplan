@@ -489,7 +489,7 @@ void Diagram::drawBackground(QPainter *p, const QRectF &r) {
 		//What changed since the last revision, when its marks are shown
 		//(on screen, in a print and a PDF alike)
 	if (m_project && isLoaded())
-		m_project->revisions()->paint(this, p);
+		m_project->revisionManager()->paint(this, p);
 
 	p -> restore();
 }

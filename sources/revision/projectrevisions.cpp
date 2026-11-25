@@ -636,14 +636,22 @@ using namespace QetRevision;
 namespace {
 const QString &blockTag()
 {
-	static const QString tag = QStringLiteral("revisions");
+		//Was <revisions marks="…"> up to fork 1.52.0; that name is now QET's own
+		//revision list (properties/revisionlist.h)
+	static const QString tag = QStringLiteral("eplan_revisions");
 	return tag;
+}
+bool startsWithTag(const QString &block, const QString &tag)
+{
+	return block.startsWith(QLatin1Char('<') + tag + QLatin1Char(' '))
+			|| block.startsWith(QLatin1Char('<') + tag + QLatin1Char('>'))
+			|| block.startsWith(QLatin1Char('<') + tag + QLatin1Char('/'));
 }
 bool isRevisionBlock(const QString &block)
 {
-	return block.trimmed().startsWith(QLatin1Char('<') + blockTag() + QLatin1Char(' '))
-			|| block.trimmed().startsWith(QLatin1Char('<') + blockTag() + QLatin1Char('>'))
-			|| block.trimmed().startsWith(QLatin1Char('<') + blockTag() + QLatin1Char('/'));
+	const QString b = block.trimmed();
+	return startsWithTag(b, blockTag())
+			|| (b.startsWith(QLatin1String("<revisions ")) && b.left(200).contains(QLatin1String(" marks=")));
 }
 } // namespace
 

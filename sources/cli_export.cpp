@@ -33,6 +33,7 @@
 
 #include "bordertitleblock.h"
 #include "conductornumexport.h"
+#include "labellistexport.h"
 #include "conductorproperties.h"
 #include "dataBase/projectdatabase.h"
 #include "dataBase/qetdbfile.h"
@@ -60,6 +61,7 @@
 #include "import/portals/partfetcher.h"
 #include "import/portals/portalcredentials.h"
 #include "dxfexport.h"
+#include "ElementsCollection/librarylisting.h"
 #include "exportproperties.h"
 #include "pdf_links.h"
 #include "container/qetcontainer.h"
@@ -118,6 +120,7 @@ const QHash<QString, QString> &exportFlags()
 		{"--export-dxf", "dxf"},
 		{"--export-cables", "cables"},
 		{"--export-wires", "wires"},
+		{"--export-labels", "labels"},
 		{"--export-bom", "bom"},
 		{"--export-marking", "marking"},
 		{"--thm-prn", "thmprn"},
@@ -144,6 +147,7 @@ const QHash<QString, QString> &exportFlags()
 		{"--portal-login", "portallogin"},
 		{"--portal-logout", "portallogout"},
 		{"--portal-request", "portalrequest"},
+		{"--export-library", "library"},
 		{"--resave", "resave"},
 		{"--lock-status", "lockstatus"},
 		{"--recover", "recover"},
@@ -471,6 +475,26 @@ int exportDxf(QETProject &project, const QString &out_dir, bool showTerminals,
 		err << "Note: DXF has no pictures in this format; "
 			   "each picture is exported as an outline box.\n";
 	out << "Exported " << diagrams.size() << " diagram(s) -> " << out_dir << "\n";
+	return 0;
+}
+
+/// --export-labels: one label per line for a label printer (#1878 A7)
+int exportLabels(QETProject &project, const QString &output, LabelListExport::Kind kind,
+				 bool full_designation)
+{
+	const QString kind_name = LabelListExport::kindName(kind);
+	const QStringList labels = LabelListExport::labels(&project, kind, full_designation);
+	// An empty list is a valid answer, so scripts exporting every kind do not
+	// fail; the file is still written (empty) so a stale list from an earlier
+	// run is never left behind to be printed.
+	if (labels.isEmpty())
+		err << "Nothing to export (no " << kind_name << " with a label).\n";
+	QString error;
+	if (!LabelListExport::write(labels, output, &error)) {
+		err << "Cannot write '" << output << "': " << error << "\n";
+		return 1;
+	}
+	out << "Exported " << labels.size() << " " << kind_name << " label(s) -> " << output << "\n";
 	return 0;
 }
 
@@ -2454,7 +2478,7 @@ int closeRevision(QETProject &project, const QStringList &rest, bool pdf)
 		err << "Usage: qelectrotech --close-revision <project> <index> [text...] [--no-pdf]\n";
 		return 2;
 	}
-	const ProjectRevisions::CloseResult r = project.revisions()->closeRevision(
+	const ProjectRevisions::CloseResult r = project.revisionManager()->closeRevision(
 				rest.at(1), rest.mid(2).join(QLatin1Char(' ')), pdf, true);
 	if (!r.ok) {
 		err << "Revision not closed: " << r.error << "\n";
@@ -2470,7 +2494,7 @@ int closeRevision(QETProject &project, const QStringList &rest, bool pdf)
 /// --revisions <project>
 int listRevisions(QETProject &project, bool json)
 {
-	ProjectRevisions *revisions = project.revisions();
+	ProjectRevisions *revisions = project.revisionManager();
 	const QList<ProjectRevisions::Entry> entries = revisions->entries();
 	if (!json) {
 		if (entries.isEmpty()) out << "No revision closed yet; the next is " << revisions->proposedIndex() << "\n";
@@ -2502,8 +2526,8 @@ int compareRevisions(const QStringList &rest, bool json)
 	QString older_path = rest.at(0), label;
 	if (!QFileInfo::exists(older_path)) {
 			//A revision index of the newer project
-		for (const ProjectRevisions::Entry &e : newer.revisions()->entries())
-			if (e.index == rest.at(0)) older_path = newer.revisions()->snapshotPath(e);
+		for (const ProjectRevisions::Entry &e : newer.revisionManager()->entries())
+			if (e.index == rest.at(0)) older_path = newer.revisionManager()->snapshotPath(e);
 		if (!QFileInfo::exists(older_path)) {
 			err << "Neither a file nor a revision of " << rest.at(1) << ": " << rest.at(0) << "\n";
 			return 2;
@@ -2520,13 +2544,13 @@ int compareRevisions(const QStringList &rest, bool json)
 	if (rest.size() >= 3) {
 			//The revision the changes belong to: the newer's own when it is
 			//a closed revision as it is (a snapshot), else the next one
-		ProjectRevisions *revisions = newer.revisions();
+		ProjectRevisions *revisions = newer.revisionManager();
 		label = revisions->hasBaseline()
 				&& QetRevision::compare(revisions->baseline(), now).isEmpty()
 				? revisions->lastIndex() : revisions->proposedIndex();
-		newer.revisions()->beginComparison(before, label);
+		newer.revisionManager()->beginComparison(before, label);
 		const int code = exportPdf(newer, rest.at(2));
-		newer.revisions()->endComparison();
+		newer.revisionManager()->endComparison();
 		return code;
 	}
 	return 0;
@@ -2633,6 +2657,7 @@ int run(const QStringList &args)
 	const bool json = filtered.removeAll("--json") > 0;
 	const bool grid = filtered.removeAll("--grid") > 0;
 	const bool noPdf = filtered.removeAll("--no-pdf") > 0;
+	const bool fullDesignation = filtered.removeAll("--full-designation") > 0;
 
 	QString flag;
 	QStringList rest;
@@ -2645,6 +2670,10 @@ int run(const QStringList &args)
 		}
 	}
 	const QString format = exportFlags().value(flag);
+	if (fullDesignation && format != "labels") {
+		err << "--full-designation only applies to --export-labels.\n";
+		return 2;
+	}
 
 	// --check-elements operates on an element file/directory, not a project.
 	if (format == "check") {
@@ -2921,6 +2950,25 @@ int run(const QStringList &args)
 		return 0;
 	}
 
+	// --export-library lists the symbols and macros of a folder, not a project
+	if (format == "library") {
+		if (rest.size() < 2 || !QFileInfo(rest.at(0)).isDir()) {
+			err << "Usage: qelectrotech --export-library <folder>"
+				   " <output.csv>\n";
+			return 2;
+		}
+		const QList<LibraryListing::Row> rows =
+				LibraryListing().scan(rest.at(0));
+		QString error;
+		if (!LibraryListing::write(rows, rest.at(1), &error)) {
+			err << "Cannot write '" << rest.at(1) << "': " << error << "\n";
+			return 1;
+		}
+		out << "Listed " << rows.size() << " symbol(s) and macro(s) -> "
+			<< rest.at(1) << "\n";
+		return 0;
+	}
+
 	// --recover reads what it can of a damaged .qetz, which a project
 	// cannot be opened from.
 	if (format == "recover") {
@@ -3128,6 +3176,13 @@ int run(const QStringList &args)
 		return thmPrinters(json);
 	if (format == "thmload")
 		return thmLoad(rest);
+		//The list asked for, before the project is opened
+	LabelListExport::Kind label_kind = LabelListExport::Devices;
+	if (format == "labels" && !LabelListExport::kindFromString(rest.value(2), &label_kind)) {
+		err << "Usage: qelectrotech --export-labels <project.qet> <output.csv> "
+			   "devices|terminals|cables|wires [--full-designation]\n";
+		return 2;
+	}
 
 	const QString input = rest.value(0);
 	if (input.isEmpty()) {
@@ -3168,7 +3223,7 @@ int run(const QStringList &args)
 			err << "Usage: qelectrotech --revision-marks <project> on|off\n";
 			return 2;
 		}
-		project.revisions()->setMarksShown(state == QLatin1String("on"));
+		project.revisionManager()->setMarksShown(state == QLatin1String("on"));
 		const QETResult saved = project.write();
 		if (!saved.isOk()) {
 			err << saved.errorMessage() << "\n";
@@ -3199,6 +3254,8 @@ int run(const QStringList &args)
 		return exportDxf(project, output, showTerminals, dxfBlocks, dxfAttributes);
 	if (format == "cables" || format == "wires")
 		return exportCsv(project, format, output);
+	if (format == "labels")
+		return exportLabels(project, output, label_kind, fullDesignation);
 	if (format == "bom")
 		return exportBom(project, output, includeSlaves, includeJunctions);
 	if (format == "purchase")

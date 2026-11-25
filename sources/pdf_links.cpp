@@ -738,6 +738,11 @@ void convertUriToGoTo(const QString &pdfPath)
 		objects += QByteArray::number(emptyAppearance) + " 0 obj\n<<\n"
 			"/Type /XObject\n/Subtype /Form\n/BBox [0 0 1 1]\n/Length 0\n"
 			">>\nstream\n\nendstream\nendobj\n";
+		// The button jumps when the mouse button goes down (/AA /D), not
+		// when it is released (/A): PDFium keeps the focus on the button
+		// clicked last and hands it the next release first, which then
+		// swallowed every other click on a new arrow in Chrome (Birger,
+		// 25.11.2026). A press goes to the button under the pointer.
 		for (int i = 0; i < buttons.size(); ++i) {
 			const Button &button = buttons.at(i);
 			objects += QByteArray::number(buttonObj(i)) + " 0 obj\n<<\n"
@@ -747,7 +752,7 @@ void convertUriToGoTo(const QString &pdfPath)
 				"/F 4\n/H /N\n"
 				"/P " + QByteArray::number(pageObjs.at(button.page - 1)) + " 0 R\n"
 				"/AP << /N " + QByteArray::number(emptyAppearance) + " 0 R >>\n"
-				"/A <<\n/Type /Action\n" + button.action + "\n>>\n"
+				"/AA << /D <<\n/Type /Action\n" + button.action + "\n>> >>\n"
 				">>\nendobj\n";
 		}
 		body += objects;

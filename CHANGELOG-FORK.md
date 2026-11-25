@@ -10,7 +10,9 @@ Original-QElectroTech stehen in `ChangeLog*`.
   verschwindet – auch in Chrome und Edge (in Chrome selbst angeklickt). Je Ziel ein verstecktes, schreibgeschütztes
   Rahmenfeld `qetmarkN`; über jedem Link eine unsichtbare Schaltfläche `qetjumpN` mit der Kette GoTo (/FitR wie
   bisher) → alle Rahmen verstecken → Zielrahmen zeigen (Hide über den Feldnamen) → JavaScript (Blinken per
-  `setInterval`, Ausblenden per `setTimeOut`). Der Link darunter trägt dieselbe Kette.
+  `setInterval`, Ausblenden per `setTimeOut`). Der Link darunter trägt dieselbe Kette. Die Schaltfläche löst beim
+  Drücken aus (`/AA /D`): PDFium gibt das Loslassen zuerst an die zuletzt geklickte Schaltfläche, die dann jeden
+  zweiten Sprung verschluckte (Birger, Chrome).
 - Warum so und nicht wie EPLAN selbst (`/Next` JavaScript `highlight()` mit `addField`): Chromes PDF-Viewer (PDFium)
   führt bei Link-Annotationen nur das GoTo aus, kein `/Next`, und kennt `addField` nicht. Bei Schaltflächen laufen
   GoTo, Hide und JavaScript (`display`, `setTimeOut`). In Chrome mit einem Prüf-PDF aller Varianten nachgeklickt.

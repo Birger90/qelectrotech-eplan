@@ -269,6 +269,11 @@ Lücke „von welchem Eintrag zu welchem Ziel“:
     „Zielrahmen zeigen“ (`/T (qetmarkN) /H false`) `,` JavaScript (`setInterval` 500 ms Blinken, `setTimeOut` 5 s
     Ausblenden) `]`. Der Link darunter trägt dieselbe Kette. Acrobat führt die oberste Annotation aus, also die
     Schaltfläche. Sprünge auf ganze Blätter bekommen keinen Rahmen.
+  - Die Kette hängt an `/AA /D` (Maustaste drücken), nicht an `/A` (loslassen): PDFium behält den Fokus auf der
+    zuletzt geklickten Schaltfläche (graues Kästchen in Chrome) und gibt ihr das nächste Loslassen zuerst – dann
+    verschluckte sie jeden zweiten Sprung (Birgers Bildschirmvideo, 25.11.2026). Das Drücken geht an die
+    Schaltfläche unter dem Zeiger. Prüfweg: in Chrome mehrere Sprünge ohne Bildschirmfoto dazwischen klicken
+    (Fotos verschieben den Fokus und verdecken den Fehler).
   - Prüfmittel: Prüf-PDF mit großen Klickflächen über localhost (`python -m http.server`) in Chrome öffnen –
     `file://` biegt Claude in Chrome zu https um. pypdfium2 kann GoTo/Hide an Schaltflächen nachklicken
     (`FFI_GetPage` setzen!), hat aber kein JavaScript. Eigenheit von PDFium: Beim nächsten Klick feuert die noch

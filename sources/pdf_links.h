@@ -79,8 +79,8 @@ namespace PdfLinks {
 		"qetmarkN", one per target) on the target page, and over the link
 		an invisible push button "qetjumpN" with the chain GoTo -> /Next
 		[hide all frames, show this one (by field name), JavaScript that
-		lets it blink and hides it after 5 s]; the link carries the same
-		chain.  Chrome and Edge (PDFium) run only the GoTo of a link, and
+		lets it blink and hides it after 5 s], run when the mouse button
+		goes down (/AA /D); the link carries the same chain.  Chrome and Edge (PDFium) run only the GoTo of a link, and
 		no addField(), but every action of a button.  A PDF/A file
 		(pdfaid:part in its XMP) gets no frames and no JavaScript, as in
 		EPLAN.

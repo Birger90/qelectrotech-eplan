@@ -136,6 +136,10 @@ private slots:
 			} else {
 				QVERIFY2(name.startsWith(QLatin1String("qetjump")), qPrintable(widget));
 				QVERIFY(widget.contains(QLatin1String("/Ff 65536\n")));     // push button
+				// jumps on press: PDFium hands a release to the button
+				// focused last, which swallowed the next jump
+				QVERIFY2(widget.contains(QLatin1String("/AA << /D <<")), qPrintable(widget));
+				QVERIFY(!widget.contains(QLatin1String("\n/A <<")));
 				buttons << w;
 			}
 		}

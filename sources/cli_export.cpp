@@ -385,6 +385,11 @@ int exportImages(QETProject &project, const QString &format,
 		if (format == "svg") {
 			QSvgGenerator gen;
 			gen.setFileName(path);
+				// The symbols are QPictures recorded at 96 dpi; played on
+				// the generator's default 72 dpi, Qt shrinks them to 75 %
+				// while terminals and wires are drawn at full size, so
+				// wires ended beside the symbols. 96 dpi, as for the PDF.
+			gen.setResolution(96);
 			gen.setSize(r.size());
 			gen.setViewBox(QRect(0, 0, r.width(), r.height()));
 			gen.setTitle(diagram->title());

@@ -151,5 +151,139 @@ class GrafcetGliederung(unittest.TestCase):
         self.assertEqual(offen, [])
 
 
+class Blatt(unittest.TestCase):
+    def test_kleine_schaltung_auf_a4_quer_oben_links(self):
+        # FluidSIM zeichnet klein mitten auf ein A4-Blatt: nach links oben schieben (Vielfaches von 10), A4 quer
+        alle = [ET.fromstring("<component x1='240' y1='300' width='60' height='36'/>"),
+                ET.fromstring("<component x1='240' y1='420' width='24' height='24'/>")]
+        ops = [{"x": 225.0, "y": 265.0}, {"x": 210.0, "y": 360.0}]
+        dx, dy, papier = fp.blatt_lage(alle, ops)
+        self.assertEqual((dx % 10, dy % 10), (0, 0))
+        self.assertEqual(min(240 * fp.fs.K, 210.0) + dx, 50.0)   # linker Rand des Kastens bei RAND
+        self.assertEqual(papier, "a4-landscape")
+
+    def test_grosse_schaltung_auf_groesserem_papier(self):
+        alle = [ET.fromstring("<component x1='0' y1='0' width='1500' height='900'/>")]
+        self.assertEqual(fp.blatt_lage(alle, [{"x": 0.0, "y": 0.0}])[2], "a3-landscape")
+
+
+class Lesen(unittest.TestCase):
+    def test_blatt_im_abschnitt_circuits(self):
+        # TP1011C, TP1024, TP1121: das Blatt steckt in section type="circuits" -> <file>
+        roh = ("<fluidtools2><section type='circuits' count='1'><file name='x.circ'>"
+               "<section type='circuit-objects'><component ident='O1'/></section></file></section></fluidtools2>")
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "x.circ"
+            p.write_text(roh, encoding="utf-8")
+            w = fp.lesen(p)
+        self.assertIsNotNone(fp.abschnitt(w, "circuit-objects"))
+
+
+class EigeneGrafik(unittest.TestCase):
+    def test_widerstand_ohne_aufschrift(self):
+        import eigene_grafik as eg
+        sym = ET.fromstring("<symbol><symbol-layer ident='default'>"
+                            "<connector type='electric' ident='1' designation='p' cx='-24' cy='0'/>"
+                            "<connector type='electric' ident='2' designation='n' cx='24' cy='0'/>"
+                            "</symbol-layer></symbol>")
+        neu = eg.ersetzen(sym, ET.fromstring("<component object-ref='ET.Basic.Resistor'/>"))
+        eigen = next(e for e in neu if e.get("ident") == "EIGEN")
+        self.assertEqual(eigen.findall("text"), [])          # kein Kasten mit Namen
+        self.assertEqual(len(eigen.findall("polyline")), 1)  # der Widerstandskörper
+
+    def test_npn_mit_pfeil_am_emitter(self):
+        import eigene_grafik as eg
+        sym = ET.fromstring("<symbol><symbol-layer ident='default'>"
+                            "<connector type='electric' ident='1' designation='B' cx='-21' cy='0'/>"
+                            "<connector type='electric' ident='2' designation='C' cx='21' cy='-18'/>"
+                            "<connector type='electric' ident='3' designation='E' cx='21' cy='18'/>"
+                            "</symbol-layer></symbol>")
+        neu = eg.ersetzen(sym, ET.fromstring("<component object-ref='ET.Semiconductor.NPN_BC140'/>"))
+        eigen = next(e for e in neu if e.get("ident") == "EIGEN")
+        self.assertEqual(sum(1 for li in eigen.findall("line") if li.get("end-cap") == "arrow1"), 1)
+        self.assertEqual(len(eigen.findall("circle")), 1)
+
+    def _eigen(self, objekt, anschluesse, klasse=""):
+        import eigene_grafik as eg
+        sym = ET.fromstring("<symbol><symbol-layer ident='default'>" + "".join(
+            f"<connector type='electric' ident='{i}' designation='{d}' cx='{x}' cy='{y}'/>"
+            for i, (d, x, y) in enumerate(anschluesse, 1)) + "</symbol-layer></symbol>")
+        neu = eg.ersetzen(sym, ET.fromstring(f"<component object-ref='{objekt}'/>"), klasse)
+        return next(e for e in neu if e.get("ident") == "EIGEN")
+
+    def test_motorschutzschalter_dreipolig_statt_spule(self):
+        # FluidSIM klassifiziert ihn als solenoid-coil; gezeichnet werden drei Pole mit Wirkverbindung
+        e = self._eigen("ET.Switch.MotorCircuitBreaker",
+                        [("1", -12, -36), ("2", -12, 36), ("3", 12, -36), ("4", 12, 36), ("5", 36, -36), ("6", 36, 36)],
+                        "solenoid-coil")
+        self.assertTrue(any(li.get("style") == "dash" for li in e.findall("line")))
+        self.assertEqual([t.text for t in e.findall("text")], ["I>"])
+
+    def test_drehstrommotor_kreis_mit_kennzeichen(self):
+        e = self._eigen("ET.Actuator.ThreePhaseSynchronousMotor2", [("", -6, -18), ("", 18, -18), ("", 6, 48)])
+        self.assertEqual(len(e.findall("circle")), 1)
+        self.assertEqual([t.text for t in e.findall("text")], ["MS", "3~"])
+
+    def test_unbekanntes_bauteil_ohne_namen(self):
+        e = self._eigen("ET.Controller.ControllerPID", [("", -24, 0), ("", 24, 0)])
+        self.assertEqual([t.text for t in e.findall("text")], ["PID"])
+        e = self._eigen("ET.Foo.SomethingUnknown", [("", -24, 0), ("", 24, 0)])
+        self.assertEqual(e.findall("text"), [])
+
+
+class Werte(unittest.TestCase):
+    def test_simulationsgroessen_und_nullwerte_nicht_im_plan(self):
+        tf = {"T1": ET.fromstring("<text-box value='P_out = 0 kW'/>"), "T2": ET.fromstring("<text-box value='0 V'/>"),
+              "T3": ET.fromstring("<text-box value='p0 = 6 bar'/>")}
+        o = ET.fromstring("<component><user-data>"
+                          "<attribute name='^#P_out' comment='~FTParam~FTPVar~FTPUnit' display-ref='T1'/>"
+                          "<attribute name='^#voltage_DC' comment='~FTParam~FTPUnit' display-ref='T2'/>"
+                          "<attribute name='^#p0' comment='~FTParam~FTPUnit' display-ref='T3'/>"
+                          "</user-data></component>")
+        self.assertEqual([w for w, _ in fp.sichtbare_werte(o, tf)], ["p0 = 6 bar"])
+
+
+class Logo(unittest.TestCase):
+    """Das LOGO-Programm (logo-box-ref) kommt auf ein eigenes Blatt, die Schaltung bleibt."""
+
+    def test_teilen(self):
+        w = ET.fromstring(
+            "<fluidtools2><section type='symbol-graphics'/><section type='circuit-objects'>"
+            "<component ident='O1' object-ref='Pneu.X' symbol-ref='s1'/>"
+            "<component ident='O9' object-ref='Digital.Logo.Logobox' symbol-ref='s2'>"
+            "<dki-data><designation value='-A1'/></dki-data></component>"
+            "<component ident='O2' logo-box-ref='9' object-ref='Digital.Logo.And' symbol-ref='s3'/>"
+            "<component ident='O3' logo-box-ref='9' object-ref='Digital.Logo.OutputQ' symbol-ref='s4'/>"
+            "<connect con1='O2.a' con2='O3.b'/><connect con1='O1.a' con2='O9.b'/>"
+            "</section></fluidtools2>")
+        teile = fp.logo_teilen(w)
+        self.assertEqual([n for n, _ in teile], ["LOGO -A1"])
+        haupt = [o.get("ident") for o in fp.objekte(w)]
+        logo = [o.get("ident") for o in fp.objekte(teile[0][1])]
+        self.assertEqual(haupt, ["O1", "O9"])
+        self.assertEqual(logo, ["O2", "O3"])
+        self.assertEqual(len(list(teile[0][1].iter("connect"))), 1)
+        self.assertEqual(len(list(w.iter("connect"))), 1)
+        self.assertIsNotNone(fp.abschnitt(teile[0][1], "symbol-graphics"))
+
+    def test_ohne_logo(self):
+        w = ET.fromstring("<fluidtools2><section type='circuit-objects'>"
+                          "<component ident='O1' symbol-ref='s1'/></section></fluidtools2>")
+        self.assertEqual(fp.logo_teilen(w), [])
+
+
+class Welle(unittest.TestCase):
+    def test_drehanschluss_ueber_con_ref(self):
+        symbole = {"s": ET.fromstring("<symbol ident='s'><symbol-layer ident='StaticLayer'>"
+                                      "<connector ident='1' type='rotational' cx='0' cy='0'/>"
+                                      "<connector ident='2' type='electric' cx='5' cy='0'/>"
+                                      "</symbol-layer></symbol>")}
+        o = ET.fromstring("<component ident='O1' symbol-ref='s'>"
+                          "<connector ident='MR' con-ref='StaticLayer.1'/>"
+                          "<connector ident='U1' con-ref='StaticLayer.2'/></component>")
+        self.assertEqual(fp.drehanschluesse(symbole, o), {"MR"})
+
+
 if __name__ == "__main__":
     unittest.main()

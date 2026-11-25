@@ -1997,7 +1997,10 @@ CONDUCTOR_PROPERTIES = ["num", "formula", "function", "bus", "cable",
                         "conductor_section", "color", "text_color",
                         # the conductor's look, under the file's own names
                         "color2", "bicolor", "style", "dash-size",
-                        "condsize", "numsize", "displaytext"]
+                        "condsize", "numsize", "displaytext",
+                        # pneumatic/hydraulic line kind: none, working, pilot,
+                        # exhaust; also sets the style (pilot/exhaust dashed)
+                        "fluid_line"]
 
 # A folio's conductor defaults take the same names, plus the folio-wide
 # "one text per potential" switch, which no single conductor carries.

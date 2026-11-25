@@ -3,7 +3,7 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
-## Unveröffentlicht
+## 1.52.0 – 25.11.2026 – Weidmüller-Drucker direkt, Pneumatik
 
 ### THM-Etiketten direkt drucken
 
@@ -39,7 +39,7 @@ Original-QElectroTech stehen in `ChangeLog*`.
   alle Varianten als Tabelle mit Suche und Filtern nach Kategorie, Maß, Farbe, ein-/zweiseitig, „nur druckbar“ und
   „nur gerüstet“; Doppelklick übernimmt das Material.
 
-## Unveröffentlicht – Weidmüller-Druck
+### Weidmüller-Druck über M-Print PRO
 
 - Beschriftung exportieren mit Weidmüller: Drucker PrintJet CONNECT (MultiCards „MC“) oder THM MultiMark
   (Rollenmaterial „MM“, Etiketten). Je Art (Klemme, Klemmleiste, Gerät, Draht, Kabel) ist ein Material vorbelegt
@@ -53,6 +53,22 @@ Original-QElectroTech stehen in `ChangeLog*`.
   Skript-API `qet.mprintJobs(ordner, optionen)` und `qet.openInMPrintPro(ordner, optionen)`.
 - Am installierten M-Print PRO noch nicht geprüft (Übergabe nur mit einem Ersatzprogramm getestet); Belege und offene
   Punkte in `docs/beschriftung-export.md`.
+
+### Pneumatik und FluidSIM-Import
+
+- Skript und MCP: Leitungseigenschaft `fluid_line` (`working`, `pilot`, `exhaust`, `none`) für
+  `setConductorProperty`/`set_conductor`; setzt wie das Leitungs-Fenster auch das Strichmuster.
+- SVG-Export: Symbole in voller Größe (96 dpi wie beim PDF); vorher endeten Leitungen neben den Symbolen.
+- FluidSIM-Import (`tools/fluidsim_import`), geprüft an allen 1329 FluidSIM-Beispielen mit `qet_layout_check`
+  (Leitungen durch Symbole 511 → 48, Texte auf Leitungen 414 → 138, Überlappungen 321 → 81, Umwege 1201 → 264):
+  - Das Programm eines LOGO-Moduls kommt auf ein eigenes Blatt (in FluidSIM ein eigenes Fenster), nicht mehr über
+    Ventile und Zylinder.
+  - Leitungen zuerst auf QETs geradem Weg; nur die, die durch ein Symbol liefen, werden in einem zweiten Durchlauf
+    um die Symbole geführt. Kennzeichnungen auf Leitungen oder Bauteilen werden an eine freie Stelle gesetzt.
+  - Elektrik mit IEC-60617-Symbolen statt Textkästen (Zweipole, Maschinen, Messgeräte, mehrpolige Schalter,
+    Logik), Netze über Hilfspunkte, Digitaltechnik, keine Simulationswerte als Text, Blatt passend zur Schaltung.
+  - Die Belastungsmaschine am Motor (nur Wellenanschluss) fehlte und ist jetzt da, die Welle als Linie.
+  - Der Importer erlaubt QET-Skripten 10 min statt 30 s; große Pläne brachen unter Last stumm ab.
 
 ## 1.51.0 – 24.11.2026 – Sprungziel im PDF markiert
 

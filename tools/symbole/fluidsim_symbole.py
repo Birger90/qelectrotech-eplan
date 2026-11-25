@@ -333,14 +333,14 @@ class Zeichner:
             # Rechts neben dem Symbol, oben: QET setzt den Querverweis einer Spule (Slave) unter die
             # Kennzeichnung, so überdeckt er das Symbol nicht
             lx, ly = max(xs) + 4, min(ys) - 2
-            xs.append(lx + 30)
             zeilen.insert(0, (
                 f'<dynamic_text x="{fmt(lx)}" y="{fmt(ly)}" z="3" text_width="-1" '
                 f'Halignment="AlignLeft" Valignment="AlignTop" frame="false" rotation="0" '
                 f'keep_visual_rotation="false" text_from="ElementInfo" uuid="{{{kennung(self.saat, "kennzeichen")}}}" '
                 f'font="Liberation Sans,7,-1,5,0,0,0,0,0,0,Regular"><text></text><info_name>label</info_name>'
                 f'</dynamic_text>'))
-            ys.append(ly)
+            # Die Kennzeichnung zählt nicht zur Ausdehnung des Bauteils: sonst überdecken sich die Kästen
+            # nebeneinander stehender Kontakte, Leitungen „laufen durch“ sie und route avoid findet keinen Weg.
         x0 = math.floor(min(xs) / 10) * 10
         y0 = math.floor(min(ys) / 10) * 10
         x1 = math.ceil(max(xs) / 10) * 10
@@ -438,14 +438,18 @@ def ebene_lesen(z: Zeichner, ebene, anschluss_info, nur_grafik=False):
             z.bogen(p(zahl(e, "cx"), zahl(e, "cy")), zahl(e, "r") * abs(sy * t.sy), start, ende, e)
         elif e.tag == "text":
             inhalt = (e.text or "").strip()
-            if inhalt and not inhalt.startswith("?") and "~" not in inhalt:
+            # "~…" sind FluidSIM-Übersetzungsschlüssel; die eigene Grafik (EIGEN) darf "3~" schreiben
+            if inhalt and not inhalt.startswith("?") and ("~" not in inhalt or ebene.get("ident") == "EIGEN"):
                 z.text(p(zahl(e, "x1"), zahl(e, "y1")), inhalt, zahl(e, "height", 8))
         elif e.tag == "connector":
             if nur_grafik:
                 continue
             art = e.get("type")
-            if e.get("visible") == "false" or art not in ("pneumatic", "electric", "hydraulic"):
+            if e.get("visible") == "false" or art not in ("pneumatic", "electric", "hydraulic", "digital"):
                 continue
+            if art == "digital":
+                art = "electric"  # Digitaltechnik (LOGO, Gatter): Signalleitungen sind elektrisch ("logic" verbindet
+                                  # im Fork nichts, Fluid::canConnect)
             z.anschluesse.append({
                 "p": p(zahl(e, "cx"), zahl(e, "cy")),
                 "name": e.get("designation") or "",

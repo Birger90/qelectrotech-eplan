@@ -83,7 +83,8 @@ nur an, wenn noch keine `qet_labels.xml` da ist). ISO/IEC 81346-2 selbst liegt n
 - **Verknüpfen immer vom Slave aus**: `link_elements` mit `element` = Spule/Kontakt, `to` = Ventil/Relais.
   Andersherum ersetzt jede weitere Spule die vorige (QETs linkElements setzt die Verknüpfungen des
   ersten Elements auf genau das zweite).
-- Leitungsart (`fluid_line`) kann `set_conductor` noch nicht setzen; im Leitungs-Fenster von Hand.
+- Leitungsart: `set_conductor` mit `property: "fluid_line"`, Wert `working`, `pilot`, `exhaust` oder `none`; setzt
+  wie das Leitungs-Fenster auch das Strichmuster (Steuer-/Abluftleitung gestrichelt). Gilt für das ganze Potential.
 - Prüfen: Menü Projekt → „Fluidtechnik prüfen…“ (offene Fluidanschlüsse ohne Leitung/Abschluss,
   Magnetventil mit weniger Spulen als Magneten, Spule ohne Ventil).
 
@@ -244,7 +245,49 @@ TP102_02 (zwei Zylinder, Rollenventile, Zähler), TP601_14 (Elektrohydraulik mit
   Simulation rechnet mit den Bauteilnamen, deshalb übernimmt der Import bei `*.Proportional.*` und `Flowmeter_2` die
   Anschlussnamen des Bauteils, nicht die Beschriftung (vorher fuhren gespiegelte Stetigventile verkehrt herum).
 
+- Import aller FluidSIM-Beispiele (17.11.2026, 1136 aus `circ` + 193 abweichende aus `circ_tp`): drei Fehler im
+  Importer behoben. (1) Jedes Blatt war A3 mit der Schaltung als Fleck oben links; jetzt beginnt sie bei 50 px und
+  das Papier ist das kleinste, auf das sie passt (`blatt_lage`, meist A4 quer). (2) 110 Dateien (TP1011C, TP1024,
+  TP1121) packen ihr Blatt in `section type="circuits"` → `<file>`: kamen leer an, `lesen()` nimmt jetzt das Blatt.
+  (3) Widerstand, Kondensator, Diode/LED, Sicherung, Gleichspannungsquelle, Bipolartransistor, Signalgenerator und
+  Oszilloskop waren Kästen mit winziger englischer Aufschrift; jetzt IEC-60617-Grafik in `eigene_grafik.py`.
+  GRAFCET-Dateien haben nur GRAFCET-Elemente.
+- Elektro-Nachbesserung (17.11.2026, Birger: Elektroplan „sieht komisch aus“, TP1410_AC3P_05): (4) Netze über
+  T-Verteiler rissen, wenn ein Hilfspunkt ohne Bauteil (leere object-ref) im Netz lag – -F1 hing nicht an -Q1, N lose;
+  jetzt werden nur Anschlüsse übernommener Bauteile der Reihe nach verbunden. (5) 166 Bauarten waren Textkästen mit
+  abgeschnittenem englischem Namen; jetzt IEC-Grafik: mehrpolige Leitungs-/Motorschutzschalter (der Motorschutz-
+  schalter ist in FluidSIM als solenoid-coil klassifiziert!), Maschinen (Kreis M 3~, MS 3~, M =, G), Messgeräte (V, A,
+  W, cos φ, Ω), Gleichrichter (Kasten mit Diagonale ~/=), Trafo, Induktivität, OpAmp, Z-Diode, Thyristor,
+  Potentiale L1/L2/L3/N/PE, Verteiler; der Rest als Kasten mit IEC-Kennzeichen (PID, Σ, p, Q …) oder leer, **nie mit
+  Namen**. Jeder Anschluss bekommt eine Stichleitung an die Grafik (`_anschluesse_erreichen`). (6) Simulationsgrößen
+  (`comment` mit `FTPVar`, z. B. „P_out = 0 kW“) und Sollwerte 0 („0 V“) kommen nicht mehr als Text in den Plan.
+  (7) Digitaltechnik (LOGO, Gatter, Flipflops; Anschlusstyp `digital`) wird übernommen: Logikkästen nach IEC
+  60617-12 (&, ≥1, =1, 1 mit Negationskreis, TON/TOF/TP, RS, CTUD), Leitungen elektrisch – Medium `logic` verbindet
+  im Fork nichts (`Fluid::canConnect`). (8) Texte mit „~“ verwirft der Symbolumwandler als FluidSIM-Übersetzungs-
+  schlüssel; in der eigenen Ebene EIGEN sind sie erlaubt („3~“). Immer selbst als PNG prüfen, „0 Fehler“ reicht nicht.
+- Layout nach dem Import (17.11.2026, Birger: PE quer durch -P1/-P2, BMK auf Leitungen): Leitungen werden um die Symbole gelegt
+  (seit 24.11. nur die, die sonst durch ein Symbol liefen, siehe unten); danach setzt `beschriftungen_freistellen()` (fluidsim_plan.py) jede
+  Kennzeichnung, die auf einer Leitung, einem Bauteil oder einer anderen Kennzeichnung liegt, mit
+  `qet.placeElementTexts` an die erste freie der neun Stellen. Potentiale (L1…PE) liegen wie in FluidSIM (quer:
+  Stich waagerecht), Name 8 hoch; Maschinenkreis mittig unter der Reihe der Wicklungsanschlüsse, kein Anschluss im
+  Kreis. Messen mit `qet_layout_check` (`wires_through_symbols`, `labels_on_wires`, `overlaps`): Stichprobe von 16
+  Plänen vorher 76/41/28, nachher 0/5/1. Ursache der meisten „durch Symbole“: die Kennzeichnung zählte zur
+  Bauteilausdehnung (+30 px rechts), so überdeckten sich Nachbarkontakte; GRAFCET-Rücksprung ebenfalls mit avoid;
+  Schrittnummern im eigenen Symbol bleiben stehen.
+
+- Vollzählung aller Beispielpläne (24.11.2026, `qet_layout_check` je Plan): Leitungen durch Symbole 511 → 48,
+  Texte auf Leitungen 414 → 138, Überlappungen 321 → 81, Umwege 1201 → 264, Kreuzungen 7042 → 4035.
+  (1) **LOGO-Programm auf eigenes Blatt**: Objekte mit `logo-box-ref` stehen in FluidSIM in einem eigenen Fenster
+  mit eigenen Koordinaten; auf dem Schaltungsblatt lägen sie über Ventilen. `logo_teilen()` legt je LOGO-Modul
+  ein Blatt an. (2) **Leitungen nicht pauschal mit avoid**: zuerst QETs gerader Weg, dann Layout-Check, nur die
+  Leitungen durch Symbole im zweiten Durchlauf mit avoid (`leitungen_nachfuehren`); `route_conductor` erreicht
+  keine Leitung, deren beide Anschlüsse weitere Leitungen tragen. (3) Objekte ohne Fluid-/Elektroanschluss
+  (Animationen, Hardware-Kopplung `ET.IO.MultiPin`) haben auch im Original keine Leitung und bleiben weg; die
+  Belastungsmaschine hat nur einen Wellenanschluss (`type="rotational"`) und bleibt, die Welle ist eine Linie.
+  (4) QET bricht Skripte nach 30 s ab (`QET_SCRIPT_TIMEOUT_MS`); große Pläne liefen unter Last stumm ins Leere –
+  der Importer setzt 10 min. Ergebnisse zählen, nicht „kein Fehler“ glauben.
+
 ## Offen
 
 Ventil- und Zylinder-Editor (Symbol zur Laufzeit), Wegmaßstab, Stückliste mit Schläuchen,
-`fluid_line` in Skript/MCP, ISO 1219-1 und 81346-2 im Wortlaut. Simulation: siehe `qet-simulation`.
+ISO 1219-1 und 81346-2 im Wortlaut. Simulation: siehe `qet-simulation`.

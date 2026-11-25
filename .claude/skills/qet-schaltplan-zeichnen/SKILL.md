@@ -315,3 +315,47 @@ Funktionsvorlage einfügen – mit Artikeldaten, Klemmen, Kabel und Verknüpfung
   action text are the labels (`set_label`).
 - QElectroTech does not draw the terminal stub in PDF/PNG: a symbol's graphics must reach each terminal, or a gap
   shows.
+
+## Steuerstromkreise – Muster aus den FluidSIM-Beispielen (gezählt 17.11.2026)
+
+Gezählt über 229 Schaltungen mit 24 V, 0 V und Spulen (Elektropneumatik, Elektrohydraulik, Elektrotechnik).
+Die Zahl in Klammern ist der Beleg; so zeichnen, wenn der Hausstil oben nichts anderes sagt.
+
+- **24 V oben, 0 V unten** (189 von 229; der Rest sind quer liegende Leiterdiagramme nach NEMA).
+- **Spulen unten, direkt an 0 V**: Relais- und Ventilspulen (1067 von 1072). Kontakte, Taster und Sensoren
+  darüber, zur 24-V-Schiene hin.
+- **Ein senkrechter Strompfad je Spule**, Abstand Median 96 FluidSIM-Einheiten ≈ 8 Raster. In QET mit
+  Kontaktspiegel unter der Spule **mindestens 10–12 Raster** lassen, sonst überlappen die Spiegel der
+  Nachbarpfade.
+- **Signalteil links, Leistungsteil rechts**: zuerst die Pfade mit Sensoren/Tastern und Relaisspulen, rechts
+  die Ventilspulen, geschaltet über Relaiskontakte (301 Ventilspulen hinter einem Relaiskontakt, 239 direkt
+  hinter Taster oder Sensor; 153 Schaltungen trennen so Signal- und Leistungsteil).
+- **Selbsthaltung** (31 Schaltungen): Ein-Taster -SF1 (Schließer 13/14) parallel zum Halteschließer der eigenen
+  Spule (-KF1 13/14), der Aus-Taster -SF2 (Öffner 11/12) in Reihe hinter der Parallelschaltung, darunter die
+  Spule -KF1 – Aus dominant. Ein zweiter Schließer der Spule (-KF1 23/24) schaltet im Nachbarpfad die
+  Ventilspule.
+- **Kontaktnummern** (erste Ziffer = Ordnungsnummer am Relais, zweite = Funktion):
+  Schließer 13/14, 23/24 (134); Öffner 11/12, 21/22 (66); Wechsler 11/12/14, 21/22/24 (273); Taster
+  13/14 oder 3/4 (336); Näherungsschalter dreiadrig 1 (+), 3 (0 V), 4 (Ausgang) (141); Endschalter als
+  Wechsler 1/2/4.
+- **Kennzeichnung**: Relais -KF (511 von ≈ 700), Ventilspule -MB (307), Taster -SF (310), Sensor/Endschalter
+  -BG (166), Leuchte -PF oder -E, Spannungsquelle -G. Die Ventilspule trägt in QET als Slave die Kennzeichnung
+  ihres Ventils (-QM1), die eigene (-MB1) bleibt in den Daten.
+- **Nie Textkasten**: Ein Bauteil ohne passendes Symbol bekommt sein IEC-60617-Kennzeichen (Maschine: Kreis mit
+  M 3~/MS 3~/G; Messgerät: Kreis mit V/A/W/cos φ; Gleichrichter: Kasten mit Diagonale und ~/=; Logik: &, ≥1, 1 mit
+  Negationskreis; Regler: PID/PT1/Σ), nie einen Kasten mit (abgeschnittenem) Namen. Mehrpolige Schalter als
+  einzelne Pole mit gestrichelter Wirkverbindung (Leitungsschutz: Kreuz am festen Kontakt; Motorschutz: Auslöser „I>“).
+- **Nach jedem Zeichnen/Import `qet_layout_check` und Treffer zählen**: `wires_through_symbols`,
+  `labels_on_wires` und `overlaps` sollen 0 sein. Leitungen durch Symbole mit `route: "avoid"` neu anlegen; eine Kennzeichnung auf
+  einer Leitung mit `placeElementTexts(folio, [uuid], "right"|"left"|…)` an eine freie Stelle setzen, nicht das
+  Bauteil verschieben.
+- **Leitungen gerade, nur bei Bedarf herum** (24.11.2026, Vollzählung der FluidSIM-Beispiele): nicht jede Leitung
+  mit `route: "avoid"` anlegen – das hält Abstand zu allen Symbolen und macht Umwege und Kreuzungen. Erst den
+  geraden Weg, dann `qet_layout_check`; nur die Leitungen aus `wire_through_symbol` neu mit avoid anlegen
+  (`route_conductor` erreicht Leitungen in Netzen nicht). Ein getrenntes Programm (LOGO, SPS-Baustein) gehört auf
+  ein eigenes Blatt, nicht über die Schaltung. Eine mechanische Kopplung (Welle Motor ↔ Belastungsmaschine) ist
+  eine Linie, keine Leitung.
+- **Keine Simulationswerte im Plan**: angezeigte Messgrößen (P_out, I, U als Ergebnis) und Sollwerte 0 weglassen;
+  nur Kennwerte (24 V, p = 6 bar, 47 kOhm) als Text am Bauteil.
+- **Endschalter** stehen im Steuerstromkreis als Schließer/Wechsler mit -BG-Kennzeichen; am Zylinder sind sie
+  nur eine Wegmarke (siehe Skill `fluidtechnik`).

@@ -113,6 +113,11 @@
 >   chosen picks the printer. Status and material can be queried; nothing prints before a summary of target,
 >   article and quantity is confirmed. Also `--thm-prn`, `--thm-status`, `--thm-send --yes`, `--thm-printers` and
 >   `qet.exportThmJob()`. Commands and what is still to be confirmed on the printer: same document.
+> - The print profile of each article can come from a layout file of your own M-Print PRO installation (JSON, chosen
+>   under *Layout file…* or `--layouts`; none is shipped, nothing is decrypted): page, labels, columns, text field and
+>   turn, speed and heat per device family (THM MMP, THM MultiMark). Checked against four M-Print print files: the
+>   `S`, `H` and `O` commands match. Continuous material with layout rules is refused with a reason. Each printer
+>   keeps its usual article apart from the one loaded now; *Change material…* (or `--thm-load`) confirms a change.
 
 > - Weidmüller printers directly: choose PrintJet CONNECT (MultiCard) or THM MultiMark (rolls, labels); every kind
 >   gets a fitting Weidmüller material (editable). *Open in M-Print PRO* hands each material a file through

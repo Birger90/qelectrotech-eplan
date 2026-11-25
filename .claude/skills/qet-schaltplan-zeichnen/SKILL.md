@@ -270,6 +270,12 @@ Funktionsvorlage einfügen – mit Artikeldaten, Klemmen, Kabel und Verknüpfung
   **Nie ohne ausdrückliche Zustimmung des Nutzers drucken**: `--thm-send` sendet nur mit `--yes`; `--thm-status
   <ID>` fragt nur ab. Drucker/Material: `--thm-printers`. Belege und offene Punkte: `docs/beschriftung-export.md`,
   Abschnitt „THM direkt drucken“.
+  Profil je Artikel aus der Layoutdatei (JSON aus der eigenen M-Print-Installation, nie ins Repo):
+  `--thm-prn <qet> <prn> --material <Nr> --layouts <json> --family mmp|multimark`. Gerätegrenzen je Familie
+  (MMP: Heizung −10…+20, 30–125 mm/s; MultiMark: −20…+20, 30–150 mm/s). Rüstungswechsel nur nach Bestätigung:
+  `--thm-load <ID> <Nr> [--usual]`. Gelernt: lupdate findet `tr()` in anonymen Namensräumen nicht – dort
+  `QCoreApplication::translate("Kontext", …)` ausschreiben; den Vergleich mit M-Print-`.prn` außerhalb des Repos
+  halten (Herstellerdaten).
 
 - Weidmüller-Druck: `--export-marking <qet> <ordner> --printer printjet|thm --mprint [--open] [--print]` schreibt je
   Material eine Datei für `MPrintPRO.exe <datei> -ImportFilter:CSV -MatNo:<nr>`. PrintJet CONNECT druckt nur MultiCards

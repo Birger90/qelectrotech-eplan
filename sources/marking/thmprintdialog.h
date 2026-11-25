@@ -22,6 +22,7 @@
 #include "thmcatalog.h"
 #include "thmclient.h"
 #include "thmjob.h"
+#include "thmlayouts.h"
 #include "thmprinters.h"
 
 #include <QDialog>
@@ -58,6 +59,15 @@ class ThmPrintDialog : public QDialog
 	private:
 		void loadCatalog();
 		void chooseCatalog();
+		void loadLayouts();
+		void chooseLayouts();
+			/// The profile of a job on the article chosen, for @p printer
+		bool jobProfile(const ThmPrinter *printer, ThmJob::Profile *profile,
+						QString *source = nullptr, QString *error = nullptr) const;
+		QString currentArticle() const;
+			/// Material change: the user loads the article chosen on a
+			/// printer and confirms it
+		void changeMaterial();
 		void fillArticles();
 		void updatePreview();
 		void updateTarget();
@@ -75,6 +85,8 @@ class ThmPrintDialog : public QDialog
 		QList<ThmPrinter> m_printers;
 		QList<ThmCatalog::Variant> m_catalog;
 		QString m_catalog_error;
+		QList<ThmLayouts::Variant> m_layouts;
+		QString m_layouts_error;
 		ThmClient *m_client = nullptr;
 		QList<ThmClient::Request> m_queue;
 		QStringList m_lines;           ///< the replies of the last query
@@ -96,8 +108,10 @@ class ThmPrintDialog : public QDialog
 
 		QComboBox *m_article = nullptr;
 		QLabel *m_catalog_label = nullptr;
+		QLabel *m_layouts_label = nullptr;
 		QComboBox *m_printer = nullptr;
 		QLabel *m_target_message = nullptr;
+		QLabel *m_profile_source = nullptr;
 		QLabel *m_device_state = nullptr;
 		QList<QPushButton *> m_device_buttons;
 		QPushButton *m_print = nullptr;
@@ -116,7 +130,8 @@ class ThmPrintersDialog : public QDialog
 	public:
 		ThmPrintersDialog(const QList<ThmPrinter> &printers,
 						  const QList<ThmCatalog::Variant> &catalog,
-						  QWidget *parent = nullptr);
+						  QWidget *parent = nullptr,
+						  const QList<ThmLayouts::Variant> &layouts = {});
 		QList<ThmPrinter> printers() const { return m_printers; }
 
 	private:
@@ -126,8 +141,10 @@ class ThmPrintersDialog : public QDialog
 		void removeCurrent();
 		void accept() override;
 
+		QString nameOf(const QString &material_no) const;
 		QList<ThmPrinter> m_printers;
 		QList<ThmCatalog::Variant> m_catalog;
+		QList<ThmLayouts::Variant> m_layouts;
 		int m_row = -1;
 		bool m_showing = false;
 
@@ -139,6 +156,9 @@ class ThmPrintersDialog : public QDialog
 		QLineEdit *m_host = nullptr;
 		QSpinBox *m_port = nullptr;
 		QComboBox *m_material = nullptr;
+		QComboBox *m_usual = nullptr;
+		QLineEdit *m_roller = nullptr;
+		QLabel *m_loaded_at = nullptr;
 		QDoubleSpinBox *m_width = nullptr;
 		QDoubleSpinBox *m_height = nullptr;
 		QDoubleSpinBox *m_gap = nullptr;

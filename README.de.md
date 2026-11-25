@@ -133,6 +133,12 @@ Seitenleiste *Anzeige > Funktionsvorlagen*, wie EPLAN-Makros mit Wertesätzen:
   Status und Material lassen sich abfragen; gedruckt wird erst nach einer Zusammenfassung von Ziel, Artikel und
   Menge. Auch per `--thm-prn`, `--thm-status`, `--thm-send --yes`, `--thm-printers` und `qet.exportThmJob()`.
   Befehle, Belege und was am Drucker noch zu prüfen ist: dasselbe Dokument.
+- Das Druckprofil je Artikel kann aus einer Layoutdatei der eigenen M-Print-PRO-Installation kommen (JSON, unter
+  *Layoutdatei…* oder `--layouts` gewählt; keine mitgeliefert, nichts entschlüsselt): Seite, Schilder, Spalten,
+  Textfeld und Drehung, Geschwindigkeit und Heizung je Gerätefamilie (THM MMP, THM MultiMark). Gegen vier
+  M-Print-Druckdateien geprüft: `S`, `H` und `O` stimmen überein. Endlosmaterial mit Layoutregeln wird mit Begründung
+  abgelehnt. Jeder Drucker führt seine übliche Rüstung getrennt von der aktuellen; *Material wechseln…* (oder
+  `--thm-load`) bestätigt einen Wechsel.
 
 - Weidmüller-Drucker direkt: Drucker PrintJet CONNECT (MultiCard) oder THM MultiMark (Rollen, Etiketten) wählen, je
   Art ist ein passendes Weidmüller-Material vorbelegt (änderbar). *In M-Print PRO öffnen* übergibt jedem Material eine

@@ -82,13 +82,62 @@ QString ThmJob::number(double value)
 
 QList<int> ThmJob::speedSteps()
 {
+	return speedSteps(Family::Mmp);
+}
+
+QList<int> ThmJob::speedSteps(Family family)
+{
+	if (family == Family::MultiMark) return {30, 40, 50, 75, 100, 125, 150};
 	return {30, 40, 50, 75, 100, 125};
+}
+
+int ThmJob::heatMin(Family family)
+{
+	return family == Family::MultiMark ? -20 : kHeatMin;
+}
+
+int ThmJob::heatMax(Family)
+{
+	return kHeatMax;
+}
+
+double ThmJob::printWidth(Family family)
+{
+	return family == Family::MultiMark ? 106.0 : kPrintWidthMm;
+}
+
+QString ThmJob::familyKey(Family family)
+{
+	return family == Family::MultiMark ? QStringLiteral("multimark") : QStringLiteral("mmp");
+}
+
+bool ThmJob::familyFromKey(const QString &key, Family *family)
+{
+	const QString k = key.trimmed().toLower().remove(QLatin1Char(' '));
+	Family f;
+	if (k == QLatin1String("mmp") || k == QLatin1String("thmmmp")) f = Family::Mmp;
+	else if (k == QLatin1String("multimark") || k == QLatin1String("thmmultimark")) f = Family::MultiMark;
+	else return false;
+	if (family) *family = f;
+	return true;
+}
+
+ThmJob::Family ThmJob::familyFromModel(const QString &model)
+{
+	return model.contains(QLatin1String("MultiMark"), Qt::CaseInsensitive)
+			&& !model.contains(QLatin1String("MMP"), Qt::CaseInsensitive)
+		   ? Family::MultiMark : Family::Mmp;
 }
 
 double ThmJob::totalWidth(const Profile &p)
 {
 	const double pitch = p.columns > 1 && p.column_pitch > 0 ? p.column_pitch : p.width;
 	return (qMax(1, p.columns) - 1) * pitch + p.width;
+}
+
+double ThmJob::rowWidth(const Profile &p)
+{
+	return p.page_width > 0 ? p.page_width : p.first_x + totalWidth(p);
 }
 
 bool ThmJob::validate(const Profile &p, QString *error)
@@ -109,14 +158,28 @@ bool ThmJob::validate(const Profile &p, QString *error)
 		e = QCoreApplication::translate("ThmJob", "The text size is not set.");
 	} else if (p.baseline < 0 || p.baseline > p.height) {
 		e = QCoreApplication::translate("ThmJob", "The text baseline lies outside the label.");
+	} else if (p.field_top < 0 || p.field_bottom < 0 || p.field_bottom > p.height + 1e-9
+			   || (p.field_bottom > 0 && p.field_bottom <= p.field_top)) {
+		e = QCoreApplication::translate("ThmJob", "The text field lies outside the label.");
+	} else if (p.text_rotation != 0 && p.text_rotation != 90 && p.text_rotation != 180
+			   && p.text_rotation != 270) {
+		e = QCoreApplication::translate("ThmJob", "The text can only be turned by 0, 90, 180 or 270 degrees.");
+	} else if (p.first_x < 0 || p.page_width < 0
+			   || (p.page_width > 0 && p.first_x + totalWidth(p) > p.page_width + 1e-9)) {
+		e = QCoreApplication::translate("ThmJob", "The columns do not fit the row width.");
 	} else if (p.set_heat && p.speed <= 0) {
 		e = QCoreApplication::translate("ThmJob", "The print speed is not set.");
-	} else if (p.set_heat && !speedSteps().contains(p.speed)) {
-		e = QCoreApplication::translate("ThmJob", "The printer only knows the speeds 30, 40, 50, 75, 100 and 125 mm/s.");
-	} else if (p.set_heat && (p.heat < kHeatMin || p.heat > kHeatMax)) {
-		e = QCoreApplication::translate("ThmJob", "The heat correction must lie between -10 and +20.");
-	} else if (totalWidth(p) > kPrintWidthMm) {
-		e = QCoreApplication::translate("ThmJob", "The labels are wider than the print head (105.7 mm).");
+	} else if (p.set_heat && !speedSteps(p.family).contains(p.speed)) {
+		QStringList steps;
+		for (int s : speedSteps(p.family)) steps << QString::number(s);
+		e = QCoreApplication::translate("ThmJob", "This printer only knows the speeds %1 mm/s.")
+			.arg(steps.join(QStringLiteral(", ")));
+	} else if (p.set_heat && (p.heat < heatMin(p.family) || p.heat > heatMax(p.family))) {
+		e = QCoreApplication::translate("ThmJob", "The heat correction must lie between %1 and +%2.")
+			.arg(heatMin(p.family)).arg(heatMax(p.family));
+	} else if (rowWidth(p) > printWidth(p.family) + 1e-9) {
+		e = QCoreApplication::translate("ThmJob", "The labels are wider than the print head (%1 mm).")
+			.arg(number(printWidth(p.family)));
 	}
 	if (error) *error = e;
 	return e.isEmpty();
@@ -149,20 +212,50 @@ QByteArray ThmJob::build(const QList<Label> &labels, const Profile &p, QString *
 	if (error) error->clear();
 
 	const double pitch = p.columns > 1 && p.column_pitch > 0 ? p.column_pitch : p.width;
-	const double total_width = (p.columns - 1) * pitch + p.width;
-	const double text_width = p.width - p.margin_left - p.margin_right;
-	const double y = p.baseline > 0 ? p.baseline : (p.height + p.text_size) / 2;
+		//The text field of a label: across from the margins, along the
+		//transport from field_top to field_bottom
+	const double field_left = p.margin_left;
+	const double field_right = p.width - p.margin_right;
+	const double field_top = p.field_top;
+	const double field_bottom = p.field_bottom > 0 ? p.field_bottom : p.height;
+	const double centre_y = (field_top + field_bottom) / 2;
 
 		//S [ptype;]xo,yo,ho,dy,wd (manual p. 220-221): dy is the label
 		//height plus the gap. Several columns are one label of the whole
 		//width with one text field per column, so only the documented
-		//meaning of S and T is used, not dx/col.
+		//meaning of S and T is used, not dx/col. M-Print PRO writes its
+		//THM jobs the same way (one S over the whole row).
 	const QString size_line = QStringLiteral("S %1;%2,%3,%4,%5,%6")
 			.arg(sensorKey(p.sensor), number(p.offset_x), number(p.offset_y),
-				 number(p.height), number(p.height + p.gap), number(total_width));
-		//H speed[,h][,t] (manual p. 196): T thermal transfer, D direct
-	const QString heat_line = QStringLiteral("H %1,%2,%3")
+				 number(p.height), number(p.height + p.gap), number(rowWidth(p)));
+		//H speed[,h][,t] (manual p. 196): T thermal transfer, D direct;
+		//further options as the maker's software writes them
+	QString heat_line = QStringLiteral("H %1,%2,%3")
 			.arg(p.speed).arg(p.heat).arg(p.transfer ? QStringLiteral("T") : QStringLiteral("D"));
+	if (!p.heat_options.isEmpty()) heat_line += QLatin1Char(',') + p.heat_options;
+	QStringList options = p.print_options;
+	if (p.rotate && !options.contains(QStringLiteral("R"))) options.prepend(QStringLiteral("R"));
+
+		//T x,y,r,...: x,y is where the text's baseline begins; [J:cW]
+		//centres it over W in its own direction. Turned by r degrees
+		//anticlockwise, the start moves to the matching side of the field.
+	struct TextPlace { double x, y, width; };
+	const auto place = [&](int column) {
+		const double left = p.first_x + column * pitch;
+		const double centre_x = left + (field_left + field_right) / 2;
+		switch (p.text_rotation) {
+			case 90:
+				return TextPlace{centre_x + p.text_size / 2, field_bottom, field_bottom - field_top};
+			case 180:
+				return TextPlace{left + field_right, centre_y - p.text_size / 2, field_right - field_left};
+			case 270:
+				return TextPlace{centre_x - p.text_size / 2, field_top, field_bottom - field_top};
+			default:
+				return TextPlace{left + field_left,
+								 p.baseline > 0 ? p.baseline : centre_y + p.text_size / 2,
+								 field_right - field_left};
+		}
+	};
 
 	QByteArray out;
 	for (const Row &row : rows(labels, p.columns)) {
@@ -173,19 +266,22 @@ QByteArray ThmJob::build(const QList<Label> &labels, const Profile &p, QString *
 		if (!ascii) out += "\x1boUTF-8;";
 		QStringList lines;
 		lines << QStringLiteral("m m");      //millimetres (manual p. 53)
+		if (p.plain_zero) lines << QStringLiteral("zO");  //zero without slash
 		lines << QStringLiteral("J");        //job start (manual p. 202)
 		if (p.set_heat) lines << heat_line;
 		lines << size_line;
 			//O directly after S (manual p. 212); R turns 180 degrees (p. 213)
-		if (p.rotate) lines << QStringLiteral("O R");
+		if (!options.isEmpty()) lines << QStringLiteral("O ") + options.join(QLatin1Char(','));
 		for (int c = 0; c < texts.size(); ++c) {
 			if (texts.at(c).isEmpty()) continue;
 				//T x,y,r,font,size;text (manual p. 224); [J:cW] centres
 				//the text in a field W wide from x (manual p. 329)
-			lines << QStringLiteral("T %1,%2,0,%3,%4;[J:c%5]%6")
-					 .arg(number(c * pitch + p.margin_left), number(y))
+			const TextPlace t = place(c);
+			lines << QStringLiteral("T %1,%2,%3,%4,%5;[J:c%6]%7")
+					 .arg(number(t.x), number(t.y))
+					 .arg(p.text_rotation)
 					 .arg(p.font)
-					 .arg(number(p.text_size), number(text_width), texts.at(c));
+					 .arg(number(p.text_size), number(t.width), texts.at(c));
 		}
 			//A <num>: end of the label and its amount (manual p. 72)
 		lines << QStringLiteral("A %1").arg(row.count);

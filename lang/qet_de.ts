@@ -31691,6 +31691,42 @@ Strg+Eingabe gibt die Zelle zurück, Escape verwirft den Text.</translation>
         <source>No THM printer is set up.</source>
         <translation type="unfinished">Kein THM-Drucker eingerichtet.</translation>
     </message>
+    <message>
+        <source>&quot;%1&quot; is loaded with %2, not %3. Confirm the change first: --thm-load %4 %3</source>
+        <translation>„%1“ ist mit %2 gerüstet, nicht mit %3. Erst den Wechsel bestätigen: --thm-load %4 %3</translation>
+    </message>
+    <message>
+        <source>%1 is now loaded with %2.</source>
+        <translation>%1 ist jetzt mit %2 gerüstet.</translation>
+    </message>
+    <message>
+        <source>Cannot be printed yet: %1</source>
+        <translation>Noch nicht druckbar: %1</translation>
+    </message>
+    <message>
+        <source>Profile: %1</source>
+        <translation>Profil: %1</translation>
+    </message>
+    <message>
+        <source>Ribbon: %1</source>
+        <translation>Farbband: %1</translation>
+    </message>
+    <message>
+        <source>Roller: %1</source>
+        <translation>Walze: %1</translation>
+    </message>
+    <message>
+        <source>Unknown --family; expected mmp or multimark.</source>
+        <translation>Unbekannte --family; erwartet mmp oder multimark.</translation>
+    </message>
+    <message>
+        <source>Usual article: %1</source>
+        <translation>Üblicher Artikel: %1</translation>
+    </message>
+    <message>
+        <source>usually %1</source>
+        <translation>üblich %1</translation>
+    </message>
 </context>
 <context>
     <name>ThmClient</name>
@@ -32040,6 +32076,109 @@ Strg+Eingabe gibt die Zelle zurück, Escape verwirft den Text.</translation>
         <source>%1, label distance %2 mm</source>
         <translation type="unfinished">%1, Etikettenabstand %2 mm</translation>
     </message>
+    <message>
+        <source>The columns do not fit the row width.</source>
+        <translation>Die Spalten passen nicht in die Reihenbreite.</translation>
+    </message>
+    <message>
+        <source>The heat correction must lie between %1 and +%2.</source>
+        <translation>Die Heizkorrektur muss zwischen %1 und +%2 liegen.</translation>
+    </message>
+    <message>
+        <source>The labels are wider than the print head (%1 mm).</source>
+        <translation>Die Etiketten sind breiter als der Druckkopf (%1 mm).</translation>
+    </message>
+    <message>
+        <source>The text can only be turned by 0, 90, 180 or 270 degrees.</source>
+        <translation>Der Text lässt sich nur um 0, 90, 180 oder 270 Grad drehen.</translation>
+    </message>
+    <message>
+        <source>The text field lies outside the label.</source>
+        <translation>Das Textfeld liegt außerhalb des Etiketts.</translation>
+    </message>
+    <message>
+        <source>This printer only knows the speeds %1 mm/s.</source>
+        <translation>Dieser Drucker kennt nur die Geschwindigkeiten %1 mm/s.</translation>
+    </message>
+</context>
+<context>
+    <name>ThmLayouts</name>
+    <message>
+        <source>%1: %2</source>
+        <translation>%1: %2</translation>
+    </message>
+    <message>
+        <source>Cannot open %1: %2</source>
+        <translation>%1 lässt sich nicht öffnen: %2</translation>
+    </message>
+    <message>
+        <source>Continuous material is not printed yet.</source>
+        <translation>Endlosmaterial wird noch nicht gedruckt.</translation>
+    </message>
+    <message>
+        <source>Continuous material with layout rules (multi_rows) is not printed yet.</source>
+        <translation>Endlosmaterial mit Layoutregeln (multi_rows) wird noch nicht gedruckt.</translation>
+    </message>
+    <message>
+        <source>Cutting is not supported yet.</source>
+        <translation>Schneiden wird noch nicht unterstützt.</translation>
+    </message>
+    <message>
+        <source>Layout %1 of %2 (%3)</source>
+        <translation>Vorlage %1 von %2 (%3)</translation>
+    </message>
+    <message>
+        <source>No layout for article %1 and no printer profile.</source>
+        <translation>Keine Vorlage für Artikel %1 und kein Druckerprofil.</translation>
+    </message>
+    <message>
+        <source>No layout for article %1, and the own profile of &quot;%2&quot;: %3</source>
+        <translation>Keine Vorlage für Artikel %1, und das eigene Profil von „%2“: %3</translation>
+    </message>
+    <message>
+        <source>Own profile of &quot;%1&quot;</source>
+        <translation>Eigenes Profil von „%1“</translation>
+    </message>
+    <message>
+        <source>Strips with several labels side by side are not printed yet.</source>
+        <translation>Streifen mit mehreren Schildern nebeneinander werden noch nicht gedruckt.</translation>
+    </message>
+    <message>
+        <source>The file holds no &quot;layouts&quot; and &quot;variants&quot;.</source>
+        <translation>Die Datei enthält keine „layouts“ und „variants“.</translation>
+    </message>
+    <message>
+        <source>The label sensor &quot;%1&quot; is not known.</source>
+        <translation>Der Etikettensensor „%1“ ist nicht bekannt.</translation>
+    </message>
+    <message>
+        <source>The labels of the layout are not evenly spaced.</source>
+        <translation>Die Etiketten der Vorlage haben keinen gleichmäßigen Abstand.</translation>
+    </message>
+    <message>
+        <source>The labels of the layout are not in one even row.</source>
+        <translation>Die Etiketten der Vorlage liegen nicht in einer gleichmäßigen Reihe.</translation>
+    </message>
+    <message>
+        <source>The layout %1 is not in the file.</source>
+        <translation>Die Vorlage %1 steht nicht in der Datei.</translation>
+    </message>
+    <message>
+        <source>The layout file cannot be read: %1</source>
+        <translation>Die Layoutdatei lässt sich nicht lesen: %1</translation>
+    </message>
+    <message>
+        <source>The layout file holds no variants.</source>
+        <translation>Die Layoutdatei enthält keine Varianten.</translation>
+    </message>
+    <message>
+        <source>The layout has no labels.</source>
+        <translation>Die Vorlage hat keine Etiketten.</translation>
+    </message>
+    <message>
+        <source>The layout has no text field for the marker.</source>
+        <translation>Die Vorlage hat kein Textfeld für das Schild.</translation>
+    </message>
 </context>
 <context>
     <name>ThmPrintDialog</name>
@@ -32305,6 +32444,110 @@ Menge: %n Etiketten</numerusform>
         <source>Sending to %1 ...</source>
         <translation type="unfinished">Sende an %1 …</translation>
     </message>
+    <message>
+        <source>%1 (%2 of %3 variants printable)</source>
+        <translation>%1 (%2 von %3 Varianten druckbar)</translation>
+    </message>
+    <message>
+        <source>Article to load:</source>
+        <translation>Einzulegender Artikel:</translation>
+    </message>
+    <message>
+        <source>Change material</source>
+        <translation>Material wechseln</translation>
+    </message>
+    <message>
+        <source>Change material...</source>
+        <translation>Material wechseln…</translation>
+    </message>
+    <message>
+        <source>Choose the article to load first.</source>
+        <translation>Zuerst den einzulegenden Artikel wählen.</translation>
+    </message>
+    <message>
+        <source>Confirm loading</source>
+        <translation>Rüstung bestätigen</translation>
+    </message>
+    <message>
+        <source>Layout file (*.json);;All files (*)</source>
+        <translation>Layoutdatei (*.json);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <source>Layout file...</source>
+        <translation>Layoutdatei…</translation>
+    </message>
+    <message>
+        <source>Layouts:</source>
+        <translation>Vorlagen:</translation>
+    </message>
+    <message>
+        <source>Load the article chosen on a printer and confirm it</source>
+        <translation>Den gewählten Artikel in einen Drucker einlegen und bestätigen</translation>
+    </message>
+    <message>
+        <source>Loaded now: %1</source>
+        <translation>Jetzt gerüstet: %1</translation>
+    </message>
+    <message>
+        <source>Make it the usual article of this printer</source>
+        <translation>Als üblichen Artikel dieses Druckers übernehmen</translation>
+    </message>
+    <message>
+        <source>No THM printer is set up yet.</source>
+        <translation>Es ist noch kein THM-Drucker eingerichtet.</translation>
+    </message>
+    <message>
+        <source>Profile: %1</source>
+        <translation>Profil: %1</translation>
+    </message>
+    <message>
+        <source>QElectroTech cannot print it yet: %1</source>
+        <translation>QElectroTech kann ihn noch nicht drucken: %1</translation>
+    </message>
+    <message>
+        <source>Ribbon:</source>
+        <translation>Farbband:</translation>
+    </message>
+    <message>
+        <source>Roller:</source>
+        <translation>Walze:</translation>
+    </message>
+    <message>
+        <source>Support:</source>
+        <translation>Trägerplatte:</translation>
+    </message>
+    <message>
+        <source>The article and its roller are loaded</source>
+        <translation>Artikel und Walze sind eingelegt</translation>
+    </message>
+    <message>
+        <source>Usual article: %1</source>
+        <translation>Üblicher Artikel: %1</translation>
+    </message>
+    <message>
+        <source>Usually it carries %1.</source>
+        <translation>Üblich trägt er %1.</translation>
+    </message>
+    <message>
+        <source>Weidmüller layout file</source>
+        <translation>Weidmüller-Layoutdatei</translation>
+    </message>
+    <message>
+        <source>none</source>
+        <translation>keiner</translation>
+    </message>
+    <message>
+        <source>none chosen: the printer&apos;s own profile is used</source>
+        <translation>keine gewählt: es gilt das eigene Profil des Druckers</translation>
+    </message>
+    <message>
+        <source>nothing confirmed</source>
+        <translation>nichts bestätigt</translation>
+    </message>
+    <message>
+        <source>the roller now fitted, as on its label</source>
+        <translation>die jetzt eingebaute Walze, wie auf ihrem Schild</translation>
+    </message>
 </context>
 <context>
     <name>ThmPrinters</name>
@@ -32351,6 +32594,10 @@ Menge: %n Etiketten</numerusform>
     <message>
         <source>%1 printers are loaded with article %2: choose one.</source>
         <translation type="unfinished">%1 Drucker sind mit Artikel %2 gerüstet: einen wählen.</translation>
+    </message>
+    <message>
+        <source>No printer is loaded with article %1. Load it on a printer and confirm it with &quot;Change material...&quot;.</source>
+        <translation>Kein Drucker ist mit Artikel %1 gerüstet. In einen Drucker einlegen und mit „Material wechseln…“ bestätigen.</translation>
     </message>
 </context>
 <context>
@@ -32490,6 +32737,30 @@ Menge: %n Etiketten</numerusform>
     <message>
         <source>Remove the printer &quot;%1&quot;?</source>
         <translation type="unfinished">Den Drucker „%1“ entfernen?</translation>
+    </message>
+    <message>
+        <source>An article found in the layout file is printed with its layout; the profile below is for articles without one. Label sizes, font and heat are those of your material; QElectroTech fills none in. Try a new profile on one label first.</source>
+        <translation>Ein Artikel aus der Layoutdatei wird mit seiner Vorlage gedruckt; das Profil unten gilt für Artikel ohne Vorlage. Etikettenmaße, Schrift und Heizung sind die Ihres Materials; QElectroTech trägt keine ein. Ein neues Profil zuerst an einem Etikett ausprobieren.</translation>
+    </message>
+    <message>
+        <source>Loading confirmed:</source>
+        <translation>Rüstung bestätigt:</translation>
+    </message>
+    <message>
+        <source>Roller:</source>
+        <translation>Walze:</translation>
+    </message>
+    <message>
+        <source>Usual article:</source>
+        <translation>Üblicher Artikel:</translation>
+    </message>
+    <message>
+        <source>e.g. the colour and number of the roller fitted</source>
+        <translation>z. B. Farbe und Nummer der eingebauten Walze</translation>
+    </message>
+    <message>
+        <source>not yet</source>
+        <translation>noch nicht</translation>
     </message>
 </context>
 <context>

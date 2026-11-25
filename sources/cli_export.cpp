@@ -23,6 +23,7 @@
 #include "marking/markingexport.h"
 #include "marking/thmclient.h"
 #include "marking/thmjob.h"
+#include "marking/thmlayouts.h"
 #include "marking/thmprinters.h"
 #include "purchase/purchasefetch.h"
 #include "purchase/purchaselist.h"
@@ -123,6 +124,7 @@ const QHash<QString, QString> &exportFlags()
 		{"--thm-status", "thmstatus"},
 		{"--thm-send", "thmsend"},
 		{"--thm-printers", "thmprinters"},
+		{"--thm-load", "thmload"},
 		{"--export-purchase", "purchase"},
 		{"--fetch-commercial", "fetchcommercial"},
 		{"--export-wiring", "wiring"},
@@ -689,6 +691,10 @@ struct ThmCliOptions
 	bool yes = false;
 	QString printer_id;
 	QString material;
+	QString layouts;                   ///< --layouts: the layout file, else the settings'
+	QString family;                    ///< --family: mmp or multimark
+	bool usual = false;                ///< --usual (--thm-load)
+	QString roller;                    ///< --roller (--thm-load)
 	QHash<QString, QString> profile;   ///< option -> value
 };
 
@@ -743,6 +749,18 @@ int parseThmOptions(const QStringList &rest, ThmCliOptions *o)
 			o->printer_id = value();
 		} else if (a == QLatin1String("--material")) {
 			o->material = value();
+		} else if (a == QLatin1String("--layouts")) {
+			o->layouts = value();
+		} else if (a == QLatin1String("--family")) {
+			o->family = value();
+			if (!ThmJob::familyFromKey(o->family, nullptr)) {
+				err << QCoreApplication::translate("ThmCli", "Unknown --family; expected mmp or multimark.") << "\n";
+				return 2;
+			}
+		} else if (a == QLatin1String("--usual")) {
+			o->usual = true;
+		} else if (a == QLatin1String("--roller")) {
+			o->roller = value();
 		} else if (a == QLatin1String("--rotate")) {
 			o->profile.insert(a, QStringLiteral("1"));
 		} else if (profile_options.contains(a)) {
@@ -810,6 +828,32 @@ bool applyThmProfile(const QHash<QString, QString> &values, ThmJob::Profile *p)
 	return true;
 }
 
+/// The layouts of --layouts, else of the settings (the message written
+/// when the file cannot be read)
+QList<ThmLayouts::Variant> thmLayouts(const ThmCliOptions &o)
+{
+	QString error;
+	if (!o.layouts.isEmpty()) {
+		const QList<ThmLayouts::Variant> l = ThmLayouts::read(o.layouts, &error);
+		if (!error.isEmpty()) err << error << "\n";
+		return l;
+	}
+	const QList<ThmLayouts::Variant> &l = ThmLayouts::settingsLayouts(nullptr, &error);
+	if (!error.isEmpty()) err << error << "\n";
+	return l;
+}
+
+/// The printer as the job sees it: --family turns its model into one of
+/// that family (a printer of nobody's: only the family)
+ThmPrinter thmFamilyPrinter(const ThmPrinter *printer, const ThmCliOptions &o)
+{
+	ThmPrinter p = printer ? *printer : ThmPrinter();
+	ThmJob::Family family = p.family();
+	if (ThmJob::familyFromKey(o.family, &family))
+		p.model = family == ThmJob::Family::MultiMark ? QStringLiteral("THM MultiMark") : QStringLiteral("THM MMP");
+	return p;
+}
+
 /// The labels of a project as the dialog collects them. @return false
 /// when the project cannot be read (the message written)
 bool thmLabels(const QString &path, const ThmCliOptions &o, QList<ThmJob::Label> *labels)
@@ -843,14 +887,35 @@ int exportThmJob(const QStringList &rest)
 		err << "Usage: qelectrotech --thm-prn <project.qet> <output.prn> "
 			   "[--printer ID | --material NO] [--kinds wires,cables,terminals,devices] "
 			   "[--folios N[-M]] [--plant P] [--location L] [--full|--short] [--one-end] "
-			   "[--copies N] [--no-merge] [--width MM --height MM --gap MM --sensor l1|e|l0|l2 "
+			   "[--copies N] [--no-merge] [--layouts FILE] [--family mmp|multimark] "
+			   "[--width MM --height MM --gap MM --sensor l1|e|l0|l2 "
 			   "--columns N --pitch MM --margin MM --text-size MM --font N --baseline MM "
 			   "--speed MM_S --heat N --rotate]\n";
 		return 2;
 	}
 	const QList<ThmPrinter> printers = ThmPrinters::load();
+	const QList<ThmLayouts::Variant> layouts = thmLayouts(o);
 	ThmJob::Profile profile;
-	if (!o.printer_id.isEmpty() || !o.material.isEmpty()) {
+		//An article the layout file knows: its layout, for the printer
+		//named (its family) or for --family; no printer needs to carry it
+	const ThmPrinter *named = nullptr;
+	if (!o.printer_id.isEmpty()) {
+		const int i = thmPrinterFor(printers, o, true);
+		if (i < 0) return 2;
+		named = &printers.at(i);
+	}
+	const QString article = !o.material.isEmpty() ? o.material : (named ? named->material_no : QString());
+	if (!article.isEmpty() && ThmLayouts::best(layouts, article) >= 0) {
+		const ThmPrinter family_printer = thmFamilyPrinter(named, o);
+		QString source, error;
+		if (!ThmLayouts::jobProfile(layouts, article, &family_printer, &profile, &source, &error)) {
+			err << error << "\n";
+			return 1;
+		}
+		out << QCoreApplication::translate("ThmCli", "Profile: %1").arg(source) << "\n";
+	} else if (named) {
+		profile = named->profile;
+	} else if (!o.material.isEmpty()) {
 		const int i = thmPrinterFor(printers, o, true);
 		if (i < 0) return 2;
 		profile = printers.at(i).profile;
@@ -966,11 +1031,28 @@ int thmSend(const QStringList &rest)
 	if (index < 0) return 2;
 	ThmPrinter printer = printers.at(index);
 	QString error;
-	if (!applyThmProfile(o.profile, &printer.profile)) return 2;
-	if (!ThmPrinters::validate(printer, &error)) {
+		//Only what the printer is loaded with goes to it
+	if (!o.material.isEmpty() && ThmPrinters::normalizedMaterial(o.material)
+			!= ThmPrinters::normalizedMaterial(printer.material_no)) {
+		err << QCoreApplication::translate("ThmCli", "\"%1\" is loaded with %2, not %3. Confirm the change first: "
+					   "--thm-load %4 %3").arg(printer.name, printer.material_no, o.material, printer.id) << "\n";
+		return 2;
+	}
+	if (!ThmPrinters::validate(printer, &error, false)) {
 		err << error << "\n";
 		return 2;
 	}
+	if (!o.positional.at(0).endsWith(QLatin1String(".prn"), Qt::CaseInsensitive)) {
+		const ThmPrinter family_printer = thmFamilyPrinter(&printer, o);
+		QString source;
+		if (!ThmLayouts::jobProfile(thmLayouts(o), printer.material_no, &family_printer,
+									&printer.profile, &source, &error)) {
+			err << error << "\n";
+			return 2;
+		}
+		out << QCoreApplication::translate("ThmCli", "Profile: %1").arg(source) << "\n";
+	}
+	if (!applyThmProfile(o.profile, &printer.profile)) return 2;
 	const QString input = o.positional.at(0);
 	QByteArray job;
 	QString quantity;
@@ -1039,6 +1121,11 @@ int thmPrinters(bool json)
 			o.insert("port", int(p.port));
 			o.insert("material_no", p.material_no);
 			o.insert("material_name", p.material_name);
+			o.insert("loaded_at", p.loaded_at.isValid() ? p.loaded_at.toString(Qt::ISODate) : QString());
+			o.insert("usual_material_no", p.usual_material_no);
+			o.insert("usual_material_name", p.usual_material_name);
+			o.insert("roller", p.roller);
+			o.insert("family", ThmJob::familyKey(p.family()));
 			o.insert("width", p.profile.width);
 			o.insert("height", p.profile.height);
 			o.insert("gap", p.profile.gap);
@@ -1053,8 +1140,48 @@ int thmPrinters(bool json)
 	for (const ThmPrinter &p : printers) {
 		out << p.id << "\t" << p.name << "\t" << p.host << ":" << p.port << "\t"
 			<< p.material_no << "\t" << ThmJob::number(p.profile.width) << " x "
-			<< ThmJob::number(p.profile.height) << " mm\n";
+			<< ThmJob::number(p.profile.height) << " mm";
+		if (ThmPrinters::changedFromUsual(p))
+			out << "\t" << QCoreApplication::translate("ThmCli", "usually %1").arg(p.usual_material_no);
+		out << "\n";
 	}
+	return 0;
+}
+
+/// --thm-load: the user has loaded another article (and roller) on a
+/// printer and confirms it; with --usual it becomes the usual one too
+int thmLoad(const QStringList &rest)
+{
+	installThmTranslator();
+	ThmCliOptions o;
+	if (const int code = parseThmOptions(rest, &o)) return code;
+	if (o.positional.size() < 2) {
+		err << "Usage: qelectrotech --thm-load <printer ID> <article> [--usual] [--roller TEXT] [--layouts FILE]\n";
+		return 2;
+	}
+	QList<ThmPrinter> printers = ThmPrinters::load();
+	const int index = ThmPrinters::indexOf(printers, o.positional.at(0));
+	if (index < 0) {
+		err << QCoreApplication::translate("ThmCli", "No THM printer with the ID \"%1\" is set up (see --thm-printers).").arg(o.positional.at(0)) << "\n";
+		return 2;
+	}
+	const QString article = o.positional.at(1).trimmed();
+	const QList<ThmLayouts::Variant> layouts = thmLayouts(o);
+	const int v = ThmLayouts::best(layouts, article);
+	const QString name = v >= 0 ? layouts.at(v).name : QString();
+	ThmPrinter &p = printers[index];
+	ThmPrinters::confirmLoading(&p, article, name, QDateTime::currentDateTime(), o.usual);
+	if (!o.roller.isEmpty()) p.roller = o.roller;
+	ThmPrinters::save(printers);
+	out << QCoreApplication::translate("ThmCli", "%1 is now loaded with %2.").arg(p.name, name.isEmpty() ? article : article + QStringLiteral(" – ") + name) << "\n";
+	if (v >= 0) {
+		const ThmLayouts::Variant &var = layouts.at(v);
+		if (!var.ribbon.isEmpty()) out << QCoreApplication::translate("ThmCli", "Ribbon: %1").arg(var.ribbon) << "\n";
+		if (!var.refusal.isEmpty()) out << QCoreApplication::translate("ThmCli", "Cannot be printed yet: %1").arg(var.refusal) << "\n";
+	}
+	if (!p.roller.isEmpty()) out << QCoreApplication::translate("ThmCli", "Roller: %1").arg(p.roller) << "\n";
+	if (ThmPrinters::changedFromUsual(p))
+		out << QCoreApplication::translate("ThmCli", "Usual article: %1").arg(p.usual_material_no) << "\n";
 	return 0;
 }
 
@@ -2991,6 +3118,8 @@ int run(const QStringList &args)
 		return thmSend(rest);
 	if (format == "thmprinters")
 		return thmPrinters(json);
+	if (format == "thmload")
+		return thmLoad(rest);
 
 	const QString input = rest.value(0);
 	if (input.isEmpty()) {

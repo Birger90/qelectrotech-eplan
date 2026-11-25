@@ -273,12 +273,58 @@ var m = qet.exportThmJob("C:/temp/test.prn", '{"profile": {"width": 12, "height"
 
 Ohne Drucker geprüft sind die Bytes des Auftrags, die Auswertung der Antworten (`Y-000000Y`, `Y0037`, Fehlerantworten) und die Zielwahl, mit einem lokalen `QTcpServer` als Gegenstelle (`tests/qttest/tst_thmprint.cpp`).
 
-### Am echten Gerät belegt (THM MMP, Firmware 4.29)
+### Am echten Gerät belegt (THM MMP und THM MultiMark)
 
-Über die Weboberfläche des Druckers (`/cgi-bin/get?cmd=1` und `cmd=9`) ausgelesen; QET prüft diese Grenzen vor dem Senden:
+Über die Weboberfläche der Drucker (`/cgi-bin/get?cmd=1` und `cmd=9`) ausgelesen; QET prüft diese Grenzen vor dem Senden, je nach Gerätefamilie (aus dem Modell des Druckers, sonst die strengeren des MMP):
 
-- Heizkorrektur −10 bis +20 (das cab-Handbuch nennt −20 bis +20).
-- Geschwindigkeit nur in Stufen: 30, 40, 50, 75, 100, 125 mm/s.
-- Druckkopf 105,7 mm breit bei 11,8 Punkt/mm; breitere Etiketten (alle Spalten zusammen) weist QET ab.
+| | THM MMP, Firmware 4.29 | THM MultiMark, Firmware 5.36 |
+|---|---|---|
+| Heizkorrektur | −10 bis +20 | −20 bis +20 |
+| Geschwindigkeit | 30, 40, 50, 75, 100, 125 mm/s | 30, 40, 50, 75, 100, 125, 150 mm/s |
+| Druckkopf | 105,7 mm bei 11,8 Punkt/mm | 106 mm bei 12 Punkt/mm |
 
-Ob ein THM MultiMark (Firmware 5.36) dieselben Grenzen hat, ist nicht geprüft.
+Breitere Etiketten (die ganze Reihe, `wd` des `S`-Befehls) weist QET ab. Auf `v`, `ESC s` und `ESC l` antworteten ein MMP (`4.29 Jan 03, 2017 (THM MMP)`, `Y-000000N`/`Y-000000Y`, `Y0037`) und ein MultiMark (`5.36 Feb 23, 2021 (THM MultiMark)`, `Y-000000Y`, `Y0023`) wie beschrieben. Drei weitere MultiMark nahmen die TCP-Verbindung an, antworteten aber nicht (vermutlich hielt eine andere Verbindung den RawIP-Port); QET meldet das als „keine Antwort“. Ein Druckbild ist noch nicht geprüft.
+
+## Layoutdatei (Druckprofil je Artikel aus M-Print PRO)
+
+Statt das Druckprofil von Hand einzutragen, kann QET es aus einer **Layoutdatei** nehmen, die der Nutzer im Dialog unter *Layoutdatei…* (oder mit `--layouts`) wählt. Diese JSON-Datei entsteht außerhalb von QElectroTech aus einer eigenen M-Print-PRO-Installation; sie gehört nicht zum Fork, QET liefert keine mit und entschlüsselt nichts. Gelesen werden nur diese Schlüssel:
+
+- `layouts.<Datei>.page.width_um`, `height_um`; `pitched_strip`; `support_plate`; `markers[]` (`x_um`, `y_um`, `width_um`, `height_um`); das Feld `fields[]` mit dem Namen `MARKER` (Groß-/Kleinschreibung egal): `properties.xstart/ystart/xend/yend.value` (µm, relativ zum Marker), `orientation.value`, `font.height` (Punkt); `layout_rules_raw`/`page_rules_raw` nur auf `multi_rows`.
+- `variants[]`: `article`, `name`, `category`, `layout`, `printer_parameters_raw` mit `sensor_type(_muma)`, `print_mode`, `print_position_mmp` (µm), `print_speed_muma`, `print_speed_muma_plus`, `print_darkness_muma_plus`, `rotate_180_degrees`, `cut_mode`, `ribbon_muma_plus`.
+
+Daraus wird das Profil so gebildet, wie M-Print PRO seine THM-Aufträge schreibt (abgeglichen mit vier M-Print-Dateiausgaben, siehe unten):
+
+| Auftrag | aus der Layoutdatei |
+|---|---|
+| `zO` | immer (Null ohne Schrägstrich, wie M-Print) |
+| `H v,h,T` | v = `print_speed_muma` (MultiMark) bzw. `print_speed_muma_plus` (MMP), h = `print_darkness_muma_plus`; bei `print_mode = tear_off` zusätzlich `,B30` |
+| `S l1;0,yo,ho,dy,wd` | `sensor_type = gap` → `l1`; yo = `print_position_mmp`; ho = dy = Seitenhöhe (Etikett und Lücke zusammen); wd = Seitenbreite |
+| `O …` | `tear_off` → `O T,P`, sonst `O P`; `rotate_180_degrees = on` zusätzlich `R` |
+| `T x,y,r,…` | je Marker ein Feld: x = Marker-x + Feld-xstart, Breite = Feld-Breite, senkrecht in der Feldmitte; r = `orientation` (bei 90° beginnt der Text unten im Feld und läuft nach oben); Größe = Schrifthöhe in Punkt als mm (× 25,4/72), höchstens 90 % der Feldhöhe quer zum Text |
+
+- `pitched_strip = true` (Streifen wie DEK): Breite und Höhe der Seite sind getauscht, wie in M-Prints eigener Ausgabe (`S l1;0,0,2.8,2.8,4.5` bei einer 2,8 × 4,5-mm-Seite).
+- **Abgelehnt** mit Begründung statt falsch gedruckt: Endlosmaterial (`sensor_type = continuous`, Layoutregel `multi_rows`, 46 Vorlagen mit 194 Varianten), Schneiden (`cut_mode = on`), Seiten breiter als der Druckkopf, Marker nicht in einer gleichmäßigen Reihe, Streifen mit mehreren Markern nebeneinander, Vorlagen ohne Textfeld `MARKER`.
+- Hat ein Artikel mehrere Varianten (z. B. ein- und zweiseitig), nimmt QET die erste druckbare; mit `Nummer/Vorlage.mcf` lässt sich eine bestimmte wählen.
+- Kennt die Layoutdatei den Artikel nicht, gilt wie bisher das eigene Profil des Druckers. Einen abgelehnten Artikel druckt QET auch nicht mit dem eigenen Profil.
+- Was M-Print anders macht: es setzt den Text als Bild (`I:Field1` mit PNG), QET schreibt `T`-Felder mit der Druckerschrift 3 (Swiss 721). Lage, Drehung und Raster folgen der Vorlage; das Schriftbild unterscheidet sich. M-Print schreibt `mm` und `O` vor `S`, QET `m m` und `O` nach `S` (cab-Handbuch S. 53 und 212). Die Lage gedrehter Texte (90°/270°) ist aus dem Handbuch abgeleitet und am Gerät noch zu prüfen.
+- Der Test `tests/qttest/tst_thmlayouts.cpp` nutzt die erfundene Datei `tests/qttest/fixtures/thm_layouts_example.json` (Artikelnummern 99000000xx), keine Herstellerdaten.
+
+## Mehrere Drucker, übliche und aktuelle Rüstung
+
+Jeder Drucker hat getrennt:
+
+- die **übliche Rüstung** (Artikel, den er normalerweise trägt, und die Walze dazu) als Voreinstellung,
+- die **aktuelle Rüstung**: den zuletzt bestätigten Artikel mit Zeitpunkt.
+
+Das Ziel eines Auftrags wählt QET nach der aktuellen Rüstung. Trägt ein Drucker gerade etwas anderes als üblich, sagt der Dialog das. Gespeichert in den Einstellungen unter `thm_print/printers` (`materialNo`, `loadedAt`, `usualMaterialNo`, `roller`).
+
+**Material wechseln…** im Druckdialog: zeigt den benötigten Artikel, das Farbband und die Trägerplatte laut Layoutdatei, den Drucker mit seiner aktuellen und üblichen Rüstung und ein Feld für die Walze. Erst wenn „Artikel und Walze sind eingelegt“ angehakt ist, lässt sich der Wechsel bestätigen; QET übernimmt ihn als aktuelle Rüstung (optional auch als übliche) und kann den Auftrag dann senden. Der Rückwechsel geht genauso. Die Walze zum Artikel steht nicht in der Layoutdatei; sie wird am Drucker notiert. Ein gemessener Etikettenabstand (`ESC l`) passt zur Rüstung oder nicht, er bestätigt aber keine Artikelnummer.
+
+Kommandozeile:
+
+```
+qelectrotech --thm-load thm1 2005610000 [--usual] [--roller "grün 115"] [--layouts datei.json]
+qelectrotech --thm-prn anlage.qet tm-i.prn --material 2005610000 --layouts datei.json --family multimark
+```
+
+`--thm-send` sendet nur an einen Drucker, dessen aktuelle Rüstung zum gewählten Artikel passt; sonst nennt es den nötigen `--thm-load`-Aufruf.

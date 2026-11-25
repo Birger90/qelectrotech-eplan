@@ -38,6 +38,7 @@
 #include "../bomexport.h"
 #include "../marking/markingexport.h"
 #include "../marking/thmjob.h"
+#include "../marking/thmlayouts.h"
 #include "../marking/thmprinters.h"
 #include "../purchase/purchasefetch.h"
 #include "../purchase/purchaselist.h"
@@ -1069,7 +1070,9 @@ QString QetScriptApi::markings(const QString &optionsJson) const
 	(docs/beschriftung-export.md). Nothing is sent to a printer.
 	@param optionsJson the choices of markingOptions() (kinds default to
 	"wires" here), and "printer" (ID) or "material" (article loaded) for
-	the profile of a printer set up, "copies", "merge", and "profile":
+	the profile of a printer set up, "layouts" (layout file; else the one
+	of the settings: an article found there is printed with its layout),
+	"family" ("mmp", "multimark"), "copies", "merge", and "profile":
 	{"width", "height", "gap", "sensor", "columns", "pitch", "marginLeft",
 	 "marginRight", "textSize", "font", "baseline", "rotate"} over it
 	@return the number of labels, -1 when nothing was written
@@ -1092,7 +1095,31 @@ int QetScriptApi::exportThmJob(const QString &output, const QString &optionsJson
 	const QList<ThmPrinter> printers = ThmPrinters::load();
 	const QString id = j.value(QLatin1String("printer")).toString();
 	const QString material = j.value(QLatin1String("material")).toString();
-	if (!id.isEmpty()) {
+		//An article the layout file knows ("layouts", else the one of the
+		//settings) is printed with its layout, for the printer's family
+		//or "family"
+	const QString layouts_file = j.value(QLatin1String("layouts")).toString();
+	QList<ThmLayouts::Variant> layouts;
+	if (!layouts_file.isEmpty()) layouts = ThmLayouts::read(layouts_file, &error);
+	else layouts = ThmLayouts::settingsLayouts(nullptr, &error);
+	if (!error.isEmpty()) {
+		log(QStringLiteral("qet.exportThmJob: %1").arg(error));
+		return -1;
+	}
+	const int named = id.isEmpty() ? -1 : ThmPrinters::indexOf(printers, id);
+	const QString article = !material.isEmpty() ? material
+						  : (named >= 0 ? printers.at(named).material_no : QString());
+	if (!article.isEmpty() && ThmLayouts::best(layouts, article) >= 0) {
+		ThmPrinter family_printer = named >= 0 ? printers.at(named) : ThmPrinter();
+		ThmJob::Family family = family_printer.family();
+		if (ThmJob::familyFromKey(j.value(QLatin1String("family")).toString(), &family))
+			family_printer.model = family == ThmJob::Family::MultiMark ? QStringLiteral("THM MultiMark")
+																		: QStringLiteral("THM MMP");
+		if (!ThmLayouts::jobProfile(layouts, article, &family_printer, &profile, nullptr, &error)) {
+			log(QStringLiteral("qet.exportThmJob: %1").arg(error));
+			return -1;
+		}
+	} else if (!id.isEmpty()) {
 		const int i = ThmPrinters::indexOf(printers, id);
 		if (i < 0) {
 			log(QStringLiteral("qet.exportThmJob: no THM printer with the ID '%1'").arg(id));

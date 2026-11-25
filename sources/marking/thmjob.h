@@ -23,6 +23,7 @@
 #include <QByteArray>
 #include <QList>
 #include <QString>
+#include <QStringList>
 
 /**
 	@brief Print jobs and replies of the thermal transfer printers of the
@@ -51,6 +52,18 @@ namespace ThmJob
 		ReflectBottom   ///< "l2": reflective mark on the lower side
 	};
 
+		/// The two THM printer families seen in use. They differ in what
+		/// the setup menu of the device accepts (web interface cmd=1 and
+		/// cmd=9 read on the devices themselves):
+		/// THM MMP, firmware 4.29: speeds 30-125 mm/s, heat -10 ... +20,
+		/// print head 105.7 mm;
+		/// THM MultiMark, firmware 5.36: speeds 30-150 mm/s, heat -20 ...
+		/// +20, print head 106 mm.
+	enum class Family {
+		Mmp,        ///< THM MMP; also the stricter limits when unknown
+		MultiMark   ///< THM MultiMark
+	};
+
 		/// The material a printer is loaded with and how to print on it.
 		/// Lengths in millimetres. No default is a value of any real
 		/// material: width and height 0 make validate() fail until the
@@ -75,6 +88,27 @@ namespace ThmJob
 		int heat = 0;            ///< H: heat correction, kHeatMin ... kHeatMax
 		bool transfer = true;    ///< H: T thermal transfer, else D direct
 		bool rotate = false;     ///< O R: contents turned by 180 degrees
+			/// The device family whose limits validate() applies
+		Family family = Family::Mmp;
+			/// wd of the S command, the whole width of a row as the maker's
+			/// layout gives it; 0: the columns' width (totalWidth())
+		double page_width = 0;
+			/// Where the first column starts, from the left of the row
+		double first_x = 0;
+			/// The text field inside a label in the transport direction:
+			/// from field_top to field_bottom (0: the label's height); the
+			/// text is centred in it
+		double field_top = 0;
+		double field_bottom = 0;
+			/// r of the T command: 0, 90, 180 or 270 degrees
+		int text_rotation = 0;
+			/// Further options of the O command besides R, as the maker's
+			/// software writes them (e.g. T, P)
+		QStringList print_options;
+			/// Written after "H speed,heat,T", e.g. "B30"
+		QString heat_options;
+			/// zO: a zero without slash, as the maker's software writes it
+		bool plain_zero = false;
 	};
 
 		/// One text and how many labels of it
@@ -91,10 +125,23 @@ namespace ThmJob
 	constexpr int kHeatMax = 20;
 	constexpr double kPrintWidthMm = 105.7;
 	constexpr double kDotsPerMm = 11.8;
-		/// 30, 40, 50, 75, 100, 125 mm/s
+		/// 30, 40, 50, 75, 100, 125 mm/s (THM MMP)
 	QList<int> speedSteps();
+		/// The speeds, heat range and print head width of a family
+	QList<int> speedSteps(Family family);
+	int heatMin(Family family);
+	int heatMax(Family family);
+	double printWidth(Family family);
+		/// "mmp", "multimark"
+	QString familyKey(Family family);
+	bool familyFromKey(const QString &key, Family *family);
+		/// From what a printer calls itself ("4.29 ... (THM MMP)",
+		/// "THM MultiMark"); MMP when it says neither
+	Family familyFromModel(const QString &model);
 		/// all columns side by side: (columns - 1) * pitch + width
 	double totalWidth(const Profile &profile);
+		/// wd of the S command: page_width, else first_x + totalWidth()
+	double rowWidth(const Profile &profile);
 
 	bool validate(const Profile &profile, QString *error = nullptr);
 

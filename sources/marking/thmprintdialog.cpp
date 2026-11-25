@@ -35,6 +35,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QLocale>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QSaveFile>
@@ -153,6 +154,14 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	catalog_row->addWidget(m_catalog_label, 1);
 	catalog_row->addWidget(catalog_button);
 	target_form->addRow(tr("Catalog:"), catalog_row);
+	auto *layouts_row = new QHBoxLayout;
+	m_layouts_label = new QLabel(target);
+	m_layouts_label->setWordWrap(true);
+	m_layouts_label->setObjectName(QStringLiteral("thm_layouts"));
+	auto *layouts_button = new QPushButton(tr("Layout file..."), target);
+	layouts_row->addWidget(m_layouts_label, 1);
+	layouts_row->addWidget(layouts_button);
+	target_form->addRow(tr("Layouts:"), layouts_row);
 	m_printer = new QComboBox(target);
 	m_printer->setObjectName(QStringLiteral("thm_printer"));
 	target_form->addRow(tr("Printer:"), m_printer);
@@ -160,8 +169,19 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	m_target_message->setWordWrap(true);
 	m_target_message->setObjectName(QStringLiteral("thm_target_message"));
 	target_layout->addWidget(m_target_message);
+	m_profile_source = new QLabel(target);
+	m_profile_source->setWordWrap(true);
+	m_profile_source->setObjectName(QStringLiteral("thm_profile_source"));
+	target_layout->addWidget(m_profile_source);
+	auto *target_buttons = new QHBoxLayout;
 	auto *printers_button = new QPushButton(tr("Printers..."), target);
-	target_layout->addWidget(printers_button, 0, Qt::AlignLeft);
+	auto *change_button = new QPushButton(tr("Change material..."), target);
+	change_button->setObjectName(QStringLiteral("thm_change_material"));
+	change_button->setToolTip(tr("Load the article chosen on a printer and confirm it"));
+	target_buttons->addWidget(printers_button);
+	target_buttons->addWidget(change_button);
+	target_buttons->addStretch();
+	target_layout->addLayout(target_buttons);
 
 	auto *device = new QGroupBox(tr("Printer state"), target);
 	auto *device_layout = new QVBoxLayout(device);
@@ -199,6 +219,8 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	connect(m_save, &QPushButton::clicked, this, &ThmPrintDialog::saveJob);
 	connect(catalog_button, &QPushButton::clicked, this, &ThmPrintDialog::chooseCatalog);
 	connect(printers_button, &QPushButton::clicked, this, &ThmPrintDialog::managePrinters);
+	connect(change_button, &QPushButton::clicked, this, &ThmPrintDialog::changeMaterial);
+	connect(layouts_button, &QPushButton::clicked, this, &ThmPrintDialog::chooseLayouts);
 	connect(status_button, &QPushButton::clicked, this, [this]() {
 		query({ThmClient::Request::Version, ThmClient::Request::Status});
 	});
@@ -219,11 +241,13 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	connect(m_printer, &QComboBox::currentIndexChanged, this, [this]() {
 		m_material = ThmJob::Material();
 		m_device_state->clear();
+		updateTarget();
 	});
 
 	const QString article = settings.value("article").toString();
 	settings.endGroup();
 	loadCatalog();
+	loadLayouts();
 	fillArticles();
 	if (!article.isEmpty()) m_article->setCurrentText(article);
 	updatePreview();
@@ -285,6 +309,138 @@ void ThmPrintDialog::chooseCatalog()
 	m_article->setCurrentText(article);
 }
 
+void ThmPrintDialog::loadLayouts()
+{
+	QSettings settings;
+	const QString path = ThmPrinters::layoutsFile(settings);
+	m_layouts.clear();
+	m_layouts_error.clear();
+	if (path.isEmpty()) {
+		m_layouts_label->setText(tr("none chosen: the printer's own profile is used"));
+		return;
+	}
+	m_layouts = ThmLayouts::read(path, &m_layouts_error);
+	int printable = 0;
+	for (const ThmLayouts::Variant &v : m_layouts) printable += v.refusal.isEmpty();
+	m_layouts_label->setText(m_layouts_error.isEmpty()
+							 ? tr("%1 (%2 of %3 variants printable)").arg(QFileInfo(path).fileName())
+							   .arg(printable).arg(m_layouts.size())
+							 : m_layouts_error);
+}
+
+void ThmPrintDialog::chooseLayouts()
+{
+	QSettings settings;
+	const QString current = ThmPrinters::layoutsFile(settings);
+	const QString path = QFileDialog::getOpenFileName(
+		this, tr("Weidmüller layout file"),
+		current.isEmpty() ? QDir::homePath() : QFileInfo(current).absolutePath(),
+		tr("Layout file (*.json);;All files (*)"));
+	if (path.isEmpty()) return;
+	ThmPrinters::setLayoutsFile(settings, path);
+	const QString article = m_article->currentText();
+	loadLayouts();
+	fillArticles();
+	m_article->setCurrentText(article);
+	updateTarget();
+}
+
+bool ThmPrintDialog::jobProfile(const ThmPrinter *printer, ThmJob::Profile *profile,
+								QString *source, QString *error) const
+{
+	const QString article = currentArticle();
+	return ThmLayouts::jobProfile(m_layouts, article.isEmpty() && printer ? printer->material_no : article,
+								  printer, profile, source, error);
+}
+
+void ThmPrintDialog::changeMaterial()
+{
+	const QString article = currentArticle();
+	if (article.isEmpty()) {
+		QMessageBox::information(this, tr("Change material"), tr("Choose the article to load first."));
+		return;
+	}
+	if (m_printers.isEmpty()) {
+		QMessageBox::information(this, tr("Change material"), tr("No THM printer is set up yet."));
+		return;
+	}
+	const int v = ThmLayouts::best(m_layouts, article);
+	const ThmLayouts::Variant *variant = v >= 0 ? &m_layouts.at(v) : nullptr;
+	QString name = variant ? variant->name : QString();
+	for (const ThmCatalog::Variant &c : m_catalog) {
+		if (name.isEmpty() && ThmPrinters::normalizedMaterial(c.material_no) == ThmPrinters::normalizedMaterial(article))
+			name = c.name;
+	}
+
+	QDialog dialog(this);
+	dialog.setWindowTitle(tr("Change material"));
+	auto *layout = new QVBoxLayout(&dialog);
+	auto *form = new QFormLayout;
+	layout->addLayout(form);
+	form->addRow(tr("Article to load:"), new QLabel(name.isEmpty() ? article : article + QStringLiteral(" – ") + name, &dialog));
+	if (variant) {
+		if (!variant->ribbon.isEmpty()) form->addRow(tr("Ribbon:"), new QLabel(variant->ribbon, &dialog));
+		if (!variant->support_plate.isEmpty()) form->addRow(tr("Support:"), new QLabel(variant->support_plate, &dialog));
+		if (!variant->refusal.isEmpty()) {
+			auto *warning = new QLabel(tr("QElectroTech cannot print it yet: %1").arg(variant->refusal), &dialog);
+			warning->setWordWrap(true);
+			form->addRow(warning);
+		}
+	}
+	auto *printer = new QComboBox(&dialog);
+	printer->setObjectName(QStringLiteral("thm_change_printer"));
+	for (const ThmPrinter &p : m_printers) printer->addItem(p.name, p.id);
+	const int chosen = printer->findData(m_printer->currentData());
+	if (chosen >= 0) printer->setCurrentIndex(chosen);
+	form->addRow(tr("Printer:"), printer);
+	auto *state = new QLabel(&dialog);
+	state->setWordWrap(true);
+	form->addRow(state);
+	auto *roller = new QLineEdit(&dialog);
+	roller->setPlaceholderText(tr("the roller now fitted, as on its label"));
+	form->addRow(tr("Roller:"), roller);
+	auto *loaded = new QCheckBox(tr("The article and its roller are loaded"), &dialog);
+	loaded->setObjectName(QStringLiteral("thm_change_loaded"));
+	auto *usual = new QCheckBox(tr("Make it the usual article of this printer"), &dialog);
+	usual->setObjectName(QStringLiteral("thm_change_usual"));
+	layout->addWidget(loaded);
+	layout->addWidget(usual);
+	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+	layout->addWidget(buttons);
+	QPushButton *ok = buttons->button(QDialogButtonBox::Ok);
+	ok->setText(tr("Confirm loading"));
+	ok->setEnabled(false);
+	connect(loaded, &QCheckBox::toggled, ok, &QPushButton::setEnabled);
+	connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+	connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+	const auto show = [&]() {
+		const int i = ThmPrinters::indexOf(m_printers, printer->currentData().toString());
+		if (i < 0) return;
+		const ThmPrinter &p = m_printers.at(i);
+		QString text = tr("Loaded now: %1").arg(p.material_no.isEmpty() ? tr("nothing confirmed") : p.material_no);
+		if (p.loaded_at.isValid())
+			text += QStringLiteral(" (") + QLocale().toString(p.loaded_at, QLocale::ShortFormat) + QLatin1Char(')');
+		text += QStringLiteral("\n") + tr("Usual article: %1").arg(p.usual_material_no.isEmpty() ? tr("none") : p.usual_material_no);
+		state->setText(text);
+		roller->setText(p.roller);
+	};
+	connect(printer, &QComboBox::currentIndexChanged, &dialog, show);
+	show();
+	if (dialog.exec() != QDialog::Accepted) return;
+
+	const int i = ThmPrinters::indexOf(m_printers, printer->currentData().toString());
+	if (i < 0) return;
+	ThmPrinters::confirmLoading(&m_printers[i], article, name, QDateTime::currentDateTime(), usual->isChecked());
+	m_printers[i].roller = roller->text().trimmed();
+	ThmPrinters::save(m_printers);
+	const QString text = m_article->currentText();
+	fillArticles();
+	m_article->setCurrentText(text);
+	updateTarget();
+	const int keep = m_printer->findData(m_printers.at(i).id);
+	if (keep >= 0) m_printer->setCurrentIndex(keep);
+}
+
 void ThmPrintDialog::fillArticles()
 {
 	const QSignalBlocker blocker(m_article);
@@ -303,6 +459,12 @@ void ThmPrintDialog::fillArticles()
 		seen << ThmPrinters::normalizedMaterial(v.material_no);
 		m_article->addItem(ThmCatalog::title(v), v.material_no);
 		m_article->setItemData(m_article->count() - 1, v.description, Qt::ToolTipRole);
+	}
+	for (const ThmLayouts::Variant &v : m_layouts) {
+		if (seen.contains(ThmPrinters::normalizedMaterial(v.article))) continue;
+		seen << ThmPrinters::normalizedMaterial(v.article);
+		m_article->addItem(ThmLayouts::title(v), v.article);
+		if (!v.refusal.isEmpty()) m_article->setItemData(m_article->count() - 1, v.refusal, Qt::ToolTipRole);
 	}
 	m_article->setCurrentText(text);
 }
@@ -337,6 +499,11 @@ static QString articleNumber(const QComboBox *combo)
 	return combo->currentText().trimmed();
 }
 
+QString ThmPrintDialog::currentArticle() const
+{
+	return articleNumber(m_article);
+}
+
 void ThmPrintDialog::updateTarget()
 {
 	const QString material = articleNumber(m_article);
@@ -357,7 +524,19 @@ void ThmPrintDialog::updateTarget()
 		}
 	}
 	m_printer->setEnabled(!choice.matches.isEmpty());
-	m_target_message->setText(choice.message);
+	QString message = choice.message;
+	if (const ThmPrinter *p = currentPrinter()) {
+		if (ThmPrinters::changedFromUsual(*p))
+			message += QStringLiteral(" ") + tr("Usually it carries %1.").arg(p->usual_material_no);
+	}
+	m_target_message->setText(message);
+	{
+		QString source, error;
+		const ThmPrinter *p = currentPrinter();
+		if (material.isEmpty()) m_profile_source->clear();
+		else if (jobProfile(p, nullptr, &source, &error)) m_profile_source->setText(tr("Profile: %1").arg(source));
+		else m_profile_source->setText(error);
+	}
 	m_material = ThmJob::Material();
 	m_device_state->clear();
 	updatePreview();
@@ -372,7 +551,7 @@ const ThmPrinter *ThmPrintDialog::currentPrinter() const
 
 void ThmPrintDialog::managePrinters()
 {
-	ThmPrintersDialog dialog(m_printers, m_catalog, this);
+	ThmPrintersDialog dialog(m_printers, m_catalog, this, m_layouts);
 	if (dialog.exec() != QDialog::Accepted) return;
 	m_printers = dialog.printers();
 	ThmPrinters::save(m_printers);
@@ -417,9 +596,10 @@ void ThmPrintDialog::onReply(const ThmClient::Reply &reply)
 				m_material = ThmJob::parseMaterial(reply.data);
 				m_material_printer = p ? p->id : QString();
 				line = tr("Material: %1").arg(ThmJob::materialText(m_material));
-				if (p) {
-					const ThmJob::Fit fit = ThmJob::materialFit(m_material, p->profile);
-					const double pitch = p->profile.height + p->profile.gap;
+				ThmJob::Profile profile;
+				if (p && jobProfile(p, &profile)) {
+					const ThmJob::Fit fit = ThmJob::materialFit(m_material, profile);
+					const double pitch = profile.height + profile.gap;
 					if (fit == ThmJob::Fit::Fits)
 						line += QStringLiteral(" – ") + tr("fits the profile (%1 mm)").arg(ThmJob::number(pitch));
 					else if (fit == ThmJob::Fit::Differs)
@@ -466,7 +646,12 @@ void ThmPrintDialog::saveJob()
 	const ThmPrinter *p = currentPrinter();
 	if (!p) return;
 	QString error;
-	const QByteArray job = ThmJob::build(labels(), p->profile, &error);
+	ThmJob::Profile profile;
+	if (!jobProfile(p, &profile, nullptr, &error)) {
+		QMessageBox::warning(this, tr("Print THM labels"), error);
+		return;
+	}
+	const QByteArray job = ThmJob::build(labels(), profile, &error);
 	if (job.isEmpty()) {
 		QMessageBox::warning(this, tr("Print THM labels"), error);
 		return;
@@ -497,12 +682,13 @@ void ThmPrintDialog::print()
 	const ThmPrinter *p = currentPrinter();
 	const QList<ThmJob::Label> list = labels();
 	if (!p || list.isEmpty()) return;
-	QString error;
-	if (!ThmPrinters::validate(*p, &error)) {
+	QString error, source;
+	ThmJob::Profile profile;
+	if (!ThmPrinters::validate(*p, &error, false) || !jobProfile(p, &profile, &source, &error)) {
 		QMessageBox::warning(this, tr("Print THM labels"), error);
 		return;
 	}
-	const QByteArray job = ThmJob::build(list, p->profile, &error);
+	const QByteArray job = ThmJob::build(list, profile, &error);
 	if (job.isEmpty()) {
 		QMessageBox::warning(this, tr("Print THM labels"), error);
 		return;
@@ -512,7 +698,7 @@ void ThmPrintDialog::print()
 	QString material_line;
 	if (m_material.valid && m_material_printer == p->id) {
 		material_line = tr("Material reported: %1").arg(ThmJob::materialText(m_material));
-		if (ThmJob::materialFit(m_material, p->profile) == ThmJob::Fit::Differs)
+		if (ThmJob::materialFit(m_material, profile) == ThmJob::Fit::Differs)
 			material_line += QStringLiteral("\n") + tr("WARNING: the label distance does not fit the profile.");
 	} else {
 		material_line = tr("Material not queried.");
@@ -522,6 +708,7 @@ void ThmPrintDialog::print()
 			.arg(p->name, p->host).arg(p->port)
 			.arg(p->model.isEmpty() ? QString() : QStringLiteral(", ") + p->model, article)
 			+ QStringLiteral("\n") + tr("%n different text(s)", nullptr, int(list.size()))
+			+ QStringLiteral("\n") + tr("Profile: %1").arg(source)
 			+ QStringLiteral("\n") + material_line
 			+ QStringLiteral("\n\n") + tr("Print now?");
 	if (QMessageBox::question(this, tr("Print THM labels"), summary) != QMessageBox::Yes) return;
@@ -557,10 +744,12 @@ void ThmPrintDialog::setBusy(bool busy)
 
 ThmPrintersDialog::ThmPrintersDialog(const QList<ThmPrinter> &printers,
 									 const QList<ThmCatalog::Variant> &catalog,
-									 QWidget *parent) :
+									 QWidget *parent,
+									 const QList<ThmLayouts::Variant> &layouts) :
 	QDialog(parent),
 	m_printers(printers),
-	m_catalog(catalog)
+	m_catalog(catalog),
+	m_layouts(layouts)
 {
 	setWindowTitle(tr("THM printers"));
 	QET::trackDialogGeometry(this);
@@ -592,13 +781,33 @@ ThmPrintersDialog::ThmPrintersDialog(const QList<ThmPrinter> &printers,
 	m_material = new QComboBox(m_form);
 	m_material->setEditable(true);
 	m_material->setInsertPolicy(QComboBox::NoInsert);
-	for (const ThmCatalog::Variant &v : m_catalog) m_material->addItem(ThmCatalog::title(v), v.material_no);
+	m_usual = new QComboBox(m_form);
+	m_usual->setEditable(true);
+	m_usual->setInsertPolicy(QComboBox::NoInsert);
+	QStringList seen;
+	for (const ThmCatalog::Variant &v : m_catalog) {
+		seen << ThmPrinters::normalizedMaterial(v.material_no);
+		m_material->addItem(ThmCatalog::title(v), v.material_no);
+		m_usual->addItem(ThmCatalog::title(v), v.material_no);
+	}
+	for (const ThmLayouts::Variant &v : m_layouts) {
+		if (seen.contains(ThmPrinters::normalizedMaterial(v.article))) continue;
+		seen << ThmPrinters::normalizedMaterial(v.article);
+		m_material->addItem(ThmLayouts::title(v), v.article);
+		m_usual->addItem(ThmLayouts::title(v), v.article);
+	}
+	m_roller = new QLineEdit(m_form);
+	m_roller->setPlaceholderText(tr("e.g. the colour and number of the roller fitted"));
+	m_loaded_at = new QLabel(m_form);
 	form->addRow(tr("ID:"), m_id);
 	form->addRow(tr("Name:"), m_name);
 	form->addRow(tr("Model:"), m_model);
 	form->addRow(tr("Address:"), m_host);
 	form->addRow(tr("Port:"), m_port);
+	form->addRow(tr("Usual article:"), m_usual);
+	form->addRow(tr("Roller:"), m_roller);
 	form->addRow(tr("Article variant loaded:"), m_material);
+	form->addRow(tr("Loading confirmed:"), m_loaded_at);
 
 	m_width = millimetres(m_form);
 	m_height = millimetres(m_form);
@@ -625,10 +834,13 @@ ThmPrintersDialog::ThmPrintersDialog(const QList<ThmPrinter> &printers,
 	m_baseline->setSpecialValueText(tr("centred"));
 	m_set_heat = new QCheckBox(tr("Set speed and heat (H command)"), m_form);
 	m_speed = new QSpinBox(m_form);
-	m_speed->setRange(ThmJob::speedSteps().first(), ThmJob::speedSteps().last());
+		//The widest range of both families; validate() applies the
+		//printer's own (from its model)
+	m_speed->setRange(ThmJob::speedSteps(ThmJob::Family::MultiMark).first(),
+					  ThmJob::speedSteps(ThmJob::Family::MultiMark).last());
 	m_speed->setSuffix(QStringLiteral(" mm/s"));
 	m_heat = new QSpinBox(m_form);
-	m_heat->setRange(ThmJob::kHeatMin, ThmJob::kHeatMax);
+	m_heat->setRange(ThmJob::heatMin(ThmJob::Family::MultiMark), ThmJob::heatMax(ThmJob::Family::MultiMark));
 	m_transfer = new QCheckBox(tr("Thermal transfer (with ribbon)"), m_form);
 	m_rotate = new QCheckBox(tr("Turn the print by 180°"), m_form);
 	form->addRow(tr("Label width:"), m_width);
@@ -651,8 +863,9 @@ ThmPrintersDialog::ThmPrintersDialog(const QList<ThmPrinter> &printers,
 	form->addRow(m_rotate);
 	split->addWidget(m_form, 2);
 
-	auto *hint = new QLabel(tr("Label sizes, font and heat are those of your material; "
-							   "QElectroTech fills none in. Try a new profile on one label first."), this);
+	auto *hint = new QLabel(tr("An article found in the layout file is printed with its layout; the profile "
+							   "below is for articles without one. Label sizes, font and heat are those of your "
+							   "material; QElectroTech fills none in. Try a new profile on one label first."), this);
 	hint->setWordWrap(true);
 	layout->addWidget(hint);
 	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
@@ -690,6 +903,12 @@ void ThmPrintersDialog::showPrinter(int row)
 	const int known = m_material->findData(p.material_no);
 	if (known >= 0) m_material->setCurrentIndex(known);
 	else m_material->setCurrentText(p.material_no);
+	const int usual = m_usual->findData(p.usual_material_no);
+	if (usual >= 0) m_usual->setCurrentIndex(usual);
+	else m_usual->setCurrentText(p.usual_material_no);
+	m_roller->setText(p.roller);
+	m_loaded_at->setText(p.loaded_at.isValid() ? QLocale().toString(p.loaded_at, QLocale::ShortFormat)
+											   : tr("not yet"));
 	m_width->setValue(f.width);
 	m_height->setValue(f.height);
 	m_gap->setValue(f.gap);
@@ -720,14 +939,20 @@ void ThmPrintersDialog::store()
 	p.model = m_model->text().trimmed();
 	p.host = m_host->text().trimmed();
 	p.port = quint16(m_port->value());
-	const int i = m_material->findText(m_material->currentText());
-	if (i >= 0 && !m_material->itemData(i).toString().isEmpty()) {
-		p.material_no = m_material->itemData(i).toString();
-		p.material_name = m_catalog.value(i).name;
-	} else {
-		p.material_no = m_material->currentText().trimmed();
-		p.material_name.clear();
+	const auto chosen = [](const QComboBox *combo) {
+		const int i = combo->findText(combo->currentText());
+		if (i >= 0 && !combo->itemData(i).toString().isEmpty()) return combo->itemData(i).toString();
+		return combo->currentText().trimmed();
+	};
+	const QString loaded = chosen(m_material);
+	if (ThmPrinters::normalizedMaterial(loaded) != ThmPrinters::normalizedMaterial(p.material_no)) {
+			//Entered here: a loading confirmed now
+		ThmPrinters::confirmLoading(&p, loaded, nameOf(loaded), QDateTime::currentDateTime());
+		m_loaded_at->setText(QLocale().toString(p.loaded_at, QLocale::ShortFormat));
 	}
+	p.usual_material_no = chosen(m_usual);
+	p.usual_material_name = nameOf(p.usual_material_no);
+	p.roller = m_roller->text().trimmed();
 	f.width = m_width->value();
 	f.height = m_height->value();
 	f.gap = m_gap->value();
@@ -746,6 +971,16 @@ void ThmPrintersDialog::store()
 	f.heat = m_heat->value();
 	f.transfer = m_transfer->isChecked();
 	f.rotate = m_rotate->isChecked();
+}
+
+QString ThmPrintersDialog::nameOf(const QString &material_no) const
+{
+	const QString want = ThmPrinters::normalizedMaterial(material_no);
+	for (const ThmCatalog::Variant &v : m_catalog)
+		if (ThmPrinters::normalizedMaterial(v.material_no) == want) return v.name;
+	for (const ThmLayouts::Variant &v : m_layouts)
+		if (ThmPrinters::normalizedMaterial(v.article) == want) return v.name;
+	return QString();
 }
 
 void ThmPrintersDialog::add()
@@ -780,7 +1015,9 @@ void ThmPrintersDialog::accept()
 	store();
 	for (int i = 0; i < m_printers.size(); ++i) {
 		QString error;
-		if (!ThmPrinters::validate(m_printers.at(i), &error)) {
+			//An article with a layout needs no own profile
+		const bool own_profile = ThmLayouts::best(m_layouts, m_printers.at(i).material_no) < 0;
+		if (!ThmPrinters::validate(m_printers.at(i), &error, own_profile)) {
 			m_list->setCurrentRow(i);
 			QMessageBox::warning(this, tr("THM printers"), error);
 			return;

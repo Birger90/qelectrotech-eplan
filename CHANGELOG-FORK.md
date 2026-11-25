@@ -22,6 +22,19 @@ Original-QElectroTech stehen in `ChangeLog*`.
 - Befehle und Antworten nach dem cab-Handbuch „JScript Programming Manual“ 07/2026; was am THM noch zu prüfen ist,
   steht in [docs/beschriftung-export.md](docs/beschriftung-export.md#thm-direkt-drucken-projekt--thm-etiketten-drucken).
   Test `tst_thmprint` mit lokalem `QTcpServer` als Drucker.
+- **Layoutdatei**: das Druckprofil je Artikelvariante kommt aus einer selbst gewählten JSON-Datei mit den
+  M-Print-Vorlagen (*Layoutdatei…*, `--layouts`, Skript `"layouts"`): Seitenbreite und -höhe, Marker, Spalten,
+  Textfeld, Drehung, Geschwindigkeit und Heizung je Gerätefamilie, `B30`/`O T,P` beim Abreißen, `zO`. Abgeglichen
+  mit vier M-Print-Dateiausgaben (TM-I 18, SFX 9/24, ESG 6/15, DEK 5/3.5): `S` (Sensor, Versatz, Höhe, Teilung,
+  Breite), `H` und `O` stimmen zahlengleich überein; M-Print setzt den Text als Bild, QET als `T`-Feld in Lage und
+  Drehung der Vorlage. Endlosmaterial mit `multi_rows`, Schneiden und zu breite Seiten lehnt QET mit Begründung ab.
+  Keine Herstellerdaten im Fork; der Test `tst_thmlayouts` nutzt eine erfundene Datei.
+- **Gerätefamilien**: THM MMP (Heizung −10…+20, 30–125 mm/s, Kopf 105,7 mm) und THM MultiMark (−20…+20,
+  30–150 mm/s, 106 mm), am Gerät ausgelesen, gewählt nach dem Modell des Druckers; `--family mmp|multimark`.
+- **Übliche und aktuelle Rüstung** je Drucker getrennt, mit Walze und Zeitpunkt der Bestätigung. *Material
+  wechseln…* im Druckdialog zeigt Artikel, Farbband und Trägerplatte und übernimmt den Wechsel erst nach der
+  Bestätigung „eingelegt“. CLI `--thm-load <Drucker> <Artikel> [--usual] [--roller …]`; `--thm-send` sendet nur an
+  einen Drucker, dessen aktuelle Rüstung zum Artikel passt.
 
 ## Unveröffentlicht – Weidmüller-Druck
 

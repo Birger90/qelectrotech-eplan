@@ -40,6 +40,12 @@ QList<ThmPrinter> ThmPrinters::load(QSettings &s)
 		p.port = quint16(s.value("port", 9100).toUInt());
 		p.material_no = s.value("materialNo").toString();
 		p.material_name = s.value("materialName").toString();
+		p.loaded_at = QDateTime::fromString(s.value("loadedAt").toString(), Qt::ISODate);
+			//Printers set up before the usual article existed: what they
+			//carry is their usual article
+		p.usual_material_no = s.value("usualMaterialNo", p.material_no).toString();
+		p.usual_material_name = s.value("usualMaterialName", p.material_name).toString();
+		p.roller = s.value("roller").toString();
 		ThmJob::Profile &f = p.profile;
 		f.width = s.value("width", 0.0).toDouble();
 		f.height = s.value("height", 0.0).toDouble();
@@ -83,6 +89,10 @@ void ThmPrinters::save(QSettings &s, const QList<ThmPrinter> &printers)
 		s.setValue("port", p.port);
 		s.setValue("materialNo", p.material_no);
 		s.setValue("materialName", p.material_name);
+		s.setValue("loadedAt", p.loaded_at.isValid() ? p.loaded_at.toString(Qt::ISODate) : QString());
+		s.setValue("usualMaterialNo", p.usual_material_no);
+		s.setValue("usualMaterialName", p.usual_material_name);
+		s.setValue("roller", p.roller);
 		s.setValue("width", f.width);
 		s.setValue("height", f.height);
 		s.setValue("gap", f.gap);
@@ -128,6 +138,35 @@ void ThmPrinters::setCatalogFile(QSettings &s, const QString &path)
 	s.setValue(QStringLiteral("%1/catalogFile").arg(QLatin1String(settings_group)), path);
 }
 
+QString ThmPrinters::layoutsFile(QSettings &s)
+{
+	return s.value(QStringLiteral("%1/layoutsFile").arg(QLatin1String(settings_group))).toString();
+}
+
+void ThmPrinters::setLayoutsFile(QSettings &s, const QString &path)
+{
+	s.setValue(QStringLiteral("%1/layoutsFile").arg(QLatin1String(settings_group)), path);
+}
+
+void ThmPrinters::confirmLoading(ThmPrinter *p, const QString &material_no,
+								 const QString &material_name, const QDateTime &when, bool usual)
+{
+	if (!p) return;
+	p->material_no = material_no.trimmed();
+	p->material_name = material_name.trimmed();
+	p->loaded_at = when;
+	if (usual) {
+		p->usual_material_no = p->material_no;
+		p->usual_material_name = p->material_name;
+	}
+}
+
+bool ThmPrinters::changedFromUsual(const ThmPrinter &p)
+{
+	return !normalizedMaterial(p.usual_material_no).isEmpty()
+		   && normalizedMaterial(p.usual_material_no) != normalizedMaterial(p.material_no);
+}
+
 QString ThmPrinters::newId(const QList<ThmPrinter> &existing)
 {
 	QSet<QString> used;
@@ -138,7 +177,7 @@ QString ThmPrinters::newId(const QList<ThmPrinter> &existing)
 	}
 }
 
-bool ThmPrinters::validate(const ThmPrinter &p, QString *error)
+bool ThmPrinters::validate(const ThmPrinter &p, QString *error, bool check_profile)
 {
 	QString e;
 	if (p.id.trimmed().isEmpty()) e = QCoreApplication::translate("ThmPrinters", "The printer has no ID.");
@@ -147,7 +186,7 @@ bool ThmPrinters::validate(const ThmPrinter &p, QString *error)
 	else if (p.port == 0) e = QCoreApplication::translate("ThmPrinters", "The printer \"%1\" has no port.").arg(p.name);
 	else if (normalizedMaterial(p.material_no).isEmpty())
 		e = QCoreApplication::translate("ThmPrinters", "No article variant is set for the printer \"%1\".").arg(p.name);
-	else {
+	else if (check_profile) {
 		QString profile_error;
 		if (!ThmJob::validate(p.profile, &profile_error))
 			e = QCoreApplication::translate("ThmPrinters", "Print profile of \"%1\": %2").arg(p.name, profile_error);
@@ -191,8 +230,8 @@ ThmPrinters::Choice ThmPrinters::choose(const QList<ThmPrinter> &printers,
 	}
 	if (c.matches.isEmpty()) {
 		c.outcome = Choice::NoMatch;
-		c.message = QCoreApplication::translate("ThmPrinters", "No printer is loaded with article %1. Load it on a printer and "
-					   "enter it there under \"Printers...\".").arg(material_no.trimmed());
+		c.message = QCoreApplication::translate("ThmPrinters", "No printer is loaded with article %1. Load it on a printer "
+					   "and confirm it with \"Change material...\".").arg(material_no.trimmed());
 	} else if (c.matches.size() == 1) {
 		c.outcome = Choice::Unique;
 		c.message = QCoreApplication::translate("ThmPrinters", "Printer \"%1\" is loaded with article %2.")

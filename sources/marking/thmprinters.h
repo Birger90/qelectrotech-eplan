@@ -20,6 +20,7 @@
 
 #include "thmjob.h"
 
+#include <QDateTime>
 #include <QList>
 #include <QString>
 
@@ -42,9 +43,19 @@ struct ThmPrinter
 	QString model;       ///< as the user calls it, e.g. what v answers
 	QString host;
 	quint16 port = 9100;
-	QString material_no; ///< the article variant loaded (material number)
+		/// The article variant loaded now, as last confirmed (material
+		/// number, or number/layout when an article has several layouts)
+	QString material_no;
 	QString material_name;
-	ThmJob::Profile profile;
+	QDateTime loaded_at;         ///< when that loading was confirmed
+		/// The article this printer usually carries, a default kept apart
+		/// from what is loaded now (M-Print PRO: material assignment)
+	QString usual_material_no;
+	QString usual_material_name;
+		/// The roller fitted for the usual article, as the user notes it
+	QString roller;
+	ThmJob::Profile profile;     ///< own profile, for an article without layout
+	ThmJob::Family family() const { return ThmJob::familyFromModel(model); }
 };
 
 namespace ThmPrinters
@@ -58,9 +69,22 @@ namespace ThmPrinters
 		/// The catalog file chosen last (my_cat*.mca), empty if none
 	QString catalogFile(QSettings &settings);
 	void setCatalogFile(QSettings &settings, const QString &path);
+		/// The layout file chosen last (JSON, ThmLayouts), empty if none
+	QString layoutsFile(QSettings &settings);
+	void setLayoutsFile(QSettings &settings, const QString &path);
 
 	QString newId(const QList<ThmPrinter> &existing);
-	bool validate(const ThmPrinter &printer, QString *error = nullptr);
+		/// Address and loaded article; with @p check_profile also the
+		/// printer's own profile (not when the profile comes from a layout)
+	bool validate(const ThmPrinter &printer, QString *error = nullptr,
+				  bool check_profile = true);
+		/// Material change confirmed by the user: @p material_no is loaded
+		/// now (at @p when); with @p usual it becomes the usual one too
+	void confirmLoading(ThmPrinter *printer, const QString &material_no,
+						const QString &material_name, const QDateTime &when,
+						bool usual = false);
+		/// Whether the printer carries something else than usual
+	bool changedFromUsual(const ThmPrinter &printer);
 		/// Material numbers compared without spaces and case
 	QString normalizedMaterial(const QString &material_no);
 	int indexOf(const QList<ThmPrinter> &printers, const QString &id);

@@ -134,6 +134,11 @@ Seitenleiste *Anzeige > Funktionsvorlagen*, wie EPLAN-Makros mit Wertesätzen:
   Menge. Auch per `--thm-prn`, `--thm-status`, `--thm-send --yes`, `--thm-printers` und `qet.exportThmJob()`.
   Befehle, Belege und was am Drucker noch zu prüfen ist: dasselbe Dokument.
 
+- Weidmüller-Drucker direkt: Drucker PrintJet CONNECT (MultiCard) oder THM MultiMark (Rollen, Etiketten) wählen, je
+  Art ist ein passendes Weidmüller-Material vorbelegt (änderbar). *In M-Print PRO öffnen* übergibt jedem Material eine
+  Datei über die Kommandozeile von M-Print PRO (`-ImportFilter:CSV -MatNo:…`, auf Wunsch `-p` zum Sofortdruck).
+  Auch per `--printer`, `--material`, `--mprint [--open] [--print]` und `qet.mprintJobs()`/`qet.openInMPrintPro()`.
+
 ## Einkaufsliste für Einkauf und ERP
 
 - Menü Projekt > *Einkaufsliste exportieren…*: eine Dateiauswahl, sonst nichts. Heraus kommt eine Excel-Mappe

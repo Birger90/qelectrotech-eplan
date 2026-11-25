@@ -87,9 +87,59 @@ Datei `--format weidmueller`: Windows-Text (ISO 8859-1; Zeichen außerhalb davon
 
 | Spalte | Inhalt |
 |---|---|
-| Referenz | Klemmen-Artikelnummer oder Alias der Art; nie leer, weil eine leere Zelle die Referenz der Vorzeile übernähme |
+| Referenz | die Materialnummer des gewählten Druckers für diese Art (siehe unten); ohne Druckerzuordnung die Klemmen-Artikelnummer oder der Alias der Art. Nie leer, weil eine leere Zelle die Referenz der Vorzeile übernähme |
 | Anzahl | Schilder dieser Zeile (Kabel mit Schild an beiden Enden: 2) |
 | Beschriftung, Ziel, Gruppe, Art, Blatt, Anlage, Ort, Artikel | wie bei Phoenix Contact |
+
+Mit Druckerzuordnung steht in „Referenz“ direkt die Materialnummer. Im VK-Import wählt man dann „Die Referenzspalte enthält Materialnummern“ (Handbuch S. 263–264), eine `*.mpr` ist nicht nötig.
+
+#### Direkt an M-Print PRO und den Drucker
+
+Knopf *In M-Print PRO öffnen* im Dialog, CLI `--mprint [--open] [--print]`, Skript `qet.mprintJobs()` / `qet.openInMPrintPro()`. QET schreibt je Material eine Datei und startet M-Print PRO je Datei mit
+
+```
+MPrintPRO.exe "<datei>.csv" [-p] -ImportFilter:CSV -MatNo:<Materialnummer>
+```
+
+Belege:
+
+- **Aufruf:** Handbuch S. 223, Abschnitt „Importieren oder Drucken einer Datei“. Dort steht `MPrintPRO.exe "dateiname" [-p] [-ImportFilter:CSV | WTXT | WE | VK | XML] [-MatNo:materialnummer] [-Fallback:materialnummer]`, ebenso in der Programmhilfe von M-Print PRO 9.16.2 (`importierenoderdruckeneinerdatei1.htm`). Mit `-p` wird gedruckt, ohne das Programmfenster zu zeigen. `-MatNo` legt das Material des Imports fest.
+- **Dateiaufbau:** Er folgt dem Standard-Importscript `csvfilter.mis`, das dem Installer `M_Print_PRO_Multi_Language_Version_9_16_2.exe` beiliegt. Das Handbuch nennt im Kapitel zu den Programmverzeichnissen für den Ordner `import` „Standard-Importscripte“. Das Script legt fest:
+  - `<quote>"</quote>`, `<delimiter>;</delimiter>`, `<os>0</os>`
+  - Feld `PROJECT` = Spalte 1, Feld `MARKER` = Spalte 2
+  - keine Anzahlspalte (`counter column="-1"`), kein Startversatz, also keine Kopfzeile
+- **Was QET daraus schreibt:** keine Kopfzeile, Windows-Text, je Schild eine Zeile `"Projekt";"Markierer"`. Projekt ist bei Klemmen die Klemmleiste, sonst `=Anlage+Ort`.
+- **Schlussfolgerung, nicht belegt:** Dass `-ImportFilter:CSV` genau dieses mitgelieferte Script verwendet, schließe ich aus den gleichen Namen (CSV, WTXT, WE, VK, XML ↔ `csvfilter`, `wtxtfilter`, `wefilter`, `vkfilter`, `xmlfilter.mis`). Am installierten M-Print PRO ist das **noch nicht geprüft**.
+- **Mehrere Materialien:** Je Material startet QET das Programm einmal. Ob M-Print PRO die Aufrufe in einem Fenster sammelt oder je Aufruf ein Projekt öffnet, ist nicht belegt.
+- **Nicht genutzt:**
+  - Eigene Importscripte (`*.mis`) und Referenzdateien (`*.mpr`) tragen eine Prüfsumme `<!--SHA::…::-->`, die keine einfache SHA-256 über den Inhalt ist. QET erzeugt deshalb keine solchen Dateien.
+  - Die verschlüsselten Markierertypen (`*.mcf`) liest QET nicht.
+  - Der AutoPrint-Modus (Ordnerüberwachung, XML `<mp_smmo>`, „What's New M-Print PRO 9.16“ S. 9–11) ist nur an einem Beispiel mit `itemType` „Connection“ beschrieben.
+
+M-Print PRO wird gefunden über den im Dialog gewählten Pfad, sonst unter `Programme\Weidm*\…\MPrintPRO.exe`. Laut `mprintpro.xml` des Installers liegt das Programm in `…\ProgramFiles\bin\MPrintPRO.exe`.
+
+#### Materialien je Drucker
+
+Vorbelegung, im Dialog je Art änderbar (eigene Nummer eintippen). Die Auswahl wird je Drucker gespeichert.
+
+- **PrintJet CONNECT:** Er bedruckt MultiCards und MetalliCards. Das Druckverfahren ist Tintenstrahl mit thermischer Fixierung. Beleg: Broschüre „MultiCard & PrintJet“, Druckschrift 3194230000/01/2026, S. 8. <https://assets.dam.weidmueller.com/assets/api/b74abe15-1232-43a6-82b0-2d2d0aec8dd5/Original/2811580000_MB_PRINTJET_CONNECT_DE_WEB.pdf>
+- **THM MultiMark:** Er ist ein Thermotransferdrucker für Endlos- und Rollenmaterial (Varianten „MM“) und Etiketten. Beleg: „MultiMark Marking System“, Stand 25.02.2026. <https://assets.dam.weidmueller.com/assets/api/019ef5c2-672c-7c52-a3bd-19243e343438/Original/MultiMark_Marking_System.pdf>
+- **Kein Material passt auf beide Drucker:** Eine MultiCard („MC“) gehört nie auf den THM, ein MM- oder THM-Material nie auf den PrintJet.
+
+| Drucker | Art | Vorgabe | Weitere | Beleg |
+|---|---|---|---|---|
+| PrintJet CONNECT | Klemme | 1609801044 DEK 5/5 MC NE WS (5 mm) | 1609860000 WS 12/5 MC (Klippon Connect) | „MultiCard & PrintJet“ S. 15–16 |
+| PrintJet CONNECT | Klemmleiste | 1876770000 CC 15/27 MC NE WS (ClipCard, Halter CC-H 15/27) | 1609940000 ESG 9/20 | S. 27; als Leistenschild **nicht belegt**, ein eigenes Leistenschild führt die Broschüre nicht |
+| PrintJet CONNECT | Gerät | 1609940000 ESG 9/20 MC NE WS | 1876770000 CC 15/27 | S. 25, S. 27 |
+| PrintJet CONNECT | Draht | 1918690000 SF 2/21 MC NE WS V2 (0,75–1,5 mm²) | 1918910000 SF 3/21 (1,5–2,5 mm²), 1918630000 SF 1/21 (0,5–0,8 mm²) | S. 19 |
+| PrintJet CONNECT | Kabel | 1852490000 SFX 9/24 MC NE WS V2 (Kabelbinder) | 1860120000 SFX 11/60 MC | S. 20 |
+| THM MultiMark | Klemme | 2007110000 DEK 5/5 MM WS | 2007190000 WS 12/5 MM WS | „MultiMark Marking System“ S. 14 |
+| THM MultiMark | Klemmleiste | 1753231044 THM MT30X 15/6 WS | – | S. 38; als Leistenschild **nicht belegt** |
+| THM MultiMark | Gerät | 1753231044 THM MT30X 15/6 WS („standard and most used“ Etikett) | 2005190000 ESG 9/17 MM WS | S. 12, 38, 31 |
+| THM MultiMark | Draht | 2719090000 SFM 2/12 1.8-2.5 MM WS | 2437870000 HS-HF 1.6-3.2/25 MM W (Schrumpfschlauch) | S. 19, 25; Zuordnung zum Querschnitt in mm² nicht belegt |
+| THM MultiMark | Kabel | 2005320000 SFX 9/24 MM WS (ab Ø 7 mm) | 1774350000 THM WRITEON 25/76 WS | S. 20, 22 |
+
+Die Klemmenschilder passen zu 5-mm-Klemmen (z. B. WDU 2.5). Bei anderen Klemmenbreiten wählt man das passende DEK oder WS bzw. trägt die Nummer ein. Für die THM-Materialien „MM“ fehlen Einträge in der Produktreferenz `productreferences.xml` von M-Print PRO, die Markierertypen selbst liefert der Installer aber mit (`mm_dek_5_5_mm.mcf` u. a.). Die Firmware der Drucker fasst QET nicht an.
 
 ### WAGO Smart Script
 
@@ -132,7 +182,7 @@ Quelle aller Befehle: cab, „JScript Programming Manual“, Ausgabe 07/2026, Fi
 | `ESC oUTF-8;` | Codepage für den nächsten Auftrag, vor den Etikettendaten | 25 |
 | `m m` | Maßeinheit Millimeter | 53 |
 | `J` | Auftragsbeginn | 202 |
-| `H speed,heat,T\|D` | Geschwindigkeit (mm/s), Heizkorrektur −20…+20, Thermotransfer bzw. Thermodirekt | 196–197 |
+| `H speed,heat,T\|D` | Geschwindigkeit (mm/s), Heizkorrektur (Handbuch −20…+20, am THM MMP −10…+20, siehe unten), Thermotransfer bzw. Thermodirekt | 196–197 |
 | `S ptype;xo,yo,ho,dy,wd` | Etikettgröße: Sensor (`e` endlos, `l1` Lücke, `l0` Reflexmarke oben, `l2` Reflexmarke unten), Verschiebung, Höhe, Höhe + Lücke, Breite | 220–222 |
 | `O R` | Inhalt um 180° drehen; `O` steht direkt nach `S` | 212–213 |
 | `T x,y,r,font,size;text` | Textfeld; Schrift 3 = Swiss 721, Größe in mm | 224–225 |
@@ -220,6 +270,15 @@ var m = qet.exportThmJob("C:/temp/test.prn", '{"profile": {"width": 12, "height"
 - Ob `;` im Text eines `T`-Felds als Text gedruckt wird.
 - Die Reihenfolge `H` vor `S` folgt dem Beispiel auf S. 223. Das Beispiel auf S. 223 stellt `O R` vor `S`, der Text auf S. 212 verlangt `O` direkt nach `S`; QET folgt dem Text.
 - Ob mehrere Blöcke (`J` … `A`) in einer Verbindung als getrennte Aufträge sauber nacheinander laufen.
-- Geschwindigkeiten und Heizwerte des THM: das Handbuch verweist auf die Betriebsanleitung des Druckers.
 
 Ohne Drucker geprüft sind die Bytes des Auftrags, die Auswertung der Antworten (`Y-000000Y`, `Y0037`, Fehlerantworten) und die Zielwahl, mit einem lokalen `QTcpServer` als Gegenstelle (`tests/qttest/tst_thmprint.cpp`).
+
+### Am echten Gerät belegt (THM MMP, Firmware 4.29)
+
+Über die Weboberfläche des Druckers (`/cgi-bin/get?cmd=1` und `cmd=9`) ausgelesen; QET prüft diese Grenzen vor dem Senden:
+
+- Heizkorrektur −10 bis +20 (das cab-Handbuch nennt −20 bis +20).
+- Geschwindigkeit nur in Stufen: 30, 40, 50, 75, 100, 125 mm/s.
+- Druckkopf 105,7 mm breit bei 11,8 Punkt/mm; breitere Etiketten (alle Spalten zusammen) weist QET ab.
+
+Ob ein THM MultiMark (Firmware 5.36) dieselben Grenzen hat, ist nicht geprüft.

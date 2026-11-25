@@ -625,10 +625,10 @@ ThmPrintersDialog::ThmPrintersDialog(const QList<ThmPrinter> &printers,
 	m_baseline->setSpecialValueText(tr("centred"));
 	m_set_heat = new QCheckBox(tr("Set speed and heat (H command)"), m_form);
 	m_speed = new QSpinBox(m_form);
-	m_speed->setRange(0, 1000);
+	m_speed->setRange(ThmJob::speedSteps().first(), ThmJob::speedSteps().last());
 	m_speed->setSuffix(QStringLiteral(" mm/s"));
 	m_heat = new QSpinBox(m_form);
-	m_heat->setRange(-20, 20);
+	m_heat->setRange(ThmJob::kHeatMin, ThmJob::kHeatMax);
 	m_transfer = new QCheckBox(tr("Thermal transfer (with ribbon)"), m_form);
 	m_rotate = new QCheckBox(tr("Turn the print by 180°"), m_form);
 	form->addRow(tr("Label width:"), m_width);

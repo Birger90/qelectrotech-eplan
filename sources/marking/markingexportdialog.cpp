@@ -31,6 +31,8 @@
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
+#include <QLineEdit>
+#include <QStandardPaths>
 #include <QLabel>
 #include <QMessageBox>
 #include <QPushButton>
@@ -143,6 +145,53 @@ MarkingExportDialog::MarkingExportDialog(QETProject *project, QWidget *parent) :
 	main_layout->addWidget(m_full);
 	main_layout->addWidget(m_both_ends);
 
+		//The Weidmüller printer: which material each kind is printed on,
+		//and M-Print PRO to hand the markers to
+	const MPrintPro::Settings mprint = MPrintPro::load();
+	m_weidmueller = new QGroupBox(tr("Weidmüller printer"), this);
+	auto *wm_form = new QFormLayout(m_weidmueller);
+	m_printer = new QComboBox(m_weidmueller);
+	for (auto p : {MPrintPro::PrintJetConnect, MPrintPro::ThmMultiMark}) {
+		m_printer->addItem(MPrintPro::printerTitle(p), int(p));
+	}
+	m_printer->setCurrentIndex(qMax(0, m_printer->findData(int(mprint.printer))));
+	wm_form->addRow(tr("Printer:"), m_printer);
+	for (int s = 0; s < MPrintPro::SlotCount; ++s) {
+		m_material[s] = new QComboBox(m_weidmueller);
+		m_material[s]->setEditable(true);
+		m_material[s]->setToolTip(tr("Weidmüller material number; type another one if your markers differ"));
+		wm_form->addRow(MPrintPro::slotTitle(MPrintPro::Slot(s)), m_material[s]);
+	}
+	auto *exe_row = new QHBoxLayout;
+	m_exe = new QLineEdit(MPrintPro::findExe(mprint), m_weidmueller);
+	m_exe->setPlaceholderText(tr("MPrintPRO.exe not found"));
+	auto *exe_pick = new QPushButton(tr("..."), m_weidmueller);
+	exe_row->addWidget(m_exe);
+	exe_row->addWidget(exe_pick);
+	wm_form->addRow(tr("M-Print PRO:"), exe_row);
+	m_print_now = new QCheckBox(tr("Print at once (without showing M-Print PRO)"), m_weidmueller);
+	m_print_now->setChecked(mprint.print);
+	wm_form->addRow(QString(), m_print_now);
+	m_open = new QPushButton(tr("Open in M-Print PRO"), m_weidmueller);
+	wm_form->addRow(QString(), m_open);
+	main_layout->addWidget(m_weidmueller);
+	fillMaterials();
+	for (int s = 0; s < MPrintPro::SlotCount; ++s) {
+		const QString own = mprint.materials[s];
+		if (!own.isEmpty()) {
+			const int at = m_material[s]->findText(own, Qt::MatchStartsWith);
+			if (at >= 0) m_material[s]->setCurrentIndex(at);
+			else m_material[s]->setEditText(own);
+		}
+	}
+	connect(m_printer, &QComboBox::currentIndexChanged, this, &MarkingExportDialog::fillMaterials);
+	connect(exe_pick, &QPushButton::clicked, this, [this]() {
+		const QString path = QFileDialog::getOpenFileName(
+			this, tr("M-Print PRO"), m_exe->text(), tr("M-Print PRO (MPrintPRO.exe)"));
+		if (!path.isEmpty()) m_exe->setText(QDir::toNativeSeparators(path));
+	});
+	connect(m_open, &QPushButton::clicked, this, &MarkingExportDialog::openInMPrintPro);
+
 	m_count = new QLabel(this);
 	main_layout->addWidget(m_count);
 
@@ -179,20 +228,26 @@ MarkingExport::Options MarkingExportDialog::options() const
 	o.full_designation = m_full->isChecked();
 	o.both_ends = m_both_ends->isChecked();
 	o.format = MarkingExport::Format(m_format->currentData().toInt());
+	if (o.format == MarkingExport::Weidmueller) {
+		o.materials = MPrintPro::materialsByKey(mprintSettings());
+	}
 	return o;
 }
 
 void MarkingExportDialog::updateCount()
 {
 	const MarkingExport::Options o = options();
+	m_weidmueller->setVisible(o.format == MarkingExport::Weidmueller);
+	m_open->setEnabled(o.kinds != 0);
 	switch (o.format) {
 		case MarkingExport::PhoenixContact:
 			m_hint->setText(tr("In PROJECT complete: File > Data exchange, assign the "
 							   "column \"Material\" once in the material mapping."));
 			break;
 		case MarkingExport::Weidmueller:
-			m_hint->setText(tr("In M-Print PRO: File > Import, filter \"VK Text Format\", "
-							   "separator semicolon; reference column \"Referenz\", "
+			m_hint->setText(tr("Open in M-Print PRO hands every material its own file. "
+							   "Export... writes one file for the import filter \"VK Text "
+							   "Format\": reference column \"Referenz\" (material numbers), "
 							   "quantity column \"Anzahl\"."));
 			break;
 		case MarkingExport::Wago:
@@ -220,6 +275,76 @@ void MarkingExportDialog::remember() const
 	settings.setValue("kinds", o.kinds);
 	settings.setValue("full_designation", o.full_designation);
 	settings.setValue("both_ends", o.both_ends);
+	if (o.format == MarkingExport::Weidmueller) {
+		MPrintPro::save(mprintSettings());
+	}
+}
+
+void MarkingExportDialog::fillMaterials()
+{
+	const auto printer = MPrintPro::Printer(m_printer->currentData().toInt());
+	for (int s = 0; s < MPrintPro::SlotCount; ++s) {
+		m_material[s]->clear();
+		for (const MPrintPro::Material &m : MPrintPro::catalog(printer, MPrintPro::Slot(s))) {
+			m_material[s]->addItem(m.number + QStringLiteral(" – ") + m.name, m.number);
+		}
+	}
+	if (m_count) updateCount();
+}
+
+MPrintPro::Settings MarkingExportDialog::mprintSettings() const
+{
+	MPrintPro::Settings s;
+	s.printer = MPrintPro::Printer(m_printer->currentData().toInt());
+	for (int i = 0; i < MPrintPro::SlotCount; ++i) {
+			//The number is what the line starts with, typed or chosen
+		s.materials[i] = m_material[i]->currentText().section(QLatin1Char(' '), 0, 0).trimmed();
+	}
+	s.exe = m_exe->text().trimmed();
+	s.print = m_print_now->isChecked();
+	return s;
+}
+
+void MarkingExportDialog::openInMPrintPro()
+{
+	const MarkingExport::Options o = options();
+	if (!o.kinds) return;
+	const MPrintPro::Settings s = mprintSettings();
+	if (MPrintPro::findExe(s).isEmpty()) {
+		QMessageBox::warning(this, tr("Open in M-Print PRO"),
+							 tr("M-Print PRO was not found. Choose MPrintPRO.exe with \"...\"."));
+		return;
+	}
+		//Beside the project, so the files can be printed again later
+	QString dir;
+	if (m_project && !m_project->filePath().isEmpty()) {
+		dir = QFileInfo(m_project->filePath()).absoluteDir().filePath(QStringLiteral("Beschriftung"));
+	} else {
+		dir = QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation)).filePath(QStringLiteral("qet_beschriftung"));
+	}
+	QString base = m_project ? QFileInfo(m_project->filePath()).completeBaseName() : QString();
+	if (base.isEmpty()) base = tr("project");
+	QString error;
+	const QList<MPrintPro::Job> jobs = MPrintPro::writeJobs(
+		MarkingExport::collect(m_project, o), s, dir, base, &error);
+	if (jobs.isEmpty()) {
+		QMessageBox::warning(this, tr("Open in M-Print PRO"),
+							 error.isEmpty() ? tr("No markers to print.") : error);
+		return;
+	}
+	remember();
+	if (!MPrintPro::open(jobs, s, &error)) {
+		QMessageBox::warning(this, tr("Open in M-Print PRO"), error);
+		return;
+	}
+	QStringList lines;
+	for (const MPrintPro::Job &job : jobs) {
+		lines << tr("%1 – %2: %n marker(s)", nullptr, job.markers)
+					 .arg(job.material, job.material_name.isEmpty() ? tr("own material") : job.material_name);
+	}
+	QMessageBox::information(this, tr("Open in M-Print PRO"),
+							 tr("Handed to M-Print PRO:") + QLatin1Char('\n') + lines.join(QLatin1Char('\n'))
+							 + QStringLiteral("\n\n") + QDir::toNativeSeparators(dir));
 }
 
 void MarkingExportDialog::exportFile()

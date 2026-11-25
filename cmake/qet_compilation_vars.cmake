@@ -1264,6 +1264,9 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/marking/thmprintdialog.h
   ${QET_DIR}/sources/marking/thmprinters.cpp
   ${QET_DIR}/sources/marking/thmprinters.h
+
+  ${QET_DIR}/sources/marking/mprintpro.cpp
+  ${QET_DIR}/sources/marking/mprintpro.h
   ${QET_DIR}/sources/cablelist/cablelistmodel.cpp
   ${QET_DIR}/sources/cablelist/cablelistmodel.h
   ${QET_DIR}/sources/cablelist/cablelistmodelpropertieswidget.cpp

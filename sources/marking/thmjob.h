@@ -72,7 +72,7 @@ namespace ThmJob
 		double baseline = 0;     ///< the text's y; 0 = (height + text_size) / 2
 		bool set_heat = false;   ///< write an H command
 		int speed = 0;           ///< H: mm/s
-		int heat = 0;            ///< H: heat correction, -20 ... +20
+		int heat = 0;            ///< H: heat correction, kHeatMin ... kHeatMax
 		bool transfer = true;    ///< H: T thermal transfer, else D direct
 		bool rotate = false;     ///< O R: contents turned by 180 degrees
 	};
@@ -83,6 +83,18 @@ namespace ThmJob
 		QString text;
 		int count = 1;
 	};
+
+		/// Limits read from a THM MMP (firmware 4.29) through its web
+		/// interface (cgi-bin get cmd=1 and cmd=9): heat correction -10 ... +20,
+		/// speeds in fixed steps only, print head 105.7 mm at 11.8 dots/mm.
+	constexpr int kHeatMin = -10;
+	constexpr int kHeatMax = 20;
+	constexpr double kPrintWidthMm = 105.7;
+	constexpr double kDotsPerMm = 11.8;
+		/// 30, 40, 50, 75, 100, 125 mm/s
+	QList<int> speedSteps();
+		/// all columns side by side: (columns - 1) * pitch + width
+	double totalWidth(const Profile &profile);
 
 	bool validate(const Profile &profile, QString *error = nullptr);
 

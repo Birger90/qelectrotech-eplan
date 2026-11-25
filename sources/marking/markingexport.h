@@ -19,6 +19,7 @@
 #define MARKINGEXPORT_H
 
 #include <QByteArray>
+#include <QHash>
 #include <QList>
 #include <QString>
 
@@ -77,6 +78,10 @@ namespace MarkingExport
 			/// Each wire end its own marker and two per cable; else one
 		bool both_ends = true;
 		Format format = Neutral;
+			/// Weidmüller: material number per kind key (Draht, Klemme,
+			/// Klemmleiste, Geraet, Kabel) for the reference column; a kind
+			/// without one keeps its alias
+		QHash<QString, QString> materials;
 	};
 
 		/// One marker, or several alike (count)
@@ -100,7 +105,8 @@ namespace MarkingExport
 						QString *error = nullptr);
 		/// The file's bytes; @p markers gets the number of markers in it
 	QByteArray write(const QList<Item> &items, Format format,
-					 int *markers = nullptr);
+					 int *markers = nullptr,
+					 const QHash<QString, QString> &materials = {});
 	bool exportFile(QETProject *project, const QString &path,
 					const Options &options, QString *error = nullptr,
 					int *markers = nullptr);

@@ -468,6 +468,11 @@ class QetScriptApi : public QObject
 		Q_INVOKABLE bool exportTiaTags(const QString &output, const QString &table = QString());
 		Q_INVOKABLE QStringList compareTiaTags(const QString &tagFile);
 		Q_INVOKABLE int applyTiaTags(const QString &tagFile);
+			/// Weidmüller M-Print PRO: a file per material in @p dir, as JSON
+			/// [{file, material, name, markers, arguments}]; openInMPrintPro()
+			/// also hands each to M-Print PRO
+		Q_INVOKABLE QString mprintJobs(const QString &dir, const QString &optionsJson = QString());
+		Q_INVOKABLE QString openInMPrintPro(const QString &dir, const QString &optionsJson = QString());
 		Q_INVOKABLE bool exportWiring(const QString &output);
 		Q_INVOKABLE bool exportNets(const QString &output);
 		Q_INVOKABLE bool exportLinks(const QString &output);

@@ -80,6 +80,17 @@ QString ThmJob::number(double value)
 	return s;
 }
 
+QList<int> ThmJob::speedSteps()
+{
+	return {30, 40, 50, 75, 100, 125};
+}
+
+double ThmJob::totalWidth(const Profile &p)
+{
+	const double pitch = p.columns > 1 && p.column_pitch > 0 ? p.column_pitch : p.width;
+	return (qMax(1, p.columns) - 1) * pitch + p.width;
+}
+
 bool ThmJob::validate(const Profile &p, QString *error)
 {
 	QString e;
@@ -100,8 +111,12 @@ bool ThmJob::validate(const Profile &p, QString *error)
 		e = QCoreApplication::translate("ThmJob", "The text baseline lies outside the label.");
 	} else if (p.set_heat && p.speed <= 0) {
 		e = QCoreApplication::translate("ThmJob", "The print speed is not set.");
-	} else if (p.set_heat && (p.heat < -20 || p.heat > 20)) {
-		e = QCoreApplication::translate("ThmJob", "The heat correction must lie between -20 and +20.");
+	} else if (p.set_heat && !speedSteps().contains(p.speed)) {
+		e = QCoreApplication::translate("ThmJob", "The printer only knows the speeds 30, 40, 50, 75, 100 and 125 mm/s.");
+	} else if (p.set_heat && (p.heat < kHeatMin || p.heat > kHeatMax)) {
+		e = QCoreApplication::translate("ThmJob", "The heat correction must lie between -10 and +20.");
+	} else if (totalWidth(p) > kPrintWidthMm) {
+		e = QCoreApplication::translate("ThmJob", "The labels are wider than the print head (105.7 mm).");
 	}
 	if (error) *error = e;
 	return e.isEmpty();

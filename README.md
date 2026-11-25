@@ -114,6 +114,11 @@
 >   article and quantity is confirmed. Also `--thm-prn`, `--thm-status`, `--thm-send --yes`, `--thm-printers` and
 >   `qet.exportThmJob()`. Commands and what is still to be confirmed on the printer: same document.
 
+> - Weidmüller printers directly: choose PrintJet CONNECT (MultiCard) or THM MultiMark (rolls, labels); every kind
+>   gets a fitting Weidmüller material (editable). *Open in M-Print PRO* hands each material a file through
+>   M-Print PRO's command line (`-ImportFilter:CSV -MatNo:…`, `-p` to print at once). Also `--printer`,
+>   `--material`, `--mprint [--open] [--print]` and `qet.mprintJobs()`/`qet.openInMPrintPro()`.
+
 > **Purchase list for purchasing and ERP**
 > - Project menu > *Export purchase list…*: one file dialog, nothing else. It writes an Excel workbook (`.xlsx`, or
 >   CSV) with one line per article, grouped by supplier (else manufacturer), a sum per group and a grand total, with

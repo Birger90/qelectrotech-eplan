@@ -23,6 +23,21 @@ Original-QElectroTech stehen in `ChangeLog*`.
   steht in [docs/beschriftung-export.md](docs/beschriftung-export.md#thm-direkt-drucken-projekt--thm-etiketten-drucken).
   Test `tst_thmprint` mit lokalem `QTcpServer` als Drucker.
 
+## Unveröffentlicht – Weidmüller-Druck
+
+- Beschriftung exportieren mit Weidmüller: Drucker PrintJet CONNECT (MultiCards „MC“) oder THM MultiMark
+  (Rollenmaterial „MM“, Etiketten). Je Art (Klemme, Klemmleiste, Gerät, Draht, Kabel) ist ein Material vorbelegt
+  (z. B. DEK 5/5 MC NE WS 1609801044, SF 2/21 MC NE WS V2 1918690000, SFX 9/24 MC NE WS V2 1852490000; THM:
+  DEK 5/5 MM WS 2007110000, THM MT30X 15/6 WS 1753231044) und im Dialog je Drucker änderbar.
+- *In M-Print PRO öffnen*: je Material eine Datei im Aufbau des mitgelieferten Standard-CSV-Filters und je Datei
+  `MPrintPRO.exe "<datei>" [-p] -ImportFilter:CSV -MatNo:<Nummer>` (Handbuch S. 223); M-Print PRO wird in den
+  Weidmüller-Programmordnern gesucht oder im Dialog gewählt. Die VK-Datei trägt die Materialnummern jetzt direkt in der
+  Referenzspalte, eine Referenzdatei `*.mpr` ist dafür nicht mehr nötig.
+- CLI `--printer printjet|thm`, `--material Klemme=…,Draht=…`, `--mprint [--open] [--print] [--mprint-exe …]`;
+  Skript-API `qet.mprintJobs(ordner, optionen)` und `qet.openInMPrintPro(ordner, optionen)`.
+- Am installierten M-Print PRO noch nicht geprüft (Übergabe nur mit einem Ersatzprogramm getestet); Belege und offene
+  Punkte in `docs/beschriftung-export.md`.
+
 ## 1.50.0 – 24.11.2026 – Weitergabe in der Firma, Simulation vollständig
 
 ### Simulation: closer03

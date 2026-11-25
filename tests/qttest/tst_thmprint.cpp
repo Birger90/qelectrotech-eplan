@@ -192,6 +192,26 @@ class TestThmPrint : public QObject
 			p.speed = 50;
 			p.heat = 21;
 			QVERIFY(!ThmJob::validate(p, &error));
+				// device limits of the THM MMP: heat -10 ... +20
+			p.heat = -11;
+			QVERIFY(!ThmJob::validate(p, &error));
+			p.heat = -10;
+			QVERIFY2(ThmJob::validate(p, &error), qPrintable(error));
+				// speeds in steps only
+			p.speed = 60;
+			QVERIFY(!ThmJob::validate(p, &error));
+			for (int s : {30, 40, 50, 75, 100, 125}) {
+				p.speed = s;
+				QVERIFY2(ThmJob::validate(p, &error), qPrintable(error));
+			}
+				// print head 105.7 mm: 5 columns of 20 mm at 21 mm pitch = 104 mm, 6 = 125 mm
+			p = smallProfile();
+			p.width = 20;
+			p.column_pitch = 21;
+			p.columns = 5;
+			QVERIFY2(ThmJob::validate(p, &error), qPrintable(error));
+			p.columns = 6;
+			QVERIFY(!ThmJob::validate(p, &error));
 			QVERIFY(ThmJob::build({}, smallProfile(), &error).isEmpty());
 			QVERIFY(!error.isEmpty());
 		}

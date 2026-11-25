@@ -271,6 +271,11 @@ Funktionsvorlage einfügen – mit Artikeldaten, Klemmen, Kabel und Verknüpfung
   <ID>` fragt nur ab. Drucker/Material: `--thm-printers`. Belege und offene Punkte: `docs/beschriftung-export.md`,
   Abschnitt „THM direkt drucken“.
 
+- Weidmüller-Druck: `--export-marking <qet> <ordner> --printer printjet|thm --mprint [--open] [--print]` schreibt je
+  Material eine Datei für `MPrintPRO.exe <datei> -ImportFilter:CSV -MatNo:<nr>`. PrintJet CONNECT druckt nur MultiCards
+  (MC), THM MultiMark nur Rollen (MM) und THM-Etiketten – Material nie mischen. Ohne installiertes M-Print PRO mit
+  `--mprint-exe` auf ein Ersatzprogramm prüfen, das seine Argumente protokolliert.
+
 ## Data instead of hand-typed text: PLC channels and contacts like EPLAN
 
 - **PLC channel**: bind the fields of the channel symbol to element information (`text_from="ElementInfo"`):

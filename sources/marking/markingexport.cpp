@@ -309,7 +309,7 @@ QString MarkingExport::materialReference(const Item &item)
 }
 
 QByteArray MarkingExport::write(const QList<Item> &items, Format format,
-								int *markers)
+								int *markers, const QHash<QString, QString> &materials)
 {
 	QByteArray out;
 	int count = 0;
@@ -370,7 +370,11 @@ QByteArray MarkingExport::write(const QList<Item> &items, Format format,
 						   QStringLiteral("Ort"), QStringLiteral("Artikel")},
 						  crlf, true);
 			for (const Item &i : items) {
-				out += record({materialReference(i), QString::number(i.count), i.text,
+					//A material number of the printer's own when one is set:
+					//"Die Referenzspalte enthält Materialnummern"
+				const QString reference = materials.value(kindKey(i)).isEmpty()
+						? materialReference(i) : materials.value(kindKey(i));
+				out += record({reference, QString::number(i.count), i.text,
 							   i.target, i.group, kindKey(i), i.folio, i.plant,
 							   i.location, i.article}, crlf, true);
 				count += i.count;
@@ -413,7 +417,7 @@ bool MarkingExport::exportFile(QETProject *project, const QString &path,
 		return false;
 	}
 	int count = 0;
-	const QByteArray bytes = write(items, options.format, &count);
+	const QByteArray bytes = write(items, options.format, &count, options.materials);
 	if (markers) *markers = count;
 	QSaveFile file(path);
 	if (!file.open(QIODevice::WriteOnly) || file.write(bytes) != bytes.size()

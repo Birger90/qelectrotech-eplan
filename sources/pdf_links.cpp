@@ -36,6 +36,7 @@
 #include <QCryptographicHash>
 #include <QFile>
 #include <QGraphicsTextItem>
+#include <QHash>
 #include <QList>
 #include <QRegularExpression>
 #include <QUrl>
@@ -390,35 +391,50 @@ static QList<int> fragmentNumbers(const QByteArray &uri, const QByteArray &key)
 	return numbers;
 }
 
-/**
-	The document JavaScript of the jump marks, done the way EPLAN's PDF
-	export does it (seen in its PDFs): each link runs highlight(page, rect)
-	after its GoTo, which adds a red-bordered button "Target" over the
-	target, lets it blink every 500 ms and removes it after 5 s. A jump
-	before that removes the old frame first. Nothing is in the file until a
-	jump is made, so there is nothing to hide; this runs in Adobe Acrobat
-	and Reader and in Chrome's and Edge's viewer (PDFium), whose JavaScript
-	knows addField(). The dirty flag is kept, so the document does not ask
-	to be saved.
-*/
-static QByteArray markScript()
+/// Where the /Annots array of the page object \a pageObj opens ('[') and
+/// closes (']') in \a data: Qt writes "/Annots 17 0 R", an array object of
+/// its own, but an inline array is read as well. False if it has none.
+static bool annotsArray(const QByteArray &data, int pageObj, int *open, int *close)
 {
+	const int start = objectStart(data, pageObj);
+	const int end = start == -1 ? -1 : data.indexOf("endobj", start);
+	if (end == -1) return false;
+	const int annots = data.indexOf("/Annots ", start);
+	if (annots == -1 || annots > end) return false;
+	int value = annots + 8;
+	if (data.at(value) != '[') {
+		const int arrayObj = data.mid(value, 12).split(' ').value(0).toInt();
+		const int arrayStart = objectStart(data, arrayObj);
+		value = arrayStart == -1 ? -1 : data.indexOf('[', arrayStart);
+	}
+	if (value == -1) return false;
+	const int closing = data.indexOf(']', value);
+	if (closing == -1) return false;
+	*open = value;
+	*close = closing;
+	return true;
+}
+
+/**
+	The JavaScript after a jump to the frame named \a name: show it, let it
+	blink every 500 ms and hide it after 5 s, as EPLAN's frame does. The
+	timers of the jump before are cleared. It only uses what Chrome's and
+	Edge's viewer (PDFium) know as well as Acrobat: getField().display,
+	app.setInterval() and app.setTimeOut(). EPLAN's own PDFs add the frame
+	with addField() from a link's /Next instead; PDFium runs neither, tried
+	in Chrome (25.11.2026).
+*/
+static QByteArray blinkScript(const QByteArray &name)
+{
+	const QByteArray field = "this.getField('" + name + "')";
 	return
-		"function finish() {"
-			" app.clearInterval(interval);"
-			" var oldDirty = dirty; removeField('Target'); dirty = oldDirty; }\n"
-		"function blinker() {"
-			" var f = getField('Target');"
-			" if (f != null) { var oldDirty = dirty;"
-			" f.hidden = (interval.counter++ % 2) == 0; dirty = oldDirty; } }\n"
-		"function highlight(page, coordinates) {"
-			" if (getField('Target') != null) { app.clearTimeOut(timer); finish(); }"
-			" var oldDirty = dirty;"
-			" var f = addField('Target', 'button', page, coordinates);"
-			" f.lineWidth = 3; f.strokeColor = color.red;"
-			" dirty = oldDirty;"
-			" interval = app.setInterval('blinker()', 500); interval.counter = 0;"
-			" timer = app.setTimeOut('finish()', 5000); }\n";
+		"var q = this; q.qetN = 0;"
+		" if (q.qetI) { app.clearInterval(q.qetI); app.clearTimeOut(q.qetT); }"
+		" " + field + ".display = display.visible;"
+		" q.qetI = app.setInterval(\"" + field
+			+ ".display = (this.qetN++ % 2) ? display.visible : display.hidden;\", 500);"
+		" q.qetT = app.setTimeOut(\"app.clearInterval(this.qetI); " + field
+			+ ".display = display.hidden;\", 5000);";
 }
 
 void convertUriToGoTo(const QString &pdfPath)
@@ -455,10 +471,41 @@ void convertUriToGoTo(const QString &pdfPath)
 
 	if (pageObjs.isEmpty()) return;  // nothing to do
 
-	// The red frame of the jump target (EPLAN 2.9 and later), see
-	// markScript(). Not in PDF/A, as in EPLAN: PDF/A allows no JavaScript.
+	// The red frame of the jump target (EPLAN 2.9 and later): one hidden
+	// read-only button per target, the frame, and over each link an
+	// invisible push button with the jump, which shows that frame. Chrome
+	// and Edge (PDFium) run only the GoTo of a link annotation, not its
+	// /Next, but every action of a button, and their Hide action finds a
+	// field by its name only; Acrobat runs the button too, it lies on top.
+	// Not in PDF/A, as in EPLAN: PDF/A allows no JavaScript.
+	struct Frame {
+		int page;          // 1-based
+		QList<int> rect;   // L B R T in points
+		int widget;        // object numbers
+		int appearance;
+		QByteArray name;
+	};
+	QList<Frame> frames;
+	QMap<QByteArray, int> frameOfTarget;   // "page:L_B_R_T" -> index
+	struct Button {
+		int page;          // 1-based
+		QByteArray rect;   // as the link's /Rect
+		QByteArray action; // the inside of the action dictionary
+	};
+	QList<Button> buttons;
 	const bool marks = !data.contains("pdfaid:part");
-	bool anyMark = false;
+	const int hideAll = highestObjectNumber(data) + 1;   // first new object
+	QHash<int, int> pageOfAnnot;           // annotation object -> 1-based page
+	if (marks) {
+		static const QRegularExpression ref(QStringLiteral("(\\d+)\\s+0\\s+R"));
+		for (int i = 0; i < pageObjs.size(); ++i) {
+			int open = -1, close = -1;
+			if (!annotsArray(data, pageObjs.at(i), &open, &close)) continue;
+			auto it = ref.globalMatch(QString::fromLatin1(data.mid(open + 1, close - open - 1)));
+			while (it.hasNext())
+				pageOfAnnot.insert(it.next().captured(1).toInt(), i + 1);
+		}
+	}
 
 	// --- 3. Replace URI annotations with GoTo ---
 	// Pattern (Qt always writes exactly this):
@@ -543,26 +590,46 @@ void convertUriToGoTo(const QString &pdfPath)
 						   + QByteArray::number(fitr[3]) + "]";
 				}
 
-				// The jump, then the red frame over the target: as EPLAN,
-				// /Next runs highlight(page index, [L B R T]).
+				// The jump, then: hide every frame, show the target's, let
+				// it blink.
 				QByteArray next;
 				const QList<int> mark = marks ? fragmentNumbers(uriVal, "mark")
 											  : QList<int>();
 				if (mark.size() == 4 && mark[2] > mark[0] && mark[3] > mark[1]) {
-					const QByteArray call = "highlight(" + QByteArray::number(pageNum - 1)
-						+ ", [" + QByteArray::number(mark[0]) + ", "
-						+ QByteArray::number(mark[1]) + ", "
-						+ QByteArray::number(mark[2]) + ", "
-						+ QByteArray::number(mark[3]) + "]);";
-					next = "\n/Next << /Type /Action /S /JavaScript /JS "
-						+ pdfLiteral(call) + " >>";
-					anyMark = true;
+					QByteArray key = QByteArray::number(pageNum) + ':';
+					for (int v : mark) key += QByteArray::number(v) + '_';
+					int index = frameOfTarget.value(key, -1);
+					if (index == -1) {
+						index = frames.size();
+						const int widget = hideAll + 1 + 2 * index;
+						frames.append({pageNum, mark, widget, widget + 1,
+									   "qetmark" + QByteArray::number(index + 1)});
+						frameOfTarget.insert(key, index);
+					}
+					const Frame &frame = frames.at(index);
+					next = "\n/Next [" + QByteArray::number(hideAll) + " 0 R"
+						+ " << /S /Hide /T " + pdfLiteral(frame.name) + " /H false >>"
+						+ " << /S /JavaScript /JS " + pdfLiteral(blinkScript(frame.name))
+						+ " >>]";
 				}
 
 				QByteArray goTo = sGoTo
 					+ QByteArray::number(pageObjNum)
 					+ " 0 R" + dest + next;
 				out.append(goTo);
+
+				// The button over the link: the link's rectangle and page
+				if (!next.isEmpty()) {
+					const int head = data.lastIndexOf(" 0 obj", found);
+					const int line = head == -1 ? -1 : data.lastIndexOf('\n', head) + 1;
+					const int linkObj = line == -1 ? 0 : data.mid(line, head - line).trimmed().toInt();
+					const int rectAt = line == -1 ? -1 : data.indexOf("/Rect [", line);
+					const int rectEnd = rectAt == -1 ? -1 : data.indexOf(']', rectAt);
+					const int page = pageOfAnnot.value(linkObj, 0);
+					if (page > 0 && rectAt != -1 && rectEnd != -1 && rectEnd < found)
+						buttons.append({page, data.mid(rectAt + 7, rectEnd - rectAt - 7).simplified(),
+										goTo});
+				}
 				changed = true;
 			} else {
 				// Unknown page — keep original URI
@@ -587,33 +654,104 @@ void convertUriToGoTo(const QString &pdfPath)
 
 	QByteArray body = data.left(xrefStart);
 
-	// --- 3b. The document JavaScript with highlight(), under the name
-	// "generalScript" in the catalog's /Names /JavaScript, as EPLAN has it ---
-	// Anything unexpected leaves the script out; the jumps stay.
-	if (anyMark) do {
-		const int script = highestObjectNumber(body) + 1;
-		const QByteArray entry = "/JavaScript << /Names [(generalScript) "
-			+ QByteArray::number(script) + " 0 R] >>";
-		const int catalog = body.indexOf("/Type /Catalog");
-		const int catalogEnd = catalog == -1 ? -1 : body.indexOf(">>", catalog);
-		if (catalog == -1 || catalogEnd == -1) break;
-		const int names = body.indexOf("/Names ", catalog);
-		if (names != -1 && names < catalogEnd) {
-			// Qt: "/Names 5 0 R", an empty dictionary of its own
-			const int namesObj = body.mid(names + 7, 12).split(' ').value(0).toInt();
-			const int start = objectStart(body, namesObj);
-			const int dict = start == -1 ? -1 : body.indexOf("<<", start);
-			if (dict == -1) break;
-			const int dictEnd = body.indexOf("endobj", dict);
-			const int existing = body.indexOf("/JavaScript", dict);
-			if (existing != -1 && existing < dictEnd) break;   // not Qt's
-			body.insert(dict + 2, "\n" + entry);
-		} else {
-			body.insert(catalog + 14, "\n/Names << " + entry + " >>");
+	// --- 3b. The frames and the buttons: their objects, on their pages'
+	// /Annots, and in the form, where the Hide actions and getField() find
+	// them by name ---
+	if (!frames.isEmpty()) {
+		// After the frames: one empty appearance, then the buttons.
+		const int emptyAppearance = hideAll + 1 + 2 * int(frames.size());
+		auto buttonObj = [&](int i) { return emptyAppearance + 1 + i; };
+
+		QByteArray fields, names;
+		for (const Frame &frame : std::as_const(frames)) {
+			fields += QByteArray::number(frame.widget) + " 0 R ";
+			names += pdfLiteral(frame.name) + ' ';
 		}
-		body += QByteArray::number(script) + " 0 obj\n<<\n/Type /Action\n/S /JavaScript\n/JS "
-			+ pdfLiteral(markScript()) + "\n>>\nendobj\n";
-	} while (false);
+		for (int i = 0; i < buttons.size(); ++i)
+			fields += QByteArray::number(buttonObj(i)) + " 0 R ";
+		fields = fields.trimmed();
+		names = names.trimmed();
+
+		// Per page, the frames go first on /Annots: below the links, so a
+		// frame that is showing never catches a click. The buttons go last,
+		// on top of the links they stand for.
+		QMap<int, QByteArray> firstOfPage, lastOfPage;
+		for (const Frame &frame : std::as_const(frames))
+			firstOfPage[frame.page] += QByteArray::number(frame.widget) + " 0 R ";
+		for (int i = 0; i < buttons.size(); ++i)
+			lastOfPage[buttons.at(i).page] += " " + QByteArray::number(buttonObj(i)) + " 0 R";
+		QList<int> pages = firstOfPage.keys() + lastOfPage.keys();
+		std::sort(pages.begin(), pages.end());
+		pages.erase(std::unique(pages.begin(), pages.end()), pages.end());
+		for (int page : std::as_const(pages)) {
+			const int pageObj = pageObjs.at(page - 1);
+			int open = -1, close = -1;
+			if (annotsArray(body, pageObj, &open, &close)) {
+				body.insert(close, lastOfPage.value(page) + ' ');
+				body.insert(open + 1, " " + firstOfPage.value(page));
+			} else {
+				const int start = objectStart(body, pageObj);
+				const int dict = start == -1 ? -1 : body.indexOf("<<", start);
+				if (dict == -1) continue;
+				body.insert(dict + 2, "\n/Annots [" + firstOfPage.value(page)
+										  + lastOfPage.value(page) + "]");
+			}
+		}
+
+		const int catalog = body.indexOf("/Type /Catalog");
+		if (catalog != -1) {
+			const int catalogEnd = body.indexOf(">>", catalog);
+			const int form = body.indexOf("/AcroForm", catalog);
+			if (form == -1 || form > catalogEnd)
+				body.insert(catalog + 14, "\n/AcroForm << /Fields [" + fields + "] >>");
+		}
+
+		QByteArray objects;
+		objects += QByteArray::number(hideAll) + " 0 obj\n<<\n/Type /Action\n/S /Hide\n/T ["
+			+ names + "]\n/H true\n>>\nendobj\n";
+		for (const Frame &frame : std::as_const(frames)) {
+			const int w = frame.rect[2] - frame.rect[0];
+			const int h = frame.rect[3] - frame.rect[1];
+			const QByteArray rect = QByteArray::number(frame.rect[0]) + " "
+				+ QByteArray::number(frame.rect[1]) + " "
+				+ QByteArray::number(frame.rect[2]) + " "
+				+ QByteArray::number(frame.rect[3]);
+			objects += QByteArray::number(frame.widget) + " 0 obj\n<<\n"
+				"/Type /Annot\n/Subtype /Widget\n/FT /Btn\n/Ff 65537\n"
+				"/T " + pdfLiteral(frame.name) + "\n"
+				"/Rect [" + rect + "]\n"
+				"/F 2\n"
+				"/P " + QByteArray::number(pageObjs.at(frame.page - 1)) + " 0 R\n"
+				"/MK << /BC [1 0 0] >>\n"
+				"/BS << /W 3 /S /S >>\n"
+				"/AP << /N " + QByteArray::number(frame.appearance) + " 0 R >>\n"
+				">>\nendobj\n";
+			const QByteArray stroke = "1 0 0 RG 3 w 1.5 1.5 "
+				+ QByteArray::number(w - 3) + " " + QByteArray::number(h - 3)
+				+ " re S\n";
+			objects += QByteArray::number(frame.appearance) + " 0 obj\n<<\n"
+				"/Type /XObject\n/Subtype /Form\n"
+				"/BBox [0 0 " + QByteArray::number(w) + " " + QByteArray::number(h) + "]\n"
+				"/Length " + QByteArray::number(stroke.size()) + "\n"
+				">>\nstream\n" + stroke + "endstream\nendobj\n";
+		}
+		objects += QByteArray::number(emptyAppearance) + " 0 obj\n<<\n"
+			"/Type /XObject\n/Subtype /Form\n/BBox [0 0 1 1]\n/Length 0\n"
+			">>\nstream\n\nendstream\nendobj\n";
+		for (int i = 0; i < buttons.size(); ++i) {
+			const Button &button = buttons.at(i);
+			objects += QByteArray::number(buttonObj(i)) + " 0 obj\n<<\n"
+				"/Type /Annot\n/Subtype /Widget\n/FT /Btn\n/Ff 65536\n"
+				"/T " + pdfLiteral("qetjump" + QByteArray::number(i + 1)) + "\n"
+				"/Rect [" + button.rect + "]\n"
+				"/F 4\n/H /N\n"
+				"/P " + QByteArray::number(pageObjs.at(button.page - 1)) + " 0 R\n"
+				"/AP << /N " + QByteArray::number(emptyAppearance) + " 0 R >>\n"
+				"/A <<\n/Type /Action\n" + button.action + "\n>>\n"
+				">>\nendobj\n";
+		}
+		body += objects;
+	}
 
 	// Collect all object offsets from the body
 	QMap<int, int> offsets;  // objNum -> byte offset
@@ -653,7 +791,7 @@ void convertUriToGoTo(const QString &pdfPath)
 
 	QByteArray trailer = trailerDictionary(data, xrefStart);
 	{
-		// /Size: one more than the highest object, the script included
+		// /Size: one more than the highest object, the frames included
 		const int sizePos = trailer.indexOf("/Size ");
 		if (sizePos != -1) {
 			const int numStart = sizePos + 6;

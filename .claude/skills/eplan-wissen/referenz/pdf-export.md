@@ -247,27 +247,34 @@ Lücke „von welchem Eintrag zu welchem Ziel“:
   „Zoom verwenden = an“. Seit der Neuerung ist EPLANs Standard aber **ganze Seite** (Zoom aus) plus roter Rahmen.
   Quelle: Fork `sources/pdf_links.cpp` (`frameRectPdf`, `convertUriToGoTo`).
 - Blinkrahmen im Fork seit 1.51.0 (Quelle: Fork `sources/pdf_links.cpp`, `convertUriToGoTo`, Test
-  `tests/qttest/tst_pdfjumpmark.cpp`), gebaut wie in EPLANs eigenen PDFs.
+  `tests/qttest/tst_pdfjumpmark.cpp`). In Chrome selbst angeklickt: Rahmen erscheint, blinkt, ist nach 5 s weg.
   - **So macht es EPLAN** (belegt an einem EPLAN-PDF mit 5813 Links): Jeder Link ist `/S /GoTo /D [Seite /Fit]`
     mit `/Next << /S /JavaScript /JS (highlight(108, [7.25, 660.24, 24.83, 670.87]);) >>`, also Seitenindex ab 0
     und Zielrechteck in PDF-Punkten. Im Katalog `/Names /JavaScript` liegt das Dokument-Skript `generalScript` mit
     `highlight(page, coordinates)`: Es legt per `addField('Target', 'button', page, coordinates)` ein Feld mit
     `lineWidth 3` und `strokeColor color.red` an, blinkt per `app.setInterval('blinker()', 500)` und entfernt es nach
     `app.setTimeOut('finish()', 5000)` mit `removeField`; `dirty` wird gesichert, damit der Viewer nicht nach
-    Speichern fragt. Vorab gibt es keine Annotation und kein `/AcroForm`. Laut Birger zeigt Chrome den Rahmen beim
-    EPLAN-PDF.
-  - Der Fork macht es genauso: `injectCrossRefLinks` hängt an jeden Link auf ein Bauteil, einen Text oder einen
-    Kabelabschnitt `&mark=L_B_R_T` an (Ziel + 4 px), `convertUriToGoTo` schreibt daraus
-    `/Next ... highlight(i, [L, B, R, T]);` und legt `generalScript` an. Zoom bleibt `/FitR`. Sprünge auf ganze
-    Blätter bekommen keinen Rahmen.
-  - Irrweg (24.11.2026, verworfen): vorab versteckte Rahmen-Widgets mit Hide-Aktionen. Chrome/Edge (PDFium) führen
-    bei einem Link nur das GoTo aus, nicht `/Next` Hide; Hide findet Felder dort nur über den Namen als Text.
-    pypdfium2 hat kein JavaScript, damit lässt sich `highlight()` nicht nachklicken. Chrome-Automatisierung
-    (Claude in Chrome) erreicht Klicks im PDF-Viewer nicht; Viewer-Tests klickt Birger.
-  - Ohne JavaScript (z. B. SumatraPDF) springt der Link, ein Rahmen erscheint nicht – wie bei EPLAN.
+    Speichern fragt. Vorab gibt es keine Annotation und kein `/AcroForm`. **In Chrome zeigt das keinen Rahmen**
+    (selbst geprüft, 25.11.2026): Das funktioniert nur in Acrobat/Reader.
+  - **Was Chromes PDF-Viewer (PDFium) ausführt** – in Chrome mit einem Prüf-PDF aller Varianten angeklickt:
+    Link-Annotation: nur das GoTo; `/Next` (JavaScript, Hide) läuft nicht, auch kein `app.alert`.
+    Schaltfläche (Widget `/FT /Btn`, `/Ff 65536`): GoTo, `/Next` Hide (Feld über den **Namen** als Text, nicht per
+    Objektverweis) und JavaScript `getField(...).display`, `app.setTimeOut` laufen. `addField` läuft auch dort
+    nicht. Der erste Klick nach dem Laden setzt manchmal nur den Fokus.
+  - Der Fork macht es deshalb so: `injectCrossRefLinks` hängt an jeden Link auf ein Bauteil, einen Text oder einen
+    Kabelabschnitt `&mark=L_B_R_T` an (Ziel + 4 px). `convertUriToGoTo` legt je Ziel ein verstecktes,
+    schreibgeschütztes rotes Rahmenfeld `qetmarkN` an (`/F 2`, `/Ff 65537`, eigenes `/AP` 3 pt, vorn in `/Annots`)
+    und über jeden Link eine unsichtbare Schaltfläche `qetjumpN` (leeres `/AP`, `/H /N`, zuletzt in `/Annots`) mit
+    GoTo (/FitR) → `/Next [` „alle Rahmen verstecken“ (`/S /Hide /T [(qetmark1) …] /H true`) `,`
+    „Zielrahmen zeigen“ (`/T (qetmarkN) /H false`) `,` JavaScript (`setInterval` 500 ms Blinken, `setTimeOut` 5 s
+    Ausblenden) `]`. Der Link darunter trägt dieselbe Kette. Acrobat führt die oberste Annotation aus, also die
+    Schaltfläche. Sprünge auf ganze Blätter bekommen keinen Rahmen.
+  - Prüfmittel: Prüf-PDF mit großen Klickflächen über localhost (`python -m http.server`) in Chrome öffnen –
+    `file://` biegt Claude in Chrome zu https um. pypdfium2 kann GoTo/Hide an Schaltflächen nachklicken
+    (`FFI_GetPage` setzen!), hat aber kein JavaScript. Eigenheit von PDFium: Beim nächsten Klick feuert die noch
+    fokussierte vorige Schaltfläche ihre Aktion noch einmal vor der neuen; das Ergebnis stimmt.
+  - Ohne JavaScript, aber mit Hide (z. B. ältere PDFium-Viewer): Rahmen bleibt bis zum nächsten Sprung stehen.
   - PDF/A (`--export-pdf … --pdf-a`, erkannt an `pdfaid:part` im XMP): keine Rahmen, kein JavaScript, wie EPLAN.
-  - Prüfen: `--export-pdf`, dann je Link den `highlight`-Aufruf (Seitenindex = Sprungziel, Rechteck im `/FitR`,
-    Inhalt darunter) und das Dokument-Skript kontrollieren (pypdf + pymupdf).
 - Optional im Fork: Schalter „Sprung = ganze Seite (/Fit) statt /FitR“, um EPLAN-Standard nachzubilden.
 
 ## 7. Lesezeichen, Seitenbaum und Texte im PDF

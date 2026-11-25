@@ -6,13 +6,15 @@ Original-QElectroTech stehen in `ChangeLog*`.
 ## 1.51.0 – 24.11.2026 – Sprungziel im PDF markiert
 
 - PDF-Export: Das Ziel eines Sprungs (Potentialpfeil, Querverweis, Kontaktspiegel, Dreifachsprung, Kabel- und
-  Klemmenverweis, Text mit Ziel-Bauteil) bekommt wie bei EPLAN ab 2.9 einen roten, blinkenden Rahmen – gebaut wie in
-  EPLANs eigenen PDFs: Die Link-Aktion ist GoTo (Seite + /FitR wie bisher) → `/Next` JavaScript
-  `highlight(Seitenindex, [x1, y1, x2, y2]);`. Das Dokument-Skript `generalScript` unter `/Names /JavaScript` legt
-  per `addField` ein Schaltflächenfeld mit rotem Rand über das Ziel, lässt es alle 500 ms blinken und entfernt es
-  nach 5 s; ein neuer Sprung entfernt den alten Rahmen vorher. Vorab liegt nichts im PDF (kein Formular, keine
-  versteckte Annotation). Läuft überall, wo PDF-JavaScript läuft (Acrobat/Reader; Chrome und Edge zeigen es beim
-  EPLAN-PDF). Sprünge auf ganze Blätter bekommen keinen Rahmen.
+  Klemmenverweis, Text mit Ziel-Bauteil) bekommt wie bei EPLAN ab 2.9 einen roten Rahmen, der blinkt und nach 5 s
+  verschwindet – auch in Chrome und Edge (in Chrome selbst angeklickt). Je Ziel ein verstecktes, schreibgeschütztes
+  Rahmenfeld `qetmarkN`; über jedem Link eine unsichtbare Schaltfläche `qetjumpN` mit der Kette GoTo (/FitR wie
+  bisher) → alle Rahmen verstecken → Zielrahmen zeigen (Hide über den Feldnamen) → JavaScript (Blinken per
+  `setInterval`, Ausblenden per `setTimeOut`). Der Link darunter trägt dieselbe Kette.
+- Warum so und nicht wie EPLAN selbst (`/Next` JavaScript `highlight()` mit `addField`): Chromes PDF-Viewer (PDFium)
+  führt bei Link-Annotationen nur das GoTo aus, kein `/Next`, und kennt `addField` nicht. Bei Schaltflächen laufen
+  GoTo, Hide und JavaScript (`display`, `setTimeOut`). In Chrome mit einem Prüf-PDF aller Varianten nachgeklickt.
+  Sprünge auf ganze Blätter bekommen keinen Rahmen.
 - Neuer Schalter `--pdf-a` für `--export-pdf`: PDF/A-1b, dann wie bei EPLAN ohne Rahmen und ohne JavaScript.
 - Test `tst_pdfjumpmark` prüft die Aktionskette und den PDF/A-Fall.
 

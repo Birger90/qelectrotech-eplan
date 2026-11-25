@@ -32,8 +32,8 @@ In QET und im exportierten PDF:
 - Ein verknüpfter Folioverweis ist selbst ein Link zum Gegenpfeil, nicht nur sein Text. Gefüllte Verweispfeile im
   EPLAN-Aussehen.
 - Das PDF markiert das Sprungziel wie EPLAN 2.9: Nach einem Klick auf Potentialpfeil, Querverweis oder Gerätesprung
-  blinkt 5 s lang ein roter Rahmen um das Ziel, gebaut wie in EPLANs eigenen PDFs (JavaScript `highlight()`;
-  Acrobat, Chrome, Edge). Bei PDF/A keine Rahmen (`--export-pdf … --pdf-a`).
+  blinkt ein roter Rahmen um das Ziel und verschwindet nach 5 s, in Acrobat wie in Chrome und Edge. Bei PDF/A keine
+  Rahmen (`--export-pdf … --pdf-a`).
 
 ## Daten wie bei EPLAN statt Handtext
 

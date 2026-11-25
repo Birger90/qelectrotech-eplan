@@ -42,6 +42,8 @@ class QPlainTextEdit;
 class QRadioButton;
 class QGroupBox;
 class QTableWidget;
+class QTabWidget;
+class ThmLabelSheet;
 
 /**
 	@brief Label printing > Print THM labels...: the markers of the open project
@@ -62,6 +64,22 @@ class ThmPrintDialog : public QDialog
 			/// Texts typed by hand: one label per line, "text;n" for n
 			/// copies; empty lines are skipped, equal texts merged if asked
 		static QList<ThmJob::Label> freeLabels(const QString &text, int copies, bool merge);
+
+			/// A numbered series as M-Print PRO's automatic numbering
+		struct Series
+		{
+			enum Kind { Decimal, Plc, Letters };
+			Kind kind = Decimal;
+			QString prefix;
+			QString suffix;
+			QString start = QStringLiteral("1");  ///< 1, 4.0 (byte.bit), A
+			QString end = QStringLiteral("10");
+			int step = 1;
+			int repeat = 1;       ///< each value so many times in a row
+			int digits = 0;       ///< decimal: at least so many digits
+		};
+			/// The texts of @p s; empty and @p error set when it cannot be
+		static QStringList series(const Series &s, QString *error = nullptr);
 		QList<ThmJob::Label> labels() const;
 
 	private:
@@ -118,7 +136,16 @@ class ThmPrintDialog : public QDialog
 		QGroupBox *m_range_box = nullptr;
 		void updateSource();
 		QSpinBox *m_copies = nullptr;
+		QSpinBox *m_first = nullptr;   ///< print from this label of the row on
+		void numberLabels();
 		QTableWidget *m_preview = nullptr;
+			/// The labels drawn as on the material, one field each
+		ThmLabelSheet *m_sheet = nullptr;
+		QTabWidget *m_views = nullptr;
+		bool m_sheet_typing = false;  ///< the change comes from the sheet
+		void sheetEdited(const QStringList &texts);
+			/// Every label of @p labels once per copy, for the sheet
+		static QStringList expanded(const QList<ThmJob::Label> &labels);
 		QLabel *m_count = nullptr;
 
 		QComboBox *m_article = nullptr;

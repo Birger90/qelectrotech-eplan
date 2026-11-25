@@ -32138,6 +32138,20 @@ Strg+Eingabe gibt die Zelle zurück, Escape verwirft den Text.</translation>
     </message>
 </context>
 <context>
+    <name>ThmLabelSheet</name>
+    <message numerus="yes">
+        <source>... and %n more label(s)</source>
+        <translation>
+            <numerusform>… und %n weiteres Etikett</numerusform>
+            <numerusform>… und %n weitere Etiketten</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Choose the material: until then a plain label is shown.</source>
+        <translation>Material wählen: bis dahin wird ein einfaches Etikett gezeigt.</translation>
+    </message>
+</context>
+<context>
     <name>ThmLayouts</name>
     <message>
         <source>%1: %2</source>
@@ -32722,6 +32736,121 @@ Menge: %n Etiketten</numerusform>
     <message>
         <source>Typed by hand</source>
         <translation>Von Hand eingeben</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n label(s): %1</source>
+        <translation>
+            <numerusform>%n Etikett: %1</numerusform>
+            <numerusform>%n Etiketten: %1</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>After the last text</source>
+        <translation>Hinter den letzten Text</translation>
+    </message>
+    <message>
+        <source>Digits:</source>
+        <translation>Stellen:</translation>
+    </message>
+    <message>
+        <source>Each value:</source>
+        <translation>Jeder Wert:</translation>
+    </message>
+    <message>
+        <source>End:</source>
+        <translation>Ende:</translation>
+    </message>
+    <message>
+        <source>Fill the labels with a series: prefix, start, end, step, suffix</source>
+        <translation>Etiketten mit einer Reihe füllen: Präfix, Start, Ende, Schritt, Suffix</translation>
+    </message>
+    <message>
+        <source>Kind:</source>
+        <translation>Art:</translation>
+    </message>
+    <message>
+        <source>Letters (A, B, C)</source>
+        <translation>Buchstaben (A, B, C)</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation>Liste</translation>
+    </message>
+    <message>
+        <source>Numbering</source>
+        <translation>Nummerieren</translation>
+    </message>
+    <message>
+        <source>Numbering...</source>
+        <translation>Nummerieren…</translation>
+    </message>
+    <message>
+        <source>Numbers (1, 2, 3)</source>
+        <translation>Zahlen (1, 2, 3)</translation>
+    </message>
+    <message>
+        <source>On a strip begun already: the labels before this one stay empty</source>
+        <translation>Bei angebrochenem Streifen: die Etiketten davor bleiben leer</translation>
+    </message>
+    <message>
+        <source>PLC addresses (4.0 ... 4.7, 5.0)</source>
+        <translation>SPS-Adressen (4.0 … 4.7, 5.0)</translation>
+    </message>
+    <message>
+        <source>Prefix:</source>
+        <translation>Präfix:</translation>
+    </message>
+    <message>
+        <source>Put:</source>
+        <translation>Einfügen:</translation>
+    </message>
+    <message>
+        <source>Replace all texts</source>
+        <translation>Alle Texte ersetzen</translation>
+    </message>
+    <message>
+        <source>Start and end must be whole numbers.</source>
+        <translation>Start und Ende müssen ganze Zahlen sein.</translation>
+    </message>
+    <message>
+        <source>Start and end of a PLC series are byte.bit, e.g. 4.0 and 5.7.</source>
+        <translation>Start und Ende einer SPS-Reihe sind Byte.Bit, z. B. 4.0 und 5.7.</translation>
+    </message>
+    <message>
+        <source>Start and end of a letter series are single letters, e.g. A and Z.</source>
+        <translation>Start und Ende einer Buchstabenreihe sind einzelne Buchstaben, z. B. A und Z.</translation>
+    </message>
+    <message>
+        <source>Start at label:</source>
+        <translation>Druck ab Etikett:</translation>
+    </message>
+    <message>
+        <source>Start:</source>
+        <translation>Start:</translation>
+    </message>
+    <message>
+        <source>Step:</source>
+        <translation>Schritt:</translation>
+    </message>
+    <message>
+        <source>Suffix:</source>
+        <translation>Suffix:</translation>
+    </message>
+    <message>
+        <source>The series is too long.</source>
+        <translation>Die Reihe ist zu lang.</translation>
+    </message>
+    <message>
+        <source>Type straight into the labels of the preview: Tab or Return goes on to the next label.</source>
+        <translation>Direkt in die Etiketten der Vorschau schreiben: Tab oder Enter springt zum nächsten Etikett.</translation>
+    </message>
+    <message>
+        <source>as needed</source>
+        <translation>nach Bedarf</translation>
+    </message>
+    <message>
+        <source>e.g. -X1: or I</source>
+        <translation>z. B. -X1: oder E</translation>
     </message>
 </context>
 <context>

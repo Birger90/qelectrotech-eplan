@@ -100,6 +100,11 @@ namespace ThmJob
 			/// text is centred in it
 		double field_top = 0;
 		double field_bottom = 0;
+			/// The label itself within the row, in the transport direction
+			/// (from the maker's layout; 0 height: the whole row). Drawn by
+			/// the preview, the printer does not need it
+		double marker_top = 0;
+		double marker_height = 0;
 			/// r of the T command: 0, 90, 180 or 270 degrees
 		int text_rotation = 0;
 			/// Further options of the O command besides R, as the maker's

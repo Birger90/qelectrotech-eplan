@@ -233,6 +233,9 @@ Die Zielwahl richtet sich nach der Artikelvariante:
 
 ### Dialog
 
+- **Etikettenansicht** (Registerkarte *Etiketten*, daneben *Liste*): der Streifen maßstäblich nach der Vorlage des gewählten Materials – Reihen, Spalten, Markierer (gelb), Textfeld (gepunktet), Text in Größe und Drehung wie gedruckt. Wechselt man das Material, wechselt die Ansicht. Von Hand: jedes Etikett ist ein eigenes Feld, Tab, Enter oder Pfeil nach unten springt weiter, nach dem letzten Text steht immer ein leeres Etikett. Strg+Mausrad zoomt.
+- **Nummerieren…** (von Hand): Zahlen, SPS-Adressen (Byte.Bit, 4.0 … 4.7, 5.0) oder Buchstaben, mit Präfix, Suffix, Start, Ende (auch abwärts), Schritt, Wiederholung je Wert und Stellenzahl; hinter den letzten Text oder statt aller Texte.
+- **Druck ab Etikett**: bei angebrochenem Streifen bleiben die Etiketten davor leer.
 - **Texte**: *Aus dem Projekt* (wie unten) oder *Von Hand eingeben*, wie in M-Print PRO: ein Etikett je Zeile, `Text;n` für n Etiketten dieses Texts, leere Zeilen zählen nicht. Kopien je Schild und *Gleiche Texte zusammenfassen* gelten auch hier. Ohne offenes Projekt öffnet der Dialog gleich mit dieser Eingabe; der Menüpunkt ist darum immer aktiv.
 - Auswahl wie beim Export: Drähte, Kabel, Klemmen, Geräte; Blätter von … bis; vollständiges Kennzeichen; je Draht- und Kabelende ein Schild; gleiche Texte zusammenfassen; Kopien je Schild.
 - Vorschau: Text und Anzahl je Zeile, Summe der Etiketten.

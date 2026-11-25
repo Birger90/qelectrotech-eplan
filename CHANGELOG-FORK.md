@@ -35,6 +35,9 @@ Original-QElectroTech stehen in `ChangeLog*`.
   wechseln…* im Druckdialog zeigt Artikel, Farbband und Trägerplatte und übernimmt den Wechsel erst nach der
   Bestätigung „eingelegt“. CLI `--thm-load <Drucker> <Artikel> [--usual] [--roller …]`; `--thm-send` sendet nur an
   einen Drucker, dessen aktuelle Rüstung zum Artikel passt.
+- **Etiketteneditor** wie in M-Print PRO: maßstäbliche Ansicht des Streifens nach der Weidmüller-Vorlage, jedes Etikett
+  ein eigenes Feld zum Tippen (Tab/Enter weiter), *Nummerieren…* (Zahlen, SPS-Adressen, Buchstaben, Präfix/Suffix,
+  Schritt, Wiederholung), *Druck ab Etikett* für angebrochene Streifen.
 - **Etiketten von Hand**: im Druckdialog *Von Hand eingeben* – ein Etikett je Zeile, `Text;n` für n Stück; geht auch
   ohne offenes Projekt.
 - **Menü Etikettendruck** neben Schaltschrankaufbau: THM-Etiketten drucken, THM-Drucker (hinzufügen, ändern,

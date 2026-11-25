@@ -21,6 +21,7 @@
 // none fits. The printers are made up; nothing is sent. With
 // QET_THM_SCREENSHOT set, the dialog is saved there as an image.
 
+#include "marking/thmlabelsheet.h"
 #include "marking/thmprintdialog.h"
 #include "marking/thmprinters.h"
 #include "qetapptest.h"
@@ -29,6 +30,7 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QPushButton>
+#include <QSpinBox>
 #include <QTableWidget>
 #include <QRadioButton>
 #include <QPlainTextEdit>
@@ -120,6 +122,40 @@ class TestThmPrintDialog : public QObject
 			}
 		}
 
+		void numberingSeries()
+		{
+			ThmPrintDialog::Series s;
+			s.prefix = QStringLiteral("-X1:");
+			s.start = QStringLiteral("1");
+			s.end = QStringLiteral("5");
+			s.step = 2;
+			QCOMPARE(ThmPrintDialog::series(s), (QStringList{QStringLiteral("-X1:1"), QStringLiteral("-X1:3"), QStringLiteral("-X1:5")}));
+			s.start = QStringLiteral("3");
+			s.end = QStringLiteral("1");
+			s.step = 1;
+			s.repeat = 2;
+			s.digits = 2;
+			s.prefix.clear();
+			QCOMPARE(ThmPrintDialog::series(s), (QStringList{QStringLiteral("03"), QStringLiteral("03"), QStringLiteral("02"),
+															 QStringLiteral("02"), QStringLiteral("01"), QStringLiteral("01")}));
+			ThmPrintDialog::Series plc;
+			plc.kind = ThmPrintDialog::Series::Plc;
+			plc.prefix = QStringLiteral("I");
+			plc.start = QStringLiteral("4.6");
+			plc.end = QStringLiteral("5.1");
+			QCOMPARE(ThmPrintDialog::series(plc), (QStringList{QStringLiteral("I4.6"), QStringLiteral("I4.7"),
+															   QStringLiteral("I5.0"), QStringLiteral("I5.1")}));
+			ThmPrintDialog::Series letters;
+			letters.kind = ThmPrintDialog::Series::Letters;
+			letters.start = QStringLiteral("a");
+			letters.end = QStringLiteral("C");
+			QCOMPARE(ThmPrintDialog::series(letters), (QStringList{QStringLiteral("A"), QStringLiteral("B"), QStringLiteral("C")}));
+			QString error;
+			plc.start = QStringLiteral("4.8");
+			QVERIFY(ThmPrintDialog::series(plc, &error).isEmpty());
+			QVERIFY(!error.isEmpty());
+		}
+
 		void typedByHand()
 		{
 				//One label per line, "text;n" for n, empty lines skipped
@@ -143,6 +179,31 @@ class TestThmPrintDialog : public QObject
 			QCOMPARE(preview->rowCount(), 2);
 			QCOMPARE(preview->item(1, 0)->text(), QStringLiteral("T2"));
 			QCOMPARE(ThmJob::labelCount(dialog.labels()), 3);
+				//Started strip: the labels before the first stay empty
+			auto *first = dialog.findChild<QSpinBox *>(QStringLiteral("thm_first_label"));
+			QVERIFY(first);
+			first->setValue(3);
+			QCOMPARE(dialog.labels().first().text, QString());
+			QCOMPARE(ThmJob::labelCount(dialog.labels()), 5);
+			first->setValue(1);
+			auto *sheet = dialog.findChild<ThmLabelSheet *>(QStringLiteral("thm_label_sheet"));
+			QVERIFY(sheet);
+			QCOMPARE(sheet->texts(), (QStringList{QStringLiteral("T1"), QStringLiteral("T2"), QStringLiteral("T2")}));
+			QVERIFY(sheet->isEditable());
+
+				//A picture of the sheet with a real material, when asked:
+				//QET_THM_SHEET_SCREENSHOT=<png>, QET_THM_LAYOUTS=<layout file>,
+				//QET_THM_SHEET_ARTICLE=<article>
+			const QString shot = qEnvironmentVariable("QET_THM_SHEET_SCREENSHOT");
+			if (!shot.isEmpty()) {
+				auto *article = dialog.findChild<QComboBox *>(QStringLiteral("thm_article"));
+				text->setPlainText(QStringLiteral("-K1\n-K2\n-X1:1\n-X1:2\n-Q1\n-F3"));
+				article->setCurrentText(qEnvironmentVariable("QET_THM_SHEET_ARTICLE", QStringLiteral("2005610000")));
+				dialog.resize(1400, 720);
+				dialog.show();
+				QCoreApplication::processEvents();
+				QVERIFY(dialog.grab().save(shot));
+			}
 		}
 };
 

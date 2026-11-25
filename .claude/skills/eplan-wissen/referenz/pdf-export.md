@@ -247,21 +247,27 @@ Lücke „von welchem Eintrag zu welchem Ziel“:
   „Zoom verwenden = an“. Seit der Neuerung ist EPLANs Standard aber **ganze Seite** (Zoom aus) plus roter Rahmen.
   Quelle: Fork `sources/pdf_links.cpp` (`frameRectPdf`, `convertUriToGoTo`).
 - Blinkrahmen im Fork seit 1.51.0 (Quelle: Fork `sources/pdf_links.cpp`, `convertUriToGoTo`, Test
-  `tests/qttest/tst_pdfjumpmark.cpp`). Wie EPLAN ihn technisch baut, ist weiter nicht belegt; der Fork macht es so:
-  - `injectCrossRefLinks` hängt an jeden Link auf ein Bauteil, einen Text oder einen Kabelabschnitt
-    `&mark=L_B_R_T` an (Ziel + 4 px, PDF-Punkte). Sprünge auf ganze Blätter bekommen keinen Rahmen.
-  - Je Ziel eine versteckte (`/F 2`), schreibgeschützte Schaltfläche `qetmarkN` (`/FT /Btn /Ff 65537`, rot
-    `/MK /BC [1 0 0]`, eigener `/AP`-Rahmen 2 pt) vorn in `/Annots` der Zielseite (unter den Links, fängt keine
-    Klicks ab), alle im `/AcroForm` des Katalogs, damit `getField()` sie findet.
-  - Link-Aktion: `/GoTo` (Seite + `/FitR` wie bisher) → `/Next [` gemeinsame Aktion „alle Rahmen verstecken“
-    (`/S /Hide /H true`, indirektes Objekt) `,` „Zielrahmen zeigen“ (`/S /Hide /H false`) `,` JavaScript `]`.
-    Das JavaScript (nur Acrobat/Reader) lässt den Rahmen sechsmal im 250-ms-Takt blinken, versteckt ihn nach 2 s
-    und löscht die Zeitgeber des vorigen Sprungs.
-  - Ohne JavaScript bleibt der Rahmen bis zum nächsten Sprung stehen, wenn der Viewer Hide-Aktionen und `/Next`
-    ausführt. Poppler (Okular) liest laut KDE-Fehlerbericht keine `/Next`-Ketten.
+  `tests/qttest/tst_pdfjumpmark.cpp`), gebaut wie in EPLANs eigenen PDFs.
+  - **So macht es EPLAN** (belegt an einem EPLAN-PDF mit 5813 Links): Jeder Link ist `/S /GoTo /D [Seite /Fit]`
+    mit `/Next << /S /JavaScript /JS (highlight(108, [7.25, 660.24, 24.83, 670.87]);) >>`, also Seitenindex ab 0
+    und Zielrechteck in PDF-Punkten. Im Katalog `/Names /JavaScript` liegt das Dokument-Skript `generalScript` mit
+    `highlight(page, coordinates)`: Es legt per `addField('Target', 'button', page, coordinates)` ein Feld mit
+    `lineWidth 3` und `strokeColor color.red` an, blinkt per `app.setInterval('blinker()', 500)` und entfernt es nach
+    `app.setTimeOut('finish()', 5000)` mit `removeField`; `dirty` wird gesichert, damit der Viewer nicht nach
+    Speichern fragt. Vorab gibt es keine Annotation und kein `/AcroForm`. Laut Birger zeigt Chrome den Rahmen beim
+    EPLAN-PDF.
+  - Der Fork macht es genauso: `injectCrossRefLinks` hängt an jeden Link auf ein Bauteil, einen Text oder einen
+    Kabelabschnitt `&mark=L_B_R_T` an (Ziel + 4 px), `convertUriToGoTo` schreibt daraus
+    `/Next ... highlight(i, [L, B, R, T]);` und legt `generalScript` an. Zoom bleibt `/FitR`. Sprünge auf ganze
+    Blätter bekommen keinen Rahmen.
+  - Irrweg (24.11.2026, verworfen): vorab versteckte Rahmen-Widgets mit Hide-Aktionen. Chrome/Edge (PDFium) führen
+    bei einem Link nur das GoTo aus, nicht `/Next` Hide; Hide findet Felder dort nur über den Namen als Text.
+    pypdfium2 hat kein JavaScript, damit lässt sich `highlight()` nicht nachklicken. Chrome-Automatisierung
+    (Claude in Chrome) erreicht Klicks im PDF-Viewer nicht; Viewer-Tests klickt Birger.
+  - Ohne JavaScript (z. B. SumatraPDF) springt der Link, ein Rahmen erscheint nicht – wie bei EPLAN.
   - PDF/A (`--export-pdf … --pdf-a`, erkannt an `pdfaid:part` im XMP): keine Rahmen, kein JavaScript, wie EPLAN.
-  - Prüfen: `--export-pdf` und je Link die Kette, Zielseite (`/P`, `/Annots`), Lage im `/FitR` und Inhalt
-    unter dem Rahmen kontrollieren (pypdf + pymupdf).
+  - Prüfen: `--export-pdf`, dann je Link den `highlight`-Aufruf (Seitenindex = Sprungziel, Rechteck im `/FitR`,
+    Inhalt darunter) und das Dokument-Skript kontrollieren (pypdf + pymupdf).
 - Optional im Fork: Schalter „Sprung = ganze Seite (/Fit) statt /FitR“, um EPLAN-Standard nachzubilden.
 
 ## 7. Lesezeichen, Seitenbaum und Texte im PDF

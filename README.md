@@ -27,8 +27,8 @@
 > - A linked folio report arrow is itself a link to its partner, not only its text. Filled report arrows in the
 >   EPLAN look.
 > - The PDF marks the jump target as EPLAN 2.9 does: after a click on a report arrow, cross reference or device jump
->   a red frame blinks around the target (Adobe Acrobat/Reader); in viewers without JavaScript it stays until the
->   next jump, if the viewer supports hide actions. No frames in PDF/A (`--export-pdf ... --pdf-a`).
+>   a red frame blinks around the target for 5 s, built like EPLAN's own PDFs (JavaScript `highlight()`; Acrobat,
+>   Chrome, Edge). No frames in PDF/A (`--export-pdf ... --pdf-a`).
 >
 > **Data like EPLAN instead of typed text**
 > - PLC: a card (PLC master) keeps its I/O table (address, function text, comment, terminals); each channel is bound

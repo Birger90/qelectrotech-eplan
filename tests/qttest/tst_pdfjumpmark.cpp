@@ -1,18 +1,20 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
-	--export-pdf marks the target of a jump as EPLAN does from 2.9 on: each
-	link to an element leads on, after its GoTo, to a Hide action which
-	hides every frame, a second which shows the frame of its target, and a
-	JavaScript which lets that frame blink. The frame is a hidden read-only
-	push button on the target page, inside the zoomed rectangle. A PDF/A
-	export (--pdf-a) has no frames and no JavaScript, as in EPLAN.
+	--export-pdf marks the target of a jump as EPLAN does from 2.9 on, and
+	the way EPLAN's own PDFs do it: each link to an element leads on, after
+	its GoTo, to a JavaScript action "highlight(page index, [L, B, R, T]);".
+	The document JavaScript "generalScript" in the catalog's /Names
+	/JavaScript defines highlight(), which adds a red-bordered button over
+	the target, lets it blink and removes it again. The frame lies inside
+	the zoomed rectangle of the jump. Nothing else is added: no form, no
+	hidden annotation. A PDF/A export (--pdf-a) has no JavaScript at all,
+	as in EPLAN.
 */
 #include <QDir>
 #include <QFile>
 #include <QMap>
 #include <QProcess>
 #include <QRegularExpression>
-#include <QSet>
 #include <QTemporaryDir>
 #include <QtTest>
 #include "qettesttimeout.h"
@@ -79,9 +81,19 @@ class tst_pdfjumpmark : public QObject
 	static QList<double> numbers(const QString &text)
 	{
 		QList<double> out;
-		for (const QString &n : text.simplified().split(' ', Qt::SkipEmptyParts))
+		const QString plain = QString(text).replace(QLatin1Char(','), QLatin1Char(' '));
+		for (const QString &n : plain.simplified().split(' ', Qt::SkipEmptyParts))
 			out << n.toDouble();
 		return out;
+	}
+
+	// A PDF literal string with its escaped brackets and backslashes undone.
+	static QString unescaped(QString text)
+	{
+		text.replace(QLatin1String("\\("), QLatin1String("("));
+		text.replace(QLatin1String("\\)"), QLatin1String(")"));
+		text.replace(QLatin1String("\\\\"), QLatin1String("\\"));
+		return text;
 	}
 
 private slots:
@@ -92,92 +104,76 @@ private slots:
 		QVERIFY2(QFile::exists(project()), "examples/industrial.qet not found");
 	}
 
-	void everyJumpShowsItsFrame()
+	void everyJumpCallsHighlight()
 	{
 		const QByteArray pdf = exportPdf({}, QStringLiteral("marks"));
 		QVERIFY2(!pdf.isEmpty(), "--export-pdf failed");
 		const QMap<int, QString> objs = objects(pdf);
 
-		// The form and its push buttons
-		int catalog = -1;
-		for (auto it = objs.cbegin(); it != objs.cend(); ++it)
-			if (it.value().contains(QLatin1String("/Type /Catalog"))) catalog = it.key();
-		QVERIFY(catalog != -1);
-		static const QRegularExpression fieldsRe(QStringLiteral(R"(/AcroForm << /Fields \[([^\]]*)\])"));
-		const auto fieldsMatch = fieldsRe.match(objs.value(catalog));
-		QVERIFY2(fieldsMatch.hasMatch(), "no /AcroForm in the catalog");
-		const QList<int> fieldList = refs(fieldsMatch.captured(1));
-		const QSet<int> fields(fieldList.cbegin(), fieldList.cend());
-		QVERIFY(!fields.isEmpty());
-		for (int w : fields) {
-			const QString widget = objs.value(w);
-			QVERIFY2(widget.contains(QLatin1String("/Subtype /Widget")), qPrintable(widget));
-			QVERIFY(widget.contains(QLatin1String("/FT /Btn")));
-			QVERIFY(widget.contains(QLatin1String("/F 2\n")));          // hidden
-			QVERIFY(widget.contains(QLatin1String("/MK << /BC [1 0 0] >>")));  // red
-			QVERIFY(widget.contains(QLatin1String("/T (qetmark")));
-		}
+		// The pages in order, for the page index handed to highlight()
+		static const QRegularExpression kidsRe(QStringLiteral(R"(/Type /Pages[\s\S]*?/Kids\s*\[([^\]]*)\])"));
+		const QList<int> pages = refs(kidsRe.match(QString::fromLatin1(pdf)).captured(1));
+		QVERIFY(pages.size() > 1);
 
-		// Every link with a frame
+		// Every link to an element: GoTo, then /Next highlight(index, rect)
 		static const QRegularExpression linkRe(QStringLiteral(
-			R"(/Subtype /Link[\s\S]*?/S /GoTo\n/D \[(\d+) 0 R /FitR ([-\d ]+)\]\n/Next \[(\d+) 0 R << /S /Hide /T (\d+) 0 R /H false >> << /S /JavaScript /JS \(([\s\S]*?)\) >>\])"));
-		int chains = 0;
-		int hideAll = -1;
-		QSet<int> shown;
+			R"(/S /GoTo\n/D \[(\d+) 0 R /FitR ([-\d ]+)\]\n/Next << /Type /Action /S /JavaScript /JS \((highlight[\s\S]*?)\) >>)"));
+		static const QRegularExpression callRe(QStringLiteral(
+			R"(^highlight\((\d+), \[(-?\d+), (-?\d+), (-?\d+), (-?\d+)\]\);$)"));
+		int calls = 0;
 		for (auto it = objs.cbegin(); it != objs.cend(); ++it) {
 			if (!it.value().contains(QLatin1String("/Subtype /Link"))) continue;
 			const auto m = linkRe.match(it.value());
 			if (!m.hasMatch()) continue;
-			++chains;
+			++calls;
 			const int page = m.captured(1).toInt();
 			const QList<double> fitr = numbers(m.captured(2));
-			const int all = m.captured(3).toInt();
-			const int widget = m.captured(4).toInt();
-			QString js = m.captured(5);   // a PDF string: brackets escaped
-			js.replace(QLatin1String("\\("), QLatin1String("("));
-			js.replace(QLatin1String("\\)"), QLatin1String(")"));
+			const QString call = unescaped(m.captured(3));
+			const auto c = callRe.match(call);
+			QVERIFY2(c.hasMatch(), qPrintable(call));
 
-			// one shared action hides every frame
-			if (hideAll == -1) hideAll = all;
-			QCOMPARE(all, hideAll);
+			// the page index is that of the page jumped to
+			QCOMPARE(c.captured(1).toInt(), pages.indexOf(page));
 
-			// the frame shown is on the page jumped to, inside the zoom
-			QVERIFY(fields.contains(widget));
-			const QString w = objs.value(widget);
-			QVERIFY2(w.contains(QStringLiteral("/P %1 0 R").arg(page)), qPrintable(w));
-			static const QRegularExpression rectRe(QStringLiteral(R"(/Rect \[([^\]]*)\])"));
-			const QList<double> rect = numbers(rectRe.match(w).captured(1));
+			// the frame lies inside the zoomed rectangle
+			const QList<double> rect = numbers(call.mid(call.indexOf('[') + 1,
+														call.indexOf(']') - call.indexOf('[') - 1));
 			QCOMPARE(rect.size(), 4);
 			QCOMPARE(fitr.size(), 4);
+			QVERIFY(rect[0] < rect[2] && rect[1] < rect[3]);
 			QVERIFY2(rect[0] >= fitr[0] && rect[1] >= fitr[1]
 					 && rect[2] <= fitr[2] && rect[3] <= fitr[3],
 					 qPrintable(QStringLiteral("frame %1 outside the zoom %2")
-								.arg(w, m.captured(2))));
-
-			// the frame is on that page's /Annots, before its links
-			static const QRegularExpression annotsRe(QStringLiteral(R"(/Annots (\d+) 0 R)"));
-			const int annots = annotsRe.match(objs.value(page)).captured(1).toInt();
-			const QList<int> onPage = refs(objs.value(annots));
-			QVERIFY(onPage.contains(widget));
-
-			// the JavaScript blinks this frame and no other
-			const QString name = QRegularExpression(QStringLiteral(R"(/T \((qetmark\d+)\))"))
-									 .match(w).captured(1);
-			QVERIFY(!name.isEmpty());
-			QVERIFY(js.contains(QStringLiteral("getField('%1')").arg(name)));
-			QVERIFY(js.contains(QLatin1String("app.setTimeOut")));
-			QVERIFY(js.contains(QLatin1String("app.clearTimeOut")));
-			shown.insert(widget);
+								.arg(call, m.captured(2))));
 		}
-		QVERIFY2(chains >= 2, "expected several links with a frame");
-		QCOMPARE(shown, fields);   // no frame which no link shows
+		QVERIFY2(calls >= 2, "expected several links which call highlight()");
 
-		// the shared Hide action names every frame
-		const QString hide = objs.value(hideAll);
-		QVERIFY(hide.contains(QLatin1String("/S /Hide")));
-		QVERIFY(hide.contains(QLatin1String("/H true")));
-		const QList<int> hiddenList = refs(hide);
-		QCOMPARE(QSet<int>(hiddenList.cbegin(), hiddenList.cend()), fields);
+		// The document JavaScript, under /Names /JavaScript of the catalog
+		int catalog = -1;
+		for (auto it = objs.cbegin(); it != objs.cend(); ++it)
+			if (it.value().contains(QLatin1String("/Type /Catalog"))) catalog = it.key();
+		QVERIFY(catalog != -1);
+		static const QRegularExpression namesRe(QStringLiteral(R"(/Names (\d+) 0 R)"));
+		const auto namesMatch = namesRe.match(objs.value(catalog));
+		const QString names = namesMatch.hasMatch() ? objs.value(namesMatch.captured(1).toInt())
+													 : objs.value(catalog);
+		static const QRegularExpression scriptRe(QStringLiteral(
+			R"(/JavaScript << /Names \[\(generalScript\) (\d+) 0 R\] >>)"));
+		const auto scriptMatch = scriptRe.match(names);
+		QVERIFY2(scriptMatch.hasMatch(), qPrintable(names));
+		const QString script = unescaped(objs.value(scriptMatch.captured(1).toInt()));
+		QVERIFY(script.contains(QLatin1String("/S /JavaScript")));
+		QVERIFY(script.contains(QLatin1String("function highlight(page, coordinates)")));
+		QVERIFY(script.contains(QLatin1String("addField('Target', 'button', page, coordinates)")));
+		QVERIFY(script.contains(QLatin1String("f.strokeColor = color.red")));
+		QVERIFY(script.contains(QLatin1String("app.setInterval('blinker()', 500)")));
+		QVERIFY(script.contains(QLatin1String("app.setTimeOut('finish()', 5000)")));
+		QVERIFY(script.contains(QLatin1String("removeField('Target')")));
+
+		// nothing else: no form, no annotation waiting hidden on the pages
+		QVERIFY(!pdf.contains("/AcroForm"));
+		QVERIFY(!pdf.contains("/Subtype /Widget"));
+		QVERIFY(!pdf.contains("/S /Hide"));
 	}
 
 	void pdfAHasNoFrames()
@@ -186,10 +182,9 @@ private slots:
 		QVERIFY2(!pdf.isEmpty(), "--export-pdf --pdf-a failed");
 		QVERIFY(pdf.contains("pdfaid:part"));
 		QVERIFY(pdf.contains("/S /GoTo"));         // still jumps
-		QVERIFY(!pdf.contains("/Subtype /Widget"));
 		QVERIFY(!pdf.contains("/JavaScript"));
 		QVERIFY(!pdf.contains("/Next"));
-		QVERIFY(!pdf.contains("/AcroForm"));
+		QVERIFY(!pdf.contains("highlight("));
 	}
 };
 

@@ -6,11 +6,13 @@ Original-QElectroTech stehen in `ChangeLog*`.
 ## 1.51.0 – 24.11.2026 – Sprungziel im PDF markiert
 
 - PDF-Export: Das Ziel eines Sprungs (Potentialpfeil, Querverweis, Kontaktspiegel, Dreifachsprung, Kabel- und
-  Klemmenverweis, Text mit Ziel-Bauteil) bekommt wie bei EPLAN ab 2.9 einen roten Rahmen. Je Ziel eine versteckte,
-  schreibgeschützte Schaltfläche `qetmarkN` auf der Zielseite; die Link-Aktion ist die Kette GoTo (Seite + /FitR wie
-  bisher) → alle Rahmen verstecken → Zielrahmen zeigen → JavaScript, das ihn blinken lässt und nach 2 s versteckt.
-- Ohne JavaScript bleibt der Rahmen bis zum nächsten Sprung stehen (wenn der Viewer Hide-Aktionen ausführt). Sprünge
-  auf ganze Blätter bekommen keinen Rahmen.
+  Klemmenverweis, Text mit Ziel-Bauteil) bekommt wie bei EPLAN ab 2.9 einen roten, blinkenden Rahmen – gebaut wie in
+  EPLANs eigenen PDFs: Die Link-Aktion ist GoTo (Seite + /FitR wie bisher) → `/Next` JavaScript
+  `highlight(Seitenindex, [x1, y1, x2, y2]);`. Das Dokument-Skript `generalScript` unter `/Names /JavaScript` legt
+  per `addField` ein Schaltflächenfeld mit rotem Rand über das Ziel, lässt es alle 500 ms blinken und entfernt es
+  nach 5 s; ein neuer Sprung entfernt den alten Rahmen vorher. Vorab liegt nichts im PDF (kein Formular, keine
+  versteckte Annotation). Läuft überall, wo PDF-JavaScript läuft (Acrobat/Reader; Chrome und Edge zeigen es beim
+  EPLAN-PDF). Sprünge auf ganze Blätter bekommen keinen Rahmen.
 - Neuer Schalter `--pdf-a` für `--export-pdf`: PDF/A-1b, dann wie bei EPLAN ohne Rahmen und ohne JavaScript.
 - Test `tst_pdfjumpmark` prüft die Aktionskette und den PDF/A-Fall.
 

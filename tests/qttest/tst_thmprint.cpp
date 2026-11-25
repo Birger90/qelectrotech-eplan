@@ -88,6 +88,8 @@ ThmJob::Profile smallProfile()
 	p.height = 6;
 	p.gap = 2;
 	p.sensor = ThmJob::Sensor::Gap;
+	p.margin_left = 0;  // the byte checks below are written without margins
+	p.margin_right = 0;
 	return p;
 }
 
@@ -214,6 +216,14 @@ class TestThmPrint : public QObject
 			QVERIFY(!ThmJob::validate(p, &error));
 			QVERIFY(ThmJob::build({}, smallProfile(), &error).isEmpty());
 			QVERIFY(!error.isEmpty());
+		}
+
+		void defaultMargins()
+		{
+				// text keeps 0.5 mm from both edges unless the profile says otherwise
+			ThmJob::Profile p;
+			QCOMPARE(p.margin_left, 0.5);
+			QCOMPARE(p.margin_right, 0.5);
 		}
 
 		void numbers()

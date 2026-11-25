@@ -63,8 +63,8 @@ namespace ThmJob
 		Sensor sensor = Sensor::Gap;
 		int columns = 1;         ///< labels side by side
 		double column_pitch = 0; ///< start of one column to the next; 0 = width
-		double margin_left = 0;  ///< kept free inside a label, left
-		double margin_right = 0; ///< kept free inside a label, right
+		double margin_left = 0.5;  ///< kept free inside a label, left (as Kabelmark)
+		double margin_right = 0.5; ///< kept free inside a label, right
 		double offset_x = 0;     ///< xo of the S command
 		double offset_y = 0;     ///< yo of the S command
 		int font = 3;            ///< T command font number, 3 = Swiss 721 (manual p. 224)

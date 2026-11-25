@@ -47,8 +47,8 @@ QList<ThmPrinter> ThmPrinters::load(QSettings &s)
 		ThmJob::sensorFromKey(s.value("sensor", "l1").toString(), &f.sensor);
 		f.columns = s.value("columns", 1).toInt();
 		f.column_pitch = s.value("columnPitch", 0.0).toDouble();
-		f.margin_left = s.value("marginLeft", 0.0).toDouble();
-		f.margin_right = s.value("marginRight", 0.0).toDouble();
+		f.margin_left = s.value("marginLeft", 0.5).toDouble();
+		f.margin_right = s.value("marginRight", 0.5).toDouble();
 		f.offset_x = s.value("offsetX", 0.0).toDouble();
 		f.offset_y = s.value("offsetY", 0.0).toDouble();
 		f.font = s.value("font", 3).toInt();

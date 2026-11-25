@@ -138,7 +138,8 @@ Seitenleiste *Anzeige > Funktionsvorlagen*, wie EPLAN-Makros mit Wertesätzen:
   Textfeld und Drehung, Geschwindigkeit und Heizung je Gerätefamilie (THM MMP, THM MultiMark). Gegen vier
   M-Print-Druckdateien geprüft: `S`, `H` und `O` stimmen überein. Endlosmaterial mit Layoutregeln wird mit Begründung
   abgelehnt. Jeder Drucker führt seine übliche Rüstung getrennt von der aktuellen; *Material wechseln…* (oder
-  `--thm-load`) bestätigt einen Wechsel.
+  `--thm-load`) bestätigt einen Wechsel. *Auswählen…* listet die Materialien wie M-Print PRO, mit Suche und Filtern
+  nach Kategorie, Maß, Farbe und Seiten.
 
 - Weidmüller-Drucker direkt: Drucker PrintJet CONNECT (MultiCard) oder THM MultiMark (Rollen, Etiketten) wählen, je
   Art ist ein passendes Weidmüller-Material vorbelegt (änderbar). *In M-Print PRO öffnen* übergibt jedem Material eine

@@ -309,6 +309,19 @@ Daraus wird das Profil so gebildet, wie M-Print PRO seine THM-Aufträge schreibt
 - Was M-Print anders macht: es setzt den Text als Bild (`I:Field1` mit PNG), QET schreibt `T`-Felder mit der Druckerschrift 3 (Swiss 721). Lage, Drehung und Raster folgen der Vorlage; das Schriftbild unterscheidet sich. M-Print schreibt `mm` und `O` vor `S`, QET `m m` und `O` nach `S` (cab-Handbuch S. 53 und 212). Die Lage gedrehter Texte (90°/270°) ist aus dem Handbuch abgeleitet und am Gerät noch zu prüfen.
 - Der Test `tests/qttest/tst_thmlayouts.cpp` nutzt die erfundene Datei `tests/qttest/fixtures/thm_layouts_example.json` (Artikelnummern 99000000xx), keine Herstellerdaten.
 
+## Material auswählen (wie in M-Print PRO)
+
+*Auswählen…* neben dem Artikel im Druckdialog (und *…* in der Druckerverwaltung bei üblichem und gerüstetem Artikel) öffnet eine Materialtabelle aus Layout- und Katalogdatei: Name, Nummer, Kategorie, Maß, Farbe, Spalten, ein- oder zweiseitig, auf welchem Drucker gerüstet, Hinweis. Gefiltert wird nach
+
+- Suchtext (Name oder Nummer; mehrere Wörter müssen alle vorkommen),
+- Kategorie (z. B. Leiter- und Kabelmarkierer, Gerätemarkierer, Klemmenmarkierer),
+- Maß eines Schilds aus der Vorlage (`Breite × Höhe`), ohne Vorlage aus der Katalogbeschreibung,
+- Farbe: „Farbe: …“ der Katalogbeschreibung, sonst das Kürzel am Namensende (WS weiß, GE/Y gelb, RT rot, BL blau, GN grün, GR grau, SW schwarz, SI silber, OR orange, TU türkis, TR transparent),
+- ein- oder zweiseitig (`-DS` im Namen oder `_ds.mcf`),
+- „nur druckbar“ (blendet die mit Begründung abgelehnten Vorlagen aus) und „nur gerüstet“.
+
+Doppelklick oder *Material übernehmen* setzt den Artikel; das Ziel wählt QET danach wie immer nach der aktuellen Rüstung. Die Filter bleiben bis zum nächsten Öffnen gespeichert (`thm_print/material_filter`). Die Filterlogik ist ohne Oberfläche in `ThmMaterials` und mit der erfundenen Layoutdatei getestet (`tst_thmlayouts`).
+
 ## Mehrere Drucker, übliche und aktuelle Rüstung
 
 Jeder Drucker hat getrennt:

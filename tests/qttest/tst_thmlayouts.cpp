@@ -25,6 +25,7 @@
 // families and the usual and loaded article of a printer.
 #include "marking/thmjob.h"
 #include "marking/thmlayouts.h"
+#include "marking/thmmaterials.h"
 #include "marking/thmprinters.h"
 
 #include <QSettings>
@@ -214,6 +215,54 @@ class TestThmLayouts : public QObject
 				//an article with a layout needs no own profile of the printer
 			QVERIFY(ThmPrinters::validate(back.first(), nullptr, false));
 			QVERIFY(!ThmPrinters::validate(back.first()));
+		}
+
+		void materialColours()
+		{
+			QCOMPARE(ThmMaterials::colourOf(QStringLiteral("TEST SINGLE GE")), QStringLiteral("Gelb"));
+			QCOMPARE(ThmMaterials::colourOf(QStringLiteral("X 9"), QStringLiteral("Marker, Farbe: weiß, Halogenfrei")),
+					 QStringLiteral("Weiß"));
+			QCOMPARE(ThmMaterials::colourOf(QStringLiteral("X W-DS")), QStringLiteral("Weiß"));
+			QCOMPARE(ThmMaterials::colourOf(QStringLiteral("X Y30M")), QStringLiteral("Gelb"));
+			QCOMPARE(ThmMaterials::colourOf(QStringLiteral("X RT/WS")), QStringLiteral("Rot/Weiß"));
+			QCOMPARE(ThmMaterials::colourOf(QStringLiteral("X VPE100")), QString());
+		}
+
+		void materialFilter()
+		{
+			ThmPrinter loaded;
+			loaded.name = QStringLiteral("Halle");
+			loaded.material_no = QStringLiteral("9900000002");
+			const QList<ThmMaterials::Entry> all = ThmMaterials::entries(m_all, {}, {loaded});
+			QCOMPARE(all.size(), 6);
+			const auto count = [&all](const ThmMaterials::Filter &f) {
+				int n = 0;
+				for (const ThmMaterials::Entry &e : all) n += ThmMaterials::matches(e, f);
+				return n;
+			};
+			ThmMaterials::Filter f;          //printable only by default
+			QCOMPARE(count(f), 4);           //endless and missing layout left out
+			f.printable_only = false;
+			QCOMPARE(count(f), 6);
+			f.printable_only = true;
+			f.colour = QStringLiteral("gelb");
+			QCOMPARE(count(f), 2);
+			f.colour.clear();
+			f.size = QStringLiteral("14 × 12 mm");
+			QCOMPARE(count(f), 1);
+			f.size.clear();
+			f.text = QStringLiteral("strip ws");
+			QCOMPARE(count(f), 1);
+			f.text = QStringLiteral("9900000001");
+			QCOMPARE(count(f), 1);
+			f.text.clear();
+			f.loaded_only = true;
+			QCOMPARE(count(f), 1);
+			for (const ThmMaterials::Entry &e : all)
+				if (e.article == QLatin1String("9900000002")) QCOMPARE(e.loaded_on, QStringList{QStringLiteral("Halle")});
+			QCOMPARE(ThmMaterials::sizes(all),
+					 QStringList({QStringLiteral("3 × 5 mm"), QStringLiteral("14 × 12 mm"),
+								  QStringLiteral("16 × 5 mm"), QStringLiteral("110 × 10 mm")}));
 		}
 };
 

@@ -118,6 +118,7 @@
 >   turn, speed and heat per device family (THM MMP, THM MultiMark). Checked against four M-Print print files: the
 >   `S`, `H` and `O` commands match. Continuous material with layout rules is refused with a reason. Each printer
 >   keeps its usual article apart from the one loaded now; *Change material…* (or `--thm-load`) confirms a change.
+>   *Choose…* lists the materials as M-Print PRO does, with search and filters for category, size, colour and sides.
 
 > - Weidmüller printers directly: choose PrintJet CONNECT (MultiCard) or THM MultiMark (rolls, labels); every kind
 >   gets a fitting Weidmüller material (editable). *Open in M-Print PRO* hands each material a file through

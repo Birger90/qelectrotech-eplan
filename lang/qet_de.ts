@@ -32181,6 +32181,113 @@ Strg+Eingabe gibt die Zelle zurück, Escape verwirft den Text.</translation>
     </message>
 </context>
 <context>
+    <name>ThmMaterialDialog</name>
+    <message>
+        <source>%1 of %2 materials</source>
+        <translation>%1 von %2 Materialien</translation>
+    </message>
+    <message>
+        <source>All categories</source>
+        <translation>Alle Kategorien</translation>
+    </message>
+    <message>
+        <source>All colours</source>
+        <translation>Alle Farben</translation>
+    </message>
+    <message>
+        <source>All sizes</source>
+        <translation>Alle Maße</translation>
+    </message>
+    <message>
+        <source>Category</source>
+        <translation>Kategorie</translation>
+    </message>
+    <message>
+        <source>Choose material</source>
+        <translation>Material auswählen</translation>
+    </message>
+    <message>
+        <source>Colour</source>
+        <translation>Farbe</translation>
+    </message>
+    <message>
+        <source>Columns</source>
+        <translation>Spalten</translation>
+    </message>
+    <message>
+        <source>Filter:</source>
+        <translation>Filter:</translation>
+    </message>
+    <message>
+        <source>Loaded on</source>
+        <translation>Gerüstet in</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <source>Note</source>
+        <translation>Hinweis</translation>
+    </message>
+    <message>
+        <source>Number</source>
+        <translation>Nummer</translation>
+    </message>
+    <message>
+        <source>One- and two-sided</source>
+        <translation>Ein- und zweiseitig</translation>
+    </message>
+    <message>
+        <source>One-sided</source>
+        <translation>Einseitig</translation>
+    </message>
+    <message>
+        <source>Only what QElectroTech can print</source>
+        <translation>Nur was QElectroTech drucken kann</translation>
+    </message>
+    <message>
+        <source>Only what a printer is loaded with</source>
+        <translation>Nur was in einem Drucker gerüstet ist</translation>
+    </message>
+    <message>
+        <source>Search:</source>
+        <translation>Suche:</translation>
+    </message>
+    <message>
+        <source>Sides</source>
+        <translation>Seiten</translation>
+    </message>
+    <message>
+        <source>Size</source>
+        <translation>Maß</translation>
+    </message>
+    <message>
+        <source>Take material</source>
+        <translation>Material übernehmen</translation>
+    </message>
+    <message>
+        <source>Two-sided</source>
+        <translation>Zweiseitig</translation>
+    </message>
+    <message>
+        <source>name or number, e.g. ESG 6/15 or 2619950000</source>
+        <translation>Name oder Nummer, z. B. ESG 6/15 oder 2619950000</translation>
+    </message>
+    <message>
+        <source>no layout: the printer&apos;s own profile</source>
+        <translation>keine Vorlage: eigenes Profil des Druckers</translation>
+    </message>
+    <message>
+        <source>one</source>
+        <translation>ein</translation>
+    </message>
+    <message>
+        <source>two</source>
+        <translation>zwei</translation>
+    </message>
+</context>
+<context>
     <name>ThmPrintDialog</name>
     <message>
         <source>Print THM labels</source>
@@ -32548,6 +32655,14 @@ Menge: %n Etiketten</numerusform>
         <source>the roller now fitted, as on its label</source>
         <translation>die jetzt eingebaute Walze, wie auf ihrem Schild</translation>
     </message>
+    <message>
+        <source>Choose the material from the catalog, filtered by category, size and colour</source>
+        <translation>Material aus dem Katalog wählen, gefiltert nach Kategorie, Maß und Farbe</translation>
+    </message>
+    <message>
+        <source>Choose...</source>
+        <translation>Auswählen…</translation>
+    </message>
 </context>
 <context>
     <name>ThmPrinters</name>
@@ -32761,6 +32876,14 @@ Menge: %n Etiketten</numerusform>
     <message>
         <source>not yet</source>
         <translation>noch nicht</translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation>…</translation>
+    </message>
+    <message>
+        <source>Choose the material from the catalog, filtered by category, size and colour</source>
+        <translation>Material aus dem Katalog wählen, gefiltert nach Kategorie, Maß und Farbe</translation>
     </message>
 </context>
 <context>

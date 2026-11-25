@@ -35,6 +35,9 @@ Original-QElectroTech stehen in `ChangeLog*`.
   wechseln…* im Druckdialog zeigt Artikel, Farbband und Trägerplatte und übernimmt den Wechsel erst nach der
   Bestätigung „eingelegt“. CLI `--thm-load <Drucker> <Artikel> [--usual] [--roller …]`; `--thm-send` sendet nur an
   einen Drucker, dessen aktuelle Rüstung zum Artikel passt.
+- **Material auswählen** wie in M-Print PRO: *Auswählen…* im Druckdialog (und *…* in der Druckerverwaltung) zeigt
+  alle Varianten als Tabelle mit Suche und Filtern nach Kategorie, Maß, Farbe, ein-/zweiseitig, „nur druckbar“ und
+  „nur gerüstet“; Doppelklick übernimmt das Material.
 
 ## Unveröffentlicht – Weidmüller-Druck
 

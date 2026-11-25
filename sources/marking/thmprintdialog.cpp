@@ -17,6 +17,8 @@
 */
 #include "thmprintdialog.h"
 
+#include "thmmaterialdialog.h"
+
 #include "../dataBase/projectdatabase.h"
 #include "../qet.h"
 #include "../qetproject.h"
@@ -146,7 +148,22 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	m_article->setEditable(true);
 	m_article->setInsertPolicy(QComboBox::NoInsert);
 	m_article->setObjectName(QStringLiteral("thm_article"));
-	target_form->addRow(tr("Article variant:"), m_article);
+	auto *article_row = new QHBoxLayout;
+	article_row->addWidget(m_article, 1);
+	auto *choose_button = new QPushButton(tr("Choose..."), target);
+	choose_button->setObjectName(QStringLiteral("thm_choose_material"));
+	choose_button->setToolTip(tr("Choose the material from the catalog, filtered by category, size and colour"));
+	article_row->addWidget(choose_button);
+	target_form->addRow(tr("Article variant:"), article_row);
+	connect(choose_button, &QPushButton::clicked, this, [this]() {
+		ThmMaterialDialog dialog(ThmMaterials::entries(m_layouts, m_catalog, m_printers),
+								 currentArticle(), this);
+		if (dialog.exec() != QDialog::Accepted || dialog.article().isEmpty()) return;
+		const int i = m_article->findData(dialog.article());
+		if (i >= 0) m_article->setCurrentIndex(i);
+		else m_article->setCurrentText(dialog.article());
+		updateTarget();
+	});
 	auto *catalog_row = new QHBoxLayout;
 	m_catalog_label = new QLabel(target);
 	m_catalog_label->setWordWrap(true);
@@ -804,9 +821,28 @@ ThmPrintersDialog::ThmPrintersDialog(const QList<ThmPrinter> &printers,
 	form->addRow(tr("Model:"), m_model);
 	form->addRow(tr("Address:"), m_host);
 	form->addRow(tr("Port:"), m_port);
-	form->addRow(tr("Usual article:"), m_usual);
+		//A combo of articles with a button opening the filtered choice
+	const auto with_choice = [this](QComboBox *combo) {
+		auto *box = new QWidget(m_form);
+		auto *row = new QHBoxLayout(box);
+		row->setContentsMargins(0, 0, 0, 0);
+		row->addWidget(combo, 1);
+		auto *button = new QPushButton(tr("..."), box);
+		button->setToolTip(tr("Choose the material from the catalog, filtered by category, size and colour"));
+		row->addWidget(button);
+		connect(button, &QPushButton::clicked, this, [this, combo]() {
+			ThmMaterialDialog dialog(ThmMaterials::entries(m_layouts, m_catalog, m_printers),
+									 combo->currentData().toString(), this);
+			if (dialog.exec() != QDialog::Accepted || dialog.article().isEmpty()) return;
+			const int i = combo->findData(dialog.article());
+			if (i >= 0) combo->setCurrentIndex(i);
+			else combo->setCurrentText(dialog.article());
+		});
+		return box;
+	};
+	form->addRow(tr("Usual article:"), with_choice(m_usual));
 	form->addRow(tr("Roller:"), m_roller);
-	form->addRow(tr("Article variant loaded:"), m_material);
+	form->addRow(tr("Article variant loaded:"), with_choice(m_material));
 	form->addRow(tr("Loading confirmed:"), m_loaded_at);
 
 	m_width = millimetres(m_form);

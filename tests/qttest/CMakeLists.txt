@@ -2392,6 +2392,10 @@ target_link_libraries(tst_thmprint PRIVATE Qt::Network Qt::Xml Qt::Test)
 add_executable(
   tst_thmlayouts
   tst_thmlayouts.cpp
+  ${QET_DIR}/sources/marking/thmcatalog.cpp
+  ${QET_DIR}/sources/marking/thmcatalog.h
+  ${QET_DIR}/sources/marking/thmmaterials.cpp
+  ${QET_DIR}/sources/marking/thmmaterials.h
   ${QET_DIR}/sources/marking/thmjob.cpp
   ${QET_DIR}/sources/marking/thmjob.h
   ${QET_DIR}/sources/marking/thmlayouts.cpp
@@ -2400,7 +2404,7 @@ add_executable(
   ${QET_DIR}/sources/marking/thmprinters.h)
 add_test(NAME tst_thmlayouts COMMAND tst_thmlayouts)
 target_include_directories(tst_thmlayouts PRIVATE ${QET_DIR}/sources)
-target_link_libraries(tst_thmlayouts PRIVATE Qt::Core Qt::Test)
+target_link_libraries(tst_thmlayouts PRIVATE Qt::Core Qt::Xml Qt::Test)
 target_compile_definitions(tst_thmlayouts PRIVATE
   THM_LAYOUTS_FIXTURE="${CMAKE_CURRENT_SOURCE_DIR}/fixtures/thm_layouts_example.json")
 # Project > Print THM labels...: preview of the markers and the printer

@@ -185,7 +185,7 @@ Die Zahl in Klammern ist der Beleg; so zeichnen, wenn nichts anderes vorgegeben 
 **Elektropneumatik/-hydraulik:** Fluidteil links, Steuerstromkreis rechts auf demselben Blatt (z. B. TP601_14);
 Regeln für den Stromlaufplan im Skill `qet-schaltplan-zeichnen`, Abschnitt „Steuerstromkreise“.
 
-Belege (Beispiele in `C:\Users\test\Desktop\qet pläne`): TP101_06 (ein Zylinder, Drosselrückschlag beidseitig),
+Belege (FluidSIM-Beispielschaltungen): TP101_06 (ein Zylinder, Drosselrückschlag beidseitig),
 TP102_02 (zwei Zylinder, Rollenventile, Zähler), TP601_14 (Elektrohydraulik mit 6 Relais), Selbsthaltung
 (Europa Lehrmittel, Elektropneumatik).
 

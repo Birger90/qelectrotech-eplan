@@ -18,6 +18,7 @@
 #include "thmprintdialog.h"
 
 #include "thmlabelsheet.h"
+#include "thmrender.h"
 #include "thmmaterialdialog.h"
 
 #include "../dataBase/projectdatabase.h"
@@ -968,7 +969,7 @@ void ThmPrintDialog::saveJob()
 		QMessageBox::warning(this, tr("Print THM labels"), error);
 		return;
 	}
-	const QByteArray job = ThmJob::build(labels(), profile, &error);
+	const QByteArray job = ThmRender::build(labels(), profile, &error);
 	if (job.isEmpty()) {
 		QMessageBox::warning(this, tr("Print THM labels"), error);
 		return;
@@ -1005,7 +1006,7 @@ void ThmPrintDialog::print()
 		QMessageBox::warning(this, tr("Print THM labels"), error);
 		return;
 	}
-	const QByteArray job = ThmJob::build(list, profile, &error);
+	const QByteArray job = ThmRender::build(list, profile, &error);
 	if (job.isEmpty()) {
 		QMessageBox::warning(this, tr("Print THM labels"), error);
 		return;

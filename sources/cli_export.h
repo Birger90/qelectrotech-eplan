@@ -55,7 +55,7 @@ namespace CLIExport {
 		  qelectrotech --fetch-commercial <project.qet> [--offline]
 		  qelectrotech --export-wiring  <project.qet> <output.csv>
 		  qelectrotech --export-marking <project.qet> <output.csv> [--format phoenix|weidmueller|wago|neutral] [--kinds wires,terminals,devices,cables] [--folios N[-M]] [--plant P] [--location L] [--short] [--one-end]
-		  qelectrotech --thm-prn        <project.qet> <output.prn> [--printer ID | --material NO] [--kinds ...] [--folios N[-M]] [--copies N] [--no-merge] [--one-end] [--full] [profile: --width --height --gap --sensor --columns --pitch --margin --text-size --font --baseline --speed --heat --rotate]
+		  qelectrotech --thm-prn        <project.qet> <output.prn> [--printer ID | --material NO] [--kinds ...] [--folios N[-M]] [--copies N] [--no-merge] [--one-end] [--full] [profile: --width --height --gap --sensor --columns --pitch --margin --text-size --font --baseline --speed --heat --rotate] [--picture: as pictures, as the dialog prints]
 		  qelectrotech --thm-status     <printer ID | host[:port]> [--json]   (exit 3 offline or error reported, 1 no answer)
 		  qelectrotech --thm-send       <project.qet | job.prn> (--printer ID | --material NO) [options of --thm-prn] [--yes]   (exit 4 without --yes: nothing sent)
 		  qelectrotech --thm-printers   [--json]

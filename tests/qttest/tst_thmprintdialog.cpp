@@ -24,6 +24,7 @@
 #include "marking/thmlabelsheet.h"
 #include "marking/thmprintdialog.h"
 #include "marking/thmprinters.h"
+#include "marking/thmrender.h"
 #include "qetapptest.h"
 #include "qetproject.h"
 
@@ -120,6 +121,53 @@ class TestThmPrintDialog : public QObject
 				QCoreApplication::processEvents();
 				QVERIFY(dialog.grab().save(shot));
 			}
+		}
+
+		void pictureJob()
+		{
+				//A TM-I 18 as its layout gives it: row 65 x 10.5 mm, label
+				//18 mm from x 32, text field 16 x 4 mm at the top
+			ThmJob::Profile p;
+			p.family = ThmJob::Family::MultiMark;
+			p.width = 18;
+			p.height = 10.5;
+			p.page_width = 65;
+			p.first_x = 32;
+			p.margin_left = 1;
+			p.margin_right = 1;
+			p.field_top = 0;
+			p.field_bottom = 4;
+			p.text_size = 3;
+			p.offset_y = -0.5;
+			const QImage row = ThmRender::renderRow({QStringLiteral("-X1:1")}, p);
+			QCOMPARE(row.size(), QSize(768, 124));  // 300 dpi, as M-Print PRO's picture
+				//Black only inside the text field
+			int black = 0, outside = 0;
+			for (int y = 0; y < row.height(); ++y)
+				for (int x = 0; x < row.width(); ++x)
+					if (qGray(row.pixel(x, y)) < 128) {
+						++black;
+						const double mx = x / ThmRender::kDotsPerMm, my = y / ThmRender::kDotsPerMm;
+						if (mx < 33 || mx > 49 || my > 4.2) ++outside;
+					}
+			QVERIFY(black > 100);
+			QCOMPARE(outside, 0);
+
+			QString error;
+			const QByteArray job = ThmRender::build({{QStringLiteral("-X1:1"), 2}, {QStringLiteral("-X1:2"), 1}}, p, &error);
+			QVERIFY2(error.isEmpty(), qPrintable(error));
+			QVERIFY(job.startsWith(QByteArray("eIMG;*\r\ndPNG;0\r\n\x1b:\x89PNG")));
+			QCOMPARE(job.count("eIMG;*"), 2);  // two different rows
+			QVERIFY(job.contains("S l1;0,-0.5,10.5,10.5,65\r\nI:Field1;0,0,0;0\r\nA2\r\n")
+					|| job.contains("Sl1;0,-0.5,10.5,10.5,65\r\nI:Field1;0,0,0;0\r\nA2\r\n"));
+			QVERIFY(job.contains("\x1b" "end-of-data\r\nmm\r\nJ\r\n"));
+				//A text too long for the field is shrunk, not cut
+			QVERIFY(ThmRender::overflows(p, QStringLiteral("-X100:1234567890")));
+			QVERIFY(!ThmRender::overflows(p, QStringLiteral("-K1")));
+			const QImage longer = ThmRender::renderRow({QStringLiteral("-X100:1234567890")}, p);
+			for (int y = 0; y < longer.height(); ++y)
+				for (int x = 0; x < longer.width(); ++x)
+					if (qGray(longer.pixel(x, y)) < 128) QVERIFY(x / ThmRender::kDotsPerMm >= 32.9 && x / ThmRender::kDotsPerMm <= 49.1);
 		}
 
 		void numberingSeries()

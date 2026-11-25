@@ -77,6 +77,7 @@ class ThmLabelSheet : public QGraphicsView
 
 		QGraphicsScene *m_scene = nullptr;
 		ThmJob::Profile m_profile;
+		ThmJob::Profile m_drawn;   ///< the profile drawn (a plain one without material)
 		bool m_known = true;
 		QStringList m_texts;
 		bool m_editable = false;

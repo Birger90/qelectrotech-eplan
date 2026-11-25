@@ -25,6 +25,7 @@
 #include "marking/thmjob.h"
 #include "marking/thmlayouts.h"
 #include "marking/thmprinters.h"
+#include "marking/thmrender.h"
 #include "purchase/purchasefetch.h"
 #include "purchase/purchaselist.h"
 #include "qetapp.h"
@@ -694,6 +695,7 @@ struct ThmCliOptions
 	int copies = 1;
 	bool merge = true;
 	bool yes = false;
+	bool picture = false;              ///< --picture: the labels as pictures (WYSIWYG)
 	QString printer_id;
 	QString material;
 	QString layouts;                   ///< --layouts: the layout file, else the settings'
@@ -750,6 +752,8 @@ int parseThmOptions(const QStringList &rest, ThmCliOptions *o)
 			o->merge = false;
 		} else if (a == QLatin1String("--yes")) {
 			o->yes = true;
+		} else if (a == QLatin1String("--picture")) {
+			o->picture = true;
 		} else if (a == QLatin1String("--printer")) {
 			o->printer_id = value();
 		} else if (a == QLatin1String("--material")) {
@@ -929,7 +933,8 @@ int exportThmJob(const QStringList &rest)
 	QList<ThmJob::Label> labels;
 	if (!thmLabels(o.positional.at(0), o, &labels)) return 1;
 	QString error;
-	const QByteArray job = ThmJob::build(labels, profile, &error);
+	const QByteArray job = o.picture ? ThmRender::build(labels, profile, &error)
+									 : ThmJob::build(labels, profile, &error);
 	if (job.isEmpty()) {
 		err << error << "\n";
 		return 1;
@@ -1072,7 +1077,8 @@ int thmSend(const QStringList &rest)
 	} else {
 		QList<ThmJob::Label> labels;
 		if (!thmLabels(input, o, &labels)) return 1;
-		job = ThmJob::build(labels, printer.profile, &error);
+		job = o.picture ? ThmRender::build(labels, printer.profile, &error)
+						: ThmJob::build(labels, printer.profile, &error);
 		if (job.isEmpty()) {
 			err << error << "\n";
 			return 1;

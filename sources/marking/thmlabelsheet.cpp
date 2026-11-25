@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "thmlabelsheet.h"
+#include "thmrender.h"
 
 #include <QFontMetricsF>
 #include <QGraphicsRectItem>
@@ -165,6 +166,7 @@ void ThmLabelSheet::rebuild()
 		p.height = 10;
 		p.margin_left = p.margin_right = 1;
 	}
+	m_drawn = p;
 	const int columns = qMax(1, p.columns);
 	const double pitch = columns > 1 && p.column_pitch > 0 ? p.column_pitch : p.width;
 	const double row_width = qMax(ThmJob::rowWidth(p), p.first_x + (columns - 1) * pitch + p.width);
@@ -178,10 +180,7 @@ void ThmLabelSheet::rebuild()
 	count = qMin(count, int(kMaxFields));
 	const int rows = count / columns;
 
-	QFont font(QStringLiteral("Arial"));
-		//The printer's size is the height of a capital; a font's em is
-		//about 1.4 times that
-	font.setPixelSize(qMax(1, qRound(p.text_size / 0.72 * kScale)));
+	const QFont font = ThmRender::font(p, kScale);
 	QPen strip_pen(QColor(0x80, 0x80, 0x80), 0);
 	QPen field_pen(QColor(0x20, 0x40, 0xd0), 0, Qt::DotLine);
 	field_pen.setCosmetic(true);
@@ -244,7 +243,10 @@ void ThmLabelSheet::rebuild()
 
 void ThmLabelSheet::place(ThmLabelField *f)
 {
-	const int r = ((m_profile.text_rotation % 360) + 360) % 360;
+	const int r = ((m_drawn.text_rotation % 360) + 360) % 360;
+		//The same font and shrinking as the printed picture (ThmRender)
+	const QFont font = ThmRender::fontFor(m_drawn, f->toPlainText(), kScale);
+	if (font != f->font()) f->setFont(font);
 	const bool across = r == 90 || r == 270;
 		//The text centred in its field, turned as it is printed (JScript
 		//turns anticlockwise, Qt clockwise)

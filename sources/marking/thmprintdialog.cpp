@@ -21,9 +21,11 @@
 
 #include "../dataBase/projectdatabase.h"
 #include "../qet.h"
+#include "../qetapp.h"
 #include "../qetproject.h"
 
 #include <QCheckBox>
+#include <QCoreApplication>
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QDir>
@@ -61,11 +63,22 @@ QDoubleSpinBox *millimetres(QWidget *parent, double max = 500)
 }
 }
 
+namespace {
+	/// The Weidmüller files are looked for beside the company collection
+	/// (its folder "weidmueller") and in the configuration folder
+void useApplicationDirs()
+{
+	ThmPrinters::setDataDirs({QDir::cleanPath(QETApp::companyElementsDir() + QStringLiteral("../weidmueller")),
+							  QDir::cleanPath(QETApp::configDir())});
+}
+}
+
 ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	QDialog(parent),
 	m_project(project),
 	m_client(new ThmClient(this))
 {
+	useApplicationDirs();
 	setWindowTitle(tr("Print THM labels"));
 	QET::trackDialogGeometry(this);
 	if (m_project && m_project->dataBase()) m_project->dataBase()->updateDB();
@@ -179,6 +192,9 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	layouts_row->addWidget(m_layouts_label, 1);
 	layouts_row->addWidget(layouts_button);
 	target_form->addRow(tr("Layouts:"), layouts_row);
+	m_target_form = target_form;
+	m_catalog_row = catalog_row;
+	m_layouts_row = layouts_row;
 	m_printer = new QComboBox(target);
 	m_printer->setObjectName(QStringLiteral("thm_printer"));
 	target_form->addRow(tr("Printer:"), m_printer);
@@ -301,6 +317,7 @@ void ThmPrintDialog::loadCatalog()
 	m_catalog_error.clear();
 	if (path.isEmpty()) {
 		m_catalog_label->setText(tr("none chosen"));
+		if (m_target_form) m_target_form->setRowVisible(m_catalog_row, true);
 		return;
 	}
 	m_catalog = ThmCatalog::read(path, &m_catalog_error);
@@ -308,6 +325,8 @@ void ThmPrintDialog::loadCatalog()
 							 ? tr("%1 (%n variant(s))", nullptr, int(m_catalog.size()))
 							   .arg(QFileInfo(path).fileName())
 							 : m_catalog_error);
+		//Found by itself and read: nothing for the user to do with it
+	if (m_target_form) m_target_form->setRowVisible(m_catalog_row, !m_catalog_error.isEmpty());
 }
 
 void ThmPrintDialog::chooseCatalog()
@@ -334,6 +353,7 @@ void ThmPrintDialog::loadLayouts()
 	m_layouts_error.clear();
 	if (path.isEmpty()) {
 		m_layouts_label->setText(tr("none chosen: the printer's own profile is used"));
+		if (m_target_form) m_target_form->setRowVisible(m_layouts_row, true);
 		return;
 	}
 	m_layouts = ThmLayouts::read(path, &m_layouts_error);
@@ -343,6 +363,8 @@ void ThmPrintDialog::loadLayouts()
 							 ? tr("%1 (%2 of %3 variants printable)").arg(QFileInfo(path).fileName())
 							   .arg(printable).arg(m_layouts.size())
 							 : m_layouts_error);
+		//Found by itself and read: nothing for the user to do with it
+	if (m_target_form) m_target_form->setRowVisible(m_layouts_row, !m_layouts_error.isEmpty());
 }
 
 void ThmPrintDialog::chooseLayouts()
@@ -1070,4 +1092,21 @@ void ThmPrintersDialog::accept()
 		}
 	}
 	QDialog::accept();
+}
+
+// ThmPrintMenu
+
+void ThmPrintMenu::managePrinters(QWidget *parent)
+{
+	useApplicationDirs();
+	QSettings settings;
+	QList<ThmCatalog::Variant> catalog;
+	QList<ThmLayouts::Variant> layouts;
+	QString error;
+	const QString catalog_path = ThmPrinters::catalogFile(settings);
+	if (!catalog_path.isEmpty()) catalog = ThmCatalog::read(catalog_path, &error);
+	const QString layouts_path = ThmPrinters::layoutsFile(settings);
+	if (!layouts_path.isEmpty()) layouts = ThmLayouts::read(layouts_path, &error);
+	ThmPrintersDialog dialog(ThmPrinters::load(), catalog, parent, layouts);
+	if (dialog.exec() == QDialog::Accepted) ThmPrinters::save(dialog.printers());
 }

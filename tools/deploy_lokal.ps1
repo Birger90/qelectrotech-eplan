@@ -86,4 +86,26 @@ if ((Test-Path $grafcet_eigen) -and (Test-Path $sammlung)) {
     Copy-Item -Recurse -Force (Join-Path $grafcet_eigen "*") (Join-Path $sammlung "20_logic")
 }
 
+# Weidmüller-Dateien für den THM-Druck (Katalog my_cat_DE.mca, Layoutdatei mprint-multimark-layouts.json):
+# Herstellerdaten, deshalb nicht im Repository, sondern im privaten Datenordner. Sie kommen neben das Programm
+# (build\deploy\weidmueller) und damit in jedes Verteilpaket: QET braucht dann kein M-Print PRO.
+# Quelle: $env:QET_WEIDMUELLER_DIR, sonst "weidmueller" neben der Firmensammlung der Einstellungen,
+# sonst ..\QElectroTech\Daten\weidmueller neben dem Repository.
+$weid = $env:QET_WEIDMUELLER_DIR
+if (-not $weid) {
+    $p = "HKCU:\Software\QElectroTech\QElectroTech\elements-collections"
+    $firma = if (Test-Path $p) { (Get-ItemProperty $p -ErrorAction SilentlyContinue)."company-collection-path" } else { $null }
+    if ($firma -and $firma -ne "default") { $weid = Join-Path (Split-Path -Parent $firma.TrimEnd("\", "/")) "weidmueller" }
+}
+if (-not $weid -or -not (Test-Path $weid)) {
+    $weid = Join-Path (Split-Path -Parent $repo) "QElectroTech\Daten\weidmueller"
+}
+if (Test-Path $weid) {
+    New-Item -ItemType Directory -Force (Join-Path $deploy "weidmueller") | Out-Null
+    Copy-Item (Join-Path $weid "*") (Join-Path $deploy "weidmueller") -Force
+    Write-Output "Weidmüller-Dateien: $weid"
+} else {
+    Write-Warning "Weidmüller-Dateien nicht gefunden (QET_WEIDMUELLER_DIR): THM-Druck braucht dann M-Print PRO oder eine gewählte Datei."
+}
+
 Write-Output "build\deploy aktuell: $((& $exe --version | Out-String).Trim())"

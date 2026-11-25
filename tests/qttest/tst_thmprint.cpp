@@ -27,7 +27,9 @@
 #include "marking/thmprinters.h"
 #include "qettesttimeout.h"
 
+#include <QDir>
 #include <QElapsedTimer>
+#include <QFile>
 #include <QSettings>
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -400,7 +402,9 @@ class TestThmPrint : public QObject
 			{
 				QSettings s(dir.filePath(QStringLiteral("thm.ini")), QSettings::IniFormat);
 				ThmPrinters::save(s, list);
-				ThmPrinters::setCatalogFile(s, QStringLiteral("/somewhere/my_cat_x.mca"));
+				QFile chosen(dir.filePath(QStringLiteral("my_cat_x.mca")));
+				QVERIFY(chosen.open(QIODevice::WriteOnly));
+				ThmPrinters::setCatalogFile(s, chosen.fileName());
 			}
 			QSettings s(dir.filePath(QStringLiteral("thm.ini")), QSettings::IniFormat);
 			const QList<ThmPrinter> back = ThmPrinters::load(s);
@@ -415,7 +419,19 @@ class TestThmPrint : public QObject
 					 ThmJob::build({{QStringLiteral("Z"), 5}}, p.profile));
 			QCOMPARE(back.at(1).material_no, QStringLiteral("BSP-1002"));
 			QCOMPARE(ThmPrinters::indexOf(back, QStringLiteral("THM2")), 1);
-			QCOMPARE(ThmPrinters::catalogFile(s), QStringLiteral("/somewhere/my_cat_x.mca"));
+			QCOMPARE(ThmPrinters::catalogFile(s), dir.filePath(QStringLiteral("my_cat_x.mca")));
+				//Nothing chosen (or the file gone): found in a data folder
+			{
+				QTemporaryDir data;
+				QFile layouts(data.filePath(QStringLiteral("mprint-multimark-layouts.json")));
+				QVERIFY(layouts.open(QIODevice::WriteOnly));
+				layouts.close();
+				ThmPrinters::setDataDirs({data.path()});
+				QSettings empty(dir.filePath(QStringLiteral("empty.ini")), QSettings::IniFormat);
+				ThmPrinters::setLayoutsFile(empty, data.filePath(QStringLiteral("gone.json")));
+				QCOMPARE(ThmPrinters::layoutsFile(empty), QDir::fromNativeSeparators(layouts.fileName()));
+				ThmPrinters::setDataDirs({});
+			}
 				//Saving fewer printers leaves none of the old behind
 			ThmPrinters::save(s, {back.at(1)});
 			QCOMPARE(ThmPrinters::load(s).size(), 1);

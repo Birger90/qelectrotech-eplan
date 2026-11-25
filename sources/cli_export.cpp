@@ -668,6 +668,10 @@ void installThmTranslator()
 	static bool done = false;
 	if (done) return;
 	done = true;
+		//Every THM command: the Weidmüller files are also looked for beside
+		//the company collection and in the configuration folder
+	ThmPrinters::setDataDirs({QDir::cleanPath(QETApp::companyElementsDir() + QStringLiteral("../weidmueller")),
+							  QDir::cleanPath(QETApp::configDir())});
 	const QString language = QETApp::langFromSetting();
 	for (const QString &dir : {QETApp::languagesPath(),
 							   QCoreApplication::applicationDirPath() + QStringLiteral("/lang")}) {

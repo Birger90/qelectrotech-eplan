@@ -31,6 +31,8 @@ class QETProject;
 class QCheckBox;
 class QComboBox;
 class QDoubleSpinBox;
+class QFormLayout;
+class QHBoxLayout;
 class QLabel;
 class QLineEdit;
 class QListWidget;
@@ -109,6 +111,10 @@ class ThmPrintDialog : public QDialog
 		QComboBox *m_article = nullptr;
 		QLabel *m_catalog_label = nullptr;
 		QLabel *m_layouts_label = nullptr;
+			/// The rows of the two files: shown only when a file is missing
+		QFormLayout *m_target_form = nullptr;
+		QHBoxLayout *m_catalog_row = nullptr;
+		QHBoxLayout *m_layouts_row = nullptr;
 		QComboBox *m_printer = nullptr;
 		QLabel *m_target_message = nullptr;
 		QLabel *m_profile_source = nullptr;
@@ -179,5 +185,16 @@ class ThmPrintersDialog : public QDialog
 		QCheckBox *m_transfer = nullptr;
 		QCheckBox *m_rotate = nullptr;
 };
+
+/**
+	@brief The entry of the menu Label printing that needs no project:
+	the printers set up, with what each is loaded with. The Weidmüller
+	catalog and layout file are found by themselves (ThmPrinters).
+*/
+namespace ThmPrintMenu
+{
+		/// Add, change and remove printers; their loading and roller
+	void managePrinters(QWidget *parent);
+}
 
 #endif // THMPRINTDIALOG_H

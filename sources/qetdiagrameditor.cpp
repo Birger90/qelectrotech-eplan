@@ -2742,6 +2742,11 @@ void QETDiagramEditor::setUpMenu()
 	menu_project -> addAction(m_cable_overview);
 	menu_project -> addAction(m_export_cable_list);
 	menu_labels -> addAction(m_thm_print);
+	menu_labels -> addSeparator();
+		//Printers and files need no project
+	connect(menu_labels->addAction(tr("THM printers...")), &QAction::triggered,
+			this, [this]() { ThmPrintMenu::managePrinters(this); });
+	menu_labels -> addSeparator();
 	menu_labels -> addAction(m_export_marking);
 	menu_project -> addAction(m_tia_tags);
 	menu_project -> addAction(m_project_export_conductor_num);

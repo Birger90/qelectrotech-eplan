@@ -24,6 +24,7 @@
 #include <QDateTime>
 #include <QList>
 #include <QString>
+#include <QStringList>
 
 class QSettings;
 
@@ -71,10 +72,21 @@ namespace ThmPrinters
 	QList<ThmPrinter> load();
 	void save(const QList<ThmPrinter> &printers);
 
-		/// The catalog file chosen last (my_cat*.mca), empty if none
+		/// Folders searched for the Weidmüller files when none is chosen
+		/// (the application sets them: beside the company collection, the
+		/// configuration folder)
+	void setDataDirs(const QStringList &dirs);
+	QStringList dataDirs();
+		/// The catalog file (my_cat*.mca): the one chosen, else the one of
+		/// an installed M-Print PRO, else my_cat_DE.mca / my_cat.mca in the
+		/// folder "weidmueller" beside the program or the data folders;
+		/// empty if none is found
 	QString catalogFile(QSettings &settings);
 	void setCatalogFile(QSettings &settings, const QString &path);
-		/// The layout file chosen last (JSON, ThmLayouts), empty if none
+		/// The layout file (JSON, ThmLayouts): the one chosen, else
+		/// QET_THM_LAYOUTS, else mprint-multimark-layouts.json in the folder
+		/// "weidmueller" beside the program or the data folders; empty if
+		/// none is found
 	QString layoutsFile(QSettings &settings);
 	void setLayoutsFile(QSettings &settings, const QString &path);
 

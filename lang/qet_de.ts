@@ -21819,6 +21819,10 @@ Hier ist das Projekt ab sofort nur zum Lesen offen. Eigene Änderungen sichern S
         <source>Label printing</source>
         <translation>Etikettendruck</translation>
     </message>
+    <message>
+        <source>THM printers...</source>
+        <translation>THM-Drucker…</translation>
+    </message>
 </context>
 <context>
     <name>QETElementEditor</name>

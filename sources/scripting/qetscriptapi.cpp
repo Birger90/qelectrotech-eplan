@@ -1101,7 +1101,11 @@ int QetScriptApi::exportThmJob(const QString &output, const QString &optionsJson
 	const QString layouts_file = j.value(QLatin1String("layouts")).toString();
 	QList<ThmLayouts::Variant> layouts;
 	if (!layouts_file.isEmpty()) layouts = ThmLayouts::read(layouts_file, &error);
-	else layouts = ThmLayouts::settingsLayouts(nullptr, &error);
+	else {
+		ThmPrinters::setDataDirs({QDir::cleanPath(QETApp::companyElementsDir() + QStringLiteral("../weidmueller")),
+								  QDir::cleanPath(QETApp::configDir())});
+		layouts = ThmLayouts::settingsLayouts(nullptr, &error);
+	}
 	if (!error.isEmpty()) {
 		log(QStringLiteral("qet.exportThmJob: %1").arg(error));
 		return -1;

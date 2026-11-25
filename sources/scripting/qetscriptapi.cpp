@@ -22,6 +22,7 @@
 #include "../import/portals/manufacturerportals.h"
 #include "../import/portals/partfetcher.h"
 
+#include <QSaveFile>
 #include <QSettings>
 #include <QTemporaryDir>
 #include <QTimer>
@@ -36,8 +37,12 @@
 #include "../diagram.h"
 #include "../bomexport.h"
 #include "../marking/markingexport.h"
+#include "../marking/thmjob.h"
+#include "../marking/thmlayouts.h"
+#include "../marking/thmprinters.h"
 #include "../purchase/purchasefetch.h"
 #include "../purchase/purchaselist.h"
+#include "../marking/mprintpro.h"
 #include "../cablelist/cablelistrows.h"
 #include "../cablelist/cablequerywidget.h"
 #include "../dataBase/ui/elementquerywidget.h"
@@ -961,6 +966,66 @@ int QetScriptApi::exportMarking(const QString &output, const QString &format,
 }
 
 /**
+	@brief mprintJobsJson
+	The files for M-Print PRO, one per material, of this project's markers.
+	Besides the keys of markingOptions(), @p options_json takes "printer"
+	(printjet, thm), "materials" ("Klemme=1609801044,Draht=..."), "print"
+	(true: -p) and "exe" (MPrintPRO.exe); the rest comes from the settings
+	the export dialog keeps.
+*/
+static QString mprintJobsJson(QETProject *project, const QString &dir,
+							  const QString &options_json, bool open, QString *error)
+{
+	MarkingExport::Options o;
+	if (!markingOptions(QString(), options_json, &o, error)) return QString();
+	MPrintPro::Settings s = MPrintPro::load();
+	const QJsonObject j = QJsonDocument::fromJson(options_json.toUtf8()).object();
+	if (j.contains(QLatin1String("printer"))) {
+		if (!MPrintPro::printerFromKey(j.value(QLatin1String("printer")).toString(), &s.printer)) {
+			*error = QStringLiteral("unknown printer (printjet, thm)");
+			return QString();
+		}
+		for (QString &m : s.materials) m.clear();
+	}
+	if (!MPrintPro::parseMaterials(j.value(QLatin1String("materials")).toString(), &s, error)) {
+		return QString();
+	}
+	s.print = j.value(QLatin1String("print")).toBool(s.print);
+	s.exe = j.value(QLatin1String("exe")).toString(s.exe);
+	const QList<MPrintPro::Job> jobs = MPrintPro::writeJobs(
+		MarkingExport::collect(project, o, error), s, dir,
+		QFileInfo(project->filePath()).completeBaseName(), error);
+	if (open && !jobs.isEmpty() && !MPrintPro::open(jobs, s, error)) return QString();
+	QJsonArray rows;
+	for (const MPrintPro::Job &job : jobs) {
+		QJsonObject row;
+		row.insert(QStringLiteral("file"), job.file);
+		row.insert(QStringLiteral("material"), job.material);
+		row.insert(QStringLiteral("name"), job.material_name);
+		row.insert(QStringLiteral("markers"), job.markers);
+		row.insert(QStringLiteral("arguments"), QJsonArray::fromStringList(MPrintPro::arguments(job, s.print)));
+		rows.append(row);
+	}
+	return QString::fromUtf8(QJsonDocument(rows).toJson(QJsonDocument::Compact));
+}
+
+QString QetScriptApi::mprintJobs(const QString &dir, const QString &optionsJson)
+{
+	QString error;
+	const QString json = m_project ? mprintJobsJson(m_project, dir, optionsJson, false, &error) : QString();
+	if (json.isEmpty()) log(QStringLiteral("qet.mprintJobs: %1").arg(m_project ? error : QStringLiteral("no project")));
+	return json.isEmpty() ? QStringLiteral("[]") : json;
+}
+
+QString QetScriptApi::openInMPrintPro(const QString &dir, const QString &optionsJson)
+{
+	QString error;
+	const QString json = m_project ? mprintJobsJson(m_project, dir, optionsJson, true, &error) : QString();
+	if (json.isEmpty()) log(QStringLiteral("qet.openInMPrintPro: %1").arg(m_project ? error : QStringLiteral("no project")));
+	return json.isEmpty() ? QStringLiteral("[]") : json;
+}
+
+/**
 	@brief QetScriptApi::markings
 	The markers export Marking would write, as JSON: an array of
 	{kind, text, target, group, plant, location, folio, folioNumber,
@@ -996,6 +1061,116 @@ QString QetScriptApi::markings(const QString &optionsJson) const
 		rows.append(row);
 	}
 	return QString::fromUtf8(QJsonDocument(rows).toJson(QJsonDocument::Compact));
+}
+
+/**
+	@brief QetScriptApi::exportThmJob
+	Write the markers of this project as a print job for a THM printer
+	to @p output, the bytes Project > Print THM labels... sends
+	(docs/beschriftung-export.md). Nothing is sent to a printer.
+	@param optionsJson the choices of markingOptions() (kinds default to
+	"wires" here), and "printer" (ID) or "material" (article loaded) for
+	the profile of a printer set up, "layouts" (layout file; else the one
+	of the settings: an article found there is printed with its layout),
+	"family" ("mmp", "multimark"), "copies", "merge", and "profile":
+	{"width", "height", "gap", "sensor", "columns", "pitch", "marginLeft",
+	 "marginRight", "textSize", "font", "baseline", "rotate"} over it
+	@return the number of labels, -1 when nothing was written
+*/
+int QetScriptApi::exportThmJob(const QString &output, const QString &optionsJson)
+{
+	if (!m_project) {
+		log(QStringLiteral("qet.exportThmJob: no project"));
+		return -1;
+	}
+	MarkingExport::Options o;
+	o.kinds = MarkingExport::Wire;
+	QString error;
+	if (!markingOptions(QString(), optionsJson, &o, &error)) {
+		log(QStringLiteral("qet.exportThmJob: %1").arg(error));
+		return -1;
+	}
+	const QJsonObject j = QJsonDocument::fromJson(optionsJson.toUtf8()).object();
+	ThmJob::Profile profile;
+	const QList<ThmPrinter> printers = ThmPrinters::load();
+	const QString id = j.value(QLatin1String("printer")).toString();
+	const QString material = j.value(QLatin1String("material")).toString();
+		//An article the layout file knows ("layouts", else the one of the
+		//settings) is printed with its layout, for the printer's family
+		//or "family"
+	const QString layouts_file = j.value(QLatin1String("layouts")).toString();
+	QList<ThmLayouts::Variant> layouts;
+	if (!layouts_file.isEmpty()) layouts = ThmLayouts::read(layouts_file, &error);
+	else layouts = ThmLayouts::settingsLayouts(nullptr, &error);
+	if (!error.isEmpty()) {
+		log(QStringLiteral("qet.exportThmJob: %1").arg(error));
+		return -1;
+	}
+	const int named = id.isEmpty() ? -1 : ThmPrinters::indexOf(printers, id);
+	const QString article = !material.isEmpty() ? material
+						  : (named >= 0 ? printers.at(named).material_no : QString());
+	if (!article.isEmpty() && ThmLayouts::best(layouts, article) >= 0) {
+		ThmPrinter family_printer = named >= 0 ? printers.at(named) : ThmPrinter();
+		ThmJob::Family family = family_printer.family();
+		if (ThmJob::familyFromKey(j.value(QLatin1String("family")).toString(), &family))
+			family_printer.model = family == ThmJob::Family::MultiMark ? QStringLiteral("THM MultiMark")
+																		: QStringLiteral("THM MMP");
+		if (!ThmLayouts::jobProfile(layouts, article, &family_printer, &profile, nullptr, &error)) {
+			log(QStringLiteral("qet.exportThmJob: %1").arg(error));
+			return -1;
+		}
+	} else if (!id.isEmpty()) {
+		const int i = ThmPrinters::indexOf(printers, id);
+		if (i < 0) {
+			log(QStringLiteral("qet.exportThmJob: no THM printer with the ID '%1'").arg(id));
+			return -1;
+		}
+		profile = printers.at(i).profile;
+	} else if (!material.isEmpty()) {
+		const ThmPrinters::Choice c = ThmPrinters::choose(printers, material);
+		if (c.outcome != ThmPrinters::Choice::Unique) {
+			log(QStringLiteral("qet.exportThmJob: ") + c.message);
+			return -1;
+		}
+		profile = printers.at(c.matches.first()).profile;
+	}
+	const QJsonObject p = j.value(QLatin1String("profile")).toObject();
+	profile.width = p.value(QLatin1String("width")).toDouble(profile.width);
+	profile.height = p.value(QLatin1String("height")).toDouble(profile.height);
+	profile.gap = p.value(QLatin1String("gap")).toDouble(profile.gap);
+	if (p.contains(QLatin1String("sensor"))
+			&& !ThmJob::sensorFromKey(p.value(QLatin1String("sensor")).toString(), &profile.sensor)) {
+		log(QStringLiteral("qet.exportThmJob: unknown sensor (l1, e, l0, l2)"));
+		return -1;
+	}
+	profile.columns = p.value(QLatin1String("columns")).toInt(profile.columns);
+	profile.column_pitch = p.value(QLatin1String("pitch")).toDouble(profile.column_pitch);
+	profile.margin_left = p.value(QLatin1String("marginLeft")).toDouble(profile.margin_left);
+	profile.margin_right = p.value(QLatin1String("marginRight")).toDouble(profile.margin_right);
+	profile.text_size = p.value(QLatin1String("textSize")).toDouble(profile.text_size);
+	profile.font = p.value(QLatin1String("font")).toInt(profile.font);
+	profile.baseline = p.value(QLatin1String("baseline")).toDouble(profile.baseline);
+	profile.rotate = p.value(QLatin1String("rotate")).toBool(profile.rotate);
+
+	const QList<ThmJob::Label> labels = ThmJob::toLabels(
+				MarkingExport::collect(m_project, o, &error),
+				j.value(QLatin1String("copies")).toInt(1),
+				j.value(QLatin1String("merge")).toBool(true));
+	if (!error.isEmpty()) {
+		log(QStringLiteral("qet.exportThmJob: %1").arg(error));
+		return -1;
+	}
+	const QByteArray job = ThmJob::build(labels, profile, &error);
+	if (job.isEmpty()) {
+		log(QStringLiteral("qet.exportThmJob: %1").arg(error));
+		return -1;
+	}
+	QSaveFile file(output);
+	if (!file.open(QIODevice::WriteOnly) || file.write(job) != job.size() || !file.commit()) {
+		log(QStringLiteral("qet.exportThmJob: %1").arg(file.errorString()));
+		return -1;
+	}
+	return ThmJob::labelCount(labels);
 }
 
 namespace {

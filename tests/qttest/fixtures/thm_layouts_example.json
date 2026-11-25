@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "layouts": {
+    "test_single.mcf": {
+      "title": "TEST SINGLE",
+      "page": {"width_um": 60000, "height_um": 9000, "endless": "true"},
+      "layout_rules_raw": {"attributes": {"type": "label"}, "elements": []},
+      "page_rules_raw": [],
+      "rows": 1, "columns": 1, "pitched_strip": "false", "support_plate": "TST",
+      "markers": [{"name": "m1.s1", "x_um": 30000, "y_um": 0, "width_um": 16000, "height_um": 5000}],
+      "fields": [{"name": "MARKER", "type": "textbox", "properties": {
+        "xstart": {"value": "1000"}, "ystart": {"value": "0"}, "xend": {"value": "15000"}, "yend": {"value": "5000"},
+        "orientation": {"value": "0"}, "font": {"value": "", "facename": "Arial", "height": "9"}}}]
+    },
+    "test_three.mcf": {
+      "title": "TEST THREE",
+      "page": {"width_um": 50000, "height_um": 12000, "endless": "true"},
+      "layout_rules_raw": {"attributes": {"type": "label"}, "elements": []},
+      "page_rules_raw": [],
+      "rows": 1, "columns": 3, "pitched_strip": "false", "support_plate": "TST",
+      "markers": [
+        {"name": "m1.s3", "x_um": 34000, "y_um": 0, "width_um": 14000, "height_um": 12000},
+        {"name": "m1.s1", "x_um": 2000, "y_um": 0, "width_um": 14000, "height_um": 12000},
+        {"name": "m1.s2", "x_um": 18000, "y_um": 0, "width_um": 14000, "height_um": 12000}],
+      "fields": [
+        {"name": "Project1", "type": "textbox", "properties": {}},
+        {"name": "Marker", "type": "textbox", "properties": {
+        "xstart": {"value": "0"}, "ystart": {"value": "0"}, "xend": {"value": "14000"}, "yend": {"value": "12000"},
+        "orientation": {"value": "90"}, "font": {"value": "", "facename": "Arial", "height": "8"}}}]
+    },
+    "test_strip.mcf": {
+      "title": "TEST STRIP",
+      "page": {"width_um": 3000, "height_um": 5000, "endless": "true"},
+      "layout_rules_raw": {"attributes": {"type": "label"}, "elements": []},
+      "page_rules_raw": [],
+      "rows": 1, "columns": 1, "pitched_strip": "true", "support_plate": "",
+      "markers": [{"name": "m1.s1", "x_um": 0, "y_um": 0, "width_um": 3000, "height_um": 5000}],
+      "fields": [{"name": "MARKER", "type": "textbox", "properties": {
+        "xstart": {"value": "0"}, "ystart": {"value": "0"}, "xend": {"value": "3000"}, "yend": {"value": "5000"},
+        "orientation": {"value": "0"}, "font": {"value": "", "facename": "Arial", "height": "6"}}}]
+    },
+    "test_endless.mcf": {
+      "title": "TEST ENDLESS",
+      "page": {"height_um": 20000, "endless": "true"},
+      "layout_rules_raw": {"attributes": {"type": "endless_strip"}, "elements": [{"tag": "multi_rows", "attributes": {"rows": "2"}, "value": ""}]},
+      "page_rules_raw": [],
+      "rows": 2, "columns": null, "pitched_strip": null, "support_plate": "",
+      "markers": [],
+      "fields": []
+    },
+    "test_wide.mcf": {
+      "title": "TEST WIDE",
+      "page": {"width_um": 110000, "height_um": 10000, "endless": "true"},
+      "layout_rules_raw": {"attributes": {"type": "label"}, "elements": []},
+      "page_rules_raw": [],
+      "rows": 1, "columns": 1, "pitched_strip": "false", "support_plate": "",
+      "markers": [{"name": "m1.s1", "x_um": 0, "y_um": 0, "width_um": 110000, "height_um": 10000}],
+      "fields": [{"name": "MARKER", "type": "textbox", "properties": {
+        "xstart": {"value": "0"}, "ystart": {"value": "0"}, "xend": {"value": "110000"}, "yend": {"value": "10000"},
+        "orientation": {"value": "0"}, "font": {"value": "", "height": "10"}}}]
+    }
+  },
+  "variants": [
+    {"article": "9900000001", "name": "TEST SINGLE GE", "category": "Test", "layout": "test_single.mcf",
+     "printer_parameters_raw": {"sensor_type": "gap", "sensor_type_muma": "gap", "print_mode": "normal",
+       "print_position_mmp": "-500", "print_speed_muma": "40", "print_speed_muma_plus": "40",
+       "print_darkness_muma_plus": "12", "cut_mode": "off", "ribbon_muma_plus": "0000000001 TEST RIBBON 76"}},
+    {"article": "9900000002", "name": "TEST THREE GE", "category": "Test", "layout": "test_three.mcf",
+     "printer_parameters_raw": {"sensor_type": "gap", "sensor_type_muma": "gap", "print_mode": "tear_off",
+       "print_position_mmp": "-500", "print_speed_muma": "40", "print_speed_muma_plus": "50",
+       "print_darkness_muma_plus": "10", "cut_mode": "off"}},
+    {"article": "9900000003", "name": "TEST STRIP WS", "category": "Test", "layout": "test_strip.mcf",
+     "printer_parameters_raw": {"sensor_type": "gap", "print_mode": "normal", "print_position_mmp": "0",
+       "print_speed_muma": "40", "print_speed_muma_plus": "40", "print_darkness_muma_plus": "12", "cut_mode": "off"}},
+    {"article": "9900000004", "name": "TEST ENDLESS", "category": "Test", "layout": "test_endless.mcf",
+     "printer_parameters_raw": {"sensor_type": "continuous", "print_mode": "normal", "cut_mode": "on"}},
+    {"article": "9900000005", "name": "TEST WIDE", "category": "Test", "layout": "test_wide.mcf",
+     "printer_parameters_raw": {"sensor_type": "gap", "print_mode": "normal", "print_speed_muma": "40",
+       "print_darkness_muma_plus": "5"}},
+    {"article": "9900000001", "name": "TEST SINGLE GE DS", "category": "Test", "layout": "test_missing.mcf",
+     "printer_parameters_raw": {"sensor_type": "gap"}}
+  ]
+}

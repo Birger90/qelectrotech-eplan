@@ -110,6 +110,23 @@
 >   kinds, folios and plant/location. Also `--export-marking` and `qet.exportMarking()`/`qet.markings()`. No maker
 >   publishes a fixed import layout, so each file is a CSV cut to what that import is documented to read; columns
 >   and sources in [docs/beschriftung-export.md](docs/beschriftung-export.md).
+> - Menu Project > *Print THM labels…*: the same markers printed straight on a Weidmüller THM thermal transfer
+>   printer (THM MMP, THM MultiMark) over TCP port 9100 in cab's printer language JScript, without M-Print PRO.
+>   Printers, the article variant each is loaded with and its print profile are set up in the dialog; the article
+>   chosen picks the printer. Status and material can be queried; nothing prints before a summary of target,
+>   article and quantity is confirmed. Also `--thm-prn`, `--thm-status`, `--thm-send --yes`, `--thm-printers` and
+>   `qet.exportThmJob()`. Commands and what is still to be confirmed on the printer: same document.
+> - The print profile of each article can come from a layout file of your own M-Print PRO installation (JSON, chosen
+>   under *Layout file…* or `--layouts`; none is shipped, nothing is decrypted): page, labels, columns, text field and
+>   turn, speed and heat per device family (THM MMP, THM MultiMark). Checked against four M-Print print files: the
+>   `S`, `H` and `O` commands match. Continuous material with layout rules is refused with a reason. Each printer
+>   keeps its usual article apart from the one loaded now; *Change material…* (or `--thm-load`) confirms a change.
+>   *Choose…* lists the materials as M-Print PRO does, with search and filters for category, size, colour and sides.
+
+> - Weidmüller printers directly: choose PrintJet CONNECT (MultiCard) or THM MultiMark (rolls, labels); every kind
+>   gets a fitting Weidmüller material (editable). *Open in M-Print PRO* hands each material a file through
+>   M-Print PRO's command line (`-ImportFilter:CSV -MatNo:…`, `-p` to print at once). Also `--printer`,
+>   `--material`, `--mprint [--open] [--print]` and `qet.mprintJobs()`/`qet.openInMPrintPro()`.
 
 > **Purchase list for purchasing and ERP**
 > - Project menu > *Export purchase list…*: one file dialog, nothing else. It writes an Excel workbook (`.xlsx`, or

@@ -19,6 +19,7 @@
 #define MARKINGEXPORTDIALOG_H
 
 #include "markingexport.h"
+#include "mprintpro.h"
 
 #include <QDialog>
 
@@ -27,6 +28,9 @@ class QCheckBox;
 class QComboBox;
 class QLabel;
 class QSpinBox;
+class QGroupBox;
+class QLineEdit;
+class QPushButton;
 
 /**
 	@brief The dialog of Project > Export markers...: one page, the choices
@@ -44,6 +48,9 @@ class MarkingExportDialog : public QDialog
 		void updateCount();
 		void exportFile();
 		void remember() const;
+		void fillMaterials();
+		MPrintPro::Settings mprintSettings() const;
+		void openInMPrintPro();
 
 		QETProject *m_project = nullptr;
 		QComboBox *m_format = nullptr;
@@ -59,6 +66,13 @@ class MarkingExportDialog : public QDialog
 		QCheckBox *m_both_ends = nullptr;
 		QLabel *m_count = nullptr;
 		QLabel *m_hint = nullptr;
+			//Weidmüller printer, shown for M-Print PRO only
+		QGroupBox *m_weidmueller = nullptr;
+		QComboBox *m_printer = nullptr;
+		QComboBox *m_material[MPrintPro::SlotCount] = {};
+		QLineEdit *m_exe = nullptr;
+		QCheckBox *m_print_now = nullptr;
+		QPushButton *m_open = nullptr;
 };
 
 #endif // MARKINGEXPORTDIALOG_H

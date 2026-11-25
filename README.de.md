@@ -130,6 +130,24 @@ Seitenleiste *Anzeige > Funktionsvorlagen*, wie EPLAN-Makros mit Wertesätzen:
   Auswahl nach Art, Blättern und Anlage/Ort. Auch per `--export-marking` und `qet.exportMarking()`/`qet.markings()`.
   Kein Hersteller veröffentlicht ein festes Importschema; jede Datei ist eine CSV nach dem, was der jeweilige Import
   belegt liest. Spalten und Belege in [docs/beschriftung-export.md](docs/beschriftung-export.md).
+- Menü Projekt > *THM-Etiketten drucken…*: dieselben Schilder direkt auf einen Weidmüller-Thermotransferdrucker THM
+  (THM MMP, THM MultiMark), über TCP-Port 9100 in cabs Druckersprache JScript, ohne M-Print PRO. Drucker, gerüstete
+  Artikelvariante und Druckprofil richtet man im Dialog ein; die gewählte Artikelvariante bestimmt den Drucker.
+  Status und Material lassen sich abfragen; gedruckt wird erst nach einer Zusammenfassung von Ziel, Artikel und
+  Menge. Auch per `--thm-prn`, `--thm-status`, `--thm-send --yes`, `--thm-printers` und `qet.exportThmJob()`.
+  Befehle, Belege und was am Drucker noch zu prüfen ist: dasselbe Dokument.
+- Das Druckprofil je Artikel kann aus einer Layoutdatei der eigenen M-Print-PRO-Installation kommen (JSON, unter
+  *Layoutdatei…* oder `--layouts` gewählt; keine mitgeliefert, nichts entschlüsselt): Seite, Schilder, Spalten,
+  Textfeld und Drehung, Geschwindigkeit und Heizung je Gerätefamilie (THM MMP, THM MultiMark). Gegen vier
+  M-Print-Druckdateien geprüft: `S`, `H` und `O` stimmen überein. Endlosmaterial mit Layoutregeln wird mit Begründung
+  abgelehnt. Jeder Drucker führt seine übliche Rüstung getrennt von der aktuellen; *Material wechseln…* (oder
+  `--thm-load`) bestätigt einen Wechsel. *Auswählen…* listet die Materialien wie M-Print PRO, mit Suche und Filtern
+  nach Kategorie, Maß, Farbe und Seiten.
+
+- Weidmüller-Drucker direkt: Drucker PrintJet CONNECT (MultiCard) oder THM MultiMark (Rollen, Etiketten) wählen, je
+  Art ist ein passendes Weidmüller-Material vorbelegt (änderbar). *In M-Print PRO öffnen* übergibt jedem Material eine
+  Datei über die Kommandozeile von M-Print PRO (`-ImportFilter:CSV -MatNo:…`, auf Wunsch `-p` zum Sofortdruck).
+  Auch per `--printer`, `--material`, `--mprint [--open] [--print]` und `qet.mprintJobs()`/`qet.openInMPrintPro()`.
 
 ## Einkaufsliste für Einkauf und ERP
 

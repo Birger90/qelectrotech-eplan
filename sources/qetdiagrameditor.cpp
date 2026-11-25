@@ -107,6 +107,7 @@
 #include "shortcutmanager.h"
 #include "cablelist/cableexportdialog.h"
 #include "marking/markingexportdialog.h"
+#include "marking/thmprintdialog.h"
 #include "ui/bomexportdialog.h"
 #include "purchase/purchaseexport.h"
 #include "ui/conductorcolortoolbutton.h"
@@ -1638,6 +1639,18 @@ void QETDiagramEditor::setUpActions()
 		MarkingExportDialog dialog(project, this);
 		dialog.exec();
 	});
+	//The same markers printed straight on a THM printer
+	m_thm_print = new QAction(QET::Icons::DocumentSpreadsheet, tr("Print THM labels..."), this);
+	ShortcutManager::instance().registerAction(m_thm_print, "diagrameditor.thm_print", tr("Diagram editors"), QKeySequence());
+	m_thm_print->setStatusTip(tr("Print wire, cable, terminal and device markers directly on a Weidmüller THM printer"));
+	connect(m_thm_print, &QAction::triggered, [this]() {
+		QETProject *project = this->currentProject();
+		if (!project) {
+			return;
+		}
+		ThmPrintDialog dialog(project, this);
+		dialog.exec();
+	});
 
 	//Export conductor num to csv
 	m_project_export_conductor_num = new QAction(QET::Icons::DocumentSpreadsheet, tr("Export the list of names of wires"), this);
@@ -2724,6 +2737,7 @@ void QETDiagramEditor::setUpMenu()
 	menu_project -> addAction(m_cable_overview);
 	menu_project -> addAction(m_export_cable_list);
 	menu_project -> addAction(m_export_marking);
+	menu_project -> addAction(m_thm_print);
 	menu_project -> addAction(m_tia_tags);
 	menu_project -> addAction(m_project_export_conductor_num);
 	menu_project -> addAction(m_project_export_wiring_list);
@@ -4513,6 +4527,7 @@ void QETDiagramEditor::slot_updateActions()
 	m_add_cable_list              -> setEnabled(editable_project);
 	m_export_cable_list           -> setEnabled(editable_project);
 	m_export_marking              -> setEnabled(opened_project);
+	m_thm_print                   -> setEnabled(opened_project);
 	m_tia_tags                    -> setEnabled(editable_project);
 	m_cable_overview              -> setEnabled(editable_project);
 	if (auto *panel_menu = findChild<PanelMenu *>()) panel_menu->updateActions();

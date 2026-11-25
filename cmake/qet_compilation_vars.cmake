@@ -1254,6 +1254,25 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/marking/markingexport.h
   ${QET_DIR}/sources/marking/markingexportdialog.cpp
   ${QET_DIR}/sources/marking/markingexportdialog.h
+  ${QET_DIR}/sources/marking/thmcatalog.cpp
+  ${QET_DIR}/sources/marking/thmcatalog.h
+  ${QET_DIR}/sources/marking/thmclient.cpp
+  ${QET_DIR}/sources/marking/thmclient.h
+  ${QET_DIR}/sources/marking/thmjob.cpp
+  ${QET_DIR}/sources/marking/thmjob.h
+  ${QET_DIR}/sources/marking/thmlayouts.cpp
+  ${QET_DIR}/sources/marking/thmlayouts.h
+  ${QET_DIR}/sources/marking/thmmaterialdialog.cpp
+  ${QET_DIR}/sources/marking/thmmaterialdialog.h
+  ${QET_DIR}/sources/marking/thmmaterials.cpp
+  ${QET_DIR}/sources/marking/thmmaterials.h
+  ${QET_DIR}/sources/marking/thmprintdialog.cpp
+  ${QET_DIR}/sources/marking/thmprintdialog.h
+  ${QET_DIR}/sources/marking/thmprinters.cpp
+  ${QET_DIR}/sources/marking/thmprinters.h
+
+  ${QET_DIR}/sources/marking/mprintpro.cpp
+  ${QET_DIR}/sources/marking/mprintpro.h
   ${QET_DIR}/sources/cablelist/cablelistmodel.cpp
   ${QET_DIR}/sources/cablelist/cablelistmodel.h
   ${QET_DIR}/sources/cablelist/cablelistmodelpropertieswidget.cpp

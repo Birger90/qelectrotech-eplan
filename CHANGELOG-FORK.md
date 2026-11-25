@@ -3,6 +3,57 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## Unveröffentlicht
+
+### THM-Etiketten direkt drucken
+
+- Menü Projekt > *THM-Etiketten drucken…*: Draht-, Kabel-, Klemmen- und Geräteschilder gehen ohne M-Print PRO
+  direkt an Weidmüller-Thermotransferdrucker THM (THM MMP, THM MultiMark) über TCP, Standardport 9100, in cabs
+  Druckersprache JScript. Auswahl mit Blattfilter, gleiche Texte zusammengefasst, Kopien je Schild, Vorschau;
+  Status (`ESC s`), Material (`ESC l`), Pause, Fortsetzen und Abbruch (nur nach Rückfrage); Druck erst nach einer
+  Zusammenfassung von Ziel, Artikel und Menge; Speichern als `.prn`.
+- Drucker unter *Drucker…* mit ID, Name, Modell, Adresse, Port, gerüsteter Artikelvariante und Druckprofil (Breite,
+  Höhe, Lücke, Sensor, Spalten, Ränder, Schrift, Heizung, Drehung) in den Einstellungen. Die Artikelvariante wählt
+  den Drucker: genau einer wird vorgewählt, bei mehreren entscheidet der Nutzer. Keine Adresse im Programm.
+- Materialkatalog zur Laufzeit aus einer selbst gewählten Weidmüller-Katalogdatei (`my_cat*.mca`, Eintrag
+  „MultiMark“).
+- CLI `--thm-prn`, `--thm-status`, `--thm-send` (sendet nur mit `--yes` und nach Statusabfrage), `--thm-printers`;
+  Skript `qet.exportThmJob()`.
+- Befehle und Antworten nach dem cab-Handbuch „JScript Programming Manual“ 07/2026; was am THM noch zu prüfen ist,
+  steht in [docs/beschriftung-export.md](docs/beschriftung-export.md#thm-direkt-drucken-projekt--thm-etiketten-drucken).
+  Test `tst_thmprint` mit lokalem `QTcpServer` als Drucker.
+- **Layoutdatei**: das Druckprofil je Artikelvariante kommt aus einer selbst gewählten JSON-Datei mit den
+  M-Print-Vorlagen (*Layoutdatei…*, `--layouts`, Skript `"layouts"`): Seitenbreite und -höhe, Marker, Spalten,
+  Textfeld, Drehung, Geschwindigkeit und Heizung je Gerätefamilie, `B30`/`O T,P` beim Abreißen, `zO`. Abgeglichen
+  mit vier M-Print-Dateiausgaben (TM-I 18, SFX 9/24, ESG 6/15, DEK 5/3.5): `S` (Sensor, Versatz, Höhe, Teilung,
+  Breite), `H` und `O` stimmen zahlengleich überein; M-Print setzt den Text als Bild, QET als `T`-Feld in Lage und
+  Drehung der Vorlage. Endlosmaterial mit `multi_rows`, Schneiden und zu breite Seiten lehnt QET mit Begründung ab.
+  Keine Herstellerdaten im Fork; der Test `tst_thmlayouts` nutzt eine erfundene Datei.
+- **Gerätefamilien**: THM MMP (Heizung −10…+20, 30–125 mm/s, Kopf 105,7 mm) und THM MultiMark (−20…+20,
+  30–150 mm/s, 106 mm), am Gerät ausgelesen, gewählt nach dem Modell des Druckers; `--family mmp|multimark`.
+- **Übliche und aktuelle Rüstung** je Drucker getrennt, mit Walze und Zeitpunkt der Bestätigung. *Material
+  wechseln…* im Druckdialog zeigt Artikel, Farbband und Trägerplatte und übernimmt den Wechsel erst nach der
+  Bestätigung „eingelegt“. CLI `--thm-load <Drucker> <Artikel> [--usual] [--roller …]`; `--thm-send` sendet nur an
+  einen Drucker, dessen aktuelle Rüstung zum Artikel passt.
+- **Material auswählen** wie in M-Print PRO: *Auswählen…* im Druckdialog (und *…* in der Druckerverwaltung) zeigt
+  alle Varianten als Tabelle mit Suche und Filtern nach Kategorie, Maß, Farbe, ein-/zweiseitig, „nur druckbar“ und
+  „nur gerüstet“; Doppelklick übernimmt das Material.
+
+## Unveröffentlicht – Weidmüller-Druck
+
+- Beschriftung exportieren mit Weidmüller: Drucker PrintJet CONNECT (MultiCards „MC“) oder THM MultiMark
+  (Rollenmaterial „MM“, Etiketten). Je Art (Klemme, Klemmleiste, Gerät, Draht, Kabel) ist ein Material vorbelegt
+  (z. B. DEK 5/5 MC NE WS 1609801044, SF 2/21 MC NE WS V2 1918690000, SFX 9/24 MC NE WS V2 1852490000; THM:
+  DEK 5/5 MM WS 2007110000, THM MT30X 15/6 WS 1753231044) und im Dialog je Drucker änderbar.
+- *In M-Print PRO öffnen*: je Material eine Datei im Aufbau des mitgelieferten Standard-CSV-Filters und je Datei
+  `MPrintPRO.exe "<datei>" [-p] -ImportFilter:CSV -MatNo:<Nummer>` (Handbuch S. 223); M-Print PRO wird in den
+  Weidmüller-Programmordnern gesucht oder im Dialog gewählt. Die VK-Datei trägt die Materialnummern jetzt direkt in der
+  Referenzspalte, eine Referenzdatei `*.mpr` ist dafür nicht mehr nötig.
+- CLI `--printer printjet|thm`, `--material Klemme=…,Draht=…`, `--mprint [--open] [--print] [--mprint-exe …]`;
+  Skript-API `qet.mprintJobs(ordner, optionen)` und `qet.openInMPrintPro(ordner, optionen)`.
+- Am installierten M-Print PRO noch nicht geprüft (Übergabe nur mit einem Ersatzprogramm getestet); Belege und offene
+  Punkte in `docs/beschriftung-export.md`.
+
 ## 1.51.0 – 24.11.2026 – Sprungziel im PDF markiert
 
 - PDF-Export: Das Ziel eines Sprungs (Potentialpfeil, Querverweis, Kontaktspiegel, Dreifachsprung, Kabel- und

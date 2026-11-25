@@ -39,7 +39,7 @@ class QSpinBox;
 class QTableWidget;
 
 /**
-	@brief Project > Print THM labels...: the markers of the open project
+	@brief Label printing > Print THM labels...: the markers of the open project
 	printed straight on a THM printer, without the maker's software.
 
 	The markers are chosen as in the marking export, equal texts merged

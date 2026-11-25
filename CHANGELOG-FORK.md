@@ -7,7 +7,7 @@ Original-QElectroTech stehen in `ChangeLog*`.
 
 ### THM-Etiketten direkt drucken
 
-- Menü Projekt > *THM-Etiketten drucken…*: Draht-, Kabel-, Klemmen- und Geräteschilder gehen ohne M-Print PRO
+- Menü Etikettendruck > *THM-Etiketten drucken…* (neben Schaltschrankaufbau): Draht-, Kabel-, Klemmen- und Geräteschilder gehen ohne M-Print PRO
   direkt an Weidmüller-Thermotransferdrucker THM (THM MMP, THM MultiMark) über TCP, Standardport 9100, in cabs
   Druckersprache JScript. Auswahl mit Blattfilter, gleiche Texte zusammengefasst, Kopien je Schild, Vorschau;
   Status (`ESC s`), Material (`ESC l`), Pause, Fortsetzen und Abbruch (nur nach Rückfrage); Druck erst nach einer
@@ -186,7 +186,7 @@ Einfache Revisionsverwaltung nach EPLAN-Vorbild (Skill `eplan-wissen`, `revision
 
 ### Beschriftungsexport
 
-- Menü Projekt > *Beschriftung exportieren…*: Draht-, Klemmen-, Geräte- und Kabelschilder für die
+- Menü Etikettendruck > *Beschriftung exportieren…*: Draht-, Klemmen-, Geräte- und Kabelschilder für die
   Beschriftungsprogramme Phoenix Contact MARKING system / PROJECT complete, Weidmüller M-Print PRO und WAGO Smart
   Script, dazu eine neutrale CSV mit allen Spalten. Auswahl nach Art, Blattbereich und Anlage/Ort; vollständiges
   oder kurzes Kennzeichen; ein Schild je Draht-/Kabelende oder eines. Die Zahl der Schilder steht im Dialog, bevor

@@ -520,7 +520,7 @@ int exportBom(QETProject &project, const QString &output,
 }
 
 /// Markers for the marking software of the terminal makers, the same file
-/// Project > Export markers... writes. @p rest: the project, the output and
+/// Label printing > Export markers... writes. @p rest: the project, the output and
 /// the options, in any order after the two files.
 int exportMarking(const QStringList &rest)
 {
@@ -1075,7 +1075,8 @@ int thmSend(const QStringList &rest)
 		}
 		quantity = QCoreApplication::translate("ThmCli", "%1 label(s), %2 text(s)").arg(ThmJob::labelCount(labels)).arg(labels.size());
 	}
-	out << QCoreApplication::translate("ThmCli", "Target: %1 (%2:%3)").arg(printer.name, printer.host).arg(printer.port) << "\n";
+	out << QCoreApplication::translate("ThmCli", "Target: %1 (%2:%3)").arg(printer.name, printer.host)
+		   .arg(printer.transport == ThmClient::Transport::Lpd ? QStringLiteral("515, LPD") : QString::number(printer.port)) << "\n";
 	out << QCoreApplication::translate("ThmCli", "Article: %1").arg(printer.material_name.isEmpty()
 									 ? printer.material_no
 									 : printer.material_no + QStringLiteral(" – ") + printer.material_name) << "\n";

@@ -21815,6 +21815,10 @@ Hier ist das Projekt ab sofort nur zum Lesen offen. Eigene Änderungen sichern S
         <source>Print wire, cable, terminal and device markers directly on a Weidmüller THM printer</source>
         <translation type="unfinished">Draht-, Kabel-, Klemmen- und Geräteschilder direkt auf einem Weidmüller-THM-Drucker drucken</translation>
     </message>
+    <message>
+        <source>Label printing</source>
+        <translation>Etikettendruck</translation>
+    </message>
 </context>
 <context>
     <name>QETElementEditor</name>

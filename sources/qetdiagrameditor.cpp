@@ -2520,6 +2520,11 @@ void QETDiagramEditor::setUpMenu()
 	insertMenu(settings_menu_, menu_affichage);
 		//Cabinet layout: mounting surfaces, rails, ducts, drilling, DXF, 3D
 	insertMenu(settings_menu_, new PanelMenu(this));
+		//Label printing beside it: the markers straight on a THM printer,
+		//or exported for the marking software of the manufacturers
+	QMenu *menu_labels = new QMenu(tr("Label printing"), this);
+	menu_labels->setObjectName(QStringLiteral("label_printing_menu"));
+	insertMenu(settings_menu_, menu_labels);
 	insertMenu(help_menu_, windows_menu);
 
 	// Part import: manufacturer EPLAN data as elements of a collection
@@ -2736,8 +2741,8 @@ void QETDiagramEditor::setUpMenu()
 	menu_project -> addAction(m_purchase_export);
 	menu_project -> addAction(m_cable_overview);
 	menu_project -> addAction(m_export_cable_list);
-	menu_project -> addAction(m_export_marking);
-	menu_project -> addAction(m_thm_print);
+	menu_labels -> addAction(m_thm_print);
+	menu_labels -> addAction(m_export_marking);
 	menu_project -> addAction(m_tia_tags);
 	menu_project -> addAction(m_project_export_conductor_num);
 	menu_project -> addAction(m_project_export_wiring_list);

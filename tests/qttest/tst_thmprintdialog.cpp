@@ -15,7 +15,7 @@
 	You should have received a copy of the GNU General Public License
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
-// Project > Print THM labels...: the markers of a project in the preview,
+// Label printing > Print THM labels...: the markers of a project in the preview,
 // equal texts merged, and the printer chosen by the article loaded: one
 // printer preselected, none preselected among several, a message when
 // none fits. The printers are made up; nothing is sent. With

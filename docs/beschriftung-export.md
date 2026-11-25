@@ -1,4 +1,4 @@
-# Beschriftungsexport (Projekt > Beschriftung exportieren…)
+# Beschriftungsexport (Etikettendruck > Beschriftung exportieren…)
 
 Der Export schreibt die Schilder eines Projekts als Datei für die Beschriftungsprogramme der Klemmenhersteller:
 
@@ -164,7 +164,7 @@ Datei `--format neutral`: UTF-8 mit BOM, Semikolon, `"…"`, CRLF, Kopfzeile. Sp
 - Geräte: Klemmen fehlen hier, sie stehen schon unter Klemmen. Querverweise fehlen ebenfalls. Ein Gerät aus mehreren Symbolen (Spule mit Kontakten) ist ein Schild.
 - Kabel ohne Bezeichnung bekommen kein Schild.
 
-## THM direkt drucken (Projekt > THM-Etiketten drucken…)
+## THM direkt drucken (Etikettendruck > THM-Etiketten drucken…)
 
 Die Schilder gehen ohne M-Print PRO direkt an einen Weidmüller-Thermotransferdrucker der Reihe THM (THM MMP, THM MultiMark). Diese Drucker beruhen auf cab-Technik und verstehen cabs Druckersprache JScript. QElectroTech schickt den Auftrag als rohe Bytes über TCP, Standardport 9100.
 

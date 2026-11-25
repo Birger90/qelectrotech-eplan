@@ -939,7 +939,7 @@ bool QetScriptApi::exportTiaTags(const QString &output, const QString &table)
 /**
 	@brief QetScriptApi::exportMarking
 	Write the markers of this project for a marking software to @p output:
-	the file Project > Export markers... writes (docs/beschriftung-export.md).
+	the file Label printing > Export markers... writes (docs/beschriftung-export.md).
 	@param format phoenix, weidmueller, wago or neutral
 	@param optionsJson the choices, see markingOptions(); empty for all
 	@return the number of markers written, -1 when nothing was written
@@ -1066,7 +1066,7 @@ QString QetScriptApi::markings(const QString &optionsJson) const
 /**
 	@brief QetScriptApi::exportThmJob
 	Write the markers of this project as a print job for a THM printer
-	to @p output, the bytes Project > Print THM labels... sends
+	to @p output, the bytes Label printing > Print THM labels... sends
 	(docs/beschriftung-export.md). Nothing is sent to a printer.
 	@param optionsJson the choices of markingOptions() (kinds default to
 	"wires" here), and "printer" (ID) or "material" (article loaded) for

@@ -1644,11 +1644,8 @@ void QETDiagramEditor::setUpActions()
 	ShortcutManager::instance().registerAction(m_thm_print, "diagrameditor.thm_print", tr("Diagram editors"), QKeySequence());
 	m_thm_print->setStatusTip(tr("Print wire, cable, terminal and device markers directly on a Weidmüller THM printer"));
 	connect(m_thm_print, &QAction::triggered, [this]() {
-		QETProject *project = this->currentProject();
-		if (!project) {
-			return;
-		}
-		ThmPrintDialog dialog(project, this);
+			//Without a project: the labels are typed by hand
+		ThmPrintDialog dialog(this->currentProject(), this);
 		dialog.exec();
 	});
 
@@ -4537,7 +4534,7 @@ void QETDiagramEditor::slot_updateActions()
 	m_add_cable_list              -> setEnabled(editable_project);
 	m_export_cable_list           -> setEnabled(editable_project);
 	m_export_marking              -> setEnabled(opened_project);
-	m_thm_print                   -> setEnabled(opened_project);
+	m_thm_print                   -> setEnabled(true); //texts typed by hand need no project
 	m_tia_tags                    -> setEnabled(editable_project);
 	m_cable_overview              -> setEnabled(editable_project);
 	if (auto *panel_menu = findChild<PanelMenu *>()) panel_menu->updateActions();

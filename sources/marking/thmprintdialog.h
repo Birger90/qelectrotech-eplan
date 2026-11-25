@@ -38,6 +38,9 @@ class QLineEdit;
 class QListWidget;
 class QPushButton;
 class QSpinBox;
+class QPlainTextEdit;
+class QRadioButton;
+class QGroupBox;
 class QTableWidget;
 
 /**
@@ -56,6 +59,9 @@ class ThmPrintDialog : public QDialog
 		explicit ThmPrintDialog(QETProject *project, QWidget *parent = nullptr);
 
 		MarkingExport::Options options() const;
+			/// Texts typed by hand: one label per line, "text;n" for n
+			/// copies; empty lines are skipped, equal texts merged if asked
+		static QList<ThmJob::Label> freeLabels(const QString &text, int copies, bool merge);
 		QList<ThmJob::Label> labels() const;
 
 	private:
@@ -104,6 +110,13 @@ class ThmPrintDialog : public QDialog
 		QCheckBox *m_full = nullptr;
 		QCheckBox *m_both_ends = nullptr;
 		QCheckBox *m_merge = nullptr;
+			/// Source of the texts: the project, or texts typed by hand
+		QRadioButton *m_from_project = nullptr;
+		QRadioButton *m_from_text = nullptr;
+		QPlainTextEdit *m_free_text = nullptr;
+		QGroupBox *m_kinds_box = nullptr;
+		QGroupBox *m_range_box = nullptr;
+		void updateSource();
 		QSpinBox *m_copies = nullptr;
 		QTableWidget *m_preview = nullptr;
 		QLabel *m_count = nullptr;

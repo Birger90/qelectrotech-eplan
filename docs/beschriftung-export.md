@@ -233,6 +233,7 @@ Die Zielwahl richtet sich nach der Artikelvariante:
 
 ### Dialog
 
+- **Texte**: *Aus dem Projekt* (wie unten) oder *Von Hand eingeben*, wie in M-Print PRO: ein Etikett je Zeile, `Text;n` für n Etiketten dieses Texts, leere Zeilen zählen nicht. Kopien je Schild und *Gleiche Texte zusammenfassen* gelten auch hier. Ohne offenes Projekt öffnet der Dialog gleich mit dieser Eingabe; der Menüpunkt ist darum immer aktiv.
 - Auswahl wie beim Export: Drähte, Kabel, Klemmen, Geräte; Blätter von … bis; vollständiges Kennzeichen; je Draht- und Kabelende ein Schild; gleiche Texte zusammenfassen; Kopien je Schild.
 - Vorschau: Text und Anzahl je Zeile, Summe der Etiketten.
 - *Status abfragen* (`v`, dann `ESC s`), *Material abfragen* (`ESC l`, mit Vergleich gegen Höhe + Lücke des Profils; bis 1 mm Abweichung gilt als passend, weil der Drucker ganze Millimeter meldet), *Pause*, *Fortsetzen*, *Auftrag abbrechen…* (nur nach Rückfrage).

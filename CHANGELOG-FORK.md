@@ -35,6 +35,8 @@ Original-QElectroTech stehen in `ChangeLog*`.
   wechseln…* im Druckdialog zeigt Artikel, Farbband und Trägerplatte und übernimmt den Wechsel erst nach der
   Bestätigung „eingelegt“. CLI `--thm-load <Drucker> <Artikel> [--usual] [--roller …]`; `--thm-send` sendet nur an
   einen Drucker, dessen aktuelle Rüstung zum Artikel passt.
+- **Etiketten von Hand**: im Druckdialog *Von Hand eingeben* – ein Etikett je Zeile, `Text;n` für n Stück; geht auch
+  ohne offenes Projekt.
 - **Menü Etikettendruck** neben Schaltschrankaufbau: THM-Etiketten drucken, THM-Drucker (hinzufügen, ändern,
   entfernen, auch ohne offenes Projekt), Beschriftung exportieren. Katalog und Layoutdatei findet QET selbst im
   Ordner `weidmueller` neben dem Programm (`deploy_lokal.ps1` legt sie aus dem privaten Datenordner hinein, also

@@ -32699,6 +32699,30 @@ Menge: %n Etiketten</numerusform>
         <source>Choose...</source>
         <translation>Auswählen…</translation>
     </message>
+    <message>
+        <source>From the project</source>
+        <translation>Aus dem Projekt</translation>
+    </message>
+    <message>
+        <source>One label per line, e.g.
+-K1
+-X1:1;2   (2 labels)</source>
+        <translation>Ein Etikett je Zeile, z. B.
+-K1
+-X1:1;2   (2 Etiketten)</translation>
+    </message>
+    <message>
+        <source>Texts</source>
+        <translation>Texte</translation>
+    </message>
+    <message>
+        <source>Type the texts, one label per line.</source>
+        <translation>Texte eingeben, ein Etikett je Zeile.</translation>
+    </message>
+    <message>
+        <source>Typed by hand</source>
+        <translation>Von Hand eingeben</translation>
+    </message>
 </context>
 <context>
     <name>ThmPrinters</name>

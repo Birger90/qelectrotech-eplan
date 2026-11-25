@@ -34,6 +34,7 @@
 #include <QFileInfo>
 #include <QFormLayout>
 #include <QGroupBox>
+#include <QHash>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
@@ -41,7 +42,9 @@
 #include <QListWidget>
 #include <QLocale>
 #include <QMessageBox>
+#include <QPlainTextEdit>
 #include <QPushButton>
+#include <QRadioButton>
 #include <QSaveFile>
 #include <QSettings>
 #include <QSpinBox>
@@ -94,7 +97,28 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 		//What gets a label
 	auto *left = new QVBoxLayout;
 	top->addLayout(left, 1);
+		//From the project, or typed by hand as in M-Print PRO
+	auto *source = new QGroupBox(tr("Texts"), this);
+	auto *source_layout = new QVBoxLayout(source);
+	auto *source_row = new QHBoxLayout;
+	m_from_project = new QRadioButton(tr("From the project"), source);
+	m_from_text = new QRadioButton(tr("Typed by hand"), source);
+	m_from_text->setObjectName(QStringLiteral("thm_from_text"));
+	source_row->addWidget(m_from_project);
+	source_row->addWidget(m_from_text);
+	source_row->addStretch();
+	source_layout->addLayout(source_row);
+	m_free_text = new QPlainTextEdit(source);
+	m_free_text->setObjectName(QStringLiteral("thm_free_text"));
+	m_free_text->setPlaceholderText(tr("One label per line, e.g.\n-K1\n-X1:1;2   (2 labels)"));
+	m_free_text->setPlainText(settings.value("free_text").toString());
+	source_layout->addWidget(m_free_text);
+	left->addWidget(source);
+	const bool by_hand = !m_project || settings.value("by_hand", false).toBool();
+	m_from_project->setEnabled(m_project != nullptr);
+	(by_hand ? m_from_text : m_from_project)->setChecked(true);
 	auto *kinds = new QGroupBox(tr("Markers"), this);
+	m_kinds_box = kinds;
 	auto *kinds_layout = new QHBoxLayout(kinds);
 	const int kind_flags = settings.value("kinds", int(MarkingExport::Wire)).toInt();
 	m_wires = new QCheckBox(tr("Wires"), kinds);
@@ -109,6 +133,7 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	left->addWidget(kinds);
 
 	auto *range = new QGroupBox(tr("Range"), this);
+	m_range_box = range;
 	auto *range_form = new QFormLayout(range);
 	const int folios = m_project ? m_project->diagrams().size() : 0;
 	auto *folio_row = new QHBoxLayout;
@@ -270,6 +295,8 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	for (auto *spin : {m_folio_from, m_folio_to, m_copies}) {
 		connect(spin, &QSpinBox::valueChanged, this, &ThmPrintDialog::updatePreview);
 	}
+	connect(m_from_text, &QRadioButton::toggled, this, &ThmPrintDialog::updateSource);
+	connect(m_free_text, &QPlainTextEdit::textChanged, this, &ThmPrintDialog::updatePreview);
 	connect(m_article, &QComboBox::currentTextChanged, this, &ThmPrintDialog::updateTarget);
 	connect(m_printer, &QComboBox::currentIndexChanged, this, [this]() {
 		m_material = ThmJob::Material();
@@ -283,7 +310,7 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	loadLayouts();
 	fillArticles();
 	if (!article.isEmpty()) m_article->setCurrentText(article);
-	updatePreview();
+	updateSource();
 	updateTarget();
 }
 
@@ -301,8 +328,54 @@ MarkingExport::Options ThmPrintDialog::options() const
 	return o;
 }
 
+QList<ThmJob::Label> ThmPrintDialog::freeLabels(const QString &text, int copies, bool merge)
+{
+	QList<ThmJob::Label> out;
+	QHash<QString, int> index;
+	for (const QString &raw : text.split(QLatin1Char('\n'))) {
+		QString line = raw.trimmed();
+		if (line.isEmpty()) continue;
+		int count = 1;
+			//"text;n": n labels of this text
+		const int semi = line.lastIndexOf(QLatin1Char(';'));
+		if (semi > 0) {
+			bool ok = false;
+			const int n = line.mid(semi + 1).trimmed().toInt(&ok);
+			if (ok && n > 0) {
+				count = n;
+				line = line.left(semi).trimmed();
+			}
+		}
+		count *= qMax(1, copies);
+		if (merge && index.contains(line)) {
+			out[index.value(line)].count += count;
+			continue;
+		}
+		index.insert(line, int(out.size()));
+		out << ThmJob::Label{line, count};
+	}
+	return out;
+}
+
+void ThmPrintDialog::updateSource()
+{
+	const bool by_hand = m_from_text->isChecked();
+	m_free_text->setEnabled(by_hand);
+	m_kinds_box->setEnabled(!by_hand);
+		//Folios, ends and designation only mean something for the project;
+		//copies and merging hold for both
+	m_folio_from->setEnabled(!by_hand);
+	m_folio_to->setEnabled(!by_hand);
+	m_full->setEnabled(!by_hand);
+	m_both_ends->setEnabled(!by_hand);
+	updatePreview();
+}
+
 QList<ThmJob::Label> ThmPrintDialog::labels() const
 {
+	if (m_from_text->isChecked())
+		return freeLabels(m_free_text->toPlainText(), m_copies->value(), m_merge->isChecked());
+	if (!m_project) return {};
 	const MarkingExport::Options o = options();
 	if (!o.kinds) return {};
 	return ThmJob::toLabels(MarkingExport::collect(m_project, o), m_copies->value(),
@@ -518,7 +591,9 @@ void ThmPrintDialog::updatePreview()
 		count->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 		m_preview->setItem(i, 1, count);
 	}
-	if (!options().kinds) {
+	if (m_from_text->isChecked() && list.isEmpty()) {
+		m_count->setText(tr("Type the texts, one label per line."));
+	} else if (!m_from_text->isChecked() && !options().kinds) {
 		m_count->setText(tr("Choose at least one kind of marker."));
 	} else {
 		m_count->setText(tr("%n label(s)", nullptr, ThmJob::labelCount(list))
@@ -772,6 +847,8 @@ void ThmPrintDialog::remember() const
 	settings.setValue("merge", m_merge->isChecked());
 	settings.setValue("copies", m_copies->value());
 	settings.setValue("article", m_article->currentText());
+	settings.setValue("by_hand", m_from_text->isChecked());
+	settings.setValue("free_text", m_free_text->toPlainText());
 }
 
 void ThmPrintDialog::setBusy(bool busy)

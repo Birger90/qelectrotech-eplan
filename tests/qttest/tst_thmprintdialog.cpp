@@ -30,6 +30,8 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QTableWidget>
+#include <QRadioButton>
+#include <QPlainTextEdit>
 
 namespace {
 ThmPrinter printer(const QString &id, const QString &name, const QString &material)
@@ -116,6 +118,31 @@ class TestThmPrintDialog : public QObject
 				QCoreApplication::processEvents();
 				QVERIFY(dialog.grab().save(shot));
 			}
+		}
+
+		void typedByHand()
+		{
+				//One label per line, "text;n" for n, empty lines skipped
+			QList<ThmJob::Label> l = ThmPrintDialog::freeLabels(QStringLiteral(" -K1 \n\n-X1:1;3\n-K1\nA;B"), 2, true);
+			QCOMPARE(l.size(), 3);
+			QCOMPARE(l.at(0).text, QStringLiteral("-K1"));
+			QCOMPARE(l.at(0).count, 4);
+			QCOMPARE(l.at(1).text, QStringLiteral("-X1:1"));
+			QCOMPARE(l.at(1).count, 6);
+			QCOMPARE(l.at(2).text, QStringLiteral("A;B"));  // not a number: part of the text
+			QCOMPARE(ThmPrintDialog::freeLabels(QStringLiteral("-K1\n-K1"), 1, false).size(), 2);
+
+				//Without a project the dialog takes the typed texts
+			ThmPrintDialog dialog(nullptr);
+			auto *text = dialog.findChild<QPlainTextEdit *>(QStringLiteral("thm_free_text"));
+			auto *by_hand = dialog.findChild<QRadioButton *>(QStringLiteral("thm_from_text"));
+			auto *preview = dialog.findChild<QTableWidget *>(QStringLiteral("thm_preview"));
+			QVERIFY(text && by_hand && preview);
+			QVERIFY(by_hand->isChecked());
+			text->setPlainText(QStringLiteral("T1\nT2;2"));
+			QCOMPARE(preview->rowCount(), 2);
+			QCOMPARE(preview->item(1, 0)->text(), QStringLiteral("T2"));
+			QCOMPARE(ThmJob::labelCount(dialog.labels()), 3);
 		}
 };
 

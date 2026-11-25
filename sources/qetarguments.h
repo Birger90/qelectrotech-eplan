@@ -60,6 +60,9 @@ class QETArguments : public QObject {
 #endif
 	virtual bool langDirSpecified() const;
 	virtual QString langDir() const;
+		/// --company-elements-dir=: the company collection for this run
+	virtual bool companyElementsDirSpecified() const;
+	virtual QString companyElementsDir() const;
 	virtual bool printHelpRequested() const;
 	virtual bool printLicenseRequested() const;
 	virtual bool printVersionRequested() const;
@@ -92,6 +95,7 @@ class QETArguments : public QObject {
 	QString data_dir_;
 #endif
 	QString lang_dir_;
+	QString company_elements_dir_;
 	bool print_help_;
 	bool print_license_;
 	bool print_version_;

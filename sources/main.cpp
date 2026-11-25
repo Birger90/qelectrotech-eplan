@@ -120,7 +120,7 @@ static QStringList headlessArguments(const QStringList &args)
 	static const QStringList folder_options {
 		QStringLiteral("--common-elements-dir="), QStringLiteral("--common-tbt-dir="),
 		QStringLiteral("--config-dir="), QStringLiteral("--data-dir="),
-		QStringLiteral("--lang-dir=")};
+		QStringLiteral("--lang-dir="), QStringLiteral("--company-elements-dir=")};
 	QStringList kept;
 	for (const QString &arg : args) {
 		bool folder = false;

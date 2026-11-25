@@ -54,6 +54,12 @@ Original-QElectroTech stehen in `ChangeLog*`.
 - Am installierten M-Print PRO noch nicht geprüft (Übergabe nur mit einem Ersatzprogramm getestet); Belege und offene
   Punkte in `docs/beschriftung-export.md`.
 
+### Firmensammlung beim Start wählen
+
+- Neuer Startschalter `--company-elements-dir=ORDNER`: die Firmensammlung für diesen Lauf, z. B. ein von OneDrive
+  gespiegelter Ordner. Er geht vor die Einstellung und wird als `QET_COMPANY_ELEMENTS_DIR` an die Programme
+  weitergegeben, die QET startet (EPLAN-Import). Gilt auch für die Exporte ohne Fenster und `--run`.
+
 ### Pneumatik und FluidSIM-Import
 
 - Skript und MCP: Leitungseigenschaft `fluid_line` (`working`, `pilot`, `exhaust`, `none`) für

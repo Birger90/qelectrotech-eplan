@@ -3032,6 +3032,15 @@ void QETApp::applyDirectoryArguments(const QETArguments &arguments)
 	if (arguments.langDirSpecified()) {
 		overrideLangDir(arguments.langDir());
 	}
+
+		// the company collection of this run: through the environment, which
+		// companyElementsDir() reads first, so that the programs QET starts
+		// (EPLAN import) use the same folder
+	if (arguments.companyElementsDirSpecified()) {
+		qputenv("QET_COMPANY_ELEMENTS_DIR",
+				QDir::toNativeSeparators(arguments.companyElementsDir()).toLocal8Bit());
+		m_company_element_dir_is_set = false;
+	}
 }
 
 /**
@@ -3845,6 +3854,7 @@ void QETApp::printHelp()
 		+ tr("  --data-dir=DIR                Define data directory\n")
 #endif
 		+ tr("  --lang-dir=DIR                Define the language files directory\n")
+		+ tr("  --company-elements-dir=DIR    Define the company elements collection directory\n")
 	);
 	std::cout << qPrintable(help) << std::endl;
 }

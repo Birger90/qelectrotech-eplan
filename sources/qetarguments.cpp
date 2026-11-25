@@ -68,6 +68,7 @@ common_tbt_dir_(qet_arguments.common_tbt_dir_),
 	data_dir_(qet_arguments.data_dir_),
 #endif
 	lang_dir_(qet_arguments.lang_dir_),
+	company_elements_dir_(qet_arguments.company_elements_dir_),
 	print_help_(qet_arguments.print_help_),
 	print_license_(qet_arguments.print_license_),
 	print_version_(qet_arguments.print_version_)
@@ -97,6 +98,7 @@ QETArguments &QETArguments::operator=(const QETArguments &qet_arguments) {
 	data_dir_ = qet_arguments.data_dir_;
 #endif
 	lang_dir_        = qet_arguments.lang_dir_;
+	company_elements_dir_ = qet_arguments.company_elements_dir_;
 	print_help_      = qet_arguments.print_help_;
 	print_license_   = qet_arguments.print_license_;
 	print_version_   = qet_arguments.print_version_;
@@ -187,6 +189,7 @@ void QETArguments::clear()
 	element_files_.clear();
 	options_.clear();
 	unknown_options_.clear();
+	company_elements_dir_.clear();
 #ifdef QET_ALLOW_OVERRIDE_CED_OPTION
 	common_elements_dir_.clear();
 #endif
@@ -299,6 +302,12 @@ void QETArguments::handleOptionArgument(const QString &option) {
 	}
 #endif
 	
+	QString cod_arg("--company-elements-dir=");
+	if (option.startsWith(cod_arg)) {
+		company_elements_dir_ = option.mid(cod_arg.length());
+		return;
+	}
+
 	QString ld_arg("--lang-dir=");
 	if (option.startsWith(ld_arg)) {
 		lang_dir_ = option.mid(ld_arg.length());
@@ -429,4 +438,21 @@ bool QETArguments::printLicenseRequested() const
 bool QETArguments::printVersionRequested() const
 {
 	return(print_version_);
+}
+
+/**
+	@return true when a company collection was given with
+	--company-elements-dir=
+*/
+bool QETArguments::companyElementsDirSpecified() const
+{
+	return(!company_elements_dir_.isEmpty());
+}
+
+/**
+	@return the folder given with --company-elements-dir=, else empty
+*/
+QString QETArguments::companyElementsDir() const
+{
+	return(company_elements_dir_);
 }

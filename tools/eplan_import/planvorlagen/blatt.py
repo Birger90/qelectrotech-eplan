@@ -16,7 +16,7 @@ import sys
 
 from . import symbole as S
 
-sys.path.insert(0, os.environ.get("QET_DIREKT_DIR", r"C:/Users/test/.claude/skills/qet-schaltplan-zeichnen/vorlagen"))
+sys.path.insert(0, os.environ.get("QET_DIREKT_DIR", os.path.expanduser("~/.claude/skills/qet-schaltplan-zeichnen/vorlagen")))
 
 SPALTEN, SPALTE_B, X0 = 10, 156, 20          # Spalte i: X0 + i*156 … +156 (X0 am Testblatt prüfen)
 BAND = {"schiene": 80, "schutz": 230, "schalten": 360, "steuer": 470, "klemme": 690, "feld": 800, "text": 985}

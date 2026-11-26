@@ -107,6 +107,31 @@ struct PanelOutline
 };
 
 /**
+	@brief The conditions the climate of an enclosure is worked out for
+	(PanelClimate): how the enclosure stands (installation 1 to 7 of
+	IEC/TR 60890: single, first or last, or middle of a row, free or
+	against a wall, roof covered), the air around it and the warmest air
+	allowed inside, the heat transfer coefficient of its walls and the
+	share of the power loss that is there at the same time. Kept by the
+	mounting plate inside the enclosure; sizes 0 come from the enclosure.
+*/
+struct PanelClimateSettings
+{
+	int installation = 1;         ///< 1..7, IEC/TR 60890
+	double ambient_c = 25;        ///< air around the enclosure, °C
+	double inside_c = 35;         ///< warmest air allowed inside, °C
+	double k = 5.5;               ///< W/(m² K), painted sheet steel
+	double simultaneity = 1;      ///< share of the devices' power loss at the same time
+	double extra_w = 0;           ///< further power loss (busbars, wiring), W
+	double width_mm = 0, height_mm = 0, depth_mm = 0;   ///< 0: from the enclosure
+
+	bool operator==(const PanelClimateSettings &o) const;
+	bool isDefault() const {return *this == PanelClimateSettings();}
+	QDomElement toXml(QDomDocument &document) const;
+	static PanelClimateSettings fromXml(const QDomElement &element);
+};
+
+/**
 	@brief What a shape stands for in a cabinet layout, and the data the
 	manufacturing needs from it (sizes in millimetres).
 
@@ -155,6 +180,9 @@ struct PanelData
 		//and become keep-out areas
 	PanelOutline outline;
 	bool outline_machined = true;
+
+		//Mounting plate: the climate of its enclosure
+	PanelClimateSettings climate;
 
 	bool isNull() const {return role == None;}
 	QDomElement toXml(QDomDocument &document) const;

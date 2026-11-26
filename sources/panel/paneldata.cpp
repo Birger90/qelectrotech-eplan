@@ -180,6 +180,7 @@ QDomElement PanelData::toXml(QDomDocument &document) const
 				o.setAttribute(QStringLiteral("machined"), outline_machined ? 1 : 0);
 				e.appendChild(o);
 			}
+			if (!climate.isDefault()) e.appendChild(climate.toXml(document));
 			break;
 		case DinRail:
 		case Duct:
@@ -232,7 +233,48 @@ PanelData PanelData::fromXml(const QDomElement &e)
 	const QDomElement o = e.firstChildElement(QStringLiteral("outline"));
 	d.outline = PanelOutline::fromXml(o);
 	d.outline_machined = o.attribute(QStringLiteral("machined"), QStringLiteral("1")) != QLatin1String("0");
+	d.climate = PanelClimateSettings::fromXml(e.firstChildElement(QStringLiteral("climate")));
 	return d;
+}
+
+/* ------------------------------------------------------------------ */
+
+bool PanelClimateSettings::operator==(const PanelClimateSettings &o) const
+{
+	return installation == o.installation && ambient_c == o.ambient_c && inside_c == o.inside_c
+		&& k == o.k && simultaneity == o.simultaneity && extra_w == o.extra_w
+		&& width_mm == o.width_mm && height_mm == o.height_mm && depth_mm == o.depth_mm;
+}
+
+QDomElement PanelClimateSettings::toXml(QDomDocument &document) const
+{
+	QDomElement e = document.createElement(QStringLiteral("climate"));
+	e.setAttribute(QStringLiteral("installation"), installation);
+	e.setAttribute(QStringLiteral("ambient"), num(ambient_c));
+	e.setAttribute(QStringLiteral("inside"), num(inside_c));
+	e.setAttribute(QStringLiteral("k"), num(k));
+	if (simultaneity != 1) e.setAttribute(QStringLiteral("simultaneity"), num(simultaneity));
+	if (extra_w != 0) e.setAttribute(QStringLiteral("extra_w"), num(extra_w));
+	if (width_mm > 0) e.setAttribute(QStringLiteral("width"), num(width_mm));
+	if (height_mm > 0) e.setAttribute(QStringLiteral("height"), num(height_mm));
+	if (depth_mm > 0) e.setAttribute(QStringLiteral("depth"), num(depth_mm));
+	return e;
+}
+
+PanelClimateSettings PanelClimateSettings::fromXml(const QDomElement &e)
+{
+	PanelClimateSettings c;
+	if (e.isNull()) return c;
+	c.installation = qBound(1, e.attribute(QStringLiteral("installation"), QStringLiteral("1")).toInt(), 7);
+	c.ambient_c = dbl(e, "ambient", c.ambient_c);
+	c.inside_c = dbl(e, "inside", c.inside_c);
+	c.k = dbl(e, "k", c.k);
+	c.simultaneity = dbl(e, "simultaneity", 1);
+	c.extra_w = dbl(e, "extra_w");
+	c.width_mm = dbl(e, "width");
+	c.height_mm = dbl(e, "height");
+	c.depth_mm = dbl(e, "depth");
+	return c;
 }
 
 /* ------------------------------------------------------------------ */

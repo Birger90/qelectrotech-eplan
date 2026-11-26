@@ -27,7 +27,9 @@
 #include "../duplicatelabels.h"
 #include "../fluid/fluiddata.h"
 #include "../fluid/fluidtypes.h"
+#include "../panel/panelclimate.h"
 #include "../panel/panellayout.h"
+#include "../panel/panelwiring.h"
 #include "../qet.h"
 #include "../qetgraphicsitem/conductor.h"
 #include "../qetgraphicsitem/element.h"
@@ -400,7 +402,14 @@ QVector<PlanCheck::Finding> PlanCheck::run(QETProject *project)
 		panel_folios << d;
 		for (QetShapeItem *surface : surfaces) {
 			const PanelLayout layout(surface);
-			for (const QString &w : layout.warnings()) {
+			QStringList warnings = layout.warnings();
+				// the plate inside the enclosure: full ducts, cooling needed
+			if (surface->panelData().face.isEmpty()) {
+				warnings << PanelWiring::route(layout).warnings();
+				const PanelClimate climate = PanelClimate::compute(surface);
+				if (climate.needsCooling()) warnings << climate.summary();
+			}
+			for (const QString &w : std::as_const(warnings)) {
 				const QString tag = w.section(QLatin1Char(':'), 0, 0).trimmed();
 				const QString rest = w.section(QLatin1Char(':'), 1).trimmed();
 				c.add(Severity::Warning, QStringLiteral("cabinet_layout"), d,

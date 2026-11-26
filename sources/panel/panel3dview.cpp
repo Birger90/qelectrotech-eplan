@@ -24,6 +24,7 @@
 #include "../qetgraphicsitem/qetshapeitem.h"
 
 #include <QCheckBox>
+#include <QCoreApplication>
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QFile>
@@ -41,6 +42,8 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPushButton>
+#include <QSurfaceFormat>
+#include <QToolButton>
 #include <QVBoxLayout>
 #include <QWheelEvent>
 #include <QtMath>
@@ -172,12 +175,64 @@ Panel3DWidget::Panel3DWidget(QWidget *parent) :
 {
 	setMinimumSize(480, 360);
 	setFocusPolicy(Qt::StrongFocus);
+#ifdef QET_WITH_OPENGL
+		// smooth edges where the driver can (it falls back to none)
+	QSurfaceFormat f = format();
+	f.setSamples(4);
+	f.setDepthBufferSize(24);
+	setFormat(f);
+#endif
+		// the standard views on top, how to move below, over the picture
+	auto *bar = new QHBoxLayout;
+	bar->setSpacing(4);
+	bar->addStretch();
+	auto view = [&](const QString &text, const QString &tip, void (Panel3DWidget::*slot)()) {
+		auto *b = new QToolButton(this);
+		b->setText(text);
+		b->setToolTip(tip);
+		b->setCursor(Qt::PointingHandCursor);
+		b->setFocusPolicy(Qt::NoFocus);
+		connect(b, &QToolButton::clicked, this, slot);
+		bar->addWidget(b);
+	};
+	view(tr("Iso"), tr("Isometric view"), &Panel3DWidget::viewIso);
+	view(tr("Front"), tr("View from the front"), &Panel3DWidget::viewFront);
+	view(tr("Top"), tr("View from above"), &Panel3DWidget::viewTop);
+	view(tr("Left"), tr("View from the left"), &Panel3DWidget::viewLeft);
+	view(tr("Right"), tr("View from the right"), &Panel3DWidget::viewRight);
+	view(tr("Fit"), tr("Show the whole scene"), &Panel3DWidget::viewFit);
+	auto *hint = new QLabel(tr("Drag: turn · right drag: move · wheel: zoom · click: select"), this);
+	hint->setAttribute(Qt::WA_TransparentForMouseEvents);
+	auto *box = new QVBoxLayout(this);
+	box->setContentsMargins(10, 8, 10, 8);
+	box->addLayout(bar);
+	box->addStretch();
+	box->addWidget(hint, 0, Qt::AlignLeft);
+	setStyleSheet(QStringLiteral(
+		"QToolButton {color: #e6e8eb; background: rgba(255, 255, 255, 22); border: 1px solid rgba(255, 255, 255, 45);"
+		" border-radius: 4px; padding: 3px 9px;}"
+		"QToolButton:hover {background: rgba(255, 255, 255, 55);}"
+		"QToolButton:pressed {background: rgba(255, 255, 255, 80);}"
+		"QLabel {color: rgba(225, 228, 232, 165); background: transparent;}"));
+}
+
+Panel3DWidget::~Panel3DWidget()
+{
+#ifdef QET_WITH_OPENGL
+	if (m_lists && context()) {
+		makeCurrent();
+		if (auto *gl = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_1_1>(context()))
+			gl->glDeleteLists(m_lists, m_list_count);
+		doneCurrent();
+	}
+#endif
 }
 
 void Panel3DWidget::setBodies(const QList<Panel3DBody> &bodies)
 {
 	m_bodies = bodies;
 	m_selected = -1;
+	m_lists_dirty = true;
 	fit();
 	update();
 }
@@ -188,14 +243,39 @@ void Panel3DWidget::fit()
 	for (const Panel3DBody &b : m_bodies)
 		for (int k = 0; k < 3; ++k) {lo[k] = qMin(lo[k], b.min[k]); hi[k] = qMax(hi[k], b.max[k]);}
 	if (m_bodies.isEmpty()) {lo = QVector3D(0, 0, 0); hi = QVector3D(600, 400, 100);}
+	m_lo = lo;
+	m_hi = hi;
 	m_centre = (lo + hi) / 2;
 	m_pan = QVector3D();
 	m_distance = qMax(200.0f, (hi - lo).length() * 1.6f);
 }
 
+void Panel3DWidget::viewFit()   {fit(); update();}
+
 void Panel3DWidget::viewFront() {m_yaw = 0; m_pitch = 0; fit(); update();}
 void Panel3DWidget::viewTop()   {m_yaw = 0; m_pitch = 89; fit(); update();}
 void Panel3DWidget::viewIso()   {m_yaw = -25; m_pitch = 20; fit(); update();}
+void Panel3DWidget::viewLeft()  {m_yaw = 90; m_pitch = 0; fit(); update();}
+void Panel3DWidget::viewRight() {m_yaw = -90; m_pitch = 0; fit(); update();}
+
+QImage Panel3DWidget::render(const QList<Panel3DBody> &bodies, const QSize &size, const QString &view)
+{
+	Panel3DWidget w;
+	w.setAttribute(Qt::WA_DontShowOnScreen);
+	w.setMinimumSize(1, 1);
+	w.resize(size);
+	w.setBodies(bodies);
+	if (view == QLatin1String("front")) w.viewFront();
+	else if (view == QLatin1String("top")) w.viewTop();
+	else if (view == QLatin1String("left")) w.viewLeft();
+	else if (view == QLatin1String("right")) w.viewRight();
+	else w.viewIso();
+	w.show();
+	QCoreApplication::processEvents();
+	const QImage image = w.grab().toImage();
+	w.hide();
+	return image;
+}
 
 void Panel3DWidget::mousePressEvent(QMouseEvent *event)
 {
@@ -262,6 +342,75 @@ int Panel3DWidget::pick(const QPoint &pos) const
 
 #ifdef QET_WITH_OPENGL
 
+	// not in every gl.h of OpenGL 1.1; drivers that lack them ignore them
+#ifndef GL_MULTISAMPLE
+#define GL_MULTISAMPLE 0x809D
+#endif
+#ifndef GL_LIGHT_MODEL_COLOR_CONTROL
+#define GL_LIGHT_MODEL_COLOR_CONTROL 0x81F8
+#endif
+#ifndef GL_SEPARATE_SPECULAR_COLOR
+#define GL_SEPARATE_SPECULAR_COLOR 0x81FA
+#endif
+
+namespace {
+
+	/// the faces of a body: its mesh, or its box
+void drawGeometry(QOpenGLFunctions_1_1 *gl, const Panel3DBody &b)
+{
+	if (!b.mesh.isEmpty()) {
+		gl->glBegin(GL_TRIANGLES);
+		for (int k = 0; k < b.mesh.vertices.size(); ++k) {
+			const QVector3D n = b.mesh.normals.value(k);
+			const QVector3D v = b.mesh.vertices.at(k) + b.mesh_offset;
+			gl->glNormal3f(n.x(), n.y(), n.z());
+			gl->glVertex3f(v.x(), v.y(), v.z());
+		}
+		gl->glEnd();
+		return;
+	}
+	const QVector3D lo = b.min, hi = b.max;
+	gl->glBegin(GL_QUADS);
+	gl->glNormal3f(0, 0, 1);
+	gl->glVertex3f(lo.x(), lo.y(), hi.z()); gl->glVertex3f(hi.x(), lo.y(), hi.z());
+	gl->glVertex3f(hi.x(), hi.y(), hi.z()); gl->glVertex3f(lo.x(), hi.y(), hi.z());
+	gl->glNormal3f(0, 0, -1);
+	gl->glVertex3f(lo.x(), lo.y(), lo.z()); gl->glVertex3f(lo.x(), hi.y(), lo.z());
+	gl->glVertex3f(hi.x(), hi.y(), lo.z()); gl->glVertex3f(hi.x(), lo.y(), lo.z());
+	gl->glNormal3f(1, 0, 0);
+	gl->glVertex3f(hi.x(), lo.y(), lo.z()); gl->glVertex3f(hi.x(), hi.y(), lo.z());
+	gl->glVertex3f(hi.x(), hi.y(), hi.z()); gl->glVertex3f(hi.x(), lo.y(), hi.z());
+	gl->glNormal3f(-1, 0, 0);
+	gl->glVertex3f(lo.x(), lo.y(), lo.z()); gl->glVertex3f(lo.x(), lo.y(), hi.z());
+	gl->glVertex3f(lo.x(), hi.y(), hi.z()); gl->glVertex3f(lo.x(), hi.y(), lo.z());
+	gl->glNormal3f(0, 1, 0);
+	gl->glVertex3f(lo.x(), hi.y(), lo.z()); gl->glVertex3f(lo.x(), hi.y(), hi.z());
+	gl->glVertex3f(hi.x(), hi.y(), hi.z()); gl->glVertex3f(hi.x(), hi.y(), lo.z());
+	gl->glNormal3f(0, -1, 0);
+	gl->glVertex3f(lo.x(), lo.y(), lo.z()); gl->glVertex3f(hi.x(), lo.y(), lo.z());
+	gl->glVertex3f(hi.x(), lo.y(), hi.z()); gl->glVertex3f(lo.x(), lo.y(), hi.z());
+	gl->glEnd();
+}
+
+	/// the twelve edges of a box
+void drawEdges(QOpenGLFunctions_1_1 *gl, const QVector3D &lo, const QVector3D &hi)
+{
+	const QVector3D p[8] = {
+		{lo.x(), lo.y(), lo.z()}, {hi.x(), lo.y(), lo.z()}, {hi.x(), hi.y(), lo.z()}, {lo.x(), hi.y(), lo.z()},
+		{lo.x(), lo.y(), hi.z()}, {hi.x(), lo.y(), hi.z()}, {hi.x(), hi.y(), hi.z()}, {lo.x(), hi.y(), hi.z()}};
+	static const int e[24] = {0,1, 1,2, 2,3, 3,0, 4,5, 5,6, 6,7, 7,4, 0,4, 1,5, 2,6, 3,7};
+	gl->glBegin(GL_LINES);
+	for (int k = 0; k < 24; ++k) gl->glVertex3f(p[e[k]].x(), p[e[k]].y(), p[e[k]].z());
+	gl->glEnd();
+}
+
+void setColour(QOpenGLFunctions_1_1 *gl, const QColor &c, float alpha)
+{
+	gl->glColor4f(float(c.redF()), float(c.greenF()), float(c.blueF()), alpha);
+}
+
+} // namespace
+
 void Panel3DWidget::initializeGL()
 {
 }
@@ -281,107 +430,145 @@ void Panel3DWidget::paintGL()
 	}
 	const qreal dpr = devicePixelRatioF();
 	gl->glViewport(0, 0, int(width() * dpr), int(height() * dpr));
-	gl->glClearColor(0.93f, 0.94f, 0.96f, 1.0f);
+	gl->glClearColor(0.10f, 0.11f, 0.12f, 1.0f);
 	gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	gl->glEnable(GL_MULTISAMPLE);
+	gl->glDisable(GL_CULL_FACE);
+
+		// background: dark, a little lighter at the top
+	gl->glDisable(GL_DEPTH_TEST);
+	gl->glDisable(GL_LIGHTING);
+	gl->glMatrixMode(GL_PROJECTION);
+	gl->glLoadIdentity();
+	gl->glMatrixMode(GL_MODELVIEW);
+	gl->glLoadIdentity();
+	gl->glBegin(GL_QUADS);
+	gl->glColor3f(0.075f, 0.082f, 0.094f);
+	gl->glVertex2f(-1, -1); gl->glVertex2f(1, -1);
+	gl->glColor3f(0.215f, 0.232f, 0.258f);
+	gl->glVertex2f(1, 1); gl->glVertex2f(-1, 1);
+	gl->glEnd();
+
 	gl->glEnable(GL_DEPTH_TEST);
 	gl->glDepthFunc(GL_LEQUAL);
 	gl->glEnable(GL_NORMALIZE);
-	gl->glShadeModel(GL_FLAT);
-
+	gl->glShadeModel(GL_SMOOTH);
 	gl->glMatrixMode(GL_PROJECTION);
 	gl->glLoadMatrixf(projection(width(), height(), m_distance).constData());
 	gl->glMatrixMode(GL_MODELVIEW);
 	gl->glLoadIdentity();
 
-		// light from the viewer, slightly above left, fixed to the camera
-	const GLfloat light_pos[4] = {-0.3f, 0.5f, 1.0f, 0.0f};
-	const GLfloat ambient[4] = {0.35f, 0.35f, 0.35f, 1.0f};
-	const GLfloat diffuse[4] = {0.75f, 0.75f, 0.75f, 1.0f};
-	gl->glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
-	gl->glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
-	gl->glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+		// lights fixed to the camera: a warm key light from above left, a
+		// cool fill light from the right below, a soft gloss
+	const GLfloat key_pos[4] = {-0.45f, 0.75f, 0.85f, 0.0f};
+	const GLfloat key_diffuse[4] = {0.80f, 0.78f, 0.74f, 1.0f};
+	const GLfloat key_specular[4] = {0.55f, 0.55f, 0.52f, 1.0f};
+	const GLfloat fill_pos[4] = {0.75f, -0.25f, 0.6f, 0.0f};
+	const GLfloat fill_diffuse[4] = {0.26f, 0.30f, 0.36f, 1.0f};
+	const GLfloat none[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+	const GLfloat ambient[4] = {0.30f, 0.31f, 0.33f, 1.0f};
+	gl->glLightfv(GL_LIGHT0, GL_POSITION, key_pos);
+	gl->glLightfv(GL_LIGHT0, GL_AMBIENT, none);
+	gl->glLightfv(GL_LIGHT0, GL_DIFFUSE, key_diffuse);
+	gl->glLightfv(GL_LIGHT0, GL_SPECULAR, key_specular);
+	gl->glLightfv(GL_LIGHT1, GL_POSITION, fill_pos);
+	gl->glLightfv(GL_LIGHT1, GL_AMBIENT, none);
+	gl->glLightfv(GL_LIGHT1, GL_DIFFUSE, fill_diffuse);
+	gl->glLightfv(GL_LIGHT1, GL_SPECULAR, none);
 	gl->glEnable(GL_LIGHT0);
+	gl->glEnable(GL_LIGHT1);
+	gl->glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
+	gl->glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	if (context()->format().version() >= qMakePair(1, 2))
+		gl->glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 	gl->glEnable(GL_COLOR_MATERIAL);
 	gl->glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-	gl->glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	const GLfloat gloss[4] = {0.30f, 0.30f, 0.30f, 1.0f};
+	gl->glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, gloss);
+	gl->glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 40.0f);
 
-	gl->glLoadMatrixf(modelView(m_centre, m_pan, m_distance, m_yaw, m_pitch).constData());
+	const QMatrix4x4 view = modelView(m_centre, m_pan, m_distance, m_yaw, m_pitch);
+	gl->glLoadMatrixf(view.constData());
 
-		// opaque bodies first, the see-through ones (enclosure) after them
-	QList<int> order;
-	for (int i = 0; i < m_bodies.size(); ++i) if (m_bodies.at(i).opacity >= 1.0f) order << i;
-	for (int i = 0; i < m_bodies.size(); ++i) if (m_bodies.at(i).opacity < 1.0f) order << i;
-	for (int i : order)
-	{
-		const Panel3DBody &b = m_bodies.at(i);
-		QColor c = b.colour;
+		// the floor under the scene, fading into the background, and a
+		// soft contact shadow under the enclosure (layers growing outwards)
+	if (!m_bodies.isEmpty() && m_pitch > -3) {
+		const float y = m_lo.y() - 0.5f;
+		const float cx = (m_lo.x() + m_hi.x()) / 2, cz = (m_lo.z() + m_hi.z()) / 2;
+		const float span = qMax(m_hi.x() - m_lo.x(), m_hi.z() - m_lo.z());
+		const float r = qMax(600.0f, span * 2.2f);
+		gl->glDisable(GL_LIGHTING);
+		gl->glEnable(GL_BLEND);
+		gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		gl->glDepthMask(GL_FALSE);
+		gl->glBegin(GL_TRIANGLE_FAN);
+		gl->glColor4f(0.36f, 0.38f, 0.42f, 0.75f);
+		gl->glVertex3f(cx, y, cz);
+		gl->glColor4f(0.36f, 0.38f, 0.42f, 0.0f);
+		for (int s = 0; s <= 48; ++s) {
+			const float a = float(s) * float(M_PI) / 24.0f;
+			gl->glVertex3f(cx + r * qCos(a), y, cz + r * qSin(a));
+		}
+		gl->glEnd();
+		const float spread = 20.0f + 0.10f * span;
+		const int layers = 10;
+		gl->glColor4f(0.0f, 0.0f, 0.0f, 0.075f);
+		gl->glBegin(GL_QUADS);
+		for (int i = 0; i < layers; ++i) {
+			const float g = spread * (float(i) / layers - 0.25f);
+			const float x0 = m_lo.x() - g, x1 = m_hi.x() + g, z0 = m_lo.z() - g, z1 = m_hi.z() + g;
+			gl->glVertex3f(x0, y + 0.1f, z0); gl->glVertex3f(x0, y + 0.1f, z1);
+			gl->glVertex3f(x1, y + 0.1f, z1); gl->glVertex3f(x1, y + 0.1f, z0);
+		}
+		gl->glEnd();
+		gl->glDepthMask(GL_TRUE);
+		gl->glDisable(GL_BLEND);
+	}
+
+		// every body compiled once; drawn from its list afterwards
+	if (m_lists_dirty) {
+		if (m_lists) gl->glDeleteLists(m_lists, m_list_count);
+		m_list_count = int(m_bodies.size());
+		m_lists = m_list_count ? gl->glGenLists(m_list_count) : 0;
+		for (int i = 0; m_lists && i < m_list_count; ++i) {
+			gl->glNewList(m_lists + i, GL_COMPILE);
+			drawGeometry(gl, m_bodies.at(i));
+			gl->glEndList();
+		}
+		m_lists_dirty = false;
+	}
+	auto draw = [&](int i) {
+		if (m_lists) gl->glCallList(m_lists + i);
+		else drawGeometry(gl, m_bodies.at(i));
+	};
+	auto colourOf = [&](int i) {
 			// the selection lights up everything of the same item: a whole
 			// terminal strip, a device with its BaseUnit
+		const Panel3DBody &b = m_bodies.at(i);
 		if (i == m_selected || (m_selected >= 0 && b.item && b.item == m_bodies.at(m_selected).item))
-			c = QColor(230, 120, 30);
+			return QColor(240, 130, 40);
+		return b.colour;
+	};
+
+		// solid bodies with their edges
+	for (int i = 0; i < m_bodies.size(); ++i) {
+		const Panel3DBody &b = m_bodies.at(i);
+		if (b.opacity < 1.0f) continue;
+		const QColor c = colourOf(i);
 		gl->glEnable(GL_LIGHTING);
-		if (b.opacity < 1.0f) {
-			gl->glEnable(GL_BLEND);
-			gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			gl->glDepthMask(GL_FALSE);
-		} else {
-			gl->glDisable(GL_BLEND);
-			gl->glDepthMask(GL_TRUE);
-		}
-		gl->glColor4f(float(c.redF()), float(c.greenF()), float(c.blueF()), b.opacity);
 		gl->glEnable(GL_POLYGON_OFFSET_FILL);
 		gl->glPolygonOffset(1.0f, 1.0f);
-		if (!b.mesh.isEmpty()) {
-			gl->glBegin(GL_TRIANGLES);
-			for (int k = 0; k < b.mesh.vertices.size(); ++k) {
-				const QVector3D n = b.mesh.normals.value(k);
-				const QVector3D v = b.mesh.vertices.at(k) + b.mesh_offset;
-				gl->glNormal3f(n.x(), n.y(), n.z());
-				gl->glVertex3f(v.x(), v.y(), v.z());
-			}
-			gl->glEnd();
-		} else {
-			const QVector3D lo = b.min, hi = b.max;
-			gl->glBegin(GL_QUADS);
-			gl->glNormal3f(0, 0, 1);
-			gl->glVertex3f(lo.x(), lo.y(), hi.z()); gl->glVertex3f(hi.x(), lo.y(), hi.z());
-			gl->glVertex3f(hi.x(), hi.y(), hi.z()); gl->glVertex3f(lo.x(), hi.y(), hi.z());
-			gl->glNormal3f(0, 0, -1);
-			gl->glVertex3f(lo.x(), lo.y(), lo.z()); gl->glVertex3f(lo.x(), hi.y(), lo.z());
-			gl->glVertex3f(hi.x(), hi.y(), lo.z()); gl->glVertex3f(hi.x(), lo.y(), lo.z());
-			gl->glNormal3f(1, 0, 0);
-			gl->glVertex3f(hi.x(), lo.y(), lo.z()); gl->glVertex3f(hi.x(), hi.y(), lo.z());
-			gl->glVertex3f(hi.x(), hi.y(), hi.z()); gl->glVertex3f(hi.x(), lo.y(), hi.z());
-			gl->glNormal3f(-1, 0, 0);
-			gl->glVertex3f(lo.x(), lo.y(), lo.z()); gl->glVertex3f(lo.x(), lo.y(), hi.z());
-			gl->glVertex3f(lo.x(), hi.y(), hi.z()); gl->glVertex3f(lo.x(), hi.y(), lo.z());
-			gl->glNormal3f(0, 1, 0);
-			gl->glVertex3f(lo.x(), hi.y(), lo.z()); gl->glVertex3f(lo.x(), hi.y(), hi.z());
-			gl->glVertex3f(hi.x(), hi.y(), hi.z()); gl->glVertex3f(hi.x(), hi.y(), lo.z());
-			gl->glNormal3f(0, -1, 0);
-			gl->glVertex3f(lo.x(), lo.y(), lo.z()); gl->glVertex3f(hi.x(), lo.y(), lo.z());
-			gl->glVertex3f(hi.x(), lo.y(), hi.z()); gl->glVertex3f(lo.x(), lo.y(), hi.z());
-			gl->glEnd();
-		}
+		setColour(gl, c, 1.0f);
+		draw(i);
 		gl->glDisable(GL_POLYGON_OFFSET_FILL);
 		gl->glDisable(GL_LIGHTING);
-
-			// outline of the box, like the edges in a 3D layout
 		if (b.mesh.isEmpty()) {
-			gl->glColor3f(0.15f, 0.15f, 0.15f);
-			const QVector3D lo = b.min, hi = b.max;
-			const QVector3D p[8] = {
-				{lo.x(), lo.y(), lo.z()}, {hi.x(), lo.y(), lo.z()}, {hi.x(), hi.y(), lo.z()}, {lo.x(), hi.y(), lo.z()},
-				{lo.x(), lo.y(), hi.z()}, {hi.x(), lo.y(), hi.z()}, {hi.x(), hi.y(), hi.z()}, {lo.x(), hi.y(), hi.z()}};
-			static const int e[24] = {0,1, 1,2, 2,3, 3,0, 4,5, 5,6, 6,7, 7,4, 0,4, 1,5, 2,6, 3,7};
-			gl->glBegin(GL_LINES);
-			for (int k = 0; k < 24; ++k) gl->glVertex3f(p[e[k]].x(), p[e[k]].y(), p[e[k]].z());
-			gl->glEnd();
+			setColour(gl, c.darker(185), 1.0f);
+			drawEdges(gl, b.min, b.max);
 		}
-
 			// holes: dark discs just above the top face of the plate
 		if (!b.holes.isEmpty()) {
-			gl->glColor3f(0.12f, 0.12f, 0.14f);
+			gl->glColor3f(0.10f, 0.10f, 0.12f);
 			const float z = b.max.z() + 0.05f;
 			for (int h = 0; h < b.holes.size(); ++h) {
 				const QVector3D c0 = b.holes.at(h);
@@ -396,6 +583,51 @@ void Panel3DWidget::paintGL()
 			}
 		}
 	}
+
+		// see-through bodies (the enclosure) from the back to the front,
+		// each with its far faces first, with a light rim on the boxes
+	const QVector3D eye = view.inverted().map(QVector3D(0, 0, 0));
+	QList<int> glass;
+	for (int i = 0; i < m_bodies.size(); ++i) if (m_bodies.at(i).opacity < 1.0f) glass << i;
+	std::sort(glass.begin(), glass.end(), [&](int a, int b) {
+		const QVector3D ca = (m_bodies.at(a).min + m_bodies.at(a).max) / 2;
+		const QVector3D cb = (m_bodies.at(b).min + m_bodies.at(b).max) / 2;
+		return (ca - eye).lengthSquared() > (cb - eye).lengthSquared();
+	});
+	gl->glEnable(GL_BLEND);
+	gl->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	gl->glDepthMask(GL_FALSE);
+	gl->glEnable(GL_CULL_FACE);
+	const GLfloat shine[4] = {0.60f, 0.60f, 0.60f, 1.0f};
+	gl->glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, shine);
+	gl->glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 80.0f);
+	for (int i : std::as_const(glass)) {
+		const Panel3DBody &b = m_bodies.at(i);
+		const QColor c = colourOf(i);
+		gl->glEnable(GL_LIGHTING);
+		setColour(gl, c, b.opacity);
+		for (GLenum face : {GLenum(GL_FRONT), GLenum(GL_BACK)}) {
+			gl->glCullFace(face);
+			draw(i);
+		}
+		gl->glDisable(GL_LIGHTING);
+		if (b.mesh.isEmpty()) {
+			gl->glDisable(GL_CULL_FACE);
+			gl->glColor4f(0.85f, 0.88f, 0.92f, qMin(1.0f, b.opacity * 2.5f));
+			drawEdges(gl, b.min, b.max);
+			gl->glEnable(GL_CULL_FACE);
+		}
+	}
+	gl->glDisable(GL_CULL_FACE);
+	gl->glDepthMask(GL_TRUE);
+	gl->glDisable(GL_BLEND);
+	gl->glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, gloss);
+		// blending left the alpha of the picture below 1, and the widget
+		// is composed with it: make it opaque again
+	gl->glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
+	gl->glClearColor(0, 0, 0, 1);
+	gl->glClear(GL_COLOR_BUFFER_BIT);
+	gl->glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 
 #endif // QET_WITH_OPENGL
@@ -524,7 +756,9 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 		{
 			Panel3DBody b;
 			const QRectF r = d.rect_mm.normalized();
-			const float z0 = d.on_rail ? rail_top : 0;
+				// on a rail: its back on the rail's top, or the clip-on
+				// height behind it (the rail sits in the device's notch)
+			const float z0 = d.on_rail ? qMax(0.0f, rail_top - float(d.snap_height_mm)) : 0;
 			float depth = float(d.depth_mm);
 			const bool no_depth = depth <= 0;
 			if (no_depth) depth = 60;
@@ -663,8 +897,8 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 					cab.mesh = fitMesh(mesh, lo, hi);
 					cab.min = cab.mesh.min;
 					cab.max = cab.mesh.max;
-					cab.colour = QColor(200, 203, 208);
-					cab.opacity = 0.28f;
+					cab.colour = QColor(205, 212, 222);
+					cab.opacity = 0.24f;
 					cab.item = enclosure_item;
 					cab.name = enclosure_name;
 					bodies << cab;
@@ -675,14 +909,20 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 				}
 				if (notes) *notes << error;
 			}
-			auto post = [&](QVector3D a, QVector3D b) {
+			auto post = [&](QVector3D a, QVector3D b, float opacity = 1.0f) {
 				Panel3DBody frame;
 				frame.min = a;
 				frame.max = b;
-				frame.colour = QColor(75, 78, 84);
+				frame.colour = opacity < 1.0f ? QColor(190, 200, 214) : QColor(150, 155, 163);
+				frame.opacity = opacity;
 				frame.name = QStringLiteral("frame");
 				bodies << frame;
 			};
+				// see-through side walls and roof between the posts
+			const float skin = 2.0f, glass = 0.16f;
+			post(QVector3D(lo.x(), lo.y() + p, lo.z() + p), QVector3D(lo.x() + skin, hi.y() - p, hi.z() - p), glass);
+			post(QVector3D(hi.x() - skin, lo.y() + p, lo.z() + p), QVector3D(hi.x(), hi.y() - p, hi.z() - p), glass);
+			post(QVector3D(lo.x() + p, hi.y() - skin, lo.z() + p), QVector3D(hi.x() - p, hi.y(), hi.z() - p), glass);
 				// four upright posts
 			for (float x : {lo.x(), hi.x() - p})
 				for (float z : {lo.z(), hi.z() - p})
@@ -869,9 +1109,6 @@ Panel3DDialog::Panel3DDialog(Diagram *diagram, QWidget *parent) :
 	m_status = new QLabel(this);
 	m_status->setWordWrap(true);
 
-	auto *front = new QPushButton(tr("Front"), this);
-	auto *top = new QPushButton(tr("Top"), this);
-	auto *iso = new QPushButton(tr("Isometric"), this);
 	auto *refresh = new QPushButton(tr("Refresh"), this);
 	auto *save = new QPushButton(tr("Export..."), this);
 	save->setToolTip(tr("Save the scene as glTF (.glb) for a 3D viewer, a browser or a CAD program"));
@@ -886,18 +1123,12 @@ Panel3DDialog::Panel3DDialog(Diagram *diagram, QWidget *parent) :
 	m_enclosure = new QCheckBox(tr("Enclosure"), this);
 	m_enclosure->setChecked(true);
 	connect(m_enclosure, &QCheckBox::toggled, this, &Panel3DDialog::reload);
-	connect(front, &QPushButton::clicked, m_view, &Panel3DWidget::viewFront);
-	connect(top, &QPushButton::clicked, m_view, &Panel3DWidget::viewTop);
-	connect(iso, &QPushButton::clicked, m_view, &Panel3DWidget::viewIso);
 	connect(refresh, &QPushButton::clicked, this, &Panel3DDialog::reload);
 
 	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close, this);
 	connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::close);
 
 	auto *row = new QHBoxLayout;
-	row->addWidget(front);
-	row->addWidget(top);
-	row->addWidget(iso);
 	row->addWidget(refresh);
 	row->addWidget(save);
 	row->addWidget(m_enclosure);
@@ -933,8 +1164,7 @@ void Panel3DDialog::reload()
 		text = tr("This folio has no mounting surface. Draw a rectangle and give it the role "
 				  "\"Mounting surface\" (Cabinet layout > Manufacturing data).");
 	else
-		text = tr("%n bodies. Drag: turn, right drag: move, wheel: zoom, click: select on the folio.",
-				  nullptr, int(bodies.size()));
+		text = tr("%n bodies; a click selects the part on the folio.", nullptr, int(bodies.size()));
 	if (!PanelStep::available())
 		text += QStringLiteral("  ") + tr("(built without STEP support)");
 	notes.removeDuplicates();

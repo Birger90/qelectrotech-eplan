@@ -153,6 +153,21 @@ double mmAttr(const QDomElement &e, const char *name)
 }
 
 /**
+	A power in watts from an EPLAN text with its unit ("3,3 W", "500 mW",
+	"1.2 kW"); a bare number counts as watts. 0 when there is none.
+*/
+double wattsAttr(const QDomElement &e, const char *name)
+{
+	static const QRegularExpression re(QStringLiteral("([0-9]+(?:[.,][0-9]+)?)\\s*([mkM]?)W?"));
+	const QRegularExpressionMatch m = re.match(e.attribute(QLatin1String(name)));
+	if (!m.hasMatch()) return 0;
+	const double v = m.captured(1).replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+	const QString unit = m.captured(2);
+	return unit == QLatin1String("m") ? v / 1000 : unit == QLatin1String("k") ? v * 1000
+		 : unit == QLatin1String("M") ? v * 1e6 : v;
+}
+
+/**
 	The <construction> of a part (EPLAN "drilling pattern"): the part.xml
 	names it in P_ARTICLE_REF_CONSTRUCTION_NAME, the EDZ carries it in a
 	file *.construction.xml beside the part.xml.
@@ -233,6 +248,11 @@ bool EdzPart::parse(const QString &part_xml_path)
 	m_depth = mmAttr(part, "P_ARTICLE_DEPTH");
 	m_snap_height = mmAttr(part, "P_ARTICLE_SNAPHEIGHT");
 	m_middle_offset = mmAttr(part, "P_ARTICLE_MIDDLEOFFSET");
+		// a technical value: on the part, mostly on its (first) variant
+	m_power_loss = wattsAttr(part, "P_ARTICLE_POWERDISSIPATION");
+	for (QDomElement v = part.firstChildElement(QStringLiteral("variant")); m_power_loss <= 0 && !v.isNull();
+		 v = v.nextSiblingElement(QStringLiteral("variant")))
+		m_power_loss = wattsAttr(v, "P_ARTICLE_POWERDISSIPATION");
 	m_patterns.clear();
 	{
 		PanelPattern rail;
@@ -337,7 +357,8 @@ bool EdzPart::parse(const QString &part_xml_path)
 /**
 	@brief EdzPart::appendMountingData
 	Write the outline (width_mm, height_mm, depth_mm, snap height and
-	middle offset) into the element information of @p element_definition
+	middle offset) and the power loss (power_loss_w, for the climate of
+	the enclosure) into the element information of @p element_definition
 	and its mounting variants into <drillingpatterns>, for the cabinet
 	layout.
 */
@@ -370,6 +391,7 @@ void EdzPart::appendMountingData(QDomDocument &element_definition) const
 	set(QStringLiteral("depth_mm"), m_depth);
 	set(QStringLiteral("snap_height_mm"), m_snap_height);
 	set(QStringLiteral("middle_offset_mm"), m_middle_offset);
+	set(QStringLiteral("power_loss_w"), m_power_loss);
 
 	QDomElement old = root.firstChildElement(QStringLiteral("drillingpatterns"));
 	if (!old.isNull()) root.removeChild(old);

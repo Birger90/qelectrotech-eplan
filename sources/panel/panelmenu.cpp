@@ -19,6 +19,7 @@
 #include "../import/portals/manufacturerportals.h"
 
 #include "panel3dview.h"
+#include "panelclimate.h"
 #include "panelcommands.h"
 #include "panelimport.h"
 #include "articledialog.h"
@@ -27,6 +28,7 @@
 #include "panellayout.h"
 #include "panelstep.h"
 #include "panelassistant.h"
+#include "panelwiring.h"
 #include <QCoreApplication>
 #include <QStatusBar>
 #include "../ElementsCollection/xmlelementcollection.h"
@@ -161,12 +163,15 @@ QDialogButtonBox *okCancel(QDialog *dialog)
 	@brief The drilling view: drawn over a folio, not saved with it (the
 	folio writes only the items it knows). Shows every hole the
 	manufacturing will get at its real size, the device outlines from
-	their part sizes and the keep-out areas.
+	their part sizes and the keep-out areas -- and in the duct fill view
+	each cable duct coloured by how full its wires make it (green, orange
+	from 80 % of the limit, red from the limit).
 */
 class PanelHoleOverlay : public QGraphicsObject
 {
 	public:
-		explicit PanelHoleOverlay(Diagram *diagram) : m_diagram(diagram)
+		PanelHoleOverlay(Diagram *diagram, bool holes, bool fill) :
+			m_diagram(diagram), m_show_holes(holes), m_show_fill(fill)
 		{
 			setZValue(1e6);
 			setAcceptedMouseButtons(Qt::NoButton);
@@ -179,6 +184,7 @@ class PanelHoleOverlay : public QGraphicsObject
 			m_holes.clear();
 			m_outlines.clear();
 			m_bad.clear();
+			m_fill.clear();
 			m_rect = QRectF();
 			if (!m_diagram) return;
 			for (QetShapeItem *surface : PanelLayout::surfaces(m_diagram))
@@ -186,6 +192,10 @@ class PanelHoleOverlay : public QGraphicsObject
 				const PanelLayout layout(surface);
 				const double k = layout.mmPerUnit() > 0 ? layout.mmPerUnit() : 1;
 				m_rect |= sceneRectOf(surface).adjusted(-20, -20, 20, 20);
+				if (m_show_fill && surface->panelData().face.isEmpty())
+					for (const PanelDuctFill &f : PanelWiring::route(layout).ducts)
+						if (f.duct) m_fill << Fill{sceneRectOf(f.duct), f.percent()};
+				if (!m_show_holes) continue;
 				for (const PanelHole &h : layout.holes()) {
 					Hole s;
 					s.centre = layout.toScene(QPointF(h.x, h.y));
@@ -217,6 +227,25 @@ class PanelHoleOverlay : public QGraphicsObject
 		void paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *) override
 		{
 			p->setRenderHint(QPainter::Antialiasing, true);
+			for (const Fill &f : std::as_const(m_fill)) {
+				const QColor c = f.percent >= PanelWiring::kWarnPercent ? QColor(220, 40, 40)
+							   : f.percent >= PanelWiring::kHintPercent ? QColor(240, 150, 30)
+							   : QColor(60, 170, 80);
+				p->setPen(QPen(c.darker(130), 0));
+				p->setBrush(QColor(c.red(), c.green(), c.blue(), 120));
+				p->drawRect(f.rect);
+				QFont font = p->font();
+				font.setPixelSize(qMax(4, int(qMin(f.rect.width(), f.rect.height()) * 0.45)));
+				font.setBold(true);
+				p->setFont(font);
+				p->setPen(Qt::black);
+				p->save();
+				p->translate(f.rect.center());
+				if (f.rect.height() > f.rect.width()) p->rotate(-90);
+				p->drawText(QRectF(-200, -50, 400, 100), Qt::AlignCenter,
+							QString::number(qRound(f.percent)) + QStringLiteral(" %"));
+				p->restore();
+			}
 			p->setPen(QPen(QColor(200, 0, 0, 160), 0, Qt::DashLine));
 			p->setBrush(QBrush(QColor(255, 0, 0, 60), Qt::BDiagPattern));
 			for (const QRectF &r : m_bad) p->drawRect(r);
@@ -248,7 +277,10 @@ class PanelHoleOverlay : public QGraphicsObject
 
 	private:
 		struct Hole {QPointF centre; double w = 0, h = 0, angle = 0; bool round = true, thread = false;};
+		struct Fill {QRectF rect; double percent = 0;};
 		QPointer<Diagram> m_diagram;
+		bool m_show_holes = true, m_show_fill = false;
+		QList<Fill> m_fill;
 		QList<Hole> m_holes;
 		QList<QRectF> m_outlines;
 		QList<QRectF> m_bad;
@@ -294,7 +326,7 @@ QDomElement panelDeviceDefinition(QDomDocument &doc, const QString &label, const
 							   QStringLiteral("designation"), QStringLiteral("description"),
 							   QStringLiteral("step_file"), QStringLiteral("mount_variant"),
 							   QStringLiteral("snap_height_mm"), QStringLiteral("middle_offset_mm"),
-							   QStringLiteral("panel_of")})
+							   QStringLiteral("power_loss_w"), QStringLiteral("panel_of")})
 		if (!source_info.value(key).toString().isEmpty())
 			infos.addValue(key, source_info.value(key), false);
 	infos.addValue(QStringLiteral("width_mm"), num(w_mm), false);
@@ -437,7 +469,16 @@ QString reportText(QETProject *project)
 				s << "  " << PanelMenu::tr("Cut list:") << "\n";
 				for (const QString &c : cuts) s << "    " << c << "\n";
 			}
-			const QStringList warnings = layout.warnings();
+			QStringList warnings = layout.warnings();
+			if (surface->panelData().face.isEmpty()) {
+				const PanelWiring wiring = PanelWiring::route(layout);
+				warnings << wiring.warnings();
+				if (!wiring.summary().isEmpty()) s << "  " << wiring.summary() << "\n";
+				for (const PanelDuctFill &f : wiring.ducts)
+					s << "    " << f.name << ": " << num(f.percent(), 0) << " %, "
+					  << PanelMenu::tr("%n wire(s)", nullptr, f.wires) << "\n";
+				s << "  " << PanelClimate::compute(surface).summary() << "\n";
+			}
 			if (!warnings.isEmpty()) {
 				s << "  " << PanelMenu::tr("Warnings:") << "\n";
 				for (const QString &w : warnings) s << "    ! " << w << "\n";
@@ -522,6 +563,9 @@ PanelMenu::PanelMenu(QETDiagramEditor *editor) :
 	QAction *view3d = addAction(tr("3D view..."));
 	view3d->setStatusTip(tr("The cabinet layout of this folio in 3D, with the STEP models of the parts"));
 	connect(view3d, &QAction::triggered, this, &PanelMenu::show3D);
+	QAction *climate = addAction(tr("Climate calculation..."));
+	climate->setStatusTip(tr("Power loss of the devices, temperature inside the enclosure and the cooling it needs (IEC/TR 60890)"));
+	connect(climate, &QAction::triggered, this, &PanelMenu::showClimate);
 	QAction *exp = addAction(tr("Export manufacturing data (DXF)..."));
 	exp->setStatusTip(tr("One DXF per mounting surface with every hole, a hole list and a cut list"));
 	connect(exp, &QAction::triggered, this, &PanelMenu::exportManufacturing);
@@ -575,6 +619,10 @@ PanelMenu::PanelMenu(QETDiagramEditor *editor) :
 	m_hole_view->setCheckable(true);
 	m_hole_view->setStatusTip(tr("Show the holes and the device outlines over the cabinet layout"));
 	connect(m_hole_view, &QAction::toggled, this, &PanelMenu::toggleHoleView);
+	m_fill_view = steps->addAction(tr("Duct fill view"));
+	m_fill_view->setCheckable(true);
+	m_fill_view->setStatusTip(tr("Colour the cable ducts by how full the wires of the schematic make them: green, orange, red from 70 %"));
+	connect(m_fill_view, &QAction::toggled, this, &PanelMenu::toggleHoleView);
 	QAction *report = steps->addAction(tr("Manufacturing report..."));
 	report->setStatusTip(tr("Holes, cut list and warnings of every mounting surface"));
 	connect(report, &QAction::triggered, this, &PanelMenu::showReport);
@@ -630,7 +678,7 @@ void PanelMenu::updateActions()
 	if (m_check_dock && m_check_dock->isVisible()) m_check_dock->setDiagram(d);
 	const bool editable = d && d->project() && !d->project()->isReadOnly();
 	for (QAction *a : std::as_const(m_edit_actions)) a->setEnabled(editable);
-	if (m_hole_view && m_hole_view->isChecked()) refreshHoleView();
+	refreshHoleView();
 }
 
 Diagram *PanelMenu::diagram() const
@@ -1695,29 +1743,12 @@ QString PanelMenu::placeDevicesOn(Diagram *d, QWidget *parent, bool interactive)
 	}
 	QETProject *project = d->project();
 
-			// One device is one full designation =plant+location-BMK, however it
-		// is written on its folios ("-A20" on a folio of =SB+CA, "=SB-A20",
-		// "=SB+CA-A20"): the parts of it a label leaves out come from the
-		// folio. Only the devices of the enclosure's location are offered.
-	struct Tag {QString plant, location, bmk;};
-	auto tagOf = [](Element *e, Diagram *folio) {
-		Tag t;
-		t.plant = folio->border_and_titleblock.plant().trimmed();
-		t.location = folio->border_and_titleblock.locmach().trimmed();
-		if (t.plant.startsWith(QLatin1Char('='))) t.plant.remove(0, 1);
-		if (t.location.startsWith(QLatin1Char('+'))) t.location.remove(0, 1);
-		static const QRegularExpression re(QStringLiteral("^(?:=([^+\\-]+))?(?:\\+([^\\-]+))?(-.*)?$"));
-		const QString label = e->actualLabel().trimmed();
-		const QRegularExpressionMatch m = re.match(label);
-		if (!m.hasMatch()) {t.bmk = label; return t;}
-		if (!m.captured(1).isEmpty()) t.plant = m.captured(1);
-		if (!m.captured(2).isEmpty()) t.location = m.captured(2);
-		t.bmk = m.captured(3);
-		return t;
-	};
-	auto keyOf = [](const Tag &t) {
-		return QStringLiteral("=%1+%2%3").arg(t.plant, t.location, t.bmk);
-	};
+			// One device is one full designation =plant+location-BMK
+			// (PanelLayout::deviceTag). Only the devices of the enclosure's
+			// location are offered.
+	using Tag = PanelLayout::DeviceTag;
+	const auto tagOf = [](Element *e, Diagram *) {return PanelLayout::deviceTag(e);};
+	const auto keyOf = [](const Tag &t) {return t.key();};
 		// the location of the enclosure around the plate
 	QString enclosure_location;
 	const QRectF plate_rect = sceneRectOf(surface);
@@ -2275,16 +2306,18 @@ void PanelMenu::editDevice(Element *element)
 
 /* ------------------------------------------------------------------ */
 
-void PanelMenu::toggleHoleView(bool on)
+void PanelMenu::toggleHoleView()
 {
 	for (const QPointer<QObject> &o : std::as_const(m_overlays)) delete o.data();
 	m_overlays.clear();
-	if (!on) return;
+	const bool holes = m_hole_view && m_hole_view->isChecked();
+	const bool fill = m_fill_view && m_fill_view->isChecked();
+	if (!holes && !fill) return;
 	Diagram *d = diagram();
 	if (!d || !d->project()) return;
 	for (Diagram *folio : d->project()->folios()) {
 		if (PanelLayout::surfaces(folio).isEmpty()) continue;
-		auto *overlay = new PanelHoleOverlay(folio);
+		auto *overlay = new PanelHoleOverlay(folio, holes, fill);
 		folio->addItem(overlay);
 		overlay->refresh();
 		m_overlays << overlay;
@@ -2295,20 +2328,40 @@ void PanelMenu::toggleHoleView(bool on)
 
 void PanelMenu::refreshHoleView()
 {
-	if (!m_hole_view || !m_hole_view->isChecked()) return;
+	if (!(m_hole_view && m_hole_view->isChecked()) && !(m_fill_view && m_fill_view->isChecked())) return;
 	Diagram *d = diagram();
 	if (d && !PanelLayout::surfaces(d).isEmpty()) {
 		bool have = false;
 		for (const QPointer<QObject> &o : std::as_const(m_overlays))
 			if (auto *ov = dynamic_cast<PanelHoleOverlay *>(o.data()))
 				if (ov->scene() == d) have = true;
-		if (!have) {toggleHoleView(true); return;}
+		if (!have) {toggleHoleView(); return;}
 	}
 	for (const QPointer<QObject> &o : std::as_const(m_overlays))
 		if (auto *ov = dynamic_cast<PanelHoleOverlay *>(o.data())) ov->refresh();
 }
 
 /* ------------------------------------------------------------------ */
+
+/**
+	@brief PanelMenu::showClimate
+	The climate of the enclosure around the mounting plate of this folio.
+*/
+void PanelMenu::showClimate()
+{
+	Diagram *d = diagram();
+	if (!d) return;
+	QetShapeItem *plate = nullptr;
+	for (QetShapeItem *s : PanelLayout::surfaces(d))
+		if (s->panelData().face.isEmpty()) {plate = s; break;}
+	if (!plate) {
+		QMessageBox::information(m_editor, tr("Climate calculation"),
+								 tr("This folio has no mounting plate yet. Use \"Build cabinet...\" to start."));
+		return;
+	}
+	PanelClimateDialog dialog(plate, m_editor);
+	dialog.exec();
+}
 
 void PanelMenu::showReport()
 {

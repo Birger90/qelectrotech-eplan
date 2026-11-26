@@ -76,6 +76,8 @@
 #include "../panel/panelstep.h"
 #include "../panel/panel3dview.h"
 #include "../panel/panelassistant.h"
+#include "../panel/panelclimate.h"
+#include "../panel/panelwiring.h"
 #include "../panel/panelimport.h"
 #include "../panel/panelmenu.h"
 #include "../import/eplandxf/eplanpartimporter.h"
@@ -402,6 +404,63 @@ int QetScriptApi::addPanelGrid(int folioIndex, int rows, double ductMm)
 }
 
 /**
+	@brief QetScriptApi::panelClimate
+	The climate of the enclosure around each mounting plate of the folio
+	(Cabinet layout > Climate calculation): power loss, effective surface,
+	inside temperature, the cooling needed. @p settingsJson may change the
+	conditions for this call only: installation (1..7), ambient_c,
+	inside_c, k, simultaneity, extra_w, width_mm, height_mm, depth_mm.
+	@return JSON array, one object per plate
+*/
+QString QetScriptApi::panelClimate(int folioIndex, const QString &settingsJson) const
+{
+	if (!m_project) return QString();
+	const QList<Diagram *> diagrams = m_project->folios();
+	if (folioIndex < 0 || folioIndex >= diagrams.count()) return QString();
+	const QJsonObject o = QJsonDocument::fromJson(settingsJson.toUtf8()).object();
+	QJsonArray out;
+	for (QetShapeItem *s : PanelLayout::surfaces(built(diagrams.at(folioIndex)))) {
+		if (!s->panelData().face.isEmpty()) continue;
+		PanelClimateSettings c = s->panelData().climate;
+		c.installation = qBound(1, o.value(QStringLiteral("installation")).toInt(c.installation), 7);
+		c.ambient_c = o.value(QStringLiteral("ambient_c")).toDouble(c.ambient_c);
+		c.inside_c = o.value(QStringLiteral("inside_c")).toDouble(c.inside_c);
+		c.k = o.value(QStringLiteral("k")).toDouble(c.k);
+		c.simultaneity = o.value(QStringLiteral("simultaneity")).toDouble(c.simultaneity);
+		c.extra_w = o.value(QStringLiteral("extra_w")).toDouble(c.extra_w);
+		c.width_mm = o.value(QStringLiteral("width_mm")).toDouble(c.width_mm);
+		c.height_mm = o.value(QStringLiteral("height_mm")).toDouble(c.height_mm);
+		c.depth_mm = o.value(QStringLiteral("depth_mm")).toDouble(c.depth_mm);
+		out.append(PanelClimate::compute(s, c).toJson());
+	}
+	return QString::fromUtf8(QJsonDocument(out).toJson(QJsonDocument::Compact));
+}
+
+/**
+	@brief QetScriptApi::panelDuctFill
+	How full the cable ducts of each mounting plate of the folio get with
+	the wires of the schematic between its devices (routed through the
+	ducts, the shortest way): per duct the wires and the fill in percent,
+	the warnings from 70 %.
+	@return JSON array, one object per plate
+*/
+QString QetScriptApi::panelDuctFill(int folioIndex) const
+{
+	if (!m_project) return QString();
+	const QList<Diagram *> diagrams = m_project->folios();
+	if (folioIndex < 0 || folioIndex >= diagrams.count()) return QString();
+	QJsonArray out;
+	for (QetShapeItem *s : PanelLayout::surfaces(built(diagrams.at(folioIndex)))) {
+		if (!s->panelData().face.isEmpty()) continue;
+		const PanelLayout layout(s);
+		QJsonObject o = PanelWiring::route(layout).toJson();
+		o.insert(QStringLiteral("surface"), layout.name());
+		out.append(o);
+	}
+	return QString::fromUtf8(QJsonDocument(out).toJson(QJsonDocument::Compact));
+}
+
+/**
 	@brief QetScriptApi::exportPanel3D
 	Write the 3D view of the cabinet layout of a folio as glTF (.glb):
 	devices with the STEP model of their order number where there is one.
@@ -423,6 +482,26 @@ QString QetScriptApi::exportPanel3D(int folioIndex, const QString &path, bool en
 	notes.removeDuplicates();
 	notes.prepend(QStringLiteral("%1 bodies, %2 with STEP model").arg(bodies.size()).arg(models));
 	return notes.join(QLatin1Char('\n'));
+}
+
+/**
+	@brief QetScriptApi::renderPanel3D
+	Draw the 3D view of the cabinet layout of a folio into a picture
+	(PNG, JPG) of @p width x @p height pixels, seen from @p view: "iso",
+	"front", "top", "left" or "right".
+	@return empty when written, else "ERROR: ..."
+*/
+QString QetScriptApi::renderPanel3D(int folioIndex, const QString &path, int width, int height,
+									const QString &view, bool enclosure)
+{
+	if (!m_project) return QStringLiteral("ERROR: no project");
+	const QList<Diagram *> diagrams = m_project->folios();
+	if (folioIndex < 0 || folioIndex >= diagrams.count()) return QStringLiteral("ERROR: no such folio");
+	const QList<Panel3DBody> bodies = Panel3DDialog::build(built(diagrams.at(folioIndex)), nullptr, enclosure);
+	if (bodies.isEmpty()) return QStringLiteral("ERROR: no mounting surface on this folio");
+	const QImage image = Panel3DWidget::render(bodies, QSize(qBound(64, width, 8000), qBound(64, height, 8000)), view);
+	if (image.isNull()) return QStringLiteral("ERROR: nothing drawn (no OpenGL)");
+	return image.save(path) ? QString() : QStringLiteral("ERROR: cannot write ") + path;
 }
 
 /**

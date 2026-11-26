@@ -54,6 +54,7 @@ struct PanelDevice
 	QPointF pos_mm;              ///< insertion point, surface coordinates
 	double angle = 0;
 	double width_mm = 0, height_mm = 0, depth_mm = 0;
+	double snap_height_mm = 0;   ///< EPLAN clip-on height: its back this far behind the rail's top
 	QRectF rect_mm;              ///< outline on the surface
 	QString variant;             ///< mounting variant in use
 	bool on_rail = false;        ///< sits on a DIN rail: leaves no holes
@@ -81,10 +82,12 @@ class PanelLayout
 
 		static QList<QetShapeItem *> surfaces(Diagram *diagram);
 		static QList<PanelPattern> patternsOf(Element *element);
-			/// where a device dropped near a DIN rail snaps to: its centre on
-			/// the rail's centre line, its side against a neighbour or the
-			/// rail's start when close; the move in scene units, null when
-			/// there is no rail near it
+			/// where a device dropped on a surface snaps to: near a DIN rail
+			/// its clip (middle offset, else its centre) on the rail's centre
+			/// line, its side flush against a neighbour within 4 mm or on the
+			/// rail's start; off a rail onto a partner it may hang on, or
+			/// flush against a neighbouring device or duct within 4 mm.
+			/// The move in scene units, null when nothing is near
 		static QPointF railSnap(Diagram *diagram, Element *element);
 			/// a pair of devices that may hang on each other (geraetekombinationen.csv)
 		struct DeviceCombination {
@@ -95,6 +98,16 @@ class PanelLayout
 		};
 		static const QList<DeviceCombination> &deviceCombinations();
 		static QList<PanelPattern> tablePatterns(const QString &order_number);
+			/// One device is one full designation =plant+location-BMK, however
+			/// it is written on its folios ("-A20" on a folio of =SB+CA,
+			/// "=SB-A20", "=SB+CA-A20"): what a label leaves out comes from
+			/// the folio of the element. key() is what a device placed on a
+			/// layout keeps in its information panel_of.
+		struct DeviceTag {
+			QString plant, location, bmk;
+			QString key() const {return QStringLiteral("=%1+%2%3").arg(plant, location, bmk);}
+		};
+		static DeviceTag deviceTag(Element *element);
 
 		QetShapeItem *surface() const {return m_surface;}
 		PanelData surfaceData() const {return m_data;}

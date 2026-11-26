@@ -1335,6 +1335,10 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/panel/panelshapewidget.h
   ${QET_DIR}/sources/panel/panelassistant.cpp
   ${QET_DIR}/sources/panel/panelassistant.h
+  ${QET_DIR}/sources/panel/panelclimate.cpp
+  ${QET_DIR}/sources/panel/panelclimate.h
+  ${QET_DIR}/sources/panel/panelwiring.cpp
+  ${QET_DIR}/sources/panel/panelwiring.h
   ${QET_DIR}/sources/panel/panelmenu.cpp
   ${QET_DIR}/sources/panel/panelmenu.h
   ${QET_DIR}/sources/panel/panelimport.cpp

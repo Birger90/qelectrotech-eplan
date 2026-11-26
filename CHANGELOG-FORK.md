@@ -3,6 +3,15 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.53.1 – 26.11.2026 – Funktionsvorlage Stern-Dreieck
+
+- **Motorabgang Stern-Dreieck** (`funktionsvorlagen/Motoren`): Motorschutzschalter, Netz- und Dreieckschütz
+  dahinter, Sternschütz mit Sternbrücke, je Schütz ein SPS-Ausgang (ADR, ADR+1, ADR+2), zwei Motorleitungen,
+  Motor mit sechs Anschlüssen; Dreieck L1–W2, L2–U2, L3–V2. Die Leistung (5,5–15 kW) wählt Schutzschalter,
+  Schütze (Netz/Dreieck 0,58 I_N, Stern 0,33 I_N) und Leitung, Richtwerte 400 V. Layoutprüfung 98/100.
+- Generator `tools/funktionsvorlagen/beispiele.js`: Hilfsfunktion `ebene()` legt Abzweige je Phase auf eine
+  eigene Höhe, damit parallele Abgriffe nicht auf einer Linie liegen.
+
 ## 1.53.0 – 26.11.2026 – Upstream-Abgleich: IEC 61355, Etikettenlisten
 
 Übernommen aus dem Original-QElectroTech (74 Commits bis 26.11.2026, `83968442f`):

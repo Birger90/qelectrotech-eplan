@@ -297,5 +297,110 @@ speichern("Steckdose 230 V", "Versorgung",
     {LS: "B13", LS_ART: "5SL6113-6"}, {LS: "B16", LS_ART: "5SL6116-6"},
     {LS: "C10", LS_ART: "5SL6110-7"}, {LS: "C16", LS_ART: "5SL6116-7"}]}]);
 
+// ---------------------------------------------------------------------------
+// 7. Motorabgang Stern-Dreieck (wie das Siemens-Schaltbild 3RA24): Motorschutz-
+//    schalter auf I_N, dahinter Netzschütz QA2 und Dreieckschütz QA3, unter dem
+//    Dreieckschütz das Sternschütz QA4 mit Sternbrücke; jedes Schütz an einem
+//    SPS-Ausgang, zwei Motorleitungen, Motor mit sechs Anschlüssen.
+//    Dreieck: L1-W2, L2-U2, L3-V2 (U1-W2, V1-U2, W1-V2). Netz- und Dreieckschütz
+//    auf 0,58 I_N, Sternschütz auf 0,33 I_N (Richtwerte 400 V, 4-polig, prüfen).
+//    Stern und Dreieck gegeneinander verriegeln (Programm und Hilfskontakte).
+// ---------------------------------------------------------------------------
+// die Leitung an Anschluss (dx, dy) von e: ihr waagerechtes Stück auf Höhe y
+function ebene(e, dx, dy, y) {
+  var t = ti(e, dx, dy);
+  var seg = qet.conductorSegments(F, e, t);
+  for (var s = 0; s < seg.length; ++s) {
+    var m = /^(\d+): \(([-\d.]+),([-\d.]+)\)-\(([-\d.]+),([-\d.]+)\) horizontal movable/.exec(seg[s]);
+    if (m) { qet.moveConductorSegment(F, e, t, parseInt(m[1]), 0, y - parseFloat(m[3])); return; }
+  }
+  fehler.push("kein waagerechtes Stück an " + e);
+}
+neuesBlatt("Vorlage Motorabgang Stern-Dreieck");
+x = 200;
+var qaS = el(MSS, x, 150, "QA1");
+info(qaS, {manufacturer: "Siemens", manufacturer_reference: "{QA_ART}",
+           description: "Motorschutzschalter {QA_I}"});
+var kmN = el(HAUPT, x, 250);
+var kmD = el(HAUPT, 420, 250);
+var kmS = el(HAUPT, 620, 380);
+var spN = el(SPULE, 780, 540, "QA2");
+var spD = el(SPULE, 880, 540, "QA3");
+var spS = el(SPULE, 980, 540, "QA4");
+info(spN, {manufacturer: "Siemens", manufacturer_reference: "{KM_ART}",
+           description: "Netzschütz {P_kW} kW Stern-Dreieck, Spule 24 V DC"});
+info(spD, {manufacturer: "Siemens", manufacturer_reference: "{KM_ART}",
+           description: "Dreieckschütz, Spule 24 V DC"});
+info(spS, {manufacturer: "Siemens", manufacturer_reference: "{KS_ART}",
+           description: "Sternschütz, Spule 24 V DC"});
+qet.linkElements(F, spN, F, kmN);
+qet.linkElements(F, spD, F, kmD);
+qet.linkElements(F, spS, F, kmS);
+var dqN = el(DQ, 780, 460);
+var dqD = el(DQ, 880, 460);
+var dqS = el(DQ, 980, 460);
+info(dqN, {plc_address: "{ADR}", function: "{BMK} Netz"});
+info(dqD, {plc_address: "{ADR+1}", function: "{BMK} Dreieck"});
+info(dqS, {plc_address: "{ADR+2}", function: "{BMK} Stern"});
+w(dqN, 0, 20, spN, 0, -20);
+w(dqD, 0, 20, spD, 0, -20);
+w(dqS, 0, 20, spS, 0, -20);
+var kA = [], kB = [];
+for (i = 0; i < 3; ++i) {
+  w(qaS, -20 + 20 * i, 40, kmN, -20 + 20 * i, -20);
+  // Dreieckschütz hinter dem Schutzschalter, je Phase eine eigene Höhe
+  w(qaS, -20 + 20 * i, 40, kmD, -20 + 20 * ((i + 2) % 3), -20);
+  ebene(kmD, -20 + 20 * ((i + 2) % 3), -20, 200 + 10 * i);
+  kA.push(klemme(x - 20 + 20 * i, 330, "{X}:{XN" + (i ? "+" + i : "") + "}"));
+  kB.push(klemme(400 + 20 * i, 480, "{X}:{XN+" + (4 + i) + "}"));
+  w(kmN, -20 + 20 * i, 20, kA[i], 0, -10);
+  w(kmD, -20 + 20 * i, 20, kB[i], 0, -10);
+  // Sternschütz an U2 V2 W2 hinter dem Dreieckschütz
+  w(kmD, -20 + 20 * i, 20, kmS, -20 + 20 * i, -20);
+  ebene(kmS, -20 + 20 * i, -20, 300 + 10 * i);
+}
+leiste(x - 20, 330);
+leiste(400, 480);
+var kpeS = klemme(x + 40, 330, "{X}:{XN+3}", "2002-1207");
+// Sternbrücke
+w(kmS, -20, 20, kmS, 0, 20);
+w(kmS, 0, 20, kmS, 20, 20);
+var mS = el(C + "391_consumers_actuators/10_engines/induction_motor_6_terminals.elmt", x, 620, "{BMK}");
+info(mS, {description: "Drehstrommotor {P_kW} kW, Stern-Dreieck-Anlauf", function: "{TEXT}"});
+// das Kennzeichen links oben, frei von der PE-Leitung rechts
+var tM = labelText(mS);
+if (tM >= 0) {
+  qet.setElementTextProperty(F, mS, tM, "x", "-80");
+  qet.setElementTextProperty(F, mS, tM, "y", "-100");
+}
+for (i = 0; i < 3; ++i) {
+  w(kA[i], 0, 10, mS, -20 + 20 * i, -100);
+  w(kB[i], 0, 10, mS, -20 + 20 * i, 20);
+}
+w(kpeS, 0, 10, mS, 42, -11);
+qet.addCable(F, "{W}", "{W_TYP}", ["1", "2", "3", "GNYE"], "", x - 35, 410, x + 55, 410);
+qet.addCable(F, "{W+1}", "{W_TYP}", ["1", "2", "3"], "", 385, 545, 455, 545);
+qet.addText(F, "L1  L2  L3", x - 28, 80);
+qet.addText(F, "Netz", x + 32, 270);
+qet.addText(F, "Dreieck", 452, 270);
+qet.addText(F, "Stern", 652, 412);
+speichern("Motorabgang Stern-Dreieck", "Motoren",
+  "Stern-Dreieck-Anlauf: Motorschutzschalter, Netz- und Dreieckschütz dahinter, Sternschütz mit " +
+  "Sternbrücke, jedes Schütz am SPS-Ausgang (ADR, ADR+1, ADR+2), zwei Motorleitungen, Motor mit " +
+  "sechs Anschlüssen. Die Leistung wählt Schutzschalter, Schütze und Leitung (Richtwerte 400 V). " +
+  "Stern und Dreieck gegeneinander verriegeln.",
+  [{name: "BMK", label: "Kennzeichen Motor", kind: "label", default: "MA1"},
+   {name: "P_kW", label: "Leistung", unit: "kW", default: "7.5"},
+   {name: "TEXT", label: "Funktion", default: "Antrieb"},
+   {name: "ADR", label: "SPS-Ausgang Netz", default: "%Q0.0"},
+   {name: "X", label: "Klemmleiste", default: "X1"},
+   {name: "XN", label: "erste Klemme", kind: "terminal", of: "X"},
+   {name: "W", label: "Kabel", kind: "cable", default: "W1"}],
+  [{key: "P_kW", columns: ["P_kW", "I_N", "QA_ART", "QA_I", "KM_ART", "KS_ART", "W_TYP"], rows: [
+    {P_kW: "5.5", I_N: "11.5 A", QA_ART: "3RV2011-1KA10", QA_I: "9...12,5 A", KM_ART: "3RT2015-1BB41", KS_ART: "3RT2015-1BB41", W_TYP: "Motorleitung 4G1,5"},
+    {P_kW: "7.5", I_N: "15.5 A", QA_ART: "3RV2011-4AA10", QA_I: "10...16 A", KM_ART: "3RT2016-1BB41", KS_ART: "3RT2015-1BB41", W_TYP: "Motorleitung 4G1,5"},
+    {P_kW: "11", I_N: "22 A", QA_ART: "3RV2021-4CA10", QA_I: "18...25 A", KM_ART: "3RT2018-1BB41", KS_ART: "3RT2016-1BB41", W_TYP: "Motorleitung 4G1,5"},
+    {P_kW: "15", I_N: "29 A", QA_ART: "3RV2021-4EA10", QA_I: "27...32 A", KM_ART: "3RT2025-1BB40", KS_ART: "3RT2017-1BB41", W_TYP: "Motorleitung 4G2,5"}]}]);
+
 if (fehler.length) qet.log("FEHLER " + fehler.join("; "));
 qet.log("FERTIG");

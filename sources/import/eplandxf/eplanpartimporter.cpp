@@ -766,10 +766,49 @@ bool EplanPartImporter::importEdz(const QString &edz_path, const QString &manufa
 	if (!archive.extract(edz_path)) return finish();
 	EdzPart part;
 	const bool has_part = part.parse(archive.partXmlPath());
-	QDirIterator it(archive.extractedDir(), {QStringLiteral("*.ema")}, QDir::Files,
-			QDirIterator::Subdirectories);
-	while (it.hasNext()) {
-		const QString ema = it.next();
+	QStringList emas;
+	for (QDirIterator it(archive.extractedDir(), {QStringLiteral("*.ema")}, QDir::Files,
+			     QDirIterator::Subdirectories);
+	     it.hasNext();)
+		emas << it.next();
+	// 3D macros first: where a macro of the same name without "_3D" exists,
+	// its schematic is written last and stays
+	std::sort(emas.begin(), emas.end(), [](const QString &a, const QString &b) {
+		const bool a3 = a.contains(QStringLiteral("_3D"), Qt::CaseInsensitive);
+		const bool b3 = b.contains(QStringLiteral("_3D"), Qt::CaseInsensitive);
+		return a3 != b3 ? a3 : a < b;
+	});
+	// An EDZ may hold the macros of accessories as well (the base unit of an
+	// ET 200SP module, 3D macros with a schematic of their own): only the
+	// macro of the part itself is "<type> Schaltbild", the others are named
+	// after their file, so that they do not overwrite each other.
+	auto key = [](const QString &s) {
+		return s.toUpper().remove(QRegularExpression(QStringLiteral("[^A-Z0-9]")));
+	};
+	auto own = [&](const QString &ema) {
+		const QString base = QFileInfo(ema).completeBaseName()
+					     .remove(QRegularExpression(QStringLiteral("_[23]D_?$"),
+									QRegularExpression::CaseInsensitiveOption));
+		// "3RM10xx-1xx04": a lower-case x stands for any character
+		QString wild;
+		for (const QChar c : base)
+			if (c == QLatin1Char('x')) wild += QLatin1Char('.');
+			else if (c.isLetterOrNumber()) wild += QRegularExpression::escape(QString(c.toUpper()));
+		const QRegularExpression match(QStringLiteral("^") + wild);
+		for (const QString &id : {type, has_part ? part.orderNumber() : QString(),
+					  has_part ? part.typeNumber() : QString()})
+			if (!key(id).isEmpty() && (match.match(key(id)).hasMatch() || key(base).startsWith(key(id))))
+				return true;
+		return false;
+	};
+	int schematics = 0;
+	for (const QString &ema : std::as_const(emas))
+		if (EplanMacroReader::variantCount(ema) > 0) ++schematics;
+	for (const QString &ema : std::as_const(emas)) {
+		const QString owner = schematics <= 1 || own(ema)
+			? type
+			: QFileInfo(ema).completeBaseName().remove(
+				  QRegularExpression(QStringLiteral("_[23]D_?$"), QRegularExpression::CaseInsensitiveOption));
 		// the 2D panel layout (front view) may sit in its own macro
 		// ("<type>_2D.ema") or next to the schematic in the same one
 		EplanMacroReader layout;
@@ -777,7 +816,7 @@ bool EplanPartImporter::importEdz(const QString &edz_path, const QString &manufa
 		{
 			if (has_layout) {
 				const EplanSymbolData data = layout.symbol();
-				const QString element_name = QStringLiteral("%1 Aufbau").arg(type);
+				const QString element_name = QStringLiteral("%1 Aufbau").arg(owner);
 				const QVector<QPair<QString, QString>> info {
 					{QStringLiteral("manufacturer"), manufacturer},
 					{QStringLiteral("manufacturer_reference"), has_part ? part.orderNumber() : type},
@@ -795,31 +834,42 @@ bool EplanPartImporter::importEdz(const QString &edz_path, const QString &manufa
 					m_messages << QStringLiteral("not taken over: %1").arg(layout.skipped().join(QStringLiteral(", ")));
 			}
 		}
-		EplanMacroReader reader;
-		if (!reader.read(ema)) {
-			if (!has_layout)
-				m_messages << QStringLiteral("%1: %2").arg(QFileInfo(ema).fileName(), reader.errorString());
-			continue;
+		// every multi-line variant: A is the device as a whole and keeps the
+		// plain name, B, C ... show parts of it (power supply, rack layout)
+		const int variants = qMax(1, EplanMacroReader::variantCount(ema));
+		for (int index = 0; index < variants; ++index) {
+			EplanMacroReader reader;
+			if (!reader.read(ema, index)) {
+				if (!has_layout && index == 0)
+					m_messages << QStringLiteral("%1: %2").arg(QFileInfo(ema).fileName(), reader.errorString());
+				continue;
+			}
+			EplanSymbolData data = reader.symbol();
+			sortPins(data.pins);
+			const QString letters = reader.deviceLetters();
+			const QVector<QPair<QString, QString>> info {
+				{QStringLiteral("manufacturer"), manufacturer},
+				{QStringLiteral("manufacturer_reference"), has_part ? part.orderNumber() : QString()},
+				{QStringLiteral("designation"), has_part && !part.typeNumber().isEmpty() ? part.typeNumber() : type},
+				{QStringLiteral("description"), reader.description()},
+				{QStringLiteral("label"), QLatin1Char('-') + (letters.isEmpty() ? QStringLiteral("K") : letters)}};
+			QString element_name = QStringLiteral("%1 Schaltbild").arg(owner);
+			if (index > 0) {
+				element_name += QLatin1Char(' ') + (index < 26 ? QString(QChar('A' + index)) : QString::number(index + 1));
+				QString what = reader.variantName().simplified();
+				if (what.size() > 40) what = what.left(39) + QChar(0x2026);
+				if (!what.isEmpty() && what != reader.description()) element_name += QStringLiteral(" (%1)").arg(what);
+			}
+			QDomDocument doc = EplanElementBuilder::build(
+				data, {{QStringLiteral("de"), element_name}, {QStringLiteral("en"), element_name}}, info);
+			if (has_part) part.appendMountingData(doc);
+			const QString out = QDir(folder).filePath(safe(element_name) + QStringLiteral(".elmt"));
+			if (!writeElement(doc, out, &m_error)) return false;
+			m_written << out;
+			m_messages << QStringLiteral("%1: %2 terminals from the EPLAN macro").arg(element_name).arg(data.pins.size());
+			if (!reader.skipped().isEmpty())
+				m_messages << QStringLiteral("not taken over: %1").arg(reader.skipped().join(QStringLiteral(", ")));
 		}
-		EplanSymbolData data = reader.symbol();
-		sortPins(data.pins);
-		const QString letters = reader.deviceLetters();
-		const QVector<QPair<QString, QString>> info {
-			{QStringLiteral("manufacturer"), manufacturer},
-			{QStringLiteral("manufacturer_reference"), has_part ? part.orderNumber() : QString()},
-			{QStringLiteral("designation"), has_part && !part.typeNumber().isEmpty() ? part.typeNumber() : type},
-			{QStringLiteral("description"), reader.description()},
-			{QStringLiteral("label"), QLatin1Char('-') + (letters.isEmpty() ? QStringLiteral("K") : letters)}};
-		const QString element_name = QStringLiteral("%1 Schaltbild").arg(type);
-		QDomDocument doc = EplanElementBuilder::build(
-			data, {{QStringLiteral("de"), element_name}, {QStringLiteral("en"), element_name}}, info);
-		if (has_part) part.appendMountingData(doc);
-		const QString out = QDir(folder).filePath(safe(element_name) + QStringLiteral(".elmt"));
-		if (!writeElement(doc, out, &m_error)) return false;
-		m_written << out;
-		m_messages << QStringLiteral("%1: %2 terminals from the EPLAN macro").arg(element_name).arg(data.pins.size());
-		if (!reader.skipped().isEmpty())
-			m_messages << QStringLiteral("not taken over: %1").arg(reader.skipped().join(QStringLiteral(", ")));
 	}
 	return finish();
 }

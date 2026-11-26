@@ -14,7 +14,8 @@
 > **Part import** (menu "Part import", headless: `--import-eplan`)
 > - EPLAN macros and EDZ packages: graphics from DXF, schematic from `.ema`, terminals and article data; black box
 >   frames, channel names and broken lines are cleaned up. Terminal designations are split per line, terminal
->   descriptions come from the right EPLAN property.
+>   descriptions come from the right EPLAN property. The macro graphics come over completely (lines, arcs, texts,
+>   embedded drawings), every multi-line variant becomes a schematic of its own.
 > - DWG drawings (AutoCAD 2004–2018) read directly, no converter; mounting views at the scale of the EPLAN macros.
 > - Article data from WSCAD packages (`.wspak`).
 > - Search and import straight from the EPLAN Data Portal (manufacturer list, filters, picture preview).

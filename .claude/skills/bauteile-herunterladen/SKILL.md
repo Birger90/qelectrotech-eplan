@@ -110,7 +110,7 @@ importiert EDZ/DXF in die Firmensammlung und legt STEP nach `3D\<H>\<Nr>.stp`. L
   parallel, bei „Access Denied“ sofort pausieren und danach einzeln mit ~20 s Abstand weiter. Nicht umgehen.
 - Ergebnisse aus der Seite holen: Tool-Ausgabe wird ab ~1000 Zeichen abgeschnitten und Text mit Query-Strings
   geblockt; `fetch` auf 127.0.0.1 wird blockiert. Funktioniert: JSON als Blob-Download speichern
-  (`a.download='sieportal_links_1.json'`) → landet in `C:\Users\test\Downloads`.
+  (`a.download='sieportal_links_1.json'`) → landet in `%USERPROFILE%\Downloads`.
 - EDZ-Inhalt: oft nur `<typ>_2D.ema` (MacroFuncType 6 = 2D-Montageaufbau) + `_3D.ema` (10), oder Schaltbild (1) und
   2D (6) in **einer** .ema. Der Fork liest seit 09.11.2026 beides (`EplanMacroReader::readLayout`; Teilobjekte S31x5
   Linie A531/A532, S32x5 Bogen A553/A554 rad, A555 Mitte, A556 Radius, S89x5 Rechteck A1651/A1652, S30x5 Text

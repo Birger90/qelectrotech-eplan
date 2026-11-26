@@ -3,6 +3,21 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.54.1 – 26.11.2026 – Vollständige Grafik aus EPLAN-Makros
+
+- **Makro-Schaltbilder komplett:** Der `.ema`-Leser übernimmt jetzt auch Linien (O31), Ellipsenbögen (O32),
+  Ellipsen (O90) und Texte (O30/O83, mit Höhe, Winkel und Ausrichtung A966), schließt Polylinien mit A623 = 1,
+  liest fehlende Koordinaten als 0/0 und lässt ausgeblendete Objekte (A406 = 1) weg. Eingebettete Zeichnungen
+  (O144/S144x5 → O5) werden an ihrer Stelle eingesetzt, mit Versatz und Drehmatrix. Beispiel 3RM1-Motorstarter:
+  vorher leerer Kasten, jetzt Innenschaltung mit Thyristoren und Transistorausgang. Die Anschlüsse bleiben gleich.
+- **Alle allpoligen Varianten:** Variante A bleibt „<Typ> Schaltbild“, weitere Varianten werden zu
+  „<Typ> Schaltbild B (…)“ usw. mit dem Teil, den sie zeigen (z. B. ET 200SP: Spannungsversorgung, Kanal,
+  Aufbau A–F je BaseUnit).
+- **Mehrere Makros in einem EDZ** überschreiben sich nicht mehr: Nur das Makro des Artikels heißt „<Typ> …“,
+  Zubehör (BaseUnits, 3D-Makros mit eigenem Schaltbild) wird nach seiner Datei benannt.
+- Aufbaumakros (2D) übernehmen Polylinien (S34x5) und Textausrichtung ebenso.
+- Abgeglichen mit 1.303 Herstellermakros und dem freien Projekt OpenECraft (MIT/Apache-2.0).
+
 ## 1.54.0 – 26.11.2026 – Bewegte Fluidsymbole in der Simulation
 
 - **Zylinder fahren im Symbol aus und ein** wie in FluidSIM: Kolben und Kolbenstange wandern mit dem simulierten

@@ -364,7 +364,7 @@ Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/ht
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/plugsgui_d_steckernavigator.htm
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/plugsgui_h_steckerleisteerstlbearb.htm
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/plugsgui_h_steckerkontaktesortieren.htm
-- Fork-Quellcode (nur gelesen): `C:\Users\test\Documents\Code Projekte\qelectrotech-eplan\sources\TerminalStrip\` (physicalterminal.h, realterminal.h, terminalstrip.h, terminalstripbridge.h), `sources\properties\elementdata.h`
+- Fork-Quellcode (nur gelesen): `<Fork>\sources\TerminalStrip\` (physicalterminal.h, realterminal.h, terminalstrip.h, terminalstripbridge.h), `sources\properties\elementdata.h`
 
 Zusatz-Dialogseiten (Ergänzung Abschnitt 22):
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/eservicesgui_d_nummusteranschluesse.htm

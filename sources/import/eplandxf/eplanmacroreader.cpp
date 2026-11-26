@@ -19,6 +19,7 @@
 
 #include <QDomDocument>
 #include <QFile>
+#include <QHash>
 #include <QMap>
 #include <QRegularExpression>
 #include <QtMath>
@@ -73,13 +74,219 @@ namespace {
 		t.halign = halign;
 		return t;
 	}
+
+	/// a number of the PXF file; "L" (inherited from the layer) and the
+	/// like give @p fallback
+	double number(const QString &s, double fallback)
+	{
+		bool ok = false;
+		const double v = s.toDouble(&ok);
+		return ok && std::isfinite(v) ? v : fallback;
+	}
+
+	/// PXF leaves out positions that are zero: a missing point is 0/0
+	bool pointOrZero(const QDomElement &e, const QString &key, QPointF *p)
+	{
+		if (!e.hasAttribute(key)) {
+			*p = QPointF();
+			return true;
+		}
+		return point(e.attribute(key), p);
+	}
+
+	/**
+		Placement of a drawing: origin and the two axes in the parent's
+		coordinates. Objects of the macro carry page coordinates; only the
+		drawings (O5) an instance (O144, S144x5) places are local to it,
+		moved by its S40x1201/A762 and turned by S39x761 (A751..A754).
+	*/
+	struct Frame
+	{
+		QPointF origin;
+		QPointF x {1, 0};
+		QPointF y {0, 1};
+		QPointF at(const QPointF &q) const { return origin + x * q.x() + y * q.y(); }
+		double scale() const { return std::hypot(x.x(), x.y()); }
+		/// direction of the local x axis, degrees counter-clockwise
+		double angle() const { return qRadiansToDegrees(std::atan2(x.y(), x.x())); }
+	};
+
+	Frame placement(const QDomElement &e, const Frame &parent)
+	{
+		const QDomElement t = e.firstChildElement(QStringLiteral("S40x1201"));
+		if (t.isNull()) return parent;
+		Frame f = parent;
+		QPointF o;
+		if (pointOrZero(t, QStringLiteral("A762"), &o)) f.origin = parent.at(o);
+		const QDomElement m = t.firstChildElement(QStringLiteral("S39x761"));
+		if (!m.isNull()) {
+			auto n = [&](const char *k, double d) { return number(m.attribute(QLatin1String(k)), d); };
+			f.x = parent.x * n("A751", 1) + parent.y * n("A752", 0);
+			f.y = parent.x * n("A753", 0) + parent.y * n("A754", 1);
+		}
+		return f;
+	}
+
+	/**
+		Elliptic arc (O32, S32x5): centre A555, major semi-axis A556 as a
+		vector, ratio of the minor axis A557, start and end angle A553/A554
+		(rad, counter-clockwise, seen from the centre). Equal angles: the
+		whole ellipse.
+	*/
+	void addArc(EplanSymbolData &sym, const QDomElement &e, const Frame &f)
+	{
+		QPointF c, r;
+		if (!pointOrZero(e, QStringLiteral("A555"), &c) || !point(e.attribute(QStringLiteral("A556")), &r)) return;
+		const double ratio = number(e.attribute(QStringLiteral("A557")), 1);
+		const double from = number(e.attribute(QStringLiteral("A553")), 0);
+		const double to = number(e.attribute(QStringLiteral("A554")), 0);
+		const double radius = std::hypot(r.x(), r.y());
+		if (radius <= 0) return;
+		double sweep_angle = std::fmod(to - from, 2 * M_PI);
+		if (sweep_angle < 0) sweep_angle += 2 * M_PI;
+		const bool full = sweep_angle < 1e-5;
+		if (full && qAbs(ratio - 1) < 1e-6) {
+			sym.circles << qMakePair(f.at(c), radius * f.scale());
+			return;
+		}
+		// the parameter of the point an angle points to
+		auto parameter = [ratio](double a) { return std::atan2(std::sin(a), ratio * std::cos(a)); };
+		const double start = parameter(from);
+		double sweep = full ? 2 * M_PI : std::fmod(parameter(to) - start, 2 * M_PI);
+		if (sweep < 0) sweep += 2 * M_PI;
+		const QPointF minor(-r.y() * ratio, r.x() * ratio);
+		const int n = qMax(2, int(std::ceil(sweep / (M_PI / 18))));  // 10° steps
+		QPointF prev;
+		for (int k = 0; k <= n; ++k) {
+			const double t = start + sweep * k / n;
+			const QPointF p = f.at(c + r * std::cos(t) + minor * std::sin(t));
+			if (k) sym.lines << QLineF(prev, p);
+			prev = p;
+		}
+	}
+
+	/**
+		Draws one graphic object of the macro, as an object of the page (O..)
+		or of a drawing (S..x5): line 31, polyline 34, rectangle 89, ellipse
+		90, arc 32, text 30/83. Returns false for anything else. Objects
+		EPLAN hides (A406 = 1) count as drawn and add nothing.
+	*/
+	bool addGraphic(EplanSymbolData &sym, const QDomElement &e, const Frame &f)
+	{
+		const QString tag = e.tagName();
+		if (!tag.startsWith(QLatin1Char('O')) && !(tag.startsWith(QLatin1Char('S')) && tag.endsWith(QLatin1String("x5"))))
+			return false;
+		const QString kind = tag.mid(1).section(QLatin1Char('x'), 0, 0);
+		static const QStringList kinds {
+			QStringLiteral("30"), QStringLiteral("31"), QStringLiteral("32"), QStringLiteral("34"),
+			QStringLiteral("83"), QStringLiteral("89"), QStringLiteral("90")};
+		if (!kinds.contains(kind)) return false;
+		if (e.attribute(QStringLiteral("A406")) == QLatin1String("1")) return true;
+
+		if (kind == QLatin1String("31")) {  // line
+			QPointF a, b;
+			if (pointOrZero(e, QStringLiteral("A531"), &a) && pointOrZero(e, QStringLiteral("A532"), &b))
+				sym.lines << QLineF(f.at(a), f.at(b));
+		} else if (kind == QLatin1String("34")) {  // polyline, closed when A623 = 1
+			QStringList parts = e.attribute(QStringLiteral("A621")).split(QLatin1Char(';'));
+			while (!parts.isEmpty() && parts.last().isEmpty()) parts.removeLast();
+			QVector<QPointF> pts;
+			for (const QString &s : std::as_const(parts)) {
+				QPointF p;  // an empty entry is 0/0
+				if (s.isEmpty() || point(s, &p)) pts << f.at(p);
+			}
+			if (e.attribute(QStringLiteral("A623")) == QLatin1String("1") && pts.size() > 2 && pts.first() != pts.last())
+				pts << pts.first();
+			for (int k = 1; k < pts.size(); ++k) sym.lines << QLineF(pts.at(k - 1), pts.at(k));
+		} else if (kind == QLatin1String("89")) {  // rectangle
+			QPointF a, b;
+			if (!pointOrZero(e, QStringLiteral("A1651"), &a) || !pointOrZero(e, QStringLiteral("A1652"), &b))
+				return true;
+			const QPointF c[4] = {f.at(a), f.at(QPointF(b.x(), a.y())), f.at(b), f.at(QPointF(a.x(), b.y()))};
+			const bool upright = qAbs(f.x.y()) < 1e-9 && qAbs(f.y.x()) < 1e-9;
+			if (e.attribute(QStringLiteral("A1656")) == QLatin1String("1") && upright)
+				sym.filled << QRectF(c[0], c[2]).normalized();
+			else
+				for (int k = 0; k < 4; ++k) sym.lines << QLineF(c[k], c[(k + 1) % 4]);
+		} else if (kind == QLatin1String("90")) {  // ellipse in its bounding box
+			QPointF a, b;
+			if (!pointOrZero(e, QStringLiteral("A1661"), &a) || !pointOrZero(e, QStringLiteral("A1662"), &b))
+				return true;
+			const QPointF c = (a + b) / 2;
+			const double rx = qAbs(b.x() - a.x()) / 2, ry = qAbs(b.y() - a.y()) / 2;
+			if (rx <= 0 || ry <= 0) return true;
+			if (qAbs(rx - ry) < 1e-6) {
+				sym.circles << qMakePair(f.at(c), rx * f.scale());
+			} else {
+				QPointF prev = f.at(c + QPointF(rx, 0));
+				for (int k = 1; k <= 36; ++k) {
+					const double t = 2 * M_PI * k / 36;
+					const QPointF p = f.at(c + QPointF(rx * std::cos(t), ry * std::sin(t)));
+					sym.lines << QLineF(prev, p);
+					prev = p;
+				}
+			}
+		} else if (kind == QLatin1String("32")) {
+			addArc(sym, e, f);
+		} else {  // text 30, 83
+			const QString s = language(e.attribute(QStringLiteral("A511"))).trimmed();
+			QPointF at;
+			if (s.isEmpty() || !pointOrZero(e, QStringLiteral("A501"), &at)) return true;
+			const QDomElement style = e.firstChildElement(QStringLiteral("S54x505"));
+			EplanDxfText t = text(s, f.at(at), 0);
+			const double h = number(style.attribute(QStringLiteral("A961")), 2.5);
+			t.height = (h > 0 ? h : 2.5) * f.scale();
+			t.rotation = f.angle() + qRadiansToDegrees(number(style.attribute(QStringLiteral("A962")), 0));
+			// A966 1..9: top, middle and bottom row of left, centred and right
+			const int j = int(number(style.attribute(QStringLiteral("A966")), 0));
+			if (j >= 1 && j <= 9) {
+				t.halign = (j - 1) % 3;
+				t.valign = (j - 1) / 3 == 0 ? 3 : (j - 1) / 3 == 1 ? 2 : 0;
+			}
+			sym.texts << t;
+		}
+		return true;
+	}
+
+	/// draws what an instance (O144, S144x5) places: the drawing O5 named by R9
+	void addInstance(EplanSymbolData &sym, const QDomElement &e, const Frame &parent,
+			 const QHash<QString, QDomElement> &drawings, QMap<QString, int> &skipped, int depth = 0)
+	{
+		const QDomElement def = drawings.value(e.attribute(QStringLiteral("R9")));
+		if (def.isNull() || depth > 16) {
+			++skipped[QStringLiteral("instance without drawing")];
+			return;
+		}
+		const Frame f = placement(e, parent);
+		for (QDomElement c = def.firstChildElement(); !c.isNull(); c = c.nextSiblingElement()) {
+			const QString tag = c.tagName();
+			if (tag == QLatin1String("O144") || tag == QLatin1String("S144x5"))
+				addInstance(sym, c, f, drawings, skipped, depth + 1);
+			else if (!addGraphic(sym, c, f) && !tag.startsWith(QLatin1Char('P'))
+				 && tag != QLatin1String("S40x1201") && tag != QLatin1String("S54x505"))
+				++skipped[tag];
+		}
+	}
 }
 
-bool EplanMacroReader::read(const QString &path)
+int EplanMacroReader::variantCount(const QString &path)
+{
+	QFile f(path);
+	QDomDocument doc;
+	if (!f.open(QIODevice::ReadOnly) || !doc.setContent(&f)) return 0;
+	int n = 0;
+	for (QDomElement v = doc.documentElement().firstChildElement(QStringLiteral("MacroVariant")); !v.isNull();
+	     v = v.nextSiblingElement(QStringLiteral("MacroVariant")))
+		if (v.attribute(QStringLiteral("MacroFuncType")) == QLatin1String("1")) ++n;
+	return n;
+}
+
+bool EplanMacroReader::read(const QString &path, int index)
 {
 	m_symbol = EplanSymbolData();
 	m_letters.clear();
 	m_description.clear();
+	m_variant_name.clear();
 	m_skipped.clear();
 	m_error.clear();
 
@@ -98,12 +305,13 @@ bool EplanMacroReader::read(const QString &path)
 		m_error = QStringLiteral("%1 is not an EPLAN macro").arg(path);
 		return false;
 	}
-	// the multi-line schematic; the other variants are panel layout,
-	// single-line, overview and the like
+	// the index-th multi-line schematic (variant A, B, ...); the other
+	// representations are panel layout, single-line, overview and the like
 	QDomElement variant;
+	int seen = 0;
 	for (QDomElement v = root.firstChildElement(QStringLiteral("MacroVariant")); !v.isNull();
 	     v = v.nextSiblingElement(QStringLiteral("MacroVariant"))) {
-		if (v.attribute(QStringLiteral("MacroFuncType")) == QLatin1String("1")) {
+		if (v.attribute(QStringLiteral("MacroFuncType")) == QLatin1String("1") && seen++ == index) {
 			variant = v;
 			break;
 		}
@@ -112,20 +320,35 @@ bool EplanMacroReader::read(const QString &path)
 		m_error = QStringLiteral("The macro has no multi-line schematic variant");
 		return false;
 	}
-	m_description = language(variant.attribute(QStringLiteral("Description"),
-						    root.attribute(QStringLiteral("Description"))))
-			.section(QLatin1Char('\n'), 0, 0).trimmed();
+	const QString full = language(variant.attribute(QStringLiteral("Description"),
+							root.attribute(QStringLiteral("Description"))));
+	m_description = full.section(QLatin1Char('\n'), 0, 0).trimmed();
+	// what tells the variants apart: Siemens writes the module on the first
+	// line and the part shown ("Power Supply", "Rack layout A") below it
+	const QStringList lines = full.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
+	m_variant_name = (lines.size() > 1 ? lines.mid(1).join(QStringLiteral(", ")) : lines.value(0)).trimmed();
 
 	// containers and settings rather than drawing objects
 	static const QStringList structural {
-		QStringLiteral("O4"), QStringLiteral("O14"), QStringLiteral("O26"),
+		QStringLiteral("O4"), QStringLiteral("O6"), QStringLiteral("O14"), QStringLiteral("O26"),
 		QStringLiteral("O37"), QStringLiteral("O76")};
 	QMap<QString, int> skipped;
-	// every element below the variant, in document order (QDom has no "*")
+	// the drawings (O5) instances place; their objects are local to the
+	// instance and drawn only through it
+	QHash<QString, QDomElement> drawings;
+	{
+		const QDomNodeList defs = variant.elementsByTagName(QStringLiteral("O5"));
+		for (int k = 0; k < defs.size(); ++k) {
+			const QDomElement d = defs.at(k).toElement();
+			drawings.insert(d.attribute(QStringLiteral("A1")), d);
+		}
+	}
+	// every element below the variant, in document order (QDom has no "*"),
+	// without the insides of the drawings
 	QVector<QDomElement> all;
 	for (QDomElement e = variant.firstChildElement(); !e.isNull();) {
 		all << e;
-		if (!e.firstChildElement().isNull()) {
+		if (e.tagName() != QLatin1String("O5") && !e.firstChildElement().isNull()) {
 			e = e.firstChildElement();
 			continue;
 		}
@@ -136,25 +359,16 @@ bool EplanMacroReader::read(const QString &path)
 	}
 	for (const QDomElement &e : std::as_const(all)) {
 		const QString tag = e.tagName();
-		if (!tag.startsWith(QLatin1Char('O')) || structural.contains(tag)) continue;
+		if (tag == QLatin1String("O144")) {  // instance of a drawing
+			addInstance(m_symbol, e, Frame(), drawings, skipped);
+			continue;
+		}
+		if (!tag.startsWith(QLatin1Char('O')) || structural.contains(tag) || tag == QLatin1String("O5")) continue;
 
-		if (tag == QLatin1String("O34")) {  // line or polyline
-			QVector<QPointF> pts;
-			for (const QString &s : e.attribute(QStringLiteral("A621")).split(QLatin1Char(';'), Qt::SkipEmptyParts)) {
-				QPointF p;
-				if (point(s, &p)) pts << p;
-			}
-			for (int k = 1; k < pts.size(); ++k) m_symbol.lines << QLineF(pts.at(k - 1), pts.at(k));
-		} else if (tag == QLatin1String("O89")) {  // rectangle
-			QPointF a, b;
-			if (!point(e.attribute(QStringLiteral("A1651")), &a)
-			    || !point(e.attribute(QStringLiteral("A1652")), &b))
-				continue;
-			if (e.attribute(QStringLiteral("A1656")) == QLatin1String("1"))
-				m_symbol.filled << QRectF(a, b).normalized();
-			else
-				addRect(m_symbol.lines, a, b);
-		} else if (tag == QLatin1String("O17")) {  // function: connection point or black box
+		// lines, polylines, rectangles, ellipses, arcs and texts carry page
+		// coordinates
+		if (addGraphic(m_symbol, e, Frame())) continue;
+		if (tag == QLatin1String("O17")) {  // function: connection point or black box
 			QPointF pos;
 			const QString where = e.firstChildElement(QStringLiteral("S40x1201")).attribute(QStringLiteral("A762"));
 			if (!point(where, &pos)) continue;
@@ -285,46 +499,8 @@ bool EplanMacroReader::readLayout(const QString &path)
 	for (const QDomElement &e : std::as_const(all)) {
 		const QString tag = e.tagName();
 		if (!tag.startsWith(QLatin1Char('S')) || !owners.contains(e.attribute(QStringLiteral("R7")))) continue;
-		if (tag == QLatin1String("S31x5")) {  // line
-			QPointF a, b;
-			if (point(e.attribute(QStringLiteral("A531")), &a) && point(e.attribute(QStringLiteral("A532")), &b))
-				m_symbol.lines << QLineF(a, b);
-		} else if (tag == QLatin1String("S32x5")) {  // arc: start/end angle (rad), centre, radius
-			QPointF c, r;
-			if (!point(e.attribute(QStringLiteral("A555")), &c) || !point(e.attribute(QStringLiteral("A556")), &r))
-				continue;
-			const double radius = r.x();
-			const double a0 = e.attribute(QStringLiteral("A553")).toDouble();
-			double a1 = e.attribute(QStringLiteral("A554")).toDouble();
-			while (a1 <= a0) a1 += 2 * M_PI;  // counter-clockwise from start to end
-			if (a1 - a0 >= 2 * M_PI - 1e-6) {
-				m_symbol.circles << qMakePair(c, radius);
-				continue;
-			}
-			const int n = qMax(2, int(std::ceil((a1 - a0) / (M_PI / 18))));  // 10° steps
-			QPointF prev(c.x() + radius * std::cos(a0), c.y() + radius * std::sin(a0));
-			for (int k = 1; k <= n; ++k) {
-				const double t = a0 + (a1 - a0) * k / n;
-				const QPointF p(c.x() + radius * std::cos(t), c.y() + radius * std::sin(t));
-				m_symbol.lines << QLineF(prev, p);
-				prev = p;
-			}
-		} else if (tag == QLatin1String("S89x5")) {  // rectangle
-			QPointF a, b;
-			if (!point(e.attribute(QStringLiteral("A1651")), &a) || !point(e.attribute(QStringLiteral("A1652")), &b))
-				continue;
-			if (e.attribute(QStringLiteral("A1656")) == QLatin1String("1"))
-				m_symbol.filled << QRectF(a, b).normalized();
-			else
-				addRect(m_symbol.lines, a, b);
-		} else if (tag == QLatin1String("S30x5")) {  // text
-			QPointF at;
-			const QString s = language(e.attribute(QStringLiteral("A511"))).trimmed();
-			if (s.isEmpty() || !point(e.attribute(QStringLiteral("A501")), &at)) continue;
-			m_symbol.texts << text(s, at, 0);
-		} else {
-			++skipped[tag];
-		}
+		// lines, polylines, rectangles, ellipses, arcs and texts
+		if (!addGraphic(m_symbol, e, Frame())) ++skipped[tag];
 	}
 	for (auto it = skipped.cbegin(); it != skipped.cend(); ++it)
 		m_skipped << QStringLiteral("%1 x %2").arg(it.value()).arg(it.key());

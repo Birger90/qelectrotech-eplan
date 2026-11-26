@@ -116,6 +116,12 @@ Quellen stehen in den Referenzdateien beim jeweiligen Abschnitt.
   Funktionsdefinition der Objekte wird nicht ausgewertet. **Behoben (2026-11-05, nicht committet):** am O17 ist
   A185 die Anschlussbezeichnung, A186 die Anschlussbeschreibung („DI a.1“), A194/P20406 die Steckerbezeichnung;
   `pin.function` liest jetzt A186, die Steckerbezeichnung nur, wenn das Makro sie als Text (A771=20406) zeigt.
+- **Makro-Grafik** (2026-11-26, abgeglichen mit 1.303 Herstellermakros und OpenECraft `symlib/ema.rs`): Grafik der
+  allpoligen Variante steht in Seitenkoordinaten (O31 Linie A531/A532, O32 Ellipsenbogen A555/A556/A557/A553/A554,
+  O34 Polylinie A621 mit A623=1 geschlossen und leerem Eintrag = 0/0, O89, O90 Ellipse A1661/A1662, O30 Text A501/A511
+  mit S54x505 A961 Höhe, A962 Winkel rad, A966 1–9 = oben/mitte/unten × links/mitte/rechts); A406=1 unsichtbar.
+  Nur O5-Zeichnungen sind lokal: O144/S144x5 setzt die O5 mit A1=R9 an S40x1201/A762, Drehung S39x761 A751–A754.
+  Das S40x1201 einer O26-Gruppe ist **kein** Versatz für ihre Kinder (OpenECraft verschiebt dort – falsch).
 - **EDZ-Import** (`sources/import/edz/edzpart.cpp`): **Behoben (2026-11-05, nicht committet):**
   `connectionDesignation`/`connectiondescription` werden zeilenweise in einzelne Pins geteilt (3VA9988: `.2/.1/.4`
   jetzt 3 Anschlüsse statt 1). Offen: `terminalNr` bedeutet je Produktgruppe Stecker, Kontakt oder Querschnitt;

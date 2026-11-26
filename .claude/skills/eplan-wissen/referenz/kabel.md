@@ -294,4 +294,4 @@ Die Themenstruktur der Kabelhilfe ist von 2.9 bis 2026 gleich. Quelle: https://w
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_r_allgemein.htm
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_r_allpoligeinpolig.htm
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cablegui_d_einstellungenpaket.htm
-- Fork-Quellcode (nur gelesen): `C:\Users\test\Documents\Code Projekte\qelectrotech-eplan\sources\cable\cable.h`, `sources\cable\cable.cpp`, `sources\conductorproperties.h`, `sources\TerminalStrip\realterminal.h`, `sources\cablelist\`
+- Fork-Quellcode (nur gelesen): `<Fork>\sources\cable\cable.h`, `sources\cable\cable.cpp`, `sources\conductorproperties.h`, `sources\TerminalStrip\realterminal.h`, `sources\cablelist\`

@@ -7,10 +7,11 @@ import functools
 import os
 import xml.etree.ElementTree as ET
 
-DATEN = os.environ.get("QET_DATEN", r"C:\Users\test\Documents\Code Projekte\QElectroTech\Daten")
+DATEN = os.environ.get("QET_DATEN", os.path.join(os.path.expanduser("~"), "Documents", "Code Projekte", "QElectroTech", "Daten"))
 COMPANY = os.environ.get("QET_COMPANY_ELEMENTS_DIR", os.path.join(DATEN, "elements-company"))
 COMMON = os.environ.get("QET_COMMON_ELEMENTS_DIR",
-                        r"C:\Users\test\Documents\Code Projekte\qelectrotech-eplan\build\deploy\elements")
+                        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..",
+                                     "build", "deploy", "elements"))
 
 
 def datei(pfad):

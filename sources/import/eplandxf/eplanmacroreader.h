@@ -26,9 +26,10 @@
 	@brief Reads the schematic of an EPLAN window macro (.ema, "EplanPxfRoot"
 	XML) as manufacturers ship it inside their EDZ parts.
 
-	Of the macro's variants the multi-line schematic (MacroFuncType 1) is
-	read: lines and polylines (O34), rectangles (O89, filled when EPLAN fills
-	them), connection points (O17 with a connection designation and an
+	Of the macro's variants the multi-line schematics (MacroFuncType 1) are
+	read, one at a time: lines (O31), polylines (O34), rectangles (O89,
+	filled when EPLAN fills them), arcs (O32), ellipses (O90), texts (O30),
+	the drawings instances place (O144 -> O5), connection points (O17 with a connection designation and an
 	optional description such as "IN") and black-box frames (O17 with a
 	frame) with their identifying letters and function text. Coordinates
 	stay in EPLAN mm with y up, as EplanElementBuilder expects them.
@@ -39,7 +40,17 @@
 class EplanMacroReader
 {
 	public:
-		bool read(const QString &path);
+		/**
+			Reads the @p index-th multi-line schematic variant (0 = variant A).
+			Macros may carry several: the whole device and parts of it, such
+			as the power supply or one rack layout per base unit.
+		*/
+		bool read(const QString &path, int index = 0);
+		/// number of multi-line schematic variants of the macro
+		static int variantCount(const QString &path);
+		/// what the read variant shows ("Power Supply", "Rack layout A"),
+		/// from its description; may be empty
+		QString variantName() const { return m_variant_name; }
 		/**
 			Reads the 2D panel layout variant (MacroFuncType 6) instead: the
 			front view the manufacturer draws as sub-objects of a graphic
@@ -59,6 +70,7 @@ class EplanMacroReader
 		EplanSymbolData m_symbol;
 		QString m_letters;
 		QString m_description;
+		QString m_variant_name;
 		QStringList m_skipped;
 		QString m_error;
 };

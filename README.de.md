@@ -16,7 +16,8 @@ Menü „Bauteil-Import“, ohne Oberfläche: `--import-eplan`
 
 - EPLAN-Makros und EDZ-Pakete: Grafik aus DXF, Schaltbild aus `.ema`, Anschlüsse und Artikeldaten; Black-Box-Rahmen,
   Kanalnamen und zerstückelte Linien werden bereinigt. Anschlussbezeichnungen werden zeilenweise geteilt, die
-  Anschlussbeschreibung kommt aus der richtigen EPLAN-Eigenschaft.
+  Anschlussbeschreibung kommt aus der richtigen EPLAN-Eigenschaft. Die Makrografik kommt vollständig mit (Linien,
+  Bögen, Texte, eingebettete Zeichnungen), jede allpolige Variante wird ein eigenes Schaltbild.
 - DWG-Zeichnungen (AutoCAD 2004–2018) direkt, ohne Konverter; Aufbauansichten im Maßstab der EPLAN-Aufbaumakros.
 - Artikeldaten aus WSCAD-Paketen (`.wspak`).
 - Suche und Import direkt aus dem EPLAN Data Portal (Herstellerliste, Filter, Bildvorschau).

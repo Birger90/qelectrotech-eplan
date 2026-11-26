@@ -169,6 +169,11 @@
 >   keep-out areas -- ordinary shapes carrying a `<panel>` role, so they move, copy and undo like any shape.
 > - *Place devices from the schematic*: each device becomes a thumbnail of its real size (stays out of the BOM),
 >   snapped onto the DIN rails, carrying the drilling patterns of its part.
+> - A dragged device sits with its clip (EPLAN middle offset, else its centre) on the DIN rail centre line and snaps
+>   flush to a free edge of a neighbour within 4 mm, on the rail or free on the plate (Shift: free).
+> - *Climate calculation...* (IEC/TR 60890 surfaces, power loss `power_loss_w` from the EDZ import, fan or cooling
+>   unit needed) and the duct fill of the wires of the schematic routed through the ducts (finding from 70 %, coloured
+>   in the *Duct fill view*) also show in the layout check; formulas and sources in `FORMELN.md`.
 > - Devices are drawn with the manufacturer's panel layout drawing from the EPLAN Data Portal (by order
 >   number, cached in Documents/panel-templates/devices), which also gives their size.
 > - Mounting variants per part (`<drillingpatterns>`): on a DIN rail it leaves no hole, screwed it leaves its
@@ -186,10 +191,12 @@
 >   - Accessories (`accessories`, `artikel_N` of the schematic device) are mounted with the device, e.g. an ET 200SP
 >     BaseUnit under its module; terminal strips show every terminal of QElectroTech's terminal strip with its model.
 >   - Ducts without a model are drawn as slotted ducts with lid. Export as glTF (`.glb`) for any 3D viewer.
+>   - Dark graded background, key and fill light with gloss, a floor with a soft contact shadow, edges on the
+>     boxes, 4x multisampling; view buttons (iso, front, top, left, right, fit) on the picture.
 > - `bohrbilder.csv` in the company or user collection: holes, threads and cut-outs for parts without a pattern
 >   (order number with wildcards, from the device centre, source per line -- values from data sheets).
 > - Script API: `setShapePanel`, `shapePanel`, `panelReport`, `exportPanelDxf`, `stepInfo`, `exportPanel3D`,
->   `addPanelGrid`.
+>   `renderPanel3D` (picture), `addPanelGrid`, `panelClimate`, `panelDuctFill`.
 >
 > **EPLAN projects and the built-in assistant**
 > - File > *Import EPLAN project* (`.zw1`): the whole project becomes a linked QET project -- forms and title blocks,

@@ -109,15 +109,17 @@ class PanelMenu : public QMenu
 		void editSelected();
 		void editShape(QetShapeItem *shape);
 		void editDevice(Element *element);
-		void toggleHoleView(bool on);
+		void toggleHoleView();
 		void refreshHoleView();
 		void showReport();
 		void exportManufacturing();
 		void show3D();
+		void showClimate();
 
 		QETDiagramEditor *m_editor = nullptr;
 		QList<QAction *> m_edit_actions;
 		QAction *m_hole_view = nullptr;
+		QAction *m_fill_view = nullptr;
 		QAction *m_check_action = nullptr;
 		QPointer<class PanelCheckDock> m_check_dock;
 		QList<QPointer<QObject>> m_overlays;

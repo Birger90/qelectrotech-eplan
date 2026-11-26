@@ -17,8 +17,10 @@
 */
 #include "panelassistant.h"
 
+#include "panelclimate.h"
 #include "panellayout.h"
 #include "panelmenu.h"
+#include "panelwiring.h"
 #include "../diagram.h"
 #include "../qetgraphicsitem/element.h"
 #include "../qetgraphicsitem/qetshapeitem.h"
@@ -110,11 +112,26 @@ void PanelCheckDock::refresh()
 	}
 	for (QetShapeItem *surface : surfaces) {
 		const PanelLayout layout(surface);
-		for (const QString &w : layout.warnings()) {
-			auto *item = new QListWidgetItem(w, m_list);
-			item->setData(Qt::UserRole, w.section(QLatin1Char(':'), 0, 0).trimmed());
+			// a finding names its part before the colon; a note (grey, not
+			// counted) and the climate select the plate
+		const QString plate = surface->panelData().designation;
+		auto add = [&](const QString &text, bool finding, const QString &tag) {
+			auto *item = new QListWidgetItem(text, m_list);
+			item->setData(Qt::UserRole, tag);
 			item->setToolTip(layout.name());
-			++m_findings;
+			if (finding) ++m_findings;
+			else item->setForeground(palette().color(QPalette::Disabled, QPalette::Text));
+		};
+			// the plate inside the enclosure: how full its ducts get and
+			// whether the enclosure needs cooling
+		const bool inside = surface->panelData().face.isEmpty();
+		const PanelWiring wiring = inside ? PanelWiring::route(layout) : PanelWiring();
+		const QStringList findings = layout.warnings() + wiring.warnings();
+		for (const QString &w : findings) add(w, true, w.section(QLatin1Char(':'), 0, 0).trimmed());
+		if (inside) {
+			const PanelClimate climate = PanelClimate::compute(surface);
+			add(climate.summary(), climate.needsCooling(), plate);
+			if (!wiring.summary().isEmpty()) add(wiring.summary(), false, plate);
 		}
 	}
 	m_summary->setText(m_findings ? tr("%n finding(s) - click one to show the part.", nullptr, m_findings)

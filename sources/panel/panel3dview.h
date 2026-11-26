@@ -22,6 +22,7 @@
 
 #include <QColor>
 #include <QDialog>
+#include <QImage>
 #include <QPointer>
 #include <QVector3D>
 
@@ -63,6 +64,12 @@ using Panel3DBase = QWidget;
 	plates with their holes, DIN rails, ducts and devices as boxes from
 	their sizes -- or the manufacturer's STEP model when the part names
 	one. Drag to turn, right drag to move, wheel to zoom.
+
+	Drawn with OpenGL 1.1 (any Windows graphics driver): a dark, slightly
+	graded background, a key and a fill light with a soft gloss, a floor
+	with a soft contact shadow under the enclosure, edges on the boxes,
+	the see-through enclosure from back to front, 4x multisampling when
+	the driver has it. Each body is compiled once into a display list.
 */
 class Panel3DWidget : public Panel3DBase
 {
@@ -70,10 +77,18 @@ class Panel3DWidget : public Panel3DBase
 
 	public:
 		explicit Panel3DWidget(QWidget *parent = nullptr);
+		~Panel3DWidget() override;
 		void setBodies(const QList<Panel3DBody> &bodies);
+		void viewFit();
 		void viewFront();
 		void viewTop();
 		void viewIso();
+		void viewLeft();
+		void viewRight();
+			/// the scene drawn into a picture of @p size, seen from @p view
+			/// ("iso", "front", "top", "left", "right"), without a window
+		static QImage render(const QList<Panel3DBody> &bodies, const QSize &size,
+							 const QString &view = QStringLiteral("iso"));
 
 	signals:
 		void picked(QObject *item);
@@ -99,6 +114,10 @@ class Panel3DWidget : public Panel3DBase
 		QVector3D m_pan;
 		QPoint m_last, m_press;
 		int m_selected = -1;
+		QVector3D m_lo, m_hi;            ///< extent of the scene
+		unsigned int m_lists = 0;        ///< display lists, one per body (GLuint)
+		int m_list_count = 0;
+		bool m_lists_dirty = true;
 };
 
 /**

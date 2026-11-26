@@ -61,6 +61,23 @@ double infoNumber(const DiagramContext &info, const QString &key)
 {
 	return info.value(key).toString().replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
 }
+
+	/// a device this close (mm) to a free edge of a neighbour goes flush against it
+const double kFlushCatchMm = 4;
+
+	/// the outline of a device on the folio as the layout sees it: its real
+	/// size from the insertion point, turned with it; its drawing when it
+	/// has no size
+QRectF footprintOf(Element *e, double k)
+{
+	const DiagramContext i = e->elementInformations();
+	const double w = infoNumber(i, QStringLiteral("width_mm")), h = infoNumber(i, QStringLiteral("height_mm"));
+	if (w <= 0 || h <= 0 || k <= 0) return e->sceneBoundingRect();
+	QTransform t;
+	t.translate(e->scenePos().x(), e->scenePos().y());
+	t.rotate(e->rotation());
+	return t.mapRect(QRectF(0, 0, w / k, h / k));
+}
 }
 
 /**
@@ -240,14 +257,16 @@ QPointF PanelLayout::railSnap(Diagram *diagram, Element *element)
 		const double k = data.mm_per_unit > 0 ? data.mm_per_unit : 1;
 			//the footprint from the device's size, as the layout sees it
 		const DiagramContext info = element->elementInformations();
-		const double w = infoNumber(info, QStringLiteral("width_mm")), h = infoNumber(info, QStringLiteral("height_mm"));
-		if (w > 0 && h > 0) {
-			QTransform t;
-			t.translate(element->scenePos().x(), element->scenePos().y());
-			t.rotate(element->rotation());
-			box = t.mapRect(QRectF(0, 0, w / k, h / k));
+		box = footprintOf(element, k);
+		const double near = 25 / k, catch_start = 15 / k, flush = kFlushCatchMm / k;
+			//the other devices on this surface, by their footprint
+		QList<QRectF> others;
+		for (QGraphicsItem *item : diagram->items()) {
+			auto *other = dynamic_cast<Element *>(item);
+			if (!other || other == element || other->parentItem()) continue;
+			const QRectF ob = footprintOf(other, k);
+			if (plate.contains(ob.center())) others << ob;
 		}
-		const double near = 25 / k, catch_x = 15 / k;
 			//the rail: horizontal, under the device or just beside it
 		QRectF rail;
 		double best = 1e300;
@@ -267,27 +286,17 @@ QPointF PanelLayout::railSnap(Diagram *diagram, Element *element)
 				// no rail: a device hung onto another one (a contactor under its
 				// motor starter) -- only a pair the combination list allows,
 				// at the place the list gives
-			auto footprint = [k](Element *e) {
-				const DiagramContext i = e->elementInformations();
-				const double ew = infoNumber(i, QStringLiteral("width_mm")), eh = infoNumber(i, QStringLiteral("height_mm"));
-				if (ew <= 0 || eh <= 0) return QRectF();
-				QTransform t;
-				t.translate(e->scenePos().x(), e->scenePos().y());
-				t.rotate(e->rotation());
-				return t.mapRect(QRectF(0, 0, ew / k, eh / k));
-			};
 			const QString own = info.value(QStringLiteral("manufacturer_reference")).toString().trimmed();
-			if (own.isEmpty()) return QPointF();
 			const double catch_place = 20 / k;
 			QPointF best_move;
 			double best_d = 1e300;
 			for (QGraphicsItem *item : diagram->items()) {
+				if (own.isEmpty()) break;
 				auto *other = dynamic_cast<Element *>(item);
 				if (!other || other == element || other->parentItem()) continue;
-				const QRectF ob = footprint(other);
-				if (ob.isNull()) continue;
 				const QString theirs = other->elementInformations().value(QStringLiteral("manufacturer_reference")).toString().trimmed();
 				if (theirs.isEmpty()) continue;
+				const QRectF ob = footprintOf(other, k);
 				for (const DeviceCombination &c : deviceCombinations()) {
 					QPointF target;   // the top left corner the moved device goes to
 					const double dx = c.dx_mm / k, dy = c.dy_mm / k;
@@ -309,34 +318,77 @@ QPointF PanelLayout::railSnap(Diagram *diagram, Element *element)
 					if (d <= catch_place && d < best_d) {best_d = d; best_move = move;}
 				}
 			}
-			return best_move;
+			if (best_d < 1e300) return best_move;
+				// free on the surface: within 4 mm of a free edge of a
+				// neighbouring device or a duct it goes flush against it,
+				// and lines up with a device when their edges are that close too
+			QList<QRectF> blocks = others;
+			for (QGraphicsItem *item : diagram->items())
+				if (auto *shape = dynamic_cast<QetShapeItem *>(item)) {
+					const PanelData::Role role = shape->panelData().role;
+					const QRectF r = sceneRectOf(shape);
+					if ((role == PanelData::Duct || role == PanelData::CProfile) && plate.contains(r.center()))
+						blocks << r;
+				}
+			double fx = 0, fy = 0, nx = flush, ny = flush;
+			bool abut_x = false, abut_y = false;
+			auto take = [](double d, double &out, double &nearest) {
+				if (qAbs(d) > nearest) return false;
+				nearest = qAbs(d);
+				out = d;
+				return true;
+			};
+			for (const QRectF &ob : std::as_const(blocks)) {
+				const bool beside = box.top() < ob.bottom() && box.bottom() > ob.top();
+				const bool above = box.left() < ob.right() && box.right() > ob.left();
+				if (beside) {
+					abut_x |= take(ob.right() - box.left(), fx, nx);
+					abut_x |= take(ob.left() - box.right(), fx, nx);
+				}
+				if (above) {
+					abut_y |= take(ob.bottom() - box.top(), fy, ny);
+					abut_y |= take(ob.top() - box.bottom(), fy, ny);
+				}
+			}
+				// beside a device: its top or bottom edge as well; above or
+				// below it: its left or right side
+			const auto same = [](double a, double b) {return qAbs(a - b) < 1e-6;};
+			for (const QRectF &ob : std::as_const(others)) {
+				const QRectF moved = box.translated(fx, fy);
+				if (abut_x && !abut_y && (same(moved.left(), ob.right()) || same(moved.right(), ob.left()))) {
+					take(ob.top() - box.top(), fy, ny);
+					take(ob.bottom() - box.bottom(), fy, ny);
+				}
+				if (abut_y && !abut_x && (same(moved.top(), ob.bottom()) || same(moved.bottom(), ob.top()))) {
+					take(ob.left() - box.left(), fx, nx);
+					take(ob.right() - box.right(), fx, nx);
+				}
+			}
+				// never onto another part: then it stays where it was dropped
+			const QRectF placed = box.translated(fx, fy).adjusted(0.01, 0.01, -0.01, -0.01);
+			for (const QRectF &ob : std::as_const(blocks))
+				if (placed.intersects(ob)) return QPointF();
+			return QPointF(fx, fy);
 		}
+			//across the rail: the device's clip on the rail's centre line --
+			//EPLAN's middle offset says how far the rail centre lies below
+			//the device centre; without it the device centre
 		const double offset = infoNumber(info, QStringLiteral("middle_offset_mm")) / k;
 		const double dy = rail.center().y() - offset - box.center().y();
-			//sideways: against the nearest neighbour on the rail, or its start
-		double dx = 0, nearest = catch_x;
-		auto consider = [&](double target_edge, double own_edge) {
+			//along the rail: flush against a neighbour on the rail within
+			//4 mm, or onto the rail's start
+		double dx = 0, nearest = 1e300;
+		auto consider = [&](double target_edge, double own_edge, double within) {
 			const double d = target_edge - own_edge;
-			if (qAbs(d) < nearest) {nearest = qAbs(d); dx = d;}
+			if (qAbs(d) <= within && qAbs(d) < nearest) {nearest = qAbs(d); dx = d;}
 		};
-		consider(rail.left() + 5 / k, box.left());
+		consider(rail.left() + 5 / k, box.left(), catch_start);
 		QList<QRectF> neighbours;
-		for (QGraphicsItem *item : diagram->items()) {
-			auto *other = dynamic_cast<Element *>(item);
-			if (!other || other == element || other->parentItem()) continue;
-			QRectF ob = other->sceneBoundingRect();
-			const DiagramContext oi = other->elementInformations();
-			const double ow = infoNumber(oi, QStringLiteral("width_mm")), oh = infoNumber(oi, QStringLiteral("height_mm"));
-			if (ow > 0 && oh > 0) {
-				QTransform t;
-				t.translate(other->scenePos().x(), other->scenePos().y());
-				t.rotate(other->rotation());
-				ob = t.mapRect(QRectF(0, 0, ow / k, oh / k));
-			}
+		for (const QRectF &ob : std::as_const(others)) {
 			if (!ob.intersects(rail)) continue;
 			neighbours << ob;
-			consider(ob.right(), box.left());    // to the right of it
-			consider(ob.left(), box.right());    // to the left of it
+			consider(ob.right(), box.left(), flush);    // to the right of it
+			consider(ob.left(), box.right(), flush);    // to the left of it
 		}
 			// never on top of a neighbour: to the nearer free side of it
 		for (int round = 0; round < 8; ++round) {
@@ -351,6 +403,26 @@ QPointF PanelLayout::railSnap(Diagram *diagram, Element *element)
 		return QPointF(dx, dy);
 	}
 	return QPointF();
+}
+
+PanelLayout::DeviceTag PanelLayout::deviceTag(Element *element)
+{
+	DeviceTag t;
+	if (!element) return t;
+	if (Diagram *folio = element->diagram()) {
+		t.plant = folio->border_and_titleblock.plant().trimmed();
+		t.location = folio->border_and_titleblock.locmach().trimmed();
+	}
+	if (t.plant.startsWith(QLatin1Char('='))) t.plant.remove(0, 1);
+	if (t.location.startsWith(QLatin1Char('+'))) t.location.remove(0, 1);
+	static const QRegularExpression re(QStringLiteral("^(?:=([^+\\-]+))?(?:\\+([^\\-]+))?(-.*)?$"));
+	const QString label = element->actualLabel().trimmed();
+	const QRegularExpressionMatch m = re.match(label);
+	if (!m.hasMatch()) {t.bmk = label; return t;}
+	if (!m.captured(1).isEmpty()) t.plant = m.captured(1);
+	if (!m.captured(2).isEmpty()) t.location = m.captured(2);
+	t.bmk = m.captured(3);
+	return t;
 }
 
 QString PanelLayout::name() const
@@ -519,6 +591,7 @@ void PanelLayout::collect()
 		d.width_mm = infoNumber(info, QStringLiteral("width_mm"));
 		d.height_mm = infoNumber(info, QStringLiteral("height_mm"));
 		d.depth_mm = infoNumber(info, QStringLiteral("depth_mm"));
+		d.snap_height_mm = infoNumber(info, QStringLiteral("snap_height_mm"));
 		d.step_file = info.value(QStringLiteral("step_file")).toString();
 			// no model named: the one of its order number in the 3D folder
 		for (const QString &a : info.value(QStringLiteral("accessories")).toString().split(QRegularExpression(QStringLiteral("[;,\n]")), Qt::SkipEmptyParts))

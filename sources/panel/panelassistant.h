@@ -35,7 +35,9 @@ class QetShapeItem;
 /**
 	@brief The check list of the cabinet layout as a side panel: every
 	finding of every surface of the folio (parts lying on each other, in a
-	duct, beyond the surface, without holes, terminal strips too short).
+	duct, beyond the surface, without holes, terminal strips too short,
+	cable ducts filled to 70 % and more, an enclosure that needs cooling),
+	with the climate and the duct fill of the mounting plate as grey notes.
 	A click selects the part and shows it; the list follows each change.
 */
 class PanelCheckDock : public QDockWidget

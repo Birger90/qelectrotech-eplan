@@ -198,6 +198,11 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
   machbar wie jede Form.
 - *Geräte aus dem Schaltplan platzieren*: jedes Gerät wird ein Rechteck in echter Größe (Vignette, nicht in der
   Stückliste), auf die Hutschienen gerastet, mit dem Bohrbild seines Artikels.
+- Ein gezogenes Gerät sitzt mit seinem Einrastpunkt (EPLAN-Mittenversatz, sonst Gerätemitte) auf der Schienenmitte und
+  rastet bis 4 mm bündig an die freie Kante eines Nachbarn an, auf der Schiene oder frei auf der Platte (Umschalt: frei).
+- *Klimaberechnung…* (Flächen nach IEC/TR 60890, Verlustleistung `power_loss_w` aus dem EDZ-Import, nötiger Lüfter
+  oder Kühlgerät) und der Kanalfüllgrad der Schaltplan-Leitungen auf dem kürzesten Weg durch die Kanäle (Befund ab
+  70 %, farbig in *Kanalfüllgrad anzeigen*) stehen auch in der Aufbauprüfung; Formeln und Quellen in `FORMELN.md`.
 - Geräte erscheinen mit der Herstellergrafik (Schaltschrankaufbau) aus dem EPLAN Data Portal (über die
   Bestellnummer, zwischengespeichert in Dokumente\panel-templates\devices); sie liefert auch die Maße.
 - Montagevarianten je Artikel (`<drillingpatterns>`): auf der Hutschiene keine Bohrung, geschraubt das Bohrbild; der
@@ -216,10 +221,12 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
   - Zubehör (`accessories`, `artikel_N` am Schaltplan-Gerät) wird mit eingebaut, z. B. die ET-200SP-BaseUnit unter
     ihrem Modul; Klemmenleisten zeigen jede Klemme der QElectroTech-Klemmenleiste mit ihrem Modell.
   - Kanäle ohne Modell als geschlitzte Kanäle mit Deckel. Export als glTF (`.glb`) für jeden 3D-Betrachter.
+  - Dunkler, verlaufender Hintergrund, Haupt- und Fülllicht mit Glanz, Boden mit weichem Kontaktschatten, Kanten an
+    den Quadern, 4-fache Kantenglättung; Ansichtsknöpfe (Iso, Vorne, Oben, Links, Rechts, Einpassen) im Bild.
 - `bohrbilder.csv` in Firmen- oder Benutzersammlung: Bohrungen, Gewinde und Ausschnitte für Teile ohne Bohrbild
   (Bestellnummer mit Platzhaltern, Maße von der Gerätemitte, Quelle je Zeile – Werte aus Datenblättern).
 - Skript-API: `setShapePanel`, `shapePanel`, `panelReport`, `exportPanelDxf`, `stepInfo`, `exportPanel3D`,
-  `addPanelGrid`.
+  `renderPanel3D` (Bild), `addPanelGrid`, `panelClimate`, `panelDuctFill`.
 
 ## EPLAN-Projekte und eingebauter Assistent
 

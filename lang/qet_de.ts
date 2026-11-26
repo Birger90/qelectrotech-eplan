@@ -14703,18 +14703,6 @@ Ignoriert: %3</translation>
         <translation>3D-Ansicht des Schaltschrankaufbaus</translation>
     </message>
     <message>
-        <source>Front</source>
-        <translation>Vorne</translation>
-    </message>
-    <message>
-        <source>Top</source>
-        <translation>Oben</translation>
-    </message>
-    <message>
-        <source>Isometric</source>
-        <translation>Isometrisch</translation>
-    </message>
-    <message>
         <source>Refresh</source>
         <translation>Aktualisieren</translation>
     </message>
@@ -14742,16 +14730,16 @@ Ignoriert: %3</translation>
         <source>This folio has no mounting surface. Draw a rectangle and give it the role &quot;Mounting surface&quot; (Cabinet layout &gt; Manufacturing data).</source>
         <translation>Dieses Blatt hat keine Montagefläche. Rechteck zeichnen und ihm die Rolle „Montagefläche“ geben (Schaltschrankaufbau &gt; Fertigungsdaten).</translation>
     </message>
-    <message numerus="yes">
-        <source>%n bodies. Drag: turn, right drag: move, wheel: zoom, click: select on the folio.</source>
-        <translation>
-            <numerusform>%n Körper. Ziehen: drehen, rechts ziehen: verschieben, Rad: zoomen, Klick: auf dem Blatt wählen.</numerusform>
-            <numerusform>%n Körper. Ziehen: drehen, rechts ziehen: verschieben, Rad: zoomen, Klick: auf dem Blatt wählen.</numerusform>
-        </translation>
-    </message>
     <message>
         <source>(built without STEP support)</source>
         <translation>(ohne STEP-Unterstützung gebaut)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n bodies; a click selects the part on the folio.</source>
+        <translation>
+            <numerusform>%n Körper; ein Klick wählt das Teil auf dem Blatt aus.</numerusform>
+            <numerusform>%n Körper; ein Klick wählt das Teil auf dem Blatt aus.</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -14759,6 +14747,58 @@ Ignoriert: %3</translation>
     <message>
         <source>OpenGL is not available on this computer.</source>
         <translation>OpenGL ist auf diesem Rechner nicht verfügbar.</translation>
+    </message>
+    <message>
+        <source>Iso</source>
+        <translation>Iso</translation>
+    </message>
+    <message>
+        <source>Isometric view</source>
+        <translation>Isometrische Ansicht</translation>
+    </message>
+    <message>
+        <source>Front</source>
+        <translation>Vorne</translation>
+    </message>
+    <message>
+        <source>View from the front</source>
+        <translation>Ansicht von vorn</translation>
+    </message>
+    <message>
+        <source>Top</source>
+        <translation>Oben</translation>
+    </message>
+    <message>
+        <source>View from above</source>
+        <translation>Ansicht von oben</translation>
+    </message>
+    <message>
+        <source>Left</source>
+        <translation>Links</translation>
+    </message>
+    <message>
+        <source>View from the left</source>
+        <translation>Ansicht von links</translation>
+    </message>
+    <message>
+        <source>Right</source>
+        <translation>Rechts</translation>
+    </message>
+    <message>
+        <source>View from the right</source>
+        <translation>Ansicht von rechts</translation>
+    </message>
+    <message>
+        <source>Fit</source>
+        <translation>Einpassen</translation>
+    </message>
+    <message>
+        <source>Show the whole scene</source>
+        <translation>Die ganze Szene zeigen</translation>
+    </message>
+    <message>
+        <source>Drag: turn · right drag: move · wheel: zoom · click: select</source>
+        <translation>Ziehen: drehen · Rechts ziehen: verschieben · Rad: zoomen · Klick: auswählen</translation>
     </message>
 </context>
 <context>
@@ -14924,6 +14964,224 @@ Ignoriert: %3</translation>
     <message>
         <source>No findings: the layout is fine.</source>
         <translation>Keine Befunde: der Aufbau ist in Ordnung.</translation>
+    </message>
+</context>
+<context>
+    <name>PanelClimate</name>
+    <message>
+        <source>1 single enclosure, free on all sides</source>
+        <translation>1 Einzelschrank, allseitig frei</translation>
+    </message>
+    <message>
+        <source>2 single enclosure against a wall</source>
+        <translation>2 Einzelschrank an der Wand</translation>
+    </message>
+    <message>
+        <source>3 first or last of a row, free-standing</source>
+        <translation>3 Anfangs- oder Endschrank einer Reihe, freistehend</translation>
+    </message>
+    <message>
+        <source>4 first or last of a row, against a wall</source>
+        <translation>4 Anfangs- oder Endschrank einer Reihe, an der Wand</translation>
+    </message>
+    <message>
+        <source>5 middle of a row, free-standing</source>
+        <translation>5 Mittelschrank einer Reihe, freistehend</translation>
+    </message>
+    <message>
+        <source>6 middle of a row, against a wall</source>
+        <translation>6 Mittelschrank einer Reihe, an der Wand</translation>
+    </message>
+    <message>
+        <source>7 middle of a row, against a wall, roof covered</source>
+        <translation>7 Mittelschrank an der Wand, Dach abgedeckt</translation>
+    </message>
+    <message>
+        <source>layout</source>
+        <translation>Aufbau</translation>
+    </message>
+    <message>
+        <source>schematic</source>
+        <translation>Schaltplan</translation>
+    </message>
+</context>
+<context>
+    <name>PanelClimateDialog</name>
+    <message>
+        <source>Climate calculation</source>
+        <translation>Klimaberechnung</translation>
+    </message>
+    <message>
+        <source>How the enclosure stands: which of its sides give off heat (IEC/TR 60890)</source>
+        <translation>Wie der Schrank steht: welche Seiten Wärme abgeben (IEC/TR 60890)</translation>
+    </message>
+    <message>
+        <source>The warmest air allowed inside, from the devices' data (often 35 to 40 °C)</source>
+        <translation>Die wärmste zulässige Luft im Schrank, aus den Gerätedaten (oft 35 bis 40 °C)</translation>
+    </message>
+    <message>
+        <source>Sheet steel, painted</source>
+        <translation>Stahlblech, lackiert</translation>
+    </message>
+    <message>
+        <source>Stainless steel</source>
+        <translation>Edelstahl</translation>
+    </message>
+    <message>
+        <source>Aluminium</source>
+        <translation>Aluminium</translation>
+    </message>
+    <message>
+        <source>Aluminium, double-walled</source>
+        <translation>Aluminium, doppelwandig</translation>
+    </message>
+    <message>
+        <source>Plastic</source>
+        <translation>Kunststoff</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation>Anderer Wert</translation>
+    </message>
+    <message>
+        <source>The share of the power loss that is there at the same time (1: all devices at full load)</source>
+        <translation>Anteil der Verlustleistung, der gleichzeitig anfällt (1: alle Geräte unter Volllast)</translation>
+    </message>
+    <message>
+        <source>Power loss not in the device data: wiring, busbars, devices not on the layout</source>
+        <translation>Verlustleistung außerhalb der Gerätedaten: Verdrahtung, Sammelschienen, Geräte nicht im Aufbau</translation>
+    </message>
+    <message>
+        <source>from the enclosure</source>
+        <translation>vom Schrank</translation>
+    </message>
+    <message>
+        <source>Enclosure</source>
+        <translation>Schrank</translation>
+    </message>
+    <message>
+        <source>Installation</source>
+        <translation>Aufstellung</translation>
+    </message>
+    <message>
+        <source>Wall</source>
+        <translation>Wand</translation>
+    </message>
+    <message>
+        <source>Width</source>
+        <translation>Breite</translation>
+    </message>
+    <message>
+        <source>Height</source>
+        <translation>Höhe</translation>
+    </message>
+    <message>
+        <source>Depth</source>
+        <translation>Tiefe</translation>
+    </message>
+    <message>
+        <source>Ambient temperature</source>
+        <translation>Umgebungstemperatur</translation>
+    </message>
+    <message>
+        <source>Inside temperature allowed</source>
+        <translation>Zulässige Innentemperatur</translation>
+    </message>
+    <message>
+        <source>Simultaneity factor</source>
+        <translation>Gleichzeitigkeitsfaktor</translation>
+    </message>
+    <message>
+        <source>Further power loss</source>
+        <translation>Weitere Verlustleistung</translation>
+    </message>
+    <message>
+        <source>Device</source>
+        <translation>Gerät</translation>
+    </message>
+    <message>
+        <source>Part</source>
+        <translation>Artikel</translation>
+    </message>
+    <message>
+        <source>Power loss W</source>
+        <translation>Verlustleistung W</translation>
+    </message>
+    <message>
+        <source>From</source>
+        <translation>Herkunft</translation>
+    </message>
+    <message>
+        <source>Power loss of each device (EPLAN: max. power dissipation); a value typed here is kept by the device on the layout</source>
+        <translation>Verlustleistung je Gerät (EPLAN: Max. Verlustleistung); ein hier eingetragener Wert bleibt am Gerät im Aufbau</translation>
+    </message>
+    <message>
+        <source>Guide values for an even power loss and mixed air inside (IEC/TR 60890 surface factors, k·A·ΔT through the walls); formulas and sources in FORMELN.md.</source>
+        <translation>Richtwerte für gleichmäßig verteilte Verlustleistung und durchmischte Innenluft (Flächenfaktoren nach IEC/TR 60890, k·A·ΔT über die Wände); Formeln und Quellen in FORMELN.md.</translation>
+    </message>
+    <message>
+        <source>(no enclosure on the folio: size estimated from the plate)</source>
+        <translation>(kein Schrank auf dem Blatt: Größe aus der Platte geschätzt)</translation>
+    </message>
+    <message>
+        <source>Power loss of the devices</source>
+        <translation>Verlustleistung der Geräte</translation>
+    </message>
+    <message>
+        <source>Devices without power loss data</source>
+        <translation>Geräte ohne Verlustleistung</translation>
+    </message>
+    <message>
+        <source>Power loss counted P</source>
+        <translation>Gerechnete Verlustleistung P</translation>
+    </message>
+    <message>
+        <source>Effective surface A&lt;sub&gt;e&lt;/sub&gt;</source>
+        <translation>Wirksame Oberfläche A&lt;sub&gt;e&lt;/sub&gt;</translation>
+    </message>
+    <message>
+        <source>Heat through the walls k·A&lt;sub&gt;e&lt;/sub&gt;</source>
+        <translation>Wärmeabgabe der Wände k·A&lt;sub&gt;e&lt;/sub&gt;</translation>
+    </message>
+    <message>
+        <source>Temperature rise ΔT = P/(k·A&lt;sub&gt;e&lt;/sub&gt;)</source>
+        <translation>Übertemperatur ΔT = P/(k·A&lt;sub&gt;e&lt;/sub&gt;)</translation>
+    </message>
+    <message>
+        <source>Inside without cooling</source>
+        <translation>Innen ohne Kühlung</translation>
+    </message>
+    <message>
+        <source>No power loss known yet: type it into the table or import the parts from the EPLAN Data Portal (EDZ).</source>
+        <translation>Noch keine Verlustleistung bekannt: in die Tabelle eintragen oder die Artikel aus dem EPLAN Data Portal (EDZ) importieren.</translation>
+    </message>
+    <message>
+        <source>No cooling needed: the walls give off the heat, %1 K below the %2 °C allowed.</source>
+        <translation>Keine Kühlung nötig: die Wände geben die Wärme ab, %1 K unter den zulässigen %2 °C.</translation>
+    </message>
+    <message>
+        <source>Cooling needed: %1 W to take away to keep %2 °C inside.</source>
+        <translation>Kühlung nötig: %1 W abführen, um innen %2 °C zu halten.</translation>
+    </message>
+    <message>
+        <source>Filter fan: at least %1 m³/h (V = 3.1 · Q / ΔT, up to 100 m above sea level)</source>
+        <translation>Filterlüfter: mindestens %1 m³/h (V = 3,1 · Q / ΔT, bis 100 m über NN)</translation>
+    </message>
+    <message>
+        <source>Air/air heat exchanger: at least %1 W/K</source>
+        <translation>Luft/Luft-Wärmetauscher: mindestens %1 W/K</translation>
+    </message>
+    <message>
+        <source>Cooling unit: at least %1 W</source>
+        <translation>Kühlgerät: mindestens %1 W</translation>
+    </message>
+    <message>
+        <source>Outside is not cooler than allowed inside: only a cooling unit helps.</source>
+        <translation>Außen ist es nicht kühler als innen zulässig: nur ein Kühlgerät hilft.</translation>
+    </message>
+    <message>
+        <source>climate calculation of %1</source>
+        <translation>Klimaberechnung von %1</translation>
     </message>
 </context>
 <context>
@@ -15784,6 +16042,37 @@ Ignoriert: %3</translation>
     <message>
         <source>Loading the 3D models...</source>
         <translation>Lade die 3D-Modelle…</translation>
+    </message>
+    <message>
+        <source>Climate calculation...</source>
+        <translation>Klimaberechnung…</translation>
+    </message>
+    <message>
+        <source>Power loss of the devices, temperature inside the enclosure and the cooling it needs (IEC/TR 60890)</source>
+        <translation>Verlustleistung der Geräte, Temperatur im Schrank und die nötige Kühlung (IEC/TR 60890)</translation>
+    </message>
+    <message>
+        <source>Duct fill view</source>
+        <translation>Kanalfüllgrad anzeigen</translation>
+    </message>
+    <message>
+        <source>Colour the cable ducts by how full the wires of the schematic make them: green, orange, red from 70 %</source>
+        <translation>Kabelkanäle nach dem Füllgrad mit den Leitungen des Schaltplans färben: grün, orange, rot ab 70 %</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n wire(s)</source>
+        <translation>
+            <numerusform>%n Leitung</numerusform>
+            <numerusform>%n Leitungen</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Climate calculation</source>
+        <translation>Klimaberechnung</translation>
+    </message>
+    <message>
+        <source>This folio has no mounting plate yet. Use &quot;Build cabinet...&quot; to start.</source>
+        <translation>Dieses Blatt hat noch keine Montageplatte. Mit „Schaltschrank aufbauen…“ beginnen.</translation>
     </message>
 </context>
 <context>

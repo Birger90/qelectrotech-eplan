@@ -3,6 +3,28 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.55.0 – 26.11.2026 – SPS-Kanäle aus Makros, Klimaberechnung, neue 3D-Ansicht
+
+- **SPS-Kanäle aus dem EPLAN-Makro:** Der Bauteil-Import liest je Anschluss die Funktionsdefinition (A1381/A1382/
+  A1383), Datentyp, Kanal und Adresse (P20405/P20407/P20400) und schreibt daraus die Kanaltabelle des Moduls; die
+  bisherigen Regeln greifen nur noch ohne Makrodaten. Über alle 175 EDZ der Firmensammlung: 568 Kanäle in 28 Modulen
+  (WAGO 750, ET 200SP, 7KM, SINAMICS G120C), vorher 2 Tabellen, beide verschoben.
+- **Bearbeitete Symbole bleiben:** Importierte Elemente tragen einen Fingerabdruck. Ein erneuter Import überschreibt
+  nur unveränderte Dateien und behält dabei UUID, Namen, Artikelinfos und Anschluss-UUIDs; bearbeitete oder fremde
+  Dateien nur mit `--import-eplan … --force`.
+- **Einrasten:** Geräte sitzen mit ihrem Mittenversatz auf der Hutschiene und rasten bis 4 mm bündig an Nachbarn
+  an, auch frei auf der Platte (an Geräten, Kanälen, C-Profilen); in 3D mit Aufklipshöhe.
+- **Klimaberechnung** (Schaltschrankaufbau > *Klimaberechnung…*, vereinfacht nach IEC/TR 60890): Verlustleistung je
+  Gerät (`power_loss_w`, aus EDZ-Eigenschaft 22074 oder von Hand), Aufstellart, Außen-/Innentemperatur; ΔT, nötige
+  Lüfter-, Wärmetauscher- oder Kühlleistung. Befund in Aufbauprüfung und *Plan prüfen*, Skript `panelClimate`.
+- **Kanalfüllgrad:** Leitungen aus den Netzen des Schaltplans über die Kanäle verlegt (Spannbaum, kürzester Weg),
+  Aderquerschnitt gegen Kanalquerschnitt; Befund ab 70 %, farbige Anzeige (*Kanalfüllgrad anzeigen*), Skript
+  `panelDuctFill`.
+- **3D-Ansicht modernisiert:** dunkler Verlauf, Haupt- und Fülllicht mit Glanz, Kontaktschatten am Boden, Kanten,
+  Kantenglättung, Ansichtsknöpfe und Bedienhinweis im Bild; Skript `renderPanel3D` für PNG-Bilder.
+- Runde Aufbauten (nur Kreise, z. B. 3SU1-Taster) ergaben eine leere Elementdatei.
+- Formeln in `FORMELN.md`. Ideen aus OpenECraft (MIT/Apache-2.0).
+
 ## 1.54.1 – 26.11.2026 – Vollständige Grafik aus EPLAN-Makros
 
 - **Makro-Schaltbilder komplett:** Der `.ema`-Leser übernimmt jetzt auch Linien (O31), Ellipsenbögen (O32),

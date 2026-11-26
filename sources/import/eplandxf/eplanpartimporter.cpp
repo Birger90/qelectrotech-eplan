@@ -17,6 +17,7 @@
 */
 #include "eplanpartimporter.h"
 
+#include "../elementfingerprint.h"
 #include "../plcchannels.h"
 
 #include "../../container/miniz/miniz.h"
@@ -128,14 +129,14 @@ namespace {
 		return true;
 	}
 
-	bool writeElement(const QDomDocument &doc, const QString &path, QString *error)
+	bool writeElement(const QDomDocument &doc, const QString &path, QString *error, int indent)
 	{
 		QFile file(path);
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
 			*error = QStringLiteral("Cannot write %1").arg(path);
 			return false;
 		}
-		file.write(doc.toString(4).toUtf8());
+		file.write(doc.toString(indent).toUtf8());
 		return true;
 	}
 
@@ -425,9 +426,7 @@ QMap<QString, QString> EplanPartImporter::packageInfo(const QString &path, QStri
 bool EplanPartImporter::importPackage(const QString &path, const QString &category,
 				      const QString &collection_dir)
 {
-	m_written.clear();
-	m_messages.clear();
-	m_error.clear();
+	clear();
 
 	Files files;
 	QList<Article> articles;
@@ -503,14 +502,15 @@ bool EplanPartImporter::importPackage(const QString &path, const QString &catego
 			{QStringLiteral("designation"), type},
 			{QStringLiteral("description"), descr},
 			{QStringLiteral("label"), QLatin1Char('-') + codeLetters(reader.deviceTag())}};
-		const QDomDocument doc = EplanElementBuilder::build(
+		QDomDocument doc = EplanElementBuilder::build(
 			data, {{QStringLiteral("de"), name}, {QStringLiteral("en"), name}}, info);
 		const QString out = QDir(folder).filePath(safe(name) + QStringLiteral(".elmt"));
-		if (!writeElement(doc, out, &m_error)) return false;
-		m_written << out;
-		m_messages << QStringLiteral("%1: %2 terminals").arg(name).arg(data.pins.size());
+		const Stored stored = store(doc, out);
+		if (stored == Stored::Failed) return false;
+		if (stored == Stored::Written)
+			m_messages << QStringLiteral("%1: %2 terminals").arg(name).arg(data.pins.size());
 	}
-	if (m_written.isEmpty()) {
+	if (m_written.isEmpty() && m_kept.isEmpty()) {
 		m_error = QStringLiteral("No element could be built from the package");
 		return false;
 	}
@@ -526,9 +526,7 @@ bool EplanPartImporter::importDxf(const QString &dxf_path, const QString &edz_pa
 				  const QString &manufacturer, const QString &category,
 				  const QString &type, const QString &collection_dir)
 {
-	m_written.clear();
-	m_messages.clear();
-	m_error.clear();
+	clear();
 
 	QFile f(dxf_path);
 	if (!f.open(QIODevice::ReadOnly)) {
@@ -580,9 +578,10 @@ bool EplanPartImporter::importDxf(const QString &dxf_path, const QString &edz_pa
 			data, {{QStringLiteral("de"), element_name}, {QStringLiteral("en"), element_name}}, info);
 		if (has_part) part.appendMountingData(doc);
 		const QString out = QDir(folder).filePath(safe(element_name) + QStringLiteral(".elmt"));
-		if (!writeElement(doc, out, &m_error)) return false;
-		m_written << out;
-		m_messages << QStringLiteral("%1: %2 terminals").arg(element_name).arg(data.pins.size());
+		const Stored stored = store(doc, out);
+		if (stored == Stored::Failed) return false;
+		if (stored == Stored::Written)
+			m_messages << QStringLiteral("%1: %2 terminals").arg(element_name).arg(data.pins.size());
 		return true;
 	};
 
@@ -653,7 +652,7 @@ bool EplanPartImporter::importDxf(const QString &dxf_path, const QString &edz_pa
 		}
 		if (!write(data, partName(type, data.pins))) return false;
 	}
-	if (m_written.isEmpty()) {
+	if (m_written.isEmpty() && m_kept.isEmpty()) {
 		m_error = QStringLiteral("No black-box part of the DXF has connection points");
 		return false;
 	}
@@ -672,9 +671,7 @@ bool EplanPartImporter::importDwg(const QString &dwg_path, const QString &wspak_
 				  const QString &manufacturer, const QString &category,
 				  const QString &type, const QString &collection_dir)
 {
-	m_written.clear();
-	m_messages.clear();
-	m_error.clear();
+	clear();
 
 	QFile f(dwg_path);
 	if (!f.open(QIODevice::ReadOnly)) {
@@ -728,12 +725,13 @@ bool EplanPartImporter::importDwg(const QString &dwg_path, const QString &wspak_
 
 	QString folder;
 	if (!ensureDirs(collection_dir, {maker, category, type_nr}, &folder, &m_error)) return false;
-	const QDomDocument doc = EplanElementBuilder::build(
+	QDomDocument doc = EplanElementBuilder::build(
 		data, {{QStringLiteral("de"), element_name}, {QStringLiteral("en"), element_name}}, info);
 	const QString out = QDir(folder).filePath(safe(element_name) + QStringLiteral(".elmt"));
-	if (!writeElement(doc, out, &m_error)) return false;
-	m_written << out;
-	m_messages << QStringLiteral("%1: %2 terminals").arg(element_name).arg(data.pins.size());
+	const Stored stored = store(doc, out);
+	if (stored == Stored::Failed) return false;
+	if (stored == Stored::Written)
+		m_messages << QStringLiteral("%1: %2 terminals").arg(element_name).arg(data.pins.size());
 	return finish();
 }
 
@@ -747,17 +745,17 @@ bool EplanPartImporter::importEdz(const QString &edz_path, const QString &manufa
 				  const QString &category, const QString &type,
 				  const QString &collection_dir)
 {
-	m_written.clear();
-	m_messages.clear();
-	m_error.clear();
+	clear();
 	QString folder;
 	if (!ensureDirs(collection_dir, {manufacturer, category, type}, &folder, &m_error)) return false;
 	EdzImporter importer;
-	if (!importer.importToDirectory(edz_path, folder)) {
+	QDomDocument generic;
+	QString generic_name;
+	if (!importer.build(edz_path, &generic, &generic_name)) {
 		m_error = importer.errorString();
 		return false;
 	}
-	m_written << importer.writtenPath();
+	if (store(generic, QDir(folder).filePath(generic_name), 0) == Stored::Failed) return false;
 
 	// The EDZ may carry the manufacturer's EPLAN macro: its schematic is the
 	// symbol the manufacturer draws, next to the generic one built from the
@@ -826,12 +824,14 @@ bool EplanPartImporter::importEdz(const QString &edz_path, const QString &manufa
 					data, {{QStringLiteral("de"), element_name}, {QStringLiteral("en"), element_name}}, info);
 				if (has_part) part.appendMountingData(doc);
 				const QString out = QDir(folder).filePath(safe(element_name) + QStringLiteral(".elmt"));
-				if (!writeElement(doc, out, &m_error)) return false;
-				m_written << out;
-				m_messages << QStringLiteral("%1: panel layout from the EPLAN macro (%2 lines)")
-						      .arg(element_name).arg(data.lines.size());
-				if (!layout.skipped().isEmpty())
-					m_messages << QStringLiteral("not taken over: %1").arg(layout.skipped().join(QStringLiteral(", ")));
+				const Stored stored = store(doc, out);
+				if (stored == Stored::Failed) return false;
+				if (stored == Stored::Written) {
+					m_messages << QStringLiteral("%1: panel layout from the EPLAN macro (%2 lines)")
+							      .arg(element_name).arg(data.lines.size());
+					if (!layout.skipped().isEmpty())
+						m_messages << QStringLiteral("not taken over: %1").arg(layout.skipped().join(QStringLiteral(", ")));
+				}
 			}
 		}
 		// every multi-line variant: A is the device as a whole and keeps the
@@ -863,15 +863,73 @@ bool EplanPartImporter::importEdz(const QString &edz_path, const QString &manufa
 			QDomDocument doc = EplanElementBuilder::build(
 				data, {{QStringLiteral("de"), element_name}, {QStringLiteral("en"), element_name}}, info);
 			if (has_part) part.appendMountingData(doc);
+			// the channels the macro defines (a single one is a channel macro
+			// or a signalling contact, not an I/O module)
+			const QVector<PlcChannels::Channel> channels =
+				PlcChannels::fromMacro(data.pins, EplanElementBuilder::terminalNames(data.pins));
+			if (channels.size() >= 2) PlcChannels::setChannels(doc, channels);
 			const QString out = QDir(folder).filePath(safe(element_name) + QStringLiteral(".elmt"));
-			if (!writeElement(doc, out, &m_error)) return false;
-			m_written << out;
+			const Stored stored = store(doc, out);
+			if (stored == Stored::Failed) return false;
+			if (stored == Stored::Kept) continue;
+			m_from_macro.removeAll(out);
 			m_messages << QStringLiteral("%1: %2 terminals from the EPLAN macro").arg(element_name).arg(data.pins.size());
+			if (channels.size() >= 2) {
+				m_from_macro << out;
+				m_messages << QStringLiteral("%1: PLC module with %2 channels (%3..%4) from the EPLAN macro")
+						      .arg(QFileInfo(out).fileName()).arg(channels.size())
+						      .arg(channels.first().name, channels.last().name);
+			}
 			if (!reader.skipped().isEmpty())
 				m_messages << QStringLiteral("not taken over: %1").arg(reader.skipped().join(QStringLiteral(", ")));
 		}
 	}
 	return finish();
+}
+
+void EplanPartImporter::clear()
+{
+	m_written.clear();
+	m_kept.clear();
+	m_from_macro.clear();
+	m_messages.clear();
+	m_error.clear();
+}
+
+/**
+	Writes @p doc to @p path with its fingerprint. An existing file is
+	overwritten only while it is as the import wrote it, or when forced;
+	its uuids, names and element information are kept (ElementFingerprint).
+*/
+EplanPartImporter::Stored EplanPartImporter::store(QDomDocument &doc, const QString &path, int indent)
+{
+	// a drawing the builder could not turn into an element: no empty file
+	if (doc.documentElement().isNull()) {
+		m_messages << QStringLiteral("nothing to draw, not written: %1").arg(QDir::toNativeSeparators(path));
+		return Stored::Kept;
+	}
+	QFile existing(path);
+	if (existing.exists()) {
+		QDomDocument old;
+		const bool parsed = existing.open(QIODevice::ReadOnly) && old.setContent(&existing);
+		existing.close();
+		const ElementFingerprint::State state = parsed ? ElementFingerprint::state(old) : ElementFingerprint::Missing;
+		if (state != ElementFingerprint::Unedited && !m_force) {
+			if (!m_kept.contains(path)) {
+				m_kept << path;
+				m_messages << (state == ElementFingerprint::Edited
+					? QStringLiteral("edited, not overwritten: %1")
+					: QStringLiteral("not from this import (no fingerprint), not overwritten: %1"))
+						      .arg(QDir::toNativeSeparators(path));
+			}
+			return Stored::Kept;
+		}
+		if (parsed) ElementFingerprint::keepIdentity(doc, old);
+	}
+	ElementFingerprint::stamp(doc);
+	if (!writeElement(doc, path, &m_error, indent)) return Stored::Failed;
+	m_written << path;
+	return Stored::Written;
 }
 
 /**
@@ -881,6 +939,6 @@ bool EplanPartImporter::importEdz(const QString &edz_path, const QString &manufa
 */
 bool EplanPartImporter::finish()
 {
-	m_messages << PlcChannels::applyToFolders(m_written);
+	m_messages << PlcChannels::applyToFolders(m_written, m_from_macro);
 	return true;
 }

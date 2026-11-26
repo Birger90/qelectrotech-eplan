@@ -18,6 +18,7 @@
 #ifndef EPLANPARTIMPORTER_H
 #define EPLANPARTIMPORTER_H
 
+#include <QDomDocument>
 #include <QMap>
 #include <QString>
 #include <QStringList>
@@ -63,14 +64,30 @@ class EplanPartImporter
 							  QString *error = nullptr,
 							  const QString &macro = QString());
 
+		/**
+			An element file that already exists is overwritten only while it
+			is as the import wrote it (ElementFingerprint); one edited since,
+			or one without fingerprint, is kept and named in messages() and
+			keptPaths(). @p force overwrites it all the same. Either way the
+			uuids, names and element information of the old file stay.
+		*/
+		void setForce(bool force) { m_force = force; }
 		QStringList writtenPaths() const { return m_written; }
+		/// existing elements left as they are (edited since their import)
+		QStringList keptPaths() const { return m_kept; }
 		QStringList messages() const { return m_messages; }
 		QString errorString() const { return m_error; }
 
 	private:
+		enum class Stored { Written, Kept, Failed };
+		Stored store(QDomDocument &doc, const QString &path, int indent = 4);
+		void clear();
 		bool finish();
 
+		bool m_force = false;
 		QStringList m_written;
+		QStringList m_kept;
+		QStringList m_from_macro;	///< elements with the channel table of their EPLAN macro
 		QStringList m_messages;
 		QString m_error;
 };

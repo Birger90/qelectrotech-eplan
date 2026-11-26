@@ -150,6 +150,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/import/eplandxf/eplanmacroreader.h
   ${QET_DIR}/sources/import/eplandxf/eplanimportdialog.cpp
   ${QET_DIR}/sources/import/eplandxf/eplanimportdialog.h
+  ${QET_DIR}/sources/import/elementfingerprint.cpp
+  ${QET_DIR}/sources/import/elementfingerprint.h
   ${QET_DIR}/sources/import/plcchannels.cpp
   ${QET_DIR}/sources/import/plcchannels.h
   ${QET_DIR}/sources/plc/tiaplctags.cpp

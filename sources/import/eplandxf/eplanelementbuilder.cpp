@@ -132,23 +132,29 @@ namespace {
 	struct HLine { double y, x1, x2; };
 }
 
+QStringList EplanElementBuilder::terminalNames(const QVector<EplanDxfPin> &pins)
+{
+	// QET wants unique terminal names; EPLAN repeats them (both sides of a
+	// feed-through terminal, channels named after their function only):
+	// repeated names are numbered "1.1", "1.2"
+	QHash<QString, int> total, seen;
+	for (const EplanDxfPin &p : pins) ++total[p.name];
+	QStringList out;
+	for (const EplanDxfPin &p : pins)
+		out << (total.value(p.name) > 1 ? QStringLiteral("%1.%2").arg(p.name).arg(++seen[p.name]) : p.name);
+	return out;
+}
+
 QDomDocument EplanElementBuilder::build(const EplanSymbolData &data,
 					const QMap<QString, QString> &names,
 					const QVector<QPair<QString, QString>> &info)
 {
 	const double S = data.scale;  // px per mm of the drawing (EPLAN: 8 mm grid -> 20 px, QET grid 10 px)
 	QDomDocument doc;
-	// QET wants unique terminal names; EPLAN repeats them (both sides of a
-	// feed-through terminal, channels named after their function only):
-	// repeated names are numbered "1.1", "1.2"
 	QVector<EplanDxfPin> pins = data.pins;
 	{
-		QHash<QString, int> total, seen;
-		for (const EplanDxfPin &p : std::as_const(pins)) ++total[p.name];
-		for (EplanDxfPin &p : pins) {
-			if (total.value(p.name) > 1)
-				p.name = QStringLiteral("%1.%2").arg(p.name).arg(++seen[p.name]);
-		}
+		const QStringList unique = terminalNames(pins);
+		for (int i = 0; i < pins.size(); ++i) pins[i].name = unique.at(i);
 	}
 	// the first terminal is the grid reference; a drawing without terminals
 	// (overview, panel layout) is referenced at its top left corner
@@ -162,6 +168,14 @@ QDomDocument EplanElementBuilder::build(const EplanSymbolData &data,
 		for (const QLineF &l : data.lines) {
 			ox = qMin(ox, qMin(l.x1(), l.x2()));
 			oy = qMax(oy, qMax(l.y1(), l.y2()));
+		}
+	} else if (!data.circles.isEmpty()) {
+		// a front view of round parts only (push buttons, lamps)
+		ox = data.circles.first().first.x() - data.circles.first().second;
+		oy = data.circles.first().first.y() + data.circles.first().second;
+		for (const auto &c : data.circles) {
+			ox = qMin(ox, c.first.x() - c.second);
+			oy = qMax(oy, c.first.y() + c.second);
 		}
 	} else {
 		return doc;
@@ -195,6 +209,10 @@ QDomDocument EplanElementBuilder::build(const EplanSymbolData &data,
 	for (const auto &c : data.circles) {
 		const double r = c.second;
 		const QPointF a = T(c.first + QPointF(-r, r));
+		if (data.lines.isEmpty()) {  // round parts only: the circles span the drawing
+			xs << a.x() << a.x() + 2 * r * S;
+			ys << a.y() << a.y() + 2 * r * S;
+		}
 		QDomElement e = doc.createElement(QStringLiteral("ellipse"));
 		e.setAttribute(QStringLiteral("x"), num(a.x()));
 		e.setAttribute(QStringLiteral("y"), num(a.y()));

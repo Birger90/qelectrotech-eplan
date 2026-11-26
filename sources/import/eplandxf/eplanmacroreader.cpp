@@ -248,6 +248,77 @@ namespace {
 		return true;
 	}
 
+	/**
+		The PLC data of a connection point (O17) from its function
+		definition: category A1381 300 is a PLC connection, group A1382 1 or
+		99 a channel with kind A1383 2 DI, 3 DQ, 4 AI, 5 AQ; groups 2 and 3
+		are supply and reference terminals. The channel name comes from the
+		macro's own text where it agrees with the kind ("DI1", "AI 0+",
+		"DO 0 NC"), else from the address ("DQx.1") or the channel property
+		P20407 ("3", "Channel 3"), numbered as the macro numbers it.
+	*/
+	EplanPlcPoint plcPoint(const QDomElement &e, const QDomElement &props, const QString &name,
+			       const QString &description)
+	{
+		EplanPlcPoint p;
+		if (e.attribute(QStringLiteral("A1381")) != QLatin1String("300")) return p;
+		p.key = props.attribute(QStringLiteral("P20407")).trimmed();
+		p.data_type = props.attribute(QStringLiteral("P20405")).trimmed();
+		p.address = props.attribute(QStringLiteral("P20400")).trimmed();
+		p.function_text = language(props.attribute(QStringLiteral("P20011"))).trimmed();
+
+		static const QRegularExpression label(QStringLiteral("^(DI|DQ|DO|AI|AQ|AO)\\s*(\\d+)(?!\\d)"),
+						      QRegularExpression::CaseInsensitiveOption);
+		static const QRegularExpression strict(QStringLiteral("^(DI|DQ|DO|AI|AQ|AO)\\s*(\\d+)$"),
+						       QRegularExpression::CaseInsensitiveOption);
+		auto isInput = [](const QString &prefix) { return prefix.endsWith(QLatin1Char('I')); };
+		auto isAnalog = [](const QString &prefix) { return prefix.startsWith(QLatin1Char('A')); };
+
+		const QString group = e.attribute(QStringLiteral("A1382"));
+		const int kind = QStringList {QStringLiteral("2"), QStringLiteral("3"), QStringLiteral("4"), QStringLiteral("5")}
+					 .indexOf(e.attribute(QStringLiteral("A1383")));
+		const bool channel_group = group == QLatin1String("1") || group == QLatin1String("99");
+		const auto own = strict.match(description.trimmed());
+		if (channel_group && kind >= 0) {
+			p.input = kind == 0 || kind == 2;
+			p.analog = kind >= 2;
+		} else if (own.hasMatch()) {
+			// a channel the macro files under another group ("DI2" as a supply)
+			const QString prefix = own.captured(1).toUpper();
+			p.input = isInput(prefix);
+			p.analog = isAnalog(prefix);
+		} else {
+			p.role = channel_group ? EplanPlcPoint::Part
+				: group == QLatin1String("2") || group == QLatin1String("3") ? EplanPlcPoint::Supply
+											     : EplanPlcPoint::None;
+			return p;
+		}
+		p.role = EplanPlcPoint::Signal;
+
+		// the macro's name of the channel, unless it contradicts the kind
+		for (const QString &s : {description, name}) {
+			const auto m = label.match(s.trimmed());
+			if (!m.hasMatch()) continue;
+			const QString prefix = m.captured(1).toUpper();
+			if (isInput(prefix) != p.input || isAnalog(prefix) != p.analog) continue;
+			p.number = m.captured(2).toInt();
+			p.channel = prefix + QString::number(p.number);
+			return p;
+		}
+		static const QRegularExpression address(QStringLiteral("^(?:DI|DQ|AI|AQ)x?\\.(\\d+)$"),
+							QRegularExpression::CaseInsensitiveOption);
+		static const QRegularExpression channel(QStringLiteral("^(?:(?:Channel|Ch\\.?)\\s*)?(\\d+)\\b"),
+							QRegularExpression::CaseInsensitiveOption);
+		auto m = address.match(p.address);
+		if (!m.hasMatch()) m = channel.match(p.key);
+		if (m.hasMatch()) {
+			p.number = m.captured(1).toInt();
+			p.channel = QString(QLatin1Char(p.analog ? 'A' : 'D')) + QLatin1Char(p.input ? 'I' : 'Q')
+				    + QString::number(p.number);
+		}
+		return p;
+	}
+
 	/// draws what an instance (O144, S144x5) places: the drawing O5 named by R9
 	void addInstance(EplanSymbolData &sym, const QDomElement &e, const Frame &parent,
 			 const QHash<QString, QDomElement> &drawings, QMap<QString, int> &skipped, int depth = 0)
@@ -420,6 +491,7 @@ bool EplanMacroReader::read(const QString &path, int index)
 						}
 					}
 				}
+				pin.plc = plcPoint(e, props, pin.name, language(e.attribute(QStringLiteral("A186"))));
 				m_symbol.pins << pin;
 				// EPLAN's connection point: a small circle the wire ends at
 				m_symbol.circles << qMakePair(pos, 1.0);

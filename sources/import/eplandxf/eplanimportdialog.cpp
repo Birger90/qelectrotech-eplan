@@ -411,8 +411,10 @@ void EplanImportDialog::runImport()
 		return;
 	}
 	m_written = importer.writtenPaths();
+	// all of them may be kept, edited since an earlier import
+	const QString folder = (m_written.isEmpty() ? importer.keptPaths() : m_written).value(0);
 	QString text = tr("%n element(s) imported into\n%1", "", int(m_written.size()))
-			       .arg(QDir::toNativeSeparators(QFileInfo(m_written.first()).absolutePath()));
+			       .arg(QDir::toNativeSeparators(QFileInfo(folder).absolutePath()));
 	if (!importer.messages().isEmpty())
 		text += QStringLiteral("\n\n") + importer.messages().join(QLatin1Char('\n'));
 	QET::QetMessageBox::information(this, tr("Part import"), text);

@@ -18,6 +18,8 @@
 #ifndef PLCCHANNELS_H
 #define PLCCHANNELS_H
 
+#include "eplandxf/eplandxfreader.h"
+
 #include <QDomDocument>
 #include <QStringList>
 #include <QVector>
@@ -36,6 +38,10 @@
 
 	The same rules as tools/sps/sps_kanaele.py, which brings an existing
 	collection up to date.
+
+	An EPLAN macro names its channels itself (function definition and PLC
+	properties of each connection point, EplanPlcPoint): where it does,
+	that table is used instead of the rules.
 */
 namespace PlcChannels
 {
@@ -48,6 +54,15 @@ namespace PlcChannels
 	/// the channels of an element; empty without channel texts
 	QVector<Channel> fromElement(const QDomDocument &element);
 
+	/**
+		The channels an EPLAN macro defines for @p pins: per channel its
+		signal terminals, then the other terminals of the same channel
+		(P20407) and its supply terminals, four at most.
+		@param terminal_names the names the element gives the pins
+		(EplanElementBuilder::terminalNames())
+	*/
+	QVector<Channel> fromMacro(const QVector<EplanDxfPin> &pins, const QStringList &terminal_names);
+
 	/// makes @p element a PLC module with @p channels; false if it
 	/// already is exactly that
 	bool setChannels(QDomDocument &element, const QVector<Channel> &channels);
@@ -57,9 +72,14 @@ namespace PlcChannels
 		the element with the most channels (at least two) goes into every
 		element of that folder that has all channel terminals (overview,
 		device picture, black box), except mounting layouts and slaves.
+		Elements in @p from_macro already hold the table of their macro
+		and are left as they are; their tables, joined, come before the
+		rules. Only elements the import wrote and nobody edited since
+		(ElementFingerprint) are changed.
 		@return one line per element changed
 	*/
-	QStringList applyToFolders(const QStringList &written_paths);
+	QStringList applyToFolders(const QStringList &written_paths,
+				   const QStringList &from_macro = QStringList());
 }
 
 #endif // PLCCHANNELS_H

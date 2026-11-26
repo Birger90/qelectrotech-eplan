@@ -422,7 +422,7 @@ void DataPortalDialog::importPackage(const QByteArray &data, const QString &file
 		m_written << importer.writtenPaths();
 		m_report << tr("%1: %n element(s) in %2", "", int(importer.writtenPaths().size()))
 				    .arg(m_current.order_number,
-					 QDir::toNativeSeparators(QFileInfo(importer.writtenPaths().first()).absolutePath()));
+					 QDir::toNativeSeparators(QFileInfo((importer.writtenPaths() + importer.keptPaths()).value(0)).absolutePath()));
 	} else {
 		m_report << tr("%1: the import failed: %2").arg(m_current.order_number, importer.errorString());
 	}

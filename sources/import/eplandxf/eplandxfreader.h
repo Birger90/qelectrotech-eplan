@@ -43,6 +43,30 @@ struct EplanDxfText
 };
 
 /**
+	@brief What an EPLAN macro says about a connection point of a PLC: its
+	function definition (category 300, groups and kinds A1382/A1383) and
+	PLC properties (P20405, P20407, P20400). Empty for DXF data.
+*/
+struct EplanPlcPoint
+{
+	enum Role {
+		None,
+		Signal,   ///< the DI, DQ, AI or AQ terminal of a channel
+		Part,     ///< another terminal of a PLC connection, e.g. "U-" of an analog input
+		Supply    ///< a supply or reference terminal (L+, M, 24V, 0V)
+	};
+	Role role = None;
+	bool input = true;     ///< Signal: input (DI, AI) or output (DQ, AQ)
+	bool analog = false;   ///< Signal: AI or AQ
+	QString channel;       ///< Signal: channel name, e.g. "DI1", "AQ0"; empty when the macro numbers none
+	int number = -1;       ///< Signal: channel number, -1 when unknown
+	QString key;           ///< P20407 as written; the terminals of one channel share it
+	QString data_type;     ///< P20405, e.g. "BOOL", "WORD"
+	QString address;       ///< P20400, e.g. "DIx.0"
+	QString function_text; ///< P20011
+};
+
+/**
 	@brief A connection point found from EPLAN attributes.
 */
 struct EplanDxfPin
@@ -50,6 +74,7 @@ struct EplanDxfPin
 	QPointF pos;
 	QString name;         ///< terminal designation, e.g. "X10:1" or "L(+)"
 	QString function;     ///< connection description, e.g. "DI a.0"
+	EplanPlcPoint plc;    ///< PLC channel data of an EPLAN macro
 };
 
 /**

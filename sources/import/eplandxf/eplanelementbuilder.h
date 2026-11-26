@@ -22,6 +22,7 @@
 
 #include <QDomDocument>
 #include <QMap>
+#include <QStringList>
 
 /**
 	@brief The drawing of one symbol, in EPLAN drawing coordinates (mm, y up).
@@ -55,6 +56,9 @@ class EplanElementBuilder
 		static QDomDocument build(const EplanSymbolData &data,
 					  const QMap<QString, QString> &names,
 					  const QVector<QPair<QString, QString>> &info);
+		/// the names build() gives the terminals of @p pins, in their order:
+		/// repeated names numbered "1.1", "1.2"
+		static QStringList terminalNames(const QVector<EplanDxfPin> &pins);
 };
 
 #endif // EPLANELEMENTBUILDER_H

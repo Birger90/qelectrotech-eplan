@@ -2762,9 +2762,12 @@ int run(const QStringList &args)
 	if (format == "importeplan") {
 		QStringList positional;
 		QHash<QString, QString> opts;
+		bool force = false;
 		for (int i = 0; i < rest.size(); ++i) {
 			const QString &a = rest.at(i);
-			if (a.startsWith("--") && i + 1 < rest.size())
+			if (a == "--force")
+				force = true;
+			else if (a.startsWith("--") && i + 1 < rest.size())
 				opts.insert(a.mid(2), rest.at(++i));
 			else
 				positional << a;
@@ -2772,10 +2775,13 @@ int run(const QStringList &args)
 		if (positional.size() < 2) {
 			err << "Usage: qelectrotech --import-eplan <package.zip | folder | file.dxf | file.dwg> "
 			       "<collection_dir> [--category C] [--manufacturer M --type T] [--edz part.edz] "
-			       "[--wspak part.wspak]\n";
+			       "[--wspak part.wspak] [--force]\n"
+			       "  --force  also overwrite elements edited since their import\n";
 			return 2;
 		}
 		EplanPartImporter importer;
+		// elements edited since their import are kept unless forced
+		importer.setForce(force);
 		const QString source = positional.at(0);
 		const QString suffix = QFileInfo(source).suffix();
 		const bool single_dxf = suffix.compare("dxf", Qt::CaseInsensitive) == 0;
@@ -2810,6 +2816,8 @@ int run(const QStringList &args)
 			out << m << "\n";
 		for (const QString &p : importer.writtenPaths())
 			out << "-> " << QDir::toNativeSeparators(p) << "\n";
+		if (!importer.keptPaths().isEmpty())
+			out << importer.keptPaths().size() << " element(s) kept as they are; --force overwrites them\n";
 		out.flush();
 		if (!ok) {
 			err << source << ": " << importer.errorString() << "\n";

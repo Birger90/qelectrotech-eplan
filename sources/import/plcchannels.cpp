@@ -17,9 +17,12 @@
 */
 #include "plcchannels.h"
 
+#include "elementfingerprint.h"
+
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QHash>
 #include <QRegularExpression>
 #include <QSet>
 #include <QTextStream>
@@ -165,6 +168,57 @@ QVector<PlcChannels::Channel> PlcChannels::fromElement(const QDomDocument &eleme
 	return out;
 }
 
+QVector<PlcChannels::Channel> PlcChannels::fromMacro(const QVector<EplanDxfPin> &pins,
+						      const QStringList &terminal_names)
+{
+	struct Found { QString prefix; QString key; Channel channel; };
+	QVector<Found> found;
+	QHash<QString, int> by_name;
+	for (int i = 0; i < pins.size() && i < terminal_names.size(); ++i) {
+		const EplanPlcPoint &p = pins.at(i).plc;
+		if (p.role != EplanPlcPoint::Signal || p.channel.isEmpty()) continue;
+		const int at = by_name.value(p.channel, -1);
+		if (at >= 0) {
+			// one channel on several terminals (U+ and I+ of an analog
+			// input, NC, NO and COM of a relay output); a second channel of
+			// the same name the macro numbers apart is a slip of the macro
+			if (found.at(at).key == p.key) found[at].channel.terminals << terminal_names.at(i);
+			continue;
+		}
+		by_name.insert(p.channel, found.size());
+		const QString prefix = QString(p.channel).remove(QRegularExpression(QStringLiteral("\\d+$")));
+		const QString type = p.analog ? (p.input ? QStringLiteral("entree_analogique") : QStringLiteral("sortie_analogique"))
+					      : (p.input ? QStringLiteral("entree_digitale") : QStringLiteral("sortie_digitale"));
+		found.append({prefix, p.key, Channel{type, p.channel, {terminal_names.at(i)}}});
+	}
+
+	// the other terminals of a channel share its key, when no other channel has it
+	QHash<QString, int> by_key, users;
+	for (int k = 0; k < found.size(); ++k) {
+		if (found.at(k).key.isEmpty()) continue;
+		by_key.insert(found.at(k).key, k);
+		++users[found.at(k).key];
+	}
+	for (const EplanPlcPoint::Role role : {EplanPlcPoint::Part, EplanPlcPoint::Supply}) {
+		for (int i = 0; i < pins.size() && i < terminal_names.size(); ++i) {
+			const EplanPlcPoint &p = pins.at(i).plc;
+			if (p.role != role || p.key.isEmpty() || users.value(p.key) != 1) continue;
+			Channel &c = found[by_key.value(p.key)].channel;
+			if (c.terminals.size() < 4) c.terminals << terminal_names.at(i);
+		}
+	}
+	for (Found &f : found)
+		while (f.channel.terminals.size() > 4) f.channel.terminals.removeLast();
+
+	std::stable_sort(found.begin(), found.end(), [](const Found &a, const Found &b) {
+		return a.prefix != b.prefix ? a.prefix < b.prefix
+					    : channelNumber(a.channel.name) < channelNumber(b.channel.name);
+	});
+	QVector<Channel> out;
+	for (const Found &f : std::as_const(found)) out << f.channel;
+	return out;
+}
+
 bool PlcChannels::setChannels(QDomDocument &element, const QVector<Channel> &channels)
 {
 	QDomElement defn = element.documentElement();
@@ -224,14 +278,17 @@ bool PlcChannels::setChannels(QDomDocument &element, const QVector<Channel> &cha
 	return true;
 }
 
-QStringList PlcChannels::applyToFolders(const QStringList &written_paths)
+QStringList PlcChannels::applyToFolders(const QStringList &written_paths, const QStringList &from_macro)
 {
 	QStringList report;
 	QSet<QString> folders;
 	for (const QString &p : written_paths)
 		if (p.endsWith(QStringLiteral(".elmt"), Qt::CaseInsensitive))
 			folders.insert(QFileInfo(p).absolutePath());
+	QSet<QString> fixed;
+	for (const QString &p : from_macro) fixed.insert(QFileInfo(p).absoluteFilePath());
 
+	struct Table { QVector<Channel> channels; QString source; };
 	for (const QString &folder : std::as_const(folders)) {
 		const QDir dir(folder);
 		const QStringList files = dir.entryList({QStringLiteral("*.elmt")}, QDir::Files, QDir::Name);
@@ -252,27 +309,81 @@ QStringList PlcChannels::applyToFolders(const QStringList &written_paths)
 				source = d.first;
 			}
 		}
-		// a single "DO1" is a signalling contact, not an I/O module
-		if (table.size() < 2) continue;
 
-		QSet<QString> needed;
-		for (const Channel &c : std::as_const(table))
-			for (const QString &t : c.terminals) needed.insert(t);
+		// the tables of the macros, largest first, and all of them joined
+		// (a 16-channel module drawn in two halves of eight)
+		QVector<Table> tables;
+		for (const auto &d : std::as_const(docs)) {
+			if (!fixed.contains(QFileInfo(dir.filePath(d.first)).absoluteFilePath())) continue;
+			Table t{{}, d.first};
+			const QDomElement ios = d.second.documentElement().firstChildElement(QStringLiteral("kindInformations"))
+							.firstChildElement(QStringLiteral("plcMasterData")).firstChildElement(QStringLiteral("plcIOs"));
+			for (QDomElement io = ios.firstChildElement(QStringLiteral("plcIO")); !io.isNull();
+			     io = io.nextSiblingElement(QStringLiteral("plcIO"))) {
+				Channel c{io.attribute(QStringLiteral("type")), io.attribute(QStringLiteral("address")), {}};
+				for (QDomElement te = io.firstChildElement(QStringLiteral("terminal")); !te.isNull();
+				     te = te.nextSiblingElement(QStringLiteral("terminal")))
+					c.terminals << te.text();
+				t.channels << c;
+			}
+			if (t.channels.size() >= 2) tables << t;
+		}
+		std::stable_sort(tables.begin(), tables.end(), [](const Table &a, const Table &b) {
+			return a.channels.size() > b.channels.size();
+		});
+		if (tables.size() > 1) {
+			QVector<Channel> joined;
+			QHash<QString, QStringList> seen;
+			bool consistent = true;
+			for (const Table &t : std::as_const(tables))
+				for (const Channel &c : t.channels) {
+					if (!seen.contains(c.name)) {
+						seen.insert(c.name, c.terminals);
+						joined << c;
+					} else if (seen.value(c.name) != c.terminals) {
+						consistent = false;
+					}
+				}
+			if (consistent && joined.size() > tables.first().channels.size()) {
+				std::stable_sort(joined.begin(), joined.end(), [](const Channel &a, const Channel &b) {
+					const QString pa = QString(a.name).remove(QRegularExpression(QStringLiteral("\\d+$")));
+					const QString pb = QString(b.name).remove(QRegularExpression(QStringLiteral("\\d+$")));
+					return pa != pb ? pa < pb : channelNumber(a.name) < channelNumber(b.name);
+				});
+				tables.prepend({joined, QStringLiteral("the EPLAN macro")});
+			}
+		}
+		// a single "DO1" is a signalling contact, not an I/O module
+		if (table.size() >= 2) tables << Table{table, source};
+		if (tables.isEmpty()) continue;
 
 		for (auto &d : docs) {
 			const QString link = d.second.documentElement().attribute(QStringLiteral("link_type"));
 			if (d.first.contains(QStringLiteral("_Aufbau"))
-			    || (link != QLatin1String("simple") && link != QLatin1String("master")))
+			    || (link != QLatin1String("simple") && link != QLatin1String("master"))
+			    || fixed.contains(QFileInfo(dir.filePath(d.first)).absoluteFilePath())
+			    || ElementFingerprint::state(d.second) != ElementFingerprint::Unedited)
 				continue;
 			QSet<QString> has;
 			for (const Spot &t : terminals(d.second)) has.insert(t.text);
-			if (!has.contains(needed)) continue;
-			if (!setChannels(d.second, table)) continue;
+			const Table *use = nullptr;
+			for (const Table &t : std::as_const(tables)) {
+				QSet<QString> needed;
+				for (const Channel &c : t.channels)
+					for (const QString &n : c.terminals) needed.insert(n);
+				if (has.contains(needed)) {
+					use = &t;
+					break;
+				}
+			}
+			if (!use || !setChannels(d.second, use->channels)) continue;
+			ElementFingerprint::stamp(d.second);
 			QFile file(dir.filePath(d.first));
 			if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) continue;
 			file.write(d.second.toByteArray(4));
 			report << QStringLiteral("%1: PLC module with %2 channels (%3..%4) from %5")
-				.arg(d.first).arg(table.size()).arg(table.first().name, table.last().name, source);
+				.arg(d.first).arg(use->channels.size())
+				.arg(use->channels.first().name, use->channels.last().name, use->source);
 		}
 	}
 	return report;

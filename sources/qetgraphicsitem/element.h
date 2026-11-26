@@ -290,6 +290,13 @@ class Element : public QetGraphicsItem
 		QTransform symbolTextsTransform() const;
 		void updateSymbolPictures(bool force = false);
 		void keepReadable(QGraphicsItem *child) const;
+			/// The drawing the element shows while a simulation runs (a cylinder whose piston
+			/// moved, a valve whose spool moved), in place of its own; a null picture gives
+			/// the own drawing back. Display only: never saved, printed from the folio as shown.
+		void setSimulationPicture(const QPicture &picture);
+		bool hasSimulationPicture() const {return !m_simulation_picture.isNull();}
+			/// what the symbol's texts get to stay readable (identity when nothing)
+		QTransform readableTransform() const {return m_readable_transform;}
 
 			//METHODS related to texts
 		void addDynamicTextItem(DynamicElementTextItem *deti = nullptr);
@@ -487,6 +494,9 @@ class Element : public QetGraphicsItem
 	QPicture m_readable_picture;
 	QPicture m_readable_low_zoom_picture;
 	QTransform m_readable_transform;
+		/// see setSimulationPicture(); m_simulation_rect: what it covers
+	QPicture m_simulation_picture;
+	QRectF m_simulation_rect;
 		/// What the drawings cover beyond the symbol's frame, if
 		/// anything: see boundingRect()
 	QRectF m_drawn_rect;

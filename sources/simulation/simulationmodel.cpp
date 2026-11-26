@@ -4229,15 +4229,22 @@ QList<SimulationModel::CylinderState> SimulationModel::cylinders() const
 	QList<CylinderState> out;
 	for (Cylinder *z : m_cylinders)
 		out << CylinderState{z->e, z->label, z->rotary ? z->x * 180.0 / M_PI : z->x * 1000.0,
-							 z->rotary ? z->stroke * 180.0 / M_PI : z->stroke * 1000.0, z->v};
+							 z->rotary ? z->stroke * 180.0 / M_PI : z->stroke * 1000.0, z->v, z->rotary};
 	return out;
 }
 
 QList<SimulationModel::ValveState> SimulationModel::valveStates() const
 {
 	QList<ValveState> out;
-	for (Valve *v : m_valves)
-		out << ValveState{v->e, v->label, v->position + 1, static_cast<int>(v->positions.size())};
+	for (Valve *v : m_valves) {
+		// the spool moves on with the opening of the new position (same first-order law as the flow, FORMELN.md V01)
+		double spool = v->position;
+		if (v->switch_at >= 0 && v->target != v->position && v->switch_at > v->switch_start) {
+			const double opened = qBound(0.0, 1.0 - std::exp(-3.0 * (m_time - v->switch_start) / (v->switch_at - v->switch_start)), 1.0);
+			spool = v->position + (v->target - v->position) * opened;
+		}
+		out << ValveState{v->e, v->label, v->position + 1, static_cast<int>(v->positions.size()), v->rest + 1, spool};
+	}
 	return out;
 }
 

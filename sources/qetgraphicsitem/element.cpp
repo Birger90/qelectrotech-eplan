@@ -835,7 +835,11 @@ void Element::paint(
 	const QPicture &picture = readable ? m_readable_picture : m_picture;
 	const QPicture &low_zoom_picture = readable ? m_readable_low_zoom_picture
 												: m_low_zoom_picture;
-	if (options && options->levelOfDetailFromTransform(painter->worldTransform()) < 0.5)
+	if (!m_simulation_picture.isNull())
+	{
+		painter->drawPicture(0, 0, m_simulation_picture);
+	}
+	else if (options && options->levelOfDetailFromTransform(painter->worldTransform()) < 0.5)
 	{
 		if (!low_zoom_picture.isNull())
 			painter->drawPicture(0, 0, low_zoom_picture);
@@ -972,7 +976,28 @@ QRectF Element::boundingRect() const
 {
 	const QRectF frame(QPointF(-hotspot_coord.x(), -hotspot_coord.y()),
 					   dimensions);
-	return m_drawn_rect.isNull() ? frame : frame.united(m_drawn_rect);
+	const QRectF drawn = m_drawn_rect.isNull() ? frame : frame.united(m_drawn_rect);
+	return m_simulation_rect.isNull() ? drawn : drawn.united(m_simulation_rect);
+}
+
+/**
+	@brief Element::setSimulationPicture
+	Show @p picture in place of the symbol's drawing while a simulation
+	runs; a null picture shows the symbol's own drawing again. Nothing of
+	the element changes: its definition, terminals and texts stay.
+*/
+void Element::setSimulationPicture(const QPicture &picture)
+{
+	const QRectF rect = picture.isNull() || !picture.boundingRect().isValid()
+			? QRectF()
+			: QRectF(picture.boundingRect()).adjusted(-1, -1, 1, 1);
+	if (rect != m_simulation_rect)
+	{
+		prepareGeometryChange();
+		m_simulation_rect = rect;
+	}
+	m_simulation_picture = picture;
+	update();
 }
 
 /**

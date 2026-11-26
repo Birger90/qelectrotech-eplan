@@ -5,7 +5,9 @@ Betätigung, Kennwerte) und der elektrischen Steuerung.
 
 - **In QET:** Menü *Anzeige → Simulation*. *Start* rechnet in Echtzeit (oder Zeitlupe). Leitungen unter Druck werden
   blau (Luft) bzw. rot (Öl) eingefärbt, stromführende Drähte rot; neben Zylindern stehen Weg und Richtung, neben
-  Wegeventilen die Stellung. Taster und Ventile bedient man im Fenster (Knopf gedrückt halten) oder direkt im
+  Wegeventilen die Stellung. Wie in FluidSIM bewegen sich die Symbole: Kolben und Stange fahren mit dem Hub aus und
+  ein (auch im gedrehten Symbol), die Felder der Wegeventile verschieben sich unter den Anschlüssen, sodass die aktive
+  Stellung an den Leitungen steht – beim Umschalten anteilig. Taster und Ventile bedient man im Fenster (Knopf gedrückt halten) oder direkt im
   Plan: Maustaste auf dem Taster gedrückt halten; auf einem Wegeventil betätigt ein Klick in die linke bzw. rechte
   Hälfte diese Seite (Handhilfsbetätigung). *Stopp* entfernt die Anzeige; das Projekt wird nicht verändert.
 - **Ohne Oberfläche:** `QElectroTech --simulate plan.qet --event "0.2 -SF1 an" --event "0.3 -SF1 aus"

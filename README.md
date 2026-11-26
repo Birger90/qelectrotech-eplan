@@ -231,7 +231,10 @@
 >   FluidSIM parts added in 1.47.0: proportional valve MPYE (Festo flow characteristic), pneumatic timers, delay valves,
 >   preset counter, two-hand control block, vacuum efficiency valve; 1.48.0: step modules TAA/TAB and muscle with guide cylinders.
 >   Lines under pressure turn blue/red, live wires red, active steps get a token; buttons and valves are operated in
->   the window or by clicking the symbol; a live list shows the PLC and GRAFCET variables.
+>   the window or by clicking the symbol; a live list shows the PLC and GRAFCET variables. As in FluidSIM the symbols
+>   move (1.54.0): piston and rod of a cylinder travel with the stroke, also in a turned symbol, and the fields of a
+>   directional valve slide under the ports, part way while the spool switches. Only the display changes; after
+>   *Stop* the plan is as before.
 > - Headless: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv out.csv --png folder`.
 >   `--simulate-reference` checks the simulation core against analytical solutions, OpenModelica runs (motion and
 >   pressures) and test projects run end to end; invalid data and computing faults stop a run with a message.

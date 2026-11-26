@@ -277,6 +277,26 @@ QPicture ElementPictureFactory::pictureFromDefinition(const QDomElement &definit
 	return picture;
 }
 
+QPicture ElementPictureFactory::pictureFromDescription(const QDomElement &description,
+													   const QTransform &texts_transform)
+{
+	QPicture picture;
+	QPainter painter(&picture);
+	painter.setRenderHint(QPainter::Antialiasing, true);
+	painter.setRenderHint(QPainter::TextAntialiasing, true);
+	primitives primitives_;
+	m_build_texts_undo = texts_transform.inverted();
+	for (QDomElement part = description.firstChildElement() ; !part.isNull() ;
+	     part = part.nextSiblingElement()) {
+		if (part.tagName() != QLatin1String("plc_table"))
+			parseElement(part, painter, primitives_);
+	}
+	m_build_texts_undo = QTransform();
+	painter.end();
+	qDeleteAll(primitives_.m_texts);
+	return picture;
+}
+
 /**
 	@brief ElementPictureFactory::build
 	Build the picture from location.

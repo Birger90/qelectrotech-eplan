@@ -64,8 +64,10 @@ class SimulationModel
 {
 	public:
 		struct Message { double time; QString text; };
-		struct CylinderState { Element *element; QString label; double x_mm; double stroke_mm; double v; };
-		struct ValveState { Element *element; QString label; int position; int positions; };
+		struct CylinderState { Element *element; QString label; double x_mm; double stroke_mm; double v; bool rotary = false; };
+			/// position 1-based; rest 1-based (initial position); spool: where the spool stands, 0-based
+			/// and fractional while it switches (0.4: from position 1 on the way to position 2)
+		struct ValveState { Element *element; QString label; int position; int positions; int rest = 1; double spool = 0; };
 			/// a measurable quantity (roadmap R01): stable id, SI unit, reference and sign
 		struct Signal {
 			QString id;          ///< e.g. "p:-QM1.4", "q:-QM1.4", "x:-MM1"

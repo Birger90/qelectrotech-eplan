@@ -35,6 +35,14 @@ class SimulationModel;
 	red, stroke of the cylinders, position of the valves, relay, counter and
 	PLC states. The items are plain graphics items on top of the folio;
 	clear() removes them.
+
+	Like FluidSIM the symbols move: the piston and the rod of a cylinder
+	travel with the stroke, the fields of a directional valve slide under
+	the ports so that the active position stands at the lines (part way
+	while the spool switches). The overlay finds the piston, the rod and
+	the fields in the symbol's drawing, draws it again with these parts
+	moved and shows that picture in place of the element's own
+	(Element::setSimulationPicture()); clear() gives the own one back.
 */
 class SimulationOverlay
 {
@@ -44,8 +52,13 @@ class SimulationOverlay
 			/// @a scenes_alive false when the folios are already deleted
 		void clear(bool scenes_alive = true);
 
+			/// how a symbol moves, found once from its drawing
+		struct Pose;
+
 	private:
 		void text(Element *element, const QString &text);
+		void pose(Element *element, bool valve, double value, int rest);
+		QHash<Element *, Pose *> m_poses;
 		QHash<Conductor *, QGraphicsItem *> m_wires;
 		QHash<Element *, QGraphicsItem *> m_texts;
 		QHash<Element *, QGraphicsItem *> m_marks;     // GRAFCET: frame of an active step

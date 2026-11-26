@@ -22,6 +22,17 @@ Per MCP: `qet_simulate` (project, events, duration, pressure, csv, png_dir, at) 
 schreiben: `qet_edit` → `set_info` key `sim_program` an der SPS-Baugruppe (Master mit E/A-Tabelle).
 In QET: Anzeige → Simulation (Start/Pause/Stopp, Zeitlupe, Taster/Ventile per Maus, Liste *SPS-Variablen*).
 
+**Bewegte Symbole (seit 1.54.0, `simulationoverlay.cpp`):** Kolben und Stange fahren mit x/xMax aus, die Felder der
+Wegeventile verschieben sich um (Ruhestellung − Schieberstellung) × Feldbreite, beim Umschalten anteilig (gleiche
+Öffnungskurve wie der Durchfluss, `ValveState::spool`). Die Anzeige liest das aus der Symbolgrafik, nicht aus
+Kennwerten: Zylinder = zwei längste Wandkanten längs der Achse, Stange = Längskanten innen, die aus dem Rohr ragen,
+Kolben = Querkanten ≥ 60 % der Rohrhöhe innen; Ventil = Band zwischen den inneren Enden der Anschlussstummel,
+Feldbreite = nächste durchgehende Querkante links/rechts der Anschlüsse, die nicht durch einen Anschluss läuft
+(Pfeile tun das). Stummel und Texte bleiben stehen. Gezeichnet wird über `Element::setSimulationPicture()`, das
+Symbol selbst bleibt unverändert. Bewegt sich ein Symbol nicht, passt seine Zeichnung nicht zur Regel (z. B. Kolben
+fehlt, Felder ohne Trennlinie) – Symbol nachzeichnen, nicht die Regel aufweichen. Prüfen mit `--png … --at t` zu
+mehreren Zeitpunkten und die Bilder ansehen.
+
 ## Zuordnungen im Plan
 
 | Was | Wie |
@@ -119,6 +130,14 @@ und der Prüfstand benutzen dieselben Funktionen, sonst prüft der Prüfstand nu
 6. README (`README.md`, `README.de.md`), `tools/simulation/README.md`, `CHANGELOG-FORK.md` und diesen Skill mitziehen.
 
 ## Gelernt
+
+- **Symbole zeichnen Anschlüsse verschieden (1.54.0).** FluidSIM-Symbole führen Stummel vom Anschluss zum Feld,
+  die QET-Bibliothek setzt den Anschluss 5 px vor das Feld ohne Linie. Eine Feldsuche über die Stummel fand bei
+  QET-Ventilen nichts (5/2-Ventil blieb stehen, obwohl die Stellung wechselte). Das Band kommt deshalb aus den
+  Längskanten über den Anschlüssen. Bei neuer Symbolauswertung immer beide Sammlungen (`sim	est_5_2_zylinder.qet`,
+  `hydraulikplan.qet`) als Bild ansehen, nicht nur eine.
+- **Steuerleitungen im Symbol dehnen, nicht verschieben.** Linien von Steueranschluss 12/14 zum Betätiger bleiben
+  am Anschluss und laufen dem verschobenen Betätiger nach; sonst reißt die Steuerleitung sichtbar ab.
 
 - **Neue Physik braucht einen Fall, der sie an ihrer Grenze trifft.** Der Speicher-Referenzfall startete oberhalb
   des Vorfülldrucks und bestand; erst Laden ab 1 bar zeigte, dass der explizite Schritt beim Überschreiten der

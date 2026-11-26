@@ -268,7 +268,10 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
   FluidSIM-Bauteile seit 1.47.0: Proportionalventil MPYE (Festo-Kennlinie), pneumatische Timer, Verzögerungsventile,
   Vorwahlzähler, Zweihandsteuerblock, Vakuumsaugventil; seit 1.48.0 Taktstufen TAA/TAB und Muskel mit Führungszylindern.
   Leitungen unter Druck werden blau bzw. rot, stromführende Drähte rot, aktive Schritte bekommen eine Marke; Taster und
-  Ventile bedient man im Fenster oder per Klick auf das Symbol; eine Liste zeigt die SPS- und GRAFCET-Variablen.
+  Ventile bedient man im Fenster oder per Klick auf das Symbol; eine Liste zeigt die SPS- und GRAFCET-Variablen. Wie
+  in FluidSIM bewegen sich die Symbole (1.54.0): Kolben und Kolbenstange fahren mit dem Hub aus und ein, auch im
+  gedrehten Symbol, und die Felder der Wegeventile verschieben sich unter den Anschlüssen, beim Umschalten anteilig.
+  Nur die Anzeige ändert sich; nach *Stopp* ist der Plan wie vorher.
 - Ohne Oberfläche: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv weg.csv --png ordner`.
   `--simulate-reference` prüft den Rechenkern gegen analytische Lösungen, OpenModelica-Läufe (Weg und Drücke) und
   Testprojekte von Anfang bis Ende; ungültige Daten und Rechenfehler brechen einen Lauf mit Meldung ab.

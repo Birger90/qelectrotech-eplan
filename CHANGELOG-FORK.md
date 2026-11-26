@@ -3,6 +3,18 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.54.0 – 26.11.2026 – Bewegte Fluidsymbole in der Simulation
+
+- **Zylinder fahren im Symbol aus und ein** wie in FluidSIM: Kolben und Kolbenstange wandern mit dem simulierten
+  Hub (x/xMax), auch in gedrehten Symbolen. Kolben, Stange und freier Weg kommen aus der Symbolgrafik (Rohrwände,
+  Querkanten innen, Längskanten, die aus dem Rohr ragen).
+- **Wegeventile schalten sichtbar um:** das Stellungsfeld verschiebt sich unter den Anschlüssen, sodass die aktive
+  Stellung an den Leitungen steht; während der Schaltzeit anteilig (Öffnungsverlauf wie beim Durchfluss). Feldbreite
+  und Ruhefeld aus der Grafik, für FluidSIM-Firmensymbole (mit Anschlussstummeln) und QET-Symbole (ohne). Stummel
+  und Anschlussbuchstaben bleiben stehen, Steuerleitungen zu 12/14 dehnen sich mit.
+- Nur Anzeige: das Element zeigt während des Laufs ein eigenes Bild (`Element::setSimulationPicture`), seine
+  Definition bleibt unverändert; nach *Stopp* ist der Plan wie vorher. Gilt im Fenster und für `--simulate … --png`.
+
 ## 1.53.1 – 26.11.2026 – Funktionsvorlage Stern-Dreieck
 
 - **Motorabgang Stern-Dreieck** (`funktionsvorlagen/Motoren`): Motorschutzschalter, Netz- und Dreieckschütz

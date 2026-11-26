@@ -91,6 +91,10 @@ class ElementPictureFactory
 		ElementPictureFactory::primitives getPrimitives(const ElementsLocation &location);
 		void dropCache(const ElementsLocation &location);
 		QPicture pictureFromDefinition(const QDomElement &definition) const;
+			/// the drawing of the parts of a symbol's @p description, its texts kept readable
+			/// under @p texts_transform (see getReadablePictures()); for the simulation display
+		QPicture pictureFromDescription(const QDomElement &description,
+										const QTransform &texts_transform = QTransform());
 
 	private:
 		ElementPictureFactory() {}

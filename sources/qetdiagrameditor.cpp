@@ -60,7 +60,6 @@
 #include "ui/checkpaneldockwidget.h"
 #include "ui/toolmenu.h"
 #include "conductornumexport.h"
-#include "labellistexport.h"
 #include "diagramcommands.h"
 #include "diagramcontent.h"
 #include "diagramevent/diagrameventaddimage.h"
@@ -1637,9 +1636,9 @@ void QETDiagramEditor::setUpActions()
 	});
 
 	//Markers for the marking software of the terminal makers
-	m_export_marking = new QAction(QET::Icons::DocumentSpreadsheet, tr("Export markers..."), this);
+	m_export_marking = new QAction(QET::Icons::DocumentSpreadsheet, tr("Export labels and markers..."), this);
 	ShortcutManager::instance().registerAction(m_export_marking, "diagrameditor.export_marking", tr("Diagram editors"), QKeySequence());
-	m_export_marking->setStatusTip(tr("Wire, terminal, device and cable markers for Phoenix Contact, Weidmüller or WAGO marking software"));
+	m_export_marking->setStatusTip(tr("Wire, terminal, device and cable markers for Phoenix Contact, Weidmüller or WAGO marking software, or a label list for any label printer"));
 	connect(m_export_marking, &QAction::triggered, [this]() {
 		QETProject *project = this->currentProject();
 		if (!project) {
@@ -1672,18 +1671,8 @@ void QETDiagramEditor::setUpActions()
 			wne.toCsv();
 		}
 	});
-		//Device tags, terminal markers, cable and wire numbers, one per
-		//line, for label printer software (#1878 A7)
-	m_project_export_label_lists = new QAction(QET::Icons::DocumentSpreadsheet, tr("Export labels for printing..."), this);
-	ShortcutManager::instance().registerAction(m_project_export_label_lists, "diagrameditor.export_label_lists", tr("Diagram editors"), QKeySequence());
-	connect(m_project_export_label_lists, &QAction::triggered, [this]() {
-		QETProject *project = this->currentProject();
-		if (project)
-		{
-			LabelListExportDialog dialog(project, this);
-			dialog.exec();
-		}
-	});
+		//Fork: upstream's "Export labels for printing..." (#1878 A7) is the
+		//format "Label list" of Export labels and markers (m_export_marking)
 	// Export wiring list to CSV
 	m_project_export_wiring_list = new QAction(QET::Icons::DocumentSpreadsheet, tr("Export the wiring diagram"), this);
 	ShortcutManager::instance().registerAction(m_project_export_wiring_list, "diagrameditor.export_wiring_list", tr("Diagram editors"), QKeySequence());
@@ -2761,7 +2750,6 @@ void QETDiagramEditor::setUpMenu()
 	menu_project -> addAction(m_thm_print);
 	menu_project -> addAction(m_tia_tags);
 	menu_project -> addAction(m_project_export_conductor_num);
-	menu_project -> addAction(m_project_export_label_lists);
 	menu_project -> addAction(m_project_export_wiring_list);
 	menu_project -> addAction(m_project_wiring_list_view);
 	menu_project -> addAction(m_reports);
@@ -4546,7 +4534,6 @@ void QETDiagramEditor::slot_updateActions()
 	m_csv_export                  -> setEnabled(editable_project);
 	m_purchase_export             -> setEnabled(opened_project);
 	m_project_export_conductor_num-> setEnabled(opened_project);
-	m_project_export_label_lists  -> setEnabled(opened_project);
 	m_terminal_strip_dialog       -> setEnabled(editable_project);
 	m_project_export_wiring_list  -> setEnabled(opened_project);
 	m_project_wiring_list_view    -> setEnabled(opened_project);

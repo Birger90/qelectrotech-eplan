@@ -21,6 +21,9 @@
 #include "../qetproject.h"
 
 #include <QCoreApplication>
+#include <QStringView>
+
+#include <algorithm>
 #include <QSaveFile>
 #include <QSet>
 #include <QSqlError>
@@ -119,6 +122,35 @@ QByteArray record(const QStringList &values, const QByteArray &eol, bool latin1)
 	}
 	const QString line = quoted.join(QLatin1Char(';'));
 	return (latin1 ? line.toLatin1() : line.toUtf8()) + eol;
+}
+
+	/// Digit runs compare as numbers (2 before 10), the rest case-insensitively
+int naturalCompare(const QString &a, const QString &b)
+{
+	int i = 0, j = 0;
+	while (i < a.size() && j < b.size()) {
+		if (a[i].isDigit() && b[j].isDigit()) {
+			int ie = i, je = j;
+			while (ie < a.size() && a[ie].isDigit()) ++ie;
+			while (je < b.size() && b[je].isDigit()) ++je;
+			QStringView da = QStringView(a).mid(i, ie - i);
+			QStringView db = QStringView(b).mid(j, je - j);
+			while (da.size() > 1 && da.startsWith(QLatin1Char('0'))) da = da.mid(1);
+			while (db.size() > 1 && db.startsWith(QLatin1Char('0'))) db = db.mid(1);
+			if (da.size() != db.size()) return da.size() < db.size() ? -1 : 1;
+			if (const int r = da.compare(db)) return r < 0 ? -1 : 1;
+			i = ie;
+			j = je;
+		} else {
+			const QChar x = a[i].toCaseFolded(), y = b[j].toCaseFolded();
+			if (x != y) return x < y ? -1 : 1;
+			++i;
+			++j;
+		}
+	}
+	if (i < a.size()) return 1;
+	if (j < b.size()) return -1;
+	return 0;
 }
 
 QString kindKey(const MarkingExport::Item &item)
@@ -401,6 +433,27 @@ QByteArray MarkingExport::write(const QList<Item> &items, Format format,
 			}
 			break;
 		}
+		case LabelList: {
+				//What upstream's "Export labels for printing" wrote: no
+				//header, one quoted label per line, each kind in natural
+				//order (2 before 10), a strip's terminals strip by strip
+			QList<Item> sorted = items;
+			std::stable_sort(sorted.begin(), sorted.end(), [](const Item &a, const Item &b) {
+				if (a.kind != b.kind) return a.kind < b.kind;
+				if (a.kind == Terminal && a.group != b.group)
+					return naturalCompare(a.group, b.group) < 0;
+				if (a.strip_marker != b.strip_marker) return a.strip_marker;
+				return naturalCompare(a.text, b.text) < 0;
+			});
+			out = QByteArray("ï»¿");
+			for (const Item &i : std::as_const(sorted)) {
+				for (int n = 0; n < i.count; ++n) {
+					out += record({i.text}, crlf, false);
+					++count;
+				}
+			}
+			break;
+		}
 	}
 	if (markers) *markers = count;
 	return out;
@@ -434,6 +487,7 @@ QString MarkingExport::formatKey(Format format)
 		case PhoenixContact: return QStringLiteral("phoenix");
 		case Weidmueller: return QStringLiteral("weidmueller");
 		case Wago: return QStringLiteral("wago");
+		case LabelList: return QStringLiteral("list");
 		default: return QStringLiteral("neutral");
 	}
 }
@@ -448,6 +502,7 @@ bool MarkingExport::formatFromKey(const QString &key, Format *format)
 	else if (k.startsWith(QLatin1String("weidm")) || k == QLatin1String("m-print")
 			 || k == QLatin1String("mprint")) f = Weidmueller;
 	else if (k.startsWith(QLatin1String("wago")) || k == QLatin1String("smartscript")) f = Wago;
+	else if (k == QLatin1String("list") || k == QLatin1String("labels")) f = LabelList;
 	else return false;
 	if (format) *format = f;
 	return true;
@@ -459,6 +514,7 @@ QString MarkingExport::formatTitle(Format format)
 		case PhoenixContact: return QCoreApplication::translate("MarkingExport", "Phoenix Contact MARKING system / PROJECT complete");
 		case Weidmueller: return QCoreApplication::translate("MarkingExport", "Weidmüller M-Print PRO");
 		case Wago: return QCoreApplication::translate("MarkingExport", "WAGO Smart Script");
+		case LabelList: return QCoreApplication::translate("MarkingExport", "Label list (one label per line)");
 		default: return QCoreApplication::translate("MarkingExport", "Neutral CSV (all columns)");
 	}
 }

@@ -94,9 +94,12 @@ namespace QetRevision {
 }
 
 /**
-	The revisions of one project: their table, the fingerprint of the last
-	one and whether its changes are marked. Kept in a <revisions> block of
-	the project, which every format keeps as it is (foreign blocks).
+	The revisions of one project. Their table is QET's revision list
+	(QETProject::revisions(), Project properties > Revisions); this class
+	adds closing a revision, the fingerprint of the last one, whether its
+	changes are marked, and each revision's snapshot and PDF -- kept in an
+	<eplan_revisions> block of the project, which every format keeps as it
+	is (foreign blocks).
 */
 class ProjectRevisions : public QObject
 {
@@ -150,6 +153,8 @@ class ProjectRevisions : public QObject
 
 			/// Read the block again (after the project was read)
 		void reload();
+			/// QET's revision list changed (QETProject::setRevisions)
+		void listChanged();
 
 	signals:
 		void revisionsChanged();
@@ -160,9 +165,13 @@ class ProjectRevisions : public QObject
 		void invalidate();
 		void repaint();
 		QString markLabel();
+		void updateTitleBlockTable(bool force);
 
 		QETProject *m_project;
-		QList<Entry> m_entries;
+			/// What closing a revision left beside the project, by index
+		struct Files { QString snapshot, pdf; };
+		QHash<QString, Files> m_files;
+		bool m_updating = false;
 		QetRevision::Fingerprint m_baseline;
 		bool m_marks = false;
 		bool m_loaded = false;

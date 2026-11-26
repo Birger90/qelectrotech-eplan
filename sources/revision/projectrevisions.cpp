@@ -678,9 +678,10 @@ void ProjectRevisions::load()
 {
 	if (m_loaded) return;
 	m_loaded = true;
-	m_entries.clear();
+	m_files.clear();
 	m_baseline = Fingerprint();
 	m_marks = false;
+	RevisionList legacy;
 	for (const QString &block : m_project->dataBase()->foreignBlocks(
 			 QString::fromLatin1(projectDataBase::project_owner))) {
 		if (!isRevisionBlock(block)) continue;
@@ -688,36 +689,43 @@ void ProjectRevisions::load()
 		if (!doc.setContent(block)) continue;
 		const QDomElement root = doc.documentElement();
 		m_marks = root.attribute(QStringLiteral("marks")) == QLatin1String("1");
+		QList<Revision> old;
 		for (QDomElement r = root.firstChildElement(QStringLiteral("revision")) ; !r.isNull() ;
 			 r = r.nextSiblingElement(QStringLiteral("revision"))) {
-			Entry e;
-			e.index = r.attribute(QStringLiteral("index"));
-			e.date = r.attribute(QStringLiteral("date"));
-			e.author = r.attribute(QStringLiteral("author"));
-			e.text = r.attribute(QStringLiteral("text"));
-			e.snapshot = r.attribute(QStringLiteral("snapshot"));
-			e.pdf = r.attribute(QStringLiteral("pdf"));
-			m_entries << e;
+			const QString index = r.attribute(QStringLiteral("index"));
+			m_files.insert(index, {r.attribute(QStringLiteral("snapshot")), r.attribute(QStringLiteral("pdf"))});
+				//Up to fork 1.53.0 the block kept the table itself
+			if (r.hasAttribute(QStringLiteral("date")) || r.hasAttribute(QStringLiteral("text")))
+				old << Revision{index, r.attribute(QStringLiteral("date")), r.attribute(QStringLiteral("text")),
+								r.attribute(QStringLiteral("author")), QString()};
 		}
+		legacy.setRevisions(old);
 		m_baseline = decode(root.firstChildElement(QStringLiteral("baseline")).text().toLatin1());
 		break;
+	}
+		//The table is QET's revision list (properties/revisionlist.h); a
+		//project of an older fork brings its rows into it once
+	if (!legacy.isEmpty() && m_project->revisions().isEmpty()) {
+		const bool modified = m_project->projectOptionsWereModified();
+		m_project->setRevisions(legacy);
+		if (!modified) m_project->setModified(false);
 	}
 }
 
 /**
-	Write the <revisions> block, keeping the project's other foreign blocks
+	Write the <eplan_revisions> block, keeping the project's other foreign
+	blocks: what QET's revision list does not hold -- the marks, the
+	snapshot and PDF of each revision and the fingerprint of the last one
 */
 void ProjectRevisions::save()
 {
 	QDomDocument doc;
 	QDomElement root = doc.createElement(blockTag());
 	root.setAttribute(QStringLiteral("marks"), m_marks ? QStringLiteral("1") : QStringLiteral("0"));
-	for (const Entry &e : std::as_const(m_entries)) {
+	for (const Entry &e : entries()) {
+		if (e.snapshot.isEmpty() && e.pdf.isEmpty()) continue;
 		QDomElement r = doc.createElement(QStringLiteral("revision"));
 		r.setAttribute(QStringLiteral("index"), e.index);
-		r.setAttribute(QStringLiteral("date"), e.date);
-		r.setAttribute(QStringLiteral("author"), e.author);
-		r.setAttribute(QStringLiteral("text"), e.text);
 		if (!e.snapshot.isEmpty()) r.setAttribute(QStringLiteral("snapshot"), e.snapshot);
 		if (!e.pdf.isEmpty()) r.setAttribute(QStringLiteral("pdf"), e.pdf);
 		root.appendChild(r);
@@ -742,7 +750,70 @@ void ProjectRevisions::save()
 	emit revisionsChanged();
 }
 
-QList<ProjectRevisions::Entry> ProjectRevisions::entries() { load(); return m_entries; }
+/**
+	@return the project's revisions, from QET's revision list, each with
+	the snapshot and PDF closing it left
+*/
+QList<ProjectRevisions::Entry> ProjectRevisions::entries()
+{
+	load();
+	QList<Entry> list;
+	for (const Revision &r : m_project->revisions().revisions()) {
+		const Files f = m_files.value(r.revision);
+		list << Entry{r.revision, r.date, r.author, r.description, f.snapshot, f.pdf};
+	}
+	return list;
+}
+
+/**
+	Fill the title block variables of the revision table, newest first:
+	%{rev1_index} ... %{revN_text}, %{rev_index}, %{rev_count}
+	(titleblocks/revision.titleblock), from QET's revision list. Only for
+	a project that uses them or closes a revision, so no other project
+	gains them.
+*/
+void ProjectRevisions::updateTitleBlockTable(bool force)
+{
+	DiagramContext properties = m_project->projectProperties();
+	static const QRegularExpression table_key(QStringLiteral("^rev(\\d+|)_(index|date|text|author|count)$"));
+	bool used = force;
+	for (const QString &key : properties.keys())
+		if (table_key.match(key).hasMatch()) { properties.remove(key); used = true; }
+	if (!used) return;
+	const QList<Revision> list = m_project->revisions().revisions();
+	auto shown = [](const QString &date) {
+		const QDate d = QDate::fromString(date, Qt::ISODate);
+		return d.isValid() ? d.toString(QStringLiteral("dd.MM.yyyy")) : date;
+	};
+	for (int i = 0 ; i < list.size() ; ++i) {
+		const Revision &r = list.at(list.size() - 1 - i);
+		const QString n = QString::number(i + 1);
+		properties.addValue(QStringLiteral("rev%1_index").arg(n), r.revision);
+		properties.addValue(QStringLiteral("rev%1_date").arg(n), shown(r.date));
+		properties.addValue(QStringLiteral("rev%1_text").arg(n), r.description);
+		properties.addValue(QStringLiteral("rev%1_author").arg(n), r.author);
+	}
+	if (!list.isEmpty()) {
+		properties.addValue(QStringLiteral("rev_index"), list.last().revision);
+		properties.addValue(QStringLiteral("rev_date"), shown(list.last().date));
+		properties.addValue(QStringLiteral("rev_text"), list.last().description);
+	}
+	properties.addValue(QStringLiteral("rev_count"), QString::number(list.size()));
+	if (!(properties == m_project->projectProperties()))
+		m_project->setProjectProperties(properties);
+}
+
+/**
+	QET's revision list changed (Project properties > Revisions)
+*/
+void ProjectRevisions::listChanged()
+{
+	if (m_updating) return;
+	m_updating = true;
+	updateTitleBlockTable(false);
+	m_updating = false;
+	emit revisionsChanged();
+}
 bool ProjectRevisions::hasBaseline() { load(); return !m_baseline.isEmpty(); }
 Fingerprint ProjectRevisions::baseline() { load(); return m_baseline; }
 bool ProjectRevisions::marksShown() { load(); return m_marks; }
@@ -750,7 +821,7 @@ bool ProjectRevisions::marksShown() { load(); return m_marks; }
 QString ProjectRevisions::lastIndex()
 {
 	load();
-	return m_entries.isEmpty() ? QString() : m_entries.last().index;
+	return m_project->revisions().latest().revision;
 }
 
 /**
@@ -760,7 +831,7 @@ QString ProjectRevisions::lastIndex()
 QString ProjectRevisions::proposedIndex()
 {
 	load();
-	if (!m_entries.isEmpty()) return nextIndex(m_entries.last().index);
+	if (!m_project->revisions().isEmpty()) return nextIndex(lastIndex());
 	QString highest;
 	for (Diagram *d : m_project->folios()) {
 		const QString i = d->border_and_titleblock.exportTitleBlock().indexrev.trimmed();
@@ -1004,7 +1075,8 @@ ProjectRevisions::CloseResult ProjectRevisions::closeRevision(const QString &ind
 		result.error = tr("Save the project to a file first");
 		return result;
 	}
-	for (const Entry &e : std::as_const(m_entries))
+	const QList<Entry> before = entries();
+	for (const Entry &e : before)
 		if (e.index == idx) {
 			result.error = tr("Revision %1 was closed already").arg(idx);
 			return result;
@@ -1014,12 +1086,16 @@ ProjectRevisions::CloseResult ProjectRevisions::closeRevision(const QString &ind
 	const QList<Change> found = m_baseline.isEmpty() ? QList<Change>() : changes();
 	result.changes = int(found.size());
 
-	Entry entry;
-	entry.index = idx;
-	entry.text = text.simplified();
-	entry.date = QDate::currentDate().toString(Qt::ISODate);
-	entry.author = qEnvironmentVariable("USERNAME", qEnvironmentVariable("USER"));
-	m_entries << entry;
+		//A new row of QET's revision list (Project properties > Revisions)
+	QList<Revision> rows = m_project->revisions().revisions();
+	rows << Revision{idx, QDate::currentDate().toString(Qt::ISODate), text.simplified(),
+					 qEnvironmentVariable("USERNAME", qEnvironmentVariable("USER")), QString()};
+	RevisionList list;
+	list.setRevisions(rows);
+	m_updating = true;
+	m_project->setRevisions(list);
+	m_updating = false;
+	Files &files = m_files[idx];
 
 		//Title blocks: every folio and the default for new ones
 	TitleBlockProperties def = m_project->defaultTitleBlockProperties();
@@ -1030,25 +1106,8 @@ ProjectRevisions::CloseResult ProjectRevisions::closeRevision(const QString &ind
 		p.indexrev = idx;
 		d->border_and_titleblock.importTitleBlock(p);
 	}
-		//The revision table, newest first: %{rev1_index} ... %{revN_text}
-	DiagramContext properties = m_project->projectProperties();
-	static const QRegularExpression table_key(QStringLiteral("^rev(\\d+|)_(index|date|text|author|count)$"));
-	for (const QString &key : properties.keys())
-		if (table_key.match(key).hasMatch()) properties.remove(key);
-	for (int i = 0 ; i < m_entries.size() ; ++i) {
-		const Entry &e = m_entries.at(m_entries.size() - 1 - i);
-		const QString n = QString::number(i + 1);
-		properties.addValue(QStringLiteral("rev%1_index").arg(n), e.index);
-		properties.addValue(QStringLiteral("rev%1_date").arg(n),
-							QDate::fromString(e.date, Qt::ISODate).toString(QStringLiteral("dd.MM.yyyy")));
-		properties.addValue(QStringLiteral("rev%1_text").arg(n), e.text);
-		properties.addValue(QStringLiteral("rev%1_author").arg(n), e.author);
-	}
-	properties.addValue(QStringLiteral("rev_index"), idx);
-	properties.addValue(QStringLiteral("rev_date"), QDate::currentDate().toString(QStringLiteral("dd.MM.yyyy")));
-	properties.addValue(QStringLiteral("rev_text"), entry.text);
-	properties.addValue(QStringLiteral("rev_count"), QString::number(m_entries.size()));
-	m_project->setProjectProperties(properties);
+		//The title block's revision table, newest first
+	updateTitleBlockTable(true);
 
 	QDir().mkpath(folder());
 	const QFileInfo info(m_project->filePath());
@@ -1071,16 +1130,16 @@ ProjectRevisions::CloseResult ProjectRevisions::closeRevision(const QString &ind
 		m_cache.clear();
 		if (ok) {
 			result.pdf = pdf;
-			m_entries.last().pdf = info.dir().relativeFilePath(pdf);
+			files.pdf = info.dir().relativeFilePath(pdf);
 		}
 	}
 
 		//What it is now, for the marks of what comes next; shown from
 		//the first revision on, as EPLAN does
-	if (m_entries.size() == 1) m_marks = true;
+	if (m_baseline.isEmpty()) m_marks = true;
 	m_baseline = fingerprint(m_project);
 	const QString snapshot = QDir(folder()).filePath(stem + QStringLiteral(".qet"));
-	m_entries.last().snapshot = info.dir().relativeFilePath(snapshot);
+	files.snapshot = info.dir().relativeFilePath(snapshot);
 	save();
 		//The snapshot carries the same block: its fingerprint is itself
 	const QETResult written = m_project->writeCopyForOlderVersions(snapshot);

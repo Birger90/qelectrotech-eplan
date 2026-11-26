@@ -280,6 +280,29 @@ void FunctionTemplate::readBlock()
 		if (!choices.isEmpty()) parameter.choices = choices.split(QLatin1Char(';'), Qt::SkipEmptyParts);
 		m_parameters << parameter;
 	}
+		//A ?name value of a plain macro (MacroLabels, upstream's way of
+		//asking) is a text parameter of the same form, so a template
+		//never asks twice
+	if (m_has_block) {
+		QStringList asked;
+		rewrite(diagramOf(m_document.documentElement()), [&](const QDomElement &, const QString &, const QString &value) {
+			if (value.contains(QLatin1Char('?')))
+				for (const QString &name : MacroLabels::namedValues(value))
+					if (!asked.contains(name.mid(1))) asked << name.mid(1); // without its ?
+			return value;
+		});
+		for (const QString &name : std::as_const(asked)) {
+			bool known = false;
+			for (const Parameter &p : std::as_const(m_parameters)) known |= p.name == name;
+			if (known) continue;
+			Parameter parameter;
+			parameter.name = name;
+			parameter.label = name;
+			parameter.kind = QStringLiteral("text");
+			m_parameters << parameter;
+			m_question_names << name;
+		}
+	}
 	for (const QDomElement &t : childrenOf(block, QStringLiteral("table"))) {
 		Table table;
 		table.name = t.attribute(QStringLiteral("name"));
@@ -542,6 +565,13 @@ QDomDocument FunctionTemplate::instantiate(const QMap<QString, QString> &resolve
 			}
 			const bool html = e.tagName() == QLatin1String("input") && attribute == QLatin1String("text");
 			changed = substitute(changed, html ? html_values : resolved, &unknown);
+		}
+		if (!m_question_names.isEmpty() && changed.contains(QLatin1Char('?'))) {
+			const bool html = e.tagName() == QLatin1String("input") && attribute == QLatin1String("text");
+			QHash<QString, QString> asked;
+			for (const QString &name : m_question_names)
+				asked.insert(QLatin1Char('?') + name, html ? html_values.value(name) : resolved.value(name));
+			changed = MacroLabels::withValues(changed, asked);
 		}
 		if (e.tagName() == QLatin1String("element") && attribute == QLatin1String("type")
 				&& changed.startsWith(QLatin1String("macro://")))

@@ -482,19 +482,40 @@ int exportDxf(QETProject &project, const QString &out_dir, bool showTerminals,
 int exportLabels(QETProject &project, const QString &output, LabelListExport::Kind kind,
 				 bool full_designation)
 {
+	// Fork: the format "list" of --export-marking and of Export labels and
+	// markers, one implementation for all three (marking/markingexport.h)
 	const QString kind_name = LabelListExport::kindName(kind);
-	const QStringList labels = LabelListExport::labels(&project, kind, full_designation);
+	MarkingExport::Options options;
+	options.format = MarkingExport::LabelList;
+	options.full_designation = full_designation;
+	options.both_ends = false;
+	switch (kind) {
+		case LabelListExport::Terminals: options.kinds = MarkingExport::Terminal; break;
+		case LabelListExport::Cables: options.kinds = MarkingExport::Cable; break;
+		case LabelListExport::Wires: options.kinds = MarkingExport::Wire; break;
+		default: options.kinds = MarkingExport::Device;
+	}
+	QString error;
+	const QList<MarkingExport::Item> items = MarkingExport::collect(&project, options, &error);
+	if (!error.isEmpty()) {
+		err << "Cannot read the labels: " << error << "\n";
+		return 1;
+	}
+	int count = 0;
+	QByteArray bytes = MarkingExport::write(items, options.format, &count);
 	// An empty list is a valid answer, so scripts exporting every kind do not
 	// fail; the file is still written (empty) so a stale list from an earlier
 	// run is never left behind to be printed.
-	if (labels.isEmpty())
+	if (!count) {
+		bytes.clear();
 		err << "Nothing to export (no " << kind_name << " with a label).\n";
-	QString error;
-	if (!LabelListExport::write(labels, output, &error)) {
-		err << "Cannot write '" << output << "': " << error << "\n";
+	}
+	QSaveFile file(output);
+	if (!file.open(QIODevice::WriteOnly) || file.write(bytes) != bytes.size() || !file.commit()) {
+		err << "Cannot write '" << output << "': " << file.errorString() << "\n";
 		return 1;
 	}
-	out << "Exported " << labels.size() << " " << kind_name << " label(s) -> " << output << "\n";
+	out << "Exported " << count << " " << kind_name << " label(s) -> " << output << "\n";
 	return 0;
 }
 
@@ -558,7 +579,7 @@ int exportMarking(const QStringList &rest)
 	MarkingExport::Options o;
 	const QString usage = QStringLiteral(
 		"Usage: qelectrotech --export-marking <project.qet> <output.csv> "
-		"[--format phoenix|weidmueller|wago|neutral] "
+		"[--format phoenix|weidmueller|wago|neutral|list] "
 		"[--kinds wires,terminals,devices,cables] [--folios N[-M]] "
 		"[--plant P] [--location L] [--short] [--one-end] "
 		"[--printer printjet|thm] [--material Klemme=N,Draht=N,...] "

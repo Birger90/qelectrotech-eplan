@@ -5521,6 +5521,13 @@ Fortfahren?</translation>
     </message>
 </context>
 <context>
+    <name>DiagramEventAddFunctionTemplate</name>
+    <message>
+        <source>Click to place &quot;%1&quot;, right click or Escape to stop.</source>
+        <translation>Klicken, um „%1“ zu platzieren; Rechtsklick oder Esc beendet.</translation>
+    </message>
+</context>
+<context>
     <name>DiagramEventAddImage</name>
     <message>
         <source>Click: position at original size. Click-drag: position and resize. Right-click: rotate 90°. Ctrl+wheel: adjust size.</source>
@@ -5928,7 +5935,7 @@ Hold Shift and drag to move this text on its own</source>
     <name>DiagramView</name>
     <message>
         <source>Save as function template…</source>
-        <translation>Als Funktionsvorlage speichern…</translation>
+        <translation type="vanished">Als Funktionsvorlage speichern…</translation>
     </message>
     <message>
         <source>Function template saved: %1</source>
@@ -5951,7 +5958,12 @@ Hold Shift and drag to move this text on its own</source>
     <message>
         <source>Create a template</source>
         <comment>context menu action</comment>
-        <translation>Vorlage erstellen</translation>
+        <translation type="vanished">Vorlage erstellen</translation>
+    </message>
+    <message>
+        <source>Save as function template…</source>
+        <comment>context menu action</comment>
+        <translation type="unfinished">Als Funktionsvorlage speichern…</translation>
     </message>
     <message>
         <source>Make a cabinet thumbnail</source>
@@ -6017,21 +6029,21 @@ Hold Shift and drag to move this text on its own</source>
     </message>
     <message>
         <source>Registered template</source>
-        <translation>Vorlage erstellt</translation>
+        <translation type="vanished">Vorlage erstellt</translation>
     </message>
     <message>
         <source>The template has been successfully saved as :
 %1</source>
-        <translation>Die Vorlage wurde erfolgreich gespeichert unter
+        <translation type="vanished">Die Vorlage wurde erfolgreich gespeichert unter
 %1</translation>
     </message>
     <message>
         <source>Error</source>
-        <translation>Fehler</translation>
+        <translation type="vanished">Fehler</translation>
     </message>
     <message>
         <source>The file could not be written.</source>
-        <translation>Die Datei konnte nicht geschrieben werden.</translation>
+        <translation type="vanished">Die Datei konnte nicht geschrieben werden.</translation>
     </message>
     <message>
         <source>Choose the new color for this conductor</source>
@@ -8714,6 +8726,10 @@ Fortfahren?</translation>
         <translation>Ordnereigenschaften</translation>
     </message>
     <message>
+        <source>Export symbol list…</source>
+        <translation>Symbolliste exportieren…</translation>
+    </message>
+    <message>
         <source>Delete element?</source>
         <comment>message box title</comment>
         <translation>Bauteil löschen?</translation>
@@ -8808,6 +8824,38 @@ Mit dem Import dieser Datei bestätigen Sie, dass:
 %1</source>
         <translation>Konnte Datei nicht importieren:
 %1</translation>
+    </message>
+    <message>
+        <source>Export symbol list</source>
+        <translation>Symbolliste exportieren</translation>
+    </message>
+    <message>
+        <source>symbols</source>
+        <translation>Symbole</translation>
+    </message>
+    <message>
+        <source>CSV files (*.csv)</source>
+        <translation>CSV-Dateien (*.csv)</translation>
+    </message>
+    <message>
+        <source>Reading the symbols…</source>
+        <translation>Symbole werden gelesen…</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Abbrechen</translation>
+    </message>
+    <message>
+        <source>Unable to write %1:
+%2</source>
+        <translation>%1 lässt sich nicht schreiben:
+%2</translation>
+    </message>
+    <message>
+        <source>Symbols: %1, macros: %2, files that could not be read: %3.
+Written to %4</source>
+        <translation>Symbole: %1, Makros: %2, nicht lesbare Dateien: %3.
+Geschrieben nach %4</translation>
     </message>
     <message>
         <source>the folder %1 contains</source>
@@ -10163,6 +10211,316 @@ Texte und Zahlen sind ebenso erlaubt.</translation>
     <message>
         <source>led</source>
         <translation>LED</translation>
+    </message>
+</context>
+<context>
+    <name>FunctionTemplate</name>
+    <message>
+        <source>The file %1 cannot be read.</source>
+        <translation>Die Datei %1 kann nicht gelesen werden.</translation>
+    </message>
+    <message>
+        <source>The file %1 is no valid XML.</source>
+        <translation>Die Datei %1 ist kein gültiges XML.</translation>
+    </message>
+    <message>
+        <source>The file %1 is no template.</source>
+        <translation>Die Datei %1 ist keine Vorlage.</translation>
+    </message>
+    <message>
+        <source>%1 = %2 is larger than the table goes (%3): its last row is used.</source>
+        <translation>%1 = %2 ist größer als die Tabelle reicht (%3): ihre letzte Zeile wird verwendet.</translation>
+    </message>
+    <message>
+        <source>The table for %1 holds no row for %2.</source>
+        <translation>Die Tabelle für %1 hat keine Zeile für %2.</translation>
+    </message>
+    <message>
+        <source>No value for %1: left as it is.</source>
+        <translation>Kein Wert für %1: bleibt stehen.</translation>
+    </message>
+    <message>
+        <source>This is no valid template.</source>
+        <translation>Das ist keine gültige Vorlage.</translation>
+    </message>
+    <message>
+        <source>There is no folio to place the template on.</source>
+        <translation>Es gibt kein Blatt, auf das die Vorlage kommen könnte.</translation>
+    </message>
+    <message>
+        <source>The project is read-only.</source>
+        <translation>Das Projekt ist schreibgeschützt.</translation>
+    </message>
+    <message>
+        <source>The template holds nothing to place.</source>
+        <translation>Die Vorlage enthält nichts zum Einfügen.</translation>
+    </message>
+    <message>
+        <source>Insert function template %1</source>
+        <translation>Funktionsvorlage %1 einfügen</translation>
+    </message>
+    <message>
+        <source>No folio could be added.</source>
+        <translation>Es konnte kein Blatt angelegt werden.</translation>
+    </message>
+    <message>
+        <source>PLC channel %1 linked to %2.</source>
+        <translation>SPS-Kanal %1 mit %2 verknüpft.</translation>
+    </message>
+    <message>
+        <source>PLC channel %1 of %2 is already used: the channel is left unlinked.</source>
+        <translation>SPS-Kanal %1 von %2 ist schon belegt: der Kanal bleibt unverknüpft.</translation>
+    </message>
+    <message>
+        <source>No PLC module of the project offers %1: the channel is left unlinked.</source>
+        <translation>Kein SPS-Modul des Projekts hat %1: der Kanal bleibt unverknüpft.</translation>
+    </message>
+    <message>
+        <source>Device tag</source>
+        <translation>Kennzeichen</translation>
+    </message>
+    <message>
+        <source>PLC address</source>
+        <translation>SPS-Adresse</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>Leistung</translation>
+    </message>
+    <message>
+        <source>There is no folio to save from.</source>
+        <translation>Es gibt kein Blatt, aus dem gespeichert werden kann.</translation>
+    </message>
+    <message>
+        <source>The template needs a name.</source>
+        <translation>Die Vorlage braucht einen Namen.</translation>
+    </message>
+    <message>
+        <source>The selection holds no symbol.</source>
+        <translation>Die Auswahl enthält kein Symbol.</translation>
+    </message>
+    <message>
+        <source>The file %1 cannot be written.</source>
+        <translation>Die Datei %1 kann nicht geschrieben werden.</translation>
+    </message>
+</context>
+<context>
+    <name>FunctionTemplateDock</name>
+    <message>
+        <source>Function templates</source>
+        <translation>Funktionsvorlagen</translation>
+    </message>
+    <message>
+        <source>Search a template</source>
+        <translation>Vorlage suchen</translation>
+    </message>
+    <message>
+        <source>Read the templates again</source>
+        <translation>Vorlagen neu einlesen</translation>
+    </message>
+    <message>
+        <source>Open the folder of your own templates</source>
+        <translation>Ordner der eigenen Vorlagen öffnen</translation>
+    </message>
+    <message>
+        <source>Insert</source>
+        <translation>Einfügen</translation>
+    </message>
+    <message>
+        <source>Place it with the mouse on the current folio</source>
+        <translation>Mit der Maus auf dem aktuellen Blatt platzieren</translation>
+    </message>
+    <message>
+        <source>On a new folio</source>
+        <translation>Auf neues Blatt</translation>
+    </message>
+    <message>
+        <source>Add a folio at the end of the project and put the template on it</source>
+        <translation>Ein Blatt am Ende des Projekts anlegen und die Vorlage darauf setzen</translation>
+    </message>
+    <message>
+        <source>Without category</source>
+        <translation>Ohne Kategorie</translation>
+    </message>
+    <message>
+        <source>Examples</source>
+        <translation>Beispiele</translation>
+    </message>
+    <message>
+        <source>No template yet: select part of a folio and choose &quot;Save as function template…&quot;.</source>
+        <translation>Noch keine Vorlage: Teil eines Blatts markieren und „Als Funktionsvorlage speichern…“ wählen.</translation>
+    </message>
+    <message>
+        <source>Choose a template</source>
+        <translation>Vorlage wählen</translation>
+    </message>
+    <message>
+        <source>No picture</source>
+        <translation>Keine Vorschau</translation>
+    </message>
+    <message>
+        <source>Open a folio first, or put the template on a new folio.</source>
+        <translation>Erst ein Blatt öffnen oder die Vorlage auf ein neues Blatt setzen.</translation>
+    </message>
+    <message>
+        <source>Open a project first.</source>
+        <translation>Erst ein Projekt öffnen.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n symbol(s) placed.</source>
+        <translation>
+            <numerusform>%n Symbol eingefügt.</numerusform>
+            <numerusform>%n Symbole eingefügt.</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>FunctionTemplateForm</name>
+    <message>
+        <source>This template asks for nothing: its labels are counted on.</source>
+        <translation>Diese Vorlage fragt nichts ab: ihre Kennzeichen zählen weiter.</translation>
+    </message>
+    <message>
+        <source>Row %1 = %2: %3</source>
+        <translation>Zeile %1 = %2: %3</translation>
+    </message>
+</context>
+<context>
+    <name>FunctionTemplateSaveDialog</name>
+    <message>
+        <source>Save as function template</source>
+        <translation>Als Funktionsvorlage speichern</translation>
+    </message>
+    <message>
+        <source>Motor feeder DOL</source>
+        <translation>Motorabgang DOL</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation>Name:</translation>
+    </message>
+    <message>
+        <source>Category:</source>
+        <translation>Kategorie:</translation>
+    </message>
+    <message>
+        <source>Description:</source>
+        <translation>Beschreibung:</translation>
+    </message>
+    <message>
+        <source>Write {NAME} in a label, a text or an article to ask for it when the template is placed: {BMK}, {P_kW}, {ADR}. {N+1} is the value counted on by one. Labels without braces are counted on to the next free one by themselves.</source>
+        <translation>{NAME} in ein Kennzeichen, einen Text oder einen Artikel schreiben, um es beim Einfügen abzufragen: {BMK}, {P_kW}, {ADR}. {N+1} ist der Wert um eins weitergezählt. Kennzeichen ohne Klammern zählen von selbst auf das nächste freie weiter.</translation>
+    </message>
+    <message>
+        <source>Placeholder</source>
+        <translation>Platzhalter</translation>
+    </message>
+    <message>
+        <source>Asked as</source>
+        <translation>Abgefragt als</translation>
+    </message>
+    <message>
+        <source>Kind</source>
+        <translation>Art</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation>Vorgabe</translation>
+    </message>
+    <message>
+        <source>Unit</source>
+        <translation type="unfinished">Einheit</translation>
+    </message>
+    <message>
+        <source>Text</source>
+        <translation type="unfinished">Text</translation>
+    </message>
+    <message>
+        <source>Device tag (next free one)</source>
+        <translation type="unfinished">Kennzeichen (nächstes freies)</translation>
+    </message>
+    <message>
+        <source>Terminal number (next free one)</source>
+        <translation type="unfinished">Klemmennummer (nächste freie)</translation>
+    </message>
+    <message>
+        <source>Number</source>
+        <translation>Nummer</translation>
+    </message>
+    <message>
+        <source>The selection holds no placeholder: it is placed as it is, its labels counted on.</source>
+        <translation type="unfinished">Die Auswahl enthält keinen Platzhalter: sie wird so eingefügt, ihre Kennzeichen zählen weiter.</translation>
+    </message>
+    <message>
+        <source>Choice table (optional, pasted from Excel): the first line names the columns, the first column is the placeholder which picks the row, the others become placeholders too.</source>
+        <translation type="unfinished">Auswahltabelle (optional, aus Excel eingefügt): Die erste Zeile nennt die Spalten, die erste Spalte ist der Platzhalter, der die Zeile wählt, die anderen werden ebenfalls Platzhalter.</translation>
+    </message>
+    <message>
+        <source>Saved in: %1</source>
+        <translation type="unfinished">Gespeichert in: %1</translation>
+    </message>
+    <message>
+        <source>The first line of the table has to name its columns.</source>
+        <translation type="unfinished">Die erste Zeile der Tabelle muss die Spalten benennen.</translation>
+    </message>
+    <message>
+        <source>Give the template a name.</source>
+        <translation type="unfinished">Gib der Vorlage einen Namen.</translation>
+    </message>
+    <message>
+        <source>in a few words</source>
+        <translation type="vanished">in wenigen Worten</translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <translation type="vanished">Titel</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="vanished">Name</translation>
+    </message>
+    <message>
+        <source>What did you do, what did you expect, what happened instead? Which project or sheet?</source>
+        <translation type="vanished">Was hast du gemacht, was hast du erwartet, was ist stattdessen passiert? Welches Projekt, welches Blatt?</translation>
+    </message>
+    <message>
+        <source>Attach a screenshot of the window</source>
+        <translation type="vanished">Bildschirmfoto des Fensters anhängen</translation>
+    </message>
+    <message>
+        <source>Attach the diagnostic report (latest log entries)</source>
+        <translation type="vanished">Diagnosebericht anhängen (letzte Protokolleinträge)</translation>
+    </message>
+    <message>
+        <source>Send</source>
+        <translation type="vanished">Senden</translation>
+    </message>
+    <message>
+        <source>Please enter a title or a description.</source>
+        <translation type="vanished">Bitte einen Titel oder eine Beschreibung eingeben.</translation>
+    </message>
+    <message>
+        <source>The folder %1 could not be created.</source>
+        <translation type="vanished">Der Ordner %1 konnte nicht angelegt werden.</translation>
+    </message>
+    <message>
+        <source>The report could not be written.</source>
+        <translation type="vanished">Die Meldung konnte nicht geschrieben werden.</translation>
+    </message>
+    <message>
+        <source>Thank you, the report has been saved.</source>
+        <translation type="vanished">Danke, die Meldung ist gespeichert.</translation>
+    </message>
+    <message>
+        <source>Thank you. The distribution folder is not available; the report is kept on this computer and handed in at the next start.</source>
+        <translation type="vanished">Danke. Der Verteilordner ist gerade nicht erreichbar; die Meldung bleibt auf diesem Rechner und wird beim nächsten Start nachgereicht.</translation>
+    </message>
+</context>
+<context>
+    <name>FunctionTemplateValuesDialog</name>
+    <message>
+        <source>Function template %1</source>
+        <translation>Funktionsvorlage %1</translation>
     </message>
 </context>
 <context>
@@ -12543,6 +12901,78 @@ Please use the advanced editor for this.</source>
     </message>
 </context>
 <context>
+    <name>LabelListExportDialog</name>
+    <message>
+        <source>Export labels for printing</source>
+        <translation>Etiketten zum Drucken exportieren</translation>
+    </message>
+    <message>
+        <source>One label per line, for label printer software:</source>
+        <translation>Ein Etikett je Zeile, für Etikettendrucker-Software:</translation>
+    </message>
+    <message>
+        <source>Device tags (one per device, in folio order)</source>
+        <translation>Gerätekennzeichen (eines je Gerät, in Blattfolge)</translation>
+    </message>
+    <message>
+        <source>Terminal markers (strip by strip, in strip order)</source>
+        <translation>Klemmenschilder (Leiste für Leiste, in Leistenfolge)</translation>
+    </message>
+    <message>
+        <source>Cable numbers (in folio order)</source>
+        <translation>Kabelnummern (in Blattfolge)</translation>
+    </message>
+    <message>
+        <source>Wire numbers (one per wire)</source>
+        <translation>Drahtnummern (eine je Draht)</translation>
+    </message>
+    <message>
+        <source>Full designation (=plant+location-tag)</source>
+        <translation>Vollständiges Kennzeichen (=Anlage+Ort-BMK)</translation>
+    </message>
+    <message>
+        <source>Save as CSV...</source>
+        <translation>Als CSV speichern…</translation>
+    </message>
+    <message>
+        <source>This project has none.</source>
+        <translation>Dieses Projekt hat keine.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n label(s), the first: %1</source>
+        <translation>
+            <numerusform>%n Etikett, das erste: %1</numerusform>
+            <numerusform>%n Etiketten, das erste: %1</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>There are no labels of this kind to export.</source>
+        <translation>Es gibt keine Etiketten dieser Art zu exportieren.</translation>
+    </message>
+    <message>
+        <source>labels</source>
+        <translation>Etiketten</translation>
+    </message>
+    <message>
+        <source>Save As...</source>
+        <translation>Speichern unter…</translation>
+    </message>
+    <message>
+        <source>CSV files (*.csv)</source>
+        <translation>CSV-Dateien (*.csv)</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation type="unfinished">Fehler</translation>
+    </message>
+    <message>
+        <source>Unable to write %1:
+%2</source>
+        <translation>%1 lässt sich nicht schreiben:
+%2</translation>
+    </message>
+</context>
+<context>
     <name>LineEditor</name>
     <message>
         <source>Normal</source>
@@ -12882,7 +13312,11 @@ Diese Einstellung finden Sie unter QElectroTech Einstellungen &gt; Allgemein &gt
     </message>
     <message>
         <source>Enter the labels and texts of this macro. Accept All takes the labels proposed.</source>
-        <translation>Geben Sie die BMK und Texte dieses Makros ein. „Alle übernehmen“ übernimmt die vorgeschlagenen BMK.</translation>
+        <translation type="vanished">Geben Sie die BMK und Texte dieses Makros ein. „Alle übernehmen“ übernimmt die vorgeschlagenen BMK.</translation>
+    </message>
+    <message>
+        <source>Enter the labels, texts and values of this macro. Accept All takes the labels proposed.</source>
+        <translation>Kennzeichen, Texte und Werte dieses Makros eingeben. „Alle übernehmen“ nimmt die vorgeschlagenen Kennzeichen.</translation>
     </message>
     <message>
         <source>Kind</source>
@@ -12899,6 +13333,10 @@ Diese Einstellung finden Sie unter QElectroTech Einstellungen &gt; Allgemein &gt
     <message>
         <source>Label</source>
         <translation>BMK</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation type="unfinished">Wert</translation>
     </message>
     <message>
         <source>Text</source>
@@ -13049,6 +13487,10 @@ Mit dem MCP-Server qet: Lies es mit qet_recording_read, schreibe ein Skript, das
     <message>
         <source>WAGO Smart Script</source>
         <translation>WAGO Smart Script</translation>
+    </message>
+    <message>
+        <source>Label list (one label per line)</source>
+        <translation>Etikettenliste (ein Etikett je Zeile)</translation>
     </message>
     <message>
         <source>Neutral CSV (all columns)</source>
@@ -13215,6 +13657,10 @@ Mit dem MCP-Server qet: Lies es mit qet_recording_read, schreibe ein Skript, das
     <message>
         <source>In Smart Script: import with a template and assign the column &quot;Beschriftung&quot;; choose the marker type there.</source>
         <translation>In Smart Script: mit einer Vorlage importieren und die Spalte „Beschriftung“ zuordnen; den Markierertyp dort wählen.</translation>
+    </message>
+    <message>
+        <source>Only the labels, one per line in natural order (2 before 10), for any label printer.</source>
+        <translation>Nur die Beschriftungen, eine je Zeile in natürlicher Reihenfolge (2 vor 10), für jeden Etikettendrucker.</translation>
     </message>
     <message>
         <source>Every column, for any other marking software.</source>
@@ -17249,6 +17695,10 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
         <translation>Symbole ohne Leitung</translation>
     </message>
     <message>
+        <source>Branches between strip terminals</source>
+        <translation>Abzweige zwischen Leistenklemmen</translation>
+    </message>
+    <message>
         <source>Device types</source>
         <translation>Gerätetypen</translation>
     </message>
@@ -17275,6 +17725,10 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     <message>
         <source>Symbols none of whose terminals has a wire. Folio reports are never listed; Options chooses what else is left out.</source>
         <translation>Symbole, von deren Anschlüssen keiner eine Leitung hat. Seitenverweise werden nie aufgelistet; die Optionen bestimmen, was sonst noch ausgelassen wird.</translation>
+    </message>
+    <message>
+        <source>Junctions with three wires or more, and no chain set in their symbol, on a wire between two terminal strip terminals. A wire cannot be split between two terminals: make the branch on a terminal.</source>
+        <translation>Verbindungspunkte mit drei oder mehr Drähten und ohne festgelegte Kette im Symbol, auf einem Draht zwischen zwei Klemmen einer Klemmleiste. Ein Draht lässt sich zwischen zwei Klemmen nicht teilen: den Abzweig an einer Klemme machen.</translation>
     </message>
     <message>
         <source>Devices not drawn the way their device type says. Project &gt; Check device types... can place the missing parts.</source>
@@ -17324,6 +17778,26 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
         <translation>
             <numerusform>%n Leitung(en)</numerusform>
             <numerusform>%n Leitung(en)</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>a terminal</source>
+        <translation>eine Klemme</translation>
+    </message>
+    <message>
+        <source>Branch between %1</source>
+        <extracomment>%1 lists the strip terminals, such as &quot;X1:1, X2:4&quot;</extracomment>
+        <translation>Abzweig zwischen %1</translation>
+    </message>
+    <message>
+        <source>Junction</source>
+        <translation type="unfinished">Verzweigung</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n other terminal(s) on the same wire</source>
+        <translation>
+            <numerusform>%n weitere Klemme am selben Draht</numerusform>
+            <numerusform>%n weitere Klemmen am selben Draht</numerusform>
         </translation>
     </message>
     <message>
@@ -17511,7 +17985,9 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
 ----------
 %1 is the problem, %2 the report, junction or symbol terminal
 ----------
-%1 is the symbol&apos;s label, %2 its name, such as &quot;QF1: Circuit breaker&quot;</extracomment>
+%1 is the symbol&apos;s label, %2 its name, such as &quot;QF1: Circuit breaker&quot;
+----------
+%1 is the junction, %2 the finding above</extracomment>
         <translation>%1: %2</translation>
     </message>
     <message>
@@ -17610,6 +18086,26 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
 </context>
 <context>
     <name>ProjectDBModel</name>
+    <message>
+        <source>Revision</source>
+        <translation type="unfinished">Revision</translation>
+    </message>
+    <message>
+        <source>Date</source>
+        <translation type="unfinished">Datum</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation type="unfinished">Beschreibung</translation>
+    </message>
+    <message>
+        <source>Author</source>
+        <translation type="unfinished">Bearbeiter</translation>
+    </message>
+    <message>
+        <source>Approved by</source>
+        <translation>Freigegeben von</translation>
+    </message>
     <message>
         <source>Position</source>
         <translation>Position</translation>
@@ -19140,6 +19636,12 @@ Verfügbare Optionen:
         <translation>  --lang-dir=DIR                Setzt Pfad zu den Sprachdateien
 </translation>
     </message>
+    <message>
+        <source>  --company-elements-dir=DIR    Define the company elements collection directory
+</source>
+        <translation>  --company-elements-dir=DIR    Ordner der Firmensammlung festlegen
+</translation>
+    </message>
 </context>
 <context>
     <name>QETDiagramEditor</name>
@@ -19381,6 +19883,14 @@ Verfügbare Optionen:
     <message>
         <source>Launch the terminal block creation plugin</source>
         <translation>Klemmenplan-Plugin starten</translation>
+    </message>
+    <message>
+        <source>Export labels and markers...</source>
+        <translation>Beschriftung und Etiketten exportieren…</translation>
+    </message>
+    <message>
+        <source>Wire, terminal, device and cable markers for Phoenix Contact, Weidmüller or WAGO marking software, or a label list for any label printer</source>
+        <translation>Draht-, Klemmen-, Geräte- und Kabelschilder für die Beschriftungssoftware von Phoenix Contact, Weidmüller oder WAGO, oder eine Etikettenliste für jeden Etikettendrucker</translation>
     </message>
     <message>
         <source>Creates a new project</source>
@@ -20120,6 +20630,10 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
         <translation>Klemmleisten-Manager (DEV)</translation>
     </message>
     <message>
+        <source>Add a revision table</source>
+        <translation>Revisionstabelle hinzufügen</translation>
+    </message>
+    <message>
         <source>Add a cable list</source>
         <translation>Kabelliste hinzufügen</translation>
     </message>
@@ -20137,11 +20651,11 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>Export markers...</source>
-        <translation>Beschriftung exportieren…</translation>
+        <translation type="vanished">Beschriftung exportieren…</translation>
     </message>
     <message>
         <source>Wire, terminal, device and cable markers for Phoenix Contact, Weidmüller or WAGO marking software</source>
-        <translation>Draht-, Klemmen-, Geräte- und Kabelschilder für die Beschriftungsprogramme von Phoenix Contact, Weidmüller oder WAGO</translation>
+        <translation type="vanished">Draht-, Klemmen-, Geräte- und Kabelschilder für die Beschriftungsprogramme von Phoenix Contact, Weidmüller oder WAGO</translation>
     </message>
     <message>
         <source>Export the list of names of wires</source>
@@ -20687,7 +21201,7 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>Open it read-only to look at it without changing it. Open it anyway only if you know that session is not using it any more: both of you could then save over each other.</source>
-        <translation>Öffnen Sie es schreibgeschützt, um es anzusehen, ohne es zu ändern. Öffnen Sie es trotzdem nur, wenn Sie wissen, dass diese Sitzung es nicht mehr verwendet: sonst könnten Sie sich gegenseitig die Änderungen überschreiben.</translation>
+        <translation type="vanished">Öffnen Sie es schreibgeschützt, um es anzusehen, ohne es zu ändern. Öffnen Sie es trotzdem nur, wenn Sie wissen, dass diese Sitzung es nicht mehr verwendet: sonst könnten Sie sich gegenseitig die Änderungen überschreiben.</translation>
     </message>
     <message>
         <source>Open read-only</source>
@@ -20695,7 +21209,7 @@ Halten Sie während des Verschiebens die Strg-Taste gedrückt, um die Texte frei
     </message>
     <message>
         <source>Open anyway</source>
-        <translation>Trotzdem öffnen</translation>
+        <translation type="vanished">Trotzdem öffnen</translation>
     </message>
     <message>
         <source>Cannot open %1</source>
@@ -22690,6 +23204,68 @@ Die erforderlichen Bedingungen wurden nicht erfüllt</translation>
         <comment>menu entry</comment>
         <translation>Anzeige von Werkzeugsleisten</translation>
     </message>
+    <message>
+        <source>Report a bug or a wish...</source>
+        <translation>Fehler oder Wunsch melden...</translation>
+    </message>
+    <message>
+        <source>Writes a bug report or a wish for the developers into the company distribution folder</source>
+        <comment>status bar tip</comment>
+        <translation>Schreibt eine Fehlermeldung oder einen Wunsch für die Entwickler in den Verteilordner der Firma</translation>
+    </message>
+    <message>
+        <source>Check for updates...</source>
+        <translation>Nach Updates suchen...</translation>
+    </message>
+    <message>
+        <source>Looks for a newer version in the company distribution folder</source>
+        <comment>status bar tip</comment>
+        <translation>Sucht im Verteilordner der Firma nach einer neueren Version</translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation type="vanished">Vorgabe</translation>
+    </message>
+    <message>
+        <source>Unit</source>
+        <translation type="vanished">Einheit</translation>
+    </message>
+    <message>
+        <source>Text</source>
+        <translation type="vanished">Text</translation>
+    </message>
+    <message>
+        <source>Device tag (next free one)</source>
+        <translation type="vanished">Kennzeichen (nächstes freies)</translation>
+    </message>
+    <message>
+        <source>Terminal number (next free one)</source>
+        <translation type="vanished">Klemmennummer (nächste freie)</translation>
+    </message>
+    <message>
+        <source>Number</source>
+        <translation type="vanished">Zahl</translation>
+    </message>
+    <message>
+        <source>The selection holds no placeholder: it is placed as it is, its labels counted on.</source>
+        <translation type="vanished">Die Auswahl enthält keinen Platzhalter: sie wird so eingefügt, ihre Kennzeichen zählen weiter.</translation>
+    </message>
+    <message>
+        <source>Choice table (optional, pasted from Excel): the first line names the columns, the first column is the placeholder which picks the row, the others become placeholders too.</source>
+        <translation type="vanished">Auswahltabelle (optional, aus Excel eingefügt): Die erste Zeile nennt die Spalten, die erste Spalte ist der Platzhalter, der die Zeile wählt, die anderen werden ebenfalls Platzhalter.</translation>
+    </message>
+    <message>
+        <source>Saved in: %1</source>
+        <translation type="vanished">Gespeichert in: %1</translation>
+    </message>
+    <message>
+        <source>The first line of the table has to name its columns.</source>
+        <translation type="vanished">Die erste Zeile der Tabelle muss die Spalten benennen.</translation>
+    </message>
+    <message>
+        <source>Give the template a name.</source>
+        <translation type="vanished">Gib der Vorlage einen Namen.</translation>
+    </message>
 </context>
 <context>
     <name>QETProject</name>
@@ -23136,9 +23712,6 @@ Was möchten Sie tun?</translation>
 </context>
 <context>
     <name>QObject</name>
-    <message>
-
-    </message>
     <message>
         <source>Take over PLC tags from TIA Portal</source>
         <translation>SPS-Variablen aus TIA Portal übernehmen</translation>
@@ -24089,6 +24662,14 @@ Möchten Sie sie ersetzen?</translation>
         <translation>Arbeitszeit [h]</translation>
     </message>
     <message>
+        <source>Higher-level function (==)</source>
+        <translation>Höhere Ebene (==)</translation>
+    </message>
+    <message>
+        <source>Higher-level location (++)</source>
+        <translation>Höherer Einbauort (++)</translation>
+    </message>
+    <message>
         <source>Conductor type</source>
         <translation>Leitertyp</translation>
     </message>
@@ -24387,6 +24968,14 @@ Möchten Sie sie ersetzen?</translation>
     <message>
         <source>Add a summary</source>
         <translation>Inhaltsverzeichnis einfügen</translation>
+    </message>
+    <message>
+        <source>Add a revision table</source>
+        <translation>Revisionstabelle hinzufügen</translation>
+    </message>
+    <message>
+        <source>Revisions</source>
+        <translation>Revisionen</translation>
     </message>
     <message>
         <source>Add a cable list</source>
@@ -25860,49 +26449,6 @@ Wie möchten Sie sie platzieren?</translation>
         <translation>%1: %2</translation>
     </message>
     <message>
-        <source>Import FluidSIM circuit</source>
-        <translation>FluidSIM-Schaltung importieren</translation>
-    </message>
-    <message>
-        <source>The import program (%1) was not found next to QElectroTech. Set QET_FLUIDSIM_IMPORT to its path.</source>
-        <translation>Das Importprogramm (%1) liegt nicht neben QElectroTech. QET_FLUIDSIM_IMPORT auf seinen Pfad setzen.</translation>
-    </message>
-    <message>
-        <source>FluidSIM circuits (*.circ);;All files (*)</source>
-        <translation>FluidSIM-Schaltungen (*.circ);;Alle Dateien (*)</translation>
-    </message>
-    <message>
-        <source>Save the imported project as</source>
-        <translation>Importiertes Projekt speichern unter</translation>
-    </message>
-    <message>
-        <source>QElectroTech projects (*.qet)</source>
-        <translation>QElectroTech-Projekte (*.qet)</translation>
-    </message>
-    <message numerus="yes">
-        <source>Importing %n FluidSIM circuit(s) …</source>
-        <translation>
-            <numerusform>Importiere %n FluidSIM-Schaltung …</numerusform>
-            <numerusform>Importiere %n FluidSIM-Schaltungen …</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation>Abbrechen</translation>
-    </message>
-    <message>
-        <source>No Python could run the import program:
-%1</source>
-        <translation>Kein Python konnte das Importprogramm ausführen:
-%1</translation>
-    </message>
-    <message>
-        <source>The import did not finish:
-%1</source>
-        <translation>Der Import ist nicht fertig geworden:
-%1</translation>
-    </message>
-    <message>
         <source>Give the symbols of these parts their device type</source>
         <translation>Den Symbolen dieser Artikel ihren Gerätetyp geben</translation>
     </message>
@@ -26154,6 +26700,46 @@ Wie möchten Sie sie platzieren?</translation>
     <message>
         <source>Open revision folder</source>
         <translation>Revisionsordner öffnen</translation>
+    </message>
+    <message>
+        <source>Updates</source>
+        <translation>Updates</translation>
+    </message>
+    <message>
+        <source>No distribution folder found. Synchronise the SharePoint library &quot;QET-Fork&quot; with OneDrive or name its folder in the environment variable QET_DISTRIBUTION_DIR.</source>
+        <translation>Kein Verteilordner gefunden. Bitte die SharePoint-Bibliothek „QET-Fork“ mit OneDrive synchronisieren oder ihren Ordner in der Umgebungsvariablen QET_DISTRIBUTION_DIR angeben.</translation>
+    </message>
+    <message>
+        <source>This version (%1) is up to date.</source>
+        <translation>Diese Version (%1) ist aktuell.</translation>
+    </message>
+    <message>
+        <source>Update available</source>
+        <translation>Update verfügbar</translation>
+    </message>
+    <message>
+        <source>Version %1 is available (installed: %2).</source>
+        <translation>Version %1 ist verfügbar (installiert: %2).</translation>
+    </message>
+    <message>
+        <source>Install now</source>
+        <translation>Jetzt installieren</translation>
+    </message>
+    <message>
+        <source>Skip this version</source>
+        <translation>Diese Version überspringen</translation>
+    </message>
+    <message>
+        <source>Later</source>
+        <translation>Später</translation>
+    </message>
+    <message>
+        <source>Update</source>
+        <translation>Update</translation>
+    </message>
+    <message>
+        <source>The installer %1 could not be started.</source>
+        <translation>Das Installierskript %1 ließ sich nicht starten.</translation>
     </message>
 </context>
 <context>
@@ -26992,6 +27578,77 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     </message>
 </context>
 <context>
+    <name>ReportDialog</name>
+    <message>
+        <source>Report a bug or a wish</source>
+        <translation>Fehler oder Wunsch melden</translation>
+    </message>
+    <message>
+        <source>Describe what happened or what you wish for. The report goes to the developers together with the program version; nothing is sent to the internet.</source>
+        <translation>Beschreibe, was passiert ist oder was du dir wünschst. Die Meldung geht mit der Programmversion an die Entwickler; ins Internet wird nichts geschickt.</translation>
+    </message>
+    <message>
+        <source>Bug</source>
+        <translation>Fehler</translation>
+    </message>
+    <message>
+        <source>Wish / new feature</source>
+        <translation>Wunsch / neue Funktion</translation>
+    </message>
+    <message>
+        <source>Kind</source>
+        <translation type="unfinished">Art</translation>
+    </message>
+    <message>
+        <source>in a few words</source>
+        <translation type="unfinished">in wenigen Worten</translation>
+    </message>
+    <message>
+        <source>Title</source>
+        <translation type="unfinished">Titel</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <source>What did you do, what did you expect, what happened instead? Which project or sheet?</source>
+        <translation type="unfinished">Was hast du gemacht, was hast du erwartet, was ist stattdessen passiert? Welches Projekt, welches Blatt?</translation>
+    </message>
+    <message>
+        <source>Attach a screenshot of the window</source>
+        <translation type="unfinished">Bildschirmfoto des Fensters anhängen</translation>
+    </message>
+    <message>
+        <source>Attach the diagnostic report (latest log entries)</source>
+        <translation type="unfinished">Diagnosebericht anhängen (letzte Protokolleinträge)</translation>
+    </message>
+    <message>
+        <source>Send</source>
+        <translation type="unfinished">Senden</translation>
+    </message>
+    <message>
+        <source>Please enter a title or a description.</source>
+        <translation type="unfinished">Bitte einen Titel oder eine Beschreibung eingeben.</translation>
+    </message>
+    <message>
+        <source>The folder %1 could not be created.</source>
+        <translation>Der Ordner %1 ließ sich nicht anlegen.</translation>
+    </message>
+    <message>
+        <source>The report could not be written.</source>
+        <translation type="unfinished">Die Meldung konnte nicht geschrieben werden.</translation>
+    </message>
+    <message>
+        <source>Thank you, the report has been saved.</source>
+        <translation type="unfinished">Danke, die Meldung ist gespeichert.</translation>
+    </message>
+    <message>
+        <source>Thank you. The distribution folder is not available; the report is kept on this computer and handed in at the next start.</source>
+        <translation type="unfinished">Danke. Der Verteilordner ist gerade nicht erreichbar; die Meldung bleibt auf diesem Rechner und wird beim nächsten Start nachgereicht.</translation>
+    </message>
+</context>
+<context>
     <name>ReportPropertieWidget</name>
     <message>
         <source>Form</source>
@@ -27124,6 +27781,53 @@ Folgende Variablen sind verfügbar:
             <numerusform>%n Seite nach %1 geschrieben.</numerusform>
             <numerusform>%n Seiten nach %1 geschrieben.</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>RevisionQueryWidget</name>
+    <message>
+        <source>The table shows the project&apos;s revision history: revision, date, description, author and approver, the latest last. Edit it in Project properties &gt; Revisions.</source>
+        <translation>Die Tabelle zeigt die Revisionen des Projekts: Revision, Datum, Beschreibung, Bearbeiter und Freigabe, die neueste zuletzt. Bearbeiten unter Projekteigenschaften &gt; Revisionen.</translation>
+    </message>
+</context>
+<context>
+    <name>RevisionsConfigPage</name>
+    <message>
+        <source>Revisions</source>
+        <comment>configuration page title</comment>
+        <translation>Revisionen</translation>
+    </message>
+    <message>
+        <source>Revision</source>
+        <translation type="unfinished">Revision</translation>
+    </message>
+    <message>
+        <source>Date</source>
+        <translation type="unfinished">Datum</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation type="unfinished">Beschreibung</translation>
+    </message>
+    <message>
+        <source>Author</source>
+        <translation type="unfinished">Bearbeiter</translation>
+    </message>
+    <message>
+        <source>Approved by</source>
+        <translation>Freigegeben von</translation>
+    </message>
+    <message>
+        <source>Add a revision</source>
+        <translation>Revision hinzufügen</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="unfinished">Entfernen</translation>
+    </message>
+    <message>
+        <source>The project&apos;s revision history, the latest last. A table on a folio can print it.</source>
+        <translation>Die Revisionen des Projekts, die neueste zuletzt. Eine Tabelle auf einem Blatt kann sie drucken; „Revision abschließen“ fügt hier eine Zeile hinzu.</translation>
     </message>
 </context>
 <context>
@@ -28312,8 +29016,16 @@ Andere Felder werden nicht verwendet.</translation>
 <context>
     <name>StructureBoxPropertiesWidget</name>
     <message>
+        <source>Higher-level function (==)</source>
+        <translation>Höhere Ebene (==)</translation>
+    </message>
+    <message>
         <source>Plant (=)</source>
         <translation>Anlage (=)</translation>
+    </message>
+    <message>
+        <source>Higher-level location (++)</source>
+        <translation>Höherer Einbauort (++)</translation>
     </message>
     <message>
         <source>Location (+)</source>
@@ -28322,6 +29034,10 @@ Andere Felder werden nicht verwendet.</translation>
     <message>
         <source>Prefix (-)</source>
         <translation>Präfix (-)</translation>
+    </message>
+    <message>
+        <source>Left empty, the folio&apos;s</source>
+        <translation>Leer: die des Blatts</translation>
     </message>
     <message>
         <source> pt</source>
@@ -30745,6 +31461,10 @@ Andere Felder werden nicht verwendet.</translation>
         <translation>Reserveklemmen hinzufügen...</translation>
     </message>
     <message>
+        <source>Cable sides...</source>
+        <translation>Kabelseiten…</translation>
+    </message>
+    <message>
         <source>Move to :</source>
         <translation>verschieben nach:</translation>
     </message>
@@ -30882,6 +31602,26 @@ Andere Felder werden nicht verwendet.</translation>
             <numerusform>%n gefunden</numerusform>
             <numerusform>%n gefunden</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>Cable sides</source>
+        <translation>Kabelseiten</translation>
+    </message>
+    <message>
+        <source>This strip has no cables.</source>
+        <translation>Diese Leiste hat keine Kabel.</translation>
+    </message>
+    <message>
+        <source>Below</source>
+        <translation>Unten</translation>
+    </message>
+    <message>
+        <source>Above</source>
+        <translation type="unfinished">Oben</translation>
+    </message>
+    <message>
+        <source>Change the sides of terminal strip cables</source>
+        <translation>Seiten der Kabel an der Klemmleiste ändern</translation>
     </message>
     <message>
         <source>A bridge of your own</source>
@@ -31835,15 +32575,15 @@ Strg+Eingabe gibt die Zelle zurück, Escape verwirft den Text.</translation>
     </message>
     <message>
         <source>The heat correction must lie between -10 and +20.</source>
-        <translation type="unfinished">Die Heizkorrektur muss zwischen -10 und +20 liegen.</translation>
+        <translation type="obsolete">Die Heizkorrektur muss zwischen -10 und +20 liegen.</translation>
     </message>
     <message>
         <source>The printer only knows the speeds 30, 40, 50, 75, 100 and 125 mm/s.</source>
-        <translation type="unfinished">Der Drucker kennt nur die Geschwindigkeiten 30, 40, 50, 75, 100 und 125 mm/s.</translation>
+        <translation type="obsolete">Der Drucker kennt nur die Geschwindigkeiten 30, 40, 50, 75, 100 und 125 mm/s.</translation>
     </message>
     <message>
         <source>The labels are wider than the print head (105.7 mm).</source>
-        <translation type="unfinished">Die Etiketten sind breiter als der Druckkopf (105,7 mm).</translation>
+        <translation type="obsolete">Die Etiketten sind breiter als der Druckkopf (105,7 mm).</translation>
     </message>
     <message>
         <source>There is nothing to print.</source>
@@ -32700,7 +33440,7 @@ Menge: %n Etiketten</numerusform>
     </message>
     <message>
         <source>No printer is loaded with article %1. Load it on a printer and enter it there under &quot;Printers...&quot;.</source>
-        <translation type="unfinished">Kein Drucker ist mit Artikel %1 gerüstet. Ihn auf einem Drucker rüsten und dort unter „Drucker…“ eintragen.</translation>
+        <translation type="obsolete">Kein Drucker ist mit Artikel %1 gerüstet. Ihn auf einem Drucker rüsten und dort unter „Drucker…“ eintragen.</translation>
     </message>
     <message>
         <source>Printer &quot;%1&quot; is loaded with article %2.</source>
@@ -32843,7 +33583,7 @@ Menge: %n Etiketten</numerusform>
     </message>
     <message>
         <source>Label sizes, font and heat are those of your material; QElectroTech fills none in. Try a new profile on one label first.</source>
-        <translation type="unfinished">Etikettenmaße, Schrift und Heizung sind die Ihres Materials; QElectroTech trägt keine ein. Ein neues Profil zuerst an einem Etikett ausprobieren.</translation>
+        <translation type="obsolete">Etikettenmaße, Schrift und Heizung sind die Ihres Materials; QElectroTech trägt keine ein. Ein neues Profil zuerst an einem Etikett ausprobieren.</translation>
     </message>
     <message>
         <source>THM printer %1</source>
@@ -32884,6 +33624,229 @@ Menge: %n Etiketten</numerusform>
     <message>
         <source>Choose the material from the catalog, filtered by category, size and colour</source>
         <translation>Material aus dem Katalog wählen, gefiltert nach Kategorie, Maß und Farbe</translation>
+    </message>
+</context>
+<context>
+    <name>TiaPlcTags</name>
+    <message>
+        <source>The workbook has no sheet with the columns Name and Logical Address.</source>
+        <translation>Die Arbeitsmappe hat kein Blatt mit den Spalten Name und Logical Address.</translation>
+    </message>
+    <message>
+        <source>Not an XML file: %1</source>
+        <translation>Keine XML-Datei: %1</translation>
+    </message>
+    <message>
+        <source>The XML file is no TIA Portal tag table (SW.Tags.PlcTagTable).</source>
+        <translation>Die XML-Datei ist keine Variablentabelle von TIA Portal (SW.Tags.PlcTagTable).</translation>
+    </message>
+    <message>
+        <source>%1, row %2: address &quot;%3&quot; is neither an I/Q address nor a channel.</source>
+        <translation>%1, Zeile %2: Adresse „%3“ ist weder eine E/A-Adresse noch ein Kanal.</translation>
+    </message>
+    <message>
+        <source>%1, row %2: the name &quot;%3&quot; is taken, written as &quot;%4&quot;.</source>
+        <translation>%1, Zeile %2: Der Name „%3“ ist vergeben, geschrieben als „%4“.</translation>
+    </message>
+    <message>
+        <source>%1, row %2: address %3 is used twice.</source>
+        <translation>%1, Zeile %2: Adresse %3 ist doppelt belegt.</translation>
+    </message>
+    <message>
+        <source>same</source>
+        <translation>gleich</translation>
+    </message>
+    <message>
+        <source>name differs</source>
+        <translation>Name abweichend</translation>
+    </message>
+    <message>
+        <source>comment differs</source>
+        <translation>Kommentar abweichend</translation>
+    </message>
+    <message>
+        <source>name and comment differ</source>
+        <translation>Name und Kommentar abweichend</translation>
+    </message>
+    <message>
+        <source>address differs</source>
+        <translation>Adresse abweichend</translation>
+    </message>
+    <message>
+        <source>missing in TIA</source>
+        <translation>fehlt in TIA</translation>
+    </message>
+    <message>
+        <source>only in TIA</source>
+        <translation>nur in TIA</translation>
+    </message>
+</context>
+<context>
+    <name>TiaTagsDialog</name>
+    <message>
+        <source>Only differences</source>
+        <translation>Nur Unterschiede</translation>
+    </message>
+    <message>
+        <source>PLC tags and TIA Portal</source>
+        <translation>SPS-Variablen und TIA Portal</translation>
+    </message>
+    <message>
+        <source>Each row is a channel of a PLC module as it goes to TIA Portal. &quot;Export for TIA…&quot; writes the tag table (.xlsx: open the tag table in TIA Portal and click Import). &quot;Compare with TIA table…&quot; reads a tag table exported from TIA Portal and shows what differs; the TIA names and comments can then be taken into the plan. Click a row to show the channel.</source>
+        <translation>Jede Zeile ist ein Kanal eines SPS-Moduls, so wie er nach TIA Portal geht. „Für TIA exportieren…“ schreibt die Variablentabelle (.xlsx: in TIA Portal die Variablentabelle öffnen und Importieren klicken). „Mit TIA-Tabelle abgleichen…“ liest eine aus TIA Portal exportierte Variablentabelle und zeigt die Unterschiede; danach lassen sich Namen und Kommentare aus TIA in den Plan übernehmen. Klick auf eine Zeile zeigt den Kanal.</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Status</translation>
+    </message>
+    <message>
+        <source>Address</source>
+        <translation>Adresse</translation>
+    </message>
+    <message>
+        <source>Name (plan)</source>
+        <translation>Name (Plan)</translation>
+    </message>
+    <message>
+        <source>Name (TIA)</source>
+        <translation>Name (TIA)</translation>
+    </message>
+    <message>
+        <source>Data type</source>
+        <translation>Datentyp</translation>
+    </message>
+    <message>
+        <source>Comment (plan)</source>
+        <translation>Kommentar (Plan)</translation>
+    </message>
+    <message>
+        <source>Comment (TIA)</source>
+        <translation>Kommentar (TIA)</translation>
+    </message>
+    <message>
+        <source>Module</source>
+        <translation>Modul</translation>
+    </message>
+    <message>
+        <source>Folio</source>
+        <translation>Blatt</translation>
+    </message>
+    <message>
+        <source>Export for TIA…</source>
+        <translation>Für TIA exportieren…</translation>
+    </message>
+    <message>
+        <source>Compare with TIA table…</source>
+        <translation>Mit TIA-Tabelle abgleichen…</translation>
+    </message>
+    <message>
+        <source>Take over names and comments</source>
+        <translation>Namen und Kommentare übernehmen</translation>
+    </message>
+    <message>
+        <source>Save report…</source>
+        <translation>Bericht speichern…</translation>
+    </message>
+    <message>
+        <source>not compared</source>
+        <translation>nicht abgeglichen</translation>
+    </message>
+    <message>
+        <source>%1 (TIA: %2)</source>
+        <translation>%1 (TIA: %2)</translation>
+    </message>
+    <message>
+        <source>Counted from the module&apos;s start address (channel %1); set the element information plc_start_address / plc_start_address_2 of the module for other addresses.</source>
+        <translation>Ab der Startadresse des Moduls gezählt (Kanal %1); für andere Adressen die Elementinformation plc_start_address / plc_start_address_2 am Modul setzen.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n channel(s) of PLC modules, </source>
+        <translation>
+            <numerusform>%n Kanal von SPS-Modulen, </numerusform>
+            <numerusform>%n Kanäle von SPS-Modulen, </numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n with an address counted from the module start.</source>
+        <translation>
+            <numerusform>%n mit ab dem Modulanfang gezählter Adresse.</numerusform>
+            <numerusform>%n mit ab dem Modulanfang gezählter Adresse.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Compared with %1: %2 the same, %3 name differs, %4 comment differs, %5 address differs, %6 missing in TIA, %7 only in TIA.</source>
+        <translation>Abgeglichen mit %1: %2 gleich, %3 Name abweichend, %4 Kommentar abweichend, %5 Adresse abweichend, %6 fehlen in TIA, %7 nur in TIA.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n tag(s) without I/Q address (memory, data blocks) not compared.</source>
+        <translation>
+            <numerusform>%n Variable ohne E/A-Adresse (Merker, Datenbausteine) nicht abgeglichen.</numerusform>
+            <numerusform>%n Variablen ohne E/A-Adresse (Merker, Datenbausteine) nicht abgeglichen.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Export PLC tags for TIA Portal</source>
+        <translation>SPS-Variablen für TIA Portal exportieren</translation>
+    </message>
+    <message>
+        <source>TIA Portal tag table (*.xlsx);;TIA Portal Openness (*.xml)</source>
+        <translation>TIA-Portal-Variablentabelle (*.xlsx);;TIA Portal Openness (*.xml)</translation>
+    </message>
+    <message>
+        <source>Could not write %1:
+%2</source>
+        <translation>%1 konnte nicht geschrieben werden:
+%2</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n PLC tag(s) written to %1.</source>
+        <translation>
+            <numerusform>%n SPS-Variable nach %1 geschrieben.</numerusform>
+            <numerusform>%n SPS-Variablen nach %1 geschrieben.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Import it with TIA Portal Openness into the PLC tags of the CPU.</source>
+        <translation>Mit TIA Portal Openness in die PLC-Variablen der CPU importieren.</translation>
+    </message>
+    <message>
+        <source>In TIA Portal open the tag table of the CPU (PLC tags) and click Import.</source>
+        <translation>In TIA Portal die Variablentabelle der CPU (PLC-Variablen) öffnen und Importieren klicken.</translation>
+    </message>
+    <message>
+        <source>Compare with TIA tag table</source>
+        <translation>Mit TIA-Variablentabelle abgleichen</translation>
+    </message>
+    <message>
+        <source>TIA Portal tag tables (*.xlsx *.xml)</source>
+        <translation>TIA-Portal-Variablentabellen (*.xlsx *.xml)</translation>
+    </message>
+    <message>
+        <source>%1 has no PLC tags.</source>
+        <translation>%1 enthält keine SPS-Variablen.</translation>
+    </message>
+    <message>
+        <source>Take over PLC tags from TIA Portal</source>
+        <translation>SPS-Variablen aus TIA Portal übernehmen</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n channel(s) took name and comment from TIA Portal (undo with Ctrl+Z).</source>
+        <translation>
+            <numerusform>%n Kanal hat Name und Kommentar aus TIA Portal übernommen (rückgängig mit Strg+Z).</numerusform>
+            <numerusform>%n Kanäle haben Name und Kommentar aus TIA Portal übernommen (rückgängig mit Strg+Z).</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Save comparison</source>
+        <translation>Abgleich speichern</translation>
+    </message>
+    <message>
+        <source>CSV (*.csv)</source>
+        <translation>CSV (*.csv)</translation>
+    </message>
+    <message>
+        <source>Could not write %1.</source>
+        <translation>%1 konnte nicht geschrieben werden.</translation>
     </message>
 </context>
 <context>
@@ -33020,6 +33983,30 @@ Menge: %n Etiketten</numerusform>
     <message>
         <source>The group this folio belongs to. Left empty, it is the plant. Available as variable %{folio_group} for title blocks</source>
         <translation>Die Gruppe, zu der diese Seite gehört. Leer gelassen ist es die Anlage. Als Variable %{folio_group} für Schriftfelder verfügbar</translation>
+    </message>
+    <message>
+        <source>Higher-level function (==):</source>
+        <translation>Höhere Ebene (==):</translation>
+    </message>
+    <message>
+        <source>The IEC 81346 level above the plant: ==A1 in ==A1=P1+L1-K1. Left empty, there is none. Available as variable %{higher_plant} for title blocks</source>
+        <translation>Die Ebene nach IEC 81346 über der Anlage: ==A1 in ==A1=P1+L1-K1. Leer: keine. Für Schriftfelder als Variable %{higher_plant}</translation>
+    </message>
+    <message>
+        <source>Higher-level location (++):</source>
+        <translation>Höherer Einbauort (++):</translation>
+    </message>
+    <message>
+        <source>The IEC 81346 level above the location: ++S1 in =P1++S1+L1-K1. Left empty, there is none. Available as variable %{higher_location} for title blocks</source>
+        <translation>Die Ebene nach IEC 81346 über dem Einbauort: ++S1 in =P1++S1+L1-K1. Leer: keine. Für Schriftfelder als Variable %{higher_location}</translation>
+    </message>
+    <message>
+        <source>Document kind (&amp;):</source>
+        <translation>Dokumentart (&amp;):</translation>
+    </message>
+    <message>
+        <source>What kind of document this folio is, as an IEC 61355 code. Left empty, none. Available as variable %{document_kind} for title blocks</source>
+        <translation>Welche Dokumentart dieses Blatt ist, als Kennbuchstaben nach IEC 61355. Leer: keine. Für Schriftfelder als Variable %{document_kind}</translation>
     </message>
     <message>
         <source>Folio sub-group:</source>
@@ -34326,629 +35313,6 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <message>
         <source>What:</source>
         <translation>Was:</translation>
-    </message>
-</context>
-<context>
-    <name>ReportDialog</name>
-    <message>
-        <source>Report a bug or a wish</source>
-        <translation>Fehler oder Wunsch melden</translation>
-    </message>
-    <message>
-        <source>Describe what happened or what you wish for. The report goes to the developers together with the program version; nothing is sent to the internet.</source>
-        <translation>Beschreibe, was passiert ist oder was du dir wünschst. Die Meldung geht mit der Programmversion an die Entwickler; ins Internet wird nichts geschickt.</translation>
-    </message>
-    <message>
-        <source>Bug</source>
-        <translation>Fehler</translation>
-    </message>
-    <message>
-        <source>Wish / new feature</source>
-        <translation>Wunsch / neue Funktion</translation>
-    </message>
-</context>
-<context>
-    <name>FunctionTemplate</name>
-    <message>
-        <source>The file %1 cannot be read.</source>
-        <translation>Die Datei %1 kann nicht gelesen werden.</translation>
-    </message>
-    <message>
-        <source>The file %1 is no valid XML.</source>
-        <translation>Die Datei %1 ist kein gültiges XML.</translation>
-    </message>
-    <message>
-        <source>The file %1 is no template.</source>
-        <translation>Die Datei %1 ist keine Vorlage.</translation>
-    </message>
-    <message>
-        <source>%1 = %2 is larger than the table goes (%3): its last row is used.</source>
-        <translation>%1 = %2 ist größer als die Tabelle reicht (%3): ihre letzte Zeile wird verwendet.</translation>
-    </message>
-    <message>
-        <source>The table for %1 holds no row for %2.</source>
-        <translation>Die Tabelle für %1 hat keine Zeile für %2.</translation>
-    </message>
-    <message>
-        <source>No value for %1: left as it is.</source>
-        <translation>Kein Wert für %1: bleibt stehen.</translation>
-    </message>
-    <message>
-        <source>This is no valid template.</source>
-        <translation>Das ist keine gültige Vorlage.</translation>
-    </message>
-    <message>
-        <source>There is no folio to place the template on.</source>
-        <translation>Es gibt kein Blatt, auf das die Vorlage kommen könnte.</translation>
-    </message>
-    <message>
-        <source>The project is read-only.</source>
-        <translation>Das Projekt ist schreibgeschützt.</translation>
-    </message>
-    <message>
-        <source>The template holds nothing to place.</source>
-        <translation>Die Vorlage enthält nichts zum Einfügen.</translation>
-    </message>
-    <message>
-        <source>Insert function template %1</source>
-        <translation>Funktionsvorlage %1 einfügen</translation>
-    </message>
-    <message>
-        <source>No folio could be added.</source>
-        <translation>Es konnte kein Blatt angelegt werden.</translation>
-    </message>
-    <message>
-        <source>PLC channel %1 linked to %2.</source>
-        <translation>SPS-Kanal %1 mit %2 verknüpft.</translation>
-    </message>
-    <message>
-        <source>PLC channel %1 of %2 is already used: the channel is left unlinked.</source>
-        <translation>SPS-Kanal %1 von %2 ist schon belegt: der Kanal bleibt unverknüpft.</translation>
-    </message>
-    <message>
-        <source>No PLC module of the project offers %1: the channel is left unlinked.</source>
-        <translation>Kein SPS-Modul des Projekts hat %1: der Kanal bleibt unverknüpft.</translation>
-    </message>
-    <message>
-        <source>Device tag</source>
-        <translation>Kennzeichen</translation>
-    </message>
-    <message>
-        <source>PLC address</source>
-        <translation>SPS-Adresse</translation>
-    </message>
-    <message>
-        <source>Power</source>
-        <translation>Leistung</translation>
-    </message>
-    <message>
-        <source>There is no folio to save from.</source>
-        <translation>Es gibt kein Blatt, aus dem gespeichert werden kann.</translation>
-    </message>
-    <message>
-        <source>The template needs a name.</source>
-        <translation>Die Vorlage braucht einen Namen.</translation>
-    </message>
-    <message>
-        <source>The selection holds no symbol.</source>
-        <translation>Die Auswahl enthält kein Symbol.</translation>
-    </message>
-    <message>
-        <source>The file %1 cannot be written.</source>
-        <translation>Die Datei %1 kann nicht geschrieben werden.</translation>
-    </message>
-</context>
-<context>
-    <name>FunctionTemplateDock</name>
-    <message>
-        <source>Function templates</source>
-        <translation>Funktionsvorlagen</translation>
-    </message>
-    <message>
-        <source>Search a template</source>
-        <translation>Vorlage suchen</translation>
-    </message>
-    <message>
-        <source>Read the templates again</source>
-        <translation>Vorlagen neu einlesen</translation>
-    </message>
-    <message>
-        <source>Open the folder of your own templates</source>
-        <translation>Ordner der eigenen Vorlagen öffnen</translation>
-    </message>
-    <message>
-        <source>Insert</source>
-        <translation>Einfügen</translation>
-    </message>
-    <message>
-        <source>Place it with the mouse on the current folio</source>
-        <translation>Mit der Maus auf dem aktuellen Blatt platzieren</translation>
-    </message>
-    <message>
-        <source>On a new folio</source>
-        <translation>Auf neues Blatt</translation>
-    </message>
-    <message>
-        <source>Add a folio at the end of the project and put the template on it</source>
-        <translation>Ein Blatt am Ende des Projekts anlegen und die Vorlage darauf setzen</translation>
-    </message>
-    <message>
-        <source>Without category</source>
-        <translation>Ohne Kategorie</translation>
-    </message>
-    <message>
-        <source>Examples</source>
-        <translation>Beispiele</translation>
-    </message>
-    <message>
-        <source>No template yet: select part of a folio and choose &quot;Save as function template…&quot;.</source>
-        <translation>Noch keine Vorlage: Teil eines Blatts markieren und „Als Funktionsvorlage speichern…“ wählen.</translation>
-    </message>
-    <message>
-        <source>Choose a template</source>
-        <translation>Vorlage wählen</translation>
-    </message>
-    <message>
-        <source>No picture</source>
-        <translation>Keine Vorschau</translation>
-    </message>
-    <message>
-        <source>Open a folio first, or put the template on a new folio.</source>
-        <translation>Erst ein Blatt öffnen oder die Vorlage auf ein neues Blatt setzen.</translation>
-    </message>
-    <message>
-        <source>Open a project first.</source>
-        <translation>Erst ein Projekt öffnen.</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n symbol(s) placed.</source>
-        <translation>
-            <numerusform>%n Symbol eingefügt.</numerusform>
-            <numerusform>%n Symbole eingefügt.</numerusform>
-        </translation>
-    </message>
-</context>
-<context>
-    <name>FunctionTemplateForm</name>
-    <message>
-        <source>This template asks for nothing: its labels are counted on.</source>
-        <translation>Diese Vorlage fragt nichts ab: ihre Kennzeichen zählen weiter.</translation>
-    </message>
-    <message>
-        <source>Row %1 = %2: %3</source>
-        <translation>Zeile %1 = %2: %3</translation>
-    </message>
-</context>
-<context>
-    <name>FunctionTemplateValuesDialog</name>
-    <message>
-        <source>Function template %1</source>
-        <translation>Funktionsvorlage %1</translation>
-    </message>
-</context>
-<context>
-    <name>FunctionTemplateSaveDialog</name>
-    <message>
-        <source>Save as function template</source>
-        <translation>Als Funktionsvorlage speichern</translation>
-    </message>
-    <message>
-        <source>Motor feeder DOL</source>
-        <translation>Motorabgang DOL</translation>
-    </message>
-    <message>
-        <source>Name:</source>
-        <translation>Name:</translation>
-    </message>
-    <message>
-        <source>Category:</source>
-        <translation>Kategorie:</translation>
-    </message>
-    <message>
-        <source>Description:</source>
-        <translation>Beschreibung:</translation>
-    </message>
-    <message>
-        <source>Write {NAME} in a label, a text or an article to ask for it when the template is placed: {BMK}, {P_kW}, {ADR}. {N+1} is the value counted on by one. Labels without braces are counted on to the next free one by themselves.</source>
-        <translation>{NAME} in ein Kennzeichen, einen Text oder einen Artikel schreiben, um es beim Einfügen abzufragen: {BMK}, {P_kW}, {ADR}. {N+1} ist der Wert um eins weitergezählt. Kennzeichen ohne Klammern zählen von selbst auf das nächste freie weiter.</translation>
-    </message>
-    <message>
-        <source>Placeholder</source>
-        <translation>Platzhalter</translation>
-    </message>
-    <message>
-        <source>Asked as</source>
-        <translation>Abgefragt als</translation>
-    </message>
-    <message>
-        <source>Kind</source>
-        <translation>Art</translation>
-    </message>
-    <message>
-        <source>in a few words</source>
-        <translation>in wenigen Worten</translation>
-    </message>
-    <message>
-        <source>Title</source>
-        <translation>Titel</translation>
-    </message>
-    <message>
-        <source>Name</source>
-        <translation>Name</translation>
-    </message>
-    <message>
-        <source>What did you do, what did you expect, what happened instead? Which project or sheet?</source>
-        <translation>Was hast du gemacht, was hast du erwartet, was ist stattdessen passiert? Welches Projekt, welches Blatt?</translation>
-    </message>
-    <message>
-        <source>Attach a screenshot of the window</source>
-        <translation>Bildschirmfoto des Fensters anhängen</translation>
-    </message>
-    <message>
-        <source>Attach the diagnostic report (latest log entries)</source>
-        <translation>Diagnosebericht anhängen (letzte Protokolleinträge)</translation>
-    </message>
-    <message>
-        <source>Send</source>
-        <translation>Senden</translation>
-    </message>
-    <message>
-        <source>Please enter a title or a description.</source>
-        <translation>Bitte einen Titel oder eine Beschreibung eingeben.</translation>
-    </message>
-    <message>
-        <source>The folder %1 could not be created.</source>
-        <translation>Der Ordner %1 konnte nicht angelegt werden.</translation>
-    </message>
-    <message>
-        <source>The report could not be written.</source>
-        <translation>Die Meldung konnte nicht geschrieben werden.</translation>
-    </message>
-    <message>
-        <source>Thank you, the report has been saved.</source>
-        <translation>Danke, die Meldung ist gespeichert.</translation>
-    </message>
-    <message>
-        <source>Thank you. The distribution folder is not available; the report is kept on this computer and handed in at the next start.</source>
-        <translation>Danke. Der Verteilordner ist gerade nicht erreichbar; die Meldung bleibt auf diesem Rechner und wird beim nächsten Start nachgereicht.</translation>
-    </message>
-</context>
-<context>
-    <name>QObject</name>
-    <message>
-        <source>Updates</source>
-        <translation>Updates</translation>
-    </message>
-    <message>
-        <source>No distribution folder found. Synchronise the SharePoint library "QET-Fork" with OneDrive or name its folder in the environment variable QET_DISTRIBUTION_DIR.</source>
-        <translation>Kein Verteilordner gefunden. Bitte die SharePoint-Bibliothek „QET-Fork“ mit OneDrive synchronisieren oder ihren Ordner in der Umgebungsvariablen QET_DISTRIBUTION_DIR angeben.</translation>
-    </message>
-    <message>
-        <source>This version (%1) is up to date.</source>
-        <translation>Diese Version (%1) ist aktuell.</translation>
-    </message>
-    <message>
-        <source>Update available</source>
-        <translation>Update verfügbar</translation>
-    </message>
-    <message>
-        <source>Version %1 is available (installed: %2).</source>
-        <translation>Version %1 ist verfügbar (installiert: %2).</translation>
-    </message>
-    <message>
-        <source>Install now</source>
-        <translation>Jetzt installieren</translation>
-    </message>
-    <message>
-        <source>Skip this version</source>
-        <translation>Diese Version überspringen</translation>
-    </message>
-    <message>
-        <source>Later</source>
-        <translation>Später</translation>
-    </message>
-    <message>
-        <source>Update</source>
-        <translation>Update</translation>
-    </message>
-    <message>
-        <source>The installer %1 could not be started.</source>
-        <translation>Das Installierskript %1 ließ sich nicht starten.</translation>
-    </message>
-</context>
-<context>
-    <name>QETMainWindow</name>
-    <message>
-        <source>Report a bug or a wish...</source>
-        <translation>Fehler oder Wunsch melden...</translation>
-    </message>
-    <message>
-        <source>Writes a bug report or a wish for the developers into the company distribution folder</source>
-        <comment>status bar tip</comment>
-        <translation>Schreibt eine Fehlermeldung oder einen Wunsch für die Entwickler in den Verteilordner der Firma</translation>
-    </message>
-    <message>
-        <source>Check for updates...</source>
-        <translation>Nach Updates suchen...</translation>
-    </message>
-    <message>
-        <source>Looks for a newer version in the company distribution folder</source>
-        <comment>status bar tip</comment>
-        <translation>Sucht im Verteilordner der Firma nach einer neueren Version</translation>
-    </message>
-    <message>
-        <source>Default</source>
-        <translation>Vorgabe</translation>
-    </message>
-    <message>
-        <source>Unit</source>
-        <translation>Einheit</translation>
-    </message>
-    <message>
-        <source>Text</source>
-        <translation>Text</translation>
-    </message>
-    <message>
-        <source>Device tag (next free one)</source>
-        <translation>Kennzeichen (nächstes freies)</translation>
-    </message>
-    <message>
-        <source>Terminal number (next free one)</source>
-        <translation>Klemmennummer (nächste freie)</translation>
-    </message>
-    <message>
-        <source>Number</source>
-        <translation>Zahl</translation>
-    </message>
-    <message>
-        <source>The selection holds no placeholder: it is placed as it is, its labels counted on.</source>
-        <translation>Die Auswahl enthält keinen Platzhalter: sie wird so eingefügt, ihre Kennzeichen zählen weiter.</translation>
-    </message>
-    <message>
-        <source>Choice table (optional, pasted from Excel): the first line names the columns, the first column is the placeholder which picks the row, the others become placeholders too.</source>
-        <translation>Auswahltabelle (optional, aus Excel eingefügt): Die erste Zeile nennt die Spalten, die erste Spalte ist der Platzhalter, der die Zeile wählt, die anderen werden ebenfalls Platzhalter.</translation>
-    </message>
-    <message>
-        <source>Saved in: %1</source>
-        <translation>Gespeichert in: %1</translation>
-    </message>
-    <message>
-        <source>The first line of the table has to name its columns.</source>
-        <translation>Die erste Zeile der Tabelle muss die Spalten benennen.</translation>
-    </message>
-    <message>
-        <source>Give the template a name.</source>
-        <translation>Gib der Vorlage einen Namen.</translation>
-    </message>
-</context>
-<context>
-    <name>DiagramEventAddFunctionTemplate</name>
-    <message>
-        <source>Click to place &quot;%1&quot;, right click or Escape to stop.</source>
-        <translation>Klicken, um „%1“ zu platzieren; Rechtsklick oder Esc beendet.</translation>
-    </message>
-</context>
-<context>
-    <name>TiaPlcTags</name>
-    <message>
-        <source>The workbook has no sheet with the columns Name and Logical Address.</source>
-        <translation>Die Arbeitsmappe hat kein Blatt mit den Spalten Name und Logical Address.</translation>
-    </message>
-    <message>
-        <source>Not an XML file: %1</source>
-        <translation>Keine XML-Datei: %1</translation>
-    </message>
-    <message>
-        <source>The XML file is no TIA Portal tag table (SW.Tags.PlcTagTable).</source>
-        <translation>Die XML-Datei ist keine Variablentabelle von TIA Portal (SW.Tags.PlcTagTable).</translation>
-    </message>
-    <message>
-        <source>%1, row %2: address &quot;%3&quot; is neither an I/Q address nor a channel.</source>
-        <translation>%1, Zeile %2: Adresse „%3“ ist weder eine E/A-Adresse noch ein Kanal.</translation>
-    </message>
-    <message>
-        <source>%1, row %2: the name &quot;%3&quot; is taken, written as &quot;%4&quot;.</source>
-        <translation>%1, Zeile %2: Der Name „%3“ ist vergeben, geschrieben als „%4“.</translation>
-    </message>
-    <message>
-        <source>%1, row %2: address %3 is used twice.</source>
-        <translation>%1, Zeile %2: Adresse %3 ist doppelt belegt.</translation>
-    </message>
-    <message>
-        <source>same</source>
-        <translation>gleich</translation>
-    </message>
-    <message>
-        <source>name differs</source>
-        <translation>Name abweichend</translation>
-    </message>
-    <message>
-        <source>comment differs</source>
-        <translation>Kommentar abweichend</translation>
-    </message>
-    <message>
-        <source>name and comment differ</source>
-        <translation>Name und Kommentar abweichend</translation>
-    </message>
-    <message>
-        <source>address differs</source>
-        <translation>Adresse abweichend</translation>
-    </message>
-    <message>
-        <source>missing in TIA</source>
-        <translation>fehlt in TIA</translation>
-    </message>
-    <message>
-        <source>only in TIA</source>
-        <translation>nur in TIA</translation>
-    </message>
-</context>
-<context>
-    <name>TiaTagsDialog</name>
-    <message>
-        <source>Only differences</source>
-        <translation>Nur Unterschiede</translation>
-    </message>
-    <message>
-        <source>PLC tags and TIA Portal</source>
-        <translation>SPS-Variablen und TIA Portal</translation>
-    </message>
-    <message>
-        <source>Each row is a channel of a PLC module as it goes to TIA Portal. &quot;Export for TIA…&quot; writes the tag table (.xlsx: open the tag table in TIA Portal and click Import). &quot;Compare with TIA table…&quot; reads a tag table exported from TIA Portal and shows what differs; the TIA names and comments can then be taken into the plan. Click a row to show the channel.</source>
-        <translation>Jede Zeile ist ein Kanal eines SPS-Moduls, so wie er nach TIA Portal geht. „Für TIA exportieren…“ schreibt die Variablentabelle (.xlsx: in TIA Portal die Variablentabelle öffnen und Importieren klicken). „Mit TIA-Tabelle abgleichen…“ liest eine aus TIA Portal exportierte Variablentabelle und zeigt die Unterschiede; danach lassen sich Namen und Kommentare aus TIA in den Plan übernehmen. Klick auf eine Zeile zeigt den Kanal.</translation>
-    </message>
-    <message>
-        <source>Status</source>
-        <translation>Status</translation>
-    </message>
-    <message>
-        <source>Address</source>
-        <translation>Adresse</translation>
-    </message>
-    <message>
-        <source>Name (plan)</source>
-        <translation>Name (Plan)</translation>
-    </message>
-    <message>
-        <source>Name (TIA)</source>
-        <translation>Name (TIA)</translation>
-    </message>
-    <message>
-        <source>Data type</source>
-        <translation>Datentyp</translation>
-    </message>
-    <message>
-        <source>Comment (plan)</source>
-        <translation>Kommentar (Plan)</translation>
-    </message>
-    <message>
-        <source>Comment (TIA)</source>
-        <translation>Kommentar (TIA)</translation>
-    </message>
-    <message>
-        <source>Module</source>
-        <translation>Modul</translation>
-    </message>
-    <message>
-        <source>Folio</source>
-        <translation>Blatt</translation>
-    </message>
-    <message>
-        <source>Export for TIA…</source>
-        <translation>Für TIA exportieren…</translation>
-    </message>
-    <message>
-        <source>Compare with TIA table…</source>
-        <translation>Mit TIA-Tabelle abgleichen…</translation>
-    </message>
-    <message>
-        <source>Take over names and comments</source>
-        <translation>Namen und Kommentare übernehmen</translation>
-    </message>
-    <message>
-        <source>Save report…</source>
-        <translation>Bericht speichern…</translation>
-    </message>
-    <message>
-        <source>not compared</source>
-        <translation>nicht abgeglichen</translation>
-    </message>
-    <message>
-        <source>%1 (TIA: %2)</source>
-        <translation>%1 (TIA: %2)</translation>
-    </message>
-    <message>
-        <source>Counted from the module&apos;s start address (channel %1); set the element information plc_start_address / plc_start_address_2 of the module for other addresses.</source>
-        <translation>Ab der Startadresse des Moduls gezählt (Kanal %1); für andere Adressen die Elementinformation plc_start_address / plc_start_address_2 am Modul setzen.</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n channel(s) of PLC modules, </source>
-        <translation>
-            <numerusform>%n Kanal von SPS-Modulen, </numerusform>
-            <numerusform>%n Kanäle von SPS-Modulen, </numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <source>%n with an address counted from the module start.</source>
-        <translation>
-            <numerusform>%n mit ab dem Modulanfang gezählter Adresse.</numerusform>
-            <numerusform>%n mit ab dem Modulanfang gezählter Adresse.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Compared with %1: %2 the same, %3 name differs, %4 comment differs, %5 address differs, %6 missing in TIA, %7 only in TIA.</source>
-        <translation>Abgeglichen mit %1: %2 gleich, %3 Name abweichend, %4 Kommentar abweichend, %5 Adresse abweichend, %6 fehlen in TIA, %7 nur in TIA.</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n tag(s) without I/Q address (memory, data blocks) not compared.</source>
-        <translation>
-            <numerusform>%n Variable ohne E/A-Adresse (Merker, Datenbausteine) nicht abgeglichen.</numerusform>
-            <numerusform>%n Variablen ohne E/A-Adresse (Merker, Datenbausteine) nicht abgeglichen.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Export PLC tags for TIA Portal</source>
-        <translation>SPS-Variablen für TIA Portal exportieren</translation>
-    </message>
-    <message>
-        <source>TIA Portal tag table (*.xlsx);;TIA Portal Openness (*.xml)</source>
-        <translation>TIA-Portal-Variablentabelle (*.xlsx);;TIA Portal Openness (*.xml)</translation>
-    </message>
-    <message>
-        <source>Could not write %1:
-%2</source>
-        <translation>%1 konnte nicht geschrieben werden:
-%2</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n PLC tag(s) written to %1.</source>
-        <translation>
-            <numerusform>%n SPS-Variable nach %1 geschrieben.</numerusform>
-            <numerusform>%n SPS-Variablen nach %1 geschrieben.</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Import it with TIA Portal Openness into the PLC tags of the CPU.</source>
-        <translation>Mit TIA Portal Openness in die PLC-Variablen der CPU importieren.</translation>
-    </message>
-    <message>
-        <source>In TIA Portal open the tag table of the CPU (PLC tags) and click Import.</source>
-        <translation>In TIA Portal die Variablentabelle der CPU (PLC-Variablen) öffnen und Importieren klicken.</translation>
-    </message>
-    <message>
-        <source>Compare with TIA tag table</source>
-        <translation>Mit TIA-Variablentabelle abgleichen</translation>
-    </message>
-    <message>
-        <source>TIA Portal tag tables (*.xlsx *.xml)</source>
-        <translation>TIA-Portal-Variablentabellen (*.xlsx *.xml)</translation>
-    </message>
-    <message>
-        <source>%1 has no PLC tags.</source>
-        <translation>%1 enthält keine SPS-Variablen.</translation>
-    </message>
-    <message>
-        <source>Take over PLC tags from TIA Portal</source>
-        <translation>SPS-Variablen aus TIA Portal übernehmen</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n channel(s) took name and comment from TIA Portal (undo with Ctrl+Z).</source>
-        <translation>
-            <numerusform>%n Kanal hat Name und Kommentar aus TIA Portal übernommen (rückgängig mit Strg+Z).</numerusform>
-            <numerusform>%n Kanäle haben Name und Kommentar aus TIA Portal übernommen (rückgängig mit Strg+Z).</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Save comparison</source>
-        <translation>Abgleich speichern</translation>
-    </message>
-    <message>
-        <source>CSV (*.csv)</source>
-        <translation>CSV (*.csv)</translation>
-    </message>
-    <message>
-        <source>Could not write %1.</source>
-        <translation>%1 konnte nicht geschrieben werden.</translation>
     </message>
 </context>
 </TS>

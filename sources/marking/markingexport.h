@@ -59,7 +59,9 @@ namespace MarkingExport
 		Neutral,         ///< described CSV, every column
 		PhoenixContact,  ///< MARKING system / PROJECT complete
 		Weidmueller,     ///< M-Print PRO
-		Wago             ///< Smart Script
+		Wago,            ///< Smart Script
+		LabelList        ///< one label per line, in natural order (2 before 10),
+		                 ///< for any label printer (was --export-labels)
 	};
 
 	struct Options
@@ -114,7 +116,7 @@ namespace MarkingExport
 		/// The reference a marker's material is assigned from
 	QString materialReference(const Item &item);
 
-		/// "neutral", "phoenix", "weidmueller", "wago"
+		/// "neutral", "phoenix", "weidmueller", "wago", "list"
 	QString formatKey(Format format);
 	bool formatFromKey(const QString &key, Format *format);
 	QString formatTitle(Format format);

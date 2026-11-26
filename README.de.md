@@ -78,8 +78,10 @@ In QET und im exportierten PDF:
 ## Revisionen wie bei EPLAN
 
 - Menü Projekt > Revision > *Revision abschließen…*: Index (Vorschlag A, B, … bzw. 01, 02, …) und Kurztext. Der Index
-  steht danach in jedem Schriftfeld (`%indexrev`), die Revisionstabelle in `%{rev1_index}`, `%{rev1_date}`,
-  `%{rev1_text}`, `%{rev1_author}` (rev1 = neueste) – das Schriftfeld *revision* zeigt die letzten drei. Neben dem
+  steht danach in jedem Schriftfeld (`%indexrev`), und die Revision ist eine neue Zeile der einen Revisionsliste des
+  Projekts (Projekteigenschaften > Revisionen, dort auch von Hand bearbeitbar; *Listen > Revisionstabelle hinzufügen*
+  druckt sie auf ein Blatt). Das Schriftfeld *revision* zeigt ihre letzten drei Zeilen über `%{rev1_index}`,
+  `%{rev1_date}`, `%{rev1_text}`, `%{rev1_author}` (rev1 = neueste). Neben dem
   Projekt entsteht `<Name>_Revisionen/` mit der Momentaufnahme `<Name>_Rev_<Index>.qet` und einem PDF, in dem die
   Änderungen seit der vorigen Revision markiert sind; das Projekt wird gespeichert.
 - *Änderungen markieren*: Was sich seit der letzten Revision geändert hat, bekommt automatisch eine rote
@@ -125,8 +127,10 @@ Seitenleiste *Anzeige > Funktionsvorlagen*, wie EPLAN-Makros mit Wertesätzen:
 
 ## Beschriftung
 
-- Menü Projekt > *Beschriftung exportieren…*: Draht-, Klemmen-, Geräte- und Kabelschilder als Datei für Phoenix
-  Contact MARKING system / PROJECT complete, Weidmüller M-Print PRO oder WAGO Smart Script, oder als neutrale CSV;
+- Menü Projekt > *Beschriftung und Etiketten exportieren…*: Draht-, Klemmen-, Geräte- und Kabelschilder als Datei für
+  Phoenix Contact MARKING system / PROJECT complete, Weidmüller M-Print PRO oder WAGO Smart Script, als neutrale CSV
+  oder als einfache Etikettenliste (ein Etikett je Zeile in natürlicher Reihenfolge, für jeden Etikettendrucker; auch
+  per `--export-labels` von Upstream);
   Auswahl nach Art, Blättern und Anlage/Ort. Auch per `--export-marking` und `qet.exportMarking()`/`qet.markings()`.
   Kein Hersteller veröffentlicht ein festes Importschema; jede Datei ist eine CSV nach dem, was der jeweilige Import
   belegt liest. Spalten und Belege in [docs/beschriftung-export.md](docs/beschriftung-export.md).

@@ -1,4 +1,4 @@
-# Beschriftungsexport (Projekt > Beschriftung exportieren…)
+# Beschriftungsexport (Projekt > Beschriftung und Etiketten exportieren…)
 
 Der Export schreibt die Schilder eines Projekts als Datei für die Beschriftungsprogramme der Klemmenhersteller:
 
@@ -13,7 +13,7 @@ Die Daten stammen aus den öffentlichen Sichten der Projektdatenbank: `qet_wires
 
 | Einstellung | Dialog | CLI | Skript (`optionsJson`) |
 |---|---|---|---|
-| Programm | Beschriftungsprogramm | `--format phoenix\|weidmueller\|wago\|neutral` | 2. Argument oder `"format"` |
+| Programm | Beschriftungsprogramm | `--format phoenix\|weidmueller\|wago\|neutral\|list` | 2. Argument oder `"format"` |
 | Art | Drähte, Klemmen, Geräte, Kabel | `--kinds wires,terminals,devices,cables` (auch `draht,klemme,geraet,kabel`, `all`) | `"kinds"` |
 | Blätter | Blätter von … bis | `--folios 3` oder `--folios 2-5` | `"folioFrom"`, `"folioTo"` |
 | Strukturbereich | Anlage (=), Ort (+) | `--plant A1 --location S1` | `"plant"`, `"location"` |
@@ -156,6 +156,8 @@ Datei `--format wago`: UTF-8 mit BOM, Semikolon, `"…"`, CRLF, Kopfzeile, eine 
 ### Neutral
 
 Datei `--format neutral`: UTF-8 mit BOM, Semikolon, `"…"`, CRLF, Kopfzeile. Spalten: Art, Beschriftung, Ziel, Gruppe, Anlage, Ort, Blatt, Blattnummer, Hersteller, Artikel, Referenz, Anzahl. Sie ist für jedes andere Programm gedacht und für Prüfungen.
+
+Datei `--format list` (Etikettenliste, früher Upstreams *Export labels for printing…*, auch `--export-labels`): UTF-8 mit BOM, ohne Kopfzeile, je Zeile ein Etikett in `"…"`, CRLF; je Art in natürlicher Reihenfolge (2 vor 10), Klemmen Leiste für Leiste. Für jedes Etikettendruckprogramm, das eine Liste von Texten liest.
 
 ## Regeln der Texte
 

@@ -196,6 +196,8 @@ class FunctionTemplate
 									QStringList *notes);
 
 		QDomDocument m_document;
+			/// Parameters made from a ?name value (MacroLabels), not {NAME}
+		QStringList m_question_names;
 		QString m_path;
 		QString m_name;
 		QString m_category;

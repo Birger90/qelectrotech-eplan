@@ -65,8 +65,10 @@
 >
 > **Revisions like EPLAN**
 > - Menu Project > Revision > *Close revision…*: index (proposed A, B, … or 01, 02, …) and a short text. The index
->   then stands in every title block (`%indexrev`), the revision table in `%{rev1_index}`, `%{rev1_date}`,
->   `%{rev1_text}`, `%{rev1_author}` (rev1 = newest) – the title block *revision* shows the last three. Beside the
+>   then stands in every title block (`%indexrev`) and the revision is a new row of the project's one revision list
+>   (Project properties > Revisions, which can also be edited by hand; *Lists > Add a revision table* prints it on a
+>   folio). The title block *revision* shows its last three rows from `%{rev1_index}`, `%{rev1_date}`,
+>   `%{rev1_text}`, `%{rev1_author}` (rev1 = newest). Beside the
 >   project, `<name>_Revisionen/` gets the snapshot `<name>_Rev_<index>.qet` and a PDF with the changes since the
 >   previous revision marked; the project is saved.
 > - *Mark changes*: whatever changed since the last revision gets a red revision cloud with a triangle (symbols,
@@ -105,8 +107,9 @@
 >   number.
 >
 > **Markers**
-> - Menu Project > *Export markers…*: wire, terminal, device and cable markers as a file for Phoenix Contact
->   MARKING system / PROJECT complete, Weidmüller M-Print PRO or WAGO Smart Script, or a neutral CSV; choose the
+> - Menu Project > *Export labels and markers…*: wire, terminal, device and cable markers as a file for Phoenix Contact
+>   MARKING system / PROJECT complete, Weidmüller M-Print PRO or WAGO Smart Script, a neutral CSV, or a plain label
+>   list (one label per line in natural order, for any label printer; upstream's `--export-labels` writes it too); choose the
 >   kinds, folios and plant/location. Also `--export-marking` and `qet.exportMarking()`/`qet.markings()`. No maker
 >   publishes a fixed import layout, so each file is a CSV cut to what that import is documented to read; columns
 >   and sources in [docs/beschriftung-export.md](docs/beschriftung-export.md).

@@ -5552,6 +5552,8 @@ void QETProject::setRevisions(const RevisionList &revisions)
 		//A revision table on a folio reads qet_revisions: tell it, as
 		//nothing else changed in the database to do so
 	emit m_data_base.dataBaseUpdated();
+		//Fork: the title block's revision table follows the list
+	if (m_revision_manager) m_revision_manager->listChanged();
 }
 
 /**

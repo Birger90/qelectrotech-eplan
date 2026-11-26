@@ -11,17 +11,30 @@ Original-QElectroTech stehen in `ChangeLog*`.
   Strukturkasten, in Klemmleisten- und Kabelkennzeichen, Ortsliste und Stückliste; Dokumentart je Blatt und
   voller Blattname `=Anlage+Ort&Art/Nummer`.
 - **Revisionsliste des Projekts** (IEC 61355) mit Revisionstabelle auf einem Blatt (Projekt > Eigenschaften >
-  Revisionen). Sie steht neben der EPLAN-artigen Revisionsverwaltung des Forks (Revision abschließen,
-  Änderungsmarken, Revisions-PDF); deren Block im Projekt heißt jetzt `<eplan_revisions>`, der alte Name
-  `<revisions marks="…">` wird weiter gelesen (die IEC-Liste überspringt ihn) und beim nächsten Abschließen
-  einer Revision unter dem neuen Namen geschrieben.
+  Revisionen).
 - Tests an den Fork angepasst: Werkzeugleiste mit Claude-Knopf und „Projekt prüfen“, Speicherstempel
   `saveddate-de`.
 - **Etikettenlisten zum Drucken**: Geräte, Klemmen, Kabel und Adern als CSV (`--export-labels … devices|terminals|
-  cables|wires [--full-designation]`), Adern in natürlicher Reihenfolge.
+  cables|wires [--full-designation]`), in natürlicher Reihenfolge.
 - **Symbolliste eines Bibliotheksordners** (`--export-library <Ordner> <Datei.csv>`), etwa für die Firmensammlung.
 - Prüfpanel: Abzweige zwischen Klemmen einer Leiste.
 - Makros: `?name`-Werte werden beim Platzieren einmal abgefragt.
+
+Keine doppelten Funktionen – wo Upstream dasselbe kann wie der Fork, gibt es nur noch eines:
+
+- **Eine Revisionsliste.** Die Tabelle der Revisionen ist die Liste von Upstream (Projekteigenschaften >
+  Revisionen, `<revisions>` im Projekt). *Revision abschließen* hängt dort eine Zeile an (Index, Datum, Text,
+  Bearbeiter; Freigabe von Hand); von Hand eingetragene Zeilen gelten genauso. Das Schriftfeld *revision*
+  (`%{rev1_index}` …) folgt der Liste bei jeder Änderung. Der Fork-Block heißt `<eplan_revisions>` und hält nur
+  noch, was die Liste nicht kennt: Änderungsmarken, Fingerabdruck, Momentaufnahme und PDF je Revision. Ein
+  Projekt eines älteren Forks (`<revisions marks="…">` mit eigener Tabelle) bringt seine Zeilen beim Öffnen einmal
+  in die Liste.
+- **Ein Etikettenexport.** Upstreams *Export labels for printing…* ist das neue Format *Etikettenliste* von
+  Projekt > *Beschriftung und Etiketten exportieren…* (auch `--export-marking … --format list`), mit allen Filtern
+  des Forks (Art, Blätter, Anlage/Ort). `--export-labels` bleibt und schreibt dieselbe Liste; kurze Kennzeichen
+  behalten ihr Vorzeichen (`-W1`).
+- **Eine Abfrage beim Einfügen.** Eine Funktionsvorlage fragt auch die `?name`-Werte von Upstream in ihrem
+  Formular ab, statt sie stehen zu lassen; ein Makro ohne Vorlagenblock fragt wie bei Upstream.
 - Anlagen und Orte: Vorschläge beim Tippen; Umbenennen auch per Skript (`qet.renamePlant`, `qet.renameLocation`).
 - Klemmleistenzeichnung: Seite je Kabel wählbar, Aderbeschriftung bündig.
 - Fehlerbehebungen: Absturz beim Öffnen eines zweiten Projekts während des Ladens, abgeschnittener Druck unter

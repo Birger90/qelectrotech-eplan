@@ -76,7 +76,7 @@ MarkingExportDialog::MarkingExportDialog(QETProject *project, QWidget *parent) :
 	auto *format_form = new QFormLayout;
 	m_format = new QComboBox(this);
 	for (auto f : {MarkingExport::PhoenixContact, MarkingExport::Weidmueller,
-				   MarkingExport::Wago, MarkingExport::Neutral}) {
+				   MarkingExport::Wago, MarkingExport::Neutral, MarkingExport::LabelList}) {
 		m_format->addItem(MarkingExport::formatTitle(f), int(f));
 	}
 	MarkingExport::Format remembered = MarkingExport::PhoenixContact;
@@ -253,6 +253,10 @@ void MarkingExportDialog::updateCount()
 		case MarkingExport::Wago:
 			m_hint->setText(tr("In Smart Script: import with a template and assign the "
 							   "column \"Beschriftung\"; choose the marker type there."));
+			break;
+		case MarkingExport::LabelList:
+			m_hint->setText(tr("Only the labels, one per line in natural order (2 before "
+							   "10), for any label printer."));
 			break;
 		default:
 			m_hint->setText(tr("Every column, for any other marking software."));

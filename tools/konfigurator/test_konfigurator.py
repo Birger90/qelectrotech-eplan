@@ -247,6 +247,51 @@ def main() -> int:
     for soll_text in ("N=4,5 mittel nein", "N=10,5 gross nein", "N=9,0 gross ja"):
         pruefe(f"5 Formel {soll_text}", soll_text in text, "\n".join(r.get("report", []))[:600])
 
+    # 7. Produktnummern (zweiter Eingang): Regeldatei funktionsvorlagen/Produkte/MS.product.json
+    ptab = arbeit / "maschine_produkte.csv"
+    shutil.copy(REPO / "examples" / "konfigurator" / "maschine_produkte.csv", ptab)
+    pplan = arbeit / "maschine_produkte.qet"
+    if pplan.exists():
+        pplan.unlink()
+    r = erzeugen(qet, ptab, pplan)
+    bericht = "\n".join(r.get("report", []))
+    for objekt, vorlage in (("Kühlpumpe", "Motorabgang DOL (Direktstart)"),
+                            ("Absaugung", "Motorabgang Stern-Dreieck (Stern-Dreieck)"),
+                            ("Späneförderer", "Motorabgang DOL (Direktstart)")):
+        pruefe(f"7 Produktnummer {objekt}", f"{objekt}: Motoren/{vorlage}" in bericht, bericht[-600:])
+    text = pplan.read_text(encoding="utf-8") if pplan.exists() else ""
+    # 7,5 kW mit erzwungenem Direktstart: Schutzschalter nach Leistung 3RV2011-4AA10 im Direktstart-Abgang
+    pruefe("7 Schutzschalter aus Leistung der Nummer", "3RV2011-4AA10" in text and "3RV2021-4CA10" in text)
+
+    def lauf_json(args):
+        lauf = qet_mcp._run_qet(qet, args, 300, tail=400000, extra_env=None)
+        t = lauf.get("stdout", "")
+        start = min([i for i in (t.find("{"), t.find("[")) if i >= 0], default=-1)
+        return (json.loads(t[start:]) if start >= 0 else None), lauf.get("exit_code")
+
+    d, code = lauf_json(["--decode-product", "MS-400-7K5-D", "--json"])
+    pruefe("7 Nummer zerlegt", code == 0 and d and d.get("variant") == "Direktstart"
+           and d.get("values", {}).get("P_kW") == "7.5", str(d))
+    d, code = lauf_json(["--decode-product", "MS-230-4K0", "--json"])
+    pruefe("7 unbekannter Code wird abgelehnt", code == 1 and d and not d.get("ok") and "230" in d.get("error", ""),
+           str(d))
+    d, code = lauf_json(["--check-product-rules", "--json"])
+    ms = [f for f in (d or []) if f.get("family") == "MS"]
+    fehler_ms = [x for f in ms for x in f.get("findings", []) if x.get("severity") in ("error", "Fehler")]
+    pruefe("7 Regeln der Familie MS ohne Lücken", code == 0 and ms and not fehler_ms and ms[0].get("numbers") == 24,
+           json.dumps(ms, ensure_ascii=False)[:1200])
+    kaputt = arbeit / "kaputt.product.json"
+    kaputt.write_text(json.dumps({
+        "family": "XX", "segments": [{"name": "P", "codes": {"1": {"values": {"P_kW": "1"}},
+                                                            "2": {"values": {"P_kW": ""}}}}],
+        "rules": [{"template": "Typicals/Gibtsnicht"},
+                  {"when": {"P": "3"}, "template": "Typicals/Antrieb"},
+                  {"when": {"P": "2"}, "template": "Typicals/Antrieb", "variant": "Dreieck"}]}), encoding="utf-8")
+    d, code = lauf_json(["--check-product-rules", str(kaputt), "--json"])
+    texte = " | ".join(x.get("text", "") for f in (d or []) for x in f.get("findings", []))
+    pruefe("7 Lücken einer fehlerhaften Regeldatei gemeldet", code == 1 and "Gibtsnicht" in texte and "3" in texte
+           and "Dreieck" in texte, texte[:1200])
+
     # 6. Layout und PDF
     lay = qet_mcp.tool_layout_check(qet, str(plan))
     # Kreuzungen zählt die Prüfung nur zum Vergleich (Info, senken die Note nicht); alles andere ist ein Treffer

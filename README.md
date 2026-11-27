@@ -137,6 +137,10 @@
 >   are drawn again with the same tags and addresses. A folio changed by hand since is never overwritten silently: it
 >   stays, the new one follows with "[new]" and the report lists every change (only *Overwrite* / `--overwrite`
 >   replaces it). The old file stays as `<name>.vor-konfigurator.qet`.
+> - **Product number** as a second input: column `Produkt` with e.g. `MS-400-7K5-D`; a rules file
+>   `<family>.product.json` splits it into segments, each code a value set, rules choose template and variant.
+>   Unknown codes are errors, never guessed. `--check-product-rules` checks the templates against the rules (every
+>   number allowed, gaps by severity), `--decode-product <number>` shows the result; MCP `qet_product_rules`.
 > - CLI `--generate-from-config <table.xlsx|csv> <project.qet> [--overwrite] [--json]` (exit 3 on conflicts),
 >   MCP tool `qet_generate_from_config`. Example: `examples/konfigurator/maschine.csv`; test:
 >   `python tools/konfigurator/test_konfigurator.py`.

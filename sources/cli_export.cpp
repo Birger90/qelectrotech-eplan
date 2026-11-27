@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "functiontemplates/configgenerator.h"
+#include "functiontemplates/productrules.h"
 #include "cli_export.h"
 #include "import/eplanproject/epdzimport.h"
 #include "plc/simaticml.h"
@@ -184,6 +185,8 @@ const QHash<QString, QString> &exportFlags()
 		{"--revision-marks", "revisionmarks"},
 		{"--compare-revisions", "comparerevisions"},
 		{"--generate-from-config", "generateconfig"},
+		{"--check-product-rules", "productcheck"},
+		{"--decode-product", "productdecode"},
 	};
 	return flags;
 }
@@ -2901,6 +2904,91 @@ int run(const QStringList &args)
 		}
 		out << "Imported -> " << target << Qt::endl;
 		return 0;
+	}
+
+	// --check-product-rules [rules.product.json]: the templates checked
+	// against the rules of product numbers (all families, or one file);
+	// --decode-product <number>: what a number becomes
+	if (format == "productcheck" || format == "productdecode") {
+		static QTranslator product_translator;
+		const QString language = QETApp::langFromSetting();
+		bool translated = false;
+		for (const QString &dir : {QETApp::languagesPath(),
+								   QCoreApplication::applicationDirPath() + QStringLiteral("/lang")})
+			for (const QString &name : {language, language.section(QLatin1Char('_'), 0, 0)})
+				if (!translated && product_translator.load(QStringLiteral("qet_") + name, dir)
+						&& !product_translator.isEmpty())
+					translated = true;
+		if (translated) QCoreApplication::installTranslator(&product_translator);
+		const auto ascii = [](const QJsonDocument &document) {
+			QString text;
+			for (const QChar c : QString::fromUtf8(document.toJson(QJsonDocument::Indented)))
+				text += c.unicode() < 0x80 ? QString(c)
+										   : QStringLiteral("\\u%1").arg(int(c.unicode()), 4, 16, QLatin1Char('0'));
+			return text;
+		};
+		if (format == "productdecode") {
+			if (rest.isEmpty()) {
+				err << "Usage: qelectrotech --decode-product <number> [--json]" << Qt::endl;
+				return 2;
+			}
+			const ProductRules::Decoded d = ProductRules::decodeNumber(rest.at(0));
+			if (json) {
+				QJsonObject o;
+				o.insert("ok", d.ok);
+				o.insert("number", d.number);
+				if (!d.error.isEmpty()) o.insert("error", d.error);
+				o.insert("template", d.templ);
+				o.insert("variant", d.variant);
+				QJsonObject values, codes;
+				for (auto it = d.values.cbegin() ; it != d.values.cend() ; ++it) values.insert(it.key(), it.value());
+				for (auto it = d.codes.cbegin() ; it != d.codes.cend() ; ++it) codes.insert(it.key(), it.value());
+				o.insert("values", values);
+				o.insert("codes", codes);
+				out << ascii(QJsonDocument(o));
+			} else if (d.ok) {
+				out << d.number << ": " << d.templ << (d.variant.isEmpty() ? QString() : " (" + d.variant + ")") << Qt::endl;
+				for (auto it = d.values.cbegin() ; it != d.values.cend() ; ++it)
+					out << "  " << it.key() << " = " << it.value() << Qt::endl;
+			} else {
+				err << d.error << Qt::endl;
+			}
+			out.flush();
+			return d.ok ? 0 : 1;
+		}
+		QList<ProductRules> families;
+		if (!rest.isEmpty()) {
+			QString error;
+			const ProductRules rules = ProductRules::fromFile(rest.at(0), &error);
+			if (!rules.isValid()) {
+				err << error << Qt::endl;
+				return 2;
+			}
+			families << rules;
+		} else {
+			families = ProductRules::available();
+		}
+		int errors = 0;
+		QJsonArray list;
+		for (const ProductRules &rules : std::as_const(families)) {
+			int numbers = 0;
+			const QList<ProductRules::Finding> findings = rules.check(&numbers);
+			QJsonArray items;
+			for (const ProductRules::Finding &f : findings) {
+				if (f.severity == ProductRules::Finding::Error) ++errors;
+				items.append(QJsonObject{{"severity", ProductRules::severityName(f.severity)}, {"text", f.text}});
+				if (!json) out << ProductRules::severityName(f.severity) << ": " << f.text << Qt::endl;
+			}
+			if (!json)
+				out << rules.family() << " (" << QDir::toNativeSeparators(rules.path()) << "): " << numbers
+					<< " numbers, " << findings.size() << " findings" << Qt::endl;
+			list.append(QJsonObject{{"family", rules.family()}, {"file", rules.path()},
+									{"numbers", numbers}, {"findings", items}});
+		}
+		if (json) out << ascii(QJsonDocument(list));
+		if (families.isEmpty() && !json) out << "No product rules (*.product.json) in the template folders." << Qt::endl;
+		out.flush();
+		return errors ? 1 : 0;
 	}
 
 	// --generate-from-config: a plan made from a table of objects

@@ -18,6 +18,7 @@
 #include "configgenerator.h"
 
 #include "functiontemplate.h"
+#include "productrules.h"
 #include "templateexpression.h"
 
 #include "../ElementsCollection/elementslocation.h"
@@ -451,7 +452,7 @@ namespace
 QStringList ConfigGenerator::metaColumns()
 {
 	return {QStringLiteral("objekt"), QStringLiteral("typical"), QStringLiteral("anlage"),
-			QStringLiteral("ort"), QStringLiteral("blatt")};
+			QStringLiteral("ort"), QStringLiteral("blatt"), QStringLiteral("produkt")};
 }
 
 ConfigGenerator::Table ConfigGenerator::readTable(const QString &path)
@@ -666,8 +667,9 @@ ConfigGenerator::Result ConfigGenerator::generate(const Table &table, QETProject
 	};
 	for (const Row &row : table.rows) {
 		const QString object = cellOf(row, QStringLiteral("objekt"));
-		const QString typical = cellOf(row, QStringLiteral("typical"));
-		if (object.isEmpty() && typical.isEmpty()) continue;
+		const QString typical_cell = cellOf(row, QStringLiteral("typical"));
+		const QString product = cellOf(row, QStringLiteral("produkt"));
+		if (object.isEmpty() && typical_cell.isEmpty() && product.isEmpty()) continue;
 		if (object.isEmpty()) {
 			r.report << tr("Row %1: no object name, left out.").arg(row.line);
 			continue;
@@ -679,6 +681,21 @@ ConfigGenerator::Result ConfigGenerator::generate(const Table &table, QETProject
 		Plan plan;
 		plan.row = row;
 		plan.object = object;
+			//A product number brings its template, variant and values; the
+			//columns of the row go before them
+		ProductRules::Decoded decoded;
+		if (!product.isEmpty()) {
+			decoded = ProductRules::decodeNumber(product);
+			if (!decoded.ok) {
+				r.report << tr("Row %1 (%2): %3").arg(row.line).arg(object, decoded.error);
+				continue;
+			}
+		}
+		const QString typical = typical_cell.isEmpty() ? decoded.templ : typical_cell;
+		if (!typical_cell.isEmpty() && !decoded.templ.isEmpty()
+				&& FunctionTemplate::find(typical_cell).path() != FunctionTemplate::find(decoded.templ).path())
+			r.report << tr("Row %1 (%2): the column Typical (%3) goes before the template of the product number (%4).")
+						.arg(row.line).arg(object, typical_cell, decoded.templ);
 		plan.typical = FunctionTemplate::find(typical);
 		if (!plan.typical.isValid()) {
 			r.report << tr("Row %1 (%2): there is no function template %3, left out.")
@@ -715,14 +732,19 @@ ConfigGenerator::Result ConfigGenerator::generate(const Table &table, QETProject
 
 		QStringList notes;
 		QString chain, error;
-		plan.given = map_values(plan.typical, plan.typical, nullptr);
+		const auto with_product = [&decoded](QMap<QString, QString> values) {
+			for (auto it = decoded.values.cbegin() ; it != decoded.values.cend() ; ++it)
+				if (!values.contains(it.key())) values.insert(it.key(), it.value());
+			return values;
+		};
+		plan.given = with_product(map_values(plan.typical, plan.typical, nullptr));
 		plan.drawn = plan.typical.chosen(plan.typical.resolve(plan.given, nullptr), &chain, nullptr, &error);
 		if (!plan.drawn.isValid()) {
 			r.report << tr("Row %1 (%2): %3").arg(row.line).arg(object, error);
 			continue;
 		}
 		QStringList unknown;
-		plan.given = map_values(plan.typical, plan.drawn, &unknown);
+		plan.given = with_product(map_values(plan.typical, plan.drawn, &unknown));
 			//The object names the function, when nothing else does
 		bool text_formula = false;
 		for (const auto &f : plan.typical.formulas()) text_formula |= f.name == QLatin1String("TEXT");

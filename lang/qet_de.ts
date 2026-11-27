@@ -37803,6 +37803,10 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
         <source>%1: %2%3, folio %4</source>
         <translation>%1: %2%3, Blatt %4</translation>
     </message>
+    <message>
+        <source>Row %1 (%2): the column Typical (%3) goes before the template of the product number (%4).</source>
+        <translation>Zeile %1 (%2): die Spalte Typical (%3) geht vor der Vorlage der Produktnummer (%4).</translation>
+    </message>
 </context>
 <context>
     <name>ConfigGeneratorUi</name>
@@ -37924,6 +37928,125 @@ Ein Blatt, das seit dem Erzeugen von Hand geändert wurde:</translation>
     <message>
         <source>Unknown function %1().</source>
         <translation>Unbekannte Funktion %1().</translation>
+    </message>
+</context>
+<context>
+    <name>ProductRules</name>
+    <message>
+        <source>The rules %1 cannot be read.</source>
+        <translation>Die Regeln %1 können nicht gelesen werden.</translation>
+    </message>
+    <message>
+        <source>The rules %1 are no valid JSON: %2</source>
+        <translation>Die Regeln %1 sind kein gültiges JSON: %2</translation>
+    </message>
+    <message>
+        <source>The rules %1 name no family or no segment.</source>
+        <translation>Die Regeln %1 nennen keine Familie oder kein Segment.</translation>
+    </message>
+    <message>
+        <source>No product family has rules for %1.</source>
+        <translation>Keine Produktfamilie hat Regeln für %1.</translation>
+    </message>
+    <message>
+        <source>%1 is no number of the family %2.</source>
+        <translation>%1 ist keine Nummer der Familie %2.</translation>
+    </message>
+    <message>
+        <source>%1 has more segments than the family %2 knows (%3).</source>
+        <translation>%1 hat mehr Segmente, als die Familie %2 kennt (%3).</translation>
+    </message>
+    <message>
+        <source>%1 lacks the segment %2.</source>
+        <translation>%1 fehlt das Segment %2.</translation>
+    </message>
+    <message>
+        <source>(none)</source>
+        <translation>(keiner)</translation>
+    </message>
+    <message>
+        <source>%1: the code %2 is not offered for %3 (offered: %4).</source>
+        <translation>%1: der Code %2 ist für %3 nicht vorgesehen (vorgesehen: %4).</translation>
+    </message>
+    <message>
+        <source>%1: the codes set %2 to %3 and to %4.</source>
+        <translation>%1: die Codes setzen %2 auf %3 und auf %4.</translation>
+    </message>
+    <message>
+        <source>%1: no rule of the family %2 applies.</source>
+        <translation>%1: keine Regel der Familie %2 gilt.</translation>
+    </message>
+    <message>
+        <source>%1: the rules disagree on the %2: %3 or %4.</source>
+        <translation>%1: die Regeln widersprechen sich bei der %2: %3 oder %4.</translation>
+    </message>
+    <message>
+        <source>template</source>
+        <translation>Vorlage</translation>
+    </message>
+    <message>
+        <source>variant</source>
+        <translation>Variante</translation>
+    </message>
+    <message>
+        <source>%1: the rules set %2 to %3 and to %4.</source>
+        <translation>%1: die Regeln setzen %2 auf %3 und auf %4.</translation>
+    </message>
+    <message>
+        <source>%1: the rules which apply name no template.</source>
+        <translation>%1: die geltenden Regeln nennen keine Vorlage.</translation>
+    </message>
+    <message>
+        <source>Rule %1 says nothing.</source>
+        <translation>Regel %1 legt nichts fest.</translation>
+    </message>
+    <message>
+        <source>Rule %1 names the segment %2, which the family has not.</source>
+        <translation>Regel %1 nennt das Segment %2, das die Familie nicht hat.</translation>
+    </message>
+    <message>
+        <source>Rule %1 names the code %2 of %3, which the segment does not offer.</source>
+        <translation>Regel %1 nennt den Code %2 von %3, den das Segment nicht vorsieht.</translation>
+    </message>
+    <message>
+        <source>The code %1 of %2 sets %3 to nothing.</source>
+        <translation>Der Code %1 von %2 setzt %3 leer.</translation>
+    </message>
+    <message>
+        <source>The template %1 the rules name is not there.</source>
+        <translation>Die Vorlage %1, die die Regeln nennen, gibt es nicht.</translation>
+    </message>
+    <message>
+        <source>%1: %2</source>
+        <translation>%1: %2</translation>
+    </message>
+    <message>
+        <source>%1: the variant %2 is no variant of %3 (taken: %4).</source>
+        <translation>%1: die Variante %2 ist keine Variante von %3 (gewählt: %4).</translation>
+    </message>
+    <message>
+        <source>%1 is no value of %2: it is not used.</source>
+        <translation>%1 ist kein Wert von %2: er wird nicht verwendet.</translation>
+    </message>
+    <message>
+        <source>Only the first %1 numbers were tried.</source>
+        <translation>Nur die ersten %1 Nummern wurden geprüft.</translation>
+    </message>
+    <message>
+        <source>Rule %1 applies to no number.</source>
+        <translation>Regel %1 gilt für keine Nummer.</translation>
+    </message>
+    <message>
+        <source>error</source>
+        <translation>Fehler</translation>
+    </message>
+    <message>
+        <source>warning</source>
+        <translation>Warnung</translation>
+    </message>
+    <message>
+        <source>note</source>
+        <translation>Hinweis</translation>
     </message>
 </context>
 </TS>

@@ -163,6 +163,10 @@ Nach dem Vorbild von EPLAN EEC Pro, Konzept in [docs/konfigurator.md](docs/konfi
   geänderte werden neu gezeichnet, BMK und Adressen bleiben. Ein Blatt, das seit dem Erzeugen von Hand geändert
   wurde, wird nicht still überschrieben: es bleibt, das neue folgt mit „[neu]“, der Bericht nennt jede Änderung
   (erst „Überschreiben“ bzw. `--overwrite` ersetzt es). Die alte Datei bleibt als `<name>.vor-konfigurator.qet`.
+- **Produktnummer** als zweiter Eingang: Spalte `Produkt` mit z. B. `MS-400-7K5-D`; eine Regeldatei
+  `<Familie>.product.json` zerlegt sie in Segmente, jeder Code ist ein Wertesatz, Regeln wählen Vorlage und Variante.
+  Unbekannte Codes sind Fehler, nie geraten. `--check-product-rules` prüft die Vorlagen gegen die Regeln (jede
+  erlaubte Nummer, Lücken nach Schwere), `--decode-product <nummer>` zeigt das Ergebnis; MCP `qet_product_rules`.
 - Kommandozeile `--generate-from-config <tabelle.xlsx|csv> <ziel.qet> [--overwrite] [--json]` (Exit 3 bei
   Konflikten), MCP-Werkzeug `qet_generate_from_config`. Beispiel: `examples/konfigurator/maschine.csv`
   (vier Antriebe gemischt Direkt/Stern-Dreieck, zwei Ventile, drei Sensoren); Prüfung:

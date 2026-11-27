@@ -167,6 +167,10 @@ Ab Fork-Branch `feature/konfigurator`, Konzept `docs/konfigurator.md`. Für Masc
   `<formula name="QA_ART" expr="lookup('3RV2'; I_N; 'QA_ART')"/>`, `<table name="…" file="../Tabellen/….csv"
   key="…"/>` (Tabellenwerte nur aus Datenblatt/Norm, Spalte `Quelle`), Adressparameter
   `kind="address" io="DQ" count="3"`. `{ADR+1}` zählt Kanäle (`%Q0.7` + 1 = `%Q1.0`).
+- Produktnummer statt Einzelwerten: Spalte `Produkt` (z. B. `MS-400-7K5-D`), Regeln in `<Familie>.product.json`
+  im Vorlagenordner (Segmente, Codes als Wertesätze, Regeln -> Vorlage/Variante). Neue Familie: Regeldatei anlegen,
+  dann `--check-product-rules` bzw. MCP `qet_product_rules` bis ohne Fehler; Nummer prüfen mit `--decode-product`.
+  Unbekannte Codes nie raten – Regel ergänzen.
 - SPS: Der Generator legt allgemeine DI/DQ-Module zu 16 Kanälen auf die SPS-Übersicht und verknüpft die Kanäle.
   Soll eine bestimmte Station (Herstellermakro) her: deren Module vorher auf ein Blatt des Ziels legen – Kanäle mit
   passender Adresse werden mit ihnen verknüpft (Hausstil: Station/Fabrikat nur nach Rückfrage tauschen).

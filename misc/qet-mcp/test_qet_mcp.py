@@ -200,7 +200,7 @@ class ToolRegistry(unittest.TestCase):
         self.assertEqual({t["name"] for t in m.TOOLS}, {
             "qet_project_info", "qet_elements", "qet_conductors", "qet_diff",
             "qet_scan", "qet_element_info", "qet_export", "qet_simulate",
-            "qet_simulate_reference", "qet_generate_from_config", "qet_fluidsim_import", "qet_edit", "qet_query",
+            "qet_simulate_reference", "qet_generate_from_config", "qet_product_rules", "qet_fluidsim_import", "qet_edit", "qet_query",
             "qet_project_new", "qet_element_search", "qet_check", "qet_plan_check", "qet_element_build",
             "qet_continuity", "qet_items", "qet_script_api", "qet_script_test",
         "qet_script_install", "qet_script_list", "qet_script_read",

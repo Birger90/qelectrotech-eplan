@@ -32,6 +32,7 @@ nicht.
 | `BMK` | nein | Betriebsmittelkennzeichen; leer: das nächste freie nach dem Vorgabewert der Vorlage |
 | `Anlage`, `Ort` | nein | `=`- und `+`-Kennzeichen des Blatts |
 | `Blatt` | nein | Gruppe: Zeilen mit demselben Wert kommen nebeneinander auf ein Blatt |
+| `Produkt` | nein | Produktnummer statt einzelner Kennwerte (Abschnitt 1a); `Typical` darf dann fehlen |
 | alle weiteren | nein | Werte der Parameter der Vorlage, Spaltenname = Parametername (`P_kW`, `TEXT`, `X`, `W_TYP` …) |
 
 Groß-/Kleinschreibung der Spaltennamen zählt nicht; Zahlen dürfen Komma oder Punkt haben. Eine Spalte, die die
@@ -46,6 +47,50 @@ Hauptpumpe;Antrieb;=HY;+M2;11;Hydraulikpumpe
 Zylinder ausfahren;Ventil;=HY;+M2;;Zylinder 1 aus
 Endlage vorn;Sensor;=HY;+M2;;Zylinder 1 vorn
 ```
+
+
+## 1a. Zweiter Eingang: Produktnummer
+
+Nach der Idee „product macros“ (Canary-ECAD/eplan-scripting-skill, `docs/ideas/product-macros.md`, MIT; nur die
+Idee übernommen): Statt einzelner Kennwerte trägt eine Zeile in der Spalte `Produkt` eine Produktnummer wie
+`MS-400-7K5-D`. Eine Regeldatei je Familie zerlegt sie:
+
+```json
+{
+  "family": "MS", "separator": "-",
+  "segments": [
+    {"name": "U", "label": "Spannung", "codes": {"400": {"values": {"U": "400"}}}},
+    {"name": "P", "label": "Leistung", "codes": {"7K5": {"values": {"P_kW": "7.5"}}, "11K": {"values": {"P_kW": "11"}}}},
+    {"name": "ANL", "label": "Anlauf", "optional": true, "codes": {"": {}, "D": {"label": "Direktstart"}}}
+  ],
+  "rules": [
+    {"template": "Typicals/Antrieb"},
+    {"when": {"ANL": "D"}, "template": "Typicals/Antrieb", "variant": "Direktstart"}
+  ]
+}
+```
+
+- **Ablage:** `<Familie>.product.json` in einem Vorlagenordner (mitgeliefert: `funktionsvorlagen/Produkte/MS.product.json`;
+  eigene im Vorlagenordner des Nutzers, dessen Familie gewinnt).
+- **Segmente:** in der Reihenfolge der Nummer nach dem Familienkürzel; optionale nur am Ende. Jeder Code ist ein
+  **Wertesatz** (`values`).
+- **Regeln:** Eine Regel gilt, wenn jeder ihrer `when`-Codes in der Nummer steht; Regeln ohne `when` gelten nur,
+  wenn keine andere gilt. Sie bestimmen **Vorlage**, **Variante** (über den reservierten Wert `VARIANTE`, der die
+  Variante gleichen Namens wählt, unabhängig von ihrer Bedingung) und weitere Werte. Zwei geltende Regeln, die
+  Verschiedenes sagen, sind ein Fehler – keine Reihenfolge entscheidet.
+- **Bestimmt:** Ein unbekannter Code ist ein Fehler mit den erlaubten Codes, nie eine Vermutung. Dieselbe Nummer
+  ergibt immer dieselbe Schaltung (die Zerlegung ist reine Regelauswertung).
+- **In der Tabelle:** Spalte `Produkt` (die Spalte `Typical` darf dann fehlen). Werte, die die Zeile selbst nennt
+  (z. B. `TEXT`, `I_N`), gehen vor; eine abweichende Spalte `Typical` geht vor und wird gemeldet.
+- **Prüfung der Vorlagensammlung gegen die Regeln:** `qelectrotech --check-product-rules [<datei>] [--json]` (MCP
+  `qet_product_rules`) zerlegt jede Nummer, die die Regeln erlauben (bis 5000), und rechnet sie durch die Vorlagen.
+  *Fehler:* Vorlage fehlt, Variante gibt es nicht, Regeln widersprechen sich, Regel nennt unbekanntes Segment oder
+  unbekannten Code, keine Variante passt. *Warnung:* Wert, den keine Vorlage kennt; Code setzt einen Wert leer;
+  Meldungen der Tabellen (z. B. Strom unter dem Bereich). *Hinweis:* Regel gilt für keine Nummer. Exit 1 bei Fehlern.
+  `--decode-product <nummer> [--json]` zeigt, was eine Nummer wird.
+- Beispiel: `examples/konfigurator/maschine_produkte.csv` (MS-400-4K0 → Direktstart, MS-400-11K → Stern-Dreieck,
+  MS-400-7K5-D → Direktstart erzwungen). Die Familie MS kennt nur 400 V, weil die Auswahltabellen der Vorlagen für
+  400 V gelten; das Typical *Antrieb* hat dafür die Bedingung `U = 400`.
 
 ## 2. Typicals, Varianten und Bedingungen
 

@@ -32,6 +32,12 @@ Ein Plan aus einer Tabelle, nach dem Vorbild von EPLAN EEC Pro; Konzept in [docs
   das neue folgt mit „[new]“, Bericht mit jeder Handänderung, Exit 3 (erst `--overwrite` ersetzt). Alte Datei als
   `<name>.vor-konfigurator.qet`.
 - Beispiel `examples/konfigurator/maschine.csv`, Prüfung `tools/konfigurator/test_konfigurator.py`.
+- **Produktnummer als zweiter Eingang** (Idee „product macros“ aus Canary-ECAD/eplan-scripting-skill, MIT):
+  Spalte `Produkt` (z. B. `MS-400-7K5-D`), Regeldatei `<Familie>.product.json` mit Segmenten, Codes als Wertesätzen
+  und Regeln für Vorlage/Variante/Werte (`sources/functiontemplates/productrules.*`); Variante per Name über den
+  Wert `VARIANTE`; `--check-product-rules [datei] [--json]` (Lücken nach Schwere, Exit 1 bei Fehlern),
+  `--decode-product <nummer> [--json]`, MCP `qet_product_rules` (beide Kopien). Beispielfamilie
+  `funktionsvorlagen/Produkte/MS.product.json`, Typical *Antrieb* mit Spannung `U` (nur 400 V).
 
 ## 1.63.0 – 27.11.2026 – liegengebliebene Branches in main
 

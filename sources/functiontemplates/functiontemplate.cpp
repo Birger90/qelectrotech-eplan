@@ -629,8 +629,15 @@ FunctionTemplate FunctionTemplate::chosen(const QMap<QString, QString> &resolved
 									const QString &key, QString *note) {
 			return current.lookup(table, value, column, key, note);
 		};
+			//A variant asked for by name (VARIANTE: from a product number
+			//or a column of the table) is taken whatever its condition
+		const QString wanted = values.value(QStringLiteral("VARIANTE")).trimmed();
 		const Variant *match = nullptr;
+		if (!wanted.isEmpty())
+			for (const Variant &v : std::as_const(current.m_variants))
+				if (v.name.compare(wanted, Qt::CaseInsensitive) == 0) { match = &v; break; }
 		for (const Variant &v : std::as_const(current.m_variants)) {
+			if (match) break;
 			if (v.condition.trimmed().isEmpty()) { match = &v; break; }
 			QString e;
 			const QString truth = TemplateExpression::evaluate(v.condition, context, &e);

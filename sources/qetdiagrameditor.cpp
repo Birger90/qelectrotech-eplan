@@ -47,6 +47,7 @@
 #include "import/eplandxf/dataportaldialog.h"
 #include "import/portals/portalsdialog.h"
 #include "import/eplandxf/eplanimportdialog.h"
+#include "import/macropackage/macropackagedialog.h"
 #include "import/eplanproject/eplanprojectimportdialog.h"
 #include "import/fluidsim/fluidsimimport.h"
 #include "import/splan/splanimportdialog.h"
@@ -2622,6 +2623,14 @@ void QETDiagramEditor::setUpMenu()
 	connect(menu_part_import->addAction(tr("From the EPLAN Data Portal…")),
 		&QAction::triggered, this, [this]() {
 			DataPortalDialog dialog(this);
+			dialog.exec();
+			if (!dialog.writtenPaths().isEmpty() && m_element_collection_widget)
+				m_element_collection_widget->reload();
+		});
+	// all macros of a manufacturer in one download (Beckhoff)
+	connect(menu_part_import->addAction(tr("From a manufacturer macro package (ZIP)…")),
+		&QAction::triggered, this, [this]() {
+			MacroPackageDialog dialog(this);
 			dialog.exec();
 			if (!dialog.writtenPaths().isEmpty() && m_element_collection_widget)
 				m_element_collection_widget->reload();

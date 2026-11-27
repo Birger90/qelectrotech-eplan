@@ -278,7 +278,8 @@ bool PlcChannels::setChannels(QDomDocument &element, const QVector<Channel> &cha
 	return true;
 }
 
-QStringList PlcChannels::applyToFolders(const QStringList &written_paths, const QStringList &from_macro)
+QStringList PlcChannels::applyToFolders(const QStringList &written_paths, const QStringList &from_macro,
+					const QVector<Channel> &given)
 {
 	QStringList report;
 	QSet<QString> folders;
@@ -300,13 +301,15 @@ QStringList PlcChannels::applyToFolders(const QStringList &written_paths, const 
 			if (!doc.setContent(&file)) continue;
 			docs.append({f, doc});
 		}
-		QVector<Channel> table;
-		QString source;
-		for (const auto &d : std::as_const(docs)) {
-			const QVector<Channel> c = fromElement(d.second);
-			if (c.size() > table.size()) {
-				table = c;
-				source = d.first;
+		QVector<Channel> table = given;
+		QString source = QStringLiteral("the part data");
+		if (table.isEmpty()) {
+			for (const auto &d : std::as_const(docs)) {
+				const QVector<Channel> c = fromElement(d.second);
+				if (c.size() > table.size()) {
+					table = c;
+					source = d.first;
+				}
 			}
 		}
 

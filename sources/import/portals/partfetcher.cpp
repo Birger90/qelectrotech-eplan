@@ -23,6 +23,7 @@
 #include "../eplandxf/dataportalclient.h"
 #include "../eplandxf/eplanpartimporter.h"
 #include "../../container/qetzip.h"
+#include "../macropackage/macropackage.h"
 
 #include <QCoreApplication>
 #include <QDateTime>
@@ -36,6 +37,7 @@
 #include <QNetworkRequest>
 #include <QRegularExpression>
 #include <QSaveFile>
+#include <QSettings>
 #include <QTimer>
 #include <QUrl>
 
@@ -422,6 +424,31 @@ FetchResult PartFetcher::fetch(const FetchItem &item, const FetchOptions &option
 	if (has_symbol && has_step) {
 		r.status = QStringLiteral("present");
 		return r;
+	}
+
+		// the macro package of the manufacturer, chosen once in the part
+		// import (Beckhoff: all macros in one ZIP), holds the part
+	const QString package_path = QSettings().value(QStringLiteral("macropackage/path")).toString();
+	if (!has_symbol && !package_path.isEmpty() && QFileInfo::exists(package_path)) {
+		MacroPackage package;
+		const MacroPackageArticle *article = package.open(package_path) ? package.article(order) : nullptr;
+		if (article && package.manufacturerName(*article).compare(r.maker, Qt::CaseInsensitive) == 0) {
+			const QString name = QFileInfo(package_path).fileName();
+			if (options.dry_run) {
+				r.notes << tr("would import the symbol from the macro package %1").arg(name);
+				has_symbol = true;
+			} else {
+				EplanPartImporter importer;
+				if (importer.importMacroPackage(package, {order}, QString(), collection)
+				    && (!importer.writtenPaths().isEmpty() || importer.skippedCount() > 0)) {
+					r.written << importer.writtenPaths();
+					r.notes << tr("symbol: from the macro package %1").arg(name);
+					has_symbol = true;
+				} else {
+					r.notes << importer.failed();
+				}
+			}
+		}
 	}
 
 		// the files of the part: those of the raw folder, then the public links

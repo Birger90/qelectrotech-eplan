@@ -63,6 +63,7 @@
 #include "simulation/simulationoverlay.h"
 #include "simulation/simulationreference.h"
 #include "import/eplandxf/eplanpartimporter.h"
+#include "import/macropackage/macropackage.h"
 #include "import/portals/manufacturerportals.h"
 #include "import/portals/partfetcher.h"
 #include "import/portals/portalcredentials.h"
@@ -152,6 +153,7 @@ const QHash<QString, QString> &exportFlags()
 		{"--import-eplan", "importeplan"},
 		{"--import-epdz", "importepdz"},
 		{"--simaticml-to-st", "simaticml"},
+		{"--list-macro-package", "listmacropackage"},
 		{"--fetch-parts", "fetchparts"},
 		{"--portal-status", "portalstatus"},
 		{"--portal-login", "portallogin"},
@@ -2904,19 +2906,70 @@ int run(const QStringList &args)
 		QStringList positional;
 		QHash<QString, QString> opts;
 		bool force = false;
+		QStringList types;   // --type may be given several times (macro package)
 		for (int i = 0; i < rest.size(); ++i) {
 			const QString &a = rest.at(i);
-			if (a == "--force")
+			if (a == "--force") {
 				force = true;
-			else if (a.startsWith("--") && i + 1 < rest.size())
+			} else if (a == "--all") {
+				opts.insert("all", "1");
+			} else if (a.startsWith("--") && i + 1 < rest.size()) {
+				if (a == "--type") types << rest.at(i + 1);
 				opts.insert(a.mid(2), rest.at(++i));
-			else
+			} else {
 				positional << a;
+			}
+		}
+		// articles out of a manufacturer's macro package: the package is an
+		// option, the collection folder the only positional argument
+		if (opts.contains("macro-package")) {
+			const bool all = opts.contains("all");
+			if (positional.size() != 1 || (types.isEmpty() && !all)) {
+				err << "Usage: qelectrotech --import-eplan <collection_dir> --macro-package <zip | folder> "
+				       "(--type T [--type T2 ...] | --all) [--category C]\n";
+				return 2;
+			}
+			MacroPackage package;
+			if (!package.open(opts.value("macro-package"))) {
+				err << package.errorString() << "\n";
+				return 1;
+			}
+			if (all) {
+				types.clear();
+				for (const MacroPackageArticle &a : package.articles()) types << a.type();
+			}
+			EplanPartImporter importer;
+			const bool ok = importer.importMacroPackage(
+				package, types, opts.value("category"), positional.at(0),
+				[all](int done, int total, const QString &type) {
+					if (all && done % 100 == 0) {
+						err << done << " / " << total << "  " << type << "\n";
+						err.flush();
+					}
+					return true;
+				});
+			err << types.size() << " articles: " << importer.importedCount() << " imported ("
+			    << importer.writtenPaths().size() << " elements), " << importer.skippedCount()
+			    << " left as they were (type folder exists), " << importer.failed().size() << " failed\n";
+			for (const QString &f : importer.failed())
+				err << "  failed: " << f << "\n";
+			for (const QString &m : importer.messages())
+				out << m << "\n";
+			for (const QString &p : importer.writtenPaths())
+				out << "-> " << QDir::toNativeSeparators(p) << "\n";
+			out.flush();
+			if (!ok) {
+				err << opts.value("macro-package") << ": " << importer.errorString() << "\n";
+				return 1;
+			}
+			return 0;
 		}
 		if (positional.size() < 2) {
 			err << "Usage: qelectrotech --import-eplan <package.zip | folder | file.dxf | file.dwg> "
 			       "<collection_dir> [--category C] [--manufacturer M --type T] [--edz part.edz] "
 			       "[--wspak part.wspak] [--force]\n"
+			       "       qelectrotech --import-eplan <collection_dir> --macro-package <zip | folder> "
+			       "--type T [--type T2 ...] [--category C]\n"
 			       "  --force  also overwrite elements edited since their import\n";
 			return 2;
 		}
@@ -2964,6 +3017,34 @@ int run(const QStringList &args)
 			err << source << ": " << importer.errorString() << "\n";
 			return 1;
 		}
+		return 0;
+	}
+
+	// --list-macro-package lists the articles of a manufacturer's macro
+	// package, tab-separated: type, order number, category, description, macro
+	if (format == "listmacropackage") {
+		QStringList positional;
+		QString find;
+		for (int i = 0; i < rest.size(); ++i) {
+			if (rest.at(i) == "--find" && i + 1 < rest.size()) find = rest.at(++i);
+			else positional << rest.at(i);
+		}
+		if (positional.size() != 1) {
+			err << "Usage: qelectrotech --list-macro-package <zip | folder> [--find TEXT]\n";
+			return 2;
+		}
+		MacroPackage package;
+		if (!package.open(positional.at(0))) {
+			err << package.errorString() << "\n";
+			return 1;
+		}
+		const QVector<MacroPackageArticle> articles = package.find(find);
+		for (const MacroPackageArticle &a : articles)
+			out << a.type() << "\t" << a.order_number << "\t" << a.category << "\t"
+			    << a.description << "\t" << a.macro << "\n";
+		out.flush();
+		err << articles.size() << " of " << package.articles().size() << " articles, "
+		    << package.macroCount() << " macros\n";
 		return 0;
 	}
 

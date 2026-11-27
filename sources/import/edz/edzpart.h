@@ -25,12 +25,17 @@
 #include "../../panel/paneldata.h"
 
 class QDomDocument;
+class QDomElement;
 
 /** One physical connection of an EPLAN part (a pin/terminal). */
 struct EdzPin {
 	QString designation;   ///< terminal id, e.g. "1", "PE"
 	QString description;   ///< function label, e.g. "L+"
 	QString group;         ///< connector group: terminalNr if present, else functiondefinition
+	/// EPLAN function definition category.group.id, e.g. 300.1.2 = PLC
+	/// connection, digital input (0 when the part data names none)
+	int def_category = 0, def_group = 0, def_id = 0;
+	QString channel;       ///< channel designation (idx1), e.g. "Channel 1"
 };
 
 /**
@@ -45,10 +50,15 @@ class EdzPart
 {
 	public:
 		bool parse(const QString &part_xml_path);
+		/// the same from memory: an EPLAN.PartsManagement document, of
+		/// which the first <part> is read
+		bool parse(const QByteArray &part_xml);
 		QString errorString() const { return m_error; }
 
 		QString partNumber()   const { return m_part_number; }
 		QString manufacturer() const { return m_manufacturer; }
+		/// the display name instead of EPLAN's short code ("BEC" -> "Beckhoff")
+		void setManufacturer(const QString &name) { m_manufacturer = name; }
 		QString orderNumber()  const { return m_order_number; }
 		QString typeNumber()   const { return m_type_number; }
 		QString description()  const { return m_description; }
@@ -69,6 +79,8 @@ class EdzPart
 		void appendMountingData(QDomDocument &element_definition) const;
 
 	private:
+		bool parsePart(const QDomElement &part, const QString &dir);
+
 		QString m_error;
 		QString m_part_number;
 		QString m_manufacturer;

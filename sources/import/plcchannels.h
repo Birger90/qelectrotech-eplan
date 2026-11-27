@@ -72,6 +72,8 @@ namespace PlcChannels
 		the element with the most channels (at least two) goes into every
 		element of that folder that has all channel terminals (overview,
 		device picture, black box), except mounting layouts and slaves.
+		@param table the channels where the part data names them (EPLAN
+		function definitions); empty: read from the texts of the elements
 		Elements in @p from_macro already hold the table of their macro
 		and are left as they are; their tables, joined, come before the
 		rules. Only elements the import wrote and nobody edited since
@@ -79,7 +81,8 @@ namespace PlcChannels
 		@return one line per element changed
 	*/
 	QStringList applyToFolders(const QStringList &written_paths,
-				   const QStringList &from_macro = QStringList());
+				   const QStringList &from_macro = QStringList(),
+				   const QVector<Channel> &table = {});
 }
 
 #endif // PLCCHANNELS_H

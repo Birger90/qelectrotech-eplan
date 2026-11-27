@@ -29,6 +29,7 @@
 #include "elementcollectionitem.h"
 #include "elementpreviewdelegate.h"
 #include "elementscollectionmodel.h"
+#include "../import/macropackage/macropackagetree.h"
 #include "elementslocation.h"
 #include "elementstreeview.h"
 #include "fileelementcollectionitem.h"
@@ -293,6 +294,20 @@ void ElementsCollectionWidget::setUpWidget()
 	m_tab_widget->setTabPosition(QTabWidget::North);
 	m_tab_widget->addTab(m_tree_view, tr("Collections"));
 	m_tab_widget->addTab(m_macros_tree_view, tr("Templates"));
+		//The macro package of a manufacturer (all its EPLAN macros in one
+		//ZIP): listed from its index, a type is only converted into the
+		//company collection when it is asked for. The collection is read
+		//again then, and the new folder shown.
+	m_package_tree = new MacroPackageTree(this);
+	m_tab_widget->addTab(m_package_tree, tr("Manufacturer packages"));
+	connect(m_package_tree, &MacroPackageTree::typeLoaded, this, [this](const QString &folder, bool fresh) {
+		if (fresh) {
+			m_folder_after_loading = folder;
+			reload();
+		} else {
+			showCollectionFolder(folder);
+		}
+	});
 
 		//Flat ranked search results.
 		//The tree search hides non-matching rows, so hits stay scattered
@@ -1140,6 +1155,11 @@ void ElementsCollectionWidget::loadingFinished()
 
 	m_progress_bar->hide();
 	m_tree_view->setEnabled(true);
+	if (!m_folder_after_loading.isEmpty()) {
+		const QString folder = m_folder_after_loading;
+		m_folder_after_loading.clear();
+		showCollectionFolder(folder);
+	}
 
 	if (m_loading_timer) {
 		qInfo()<<"Elements collection finished to be loaded in" << m_loading_timer->elapsed()/1000.0 << "seconds";
@@ -1148,6 +1168,24 @@ void ElementsCollectionWidget::loadingFinished()
 	else {
 		qInfo()<<"Elements collection finished to be loaded";
 	}
+}
+
+/**
+	@brief ElementsCollectionWidget::showCollectionFolder
+	Go to the collections tab and open @p folder there, a folder of one
+	of the file collections.
+*/
+void ElementsCollectionWidget::showCollectionFolder(const QString &folder)
+{
+	if (!m_model) return;
+	const ElementsLocation location(folder);
+	if (!location.exist()) return;
+	const QModelIndex index = m_model->indexFromLocation(location);
+	if (!index.isValid()) return;
+	m_tab_widget->setCurrentWidget(m_tree_view);
+	m_tree_view->setCurrentIndex(index);
+	m_tree_view->expand(index);
+	m_tree_view->scrollTo(index, QAbstractItemView::PositionAtTop);
 }
 
 /**

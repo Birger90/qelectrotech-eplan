@@ -42,11 +42,14 @@
 #include <QCoreApplication>
 #include <QHash>
 #include <QJsonArray>
+#include <QLocale>
+#include <QRegularExpression>
 #include <QSqlQuery>
 #include <QSet>
 
 #include <algorithm>
 #include <climits>
+#include <functional>
 
 namespace {
 
@@ -69,6 +72,7 @@ const RuleDef kRules[] = {
 	{"device_without_part",     "007017", Kind::LabelsAndParts},
 	{"open_terminal",           "005026", Kind::OpenTerminals},
 	{"open_port",               "005026", Kind::OpenTerminals},
+	{"wire_protection",         "",       Kind::WireProtection},
 	{"cabinet_layout",          "",       Kind::CabinetLayout},
 };
 
@@ -376,6 +380,189 @@ void checkCables(Collector &c, QETProject *project, const Wires &wires)
 	}
 }
 
+	/// a number written with a comma or a point
+double numberOf(QString text)
+{
+	return text.replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+}
+
+	/// the cross-section in mm² of a wire: "1,5", "2.5 mm²", "3x1,5"
+double sectionOf(QString text)
+{
+	static const QRegularExpression value(QStringLiteral("\\d+(?:[.,]\\d+)?"));
+	text = text.trimmed();
+	const int x = qMax(text.lastIndexOf(QLatin1Char('x')), text.lastIndexOf(QChar(0x00D7)));
+	if (x >= 0) text = text.mid(x + 1);
+	const QRegularExpressionMatch m = value.match(text);
+	return m.hasMatch() ? numberOf(m.captured(0)) : 0;
+}
+
+	/// the rated current In of a protective device in A, 0 when unknown:
+	/// element information rated_current_a, In= of sim_params, else the
+	/// current of a Siemens order number (5SY4310-7: 10 A), else the largest
+	/// current written in its description, designation, comment or label
+	/// ("C16", "B 10 A", "CIRCUIT-BREAKER ... 8A")
+double ratedCurrentOf(Element *e)
+{
+	const DiagramContext info = e->elementInformations();
+	const double own = numberOf(info.value(QStringLiteral("rated_current_a")).toString());
+	if (own > 0) return own;
+	for (const QString &item : info.value(QStringLiteral("sim_params")).toString().split(QLatin1Char(';'), Qt::SkipEmptyParts)) {
+		const QString key = item.section(QLatin1Char('='), 0, 0).trimmed();
+		if (key.compare(QLatin1String("In"), Qt::CaseInsensitive) == 0) {
+			const double v = numberOf(item.section(QLatin1Char('='), 1).trimmed());
+			if (v > 0) return v;
+		}
+	}
+		// Siemens miniature circuit breakers: 5SY4 3 10-7 = 3 poles, 10 A
+	static const QRegularExpression siemens(QStringLiteral("\\b5S[YLJP]\\d\\d(\\d\\d)-\\d"));
+	for (const QString &key : {QStringLiteral("manufacturer_reference"), QStringLiteral("designation")}) {
+		const QRegularExpressionMatch m = siemens.match(info.value(key).toString());
+		if (m.hasMatch() && m.captured(1).toInt() > 0) return m.captured(1).toInt();
+	}
+	static const QRegularExpression curve(QStringLiteral("(?<![A-Za-z0-9])[BCDKZ]\\s?(\\d+(?:[.,]\\d+)?)\\s?A?(?![A-Za-z0-9]|[.,]\\d)"));
+	static const QRegularExpression amps(QStringLiteral("(?<![A-Za-z0-9.,])(\\d+(?:[.,]\\d+)?)\\s?A(?![A-Za-z0-9])"));
+	double best = 0;
+	for (const QString &key : {QStringLiteral("description"), QStringLiteral("designation"), QStringLiteral("comment"), QStringLiteral("label")}) {
+		const QString text = info.value(key).toString();
+		for (const QRegularExpression *re : {&curve, &amps}) {
+			auto it = re->globalMatch(text);
+			while (it.hasNext()) best = qMax(best, numberOf(it.next().captured(1)));
+		}
+	}
+	return best;
+}
+
+	/// current-carrying capacity Iz in A of a PVC insulated copper wire
+	/// (70 °C on the conductor) at 40 °C in the cabinet, as EN 60204-1
+	/// table 6 method B1 (single cores in a duct): from 1,5 mm² the 30 °C
+	/// values of DIN VDE 0298-4 table 3 / IEC 60364-5-52 B.52.4 (B1, three
+	/// loaded cores), 0,75 and 1 mm² from DIN VDE 0298-4 table 11
+	/// (multi-core, three loaded cores), each times 0,87 for 40 °C.
+	/// Between two table values the smaller one. See FORMELN.md.
+double capacityOf(double mm2)
+{
+	static const double table[][2] = {
+		{0.75, 6}, {1, 10}, {1.5, 15.5}, {2.5, 21}, {4, 28}, {6, 36}, {10, 50}, {16, 68},
+		{25, 89}, {35, 110}, {50, 134}, {70, 171}, {95, 207}, {120, 239}};
+	double iz = 0;
+	for (const auto &row : table)
+		if (mm2 + 1e-9 >= row[0]) iz = row[1];
+	return iz * 0.87;
+}
+
+	/// whether @p t is an output of its protective device: the even
+	/// numbered terminals (1→2, 3→4, 5→6); without numbers the terminals
+	/// at the bottom
+bool isOutput(Terminal *t, const QList<Terminal *> &all)
+{
+	bool numbered = false;
+	for (Terminal *o : all) {
+		bool ok = false;
+		o->name().trimmed().toInt(&ok);
+		numbered |= ok;
+	}
+	if (numbered) {
+		bool ok = false;
+		const int n = t->name().trimmed().toInt(&ok);
+		return ok && n % 2 == 0;
+	}
+	return t->orientation() == Qet::South;
+}
+
+	/// EN 60204-1 7.2 / IEC 60364-4-43: every wire behind a protective
+	/// device must carry its rated current, In ≤ Iz
+void checkWireProtection(Collector &c, const QList<Diagram *> &diagrams, const QSet<Diagram *> &panel_folios)
+{
+		// potentials: wires, junctions, folio reports and the two sides
+		// of a terminal block, not through any other device
+	QHash<Terminal *, Terminal *> parent;
+	std::function<Terminal *(Terminal *)> root = [&](Terminal *t) -> Terminal * {
+		Terminal *p = parent.value(t, t);
+		if (p == t) return t;
+		Terminal *r = root(p);
+		parent.insert(t, r);
+		return r;
+	};
+	auto unite = [&](Terminal *a, Terminal *b) {
+		if (!a || !b) return;
+		Terminal *ra = root(a), *rb = root(b);
+		if (ra != rb) parent.insert(ra, rb);
+	};
+	QList<Conductor *> wires;
+	QList<QPair<Diagram *, Element *>> devices;
+	for (Diagram *d : diagrams) {
+		if (panel_folios.contains(d)) continue;
+		for (Conductor *w : d->content().conductors()) {
+			unite(w->terminal1, w->terminal2);
+			wires << w;
+		}
+		for (Element *e : d->elements()) {
+			if (isPanelDevice(e)) continue;
+			const ElementData data = e->elementData();
+			const QList<Terminal *> own = e->terminals();
+			if ((data.m_type & (ElementData::AllReport | ElementData::Junction | ElementData::Terminal))
+				|| dynamic_cast<TerminalElement *>(e)) {
+				for (int i = 1; i < own.size(); ++i) unite(own.first(), own.at(i));
+				if (data.m_type & ElementData::AllReport)
+					for (Element *other : e->linkedElements())
+						if (!own.isEmpty() && !other->terminals().isEmpty()) unite(own.first(), other->terminals().first());
+				continue;
+			}
+			if (data.m_type == ElementData::Master && data.m_master_type == ElementData::Protection)
+				devices << qMakePair(d, e);
+		}
+	}
+	QHash<Terminal *, QList<Conductor *>> net_wires;
+	for (Conductor *w : std::as_const(wires)) net_wires[root(w->terminal1)] << w;
+
+	for (const auto &dev : std::as_const(devices)) {
+		Element *e = dev.second;
+		const QString shown = labelOf(e).isEmpty() ? e->name() : labelOf(e);
+		const QList<Terminal *> own = e->terminals();
+		QSet<Terminal *> nets;
+		for (Terminal *t : own)
+			if (isOutput(t, own) && net_wires.contains(root(t))) nets << root(t);
+		if (nets.isEmpty()) continue;
+			// main switches and switch-disconnectors protect nothing
+		static const QRegularExpression no_protection(QStringLiteral(
+			"hauptschalter|lasttrenn|trennschalter|not-aus|disconnector|main switch"), QRegularExpression::CaseInsensitiveOption);
+		const QString what = e->elementInformations().value(QStringLiteral("description")).toString()
+			+ QLatin1Char(' ') + e->elementInformations().value(QStringLiteral("comment")).toString();
+		if (what.contains(no_protection)) continue;
+		const double in = ratedCurrentOf(e);
+		if (in <= 0) {
+			c.add(Severity::Info, QStringLiteral("wire_protection"), dev.first, shown,
+				  ProjectCheck::tr("Protective device without a rated current: the wires behind it are not checked "
+								   "(enter rated_current_a or the current in its designation, e.g. C16)"),
+				  {e->uuid()});
+			continue;
+		}
+		double smallest = 0;
+		QList<QUuid> too_thin, unknown;
+		for (Terminal *net : std::as_const(nets))
+			for (Conductor *w : net_wires.value(net)) {
+				const double s = sectionOf(w->properties().m_wire_section);
+				if (s <= 0) unknown << w->uuid();
+				if (s <= 0 || capacityOf(s) >= in) continue;
+				if (smallest <= 0 || s < smallest) smallest = s;
+				too_thin << w->uuid();
+			}
+		if (!unknown.isEmpty())
+			c.add(Severity::Info, QStringLiteral("wire_protection"), dev.first, shown,
+				  ProjectCheck::tr("%n wire(s) behind this protective device (%1 A) without a cross-section: not checked",
+								   nullptr, int(unknown.size())).arg(QLocale().toString(in, 'g', 4)),
+				  QList<QUuid>{e->uuid()} + unknown);
+		if (too_thin.isEmpty()) continue;
+		c.add(Severity::Warning, QStringLiteral("wire_protection"), dev.first, shown,
+			  ProjectCheck::tr("Protected with %1 A, but %n wire(s) behind it are too thin: %2 mm² carries "
+							   "only %3 A (EN 60204-1, PVC, single cores in a duct, 40 °C)", nullptr, int(too_thin.size()))
+				  .arg(QLocale().toString(in, 'g', 4), QLocale().toString(smallest, 'g', 4),
+					   QLocale().toString(capacityOf(smallest), 'f', 1)),
+			  QList<QUuid>{e->uuid()} + too_thin);
+	}
+}
+
 } // namespace
 
 ProjectCheck::Kind PlanCheck::kindOf(const QString &rule)
@@ -442,6 +629,7 @@ QVector<PlanCheck::Finding> PlanCheck::run(QETProject *project)
 	}
 
 	checkCables(c, project, wires);
+	checkWireProtection(c, diagrams, panel_folios);
 
 	QVector<Finding> out = c.m_findings;
 	std::stable_sort(out.begin(), out.end(), [project](const Finding &a, const Finding &b) {
@@ -592,6 +780,7 @@ bool ProjectCheck::isForkKind(Kind kind)
 		case Kind::TerminalStrips:
 		case Kind::LabelsAndParts:
 		case Kind::OpenTerminals:
+		case Kind::WireProtection:
 		case Kind::CabinetLayout:
 			return true;
 		default:
@@ -608,6 +797,7 @@ QString ProjectCheck::forkTitle(Kind kind)
 		case Kind::TerminalStrips: return tr("Terminals without a terminal strip");
 		case Kind::LabelsAndParts: return tr("Devices without a label or part");
 		case Kind::OpenTerminals: return tr("Unconnected terminals");
+		case Kind::WireProtection: return tr("Wire cross-section and protection");
 		case Kind::CabinetLayout: return tr("Cabinet layout");
 		default: return QString();
 	}
@@ -636,6 +826,11 @@ QString ProjectCheck::forkToolTip(Kind kind)
 			return tr("Terminals and fluid ports left open on a symbol that has wires "
 					  "(EPLAN 005026, 005053). A symbol with no wire at all is listed under "
 					  "Symbols with no wire.");
+		case Kind::WireProtection:
+			return tr("Wires behind a protective device that cannot carry its rated current: "
+					  "In must not exceed Iz of the thinnest wire (EN 60204-1 table 6, PVC single "
+					  "cores in a duct, 40 °C). The rated current comes from rated_current_a, "
+					  "In= of the simulation or the designation (C16, 8 A).");
 		case Kind::CabinetLayout:
 			return tr("The warnings of the cabinet layouts: devices outside their mounting "
 					  "surface, overlapping or without a size.");
@@ -659,6 +854,7 @@ QString ProjectCheck::key(Kind kind)
 		case Kind::TerminalStrips: return QStringLiteral("terminal_strips");
 		case Kind::LabelsAndParts: return QStringLiteral("labels_and_parts");
 		case Kind::OpenTerminals: return QStringLiteral("open_terminals");
+		case Kind::WireProtection: return QStringLiteral("wire_protection");
 		case Kind::CabinetLayout: return QStringLiteral("cabinet_layout");
 	}
 	return QString();

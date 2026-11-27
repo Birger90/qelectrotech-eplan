@@ -42,6 +42,18 @@ Codestellen: `climate` = `panelclimate.cpp`, `wiring` = `panelwiring.cpp`, `layo
 | E2 | In 3D liegt die Rückseite eines Geräts auf der Schiene um die Aufklipshöhe (`snap_height_mm`, EPLAN ID 22211) hinter der Schienenoberkante, nicht tiefer als die Platte | `3d` `build` | Q4 (Bezug Schienenoberkante); Richtung Projektdefinition | – |
 | E3 | Bündig anreihen: liegt eine freie Kante eines Nachbarn (Gerät auf derselben Schiene; frei auf der Platte auch Kanal oder C-Profil) höchstens 4 mm entfernt, rastet das Gerät an ihr an; frei auf der Platte richtet es sich außerdem an Ober-/Unterkante bzw. Seite des Nachbarn aus, wenn diese ebenso nahe liegt; nie auf ein anderes Teil | `layout` `railSnap`, `kFlushCatchMm` | Projektdefinition | Schienenanfang fängt weiter bis 15 mm |
 
+## Leitungsquerschnitt zur Absicherung (Plan prüfen)
+
+Codestelle: `sources/plancheck/plancheck.cpp` (`checkWireProtection`, `capacityOf`, `ratedCurrentOf`).
+
+| ID | Beziehung | Codestelle | Herkunft, Quelle | Grenze |
+|---|---|---|---|---|
+| F1 | Bedingung In ≤ Iz für jede Leitung hinter dem Schutzorgan | `checkWireProtection` | Literaturformel, Q6 (Ib ≤ In ≤ Iz; bei Leitungsschutzschaltern ist I2 = 1,45·In, damit gilt I2 ≤ 1,45·Iz von selbst) | Ib (Betriebsstrom) und Kurzschlussschutz werden nicht geprüft |
+| F2 | Iz(30 °C) für Kupfer, PVC 70 °C, Verlegeart B1 (Aderleitungen im Rohr/Kanal), 3 belastete Adern: 1,5 → 15,5 A; 2,5 → 21; 4 → 28; 6 → 36; 10 → 50; 16 → 68; 25 → 89; 35 → 110; 50 → 134; 70 → 171; 95 → 207; 120 → 239 | `capacityOf` | Literaturwerte, Q7 (1,5–4 mm² am Auszug geprüft); ab 6 mm² Werte von IEC 60364-5-52 Tabelle B.52.4 Spalte B1, **nicht am Dokument geprüft** | zwischen Tabellenwerten der kleinere |
+| F3 | 0,75 mm² → 6 A, 1 mm² → 10 A (30 °C, mehradrig, 3 belastete Adern) | `capacityOf` | Literaturwerte, Q8 (Tabelle 12-1, Kategorie B); B1 nennt keine Werte unter 1,5 mm² | konservativ |
+| F4 | Iz(40 °C) = 0,87 · Iz(30 °C) | `capacityOf` | Umrechnungsfaktor für 70 °C Leitertemperatur bei 40 °C Umgebung, Q8 (Tabelle 12-2) | Schrankinnentemperatur fest 40 °C wie EN 60204-1; Häufung nicht berücksichtigt |
+| F5 | Bemessungsstrom: `rated_current_a` → `In=` aus `sim_params` → Siemens-Bestellnummer `5S[YLJP]` + Pole + zwei Ziffern In (5SY4310-7 → 10 A) → größter Strom im Text („C16“, „B 10 A“, „8A“) von Beschreibung, Bezeichnung, Kommentar, Kennzeichen | `ratedCurrentOf` | Projektdefinition; Siemens-Bestellschlüssel 5SY/5SL | Motorschutzschalter mit Einstellbereich: der größte Wert im Text |
+
 ## Quellen
 
 - Q1: IEC/TR 60890:2022 bzw. DIN VDE 0660-507, *A method of temperature-rise verification of low-voltage switchgear
@@ -57,3 +69,10 @@ Codestellen: `climate` = `panelclimate.cpp`, `wiring` = `panelwiring.cpp`, `layo
   https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/cabinetgui_k_verlustleistungprinzip.htm
 - Q5: DIN EN 50525-2-31, Kabel und Leitungen bis 450/750 V – Einadrige Leitungen ohne Mantel mit thermoplastischer
   PVC-Isolierung (H05V-K, H07V-K): Grenzwerte des mittleren Außendurchmessers.
+- Q6: DIN VDE 0100-430 / IEC 60364-4-43 (Schutz bei Überstrom) und DIN EN 60204-1 Abschnitt 7.2 und Tabelle 6
+  (Strombelastbarkeit in Maschinen, 40 °C).
+- Q7: DIN VDE 0298-4, Tabelle 3, Auszug in Voltimum, *Querschnittsbemessung von Leitungen und Kabeln – Teil 1*,
+  Tabelle 6 (Verlegeart B1: 1,5 mm² 15,5 A, 2,5 mm² 21 A, 4 mm² 28 A bei 3 belasteten Adern),
+  https://content.voltimum.com/de/137631/201108022505.pdf
+- Q8: Lapp, Technische Tabellen T12, Tabelle 12-1 (DIN VDE 0298-4 Tabelle 11, 30 °C) und Tabelle 12-2
+  (Umrechnungsfaktor 40 °C bei 70 °C Leitertemperatur: 0,87).

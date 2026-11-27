@@ -105,7 +105,11 @@ QList<ProjectCheck::Kind> ProjectCheck::kinds()
 {
 	return {Kind::DuplicateLabels, Kind::PotentialTypes, Kind::OpenWireEnds,
 			Kind::UnwiredSymbols, Kind::TerminalBranches, Kind::DeviceTypes,
-			Kind::WiresPerTerminal, Kind::TerminalNames};
+			Kind::WiresPerTerminal, Kind::TerminalNames,
+				// Fork: the rules of "Check plan" (PlanCheck)
+			Kind::Links, Kind::PlcChannels, Kind::Cables, Kind::TerminalStrips,
+			Kind::LabelsAndParts, Kind::OpenTerminals, Kind::WireProtection,
+			Kind::CabinetLayout};
 }
 
 QString ProjectCheck::title(Kind kind)

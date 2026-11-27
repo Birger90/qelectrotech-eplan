@@ -54,7 +54,8 @@
 >   and selects the device or wire. Checks: duplicate labels and wire numbers, potential types, open wire ends,
 >   symbols with no wire, device types, wires per terminal, terminal names, and the fork's rules: contacts, coils and
 >   folio reports without their partner, PLC channels without an address, cables without a target, terminals without
->   a terminal strip, devices without a label or part, unconnected terminals and fluid ports, the cabinet layout.
+>   a terminal strip, devices without a label or part, unconnected terminals and fluid ports, wire cross-section
+>   against the protective device (In ≤ Iz per EN 60204-1), the cabinet layout.
 > - Script API `qet.checkProject(folio = -1)`, CLI `--check-project <project.qet> [report.json]` (the same rules;
 >   exit code 3 when errors are found).
 >

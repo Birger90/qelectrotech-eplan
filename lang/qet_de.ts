@@ -18229,6 +18229,32 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
         <translation>Schaltschrankaufbau</translation>
     </message>
     <message>
+        <source>Wire cross-section and protection</source>
+        <translation>Leitungsquerschnitt und Absicherung</translation>
+    </message>
+    <message>
+        <source>Wires behind a protective device that cannot carry its rated current: In must not exceed Iz of the thinnest wire (EN 60204-1 table 6, PVC single cores in a duct, 40 °C). The rated current comes from rated_current_a, In= of the simulation or the designation (C16, 8 A).</source>
+        <translation>Leitungen hinter einem Schutzorgan, die dessen Bemessungsstrom nicht tragen: In darf Iz der dünnsten Leitung nicht übersteigen (EN 60204-1 Tabelle 6, PVC-Aderleitungen im Kanal, 40 °C). Der Bemessungsstrom kommt aus rated_current_a, In= der Simulation oder der Beschreibung (C16, 8 A).</translation>
+    </message>
+    <message>
+        <source>Protective device without a rated current: the wires behind it are not checked (enter rated_current_a or the current in its designation, e.g. C16)</source>
+        <translation>Schutzorgan ohne Bemessungsstrom: die Leitungen dahinter werden nicht geprüft (rated_current_a eintragen oder den Strom in die Beschreibung, z. B. C16)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n wire(s) behind this protective device (%1 A) without a cross-section: not checked</source>
+        <translation>
+            <numerusform>%n Leitung hinter diesem Schutzorgan (%1 A) ohne Querschnitt: nicht geprüft</numerusform>
+            <numerusform>%n Leitungen hinter diesem Schutzorgan (%1 A) ohne Querschnitt: nicht geprüft</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Protected with %1 A, but %n wire(s) behind it are too thin: %2 mm² carries only %3 A (EN 60204-1, PVC, single cores in a duct, 40 °C)</source>
+        <translation>
+            <numerusform>Mit %1 A abgesichert, aber %n Leitung dahinter ist zu dünn: %2 mm² trägt nur %3 A (EN 60204-1, PVC-Aderleitungen im Kanal, 40 °C)</numerusform>
+            <numerusform>Mit %1 A abgesichert, aber %n Leitungen dahinter sind zu dünn: %2 mm² trägt nur %3 A (EN 60204-1, PVC-Aderleitungen im Kanal, 40 °C)</numerusform>
+        </translation>
+    </message>
+    <message>
         <source>Contacts linked to no coil or main function, coils without any contact, solenoid valves without their coil and folio reports without their partner (EPLAN 007005, 007009, 011002).</source>
         <translation>Kontakte ohne verknüpfte Spule bzw. Hauptfunktion, Spulen ohne Kontakt, Magnetventile ohne Spule und Abbruchstellen ohne Gegenstück (EPLAN 007005, 007009, 011002).</translation>
     </message>

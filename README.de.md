@@ -65,7 +65,7 @@ In QET und im exportierten PDF:
   Leiternummern, Potenzialtypen, offene Leitungsenden, Symbole ohne Leitung, Gerätetypen, Leitungen je Anschluss,
   Anschlussnamen und die Regeln des Forks: Kontakte, Spulen und Abbruchstellen ohne Gegenstück, SPS-Kanäle ohne
   Adresse, Kabel ohne Ziel, Klemmen ohne Klemmleiste, Geräte ohne Kennzeichen oder Artikel, offene Anschlüsse und
-  Fluidanschlüsse, Schaltschrankaufbau.
+  Fluidanschlüsse, Leitungsquerschnitt zur Absicherung (In ≤ Iz nach EN 60204-1), Schaltschrankaufbau.
 - Skript-API `qet.checkProject(folio = -1)`, CLI `--check-project <projekt.qet> [bericht.json]` (dieselben Regeln;
   Rückgabewert 3 bei Fehlern).
 

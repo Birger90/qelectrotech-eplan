@@ -3,6 +3,19 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.56.0 – 27.11.2026 – Prüfung Leitungsquerschnitt zur Absicherung
+
+- **Neue Prüfregel „Leitungsquerschnitt und Absicherung“** in *Projekt prüfen* und `--check-project`: Hinter jedem
+  Schutzorgan (Geräteart Schutz) muss jede Leitung dessen Bemessungsstrom tragen, In ≤ Iz der dünnsten Leitung
+  (EN 60204-1 Tabelle 6, PVC-Aderleitungen im Kanal, 40 °C; Formeln F1–F4 in `FORMELN.md`). Abgänge sind die
+  geraden Anschlüsse (2, 4, 6), das Potential geht über Leitungen, Verbinder, Abbruchstellen und Klemmen weiter.
+  Bemessungsstrom aus `rated_current_a`, `In=` der Simulation, der Siemens-Bestellnummer (5SY4310-7 → 10 A) oder dem
+  Text („C10A“, „FI/LS B16“, „8 A“); Hauptschalter und Lasttrennschalter sind ausgenommen. Ohne Strom oder ohne
+  Querschnitt ein Hinweis.
+- **Behoben:** Seit dem Hauptrepo-Stand vom 25.11. standen alle Befunde der Fork-Regeln (offene Anschlüsse, Kabel
+  ohne Ziel, Klemmen ohne Leiste …) unter „Doppelte Signale und Betriebsmittel“, weil die Liste der Prüfarten
+  überschrieben war. Jetzt wieder in ihrer eigenen Gruppe.
+
 ## 1.55.0 – 26.11.2026 – SPS-Kanäle aus Makros, Klimaberechnung, neue 3D-Ansicht
 
 - **SPS-Kanäle aus dem EPLAN-Makro:** Der Bauteil-Import liest je Anschluss die Funktionsdefinition (A1381/A1382/

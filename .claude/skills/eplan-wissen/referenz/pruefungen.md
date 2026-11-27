@@ -183,6 +183,7 @@ Quellen: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/h
 | Gleiche Verbindungsbezeichnung nicht auf verschiedenen Potenzialen/Signalen/Netzen; innerhalb eines Potenzials/Signals/Netzes keine unterschiedlichen Bezeichnungen | 005044, 005045, 005069–005072 | cont (potential_mismatch) |
 | Farbe/Nummer nur aus den Projekt-„Verbindungsfarben“, Querschnitt aus Projektliste; Kabelverbindung hat Farbe/Nummer | 005042, 005043, 005082 | Skript |
 | Verbindungsquerschnitt im zulässigen Bereich des Klemmenartikels | 005093 | Hand |
+| Querschnitt trägt den Bemessungsstrom des vorgeschalteten Schutzorgans, In ≤ Iz (EN 60204-1 Tab. 6, 40 °C) | – (EPLAN hat keine Meldung dafür) | check (wire_protection, Fork 1.56.0; In aus rated_current_a, 5SY-Bestellnummer oder „C16“ im Text) |
 | Einpolig/allpolig konsistent (keine doppelte allpolige Verbindung, Definition passt zu Quelle/Ziel) | 005060–005063 | – (QET kennt keine allpolige Darstellung) |
 | Kein Ziel fehlt, keine ungültige Verbindung, keine zum Löschen markierte Verbindung | 005017, 005064, 005085 | cont |
 

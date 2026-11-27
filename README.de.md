@@ -246,9 +246,11 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
 - Datei > *EPLAN-Projekt importieren* (`.zw1`): das ganze Projekt als verknüpftes QET-Projekt – Formulare und
   Schriftfelder, SPS-Karten als SPS-Master mit Kanaltabelle, symbolische Adressen wie in EPLAN verfolgt, Bericht über
   nicht verknüpfte Kanäle (`sps_bericht.txt`). Derselbe Befehl liest auch einen EPLAN-Export (`.epdz`, z. B. aus
-  EPLAN eView): je Seite ein Blatt mit Titel, Seitennummer und Struktur, die Seite als Bild, daneben Geräteliste,
-  Verbindungsliste (Quelle, Ziel, Potential, Farbe, Querschnitt, Länge) und die 3D-Bauräume (`.e3d`); auch
-  `--import-epdz export.epdz [projekt.qet]`.
+  EPLAN eView) als bearbeitbares Projekt: jedes EPLAN-Symbol wird ein Bauteil mit seinen Anschlüssen (Namen aus dem
+  Export), Artikel, Bezeichnung und Funktionstext; die Verbindungen werden Leitungen, die so laufen, wie EPLAN sie
+  gezeichnet hat, mit Farbe, Querschnitt und Potential; Unterbrechungspunkte werden verknüpfte Verweispfeile, Spulen
+  und Kontakte Master und Slave; Rahmen, Schriftfeld und Strukturkästen bleiben. Daneben Geräteliste,
+  Verbindungsliste und die 3D-Bauräume (`.e3d`). Ohne Python kommen die Seiten als Bild (`--import-epdz export.epdz`).
 - Claude-Assistent als Andockfenster (Knopf *Claude* in der Hauptwerkzeugleiste): liest und ändert das offene Projekt
   über den MCP-Server unten; Bilder und PDFs lassen sich mitschicken. Mit API-Schlüssel oder in eigenen Builds
   (`-DQET_CLAUDE_KONTO=ON`) über das eigene Claude-Konto.
@@ -297,10 +299,6 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
   gedrehten Symbol, und die Felder der Wegeventile verschieben sich unter den Anschlüssen, beim Umschalten anteilig.
   Nur die Anzeige ändert sich; nach *Stopp* ist der Plan wie vorher.
 - Ohne Oberfläche: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv weg.csv --png ordner`.
-- TIA-Portal-Bausteine in KOP/FUP (SimaticML-Export) werden zu Strukturiertem Text für die Simulation:
-  `--simaticml-to-st baustein.xml [programm.st]` oder `qet.simaticMlToSt(pfad)` – Kontakte, Spulen, Setzen/Rücksetzen,
-  Vergleiche, Flanken, TON/TOF/CTU/CTD, Move und Rechnen; Aufrufe eigener Bausteine und SCL/STL-Netzwerke werden als
-  nicht übersetzt gemeldet, das Ergebnis prüft die Simulation sofort.
   `--simulate-reference` prüft den Rechenkern gegen analytische Lösungen, OpenModelica-Läufe (Weg und Drücke) und
   Testprojekte von Anfang bis Ende; ungültige Daten und Rechenfehler brechen einen Lauf mit Meldung ab.
   Jedes Bauteil wird nur über den versionierten Modellkatalog gerechnet (`--simulate-catalog`); Bauteile ohne
@@ -313,6 +311,10 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
   Proportional-Verstärker, lagegeregelte Proportionalmagnete, Druck-, Durchfluss- und Wegsensoren,
   Proportional-Druckbegrenzungsventil) – geschlossene Druck- und Lageregelkreise. Stand der Roadmap: [tools/simulation/ROADMAP_STAND.md](tools/simulation/ROADMAP_STAND.md).
   Anleitung: [tools/simulation/README.md](tools/simulation/README.md).
+- TIA-Portal-Bausteine in KOP/FUP (SimaticML-Export) werden zu Strukturiertem Text für die Simulation:
+  `--simaticml-to-st baustein.xml [programm.st]` oder `qet.simaticMlToSt(pfad)` – Kontakte, Spulen, Setzen/Rücksetzen,
+  Vergleiche, Flanken, TON/TOF/CTU/CTD, Move und Rechnen; Aufrufe eigener Bausteine und SCL/STL-Netzwerke werden als
+  nicht übersetzt gemeldet, das Ergebnis prüft die Simulation sofort.
 - Weitergabe in der Firma ohne Git: über eine SharePoint-Bibliothek, die OneDrive spiegelt – Installation per
   Doppelklick, Update-Prüfung beim Start, Hilfe > *Fehler oder Wunsch melden...*, Firmen-Bauteile aus dem
   Verteilordner. Anleitung: [tools/verteilung/README.md](tools/verteilung/README.md).

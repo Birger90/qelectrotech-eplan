@@ -2316,6 +2316,17 @@ def standard_ziel(archiv):
 if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     archiv = args[0]
+    if archiv.lower().endswith(".epdz"):
+        # EPLAN-Export (.epdz): eigener Leser, dieselbe Ausgabe (Fortschritt, „fertig:“, --pdf, --oeffnen)
+        import epdz_nach_qet
+        erg = epdz_nach_qet.haupt(sys.argv[1:])
+        if "--pdf" in sys.argv:
+            from qet_direkt import q, BIN
+            print("pdf:", q.tool_export(BIN, erg, "pdf", erg.replace(".qet", ".pdf"), timeout=3600).get("ok"))
+        if "--oeffnen" in sys.argv:
+            import subprocess
+            subprocess.Popen([QET_EXE, erg])
+        sys.exit(0)
     ziel = args[1] if len(args) > 1 else standard_ziel(archiv)
     os.makedirs(os.path.dirname(os.path.abspath(ziel)), exist_ok=True)
     erg = umsetzen(archiv, ziel, args[2] if len(args) > 2 else None,

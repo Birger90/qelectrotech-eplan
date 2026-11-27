@@ -1765,6 +1765,12 @@ OPS = {
     # "routed", or "no-route" when there is none, the path then unchanged.
     "route_conductor":  ("routeConductor",      [("folio", "folio"), ("element", "elmt"),
                                                  ("terminal", "term")]),
+    # the path a drawing gave the wire, through its corners ("x,y;x,y", scene
+    # coordinates, from "from"): an importer keeps the source's routing
+    "set_conductor_path": ("setConductorPathBetween", [("folio", "folio"),
+                                                 ("from", "elmt"), ("from_terminal", "term"),
+                                                 ("to", "elmt"), ("to_terminal", "term"),
+                                                 ("corners", "str")]),
     "link_elements":    ("linkElements",        [("folio", "folio"), ("element", "elmt"),
                                                  ("to_folio", "folio"), ("to", "elmt")]),
     "link_plc_io":      ("linkElements",        [("folio", "folio"), ("element", "elmt"),
@@ -1995,7 +2001,7 @@ ROUTE_MODES = ["default", "avoid"]
 
 # Routing arrived after the other drawing verbs, so it is required only by
 # an edit that routes: every other edit still runs on a build without it.
-_ROUTE_METHODS = {"routeConductor", "routeConductorBetween"}
+_ROUTE_METHODS = {"routeConductor", "routeConductorBetween", "setConductorPathBetween"}
 
 # Accepted by set_conductor. The names are the project file's own, so what
 # a script sets is what qet_conductors reports back.
@@ -2361,6 +2367,8 @@ def _build_script(operations: list, output: str) -> str:
                              f"expected one of {', '.join(ROUTE_MODES)}")
         if name == "route_conductor":
             uuid_methods.add("routeConductor")
+        if name == "set_conductor_path":
+            uuid_methods.add("setConductorPathBetween")
         if route == "avoid":
             uuid_methods.add("routeConductorBetween")
         if name == "set_folio" and op.get("property") not in FOLIO_PROPERTIES:
@@ -2516,6 +2524,11 @@ def _build_script(operations: list, output: str) -> str:
                          f"JSON.stringify({{kind: 'op_note', index: {i}, note: v{i}.notes.join(' ')}}));")
             lines.append(f"  if (v{i} && v{i}.ok === false) {{ qet.log({_js(_MARKER)} + "
                          f"JSON.stringify({{kind: 'op_note', index: {i}, note: v{i}.error}})); v{i} = false; }}")
+        if name == "set_conductor_path":
+            lines.append(f"  if (v{i} === 'kept') qet.log({_js(_MARKER)} + "
+                         f"JSON.stringify({{kind: 'op_note', index: {i}, note: 'the corners do "
+                         f"not make horizontal and vertical segments; the conductor keeps its "
+                         f"path'}}));")
         if name == "route_conductor":
             lines.append(f"  if (v{i} === 'no-route') qet.log({_js(_MARKER)} + "
                          f"JSON.stringify({{kind: 'op_note', index: {i}, note: 'no route "

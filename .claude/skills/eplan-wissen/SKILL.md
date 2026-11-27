@@ -134,7 +134,7 @@ Quellen stehen in den Referenzdateien beim jeweiligen Abschnitt.
 - Läuft die Sprungkette am Ende um? Wohin führt die Mitte einer Hauptfunktion ohne BM-Seiten?
 - Wie erzeugt EPLAN den Blinkrahmen technisch (JavaScript, /Hide)? Sind Querverweistexte selbst klickbar?
 - Werden Mehrstockklemmen über ein Seitenende getrennt? Standard-Zeilenzahl der Formulare?
-- Voreingestellte Kategorie (Fehler/Warnung/Hinweis) je Prüfmeldung; Aufbau von `.epj`/`.epdz`.
+- Voreingestellte Kategorie (Fehler/Warnung/Hinweis) je Prüfmeldung; Aufbau von `.epj` (`.epdz` geklärt, siehe dxf-dwg-druck.md Abschnitt 10).
 
 ## Pflege
 

@@ -196,8 +196,30 @@ Ein DXF-Import in den Fork müsste Layer -> QET-Grafik/Text und Blöcke -> Baute
 
 **Bedeutung für QET:** Eine EPDZ-Datei wäre eine sehr gute Nachbauquelle: SVG je Seite = exakte Vektorgrafik mit
 echten Koordinaten (besser als PDF-Extraktion), dazu Projekt-, Seiten-, Funktions- und Abbruchstelleneigenschaften.
-Falls ein Kunde EPDZ liefern kann, vor dem PDF-Auslesen danach fragen. **Vermutung:** EPDZ ist ein ZIP-Container;
-Aufbau vor Nutzung an einer echten Datei prüfen.
+Falls ein Kunde EPDZ liefern kann, vor dem PDF-Auslesen danach fragen.
+
+**Beobachtet an einer echten Datei (EPLAN 2025, Beispiel von ecad-view), Fork 1.62.0:** EPDZ ist ein **7z**-Archiv.
+- `manifest.db` (SQLite): `package` (id, type, name), `property` (packageid, propid, propindex, value) mit den
+  EPLAN-Eigenschaftsnummern; Typen page, function, mergedconnection, interruptionpoint, installationspace, location.
+  Eigenschaft 2000 = Objektkennung `253/<Klasse>/<Nummer>/0` (17 Funktion, 59 Verbindungsdefinitionspunkt,
+  70 Unterbrechungspunkt, 88 Strukturkasten, 18/166 Verbindung). Seiten: 11000 Seitenzähler, 11011 Beschreibung,
+  1140/1240/1540 Struktur. Funktionen: 20001 BMK vollständig, 20006 Geräte-BMK, 20215 sichtbares BMK, 20026
+  Funktionsdefinition (Text), 20188 Funktionsdefinition „Kategorie/Gruppe/Nr“ (200 Spule, 201 Schließer, 202 Öffner,
+  1302 Geräteanschlusspunkt), 20038 Anschlussbezeichnungen „A1;A2“, 20030 Klemmennummer, 20122 Hauptfunktion,
+  20100 Artikel „Kürzel.Bestellnr“, 20919 Bestellnummer, 20193 Bezeichnung, 20031 Funktionstext, 20027 Kenngrößen.
+  Verbindungen: 31019 Quelle, 31020 Ziel („BMK:Anschluss“, mit Stecker „BMK:Stecker:Anschluss“), 31004 Farbe,
+  31007 Querschnitt, 31003 Länge, 33003 Potential.
+- `packages/pages/items/pagesvg/<Seite>.svg`: mm, y nach oben (`matrix(1,0,0,-1,0,297)`); jede Funktion ist eine
+  Gruppe `id="Id17_<Nummer>"` mit `<title>` = BMK, Grafik fertig gedreht und platziert; Verbindungen sind freie Linien,
+  Abzweige als kurze Schräge; Rahmen/Schriftfeld in der Gruppe „Frame“, schon ausgewertet. Die Leitung endet am
+  Anschlusspunkt, der auch mitten auf einem Symbolstrich oder am Kreisrand (Klemme) liegen kann. Der Link der Gruppe
+  (`jumpToFunction(…, eigene Id, nächste Id, …)`) zeigt bei Unterbrechungspunkten auf den **nächsten** gleichnamigen:
+  die Punkte eines Potentials bilden eine Kette über die Seiten; Paare = aufeinanderfolgende Glieder.
+- `packages/installationspaces/items/installationspacee3d/*.E3d` (3D), `packages/automationML/*.aml`.
+- Die Steckerbezeichnung steht nur als Text in der Anschlussgruppe, nicht als Eigenschaft.
+
+**Umsetzung im Fork:** `tools/eplan_import/eplan_zw1/epdz_nach_qet.py` (über *Datei > EPLAN-Projekt importieren*):
+bearbeitbares Projekt mit Bauteilen, Anschlüssen, Leitungen auf dem EPLAN-Weg, Verweispaaren und Master/Slave.
 
 ## 11. Bedeutung für den QET-Nachbau (Zusammenfassung)
 

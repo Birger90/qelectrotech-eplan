@@ -473,8 +473,22 @@ void EplanProjectImportDialog::start()
 	m_pending.clear();
 	m_result.clear();
 
-		// an EPLAN export archive (.epdz): pages, lists and 3D, read here
-	if (archive.endsWith(QLatin1String(".epdz"), Qt::CaseInsensitive)) {
+		// An EPLAN export archive (.epdz) goes the same way as a .zw1: the
+		// import program draws each EPLAN symbol as a part with its terminals,
+		// the connections as conductors where EPLAN drew them and the
+		// interruption points as linked arrows. Without the program or a
+		// Python able to run it, it is read here instead, the pages as
+		// pictures with the lists and 3D beside them (EpdzImport).
+	const bool epdz = archive.endsWith(QLatin1String(".epdz"), Qt::CaseInsensitive);
+	QString python;
+	if (epdz && QFileInfo(script).isFile()) {
+		QApplication::setOverrideCursor(Qt::BusyCursor);
+		python = usablePython(script);
+		QApplication::restoreOverrideCursor();
+	}
+	if (epdz && python.isEmpty()) {
+		appendLog(tr("Without the import program and a Python that runs it, the pages of %1 come in as "
+			     "pictures; parts and conductors need them.").arg(QFileInfo(archive).fileName()));
 		m_status->setText(tr("Importing %1 …").arg(QFileInfo(archive).fileName()));
 		QApplication::setOverrideCursor(Qt::BusyCursor);
 		const EpdzImport::Result result = EpdzImport::run(archive, target);
@@ -494,9 +508,11 @@ void EplanProjectImportDialog::start()
 	m_progress->setValue(0);
 	m_progress->setVisible(true);
 	m_start->setEnabled(false);
-	QApplication::setOverrideCursor(Qt::BusyCursor);
-	const QString python = usablePython(script);
-	QApplication::restoreOverrideCursor();
+	if (python.isEmpty()) {
+		QApplication::setOverrideCursor(Qt::BusyCursor);
+		python = usablePython(script);
+		QApplication::restoreOverrideCursor();
+	}
 	if (python.isEmpty()) {
 		updateButtons();
 		m_status->setText(tr("No usable Python found."));

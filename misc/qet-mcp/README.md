@@ -681,7 +681,13 @@ Python, plus the hang guard on `addConductor` and the database refresh in
   the run goes on. Like a hand-edited path, it is stretched rather than
   rerouted when a symbol is moved afterwards; route again after moving
   things. Needs `qet.routeConductor()` / `qet.routeConductorBetween()` in
-  the build, and only an edit that routes requires them. A symbol drawn
+  the build, and only an edit that routes requires them. `set_conductor_path`
+  (`from`, `from_terminal`, `to`, `to_terminal`, `corners` = "x,y;x,y"
+  in scene units, from the `from` side) gives a conductor the path a
+  drawing had instead -- an importer keeps the source's routing. Corners
+  within one unit of a line are put on it; corners that still do not make
+  horizontal and vertical segments leave the wire as it was, with a
+  `note`. Needs `qet.setConductorPathBetween()`. A symbol drawn
   around either end's own symbol (a cabinet made as one element) is not
   an obstacle, so a wire between two symbols inside one is routed inside
   it. Two terminals facing each other on one line, with nothing between

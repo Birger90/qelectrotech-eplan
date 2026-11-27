@@ -9554,6 +9554,10 @@ Geschrieben nach %4</translation>
         <translation>Liest ein gepacktes EPLAN-Projekt (.zw1) oder einen EPLAN-Export (.epdz) und schreibt ein QElectroTech-Projekt mit Seiten, Symbolen, Verbindungen, Querverweisen und Listen. Der Import öffnet sich danach in QElectroTech.</translation>
     </message>
     <message>
+        <source>Without the import program and a Python that runs it, the pages of %1 come in as pictures; parts and conductors need them.</source>
+        <translation>Ohne das Importprogramm und ein Python, das es ausführt, kommen die Seiten von %1 nur als Bild; Bauteile und Leitungen brauchen beides.</translation>
+    </message>
+    <message>
         <source>EPLAN project (.zw1, .epdz):</source>
         <translation>EPLAN-Projekt (.zw1, .epdz):</translation>
     </message>

@@ -3,6 +3,20 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.62.0 – 27.11.2026 – EPLAN-Export (.epdz) als bearbeitbares Projekt
+
+- **.epdz wird ein echter Schaltplan:** *Datei > EPLAN-Projekt importieren* übersetzt einen EPLAN-Export jetzt wie
+  eine .zw1 (über `eplan_nach_qet.py` → `epdz_nach_qet.py`): jedes EPLAN-Symbol wird ein Bauteil mit seiner Grafik,
+  seinen Anschlüssen (Namen aus dem Anschlusstext bzw. der Verbindungsliste), Artikel, Bezeichnung und Funktionstext;
+  Verbindungen werden QET-Leitungen mit Farbe, Querschnitt und Potential, die so laufen, wie EPLAN sie gezeichnet hat;
+  Unterbrechungspunkte werden verknüpfte Verweispfeile (Paare aus der EPLAN-Sprungkette), Spulen und Kontakte Master
+  und Slave; Rahmen, Schriftfeld und Strukturkästen bleiben. Am Beispiel von ecad-view: 10 Seiten, 374 Bauteile,
+  706 Anschlüsse, 423 Leitungen (329 direkt aus der EPLAN-Verbindungsliste), 66 Verweispfeile, keine Verbindung in
+  einem falschen Netz. Ohne Python bleibt der bisherige Weg (Seiten als Bild).
+- **`qet.setConductorPathBetween` / MCP `set_conductor_path`:** gibt einer Leitung ihren Weg über vorgegebene Ecken.
+- **Fehler behoben:** `qet.linkElements` verweigerte Spule–Kontakt-Verknüpfungen, wenn deren Leitungen verschiedene
+  Eigenschaften hatten; die Prüfung gilt jetzt wie in der Oberfläche nur für Verweispfeile.
+
 ## 1.61.0 – 27.11.2026 – EPLAN-Export (.epdz) und TIA-KOP/FUP
 
 - **EPLAN-Export (.epdz) im selben Import wie .zw1:** *Datei > EPLAN-Projekt importieren* nimmt jetzt auch .epdz

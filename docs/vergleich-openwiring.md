@@ -111,7 +111,7 @@ Spalte **Maßnahme**: **Ü** übernehmen (fehlt bei uns), **A** angleichen (bei 
 
 ## Umgesetzt
 
-Branch `feature/openwiring-abgleich`, Version 1.64.0. Getestet mit Skripten über die gebaute exe
+Branch `feature/openwiring-abgleich`, Version 1.67.0. Getestet mit Skripten über die gebaute exe
 (`QET_ENABLE_SCRIPTING=1`, `--run`), MCP-Werkzeuge über `qet_edit`, PDF-Import an einem echten Vektor-PDF.
 
 | Funktion | Stand | Wo |

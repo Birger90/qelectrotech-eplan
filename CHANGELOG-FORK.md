@@ -3,7 +3,7 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
-## 1.64.0 – 27.11.2026 – Abgleich mit OpenWiring
+## 1.67.0 – 27.11.2026 – Abgleich mit OpenWiring (Branch, auf main 1.63.0 aufgesetzt)
 
 Funktion für Funktion mit OpenWiring 2.1.16 verglichen ([docs/vergleich-openwiring.md](docs/vergleich-openwiring.md));
 übernommen, was fehlte, und angeglichen, wo OpenWiring es besser löst. Eigener Code, nichts aus OpenWiring kopiert.

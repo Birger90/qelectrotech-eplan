@@ -141,7 +141,7 @@ wie in EPLAN („überzählige Hauptfunktionen“).
 - Abbruchstellen-Einstellung „Zielanzeige an Paarquerverweisen“: zuerst Ziel, dann Verweis (Beispiel `L1/ X1:1 /7.04`).
   Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/xessettingsgui_d_einstellungenprojektabbruchstellen.htm
 
-**Bedeutung für QET:** Der Fork hat ab 1.64.0 den **Paarquerverweis** (Abgleich mit OpenWiring): Erkennen im PDF:
+**Bedeutung für QET:** Der Fork hat ab 1.67.0 den **Paarquerverweis** (Abgleich mit OpenWiring): Erkennen im PDF:
 Kontakt mit Verweistext direkt rechts neben einem 3RV/LS, ohne Leitungen. Umsetzung: den **verdrahteten** Kontakt als
 Slave mit der Hauptfunktion verknüpfen, dann die Darstellung erzeugen – Verknüpfungsfenster des Kontakts *Als
 Paarquerverweis darstellen …* oder Skript `qet.addPairRepresentation(folio, kontakt, zielblatt, x, y)`. Die
@@ -249,7 +249,7 @@ wenn das Original sie bei fremden Anlagen zeigt. Spalten: EPLAN zählt ab 0, QET
 - **Kette** passt direkt: in EPLAN-Reihenfolge (Seitenfolge bzw. Sortierkennung) paarweise 1↔2, 3↔4 verknüpfen.
   Ein Potential, das auf Blatt A abgeht und auf B, C, D ankommt, ist in EPLAN eine Kette A→B, B→C … – auf B braucht es
   daher einen kommenden **und** einen gehenden Pfeil. Im Original lesen, welcher Pfeil worauf zeigt.
-- **Stern** (Pfeil mit Verweisliste, z. B. „L1 /9.0 /12.0 /15.0“): der Fork kann das ab 1.64.0 – den gehenden Pfeil
+- **Stern** (Pfeil mit Verweisliste, z. B. „L1 /9.0 /12.0 /15.0“): der Fork kann das ab 1.67.0 – den gehenden Pfeil
   als **Stern** setzen (Verknüpfungsfenster *Stern* oder `qet.setReportStar(folio, uuid)`, Elementattribut
   `reportStar="true"`); er verbindet sich mit allen freien gleichnamigen kommenden Pfeilen der anderen Blätter
   (Name = label, sonst Leiterfunktion, sonst Drahtnummer) und zeigt alle Positionen. Die Prüfung schlägt den Stern

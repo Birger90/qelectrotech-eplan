@@ -1243,6 +1243,10 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/undocommand/itemmodelcommand.h
   ${QET_DIR}/sources/undocommand/linkelementcommand.cpp
   ${QET_DIR}/sources/undocommand/linkelementcommand.h
+  ${QET_DIR}/sources/undocommand/reportstarcommand.cpp
+  ${QET_DIR}/sources/undocommand/reportstarcommand.h
+  ${QET_DIR}/sources/undocommand/pairrepresentation.cpp
+  ${QET_DIR}/sources/undocommand/pairrepresentation.h
   ${QET_DIR}/sources/undocommand/movediagramcommand.cpp
   ${QET_DIR}/sources/undocommand/movediagramcommand.h
   ${QET_DIR}/sources/undocommand/removediagramcommand.cpp

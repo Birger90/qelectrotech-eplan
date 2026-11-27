@@ -43,7 +43,10 @@ ReportElement::~ReportElement()
 
 /**
 	@brief ReportElement::linkToElement
-	Link this element to the other element
+	Link this element to the other element.
+	A report links to one report of the other kind, and a new link replaces
+	the one it had. A star (@sa Element::isReportStar()) keeps every report
+	of the other kind it is given: one source going out to many sheets.
 	@param elmt
 	element to be linked with this
 */
@@ -55,24 +58,35 @@ void ReportElement::linkToElement(Element * elmt)
 		return;
 	}
 
-		//ensure elmt isn't already linked
-	bool i = true;
-	if (!connected_elements.isEmpty() && (connected_elements.first() == elmt))
-		i = false;
-
 		//ensure elmt is an inverse report of this element
-	if ((elmt->linkType() == m_inverse_report) && i)
+	if (!elmt || elmt->linkType() != m_inverse_report)
+		return;
+
+	if (isReportStar())
 	{
-		unlinkAllElements();
+		if (connected_elements.contains(elmt))
+			return;
 		connected_elements << elmt;
 		elmt->linkToElement(this);
 		emit linkedElementChanged();
+		return;
 	}
+
+		//ensure elmt isn't already linked
+	if (!connected_elements.isEmpty() && (connected_elements.first() == elmt))
+		return;
+
+	unlinkAllElements();
+	connected_elements << elmt;
+	elmt->linkToElement(this);
+	emit linkedElementChanged();
 }
 
 /**
 	@brief ReportElement::unLinkAllElements
-	Unlink all of the element in the QList connected_elements
+	Unlink all of the element in the QList connected_elements.
+	Each partner lets go of this report only: a star keeps its other
+	reports.
 */
 void ReportElement::unlinkAllElements()
 {
@@ -80,26 +94,47 @@ void ReportElement::unlinkAllElements()
 		return;
 
 	const QList <Element *> tmp_elmt = connected_elements;
-
-	for (Element *elmt : tmp_elmt)
-		connected_elements.removeAll(elmt);
+	connected_elements.clear();
 
 	for(Element *elmt : tmp_elmt)
 	{
 		elmt -> setHighlighted(false);
-		elmt -> unlinkAllElements();
+		elmt -> unlinkElement(this);
 	}
 	
 	emit linkedElementChanged();
 }
+
 /**
 	@brief ReportElement::unlinkElement
- *unlink the specified element.
- *for reportelement, they must be only one linked element, so we call
- *unlinkAllElements for clear the connected_elements list.
+	Unlink the specified element. A report that is not a star has only one
+	linked element, so the list is cleared; a star lets go of @p elmt only.
 	@param elmt
 */
-void ReportElement::unlinkElement(Element *elmt) {
-	Q_UNUSED (elmt);
-	unlinkAllElements();
+void ReportElement::unlinkElement(Element *elmt)
+{
+	if (!isReportStar()) {
+		unlinkAllElements();
+		return;
+	}
+	if (!connected_elements.contains(elmt))
+		return;
+	connected_elements.removeAll(elmt);
+	elmt->setHighlighted(false);
+	elmt->unlinkElement(this);
+	emit linkedElementChanged();
+}
+
+/**
+	@brief ReportElement::setReportStar
+	A report which stops being a star keeps the first of its links only.
+*/
+void ReportElement::setReportStar(bool star)
+{
+	if (!star && connected_elements.size() > 1) {
+		const QList<Element *> others = connected_elements.mid(1);
+		for (Element *elmt : others)
+			unlinkElement(elmt);
+	}
+	Element::setReportStar(star);
 }

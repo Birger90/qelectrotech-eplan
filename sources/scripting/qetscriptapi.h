@@ -563,6 +563,17 @@ class QetScriptApi : public QObject
 									  int folioIndexB, const QString &elementUuidB,
 									  int groupIndex = -1);
 		Q_INVOKABLE bool unlinkElement(int folioIndex, const QString &elementUuid);
+		// A star folio report: linked to every free report of the other
+		// kind with its name on another folio (one +24V to many sheets)
+		Q_INVOKABLE bool isReportStar(int folioIndex, const QString &elementUuid) const;
+		Q_INVOKABLE int setReportStar(int folioIndex, const QString &elementUuid, bool star = true);
+		// A pair cross-reference (EPLAN "Paarquerverweis"): the contact
+		// shown once more on another folio as a drawing only; returns the
+		// uuid of the representation. pairRepresentationOf() gives the
+		// uuid of the contact a representation shows, empty for any other
+		Q_INVOKABLE QString addPairRepresentation(int folioIndex, const QString &contactUuid,
+												  int targetFolioIndex, double x, double y);
+		Q_INVOKABLE QString pairRepresentationOf(int folioIndex, const QString &elementUuid) const;
 		Q_INVOKABLE int elementLinkGroupIndex(int folioIndex, const QString &elementUuid,
 											  int otherFolioIndex, const QString &otherElementUuid) const;
 

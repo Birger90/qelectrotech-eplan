@@ -59,6 +59,8 @@ class Element : public QetGraphicsItem
 	Q_PROPERTY(bool verticalMirror READ hasVerticalMirror WRITE setVerticalMirror NOTIFY mirrorChanged)
 	Q_PROPERTY(QVariantMap potentialSources READ potentialSourcesMap WRITE setPotentialSourcesMap)
 	Q_PROPERTY(bool shownAsDot READ isShownAsDot WRITE setShownAsDot)
+	Q_PROPERTY(bool reportStar READ isReportStar WRITE setReportStar)
+	Q_PROPERTY(QString pairOf READ pairOfText WRITE setPairOfText)
 
 	public:
 			/**
@@ -413,6 +415,22 @@ class Element : public QetGraphicsItem
 		bool isShownAsDot() const {return m_shown_as_dot;}
 		void setShownAsDot(bool dot);
 		std::optional<QPointF> dotPoint() const;
+			/// A folio report linked to every report of the other kind
+			/// it is given, not only to one (a star: one +24V going out
+			/// to many sheets). Only a report uses it; kept with the project.
+		bool isReportStar() const {return m_report_star;}
+		virtual void setReportStar(bool star);
+			/// A pair cross-reference (EPLAN's "Paarquerverweis"): this
+			/// contact only shows the contact @p pairOf() is, wired on
+			/// another folio. Linked to the same master, it is left out of
+			/// the master's linkedElements() -- its contact mirror, counts
+			/// and lists -- and the two point at each other
+			/// (@sa PairRepresentation). Null for any other element.
+		QUuid pairOf() const {return m_pair_of;}
+		bool isPairRepresentation() const {return !m_pair_of.isNull();}
+		void setPairOf(const QUuid &real);
+		QString pairOfText() const {return m_pair_of.isNull() ? QString() : m_pair_of.toString();}
+		void setPairOfText(const QString &real) {setPairOf(QUuid(real));}
 		/**
 		 * @brief takesSchemeNumber
 		 * Whether this element is given a number by an element numbering
@@ -493,6 +511,8 @@ class Element : public QetGraphicsItem
 		autonum::sequentialNumbers m_autoNum_seq;
 		bool m_freeze_label = false;
 		bool m_shown_as_dot = false;
+		bool m_report_star = false;
+		QUuid m_pair_of;
 		void drawAsDot(QPainter *painter, const QPointF &meet) const;
 		QHash<QUuid, QString> m_potential_sources;
 			/// The names of the terminals and how they are drawn, as
@@ -599,7 +619,8 @@ inline QList <Element *> Element::linkedElements() const
 	QList <Element *> sorted;
 	sorted.reserve(connected_elements.size());
 	for (Element *elmt : connected_elements)
-		if (elmt && elmt->standsInProject())
+		if (elmt && elmt->standsInProject()
+				&& !(m_link_type == Master && !elmt->m_pair_of.isNull()))
 			sorted << elmt;
 	std::sort(sorted.begin(), sorted.end(), comparPos);
 	return sorted;

@@ -17,6 +17,7 @@
 */
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "plancheck.h"
+#include "../undocommand/pairrepresentation.h"
 
 #include "../TerminalStrip/realterminal.h"
 #include "../cable/cable.h"
@@ -66,6 +67,7 @@ const RuleDef kRules[] = {
 	{"report_without_partner",  "011002", Kind::Links},
 	{"solenoid_without_coil",   "",       Kind::Links},
 	{"coil_without_contact",    "007009", Kind::Links},
+	{"pair_representation",     "",       Kind::Links},
 	{"plc_channel_address",     "004023", Kind::PlcChannels},
 	{"cable_without_target",    "003005", Kind::Cables},
 	{"terminal_without_strip",  "001010", Kind::TerminalStrips},
@@ -245,6 +247,22 @@ void checkElement(Collector &c, Diagram *d, Element *e, LooseTerminals &loose_te
 		if (linked.isEmpty())
 			c.add(Severity::Warning, QStringLiteral("solenoid_without_coil"), d, shown,
 				  ProjectCheck::tr("Valve coil linked to no valve"), self);
+		return;
+	}
+
+		//Pair cross-references: the contact they show, and no wire of
+		//their own (@sa PairRepresentation)
+	if (data.m_type == ElementData::Slave && e->isPairRepresentation()) {
+		if (!PairRepresentation::realOf(e))
+			c.add(Severity::Warning, QStringLiteral("pair_representation"), d, shown,
+				  ProjectCheck::tr("Pair cross-reference whose contact is gone"), self);
+		bool wired = false;
+		for (Terminal *t : terminals)
+			if (t->conductorsCount()) wired = true;
+		if (wired)
+			c.add(Severity::Warning, QStringLiteral("pair_representation"), d, shown,
+				  ProjectCheck::tr("Pair cross-reference with wires: it is a drawing only, "
+								   "wire the real contact"), self);
 		return;
 	}
 

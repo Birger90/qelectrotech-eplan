@@ -39,7 +39,8 @@ class ReportElement : public Element
 		void linkToElement(Element *) override;
 		void unlinkAllElements() override;
 		void unlinkElement(Element *elmt) override;
-		
+		void setReportStar(bool star) override;
+
 	private:
 		int m_inverse_report;
 };

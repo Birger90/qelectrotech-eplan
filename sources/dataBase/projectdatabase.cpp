@@ -6918,7 +6918,13 @@ QList<projectDataBase::ProjectSetting> projectDataBase::elementValueRowsOf(const
 				 ? QStringLiteral("false") : QStringLiteral("true")});
 	rows.append({section, 0, QStringLiteral("is_movable"),
 				 QString::number(int(bool(element.attribute(QStringLiteral("is_movable"), QStringLiteral("1")).toInt())))});
+		//Only a pair cross-reference has the row: the contact it shows
+	if (!element.attribute(QStringLiteral("pairOf")).isEmpty())
+		rows.append({section, 0, QStringLiteral("pairOf"), element.attribute(QStringLiteral("pairOf"))});
 	rows.append({section, 0, QStringLiteral("prefix"), element.attribute(QStringLiteral("prefix"))});
+		//Only a folio report linked as a star has the row
+	if (element.attribute(QStringLiteral("reportStar")) == QLatin1String("true"))
+		rows.append({section, 0, QStringLiteral("reportStar"), QStringLiteral("true")});
 		//Only a T-junction shown as a dot has the row
 	if (element.attribute(QStringLiteral("shownAsDot")) == QLatin1String("true"))
 		rows.append({section, 0, QStringLiteral("shownAsDot"), QStringLiteral("true")});

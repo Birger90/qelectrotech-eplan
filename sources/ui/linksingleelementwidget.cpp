@@ -16,6 +16,11 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "linksingleelementwidget.h"
+#include "../undocommand/reportstarcommand.h"
+#include "../undocommand/pairrepresentation.h"
+#include <QMessageBox>
+#include <QPushButton>
+#include "../qetgraphicsitem/reportelement.h"
 #include "contactgroupselectiondialog.h"
 #include <qetgraphicsitem/conductor.h>
 #include <diagram.h>
@@ -108,6 +113,63 @@ LinkSingleElementWidget::LinkSingleElementWidget(Element *elmt,
 
 	connect(ui->m_hide_full_masters_cb, &QCheckBox::toggled,
 		this, &LinkSingleElementWidget::hideFullMastersToggled);
+
+		//A folio report may be a star: linked to every free report of the
+		//other kind with its name on another folio (@sa ReportStar)
+	m_star_cb = new QCheckBox(tr("Star: link every report of this name on the other folios"), this);
+	m_star_cb->setToolTip(tr("One source going out to many folios, a +24V say: the report "
+							 "is linked to every free report of the other kind with its "
+							 "name and shows all their positions."));
+	ui->gridLayout->addWidget(m_star_cb, ui->gridLayout->rowCount(), 0, 1, -1);
+	m_star_cb->setVisible(elmt && (elmt->elementData().m_type & ElementData::AllReport));
+		//A contact may be shown on another folio as a pair
+		//cross-reference (@sa PairRepresentation)
+	m_pair_pb = new QPushButton(tr("Show as pair cross-reference..."), this);
+	m_pair_pb->setToolTip(tr("Draw this contact once more on another folio, as a drawing "
+							 "only: it follows the label and terminals of this contact, "
+							 "and the two point at each other"));
+	ui->gridLayout->addWidget(m_pair_pb, ui->gridLayout->rowCount(), 0, 1, -1);
+	connect(m_pair_pb, &QPushButton::clicked, this, [this]() {
+		Element *real = m_element.data();
+		if (!real || !real->diagram()) return;
+		if (real->isPairRepresentation()) {
+				//On a representation the button goes to the real contact
+			if (Element *other = PairRepresentation::realOf(real)) {
+				other->diagram()->showMe();
+				other->setHighlighted(true);
+			}
+			return;
+		}
+		QETProject *project = real->diagram()->project();
+		QStringList names;
+		const QList<Diagram *> folios = project->diagrams();
+		for (Diagram *d : folios)
+			names << QStringLiteral("%1 - %2").arg(d->folioIndex() + 1).arg(d->title());
+		bool ok = false;
+		const QString chosen = QInputDialog::getItem(this, tr("Pair cross-reference"),
+				tr("Folio to show the contact on:"), names,
+				int(folios.indexOf(real->diagram())), false, &ok);
+		if (!ok) return;
+		Diagram *folio = folios.value(int(names.indexOf(chosen)));
+		if (!folio) return;
+			//Beside the contact on its own folio, at its place on another
+		const QPointF pos = folio == real->diagram() ? real->pos() + QPointF(40, 0) : real->pos();
+		QString problem;
+		Element *rep = PairRepresentation::create(real, folio, pos, &problem);
+		if (!rep) {
+			QMessageBox::warning(this, tr("Pair cross-reference"), problem);
+			return;
+		}
+		folio->showMe();
+		rep->setSelected(true);
+	});
+
+	connect(m_star_cb, &QCheckBox::toggled, this, [this](bool star) {
+		auto *report = dynamic_cast<ReportElement *>(m_element.data());
+		if (!report || !report->diagram()) return;
+		if (QUndoCommand *cmd = ReportStar::command(report, star))
+			report->diagram()->undoStack().push(cmd);
+	});
 	
 	connect(m_show_qtwi, &QAction::triggered, this, [this]()
 	{
@@ -303,7 +365,11 @@ QUndoCommand *LinkSingleElementWidget::associatedUndo() const
 	if (m_element_to_link || m_unlink)
 	{
 		if (m_element_to_link) {
-			undo->setLink(m_element_to_link);
+				//A star keeps the reports it has and takes this one too
+			if (m_element->isReportStar())
+				undo->setLink(m_element->linkedElements() << m_element_to_link);
+			else
+				undo->setLink(m_element_to_link);
 			if (m_pending_group_index >= 0) {
 				undo->setGroupIndex(m_pending_group_index);
 			}
@@ -342,6 +408,24 @@ void LinkSingleElementWidget::updateUi()
 		hideButtons();
 	else
 		showButtons();
+
+	if (m_pair_pb) {
+		const bool slave = m_element->elementData().m_type == ElementData::Slave
+				&& m_element->elementData().m_slave_type != ElementData::PLCSlave;
+		m_pair_pb->setVisible(slave && (m_element->isPairRepresentation() || !m_element->isFree()));
+		m_pair_pb->setText(m_element->isPairRepresentation()
+				? tr("Go to the real contact (this is its pair cross-reference)")
+				: tr("Show as pair cross-reference..."));
+	}
+	if (m_star_cb) {
+		const bool report = m_element->elementData().m_type & ElementData::AllReport;
+		m_star_cb->setVisible(report);
+		const QSignalBlocker blocker(m_star_cb);
+		m_star_cb->setChecked(report && m_element->isReportStar());
+			//A star takes more reports while it has some
+		if (report && m_element->isReportStar())
+			ui->m_search_field->show();
+	}
 	
 	buildTree();
 }

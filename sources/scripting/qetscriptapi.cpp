@@ -135,6 +135,9 @@
 #include <undocommand/changetitleblockcommand.h>
 #include <undocommand/deleteqgraphicsitemcommand.h>
 #include <undocommand/linkelementcommand.h>
+#include <undocommand/reportstarcommand.h>
+#include <undocommand/pairrepresentation.h>
+#include <qetgraphicsitem/reportelement.h>
 #include <undocommand/removediagramcommand.h>
 #include <utils/conductorcreator.h>
 
@@ -3056,7 +3059,11 @@ bool QetScriptApi::linkElements(int folioIndexA, const QString &elementUuidA,
 	Element *master = (slave == a) ? b : a;
 
 	auto *cmd = new LinkElementCommand(slave);
-	cmd->setLink(master);
+		//A star keeps the reports it has and takes the new one too
+	if (slave->isReportStar())
+		cmd->setLink(slave->linkedElements() << master);
+	else
+		cmd->setLink(master);
 	if (groupIndex >= 0)
 		cmd->setGroupIndex(groupIndex);
 	m_project->undoStack()->push(cmd);
@@ -3094,6 +3101,76 @@ bool QetScriptApi::unlinkElement(int folioIndex, const QString &elementUuid)
 	cmd->unlinkAll();
 	m_project->undoStack()->push(cmd);
 	return element->linkedElements().isEmpty();
+}
+
+/**
+	@brief QetScriptApi::addPairRepresentation
+	Show the contact once more on folio @p targetFolioIndex at (@p x, @p y)
+	as a pair cross-reference (@sa PairRepresentation): a drawing only, it
+	follows the contact's label and terminals, the master's contact mirror
+	leaves it out, and the two point at each other. One undo step.
+	@return the uuid of the representation, empty on error (logged)
+*/
+QString QetScriptApi::addPairRepresentation(int folioIndex, const QString &contactUuid,
+											int targetFolioIndex, double x, double y)
+{
+	if (!m_project) return QString();
+	Element *real = findElement(folioIndex, contactUuid);
+	const QList<Diagram *> diagrams = m_project->folios();
+	if (!real || targetFolioIndex < 0 || targetFolioIndex >= diagrams.count()) {
+		log(QStringLiteral("qet.addPairRepresentation: no contact %1 on folio %2, or no folio %3")
+			.arg(contactUuid).arg(folioIndex).arg(targetFolioIndex));
+		return QString();
+	}
+	QString problem;
+	Element *rep = PairRepresentation::create(real, built(diagrams.at(targetFolioIndex)),
+											  QPointF(x, y), &problem);
+	if (!rep) {
+		log(QStringLiteral("qet.addPairRepresentation: %1").arg(problem));
+		return QString();
+	}
+	return rep->uuid().toString();
+}
+
+QString QetScriptApi::pairRepresentationOf(int folioIndex, const QString &elementUuid) const
+{
+	Element *element = findElement(folioIndex, elementUuid);
+	return element && element->isPairRepresentation() ? element->pairOf().toString() : QString();
+}
+
+/**
+	@brief QetScriptApi::isReportStar
+	Whether the folio report is a star (@sa Element::isReportStar()).
+*/
+bool QetScriptApi::isReportStar(int folioIndex, const QString &elementUuid) const
+{
+	Element *element = findElement(folioIndex, elementUuid);
+	return element && (element->linkType() & Element::AllReport) && element->isReportStar();
+}
+
+/**
+	@brief QetScriptApi::setReportStar
+	Make the folio report a star, which also links it to every free report
+	of the other kind with its name on another folio, or (star false) a
+	report with one partner again, which keeps the first. One undo step.
+	@return the number of reports the report is linked to afterwards, -1
+	when it is not a folio report
+*/
+int QetScriptApi::setReportStar(int folioIndex, const QString &elementUuid, bool star)
+{
+	if (!m_project) return -1;
+	if (m_project->isReadOnly()) {
+		log(QStringLiteral("qet.setReportStar: project is read-only"));
+		return -1;
+	}
+	auto *report = dynamic_cast<ReportElement *>(findElement(folioIndex, elementUuid));
+	if (!report) {
+		log(QStringLiteral("qet.setReportStar: %1 is not a folio report").arg(elementUuid));
+		return -1;
+	}
+	if (QUndoCommand *cmd = ReportStar::command(report, star))
+		m_project->undoStack()->push(cmd);
+	return report->linkedElements().size();
 }
 
 namespace {

@@ -64,6 +64,7 @@
 
 class Diagram;
 class Element;
+class ReportElement;
 class ElementsLocation;
 class QETResult;
 class TitleBlockTemplate;
@@ -132,6 +133,8 @@ class QETProject : public QObject
 
 		void autoLinkReportElements();
 		void scheduleAutoLink();
+		static QString starReportName(const ReportElement *report);
+		QList<ReportElement *> starReportCandidates(const ReportElement *star);
 		void reportKeySourceChanged(Conductor *conductor);
 		void recheckReportKeys(Conductor *conductor);
 

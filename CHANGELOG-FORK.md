@@ -3,6 +3,20 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.61.0 – 27.11.2026 – EPLAN-Export (.epdz) und TIA-KOP/FUP
+
+- **EPLAN-Export (.epdz) im selben Import wie .zw1:** *Datei > EPLAN-Projekt importieren* nimmt jetzt auch .epdz
+  (EPLAN eView, Export zum Ansehen): je Seite ein Blatt mit Titel, Seitennummer und Struktur, die Seite als Bild im
+  Rahmen; daneben `<Name>_Geraete.csv`, `<Name>_Verbindungen.csv` (Quelle, Ziel, Potential, Farbe, Querschnitt,
+  Länge) und `<Name>_3D` mit den Bauräumen als .e3d. Auch `--import-epdz`. Am Beispiel von ecad-view: 10 Seiten,
+  3186 Funktionen, 847 Verbindungen, 7 Bauräume. Format nach ecad-view (MIT), eigener Code; 7z über den
+  vorhandenen LZMA-Leser des EDZ-Imports.
+- **TIA-Portal KOP/FUP nach Strukturiertem Text:** `--simaticml-to-st` und `qet.simaticMlToSt` übersetzen einen
+  SimaticML-Baustein (V17–V21) für die Simulation: Kontakte, Spulen, S/R, SR/RS, Vergleiche, Flanken, TON/TOF/CTU/CTD,
+  Move, Rechnen, Inc/Dec. Nicht Übersetztes (eigene Bausteinaufrufe, TP, SCL/STL/GRAPH) steht als Liste im Ergebnis,
+  nichts wird still weggelassen; das Ergebnis wird gleich von der Simulation übersetzt. Formatwissen aus
+  simaticml-decoder (MIT), eigener Code, ohne Python.
+
 ## 1.60.0 – 27.11.2026 – Übernahmen aus Forks und anderer Software
 
 Herkunft und Lizenz stehen in den Commits und in den Dateiköpfen.

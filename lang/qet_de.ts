@@ -9545,6 +9545,30 @@ Geschrieben nach %4</translation>
         <source>Stop the running import?</source>
         <translation>Den laufenden Import abbrechen?</translation>
     </message>
+    <message>
+        <source>EPLAN projects (*.zw1 *.epdz);;EPLAN project archives (*.zw1);;EPLAN export archives (*.epdz);;All files (*)</source>
+        <translation>EPLAN-Projekte (*.zw1 *.epdz);;EPLAN-Projektarchive (*.zw1);;EPLAN-Exportarchive (*.epdz);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <source>Reads a packed EPLAN project (.zw1) or an EPLAN export (.epdz) and writes a QElectroTech project with its pages, symbols, connections, cross references and lists. The import opens in QElectroTech when it is done.</source>
+        <translation>Liest ein gepacktes EPLAN-Projekt (.zw1) oder einen EPLAN-Export (.epdz) und schreibt ein QElectroTech-Projekt mit Seiten, Symbolen, Verbindungen, Querverweisen und Listen. Der Import öffnet sich danach in QElectroTech.</translation>
+    </message>
+    <message>
+        <source>EPLAN project (.zw1, .epdz):</source>
+        <translation>EPLAN-Projekt (.zw1, .epdz):</translation>
+    </message>
+    <message>
+        <source>Choose the EPLAN project (.zw1 or .epdz).</source>
+        <translation>EPLAN-Projekt (.zw1 oder .epdz) wählen.</translation>
+    </message>
+    <message>
+        <source>Importing %1 …</source>
+        <translation>%1 wird importiert …</translation>
+    </message>
+    <message>
+        <source>The import failed: %1</source>
+        <translation>Der Import ist fehlgeschlagen: %1</translation>
+    </message>
 </context>
 <context>
     <name>ExportConfigPage</name>
@@ -27258,6 +27282,38 @@ Wie möchten Sie sie platzieren?</translation>
     <message>
         <source>Not a readable E3D file: %1</source>
         <translation>Keine lesbare E3D-Datei: %1</translation>
+    </message>
+    <message>
+        <source>No temporary folder</source>
+        <translation>Kein temporärer Ordner</translation>
+    </message>
+    <message>
+        <source>%1 cannot be unpacked: %2</source>
+        <translation>%1 lässt sich nicht entpacken: %2</translation>
+    </message>
+    <message>
+        <source>%1 holds no manifest.db: no EPLAN export archive</source>
+        <translation>%1 enthält keine manifest.db: kein EPLAN-Exportarchiv</translation>
+    </message>
+    <message>
+        <source>manifest.db cannot be read</source>
+        <translation>manifest.db lässt sich nicht lesen</translation>
+    </message>
+    <message>
+        <source>The manifest lists no page</source>
+        <translation>Das Manifest enthält keine Seite</translation>
+    </message>
+    <message>
+        <source>Page %1: no drawing in the archive</source>
+        <translation>Seite %1: keine Zeichnung im Archiv</translation>
+    </message>
+    <message>
+        <source>Page %1: the drawing cannot be read</source>
+        <translation>Seite %1: die Zeichnung lässt sich nicht lesen</translation>
+    </message>
+    <message>
+        <source>%1 page(s), %2 function(s), %3 connection(s), %4 3D installation space(s)</source>
+        <translation>%1 Seite(n), %2 Funktion(en), %3 Verbindung(en), %4 3D-Bauräume</translation>
     </message>
 </context>
 <context>

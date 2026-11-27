@@ -16,6 +16,9 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "cli_export.h"
+#include "import/eplanproject/epdzimport.h"
+#include "plc/simaticml.h"
+#include "simulation/plcprogram.h"
 #include "revision/projectrevisions.h"
 #include "qetresult.h"
 #include "projectlock.h"
@@ -142,6 +145,8 @@ const QHash<QString, QString> &exportFlags()
 		{"--info", "info"},
 		{"--check-elements", "check"},
 		{"--import-eplan", "importeplan"},
+		{"--import-epdz", "importepdz"},
+		{"--simaticml-to-st", "simaticml"},
 		{"--fetch-parts", "fetchparts"},
 		{"--portal-status", "portalstatus"},
 		{"--portal-login", "portallogin"},
@@ -2762,6 +2767,57 @@ int run(const QStringList &args)
 		out.flush();
 		return state == QLatin1String("held") ? 1
 			 : (state == QLatin1String("orphaned") || state == QLatin1String("crashed")) ? 3 : 0;
+	}
+
+	// --simaticml-to-st: a TIA LAD/FBD block as Structured Text for the simulation
+	if (format == "simaticml") {
+		if (rest.isEmpty()) {
+			err << "Usage: qelectrotech --simaticml-to-st <block.xml> [program.st]" << Qt::endl;
+			return 2;
+		}
+		const SimaticMl::Result r = SimaticMl::fileToStructuredText(rest.at(0));
+		if (!r.error.isEmpty()) {
+			err << "Cannot read '" << rest.at(0) << "': " << r.error << Qt::endl;
+			return 1;
+		}
+		if (rest.size() > 1) {
+			QFile f(rest.at(1));
+			if (!f.open(QIODevice::WriteOnly | QIODevice::Text)) {
+				err << "Cannot write '" << rest.at(1) << "'" << Qt::endl;
+				return 1;
+			}
+			f.write(r.st.toUtf8());
+		} else {
+			out << r.st;
+		}
+		for (const QString &u : r.unsupported) err << "not translated: " << u << Qt::endl;
+		err << r.block << ": " << r.translated << " of " << r.networks << " network(s) translated" << Qt::endl;
+			// what the simulation says to it
+		PlcProgram program;
+		QString compile_error;
+		if (program.compile(r.st, &compile_error)) err << "simulation: the program compiles" << Qt::endl;
+		else err << "simulation: " << compile_error << Qt::endl;
+		return 0;
+	}
+
+	// --import-epdz: an EPLAN export archive (.epdz) as a QElectroTech
+	// project, as File > Import EPLAN project does with it
+	if (format == "importepdz") {
+		if (rest.isEmpty()) {
+			err << "Usage: qelectrotech --import-epdz <export.epdz> [project.qet]" << Qt::endl;
+			return 2;
+		}
+		const QString source = rest.at(0);
+		const QString target = rest.size() > 1 ? rest.at(1)
+			: QFileInfo(source).absoluteDir().filePath(QFileInfo(source).completeBaseName() + QStringLiteral("_EPLAN_Import.qet"));
+		const EpdzImport::Result result = EpdzImport::run(source, target);
+		for (const QString &n : result.notes) out << n << Qt::endl;
+		if (!result.ok) {
+			err << "Cannot import '" << source << "': " << result.error << Qt::endl;
+			return 1;
+		}
+		out << "Imported -> " << target << Qt::endl;
+		return 0;
 	}
 
 	// --import-eplan turns manufacturer EPLAN DXF data into elements of a

@@ -16,6 +16,7 @@
 	along with QElectroTech. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "eplanprojectimportdialog.h"
+#include "epdzimport.h"
 
 #include "../../qetapp.h"
 #include "../../panel/eplanproject.h"
@@ -103,7 +104,7 @@ EplanProjectImportDialog::EplanProjectImportDialog(QWidget *parent) :
 	setAcceptDrops(true);
 	resize(760, 560);
 
-	auto *intro = new QLabel(tr("Reads a packed EPLAN project (.zw1) and writes a QElectroTech "
+	auto *intro = new QLabel(tr("Reads a packed EPLAN project (.zw1) or an EPLAN export (.epdz) and writes a QElectroTech "
 				    "project with its pages, symbols, connections, cross references and "
 				    "lists. The import opens in QElectroTech when it is done."), this);
 	intro->setWordWrap(true);
@@ -111,7 +112,7 @@ EplanProjectImportDialog::EplanProjectImportDialog(QWidget *parent) :
 	auto *form = new QFormLayout;
 	QPushButton *archive_button = nullptr, *target_button = nullptr,
 		*script_button = nullptr, *python_button = nullptr;
-	m_archive = pathRow(this, form, tr("EPLAN project (.zw1):"), &archive_button);
+	m_archive = pathRow(this, form, tr("EPLAN project (.zw1, .epdz):"), &archive_button);
 	m_target = pathRow(this, form, tr("Save as:"), &target_button);
 
 	QSettings settings;
@@ -287,7 +288,7 @@ bool EplanProjectImportDialog::chooseArchive()
 	if (!m_archive->text().trimmed().isEmpty())
 		dir = QFileInfo(m_archive->text().trimmed()).absolutePath();
 	const QString path = QFileDialog::getOpenFileName(this, tr("Import an EPLAN project"), dir,
-		tr("EPLAN project archives (*.zw1);;All files (*)"));
+		tr("EPLAN projects (*.zw1 *.epdz);;EPLAN project archives (*.zw1);;EPLAN export archives (*.epdz);;All files (*)"));
 	if (path.isEmpty()) return false;
 	setArchive(path);
 	return true;
@@ -339,12 +340,13 @@ void EplanProjectImportDialog::updateButtons()
 	const QString archive = m_archive->text().trimmed();
 	QString missing;
 	if (archive.isEmpty())
-		missing = tr("Choose the EPLAN project (.zw1).");
+		missing = tr("Choose the EPLAN project (.zw1 or .epdz).");
 	else if (!QFileInfo(archive).isFile())
 		missing = tr("The EPLAN project %1 does not exist.").arg(archive);
 	else if (m_target->text().trimmed().isEmpty())
 		missing = tr("Choose where the QElectroTech project is to be saved.");
-	else if (!QFileInfo(m_script->text().trimmed()).isFile())
+	else if (!archive.endsWith(QLatin1String(".epdz"), Qt::CaseInsensitive)
+			 && !QFileInfo(m_script->text().trimmed()).isFile())
 		missing = tr("The import program (%1) was not found. Choose it with \"Change…\".")
 			.arg(QString::fromLatin1(SCRIPT_NAME));
 	if (!running && !missing.isEmpty()) m_status->setText(missing);
@@ -470,6 +472,25 @@ void EplanProjectImportDialog::start()
 	m_output.clear();
 	m_pending.clear();
 	m_result.clear();
+
+		// an EPLAN export archive (.epdz): pages, lists and 3D, read here
+	if (archive.endsWith(QLatin1String(".epdz"), Qt::CaseInsensitive)) {
+		m_status->setText(tr("Importing %1 …").arg(QFileInfo(archive).fileName()));
+		QApplication::setOverrideCursor(Qt::BusyCursor);
+		const EpdzImport::Result result = EpdzImport::run(archive, target);
+		QApplication::restoreOverrideCursor();
+		for (const QString &n : result.notes) appendLog(n);
+		if (!result.ok) {
+			appendLog(result.error);
+			m_status->setText(tr("The import failed: %1").arg(result.error));
+			updateButtons();
+			return;
+		}
+		m_result = target;
+		m_status->setText(tr("Done: %1").arg(QDir::toNativeSeparators(m_result)));
+		accept();
+		return;
+	}
 	m_progress->setValue(0);
 	m_progress->setVisible(true);
 	m_start->setEnabled(false);
@@ -587,7 +608,8 @@ void EplanProjectImportDialog::dragEnterEvent(QDragEnterEvent *event)
 {
 	const auto urls = event->mimeData()->urls();
 	if (!m_process && urls.size() == 1 && urls.first().isLocalFile()
-	    && urls.first().toLocalFile().endsWith(QStringLiteral(".zw1"), Qt::CaseInsensitive))
+	    && (urls.first().toLocalFile().endsWith(QStringLiteral(".zw1"), Qt::CaseInsensitive)
+		|| urls.first().toLocalFile().endsWith(QStringLiteral(".epdz"), Qt::CaseInsensitive)))
 		event->acceptProposedAction();
 }
 

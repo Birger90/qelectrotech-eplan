@@ -155,10 +155,14 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/import/elementfingerprint.h
   ${QET_DIR}/sources/import/plcchannels.cpp
   ${QET_DIR}/sources/import/plcchannels.h
+  ${QET_DIR}/sources/plc/simaticml.cpp
+  ${QET_DIR}/sources/plc/simaticml.h
   ${QET_DIR}/sources/plc/tiaplctags.cpp
   ${QET_DIR}/sources/safety/iso13849.cpp
   ${QET_DIR}/sources/safety/iso13849.h
   ${QET_DIR}/sources/plc/tiaplctags.h
+  ${QET_DIR}/sources/import/eplanproject/epdzimport.cpp
+  ${QET_DIR}/sources/import/eplanproject/epdzimport.h
   ${QET_DIR}/sources/import/eplanproject/eplanprojectimportdialog.cpp
   ${QET_DIR}/sources/import/eplanproject/eplanprojectimportdialog.h
   ${QET_DIR}/sources/import/fluidsim/fluidsimimport.cpp

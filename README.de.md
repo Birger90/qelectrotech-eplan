@@ -245,7 +245,10 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
 
 - Datei > *EPLAN-Projekt importieren* (`.zw1`): das ganze Projekt als verknüpftes QET-Projekt – Formulare und
   Schriftfelder, SPS-Karten als SPS-Master mit Kanaltabelle, symbolische Adressen wie in EPLAN verfolgt, Bericht über
-  nicht verknüpfte Kanäle (`sps_bericht.txt`).
+  nicht verknüpfte Kanäle (`sps_bericht.txt`). Derselbe Befehl liest auch einen EPLAN-Export (`.epdz`, z. B. aus
+  EPLAN eView): je Seite ein Blatt mit Titel, Seitennummer und Struktur, die Seite als Bild, daneben Geräteliste,
+  Verbindungsliste (Quelle, Ziel, Potential, Farbe, Querschnitt, Länge) und die 3D-Bauräume (`.e3d`); auch
+  `--import-epdz export.epdz [projekt.qet]`.
 - Claude-Assistent als Andockfenster (Knopf *Claude* in der Hauptwerkzeugleiste): liest und ändert das offene Projekt
   über den MCP-Server unten; Bilder und PDFs lassen sich mitschicken. Mit API-Schlüssel oder in eigenen Builds
   (`-DQET_CLAUDE_KONTO=ON`) über das eigene Claude-Konto.
@@ -294,6 +297,10 @@ Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser 
   gedrehten Symbol, und die Felder der Wegeventile verschieben sich unter den Anschlüssen, beim Umschalten anteilig.
   Nur die Anzeige ändert sich; nach *Stopp* ist der Plan wie vorher.
 - Ohne Oberfläche: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv weg.csv --png ordner`.
+- TIA-Portal-Bausteine in KOP/FUP (SimaticML-Export) werden zu Strukturiertem Text für die Simulation:
+  `--simaticml-to-st baustein.xml [programm.st]` oder `qet.simaticMlToSt(pfad)` – Kontakte, Spulen, Setzen/Rücksetzen,
+  Vergleiche, Flanken, TON/TOF/CTU/CTD, Move und Rechnen; Aufrufe eigener Bausteine und SCL/STL-Netzwerke werden als
+  nicht übersetzt gemeldet, das Ergebnis prüft die Simulation sofort.
   `--simulate-reference` prüft den Rechenkern gegen analytische Lösungen, OpenModelica-Läufe (Weg und Drücke) und
   Testprojekte von Anfang bis Ende; ungültige Daten und Rechenfehler brechen einen Lauf mit Meldung ab.
   Jedes Bauteil wird nur über den versionierten Modellkatalog gerechnet (`--simulate-catalog`); Bauteile ohne

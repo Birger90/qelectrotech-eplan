@@ -214,7 +214,10 @@
 > **EPLAN projects and the built-in assistant**
 > - File > *Import EPLAN project* (`.zw1`): the whole project becomes a linked QET project -- forms and title blocks,
 >   PLC cards as PLC masters with their channel table, symbolic addresses traced like EPLAN, a report of channels it
->   could not link (`sps_bericht.txt`).
+>   could not link (`sps_bericht.txt`). The same command reads an EPLAN export (`.epdz`, e.g. from EPLAN eView):
+>   one folio per page with title, page number and structure, the page drawn in, beside it the device list, the
+>   connection list (source, target, potential, colour, section, length) and the 3D installation spaces (`.e3d`);
+>   also `--import-epdz export.epdz [project.qet]`.
 > - Claude assistant as a dock window (button *Claude* in the main toolbar): it reads and changes the open project
 >   through the MCP server below; images and PDFs can be attached. With an API key, or in own builds
 >   (`-DQET_CLAUDE_KONTO=ON`) through one's own Claude account.
@@ -257,6 +260,10 @@
 >   directional valve slide under the ports, part way while the spool switches. Only the display changes; after
 >   *Stop* the plan is as before.
 > - Headless: `--simulate plan.qet --event "0.2 -SF1 an" --duration 2 --csv out.csv --png folder`.
+> - TIA Portal LAD/FBD blocks (SimaticML export) become Structured Text for the simulation:
+>   `--simaticml-to-st block.xml [program.st]` or `qet.simaticMlToSt(path)` -- contacts, coils, set/reset,
+>   comparisons, edges, TON/TOF/CTU/CTD, Move and arithmetic; calls of own blocks and SCL/STL networks are listed as
+>   not translated, and the result is compiled by the simulation at once.
 >   `--simulate-reference` checks the simulation core against analytical solutions, OpenModelica runs (motion and
 >   pressures) and test projects run end to end; invalid data and computing faults stop a run with a message.
 >   Every part is simulated only through the versioned model catalog (`--simulate-catalog`); parts without a

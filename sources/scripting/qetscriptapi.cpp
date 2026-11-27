@@ -20,6 +20,7 @@
 #include "../projectcheck.h"
 #include "../plc/tiaplctags.h"
 #include "../safety/iso13849.h"
+#include "../plc/simaticml.h"
 #include "../import/portals/manufacturerportals.h"
 #include "../import/portals/partfetcher.h"
 
@@ -1016,6 +1017,22 @@ bool QetScriptApi::exportTiaTags(const QString &output, const QString &table)
 		return false;
 	}
 	return true;
+}
+
+/**
+	@brief QetScriptApi::simaticMlToSt
+	A block of TIA Portal in LAD or FBD, exported as SimaticML XML, as
+	Structured Text the simulation runs (SimaticMl::toStructuredText);
+	what is not translated is listed in "unsupported".
+*/
+QString QetScriptApi::simaticMlToSt(const QString &xmlPath) const
+{
+	const SimaticMl::Result r = SimaticMl::fileToStructuredText(xmlPath);
+	QJsonObject o{{QStringLiteral("st"), r.st}, {QStringLiteral("block"), r.block},
+				  {QStringLiteral("networks"), r.networks}, {QStringLiteral("translated"), r.translated},
+				  {QStringLiteral("unsupported"), QJsonArray::fromStringList(r.unsupported)}};
+	if (!r.error.isEmpty()) o.insert(QStringLiteral("error"), r.error);
+	return QString::fromUtf8(QJsonDocument(o).toJson(QJsonDocument::Compact));
 }
 
 /**

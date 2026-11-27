@@ -476,6 +476,9 @@ class QetScriptApi : public QObject
 			/// PL of a safety function after ISO 13849-1 (Iso13849::evaluate):
 			/// JSON in, JSON out; a planning estimate, see iso13849.h
 		Q_INVOKABLE QString safetyFunction(const QString &functionJson) const;
+			/// a TIA LAD/FBD block (SimaticML .xml) as Structured Text for the
+			/// simulation: {"st", "block", "networks", "translated", "unsupported"}
+		Q_INVOKABLE QString simaticMlToSt(const QString &xmlPath) const;
 		Q_INVOKABLE QStringList compareTiaTags(const QString &tagFile);
 		Q_INVOKABLE int applyTiaTags(const QString &tagFile);
 			/// Weidmüller M-Print PRO: a file per material in @p dir, as JSON

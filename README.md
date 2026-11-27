@@ -32,7 +32,8 @@
 > - Manufacturer macro packages (ZIP or folder of `.ema` and article data, e.g. Beckhoff): tab *Manufacturer
 >   packages* in the collection, converted per type when needed; PLC cards get their channel table from the
 >   function templates. Headless: `--import-eplan <collection> --macro-package <zip|folder> --type T`.
-> - Search and import straight from the EPLAN Data Portal (manufacturer list, filters, picture preview).
+> - Search and import straight from the EPLAN Data Portal (manufacturer list, filters, picture preview); without a
+>   STEP model, *Fetch parts* takes EPLAN's 3D model (`.e3d`) from the Data Portal (with the token).
 >
 > **Navigation like EPLAN** (in QET and in the exported PDF)
 > - EPLAN's three-way jump on a part: left third forward through the jump sequence of the device, middle to its main

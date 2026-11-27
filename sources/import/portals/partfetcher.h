@@ -122,6 +122,8 @@ class PartFetcher : public QObject
 		bool dataPortalLookup(const QString &order, const QString &maker, QString *part_id,
 				      QString *category, QString *maker_long, QString *error);
 		bool dataPortalPackage(const QString &part_id, const QString &file, QString *error);
+			/// EPLAN's 3D model (.e3d) of the part with this order number; empty and @p error when none
+		QByteArray dataPortalE3d(const QString &order, const QString &token, QString *error);
 		void loadLinks(const FetchOptions &options);
 		static QString existingSymbolFolder(const QString &collection, const QString &maker, const QString &order);
 

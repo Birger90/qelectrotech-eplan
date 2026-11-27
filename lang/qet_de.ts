@@ -4069,6 +4069,14 @@ Fortfahren?</translation>
         <source>The Data Portal reported an error (HTTP %1): %2</source>
         <translation>Das Data Portal meldet einen Fehler (HTTP %1): %2</translation>
     </message>
+    <message>
+        <source>The Data Portal has no 3D model (E3D) for this part.</source>
+        <translation>Das Data Portal hat kein 3D-Modell (E3D) für diesen Artikel.</translation>
+    </message>
+    <message>
+        <source>The Data Portal sent no 3D model.</source>
+        <translation>Das Data Portal hat kein 3D-Modell geschickt.</translation>
+    </message>
 </context>
 <context>
     <name>DataPortalDialog</name>
@@ -17571,6 +17579,26 @@ Ignoriert: %3</translation>
     <message>
         <source>symbol: from the macro package %1</source>
         <translation>Symbol: aus dem Makropaket %1</translation>
+    </message>
+    <message>
+        <source>E3D: a Data Portal token would fetch EPLAN's 3D model (Part import &gt; Manufacturer portals)</source>
+        <translation>E3D: Mit einem Data-Portal-Token käme das 3D-Modell von EPLAN (Bauteil-Import &gt; Herstellerportale)</translation>
+    </message>
+    <message>
+        <source>would fetch the 3D model (E3D) from the Data Portal as %1</source>
+        <translation>würde das 3D-Modell (E3D) aus dem Data Portal als %1 holen</translation>
+    </message>
+    <message>
+        <source>E3D: %1</source>
+        <translation>E3D: %1</translation>
+    </message>
+    <message>
+        <source>E3D: EPLAN's 3D model stored as %1</source>
+        <translation>E3D: 3D-Modell von EPLAN abgelegt als %1</translation>
+    </message>
+    <message>
+        <source>E3D: %1 cannot be written</source>
+        <translation>E3D: %1 kann nicht geschrieben werden</translation>
     </message>
 </context>
 <context>

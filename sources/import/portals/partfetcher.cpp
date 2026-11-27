@@ -364,6 +364,46 @@ bool PartFetcher::dataPortalLookup(const QString &order, const QString &maker, Q
 	return false;
 }
 
+QByteArray PartFetcher::dataPortalE3d(const QString &order, const QString &token, QString *error)
+{
+	DataPortalClient client;
+	client.setToken(token);
+	QString failure;
+	QString part_id;
+	{
+			// the order number to the part: exact, /partscheck
+		QEventLoop loop;
+		connect(&client, &DataPortalClient::partsChecked, &loop, [&](const QVector<DataPortalCheck> &checks) {
+			for (const DataPortalCheck &c : checks) {
+				if (c.found && orderKey(c.order_number) == orderKey(order)) {
+					part_id = c.part_id;
+					break;
+				}
+			}
+			loop.quit();
+		});
+		connect(&client, &DataPortalClient::failed, &loop,
+			[&](const QString &message) { failure = message; loop.quit(); });
+		client.checkParts({order});
+		loop.exec();
+		client.disconnect(&loop);
+	}
+	if (part_id.isEmpty()) {
+		if (error) *error = failure.isEmpty() ? tr("not in the Data Portal") : failure;
+		return {};
+	}
+	QByteArray data;
+	QEventLoop loop;
+	connect(&client, &DataPortalClient::downloadFinished, &loop,
+		[&](const QByteArray &d, const QString &) { data = d; loop.quit(); });
+	connect(&client, &DataPortalClient::failed, &loop,
+		[&](const QString &message) { failure = message; loop.quit(); });
+	client.downloadE3d(part_id);
+	loop.exec();
+	if (data.isEmpty() && error) *error = failure.isEmpty() ? tr("the download failed") : failure;
+	return data;
+}
+
 bool PartFetcher::dataPortalPackage(const QString &part_id, const QString &file, QString *error)
 {
 	const QString token = ManufacturerPortals::dataPortalToken();
@@ -594,6 +634,37 @@ FetchResult PartFetcher::fetch(const FetchItem &item, const FetchOptions &option
 			r.notes << tr("STEP: request it on 3Dfindit in the browser (%1 of %2 requests left today)")
 				   .arg(ManufacturerPortals::requestsLeft(QStringLiteral("3dfindit")))
 				   .arg(ManufacturerPortals::portal(QStringLiteral("3dfindit")).daily_limit);
+		}
+	}
+
+		// still no model: EPLAN's 3D model (.e3d) from the Data Portal, when
+		// the part has one; the 3D view and the cabinet layout read it
+		// (PanelStep::findModel, a STEP model of the part comes first)
+	if (!has_step) {
+		const QString token = ManufacturerPortals::dataPortalToken();
+		const QString target = QDir(model_root).filePath(safeName(r.maker) + QLatin1Char('/') + order
+								 + QStringLiteral(".e3d"));
+		if (token.isEmpty()) {
+			r.notes << tr("E3D: a Data Portal token would fetch EPLAN's 3D model (Part import > Manufacturer portals)");
+		} else if (options.dry_run) {
+			r.notes << tr("would fetch the 3D model (E3D) from the Data Portal as %1").arg(QDir::toNativeSeparators(target));
+		} else {
+			QString failure;
+			const QByteArray model_data = dataPortalE3d(order, token, &failure);
+			if (model_data.isEmpty()) {
+				r.notes << tr("E3D: %1").arg(failure);
+			} else {
+				QDir().mkpath(QFileInfo(target).absolutePath());
+				QSaveFile out(target);
+				if (out.open(QIODevice::WriteOnly) && out.write(model_data) == model_data.size() && out.commit()) {
+					r.step_file = QDir::toNativeSeparators(target);
+					r.written << target;
+					r.notes << tr("E3D: EPLAN's 3D model stored as %1").arg(QDir::toNativeSeparators(target));
+					has_step = true;
+				} else {
+					r.notes << tr("E3D: %1 cannot be written").arg(QDir::toNativeSeparators(target));
+				}
+			}
 		}
 	}
 

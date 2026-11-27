@@ -109,6 +109,67 @@ QVector<DataPortalPart> searchPortal(const QString &part_number, QString *error)
 	return found;
 }
 
+	/**
+		The parts of the Data Portal for many numbers at once: POST /partscheck
+		(exact, all matches), then POST /parts for the ids found, keyed by
+		PurchaseList::key() of the number asked. A number missing here is
+		searched one by one later (a miss of /partscheck is no proof: some
+		catalogs write numbers with other punctuation).
+	*/
+QHash<QString, QVector<DataPortalPart>> checkPortal(const QStringList &numbers, QString *error)
+{
+	QHash<QString, QVector<DataPortalPart>> by_key;
+	if (numbers.isEmpty()) return by_key;
+	DataPortalClient client;
+	client.setLanguage(QStringLiteral("de_DE"));
+	QString failure;
+	QVector<DataPortalCheck> checks;
+	for (int i = 0; i < numbers.size() && failure.isEmpty(); i += 200) {
+		QEventLoop loop;
+		const auto a = QObject::connect(&client, &DataPortalClient::partsChecked, &loop,
+						[&](const QVector<DataPortalCheck> &r) { checks += r; loop.quit(); });
+		const auto b = QObject::connect(&client, &DataPortalClient::failed, &loop,
+						[&](const QString &message) { failure = message; loop.quit(); });
+		client.checkParts(numbers.mid(i, 200), true);
+		loop.exec();
+		QObject::disconnect(a);
+		QObject::disconnect(b);
+	}
+	QHash<QString, QStringList> ids_of;
+	QStringList ids;
+	for (const DataPortalCheck &c : std::as_const(checks)) {
+		if (!c.found || c.part_id.isEmpty()) continue;
+		ids_of[PurchaseList::key(c.search)] << c.part_id;
+		if (!ids.contains(c.part_id)) ids << c.part_id;
+	}
+	QHash<QString, DataPortalPart> parts;
+	for (int i = 0; i < ids.size() && failure.isEmpty(); i += 100) {
+		QEventLoop loop;
+		const auto a = QObject::connect(&client, &DataPortalClient::searchFinished, &loop,
+						[&](const QVector<DataPortalPart> &found, int, int) {
+			for (const DataPortalPart &p : found) parts.insert(p.id, p);
+			loop.quit();
+		});
+		const auto b = QObject::connect(&client, &DataPortalClient::failed, &loop,
+						[&](const QString &message) { failure = message; loop.quit(); });
+		client.loadParts(ids.mid(i, 100));
+		loop.exec();
+		QObject::disconnect(a);
+		QObject::disconnect(b);
+	}
+	if (!failure.isEmpty()) {
+		if (error) *error = failure;
+		return {};
+	}
+	for (auto it = ids_of.constBegin(); it != ids_of.constEnd(); ++it) {
+		QVector<DataPortalPart> list;
+		for (const QString &id : it.value())
+			if (parts.contains(id)) list << parts.value(id);
+		if (!list.isEmpty()) by_key.insert(it.key(), list);
+	}
+	return by_key;
+}
+
 bool sameNumber(const DataPortalPart &p, const QString &k)
 {
 	return PurchaseList::key(p.order_number) == k
@@ -211,6 +272,16 @@ PurchaseFetch::Result PurchaseFetch::fetch(const QList<PurchaseList::Item> &item
 	if (todo.isEmpty()) return result;
 
 	const QHash<QString, QString> packages = edzPackages();
+		//All numbers in one go first; only those it does not find are
+		//searched one by one below
+	QHash<QString, QVector<DataPortalPart>> checked;
+	if (online) {
+		QStringList numbers;
+		for (const PurchaseList::Item *item : std::as_const(todo)) numbers << item->part_number;
+		QString error;
+		checked = checkPortal(numbers, &error);
+		if (!error.isEmpty()) result.error = error;
+	}
 	bool changed = false;
 	int done = 0;
 	for (const PurchaseList::Item *item : std::as_const(todo)) {
@@ -242,7 +313,9 @@ PurchaseFetch::Result PurchaseFetch::fetch(const QList<PurchaseList::Item> &item
 		bool asked = false;
 		if (online && result.error.isEmpty()) {
 			QString error;
-			const QVector<DataPortalPart> parts = searchPortal(item->part_number, &error);
+			const auto hit = checked.constFind(k);
+			const QVector<DataPortalPart> parts = hit != checked.constEnd()
+					? hit.value() : searchPortal(item->part_number, &error);
 			if (!error.isEmpty()) {
 					//No connection, or the portal refuses: stop asking,
 					//keep what the EDZ packages gave

@@ -3,6 +3,18 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.64.0 – 27.11.2026 – Data Portal: viele Nummern auf einmal, 3D-Modelle (E3D)
+
+Abgeglichen mit der live geprüften API-Beschreibung von Canary-ECAD (`eplan-scripting-skill`, MIT).
+
+- **Einkaufsliste:** alle Bestellnummern in einer Abfrage (`POST /partscheck`, exakt, ohne Token), die Treffer mit einem
+  `POST /parts`; nur was dort fehlt, wird wie bisher einzeln gesucht. Am Beispielprojekt 32 von 39 Artikeln gefunden.
+- **Bauteile holen** (`--fetch-parts`, Herstellerportale): Gibt es kein STEP-Modell, kommt EPLANs 3D-Modell (`.e3d`) aus
+  dem Data Portal (Artikel → 3D-Makro → Variante mit Darstellungstyp 10, braucht das Token) nach
+  `3D/<Hersteller>/<Bestellnr>.e3d`; 3D-Ansicht und Schaltschrankaufbau lesen es (ein STEP-Modell hat Vorrang).
+- Skill `eplan-wissen`: Austauschformat der EPLAN-Artikeldatenbank (`XPamExportXml`), Importmodi, „Beschreibung“ ist
+  22009 `ARTICLE_NOTE`, Data-Portal-Web-API.
+
 ## 1.63.0 – 27.11.2026 – liegengebliebene Branches in main
 
 Die fertigen Feature-Branches, die noch nicht in `main` waren, sind jetzt übernommen und mit dem heutigen Stand

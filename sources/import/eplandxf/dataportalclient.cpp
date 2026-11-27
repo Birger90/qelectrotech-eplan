@@ -18,6 +18,7 @@
 #include "dataportalclient.h"
 
 #include <QHash>
+#include <QSet>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -159,6 +160,168 @@ void DataPortalClient::downloadDxf(const QString &part_id)
 	QNetworkReply *reply = m_manager->get(req);
 	m_reply = reply;
 	connect(reply, &QNetworkReply::finished, this, [this, reply]() { finished(reply, true, 0); });
+}
+
+void DataPortalClient::checkParts(const QStringList &values, bool all_matches)
+{
+	abort();
+	QStringList lines;
+	for (const QString &v : values)
+		if (!v.trimmed().isEmpty()) lines << v.trimmed();
+	QNetworkRequest req = request(QStringLiteral("/partscheck"));
+	QUrl url = req.url();
+	QUrlQuery query;
+	query.addQueryItem(QStringLiteral("exact"), QStringLiteral("0"));
+	if (all_matches) query.addQueryItem(QStringLiteral("allow_multiple_results"), QStringLiteral("true"));
+	url.setQuery(query);
+	req.setUrl(url);
+	req.setRawHeader("Accept", "application/vnd.api+json, application/json");
+		// one value per line: a comma is no separator here
+	req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("text/plain"));
+	QNetworkReply *reply = m_manager->post(req, lines.join(QLatin1Char('\n')).toUtf8());
+	m_reply = reply;
+	connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+		reply->deleteLater();
+		if (m_reply == reply) m_reply.clear();
+		const QByteArray body = reply->readAll();
+		const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+		if (reply->error() != QNetworkReply::NoError || status >= 400) {
+			emit failed(errorText(reply, body, false));
+			return;
+		}
+		emit partsChecked(parseCheck(body));
+	});
+}
+
+void DataPortalClient::loadParts(const QStringList &ids)
+{
+	abort();
+	QNetworkRequest req = request(QStringLiteral("/parts"));
+	QUrl url = req.url();
+	QUrlQuery query;
+	query.addQueryItem(QStringLiteral("include"), QStringLiteral("manufacturer,product_group"));
+	url.setQuery(query);
+	req.setUrl(url);
+	req.setRawHeader("Accept", "application/vnd.api+json, application/json");
+		// several ids, comma separated (unlike /partscheck)
+	req.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("text/plain"));
+	QNetworkReply *reply = m_manager->post(req, ids.join(QLatin1Char(',')).toUtf8());
+	m_reply = reply;
+	connect(reply, &QNetworkReply::finished, this, [this, reply]() { finished(reply, false, 0); });
+}
+
+void DataPortalClient::getJson(const QString &path, const std::function<void(const QByteArray &)> &done)
+{
+	QNetworkRequest req = request(path);
+	req.setRawHeader("Accept", "application/vnd.api+json, application/json");
+	QNetworkReply *reply = m_manager->get(req);
+	m_reply = reply;
+	connect(reply, &QNetworkReply::finished, this, [this, reply, done]() {
+		reply->deleteLater();
+		if (m_reply == reply) m_reply.clear();
+		const QByteArray body = reply->readAll();
+		const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+		if (reply->error() != QNetworkReply::NoError || status >= 400) {
+			emit failed(errorText(reply, body, false));
+			return;
+		}
+		done(body);
+	});
+}
+
+namespace {
+		/// the "data" of a JSON:API reply for one resource: an object for
+		/// /parts/{id} and /macros/{id}, a list of one for /macro_variants/{id}
+		/// (measured 2026-11-27)
+	QJsonObject dataObject(const QByteArray &json)
+	{
+		const QJsonValue d = QJsonDocument::fromJson(json).object().value(QStringLiteral("data"));
+		return d.isArray() ? d.toArray().first().toObject() : d.toObject();
+	}
+
+		/// relationships.<name>.data of the "data" object of a JSON:API reply:
+		/// the ids it names (one for a to-one relation, several for to-many)
+	QStringList relationIds(const QByteArray &json, const QString &name)
+	{
+		const QJsonValue d = dataObject(json).value(QStringLiteral("relationships")).toObject()
+				.value(name).toObject().value(QStringLiteral("data"));
+		QStringList ids;
+		const auto idOf = [](const QJsonValue &v) {
+			const QJsonValue id = v.toObject().value(QStringLiteral("id"));
+			return id.isString() ? id.toString() : QString::number(id.toVariant().toLongLong());
+		};
+		if (d.isArray()) {
+			for (const QJsonValue &v : d.toArray()) ids << idOf(v);
+		} else if (d.isObject()) {
+			ids << idOf(d);
+		}
+		ids.removeAll(QStringLiteral("0"));
+		ids.removeAll(QString());
+		return ids;
+	}
+}
+
+void DataPortalClient::downloadE3d(const QString &part_id)
+{
+	abort();
+	const QString part = QString::fromUtf8(QUrl::toPercentEncoding(part_id));
+	getJson(QStringLiteral("/parts/") + part, [this, part_id](const QByteArray &body) {
+		const QStringList macro = relationIds(body, QStringLiteral("graphic_macro"));
+		if (macro.isEmpty()) {
+			emit failed(tr("The Data Portal has no 3D model (E3D) for this part."));
+			return;
+		}
+		getJson(QStringLiteral("/macros/") + macro.first(), [this, part_id](const QByteArray &m) {
+			e3dVariants(relationIds(m, QStringLiteral("macro_variants")), part_id);
+		});
+	});
+}
+
+	/// the first variant of representation type 10 (3D) of @p variants,
+	/// then its .e3d. Whether a macro is 3D is that type, not a name in _3D.
+void DataPortalClient::e3dVariants(const QStringList &variants, const QString &part_id)
+{
+	if (variants.isEmpty()) {
+		emit failed(tr("The Data Portal has no 3D model (E3D) for this part."));
+		return;
+	}
+	const QString variant = variants.first();
+	const QStringList rest = variants.mid(1);
+	getJson(QStringLiteral("/macro_variants/") + variant, [this, variant, rest, part_id](const QByteArray &v) {
+		const QJsonObject attributes = dataObject(v).value(QStringLiteral("attributes")).toObject();
+		if (attributes.value(QStringLiteral("representation_type")).toVariant().toInt() != 10) {
+			e3dVariants(rest, part_id);
+			return;
+		}
+		QNetworkReply *reply = m_manager->get(request(QStringLiteral("/download/e3d_data/") + variant));
+		m_reply = reply;
+		connect(reply, &QNetworkReply::finished, this, [this, reply, part_id]() {
+			reply->deleteLater();
+			if (m_reply == reply) m_reply.clear();
+			const QByteArray body = reply->readAll();
+			const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+			if (reply->error() != QNetworkReply::NoError || status >= 400 || body.isEmpty()) {
+				emit failed(status == 404 ? tr("The Data Portal has no 3D model (E3D) for this part.")
+							  : errorText(reply, body, true));
+				return;
+			}
+				// a wrong URL may answer with a web page instead of the model
+			if (body.trimmed().startsWith('<')) {
+				emit failed(tr("The Data Portal sent no 3D model."));
+				return;
+			}
+			static const QRegularExpression file_name(
+				QStringLiteral("filename\\*?=(?:UTF-8'')?\"?([^\";]+)\"?"),
+				QRegularExpression::CaseInsensitiveOption);
+			QString name;
+			const auto m = file_name.match(QString::fromUtf8(reply->rawHeader("Content-Disposition")));
+			if (m.hasMatch()) name = QUrl::fromPercentEncoding(m.captured(1).toUtf8());
+			name = name.section(QLatin1Char('/'), -1).section(QLatin1Char('\\'), -1);
+			if (!name.endsWith(QLatin1String(".e3d"), Qt::CaseInsensitive))
+				name = part_id + QStringLiteral(".e3d");
+			emit downloadFinished(body, name);
+		});
+	});
 }
 
 /// a failure here is not reported: the filter then stays a text field
@@ -390,5 +553,38 @@ QVector<DataPortalManufacturer> DataPortalClient::parseManufacturers(const QByte
 	std::sort(list.begin(), list.end(), [](const DataPortalManufacturer &x, const DataPortalManufacturer &y) {
 		return x.long_name.compare(y.long_name, Qt::CaseInsensitive) < 0;
 	});
+	return list;
+}
+
+/**
+	The entries of a reply of POST /partscheck: "partscheckresult" (a match,
+	with partid, partnr, typenr, ordernr, data_supplier) and
+	"partscheckmissingresult" (no match). With allow_multiple_results the
+	same hit can come twice: kept once per (search, part id).
+*/
+QVector<DataPortalCheck> DataPortalClient::parseCheck(const QByteArray &json)
+{
+	QVector<DataPortalCheck> list;
+	QSet<QString> seen;
+	const QJsonArray data = QJsonDocument::fromJson(json).object().value(QStringLiteral("data")).toArray();
+	for (const QJsonValue &v : data) {
+		const QJsonObject o = v.toObject();
+		const QJsonObject a = o.value(QStringLiteral("attributes")).toObject();
+		DataPortalCheck c;
+		c.search = a.value(QStringLiteral("search")).toString();
+		c.found = o.value(QStringLiteral("type")).toString() == QLatin1String("partscheckresult");
+		if (c.found) {
+			const QJsonValue id = a.value(QStringLiteral("partid"));
+			c.part_id = id.isString() ? id.toString() : QString::number(id.toVariant().toLongLong());
+			c.part_number = a.value(QStringLiteral("partnr")).toString();
+			c.type_number = a.value(QStringLiteral("typenr")).toString();
+			c.order_number = a.value(QStringLiteral("ordernr")).toString();
+			c.supplier = a.value(QStringLiteral("data_supplier")).toString();
+		}
+		const QString key = c.search + QLatin1Char('\n') + c.part_id;
+		if (seen.contains(key)) continue;
+		seen.insert(key);
+		list << c;
+	}
 	return list;
 }

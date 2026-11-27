@@ -38,7 +38,8 @@ Menü „Bauteil-Import“, ohne Oberfläche: `--import-eplan`
 - Hersteller-Makropakete (ZIP oder Ordner mit `.ema` und Artikeldaten, z. B. Beckhoff): Reiter *Herstellerpakete* in
   der Bauteilsammlung, Umwandlung je Typ bei Bedarf; SPS-Karten bekommen ihre Kanaltabelle aus den
   Funktionsschablonen. Ohne Oberfläche: `--import-eplan <sammlung> --macro-package <zip|ordner> --type T`.
-- Suche und Import direkt aus dem EPLAN Data Portal (Herstellerliste, Filter, Bildvorschau).
+- Suche und Import direkt aus dem EPLAN Data Portal (Herstellerliste, Filter, Bildvorschau); fehlt ein STEP-Modell,
+  holt *Bauteile holen* EPLANs 3D-Modell (`.e3d`) aus dem Data Portal (mit Token).
 
 ## Navigation wie bei EPLAN
 

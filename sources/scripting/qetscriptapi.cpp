@@ -140,6 +140,7 @@
 #include <projectcheck/checkfixes.h>
 #include <autoNum/wirenumberpattern.h>
 #include <plc/plcaddressing.h>
+#include <QFile>
 #include <network/networkaddresses.h>
 #include <qetgraphicsitem/reportelement.h>
 #include <undocommand/removediagramcommand.h>
@@ -467,6 +468,32 @@ QString QetScriptApi::panelDuctFill(int folioIndex) const
 		out.append(o);
 	}
 	return QString::fromUtf8(QJsonDocument(out).toJson(QJsonDocument::Compact));
+}
+
+/**
+	@brief QetScriptApi::exportPanelWireList
+	The wiring list of the mounting plates of the folio (PanelWiring::runs):
+	one row per wire in the order of the wiring, ; separated, UTF-8.
+*/
+bool QetScriptApi::exportPanelWireList(int folioIndex, const QString &path, double reserveMm)
+{
+	if (!m_project) return false;
+	const QList<Diagram *> diagrams = m_project->folios();
+	if (folioIndex < 0 || folioIndex >= diagrams.count()) return false;
+	QString text;
+	for (QetShapeItem *s : PanelLayout::surfaces(built(diagrams.at(folioIndex)))) {
+		if (!s->panelData().face.isEmpty()) continue;
+		const QString csv = PanelWiring::route(PanelLayout(s)).wireListCsv(reserveMm);
+		text += text.isEmpty() ? csv : csv.section(QStringLiteral("\r\n"), 1);
+	}
+	QFile file(path);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+		log(QStringLiteral("qet.exportPanelWireList: %1").arg(file.errorString()));
+		return false;
+	}
+	file.write("\xEF\xBB\xBF", 3);
+	file.write(text.toUtf8());
+	return true;
 }
 
 /**

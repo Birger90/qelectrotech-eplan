@@ -400,6 +400,10 @@ class QetScriptApi : public QObject
 			// climate of the enclosure and fill of the cable ducts (JSON)
 		Q_INVOKABLE QString panelClimate(int folioIndex, const QString &settingsJson = QString()) const;
 		Q_INVOKABLE QString panelDuctFill(int folioIndex) const;
+		// the wiring list of the mounting plates of a folio: every wire
+		// from device to device in wiring order, cross-section, ferrule,
+		// length through the ducts plus reserveMm at each end (CSV)
+		Q_INVOKABLE bool exportPanelWireList(int folioIndex, const QString &path, double reserveMm = 0);
 			// Mounting plate templates (DXF): give a surface the contour of
 			// a template, stretched to its size; machined: make its holes too
 		Q_INVOKABLE bool setSurfaceTemplate(int folioIndex, int shapeIndex, const QString &dxfPath, bool machined = true);

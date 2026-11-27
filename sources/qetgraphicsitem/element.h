@@ -193,7 +193,8 @@ class Element : public QetGraphicsItem
 		void setTerminalLabel(const QUuid &terminal, const TerminalLabel &label);
 			/// Take back what the definition says about the terminal
 			/// @p terminal of this placed symbol
-		void removeTerminalLabel(const QUuid &terminal);		void setMovable(bool movable) override;
+		void removeTerminalLabel(const QUuid &terminal);
+		void setMovable(bool movable) override;
 		//@kind_information_ is used to store more information
 		//about the herited class like contactelement for know
 		// kind of contact (simple tempo) or number of contact show by the element.

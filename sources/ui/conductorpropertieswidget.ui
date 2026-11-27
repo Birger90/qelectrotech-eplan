@@ -226,6 +226,16 @@
                 </property>
                </widget>
               </item>
+              <item row="12" column="0" colspan="5">
+               <widget class="QCheckBox" name="m_end_labels_cb">
+                <property name="toolTip">
+                 <string>The conductor's text is also written at each end of the conductor, along its direction.</string>
+                </property>
+                <property name="text">
+                 <string>Text at each end of the conductor</string>
+                </property>
+               </widget>
+              </item>
               <item row="9" column="0" colspan="3">
                <widget class="QCheckBox" name="m_definition_mark_cb">
                 <property name="toolTip">

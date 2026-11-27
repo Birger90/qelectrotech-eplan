@@ -2741,6 +2741,8 @@ qet_add_app_test(tst_outlinelightwires tst_outlinelightwires.cpp)
 # the separation lets through from the other -- the voltage / protocol and
 # the drawing -- and a new number of its own.
 qet_add_app_test(tst_functionseparation tst_functionseparation.cpp)
+# The conductor's text at each end, along the wire.
+qet_add_app_test(tst_conductorendlabels tst_conductorendlabels.cpp)
 
 # Settings for every test. get_property(... TESTS) only sees the tests added
 # so far, so they wait for the end of this file: a test takes them wherever

@@ -37,6 +37,7 @@ class Terminal;
 class ConductorSegment;
 class ConductorTextItem;
 class ConductorDefinitionMark;
+class ConductorEndLabels;
 class Element;
 class QETDiagramEditor;
 class NumerotationContext;
@@ -170,6 +171,7 @@ class Conductor : public QGraphicsObject
 		ConductorProfilesGroup profiles() const;
 		void calculateTextItemPosition();
 		void updateDefinitionMark();
+		void updateEndLabels();
 		QList<Conductor *> cornerChain();
 		void updateTextVisibility();
 		virtual Highlight highlight() const;
@@ -264,6 +266,7 @@ class Conductor : public QGraphicsObject
 			/// Text input for non simple, non-singleline conductors
 		ConductorTextItem *m_text_item;
 		ConductorDefinitionMark *m_definition_mark = nullptr;
+		ConductorEndLabels *m_end_labels = nullptr;
 			/// Segments composing the conductor
 		ConductorSegment *segments;
 			/// Attributes related to mouse interaction

@@ -34,6 +34,7 @@
 #include <ui/conductorpropertiesdialog.h>
 #include "conductortextitem.h"
 #include "conductordefinitionmark.h"
+#include "conductorendlabels.h"
 #include "element.h"
 #include <QetGraphicsItemModeler/qetgraphicshandleritem.h>
 #include <utils/qetutils.h>
@@ -1737,6 +1738,7 @@ bool Conductor::hidesPlaceholder() const
 void Conductor::calculateTextItemPosition()
 {
 	updateDefinitionMark();
+	updateEndLabels();
 	if (!m_text_item || !diagram() || m_properties.type != ConductorProperties::Multi)
 		return;
 
@@ -1895,6 +1897,26 @@ void Conductor::updateDefinitionMark()
 		} else {
 			c->m_definition_mark->refresh();
 		}
+	}
+}
+
+/**
+	@brief Conductor::updateEndLabels
+	Show, refresh or remove the conductor's text at each of its ends, as
+	its properties ask.
+*/
+void Conductor::updateEndLabels()
+{
+	const bool wanted = scene() && m_text_item
+			&& m_properties.m_end_labels
+			&& m_properties.type == ConductorProperties::Multi;
+	if (!wanted) {
+		delete m_end_labels;
+		m_end_labels = nullptr;
+	} else if (!m_end_labels) {
+		m_end_labels = new ConductorEndLabels(this);
+	} else {
+		m_end_labels->refresh();
 	}
 }
 

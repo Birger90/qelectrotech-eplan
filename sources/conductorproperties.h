@@ -146,6 +146,9 @@ class ConductorProperties
 		qreal m_definition_mark_at = -1;
 			/// The stroke stands in for the conductor's own text
 		bool m_definition_mark_hides_text = false;
+			/// The conductor's text is also written at each end, along
+			/// the wire (ConductorEndLabels)
+		bool m_end_labels = false;
 
 		Qt::Alignment
 		m_horizontal_alignment = Qt::AlignBottom,

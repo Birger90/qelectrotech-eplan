@@ -3,6 +3,13 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.59.0 – 27.11.2026 – Tür in der 3D-Ansicht öffnen
+
+- **Türwinkel in der 3D-Ansicht:** Hat der Schrank eine Türfläche (`face="door"`), erscheint jetzt auch das
+  Türblatt (halbdurchsichtig), und der Regler *Tür* öffnet es von 0 bis 120° um das Scharnier an der linken
+  Vorderkante, mit allen Geräten auf der Tür; die Kamera bleibt dabei stehen. Auch im glTF-Export und in der
+  Skript-API (`renderPanel3D` und `exportPanel3D` mit `doorAngle`). Idee aus OpenECraft #267.
+
 ## 1.58.0 – 27.11.2026 – Schranksuche nach Maßen
 
 - **Schrank aus dem Data Portal nach Maßen suchen** (*Schaltschrank einfügen… > Data Portal…*): Felder für Breite, Höhe und

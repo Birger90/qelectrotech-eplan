@@ -392,9 +392,10 @@ class QetScriptApi : public QObject
 		Q_INVOKABLE QString panelReport(int folioIndex) const;
 		Q_INVOKABLE QStringList exportPanelDxf(int folioIndex, const QString &outDir, bool labels = false);
 		Q_INVOKABLE QString stepInfo(const QString &path) const;
-		Q_INVOKABLE QString exportPanel3D(int folioIndex, const QString &path, bool enclosure = true);
+		Q_INVOKABLE QString exportPanel3D(int folioIndex, const QString &path, bool enclosure = true, double doorAngle = 0);
 		Q_INVOKABLE QString renderPanel3D(int folioIndex, const QString &path, int width = 1200, int height = 800,
-										  const QString &view = QStringLiteral("iso"), bool enclosure = true);
+										  const QString &view = QStringLiteral("iso"), bool enclosure = true,
+										  double doorAngle = 0);
 		Q_INVOKABLE int addPanelGrid(int folioIndex, int rows = 0, double ductMm = 60);
 			// climate of the enclosure and fill of the cable ducts (JSON)
 		Q_INVOKABLE QString panelClimate(int folioIndex, const QString &settingsJson = QString()) const;

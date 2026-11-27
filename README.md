@@ -191,7 +191,8 @@
 >     (`3D/<manufacturer>/<order number>.stp`, with or without dashes) or `QET_3D_DIR`; the footprint on the plate
 >     decides how a model stands, its depth is its own. Without a size a device takes its outline from the model.
 >   - The enclosure (by its article) is drawn see-through; door and side walls are mounting surfaces of their own
->     (`face="door|left|right"`), their devices face outwards.
+>     (`face="door|left|right"`), their devices face outwards. The *Door* slider opens the door (0-120°, hinge on the
+>     left) with its devices; scripts: `renderPanel3D(..., doorAngle)`, `exportPanel3D(..., doorAngle)`.
 >   - Accessories (`accessories`, `artikel_N` of the schematic device) are mounted with the device, e.g. an ET 200SP
 >     BaseUnit under its module; terminal strips show every terminal of QElectroTech's terminal strip with its model.
 >   - Ducts without a model are drawn as slotted ducts with lid. Export as glTF (`.glb`) for any 3D viewer.

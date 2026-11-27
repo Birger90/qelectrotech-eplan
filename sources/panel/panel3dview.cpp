@@ -42,6 +42,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPushButton>
+#include <QSlider>
 #include <QSurfaceFormat>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -228,12 +229,12 @@ Panel3DWidget::~Panel3DWidget()
 #endif
 }
 
-void Panel3DWidget::setBodies(const QList<Panel3DBody> &bodies)
+void Panel3DWidget::setBodies(const QList<Panel3DBody> &bodies, bool keep_view)
 {
 	m_bodies = bodies;
 	m_selected = -1;
 	m_lists_dirty = true;
-	fit();
+	if (!keep_view) fit();
 	update();
 }
 
@@ -642,7 +643,7 @@ void Panel3DWidget::paintGL()
 	STEP model named in step_file). Surfaces of one folio are put side by
 	side. @p notes collects what could not be shown.
 */
-QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bool enclosure)
+QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bool enclosure, double door_angle)
 {
 	QList<Panel3DBody> bodies;
 	if (!diagram) return bodies;
@@ -968,6 +969,20 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 			if (left) return QVector3D(-n.z(), n.y(), n.x());
 			return QVector3D(n.z(), n.y(), -n.x());
 		};
+		if (door) {
+				// the door leaf itself, see-through, so it can be opened
+			Panel3DBody leaf;
+			appendBox(leaf.mesh, QVector3D(enc_lo.x(), enc_lo.y(), enc_hi.z()),
+					  QVector3D(enc_hi.x(), enc_hi.y(), enc_hi.z() + skin));
+			leaf.min = leaf.mesh.min;
+			leaf.max = leaf.mesh.max;
+			leaf.colour = QColor(190, 200, 214);
+			leaf.opacity = 0.22f;
+			leaf.item = surface;
+			leaf.name = layout.name();
+			leaf.door = true;
+			bodies << leaf;
+		}
 		for (const PanelDevice &d : layout.devices())
 		{
 			const QRectF r = d.rect_mm.normalized();
@@ -1007,7 +1022,39 @@ QList<Panel3DBody> Panel3DDialog::build(Diagram *diagram, QStringList *notes, bo
 			b.mesh = placed;
 			b.min = lo;
 			b.max = hi;
+			b.door = door;
 			bodies << b;
+		}
+	}
+
+		// open the door: everything on it turns outwards about the hinge,
+		// the vertical line at the left front edge of the enclosure
+	if (have_enclosure && qAbs(door_angle) > 0.01) {
+		const float a = float(qDegreesToRadians(qBound(0.0, door_angle, 180.0)));
+		const float c = std::cos(a), s = std::sin(a);
+		const float hx = enc_lo.x(), hz = enc_hi.z();
+		auto rotate = [&](const QVector3D &p) {
+			const float dx = p.x() - hx, dz = p.z() - hz;
+			return QVector3D(hx + dx * c - dz * s, p.y(), hz + dx * s + dz * c);
+		};
+		for (Panel3DBody &b : bodies) {
+			if (!b.door) continue;
+			if (b.mesh.isEmpty()) appendBox(b.mesh, b.min, b.max);
+			QVector3D lo(1e30f, 1e30f, 1e30f), hi(-1e30f, -1e30f, -1e30f);
+			for (int i = 0; i < b.mesh.vertices.size(); ++i) {
+				const QVector3D p = rotate(b.mesh.vertices.at(i) + b.mesh_offset);
+				b.mesh.vertices[i] = p;
+				if (i < b.mesh.normals.size()) {
+					const QVector3D n = b.mesh.normals.at(i);
+					b.mesh.normals[i] = QVector3D(n.x() * c - n.z() * s, n.y(), n.x() * s + n.z() * c);
+				}
+				for (int k = 0; k < 3; ++k) {lo[k] = qMin(lo[k], p[k]); hi[k] = qMax(hi[k], p[k]);}
+			}
+			b.mesh_offset = QVector3D();
+			b.mesh.min = lo;
+			b.mesh.max = hi;
+			b.min = lo;
+			b.max = hi;
 		}
 	}
 	return bodies;
@@ -1117,12 +1164,27 @@ Panel3DDialog::Panel3DDialog(Diagram *diagram, QWidget *parent) :
 														  tr("glTF binary (*.glb)"));
 		if (path.isEmpty()) return;
 		QString error;
-		if (!writeGlb(build(m_diagram, nullptr, !m_enclosure || m_enclosure->isChecked()), path, &error))
+		if (!writeGlb(build(m_diagram, nullptr, !m_enclosure || m_enclosure->isChecked(), m_door->value()), path, &error))
 			QMessageBox::warning(this, tr("Export 3D view"), error);
 	});
 	m_enclosure = new QCheckBox(tr("Enclosure"), this);
 	m_enclosure->setChecked(true);
 	connect(m_enclosure, &QCheckBox::toggled, this, &Panel3DDialog::reload);
+		// open the door (a door surface of the enclosure) by an angle
+	m_door = new QSlider(Qt::Horizontal, this);
+	m_door->setRange(0, 120);
+	m_door->setSingleStep(5);
+	m_door->setPageStep(30);
+	m_door->setMaximumWidth(160);
+	m_door->setToolTip(tr("Open the door of the enclosure (needs a door surface)"));
+	m_door_label = new QLabel(this);
+	auto show_angle = [this](int v) {m_door_label->setText(tr("Door %1°").arg(v));};
+	show_angle(0);
+	connect(m_door, &QSlider::valueChanged, this, show_angle);
+	connect(m_door, &QSlider::valueChanged, this, [this]() {
+		const QList<Panel3DBody> bodies = build(m_diagram, nullptr, !m_enclosure || m_enclosure->isChecked(), m_door->value());
+		m_view->setBodies(bodies, true);
+	});
 	connect(refresh, &QPushButton::clicked, this, &Panel3DDialog::reload);
 
 	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close, this);
@@ -1132,6 +1194,8 @@ Panel3DDialog::Panel3DDialog(Diagram *diagram, QWidget *parent) :
 	row->addWidget(refresh);
 	row->addWidget(save);
 	row->addWidget(m_enclosure);
+	row->addWidget(m_door_label);
+	row->addWidget(m_door);
 	row->addStretch();
 	row->addWidget(buttons);
 
@@ -1156,9 +1220,14 @@ void Panel3DDialog::reload()
 {
 	QStringList notes;
 	QGuiApplication::setOverrideCursor(Qt::WaitCursor);
-	const QList<Panel3DBody> bodies = build(m_diagram, &notes, !m_enclosure || m_enclosure->isChecked());
+	const QList<Panel3DBody> bodies = build(m_diagram, &notes, !m_enclosure || m_enclosure->isChecked(),
+											m_door ? m_door->value() : 0);
 	QGuiApplication::restoreOverrideCursor();
 	m_view->setBodies(bodies);
+	bool door = false;
+	for (const Panel3DBody &b : bodies) door = door || b.door;
+	m_door->setEnabled(door);
+	m_door_label->setEnabled(door);
 	QString text;
 	if (bodies.isEmpty())
 		text = tr("This folio has no mounting surface. Draw a rectangle and give it the role "

@@ -51,6 +51,7 @@ struct Panel3DBody
 	QList<float> hole_radius;
 	QPointer<QObject> item;         ///< the QetShapeItem or Element
 	QString name;
+	bool door = false;              ///< on the door: turns with it about its hinge
 };
 
 #ifdef QET_WITH_OPENGL
@@ -78,7 +79,8 @@ class Panel3DWidget : public Panel3DBase
 	public:
 		explicit Panel3DWidget(QWidget *parent = nullptr);
 		~Panel3DWidget() override;
-		void setBodies(const QList<Panel3DBody> &bodies);
+			/// @p keep_view: leave the camera where it is (door turned)
+		void setBodies(const QList<Panel3DBody> &bodies, bool keep_view = false);
 		void viewFit();
 		void viewFront();
 		void viewTop();
@@ -130,7 +132,10 @@ class Panel3DDialog : public QDialog
 
 	public:
 		explicit Panel3DDialog(Diagram *diagram, QWidget *parent = nullptr);
-		static QList<Panel3DBody> build(Diagram *diagram, QStringList *notes, bool enclosure = true);
+			/// @p door_angle: the door open by so many degrees (0 closed), turned
+			/// outwards about its hinge on the left edge of the enclosure
+		static QList<Panel3DBody> build(Diagram *diagram, QStringList *notes, bool enclosure = true,
+										double door_angle = 0);
 		static bool writeGlb(const QList<Panel3DBody> &bodies, const QString &path, QString *error = nullptr);
 
 	private:
@@ -140,6 +145,8 @@ class Panel3DDialog : public QDialog
 		Panel3DWidget *m_view = nullptr;
 		QLabel *m_status = nullptr;
 		class QCheckBox *m_enclosure = nullptr;
+		class QSlider *m_door = nullptr;
+		QLabel *m_door_label = nullptr;
 };
 
 #endif // PANEL3DVIEW_H

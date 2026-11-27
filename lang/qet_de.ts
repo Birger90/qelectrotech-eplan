@@ -14741,6 +14741,14 @@ Ignoriert: %3</translation>
             <numerusform>%n Körper; ein Klick wählt das Teil auf dem Blatt aus.</numerusform>
         </translation>
     </message>
+    <message>
+        <source>Door %1°</source>
+        <translation>Tür %1°</translation>
+    </message>
+    <message>
+        <source>Open the door of the enclosure (needs a door surface)</source>
+        <translation>Tür des Schranks öffnen (braucht eine Türfläche)</translation>
+    </message>
 </context>
 <context>
     <name>Panel3DWidget</name>

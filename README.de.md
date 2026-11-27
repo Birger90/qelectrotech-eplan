@@ -221,7 +221,8 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
     Platte bestimmt, wie ein Modell steht, die Tiefe ist seine eigene. Ohne Maßangabe nimmt ein Gerät den Umriss
     aus dem Modell.
   - Der Schrank (über seinen Artikel) erscheint halbdurchsichtig; Tür und Seitenwände sind eigene Montageflächen
-    (`face="door|left|right"`), ihre Geräte zeigen nach außen.
+    (`face="door|left|right"`), ihre Geräte zeigen nach außen. Der Regler *Tür* öffnet die Tür samt Geräten
+    (0–120°, Scharnier links); in Skripten `renderPanel3D(…, doorAngle)`, `exportPanel3D(…, doorAngle)`.
   - Zubehör (`accessories`, `artikel_N` am Schaltplan-Gerät) wird mit eingebaut, z. B. die ET-200SP-BaseUnit unter
     ihrem Modul; Klemmenleisten zeigen jede Klemme der QElectroTech-Klemmenleiste mit ihrem Modell.
   - Kanäle ohne Modell als geschlitzte Kanäle mit Deckel. Export als glTF (`.glb`) für jeden 3D-Betrachter.

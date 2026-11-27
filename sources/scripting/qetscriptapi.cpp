@@ -467,13 +467,13 @@ QString QetScriptApi::panelDuctFill(int folioIndex) const
 	@return what could not be shown, one line each; "ERROR: ..." when
 	nothing was written
 */
-QString QetScriptApi::exportPanel3D(int folioIndex, const QString &path, bool enclosure)
+QString QetScriptApi::exportPanel3D(int folioIndex, const QString &path, bool enclosure, double doorAngle)
 {
 	if (!m_project) return QStringLiteral("ERROR: no project");
 	const QList<Diagram *> diagrams = m_project->folios();
 	if (folioIndex < 0 || folioIndex >= diagrams.count()) return QStringLiteral("ERROR: no such folio");
 	QStringList notes;
-	const QList<Panel3DBody> bodies = Panel3DDialog::build(built(diagrams.at(folioIndex)), &notes, enclosure);
+	const QList<Panel3DBody> bodies = Panel3DDialog::build(built(diagrams.at(folioIndex)), &notes, enclosure, doorAngle);
 	if (bodies.isEmpty()) return QStringLiteral("ERROR: no mounting surface on this folio");
 	int models = 0;
 	for (const Panel3DBody &b : bodies) if (!b.mesh.isEmpty()) ++models;
@@ -488,16 +488,17 @@ QString QetScriptApi::exportPanel3D(int folioIndex, const QString &path, bool en
 	@brief QetScriptApi::renderPanel3D
 	Draw the 3D view of the cabinet layout of a folio into a picture
 	(PNG, JPG) of @p width x @p height pixels, seen from @p view: "iso",
-	"front", "top", "left" or "right".
+	"front", "top", "left" or "right"; @p doorAngle opens the door by so
+	many degrees.
 	@return empty when written, else "ERROR: ..."
 */
 QString QetScriptApi::renderPanel3D(int folioIndex, const QString &path, int width, int height,
-									const QString &view, bool enclosure)
+									const QString &view, bool enclosure, double doorAngle)
 {
 	if (!m_project) return QStringLiteral("ERROR: no project");
 	const QList<Diagram *> diagrams = m_project->folios();
 	if (folioIndex < 0 || folioIndex >= diagrams.count()) return QStringLiteral("ERROR: no such folio");
-	const QList<Panel3DBody> bodies = Panel3DDialog::build(built(diagrams.at(folioIndex)), nullptr, enclosure);
+	const QList<Panel3DBody> bodies = Panel3DDialog::build(built(diagrams.at(folioIndex)), nullptr, enclosure, doorAngle);
 	if (bodies.isEmpty()) return QStringLiteral("ERROR: no mounting surface on this folio");
 	const QImage image = Panel3DWidget::render(bodies, QSize(qBound(64, width, 8000), qBound(64, height, 8000)), view);
 	if (image.isNull()) return QStringLiteral("ERROR: nothing drawn (no OpenGL)");

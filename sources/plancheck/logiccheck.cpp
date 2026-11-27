@@ -499,15 +499,17 @@ class Circuit
 					if (name.contains(plus_name)) explicit_plus << it.key();
 					if (name.contains(minus_name)) explicit_minus << it.key();
 				}
+			m_given = !explicit_plus.isEmpty() || !explicit_minus.isEmpty();
+			m_fed = fed;
+			m_fed.remove(-1);
 			m_plus = explicit_plus.isEmpty() ? fed : explicit_plus;
 			m_minus = explicit_minus;
 			if (m_minus.isEmpty()) {
+					// every common return: a net with the A2 of two coils or more
 				QHash<int, int> count;
 				for (const CoilInfo &c : std::as_const(m_coils)) ++count[c.n2];
-				int best = -1, most = 0;
 				for (auto it = count.cbegin(); it != count.cend(); ++it)
-					if (it.value() > most) {best = it.key(); most = it.value();}
-				if (best >= 0 && (most >= 2 || m_coils.size() == 1)) m_minus << best;
+					if (it.key() >= 0 && (it.value() >= 2 || m_coils.size() == 1)) m_minus << it.key();
 			}
 			m_plus.subtract(m_minus);
 			m_plus.remove(-1);
@@ -534,6 +536,8 @@ class Circuit
 		QHash<Element *, int> m_coil_var;
 		QHash<QString, int> m_var_of;
 		QSet<int> m_plus, m_minus;
+		QSet<int> m_fed;        ///< outputs of protective devices and fuses
+		bool m_given = false;   ///< rails given (sim_role, names of potentials)
 		QHash<int, int> m_plc_source;   ///< net of a PLC output -> its variable
 		QList<QPair<Diagram *, Element *>> m_protection;
 		QHash<int, QVector<int>> m_adj;  ///< net -> branches
@@ -646,6 +650,20 @@ class CoilLogic
 		{
 			const CoilInfo &coil = m_c.m_coils.at(i);
 			bool overflow = false;
+				// rails not given: a coil side right on a common return or on
+				// the output of a protective device (a fused neutral, 230N) is
+				// this coil's return; the other side must reach another rail
+			if (!m_c.m_given) {
+				int ret = -1;
+				if (m_c.m_minus.contains(coil.n2) || m_c.m_fed.contains(coil.n2)) ret = coil.n2;
+				else if (m_c.m_minus.contains(coil.n1) || m_c.m_fed.contains(coil.n1)) ret = coil.n1;
+				if (ret >= 0) {
+					QSet<int> targets = m_c.m_plus + m_c.m_minus + m_c.m_fed;
+					targets.remove(ret);
+					*out = minimal(paths(ret == coil.n2 ? coil.n1 : coil.n2, targets, {ret}, true, &overflow));
+					return !overflow;
+				}
+			}
 			const QList<Term> a = product(paths(coil.n1, m_c.m_plus, m_c.m_minus, true, &overflow),
 										  paths(coil.n2, m_c.m_minus, m_c.m_plus, false, &overflow));
 			const QList<Term> b = product(paths(coil.n1, m_c.m_minus, m_c.m_plus, false, &overflow),
@@ -734,31 +752,43 @@ QList<QPair<int, int>> exclusivePairs(Circuit &c)
 		for (const auto &list : std::as_const(main_of))
 			for (int i : list)
 				if (c.m_branches.at(i).directed && !src.contains(c.m_branches.at(i).a)) src << c.m_branches.at(i).a;
-	if (src.size() < 2) return {};
 
-		// whether the contactors of @p closed, all others open, join two
-		// potentials of the supply that are apart with every contactor open
+		// the potentials of the supply: with every contactor open, the parts
+		// of the power circuit that hold a source and no output of a main
+		// contact (behind a contactor is not supply: two contactors in a row
+		// join nothing). Two of them joined is a short circuit.
 	Dsu open;
 	for (const Branch &b : std::as_const(c.m_branches))
 		if (b.var < 0 || !c.m_vars.at(b.var).coil) open.unite(b.a, b.b);
+	QSet<int> behind;
+	for (const auto &list : std::as_const(main_of))
+		for (int i : list) behind << open.find(c.m_branches.at(i).b);
+	QList<int> supply;   // one net per potential of the supply
+	QSet<int> supply_roots;
+	for (int s : std::as_const(src)) {
+		const int root = open.find(s);
+		if (behind.contains(root) || supply_roots.contains(root)) continue;
+		supply_roots << root;
+		supply << s;
+	}
+	if (supply.size() < 2) return {};
 	auto shorts = [&](const QSet<int> &closed) {
 		Dsu d;
 		for (const Branch &b : std::as_const(c.m_branches))
 			if (b.var < 0 || !c.m_vars.at(b.var).coil || (b.main && closed.contains(b.var))) d.unite(b.a, b.b);
-		for (int i = 0; i < src.size(); ++i)
-			for (int j = i + 1; j < src.size(); ++j)
-				if (d.find(src.at(i)) == d.find(src.at(j)) && open.find(src.at(i)) != open.find(src.at(j)))
-					return true;
+		for (int i = 0; i < supply.size(); ++i)
+			for (int j = i + 1; j < supply.size(); ++j)
+				if (d.find(supply.at(i)) == d.find(supply.at(j))) return true;
 		return false;
 	};
 		// line contactors: a main contact on the supply itself; they may be
 		// on while the pair is checked (the line contactor of a star-delta
 		// starter), every other contactor is off
-	const QSet<int> src_set(src.begin(), src.end());
 	QList<int> line;
 	for (int var : std::as_const(contactors))
 		for (int i : main_of.value(var))
-			if ((src_set.contains(c.m_branches.at(i).a) || src_set.contains(c.m_branches.at(i).b)) && !line.contains(var))
+			if ((supply_roots.contains(open.find(c.m_branches.at(i).a)) || supply_roots.contains(open.find(c.m_branches.at(i).b)))
+				&& !line.contains(var))
 				line << var;
 
 	QList<QPair<int, int>> out;
@@ -804,7 +834,7 @@ void PlanCheck::Logic::checkControl(const QList<Diagram *> &diagrams, const QSet
 	QSet<int> in_pairs;
 	for (const auto &p : pairs) in_pairs << p.first << p.second;
 
-	if (c.m_plus.isEmpty() || c.m_minus.isEmpty()) {
+	if (c.m_given ? (c.m_plus.isEmpty() || c.m_minus.isEmpty()) : (c.m_fed.isEmpty() && c.m_plus.isEmpty())) {
 		QList<QUuid> items;
 		QStringList names;
 		for (const CoilInfo &coil : std::as_const(c.m_coils))

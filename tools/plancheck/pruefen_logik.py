@@ -40,6 +40,7 @@ CASES = {
     "stern_dreieck_richtig": ([], ["interlock_missing", "interlock_one_way", "interlock_buttons_only",
                                    "self_hold_no_off", "circuit_unstable"], None),
     "stern_dreieck_falsch": ([("interlock_missing", "error")], [], "correction"),
+    "reihe": ([], ["interlock_missing", "interlock_one_way", "interlock_buttons_only"], None),
     "selbsthaltung_ohne_aus": ([("self_hold_no_off", "error")], [], "correction"),
     "pumpen": ([("circuit_unstable", "warning")], ["self_hold_no_off"], None),
     "kabel_zu_klein": ([("cable_capacity", "warning")], [], None),

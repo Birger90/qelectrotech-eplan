@@ -142,6 +142,20 @@ function starDeltaCase(interlocked) {
 	w(p2, t(p2, "4"), p2, t(p2, "6"));
 }
 
+	// two contactors in a row (redundant, as for a safety function): both on joins nothing
+function seriesCase() {
+	var plus = controlFuse();
+	var k1 = el(COIL, 200, 520, "-K1");
+	var k2 = el(COIL, 400, 520, "-K2");
+	branch(plus, "-K1", {coil: k1, stop: true, start: true, hold: true, x: 200});
+	branch(plus, "-K2", {coil: k2, stop: true, start: true, hold: true, x: 400});
+	w(k1, t(k1, "A2"), k2, t(k2, "A2"));
+	var q = el(MCB3, 300, 760, "-Q1");
+	info(q, "description", "C16");
+	var p1 = poles(k1, 200, [{u: q, i: t(q, "OUT.2")}, {u: q, i: t(q, "OUT.4")}, {u: q, i: t(q, "OUT.6")}], [null, null, null]);
+	poles(k2, 400, [pole(p1, 0, "out"), pole(p1, 1, "out"), pole(p1, 2, "out")], [null, null, null]);
+}
+
 	// K5 holds itself, nothing in its path switches it off
 function selfHoldCase() {
 	branch(controlFuse(), "-K5", {start: true, hold: true, x: 200});
@@ -223,6 +237,7 @@ var cases = {
 	wende_einseitig: function() { reversingCase(false, true); },
 	stern_dreieck_richtig: function() { starDeltaCase(true); },
 	stern_dreieck_falsch: function() { starDeltaCase(false); },
+	reihe: seriesCase,
 	selbsthaltung_ohne_aus: selfHoldCase,
 	pumpen: pumpCase,
 	kabel_zu_klein: cableCase,

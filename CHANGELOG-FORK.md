@@ -20,10 +20,13 @@ gemeldet, nie geschätzt.
   wenn angegeben (P08–P10); Ik3 an der Einspeisung nach IEC 60909-0 vereinfacht gegen das Schaltvermögen (P11, P12);
   Abschaltbedingung Zs × Ia ≤ U0 nach IEC 60364-4-41 411.4.4 (P13, P14); FI hintereinander (P15); Steckdose ohne FI
   ≤ 30 mA (411.3.3, P16). Neue Kategorie *Kurzschluss, Abschaltung und FI*.
+- FI und Steckdosen werden auch an französischen Symbolnamen erkannt („différentiel“, „sélectif“, IΔn im Namen);
+  ein abgesicherter Neutralleiter (2-polige Absicherung) gilt als Rückleiter der Spulen. Das Prüfpanel ist offscreen
+  angesehen (`tests/qttest/check_panel_probe.cpp`); 27 fehlende deutsche Texte des Panels ergänzt.
 - **Behoben:** `qet.linkElements(spule, kontakt)` ersetzte die bisherigen Kontakte der Spule durch den neuen (der
   Befehl wurde von der Master-Seite gebaut); jetzt immer von der Kontaktseite, wie bisher nur bei SPS-Kanälen.
-- Tests: `tools/plancheck/pruefen_logik.py` baut 12 Testprojekte (Wendeschütz richtig/ohne/einseitig, Stern-Dreieck
-  richtig/falsch, Selbsthaltung, Pumpen, Kabel zu klein/richtig, ohne Angaben, Abschaltung, FI) und prüft Befunde und
+- Tests: `tools/plancheck/pruefen_logik.py` baut 13 Testprojekte (Wendeschütz richtig/ohne/einseitig, Stern-Dreieck
+  richtig/falsch, Schütze in Reihe, Selbsthaltung, Pumpen, Kabel zu klein/richtig, ohne Angaben, Abschaltung, FI) und prüft Befunde und
   Ergebnis.
 
 ## 1.63.0 – 27.11.2026 – liegengebliebene Branches in main

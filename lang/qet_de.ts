@@ -3225,6 +3225,72 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
             <numerusform>%n Angaben fehlen</numerusform>
         </translation>
     </message>
+    <message>
+        <source>Accepted findings</source>
+        <translation>Angenommene Befunde</translation>
+    </message>
+    <message>
+        <source>Show accepted findings</source>
+        <translation>Angenommene Befunde zeigen</translation>
+    </message>
+    <message>
+        <source>Double-click a finding to show it on its folio. Right-click to accept it, or to switch its check off for this project.</source>
+        <translation>Doppelklick zeigt einen Befund auf seinem Blatt. Rechtsklick nimmt ihn an oder schaltet seine Prüfung für dieses Projekt ab.</translation>
+    </message>
+    <message>
+        <source>%1: switched off for this project</source>
+        <translation>%1: für dieses Projekt abgeschaltet</translation>
+    </message>
+    <message>
+        <source>%1 (accepted)</source>
+        <translation>%1 (angenommen)</translation>
+    </message>
+    <message>
+        <source>%1 (accepted: %2)</source>
+        <translation>%1 (angenommen: %2)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1: nothing found, %n accepted</source>
+        <translation>
+            <numerusform>%1: nichts gefunden, %n angenommen</numerusform>
+            <numerusform>%1: nichts gefunden, %n angenommen</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%1 (%2, %n accepted)</source>
+        <translation>
+            <numerusform>%1 (%2, %n angenommen)</numerusform>
+            <numerusform>%1 (%2, %n angenommen)</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>List this finding again</source>
+        <translation>Diesen Befund wieder aufführen</translation>
+    </message>
+    <message>
+        <source>Accept this finding...</source>
+        <translation>Diesen Befund annehmen …</translation>
+    </message>
+    <message>
+        <source>The finding is not listed any more in this project, until Options &gt; Show accepted findings.</source>
+        <translation>Der Befund wird in diesem Projekt nicht mehr aufgeführt, außer mit Optionen &gt; Angenommene Befunde zeigen.</translation>
+    </message>
+    <message>
+        <source>Accept this finding</source>
+        <translation>Diesen Befund annehmen</translation>
+    </message>
+    <message>
+        <source>Why it is right as it is (kept in the project):</source>
+        <translation>Warum es so richtig ist (wird im Projekt gespeichert):</translation>
+    </message>
+    <message>
+        <source>Switch this check off for this project</source>
+        <translation>Diese Prüfung für dieses Projekt abschalten</translation>
+    </message>
+    <message>
+        <source>Switch this check on for this project</source>
+        <translation>Diese Prüfung für dieses Projekt einschalten</translation>
+    </message>
 </context>
 <context>
     <name>ClickableImageLabel</name>
@@ -19766,6 +19832,54 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     <message>
         <source>No finding</source>
         <translation>Kein Befund</translation>
+    </message>
+    <message>
+        <source>Wires in two cables</source>
+        <translation>Leitungen in zwei Kabeln</translation>
+    </message>
+    <message>
+        <source>Symbols with no part number</source>
+        <translation>Symbole ohne Artikelnummer</translation>
+    </message>
+    <message>
+        <source>Unanswered prompts</source>
+        <translation>Unbeantwortete Abfragen</translation>
+    </message>
+    <message>
+        <source>Wires set as a core of more than one cable. A wire runs in one cable: the cable core list would show it twice.</source>
+        <translation>Leitungen, die als Ader mehrerer Kabel eingetragen sind. Eine Leitung liegt in einem Kabel: die Aderliste zeigte sie doppelt.</translation>
+    </message>
+    <message>
+        <source>Symbols the parts list holds that have no part number. Folio reports, junctions and symbols set to be left out of the bill of materials are not listed.</source>
+        <translation>Symbole der Stückliste ohne Artikelnummer. Abbruchstellen, Verbindungspunkte und Symbole, die nicht in die Stückliste sollen, sind nicht aufgeführt.</translation>
+    </message>
+    <message>
+        <source>Labels and texts of symbols, wires and folios that still hold a question mark or a ?name: what a macro asks for when it is placed, left unanswered.</source>
+        <translation>Kennzeichen und Texte von Symbolen, Leitungen und Blättern, die noch ein Fragezeichen oder ein ?name enthalten: was ein Makro beim Einfügen abfragt, unbeantwortet.</translation>
+    </message>
+    <message>
+        <source>A wire is a core of two cables: %1</source>
+        <translation>Eine Leitung ist Ader zweier Kabel: %1</translation>
+    </message>
+    <message>
+        <source>Wire %1 is a core of two cables: %2</source>
+        <translation>Leitung %1 ist Ader zweier Kabel: %2</translation>
+    </message>
+    <message>
+        <source>Unanswered: %1</source>
+        <translation>Unbeantwortet: %1</translation>
+    </message>
+    <message>
+        <source>%1: unanswered %2</source>
+        <translation>%1: unbeantwortet %2</translation>
+    </message>
+    <message>
+        <source>Wire: unanswered %1</source>
+        <translation>Leitung: unbeantwortet %1</translation>
+    </message>
+    <message>
+        <source>Text: unanswered %1</source>
+        <translation>Text: unbeantwortet %1</translation>
     </message>
 </context>
 <context>

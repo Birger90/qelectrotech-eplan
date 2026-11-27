@@ -3,6 +3,13 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.62.1 – 27.11.2026 – .epdz-Import ohne fremde Verweispfeile
+
+- Der .epdz-Import brach im Dialog bei 84 % ab, wenn QETs Firmensammlung die Verweispfeile
+  (`Allgemein/Verweise`) nicht enthält. Er erzeugt die Verweispfeile jetzt selbst aus der EPLAN-Grafik des
+  Unterbrechungspunkts (gehend/kommend als echte QET-Verweise). Im Programm geprüft: Import über
+  *Datei > EPLAN-Projekt importieren*, Projekt öffnet sich mit allen Blättern.
+
 ## 1.62.0 – 27.11.2026 – EPLAN-Export (.epdz) als bearbeitbares Projekt
 
 - **.epdz wird ein echter Schaltplan:** *Datei > EPLAN-Projekt importieren* übersetzt einen EPLAN-Export jetzt wie

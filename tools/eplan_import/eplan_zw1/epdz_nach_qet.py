@@ -507,6 +507,29 @@ def _anschluss_index(t, pos, ein):
     return min(t.symbol.anschluesse, key=lambda a: math.hypot(a.x - rx, a.y - ry)).index
 
 
+def _verweis(e, gehend, stat):
+    """Unterbrechungspunkt als QET-Verweiselement (next_report gehend, previous_report kommend) mit seiner
+    EPLAN-Grafik, Anschluss am Leitungsende; eigene Datei in der Sammlung, damit der Import keine Pfeile einer
+    bestimmten Firmensammlung braucht. Der Text des Punkts steht als Blatttext daneben."""
+    h, pt = e["gruppe"], e["pt"]
+    fo = [_form_linie(pts, zu, st_, pt) for pts, zu, st_ in h.linien] +          [_form_kreis(c, r, st_, pt) for c, r, st_ in h.kreise]
+    xml = G.element_xml("EPLAN Unterbrechungspunkt " + ("gehend" if gehend else "kommend"), fo,
+                        [(0.0, 0.0, e["ri"])], "Aus einem EPLAN-Export (.epdz) übernommen (epdz_nach_qet.py)",
+                        namen=["1"])
+    xml = xml.replace('link_type="simple"', 'link_type="%s"' % ("next_report" if gehend else "previous_report"), 1)
+    xml = re.sub(r'\n\s*<dynamic_text [^>]*text_from="ElementInfo"[^>]*><text></text>'
+                 r'<info_name>label</info_name></dynamic_text>', "", xml)
+    sig = hashlib.sha1(re.sub(r'uuid="\{[^}]*\}"', "", xml).encode("utf-8")).hexdigest()[:10]
+    rel = f"{ORDNER}/Verweis_{'gehend' if gehend else 'kommend'}_{sig}.elmt"
+    ziel = os.path.join(S.COMPANY, *rel.split("/"))
+    if not os.path.exists(ziel):
+        os.makedirs(os.path.dirname(ziel), exist_ok=True)
+        with open(ziel, "w", encoding="utf-8") as f:
+            f.write(xml)
+        stat["schaltbilder_neu"] += 1
+    return S.U + rel
+
+
 def _schriftfeld_leer():
     from eplan_nach_qet import _schriftfeld_leer as leer
     return leer()
@@ -1050,11 +1073,7 @@ def umsetzen(epdz, ziel_qet, arbeit=None, bibliothek=True):
         for n, k in enumerate(paar):
             ek = pfeile[k]
             gehend = n == 0 and len(paar) == 2
-            if gehend:                            # Anschluss links bei 0°, Leitung geht in Richtung ri weg
-                pfad_, dreh = S.GEHEND, {8: 0, 1: 90, 2: 180, 4: 270}[ek["ri"]]
-            else:                                 # Anschluss rechts bei 0°
-                pfad_, dreh = S.KOMMEND, {2: 0, 4: 90, 8: 180, 1: 270}[ek["ri"]]
-            ek["teil"] = ek["blatt"].setze(pfad_, *_px(ek["pt"]), anker=0, drehung=dreh)
+            ek["teil"] = ek["blatt"].setze(_verweis(ek, gehend, stat), *_px(ek["pt"]), label="", label_xy=())
             stat["pfeile"] += 1
             if len(paar) == 2 and pfeile[paar[0]]["blatt"] is pfeile[paar[1]]["blatt"]:
                 continue                       # Paar auf einer Seite: unten direkt verknüpft

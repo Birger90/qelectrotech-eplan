@@ -5,8 +5,9 @@
 🇬🇧 [English version](README.md) · Allgemeine Beschreibung von QElectroTech: [README.md](README.md#qelectrotech)
 
 Dieser Fork erweitert QElectroTech so, dass sich EPLAN-Schaltpläne als echte,
-verknüpfte Projekte nachbauen lassen – sie navigieren wie ein EPLAN-PDF und tragen ihre Daten so, wie EPLAN es tut –
-und dass Herstellerbauteile und -kabel direkt nutzbar sind. Der Upstream
+verknüpfte Projekte nachbauen lassen – sie navigieren wie ein EPLAN-PDF und tragen ihre Daten so, wie EPLAN es tut –,
+dass sich Pläne aus WSCAD, sPlan und FluidSIM übernehmen lassen und dass Herstellerbauteile und -kabel direkt nutzbar
+sind. Der Upstream
 ([qelectrotech-source-mirror](https://github.com/qelectrotech/qelectrotech-source-mirror)) wird regelmäßig
 eingemischt; alles Folgende gibt es nur hier.
 
@@ -22,6 +23,11 @@ Alle Importe auf einen Blick; Einzelheiten stehen in den Abschnitten darunter.
 - **sPlan-Plan** (`.spl8`, Abacom): Datei > *sPlan-Plan importieren* – neu gezeichnet als QET-Projekt; Netze aus der
   Zeichnung, Gerätekästen und SPS-Kanäle aus einer Zuordnungsdatei zu Herstellermakros
   ([tools/splan_import](tools/splan_import/README.md)).
+- **WSCAD-Projekt** (Projektordner mit `Database/WSCAD6.db` und `.wsELD`-Seiten, ELECTRIX/SUITE ab 6.x): Datei >
+  *WSCAD-Projekt importieren* – ein bearbeitbares Projekt mit WSCAD-Rahmen und Schriftfeld, Bauteilen, Leitungen,
+  verknüpften Verweisen und Master/Slave; fehlende Artikel kommen sortiert in die Firmensammlung
+  ([EPLAN-Projekte](#eplan-projekte-und-eingebauter-assistent),
+  [Formatbeschreibung](tools/wscad_import/FORMATBESCHREIBUNG_WSCAD.md)).
 - **Bauteile**: EPLAN-Makros und EDZ, Hersteller-Makropakete (z. B. Beckhoff), DWG, WSCAD-Artikeldaten (`.wspak`) und
   das EPLAN Data Portal ([Bauteil-Import](#bauteil-import)).
 

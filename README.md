@@ -6,8 +6,8 @@
 > 🇩🇪 [Deutsche Fassung](README.de.md)
 >
 > This fork extends QElectroTech so that EPLAN schematics can be rebuilt as
-> real, linked projects — navigating like an EPLAN PDF and carrying their data the way EPLAN does — and so that
-> manufacturer parts and cables can be used directly. The upstream
+> real, linked projects — navigating like an EPLAN PDF and carrying their data the way EPLAN does —, so that plans
+> from WSCAD, sPlan and FluidSIM can be brought in, and so that manufacturer parts and cables can be used directly. The upstream
 > ([qelectrotech-source-mirror](https://github.com/qelectrotech/qelectrotech-source-mirror)) is merged regularly;
 > everything below exists only here.
 >
@@ -19,6 +19,10 @@
 > - **sPlan schematic** (`.spl8`, Abacom): File > *Import sPlan schematic* -- drawn anew as a QET project; nets from
 >   the drawing, device boxes and PLC channels from a mapping file to manufacturer macros
 >   ([tools/splan_import](tools/splan_import/README.md)).
+> - **WSCAD project** (project folder with `Database/WSCAD6.db` and `.wsELD` pages, ELECTRIX/SUITE 6.x and later):
+>   File > *Import WSCAD project* -- an editable project with the WSCAD frame and title block, parts, conductors,
+>   linked report arrows and master/slave; missing articles go sorted into the company collection
+>   ([format description](tools/wscad_import/FORMATBESCHREIBUNG_WSCAD.md)).
 > - **Parts**: EPLAN macros and EDZ, manufacturer macro packages (e.g. Beckhoff), DWG, WSCAD article data (`.wspak`)
 >   and the EPLAN Data Portal (part import below).
 >

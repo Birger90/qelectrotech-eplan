@@ -169,6 +169,8 @@ class QETDiagramEditor : public QETMainWindow
 		void saveAs();
 		bool newProject();
 		bool newAutoConnectProject();
+		bool newProjectFromTemplate();
+		bool newProjectFromTemplateFile(const QString &path);
 		bool openProject();
 		bool openRecentFile(const QString &);
 		bool closeProject(ProjectView *);
@@ -363,6 +365,10 @@ class QETDiagramEditor : public QETMainWindow
 		*m_cable_numbering,            ///< Action to open the cable numbering window (rule + numbering of every cable)
 		*m_add_cable_list,             ///< Add a cable list graphics item
 		*m_add_revision_table,         ///< Add a table of the project's revision history
+		*m_add_device_list,            ///< Add a table of the project's devices
+		*m_add_wiring_table,           ///< Add a table of the project's wires
+		*m_add_plc_list,               ///< Add a table of the PLC I/O
+		*m_add_signal_list,            ///< Add a table of the signals (potentials)
 		*m_export_cable_list,          ///< Export the cable list of the project to CSV
 		*m_export_marking,             ///< Export the markers for marking software
 		*m_thm_print,                  ///< Print the markers on a THM printer (ThmPrintDialog)

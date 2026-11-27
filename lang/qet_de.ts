@@ -18229,6 +18229,10 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
         <translation>Schaltschrankaufbau</translation>
     </message>
     <message>
+        <source>listed under Devices without a label or part</source>
+        <translation>steht unter Geräte ohne Kennzeichen oder Artikel</translation>
+    </message>
+    <message>
         <source>Wire cross-section and protection</source>
         <translation>Leitungsquerschnitt und Absicherung</translation>
     </message>

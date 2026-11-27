@@ -3,6 +3,15 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.56.1 – 27.11.2026 – Hauptrepo nachgezogen
+
+- 35 Commits aus dem Hauptrepo: Prüfungen je Projekt abschalten und Befunde akzeptieren, neue Prüfungen (Leitung in
+  zwei Kabeln, Symbole ohne Artikelnummer, offene Rückfragen), Geräte-, Verdrahtungs-, SPS- und Signallisten als
+  Tabellen, Projektvorlagen, Anlage kopieren, Zeichnungsnorm je Projekt, Kabelkommentar u. a.
+- Prüfpanel zusammengeführt: Abschalten/Akzeptieren des Hauptrepos plus Schwere-Symbole, Filter und alle Regeln des
+  Forks in einem Durchlauf. „Symbole ohne Artikelnummer“ verweist auf die Fork-Regel „Geräte ohne Kennzeichen oder
+  Artikel“ (keine Doppelmeldungen); „Leitung in zwei Kabeln“ ist ein Fehler.
+
 ## 1.56.0 – 27.11.2026 – Prüfung Leitungsquerschnitt zur Absicherung
 
 - **Neue Prüfregel „Leitungsquerschnitt und Absicherung“** in *Projekt prüfen* und `--check-project`: Hinter jedem

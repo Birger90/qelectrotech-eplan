@@ -99,6 +99,8 @@ class CableTypeList
 		static QString designation(const CableTypeRecord &record);
 		static int coreCount(const CableTypeRecord &record);
 		static QStringList coreColors(const CableTypeRecord &record);
+		static QString manufacturer(const CableTypeRecord &record);
+		static QString manufacturerReference(const CableTypeRecord &record);
 
 		//Manufacturer catalogues: every CSV file of the folder
 		//"cable-catalogs" beside the cable type file is read with it,

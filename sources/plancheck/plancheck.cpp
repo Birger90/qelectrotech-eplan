@@ -756,6 +756,18 @@ void rate(ProjectCheck::Result &result)
 				f.severity = Severity::Warning;
 				f.rule = QStringLiteral("terminal_names");
 				break;
+			case K::WireInTwoCables:
+				f.severity = Severity::Error;
+				f.rule = QStringLiteral("wire_in_two_cables");
+				break;
+			case K::NoPartNumber:
+					//the fork's rule "device_without_part" lists them, with
+					//the same exceptions (exclude_from_bom)
+				continue;
+			case K::UnansweredPrompts:
+				f.severity = Severity::Warning;
+				f.rule = QStringLiteral("unanswered_prompt");
+				break;
 			default:
 				break;
 		}
@@ -766,6 +778,8 @@ void rate(ProjectCheck::Result &result)
 		[](const ProjectCheck::Finding &a, const ProjectCheck::Finding &b) {
 			return int(a.severity) < int(b.severity);
 		});
+	if (result.kind == K::NoPartNumber && kept.isEmpty() && !result.findings.isEmpty())
+		result.note = ProjectCheck::tr("listed under Devices without a label or part");
 	result.findings = kept;
 }
 

@@ -253,6 +253,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/reports/projectreports.cpp
   ${QET_DIR}/sources/placesuggestions.h
   ${QET_DIR}/sources/placesuggestions.cpp
+  ${QET_DIR}/sources/placecopy.h
+  ${QET_DIR}/sources/placecopy.cpp
   ${QET_DIR}/sources/placerename.h
   ${QET_DIR}/sources/placerename.cpp
   ${QET_DIR}/sources/ui/devicetypecheckdialog.h
@@ -764,6 +766,7 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/factory/ui/addtabledialog.cpp
   ${QET_DIR}/sources/factory/ui/addtabledialog.h
   ${QET_DIR}/sources/factory/ui/revisionquerywidget.h
+  ${QET_DIR}/sources/factory/ui/listquerywidget.h
 
   ${QET_DIR}/sources/NameList/nameslist.cpp
   ${QET_DIR}/sources/NameList/nameslist.h
@@ -1133,6 +1136,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/ui/fluidcheckdialog.h
   ${QET_DIR}/sources/ui/openwireendsdialog.cpp
   ${QET_DIR}/sources/ui/openwireendsdialog.h
+  ${QET_DIR}/sources/projectcheck/checksettings.cpp
+  ${QET_DIR}/sources/projectcheck/checksettings.h
   ${QET_DIR}/sources/projectcheck/openwireends.cpp
   ${QET_DIR}/sources/projectcheck/openwireends.h
   ${QET_DIR}/sources/ui/tiatagsdialog.cpp
@@ -1238,6 +1243,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/utils/conductorcreator.h
   ${QET_DIR}/sources/utils/colordialogdoubleclick.cpp
   ${QET_DIR}/sources/utils/colordialogdoubleclick.h
+  ${QET_DIR}/sources/utils/dialogplacement.cpp
+  ${QET_DIR}/sources/utils/dialogplacement.h
   ${QET_DIR}/sources/utils/macosxopenevent.cpp
   ${QET_DIR}/sources/utils/macosxopenevent.h
   ${QET_DIR}/sources/utils/qetsettings.cpp
@@ -1245,6 +1252,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/utils/qetutils.cpp
   ${QET_DIR}/sources/utils/previousversions.cpp
   ${QET_DIR}/sources/utils/previousversions.h
+  ${QET_DIR}/sources/utils/projecttemplates.cpp
+  ${QET_DIR}/sources/utils/projecttemplates.h
   ${QET_DIR}/sources/utils/qetutils.h
   ${QET_DIR}/sources/utils/syncfolder.h
 

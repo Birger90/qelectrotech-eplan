@@ -496,6 +496,7 @@ install(DIRECTORY tools/simulation/referenz DESTINATION ${QET_DATA_PATH}simulati
 install(DIRECTORY funktionsvorlagen DESTINATION ${QET_DATA_PATH})
 install(DIRECTORY examples    DESTINATION ${QET_DATA_PATH})
 install(DIRECTORY titleblocks DESTINATION ${QET_DATA_PATH})
+install(DIRECTORY templates   DESTINATION ${QET_DATA_PATH})
 # The MCP server (misc/qet-mcp) finds this QElectroTech and its elements
 # from here: <prefix>/share/qelectrotech/mcp -> <prefix>/bin, or on Windows
 # <prefix>/mcp -> <prefix>/bin.

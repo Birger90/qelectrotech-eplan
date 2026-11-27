@@ -52,6 +52,27 @@ namespace {
 		}
 	}
 
+	/// What the module is, from its channels: "DI 16", "DI 8 / DQ 6"
+	QString moduleKind(const Element *e)
+	{
+		int n[4] = {0, 0, 0, 0};
+		for (const auto &io : e->elementData().plcMasterData().ios) {
+			switch (io.type) {
+				case ElementData::EntreeDigitale:
+				case ElementData::EntreeUniverselle:  ++n[0]; break;
+				case ElementData::SortieDigitale:
+				case ElementData::SortieUniverselle:  ++n[1]; break;
+				case ElementData::EntreeAnalogique:   ++n[2]; break;
+				case ElementData::SortieAnalogique:   ++n[3]; break;
+			}
+		}
+		static const char *const names[4] = {"DI", "DQ", "AI", "AQ"};
+		QStringList parts;
+		for (int i = 0; i < 4; ++i)
+			if (n[i]) parts << QStringLiteral("%1 %2").arg(QLatin1String(names[i])).arg(n[i]);
+		return parts.join(QStringLiteral(" / "));
+	}
+
 	bool isPlcModule(const Element *e)
 	{
 		return e && e->elementData().m_type == ElementData::Master
@@ -228,11 +249,18 @@ void PlcLinkWidget::fillModules()
 			if (!fits) continue;
 			QString label = e->actualLabel();
 			if (label.isEmpty()) label = e->name();
-			const QString part = e->elementInformations()
-				.value(QStringLiteral("manufacturer_reference")).toString();
-			m_module_cb->addItem(part.isEmpty()
+			// what the module is ("DI 16"), not its order number: that one
+			// tells nobody what they are choosing, it is the tooltip
+			const QString kind = moduleKind(e);
+			m_module_cb->addItem(kind.isEmpty()
 				? tr("%1 (folio %2)").arg(label, folioOf(e))
-				: tr("%1  %2 (folio %3)").arg(label, part, folioOf(e)));
+				: tr("%1  %2 (folio %3)").arg(label, kind, folioOf(e)));
+			QStringList tip;
+			for (const char *key : {"manufacturer_reference", "description"}) {
+				const QString v = e->elementInformations().value(QLatin1String(key)).toString();
+				if (!v.isEmpty()) tip << v;
+			}
+			m_module_cb->setItemData(m_module_cb->count() - 1, tip.join(QChar::LineFeed), Qt::ToolTipRole);
 			m_modules << e;
 		}
 	}

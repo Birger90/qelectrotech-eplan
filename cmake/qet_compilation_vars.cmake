@@ -156,6 +156,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/import/plcchannels.cpp
   ${QET_DIR}/sources/import/plcchannels.h
   ${QET_DIR}/sources/plc/tiaplctags.cpp
+  ${QET_DIR}/sources/safety/iso13849.cpp
+  ${QET_DIR}/sources/safety/iso13849.h
   ${QET_DIR}/sources/plc/tiaplctags.h
   ${QET_DIR}/sources/import/eplanproject/eplanprojectimportdialog.cpp
   ${QET_DIR}/sources/import/eplanproject/eplanprojectimportdialog.h
@@ -1349,6 +1351,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/panel/paneldxf.h
   ${QET_DIR}/sources/panel/panelcommands.cpp
   ${QET_DIR}/sources/panel/panelcommands.h
+  ${QET_DIR}/sources/panel/panele3d.cpp
+  ${QET_DIR}/sources/panel/panele3d.h
   ${QET_DIR}/sources/panel/panelstep.cpp
   ${QET_DIR}/sources/panel/panelstep.h
   ${QET_DIR}/sources/panel/panel3dview.cpp

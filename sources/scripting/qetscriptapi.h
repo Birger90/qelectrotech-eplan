@@ -473,6 +473,9 @@ class QetScriptApi : public QObject
 			/// .xml SimaticML for Openness), a TIA table compared with them
 			/// (CSV lines, header first), its names/comments taken over
 		Q_INVOKABLE bool exportTiaTags(const QString &output, const QString &table = QString());
+			/// PL of a safety function after ISO 13849-1 (Iso13849::evaluate):
+			/// JSON in, JSON out; a planning estimate, see iso13849.h
+		Q_INVOKABLE QString safetyFunction(const QString &functionJson) const;
 		Q_INVOKABLE QStringList compareTiaTags(const QString &tagFile);
 		Q_INVOKABLE int applyTiaTags(const QString &tagFile);
 			/// Weidmüller M-Print PRO: a file per material in @p dir, as JSON

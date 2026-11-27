@@ -19,6 +19,7 @@
 #include "../revision/projectrevisions.h"
 #include "../projectcheck.h"
 #include "../plc/tiaplctags.h"
+#include "../safety/iso13849.h"
 #include "../import/portals/manufacturerportals.h"
 #include "../import/portals/partfetcher.h"
 
@@ -1015,6 +1016,24 @@ bool QetScriptApi::exportTiaTags(const QString &output, const QString &table)
 		return false;
 	}
 	return true;
+}
+
+/**
+	@brief QetScriptApi::safetyFunction
+	The performance level of a safety function after ISO 13849-1, the
+	simplified way (subsystems in series, category, MTTFd, DCavg, CCF),
+	and the required PL of its risk graph. Input and output: see
+	Iso13849::evaluate(). A planning estimate, not table K.1.
+	@return the result as JSON, or {"error": ...}
+*/
+QString QetScriptApi::safetyFunction(const QString &functionJson) const
+{
+	QJsonParseError error;
+	const QJsonDocument doc = QJsonDocument::fromJson(functionJson.toUtf8(), &error);
+	if (!doc.isObject())
+		return QString::fromUtf8(QJsonDocument(QJsonObject{{QStringLiteral("error"), error.errorString()}})
+									 .toJson(QJsonDocument::Compact));
+	return QString::fromUtf8(QJsonDocument(Iso13849::evaluate(doc.object())).toJson(QJsonDocument::Compact));
 }
 
 /**

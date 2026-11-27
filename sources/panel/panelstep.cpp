@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "panelstep.h"
+#include "panele3d.h"
 
 #include "../qetapp.h"
 
@@ -110,13 +111,20 @@ QString PanelStep::findModel(const QString &reference, const QString &manufactur
 	if (changed) {
 		index.clear();
 		for (const QString &d : dirs) {
-			QDirIterator it(d, {QStringLiteral("*.stp"), QStringLiteral("*.step"), QStringLiteral("*.STP"), QStringLiteral("*.STEP")},
+			QDirIterator it(d, {QStringLiteral("*.stp"), QStringLiteral("*.step"), QStringLiteral("*.STP"), QStringLiteral("*.STEP"),
+								QStringLiteral("*.e3d"), QStringLiteral("*.E3D"), QStringLiteral("*.E3d")},
 							QDir::Files, QDirIterator::Subdirectories);
 			while (it.hasNext()) {
 				const QString f = it.next();
 				index[orderKey(QFileInfo(f).completeBaseName())] << f;
 			}
 		}
+			// a STEP model before EPLAN's .e3d of the same part
+		for (auto it = index.begin(); it != index.end(); ++it)
+			std::stable_sort(it->begin(), it->end(), [](const QString &a, const QString &b) {
+				return !a.endsWith(QLatin1String(".e3d"), Qt::CaseInsensitive)
+					&& b.endsWith(QLatin1String(".e3d"), Qt::CaseInsensitive);
+			});
 	}
 	QStringList files = index.value(key);
 	if (files.isEmpty()) {
@@ -222,6 +230,13 @@ PanelMesh PanelStep::load(const QString &path, QString *error)
 	const QString key = QFileInfo(path).absoluteFilePath();
 	auto it = cache().constFind(key);
 	if (it != cache().constEnd()) return it.value();
+
+		// EPLAN's own 3D (.e3d), read without Open CASCADE
+	if (path.endsWith(QLatin1String(".e3d"), Qt::CaseInsensitive)) {
+		const PanelMesh e3d = PanelE3d::readFile(path, error);
+		if (!e3d.isEmpty()) cache().insert(key, e3d);
+		return e3d;
+	}
 
 	PanelMesh mesh;
 #ifdef QET_WITH_OCCT

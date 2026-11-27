@@ -137,6 +137,7 @@
 #include <undocommand/linkelementcommand.h>
 #include <undocommand/reportstarcommand.h>
 #include <undocommand/pairrepresentation.h>
+#include <projectcheck/checkfixes.h>
 #include <autoNum/wirenumberpattern.h>
 #include <qetgraphicsitem/reportelement.h>
 #include <undocommand/removediagramcommand.h>

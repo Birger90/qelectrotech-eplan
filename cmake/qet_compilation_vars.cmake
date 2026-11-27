@@ -1173,6 +1173,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/network/networkaddresses.h
   ${QET_DIR}/sources/projectcheck/checksettings.cpp
   ${QET_DIR}/sources/projectcheck/checksettings.h
+  ${QET_DIR}/sources/projectcheck/checkfixes.cpp
+  ${QET_DIR}/sources/projectcheck/checkfixes.h
   ${QET_DIR}/sources/projectcheck/openwireends.cpp
   ${QET_DIR}/sources/projectcheck/openwireends.h
   ${QET_DIR}/sources/ui/tiatagsdialog.cpp

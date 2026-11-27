@@ -141,12 +141,15 @@ wie in EPLAN („überzählige Hauptfunktionen“).
 - Abbruchstellen-Einstellung „Zielanzeige an Paarquerverweisen“: zuerst Ziel, dann Verweis (Beispiel `L1/ X1:1 /7.04`).
   Quelle: https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/xessettingsgui_d_einstellungenprojektabbruchstellen.htm
 
-**Bedeutung für QET:** QET hat keinen Paarquerverweis. Erkennen im PDF: Kontakt mit Verweistext direkt rechts neben
-einem 3RV/LS, ohne Leitungen. Umsetzung (Vermutung, bewährt sich noch): den Kontakt neben dem Master als
-**Slave** verknüpfen (zeigt dann auf den Master) und den verdrahteten Kontakt ebenfalls als Slave; der
-Kontaktspiegel des Masters listet dann beide. Alternativ den Paarkontakt als reine Grafik ohne label und den
-EPLAN-Verweistext als freien Text mit `destination` auf den verdrahteten Kontakt (Sprung wie im EPLAN-PDF).
-Inhaltlich wichtig: nur **ein** Kontakt ist elektrisch real – der Paarkontakt darf nicht in Klemmen-/Kabelpläne.
+**Bedeutung für QET:** Der Fork hat ab 1.64.0 den **Paarquerverweis** (Abgleich mit OpenWiring): Erkennen im PDF:
+Kontakt mit Verweistext direkt rechts neben einem 3RV/LS, ohne Leitungen. Umsetzung: den **verdrahteten** Kontakt als
+Slave mit der Hauptfunktion verknüpfen, dann die Darstellung erzeugen – Verknüpfungsfenster des Kontakts *Als
+Paarquerverweis darstellen …* oder Skript `qet.addPairRepresentation(folio, kontakt, zielblatt, x, y)`. Die
+Darstellung ist eine Kopie des Kontaktsymbols mit `pairOf="{uuid des echten Kontakts}"`, mit derselben Kontaktgruppe
+an der Hauptfunktion verknüpft: BMK und Anschlussnamen folgen dem echten Kontakt, der Kontaktspiegel und die Zählung
+der Hauptfunktion lassen sie weg, sie verweist auf den echten Kontakt und der echte Kontakt zusätzlich auf sie (wie
+EPLAN: „aufeinander statt auf die Hauptfunktion“). Keine Leiter an die Darstellung – die Prüfung meldet das und eine
+verwaiste Darstellung (Korrektur „Paarquerverweis löschen“). Nur **ein** Kontakt ist elektrisch real.
 
 ## 6. Kontaktspiegel
 
@@ -246,9 +249,12 @@ wenn das Original sie bei fremden Anlagen zeigt. Spalten: EPLAN zählt ab 0, QET
 - **Kette** passt direkt: in EPLAN-Reihenfolge (Seitenfolge bzw. Sortierkennung) paarweise 1↔2, 3↔4 verknüpfen.
   Ein Potential, das auf Blatt A abgeht und auf B, C, D ankommt, ist in EPLAN eine Kette A→B, B→C … – auf B braucht es
   daher einen kommenden **und** einen gehenden Pfeil. Im Original lesen, welcher Pfeil worauf zeigt.
-- **Stern** (Pfeil mit Verweisliste, z. B. „L1 /9.0 /12.0 /15.0“): QET kann das nicht. Sternquelle als gehenden Pfeil mit
-  dem ersten Ziel verknüpfen, die übrigen Ziele als freien Text mit `destination` je Ziel daneben (Sprünge wie EPLAN);
-  die Zielpfeile als kommende Pfeile, je einer mit eigenem Partner (Vermutung, Muster noch festlegen).
+- **Stern** (Pfeil mit Verweisliste, z. B. „L1 /9.0 /12.0 /15.0“): der Fork kann das ab 1.64.0 – den gehenden Pfeil
+  als **Stern** setzen (Verknüpfungsfenster *Stern* oder `qet.setReportStar(folio, uuid)`, Elementattribut
+  `reportStar="true"`); er verbindet sich mit allen freien gleichnamigen kommenden Pfeilen der anderen Blätter
+  (Name = label, sonst Leiterfunktion, sonst Drahtnummer) und zeigt alle Positionen. Die Prüfung schlägt den Stern
+  vor, wenn eine Quelle schon verbunden ist und weitere Ziele ihren Namen tragen (Korrektur *Beheben*). Der
+  PDF-Sprung geht auf das erste Ziel; die übrigen Ziele bei Bedarf als freier Text mit `destination`.
 - Abbruchstellen sind keine Betriebsmittel: kein Artikel, nicht in Stückliste. Name des Pfeils = label des Reports;
   Potential/Signal fließt über die Verknüpfung durch (QET-Potential über Reports).
 - Fehlendes Gegenstück = Fehler wie in EPLAN: nach `verknuepfen.py` alle unverknüpften Pfeile melden.

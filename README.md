@@ -327,6 +327,28 @@
 > `qet_simulate_reference`) and the FluidSIM import (`qet_fluidsim_import`). Set it up and see every tool in
 > [misc/qet-mcp/README.md](misc/qet-mcp/README.md).
 >
+> **Cross-references, wire numbers, PLC addresses, network (compared with OpenWiring)**
+> - Comparison list (German): [docs/vergleich-openwiring.md](docs/vergleich-openwiring.md).
+> - Star folio report: one report linked to every free report of its name on other folios (+24V going out to many
+>   folios); its cross-reference names all their positions. Link editor *Star*, `qet.setReportStar()`.
+> - Pair cross-reference (EPLAN "Paarquerverweis"): a contact shown once more on another folio as a drawing only;
+>   it follows the contact's label and terminals, the contact mirror leaves it out, the two point at each other.
+>   `qet.addPairRepresentation()`.
+> - One-click fixes in the Check panel (*Fix*): link a folio report or make it a star, link a contact to its coil,
+>   give a label, renumber a wire number given twice, delete an orphaned pair cross-reference.
+>   `qet.checkFixes()`, `qet.applyCheckFix()`.
+> - Wire numbers by pattern (*Project > Wire numbers by pattern...*): `{seite}.{n:2}` (`{page}` too), column, row,
+>   cabinet, plant, letters `{n:A}`; counter per folio, cabinet or project; reserve per folio; by columns or rows;
+>   fixed or recalculated. `qet.setWireNumberPattern()`, `qet.numberWires()`.
+> - PLC address formats per station: Siemens (I0.0, German E0.0), IEC/CODESYS, Omron, Beckhoff TwinCAT (`AT %I*`),
+>   IO-Link ports, "analog first" (WAGO). `qet.setPlcStation()`, `qet.assignPlcAddresses()`.
+> - Network addresses (*Project > Network addresses...*): every network device with its problems, free IP addresses
+>   from the project's IP networks, PROFINET names from location and label, CSV.
+> - Wiring list of the cabinet layout: each wire in wiring order with cross-section, ferrule, cut length
+>   (`qet.exportPanelWireList()`).
+> - QET-Text v1 for AI agents: a folio as text; MCP `qet_folio_text`, `qet_folio_text_check`, `qet_folio_text_apply`.
+> - Import from a vector PDF of another CAD (SEE Electrical, ...): `tools/pdf_import/pdf_projekt.py`, all pages.
+>
 > **For AI assistants**: skills in `.claude/skills/` (Claude Code loads them in a clone; other tools: read the
 > `SKILL.md`, it points to its sub files):
 > - `qet-schaltplan-zeichnen` – how to draw, check and link EPLAN-style sheets by script, GRAFCET included.

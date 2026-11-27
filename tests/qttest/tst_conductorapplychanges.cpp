@@ -55,6 +55,8 @@ class tst_conductorapplychanges : public QObject
 				p.m_wire_color = QStringLiteral("BU%1").arg(v); }},
 			{"wire_section", [](ConductorProperties &p, int v) {
 				p.m_wire_section = QStringLiteral("1.%1").arg(v); }},
+			{"length", [](ConductorProperties &p, int v) {
+				p.m_length = QStringLiteral("%1 m").arg(v + 1); }},
 			{"show_text", [](ConductorProperties &p, int v) {
 				p.m_show_text = v == 1; }},
 			{"text_size", [](ConductorProperties &p, int v) {

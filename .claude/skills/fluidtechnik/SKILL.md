@@ -91,6 +91,16 @@ nur an, wenn noch keine `qet_labels.xml` da ist). ISO/IEC 81346-2 selbst liegt n
   wie das Leitungs-Fenster auch das Strichmuster (Steuer-/Abluftleitung gestrichelt). Gilt für das ganze Potential.
 - Prüfen: Menü Projekt → „Fluidtechnik prüfen…“ (offene Fluidanschlüsse ohne Leitung/Abschluss,
   Magnetventil mit weniger Spulen als Magneten, Spule ohne Ventil).
+- Stückliste: `QElectroTech --export-fluid-bom PROJEKT.qet AUSGABE.csv`. Eine Zeile je gleichem Teil
+  (Name, Bauart, Kenndaten, Hersteller, Bestellnummer aus den Bauteilinformationen `manufacturer`,
+  `manufacturer_reference`), mit Anzahl und Kennzeichnungen; Zylinder mit Ø/Stange/Hub, Ventile mit Stellungen
+  und Betätigung. Leitungen mit Leitungsart als Schläuche nach Art und Feld „Querschnitt“ gezählt, dazu die
+  Summe ihrer Längen. Die Länge ist ein Feld der einzelnen Leitung (Leitungsfenster, nur bei Fluidleitung
+  sichtbar; .qet-Attribut `length`; Skript/MCP `set_conductor` mit `property: "length"`), Freitext mit
+  Einheit wie bei Kabeln: „1,5 m“, „80 cm“, „350 mm“, ohne Einheit Meter. Sie gehört der Leitung, nicht dem
+  Potential: Bearbeiten mit „auf alle Leiter des Potentials anwenden“ und `set_conductor` übertragen sie
+  nicht. In der Stückliste: „Summe 3.2 m“, fehlen welche „n line(s) without length“, nicht lesbare werden
+  genannt; hat keine Leitung der Art eine Länge, bleibt „length to be measured“ (kein Maßstab im Plan).
 
 ## FluidSIM-Schaltungen übernehmen
 
@@ -293,5 +303,5 @@ TP102_02 (zwei Zylinder, Rollenventile, Zähler), TP601_14 (Elektrohydraulik mit
 
 ## Offen
 
-Ventil- und Zylinder-Editor (Symbol zur Laufzeit), Wegmaßstab, Stückliste mit Schläuchen,
-ISO 1219-1 und 81346-2 im Wortlaut. Simulation: siehe `qet-simulation`.
+Ventil- und Zylinder-Editor (Symbol zur Laufzeit), Wegmaßstab, Fluid-Stückliste mit Schlauchlängen (Oberfläche
+und `--export-fluid-bom`), ISO 1219-1 und 81346-2 im Wortlaut. Simulation: siehe `qet-simulation`.

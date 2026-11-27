@@ -307,6 +307,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/purchase/purchasefetch.h
   ${QET_DIR}/sources/purchase/purchaseexport.cpp
   ${QET_DIR}/sources/purchase/purchaseexport.h
+  ${QET_DIR}/sources/fluid/fluidbom.cpp
+  ${QET_DIR}/sources/fluid/fluidbom.h
   ${QET_DIR}/sources/fluid/fluiddata.cpp
   ${QET_DIR}/sources/fluid/fluiddata.h
   ${QET_DIR}/sources/fluid/fluidtypes.cpp

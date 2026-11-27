@@ -2092,6 +2092,7 @@ class ReadToolContracts(unittest.TestCase):
         self.assertEqual(first, {
             "folio": 1, "uuid": "", "num": "W1", "formula": "F", "cable": "C1", "bus": "B",
             "function": "L1", "color": "red", "section": "1.5", "type": "multi",
+            "length": "",
             # legacy ends resolved through the folio's terminal ids
             "key": f"1:{self.A}@0,-10,n--{self.A}@0,10,s"})
         # current ends: instance/terminal; an empty terminal falls back to its name

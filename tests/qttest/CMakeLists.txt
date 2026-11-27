@@ -2916,3 +2916,22 @@ qet_add_app_test(tst_labellistexport tst_labellistexport.cpp)
 target_compile_definitions(tst_labellistexport PRIVATE
   QET_EXAMPLES_DIR="${QET_DIR}/examples"
   QET_FIXTURES_DIR="${CMAKE_CURRENT_SOURCE_DIR}/fixtures")
+
+# Fluid parts list: identical parts grouped, valve and cylinder figures,
+# lines counted by kind and size with their lengths added up, and the
+# length of a line kept in the project file
+add_executable(
+  tst_fluidbom
+  tst_fluidbom.cpp
+  ${QET_DIR}/sources/fluid/fluidbom.cpp
+  ${QET_DIR}/sources/fluid/fluiddata.cpp
+  ${QET_DIR}/sources/fluid/fluidtypes.cpp
+  ${QET_DIR}/sources/bomexport.cpp
+  ${QET_DIR}/sources/conductordashpattern.cpp
+  ${QET_DIR}/sources/conductorproperties.cpp
+  ${QET_DIR}/sources/qet.cpp
+  ${QET_DIR}/sources/qeticons.cpp
+  ${QET_DIR}/sources/shortcutmanager.cpp)
+add_test(NAME tst_fluidbom COMMAND tst_fluidbom)
+target_include_directories(tst_fluidbom PRIVATE ${QET_DIR}/sources)
+target_link_libraries(tst_fluidbom PRIVATE Qt::Test Qt::Widgets Qt::Xml Qt::Sql pugixml::pugixml)

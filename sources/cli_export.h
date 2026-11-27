@@ -54,6 +54,7 @@ namespace CLIExport {
 		  qelectrotech --export-bom     <project.qet> <output.csv> [--no-slaves] [--no-junctions]
 		  qelectrotech --export-purchase <project.qet> <output.xlsx|output.csv> [--online] [--erp]
 		  qelectrotech --fetch-commercial <project.qet> [--offline]
+		  qelectrotech --export-fluid-bom <project.qet> <output.csv>
 		  qelectrotech --export-wiring  <project.qet> <output.csv>
 		  qelectrotech --export-marking <project.qet> <output.csv> [--format phoenix|weidmueller|wago|neutral|list] [--kinds wires,terminals,devices,cables] [--folios N[-M]] [--plant P] [--location L] [--short] [--one-end]
 		  qelectrotech --thm-prn        <project.qet> <output.prn> [--printer ID | --material NO] [--kinds ...] [--folios N[-M]] [--copies N] [--no-merge] [--one-end] [--full] [profile: --width --height --gap --sensor --columns --pitch --margin --text-size --font --baseline --speed --heat --rotate] [--picture: as pictures, as the dialog prints]

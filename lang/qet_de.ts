@@ -3433,6 +3433,18 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
         <translation>Bus:</translation>
     </message>
     <message>
+        <source>Length :</source>
+        <translation type="unfinished">Länge:</translation>
+    </message>
+    <message>
+        <source>Length of this hose or pipe, with its unit: 1.5 m, 80 cm or 350 mm. A number without a unit is in metres. The fluid parts list adds the lengths up.</source>
+        <translation type="unfinished">Länge dieses Schlauchs oder Rohrs mit Einheit: 1,5 m, 80 cm oder 350 mm. Eine Zahl ohne Einheit gilt in Metern. Die Fluid-Stückliste addiert die Längen.</translation>
+    </message>
+    <message>
+        <source>e.g. 1.5 m</source>
+        <translation type="unfinished">z. B. 1,5 m</translation>
+    </message>
+    <message>
         <source>TextLabel</source>
         <translation>TextLabel</translation>
     </message>
@@ -9868,6 +9880,238 @@ Geschrieben nach %4</translation>
     <message>
         <source>Already used in this project</source>
         <translation>Bereits in diesem Projekt verwendet</translation>
+    </message>
+</context>
+<context>
+    <name>FluidBom</name>
+    <message>
+        <source>solenoid</source>
+        <translation type="unfinished">Magnet</translation>
+    </message>
+    <message>
+        <source>manual</source>
+        <translation type="unfinished">Hand</translation>
+    </message>
+    <message>
+        <source>push button</source>
+        <translation type="unfinished">Taster</translation>
+    </message>
+    <message>
+        <source>lever</source>
+        <translation type="unfinished">Hebel</translation>
+    </message>
+    <message>
+        <source>pedal</source>
+        <translation type="unfinished">Pedal</translation>
+    </message>
+    <message>
+        <source>detent</source>
+        <translation type="unfinished">Raste</translation>
+    </message>
+    <message>
+        <source>plunger</source>
+        <translation type="unfinished">Stößel</translation>
+    </message>
+    <message>
+        <source>roller</source>
+        <translation type="unfinished">Rolle</translation>
+    </message>
+    <message>
+        <source>idle roller</source>
+        <translation type="unfinished">Rollenhebel (Leerrücklauf)</translation>
+    </message>
+    <message>
+        <source>pneumatic</source>
+        <translation type="unfinished">pneumatisch</translation>
+    </message>
+    <message>
+        <source>pilot</source>
+        <translation type="unfinished">vorgesteuert</translation>
+    </message>
+    <message>
+        <source>spring</source>
+        <translation type="unfinished">Feder</translation>
+    </message>
+    <message>
+        <source>air spring</source>
+        <translation type="unfinished">Luftfeder</translation>
+    </message>
+    <message>
+        <source>size not given</source>
+        <translation type="unfinished">Größe nicht angegeben</translation>
+    </message>
+    <message>
+        <source>size %1</source>
+        <translation type="unfinished">Größe %1</translation>
+    </message>
+    <message>
+        <source>length to be measured</source>
+        <translation type="unfinished">Länge aufmessen</translation>
+    </message>
+    <message>
+        <source>total %1 m</source>
+        <translation type="unfinished">Summe %1 m</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n line(s) without length</source>
+        <translation type="unfinished">
+            <numerusform>%n Leitung ohne Länge</numerusform>
+            <numerusform>%n Leitungen ohne Länge</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n length(s) not understood: %1</source>
+        <translation type="unfinished">
+            <numerusform>%n Länge nicht verstanden: %1</numerusform>
+            <numerusform>%n Längen nicht verstanden: %1</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Directional valve</source>
+        <translation type="unfinished">Wegeventil</translation>
+    </message>
+    <message>
+        <source>Cylinder</source>
+        <translation type="unfinished">Zylinder</translation>
+    </message>
+    <message>
+        <source>Supply</source>
+        <translation type="unfinished">Versorgung</translation>
+    </message>
+    <message>
+        <source>Air treatment</source>
+        <translation type="unfinished">Aufbereitung</translation>
+    </message>
+    <message>
+        <source>Flow or shut-off valve</source>
+        <translation type="unfinished">Strom- oder Sperrventil</translation>
+    </message>
+    <message>
+        <source>Logic valve</source>
+        <translation type="unfinished">Logikventil</translation>
+    </message>
+    <message>
+        <source>Sensor or gauge</source>
+        <translation type="unfinished">Sensor oder Messgerät</translation>
+    </message>
+    <message>
+        <source>Other fluid part</source>
+        <translation type="unfinished">Sonstiges Fluidbauteil</translation>
+    </message>
+    <message>
+        <source>Valve solenoid</source>
+        <translation type="unfinished">Ventilmagnet</translation>
+    </message>
+    <message>
+        <source>Working line</source>
+        <translation type="unfinished">Arbeitsleitung</translation>
+    </message>
+    <message>
+        <source>Pilot line</source>
+        <translation type="unfinished">Steuerleitung</translation>
+    </message>
+    <message>
+        <source>Exhaust line</source>
+        <translation type="unfinished">Abluft-/Leckleitung</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n position(s)</source>
+        <translation type="unfinished">
+            <numerusform>%n Stellung</numerusform>
+            <numerusform>%n Stellungen</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>left: %1</source>
+        <translation type="unfinished">links: %1</translation>
+    </message>
+    <message>
+        <source>right: %1</source>
+        <translation type="unfinished">rechts: %1</translation>
+    </message>
+    <message>
+        <source>single acting</source>
+        <translation type="unfinished">einfachwirkend</translation>
+    </message>
+    <message>
+        <source>double acting</source>
+        <translation type="unfinished">doppeltwirkend</translation>
+    </message>
+    <message>
+        <source>bore %1 mm</source>
+        <translation type="unfinished">Kolben-Ø %1 mm</translation>
+    </message>
+    <message>
+        <source>rod %1 mm</source>
+        <translation type="unfinished">Stangen-Ø %1 mm</translation>
+    </message>
+    <message>
+        <source>stroke %1 mm</source>
+        <translation type="unfinished">Hub %1 mm</translation>
+    </message>
+    <message>
+        <source>spring on the rod side</source>
+        <translation type="unfinished">Feder auf der Stangenseite</translation>
+    </message>
+    <message>
+        <source>spring on the piston side</source>
+        <translation type="unfinished">Feder auf der Kolbenseite</translation>
+    </message>
+    <message>
+        <source>Item</source>
+        <translation type="unfinished">Pos.</translation>
+    </message>
+    <message>
+        <source>Quantity</source>
+        <translation type="unfinished">Menge</translation>
+    </message>
+    <message>
+        <source>Unit</source>
+        <translation type="unfinished">Einheit</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Bezeichnung</translation>
+    </message>
+    <message>
+        <source>Kind</source>
+        <translation type="unfinished">Bauart</translation>
+    </message>
+    <message>
+        <source>Characteristics</source>
+        <translation type="unfinished">Kenndaten</translation>
+    </message>
+    <message>
+        <source>Manufacturer</source>
+        <translation type="unfinished">Hersteller</translation>
+    </message>
+    <message>
+        <source>Order number</source>
+        <translation type="unfinished">Bestellnummer</translation>
+    </message>
+    <message>
+        <source>Labels</source>
+        <translation type="unfinished">Kennzeichnungen</translation>
+    </message>
+    <message>
+        <source>pcs</source>
+        <translation type="unfinished">Stk.</translation>
+    </message>
+    <message>
+        <source>size not given; length to be measured</source>
+        <translation type="obsolete">Größe nicht angegeben; Länge aufmessen</translation>
+    </message>
+    <message>
+        <source>size %1; length to be measured</source>
+        <translation type="obsolete">Größe %1; Länge aufmessen</translation>
+    </message>
+    <message>
+        <source>line(s)</source>
+        <translation type="unfinished">Leitung(en)</translation>
+    </message>
+    <message>
+        <source>Hose or pipe</source>
+        <translation type="unfinished">Schlauch oder Rohr</translation>
     </message>
 </context>
 <context>

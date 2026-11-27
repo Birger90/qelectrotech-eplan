@@ -1729,6 +1729,7 @@ QString conductorPropertyValue(const ConductorProperties &p, const QString &name
 	if (name == QLatin1String("tension_protocol"))  return p.m_tension_protocol;
 	if (name == QLatin1String("conductor_color"))   return p.m_wire_color;
 	if (name == QLatin1String("conductor_section")) return p.m_wire_section;
+	if (name == QLatin1String("length"))            return p.m_length;
 	if (name == QLatin1String("color"))             return p.color.name();
 	if (name == QLatin1String("text_color"))        return p.text_color.name();
 	if (name == QLatin1String("color2"))            return p.m_color_2.name();
@@ -1756,6 +1757,7 @@ bool setConductorPropertyValue(ConductorProperties &p, const QString &name, cons
 	if (name == QLatin1String("tension_protocol"))  { p.m_tension_protocol = value; return true; }
 	if (name == QLatin1String("conductor_color"))   { p.m_wire_color = value; return true; }
 	if (name == QLatin1String("conductor_section")) { p.m_wire_section = value; return true; }
+	if (name == QLatin1String("length"))            { p.m_length = value.trimmed(); return true; }
 	// The two real colours are QColor, not free text: an unparseable name
 	// would otherwise be stored as an invalid colour and drawn as black.
 	if (name == QLatin1String("color") || name == QLatin1String("text_color")
@@ -1828,7 +1830,8 @@ const QStringList &conductorPropertyNames()
 		QStringLiteral("color"), QStringLiteral("text_color"), QStringLiteral("color2"),
 		QStringLiteral("bicolor"), QStringLiteral("style"), QStringLiteral("dash-size"),
 		QStringLiteral("condsize"), QStringLiteral("numsize"), QStringLiteral("displaytext"),
-		QStringLiteral("fluid_line")};
+		QStringLiteral("fluid_line"),
+		QStringLiteral("length")};
 	return names;
 }
 
@@ -2438,7 +2441,8 @@ bool QetScriptApi::setConductorProperty(int folioIndex, const QString &elementUu
 /**
 	@brief QetScriptApi::applyConductorProperties
 	Give @p conductor and every wire at its potential the properties
-	@p properties, one undo step
+	@p properties, one undo step. The length is the one exception: only
+	@p conductor takes it, the other wires keep their own.
 */
 bool QetScriptApi::applyConductorProperties(Conductor *conductor, const ConductorProperties &properties)
 {
@@ -2456,7 +2460,12 @@ bool QetScriptApi::applyConductorProperties(Conductor *conductor, const Conducto
 	{
 		QVariant old_value, new_value;
 		old_value.setValue(c->properties());
-		new_value.setValue(properties);
+			//A length belongs to one drawn line (a hose), not to the
+			//potential: the other conductors keep their own
+		ConductorProperties c_properties = properties;
+		if (c != conductor)
+			c_properties.m_length = c->properties().m_length;
+		new_value.setValue(c_properties);
 		m_project->undoStack()->push(new QPropertyUndoCommand(c, "properties", old_value, new_value));
 	}
 		//The other side of a function separated terminal element gets

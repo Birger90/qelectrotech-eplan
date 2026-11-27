@@ -413,6 +413,14 @@ QUndoCommand *ConductorPropertiesEditorWidget::associatedUndo() const
 		}
 	}
 
+		//What only the potential reaches keeps its own length: a length
+		//belongs to one drawn line (a hose), not to what it joins
+	QSet<Conductor *> potential_only;
+	for (Conductor *conductor : all_targets)
+		if (!selected.contains(conductor)
+				&& !function_separated.contains(conductor))
+			potential_only.insert(conductor);
+
 		//The links go first and come back last: one undo step carries the
 		//edit and the links it took away
 	auto *undo = new QUndoCommand();
@@ -420,7 +428,8 @@ QUndoCommand *ConductorPropertiesEditorWidget::associatedUndo() const
 		new DissolveReportLinksCommand(selected, undo);
 	}
 	return ConductorMultiEdit::undo(all_targets, m_shown, edited,
-					function_separated, undo, bridge_reached);
+					function_separated, undo, bridge_reached,
+					potential_only);
 }
 
 /**

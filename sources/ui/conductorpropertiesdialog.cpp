@@ -113,7 +113,14 @@ void ConductorPropertiesDialog::PropertiesDialog(Conductor *conductor,
 				continue;
 			}
 			old_value.setValue(potential_conductor->properties());
-			new QPropertyUndoCommand (potential_conductor, "properties", old_value, new_value, undo);
+				//Each line keeps its own length: it belongs to the
+				//drawn line (a hose), not to the potential
+			ConductorProperties potential_properties = cpd.properties();
+			potential_properties.m_length =
+					potential_conductor->properties().m_length;
+			QVariant potential_value;
+			potential_value.setValue(potential_properties);
+			new QPropertyUndoCommand (potential_conductor, "properties", old_value, potential_value, undo);
 		}
 	}
 

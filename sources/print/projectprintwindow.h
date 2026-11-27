@@ -107,6 +107,7 @@ class ProjectPrintWindow : public QMainWindow
 		QColor m_backup_diagram_background_color;
 		QHash<Diagram *, QCheckBox *> m_diagram_list_hash;
 		QList<PdfLinks::ComponentInfo> m_componentInfoList;
+		QList<QPair<int, QString>> m_outline;   ///< bookmarks of the PDF: 0-based page, folio title
 		bool m_printing = false;
 };
 

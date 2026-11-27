@@ -193,10 +193,12 @@ void ProjectPrintWindow::requestPaint()
 	// Build diagram -> first physical PDF page number map (1-based)
 	// Must be done before the print loop since page numbers depend on order
 	QMap<Diagram*, int> diagramPageMap;
+	m_outline.clear();
 	{
 		int pageNum = 1;
 		for (auto diagram : selectedDiagram()) {
 			diagramPageMap.insert(diagram, pageNum);
+			m_outline << qMakePair(pageNum - 1, PdfLinks::outlineTitle(diagram));
 			// Each diagram may span multiple pages if not fit_page
 			if (!ui->m_fit_in_page_cb->isChecked()) {
 				auto option = exportProperties();
@@ -870,7 +872,8 @@ void ProjectPrintWindow::print()
 		// compositing the backing store before the window is destroyed,
 		// which prevents the black screen observed on Apple Silicon under
 		// macOS Sequoia (QPrintPreviewWidget + CALayer timing issue).
-		QTimer::singleShot(0, this, [this, pdfFile]() {
+		const QList<QPair<int, QString>> outline = m_outline;
+		QTimer::singleShot(0, this, [this, pdfFile, outline]() {
 			// Convert component-info link annotations into invisible text annotations
 			if (ui->m_component_info_cb->isChecked() && !m_componentInfoList.isEmpty()) {
 				PdfLinks::convertComponentInfoAnnotations(pdfFile, m_componentInfoList);
@@ -881,6 +884,8 @@ void ProjectPrintWindow::print()
 			// actions so cross-references jump inside the document.
 			PdfLinks::convertUriToGoTo(pdfFile);
 			PdfLinks::removeUnusedPdfxNamespace(pdfFile);
+				// a bookmark per folio, as EPLAN gives its PDF
+			PdfLinks::addOutline(pdfFile, outline);
 
 			this->close();
 		});

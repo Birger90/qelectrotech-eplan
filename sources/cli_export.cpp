@@ -363,6 +363,13 @@ int exportPdf(QETProject &project, const QString &output,
 		PdfLinks::setDocumentDate(output, sourceDate);
 		PdfLinks::setDocumentIdFromContent(output);
 	}
+		// a bookmark per folio, after the rest: it is an incremental update
+	{
+		QList<QPair<int, QString>> outline;
+		for (int i = 0; i < diagrams.size(); ++i)
+			outline << qMakePair(i, PdfLinks::outlineTitle(diagrams.at(i)));
+		PdfLinks::addOutline(output, outline);
+	}
 
 	out << "Exported " << diagrams.size() << " page(s) -> " << output << "\n";
 	return 0;

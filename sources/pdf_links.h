@@ -19,6 +19,8 @@
 #define PDF_LINKS_H
 
 #include <QDateTime>
+#include <QList>
+#include <QPair>
 #include <QMap>
 #include <QPointF>
 #include <QRectF>
@@ -86,6 +88,22 @@ namespace PdfLinks {
 		EPLAN.
 	*/
 	void convertUriToGoTo(const QString &pdfPath);
+
+	/**
+		Post-process a PDF file: give it bookmarks (/Outlines), one per entry
+		of @p entries -- the 0-based page and its title, e.g. a folio "3
+		Motoren" -- and open it with the bookmarks shown, as EPLAN does.
+		Written as an incremental update (new objects, a new catalog and an
+		xref section with /Prev at the end), so nothing written before
+		moves.  No-op when the file has bookmarks already or no page tree.
+		Idea from DieterMayerOSS/qelectrotech-source-mirror cc8d511
+		(GPL-2.0-or-later), written anew for our post-processing.
+	*/
+	void addOutline(const QString &pdfPath, const QList<QPair<int, QString>> &entries);
+
+	/// The bookmark title of a folio: its folio number as the title block
+	/// shows it ("3", "=SB+CA/12") and its title, e.g. "3 Motoren"
+	QString outlineTitle(Diagram *diagram);
 
 	/**
 		Post-process a Qt-generated PDF file: blank out the PDF/X namespace

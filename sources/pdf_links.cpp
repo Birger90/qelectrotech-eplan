@@ -1258,4 +1258,128 @@ void convertComponentInfoAnnotations(const QString &pdfPath,
 	outF.close();
 }
 
+/// \a text as a PDF text string: a literal for plain ASCII, else UTF-16BE
+/// with its byte order mark, as hex
+static QByteArray pdfTextString(const QString &text)
+{
+	bool ascii = true;
+	for (const QChar c : text) if (c.unicode() < 32 || c.unicode() > 126) {ascii = false; break;}
+	if (ascii) return pdfLiteral(text.toLatin1());
+	QByteArray hex("<FEFF");
+	for (const QChar c : text) hex += QByteArray::number(c.unicode(), 16).rightJustified(4, '0').toUpper();
+	return hex + '>';
+}
+
+QString outlineTitle(Diagram *diagram)
+{
+	if (!diagram) return QString();
+	QString folio = diagram->border_and_titleblock.finalfolio().trimmed();
+	if (folio.isEmpty()) folio = QString::number(diagram->folioIndex() + 1);
+	const QString title = diagram->title().trimmed();
+	return title.isEmpty() ? folio : folio + QLatin1Char(' ') + title;
+}
+
+void addOutline(const QString &pdfPath, const QList<QPair<int, QString>> &entries)
+{
+	if (entries.isEmpty()) return;
+	QFile f(pdfPath);
+	if (!f.open(QIODevice::ReadOnly)) return;
+	QByteArray data = f.readAll();
+	f.close();
+	if (data.contains("/Outlines")) return;
+
+		// the pages in order, from the page tree as convertUriToGoTo() reads it
+	QVector<int> pages;
+	{
+		const int pagesPos = data.indexOf("/Type /Pages");
+		const int kidsPos = pagesPos == -1 ? -1 : data.indexOf("/Kids", pagesPos);
+		const int lb = kidsPos == -1 ? -1 : data.indexOf('[', kidsPos);
+		const int rb = lb == -1 ? -1 : data.indexOf(']', lb);
+		if (lb == -1 || rb <= lb) return;
+		static const QRegularExpression re(QStringLiteral("(\\d+)\\s+\\d+\\s+R"));
+		auto it = re.globalMatch(QString::fromLatin1(data.mid(lb + 1, rb - lb - 1)));
+		while (it.hasNext()) pages << it.next().captured(1).toInt();
+	}
+	if (pages.isEmpty()) return;
+
+		// the last trailer: its /Root (the catalog), /Info, /ID and where
+		// its xref starts
+	const int sx = data.lastIndexOf("startxref");
+	if (sx == -1) return;
+	bool ok = false;
+	const int prev = data.mid(sx + 9, 24).trimmed().split('\n').value(0).trimmed().toInt(&ok);
+	if (!ok) return;
+	const int tr = data.lastIndexOf("trailer", sx);
+	if (tr == -1) return;
+	const QByteArray trailer = data.mid(tr, sx - tr);
+	static const QRegularExpression root_re(QStringLiteral("/Root\\s+(\\d+)\\s+0\\s+R"));
+	const QRegularExpressionMatch rm = root_re.match(QString::fromLatin1(trailer));
+	if (!rm.hasMatch()) return;
+	const int catalog = rm.captured(1).toInt();
+	const int cs = objectStart(data, catalog);
+	if (cs == -1) return;
+	const int dict_open = data.indexOf("<<", cs);
+	const int obj_end = data.indexOf("endobj", cs);
+	const int dict_close = data.lastIndexOf(">>", obj_end);
+	if (dict_open == -1 || obj_end == -1 || dict_close <= dict_open) return;
+	QByteArray catalog_dict = data.mid(dict_open + 2, dict_close - dict_open - 2);
+	static const QRegularExpression mode_re(QStringLiteral("/PageMode\\s*/\\w+"));
+	catalog_dict = QString::fromLatin1(catalog_dict).remove(mode_re).toLatin1();
+
+		// the new objects: the outline root, then one item per entry
+	QList<QPair<int, QString>> items;
+	for (const auto &e : entries)
+		if (e.first >= 0 && e.first < pages.size()) items << e;
+	if (items.isEmpty()) return;
+	const int first = highestObjectNumber(data) + 1;
+	const int outlines = first;
+	QByteArray update("\n");
+	QMap<int, int> offsets;
+	auto object = [&](int num, const QByteArray &body) {
+		offsets.insert(num, data.size() + update.size());
+		update += QByteArray::number(num) + " 0 obj\n" + body + "\nendobj\n";
+	};
+	object(outlines, "<< /Type /Outlines /First " + QByteArray::number(first + 1) + " 0 R /Last "
+					 + QByteArray::number(first + int(items.size())) + " 0 R /Count "
+					 + QByteArray::number(items.size()) + " >>");
+	for (int i = 0; i < items.size(); ++i) {
+		const int num = first + 1 + i;
+		QByteArray body = "<< /Title " + pdfTextString(items.at(i).second) + " /Parent "
+						  + QByteArray::number(outlines) + " 0 R";
+		if (i > 0) body += " /Prev " + QByteArray::number(num - 1) + " 0 R";
+		if (i + 1 < items.size()) body += " /Next " + QByteArray::number(num + 1) + " 0 R";
+		body += " /Dest [" + QByteArray::number(pages.at(items.at(i).first)) + " 0 R /Fit] >>";
+		object(num, body);
+	}
+	object(catalog, "<<" + catalog_dict + " /Outlines " + QByteArray::number(outlines)
+					+ " 0 R /PageMode /UseOutlines >>");
+
+		// the xref section of the update, one subsection per run of numbers
+	QByteArray xref("xref\n");
+	for (auto it = offsets.constBegin(); it != offsets.constEnd();) {
+		auto end = it;
+		int count = 0;
+		while (end != offsets.constEnd() && end.key() == it.key() + count) {++end; ++count;}
+		xref += QByteArray::number(it.key()) + ' ' + QByteArray::number(count) + '\n';
+		for (; it != end; ++it) xref += QByteArray::number(it.value()).rightJustified(10, '0') + " 00000 n \n";
+	}
+	const int size = qMax(first + int(items.size()) + 1, catalog + 1);
+	QByteArray new_trailer = "trailer\n<< /Size " + QByteArray::number(size) + " /Root "
+							 + QByteArray::number(catalog) + " 0 R";
+	static const QRegularExpression info_re(QStringLiteral("/Info\\s+\\d+\\s+0\\s+R"));
+	static const QRegularExpression id_re(QStringLiteral("/ID\\s*\\[[^\\]]*\\]"));
+	const QRegularExpressionMatch im = info_re.match(QString::fromLatin1(trailer));
+	if (im.hasMatch()) new_trailer += ' ' + im.captured(0).toLatin1();
+	const QRegularExpressionMatch idm = id_re.match(QString::fromLatin1(trailer));
+	if (idm.hasMatch()) new_trailer += ' ' + idm.captured(0).toLatin1();
+	new_trailer += " /Prev " + QByteArray::number(prev) + " >>\n";
+	const int xref_at = data.size() + update.size();
+	data += update + xref + new_trailer + "startxref\n" + QByteArray::number(xref_at) + "\n%%EOF\n";
+
+	QFile out(pdfPath);
+	if (!out.open(QIODevice::WriteOnly | QIODevice::Truncate)) return;
+	out.write(data);
+	out.close();
+}
+
 } // namespace PdfLinks

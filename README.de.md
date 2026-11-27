@@ -10,6 +10,21 @@ und dass Herstellerbauteile und -kabel direkt nutzbar sind. Der Upstream
 ([qelectrotech-source-mirror](https://github.com/qelectrotech/qelectrotech-source-mirror)) wird regelmäßig
 eingemischt; alles Folgende gibt es nur hier.
 
+## Pläne aus anderen Programmen übernehmen
+
+Alle Importe auf einen Blick; Einzelheiten stehen in den Abschnitten darunter.
+
+- **EPLAN-Projekt** (`.zw1`) und **EPLAN-Export** (`.epdz`, eView): Datei > *EPLAN-Projekt importieren* – ein
+  verknüpftes, bearbeitbares Projekt mit Bauteilen, Leitungen, Querverweisen und Listen
+  ([EPLAN-Projekte](#eplan-projekte-und-eingebauter-assistent)).
+- **FluidSIM-Schaltung** (`.circ`): Datei > *FluidSIM-Schaltung importieren* – Pneumatik, Hydraulik, Elektrik und
+  GRAFCET, sofort simulierbar ([Pneumatik, Hydraulik und Simulation](#pneumatik-hydraulik-und-simulation)).
+- **sPlan-Plan** (`.spl8`, Abacom): Datei > *sPlan-Plan importieren* – neu gezeichnet als QET-Projekt; Netze aus der
+  Zeichnung, Gerätekästen und SPS-Kanäle aus einer Zuordnungsdatei zu Herstellermakros
+  ([tools/splan_import](tools/splan_import/README.md)).
+- **Bauteile**: EPLAN-Makros und EDZ, Hersteller-Makropakete (z. B. Beckhoff), DWG, WSCAD-Artikeldaten (`.wspak`) und
+  das EPLAN Data Portal ([Bauteil-Import](#bauteil-import)).
+
 ## Bauteil-Import
 
 Menü „Bauteil-Import“, ohne Oberfläche: `--import-eplan`
@@ -20,6 +35,9 @@ Menü „Bauteil-Import“, ohne Oberfläche: `--import-eplan`
   Bögen, Texte, eingebettete Zeichnungen), jede allpolige Variante wird ein eigenes Schaltbild.
 - DWG-Zeichnungen (AutoCAD 2004–2018) direkt, ohne Konverter; Aufbauansichten im Maßstab der EPLAN-Aufbaumakros.
 - Artikeldaten aus WSCAD-Paketen (`.wspak`).
+- Hersteller-Makropakete (ZIP oder Ordner mit `.ema` und Artikeldaten, z. B. Beckhoff): Reiter *Herstellerpakete* in
+  der Bauteilsammlung, Umwandlung je Typ bei Bedarf; SPS-Karten bekommen ihre Kanaltabelle aus den
+  Funktionsschablonen. Ohne Oberfläche: `--import-eplan <sammlung> --macro-package <zip|ordner> --type T`.
 - Suche und Import direkt aus dem EPLAN Data Portal (Herstellerliste, Filter, Bildvorschau).
 
 ## Navigation wie bei EPLAN
@@ -192,8 +210,10 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
 - *Schaltschrank aufbauen…*: der ganze Aufbau in sechs geführten Schritten mit Haken – Schrank mit Montageplatte
   (Rittal über die Bestellnummer), Hutschienen und Kanäle als Raster (Kanäle am Rand und zwischen den Reihen, eine
   Schiene je Reihe), Geräte und Klemmenleisten aus dem Schaltplan, Prüfung, 3D und Export. Die Einzelbefehle
-  stehen unter *Einzelschritte*. Die Data-Portal-Suche nach Schränken filtert nach Breite, Höhe und Tiefe, zeigt
-  die kleinsten zuerst und lässt Zubehör weg.
+  stehen unter *Einzelschritte*. Schränke findet man über Breite, Höhe und Tiefe (der passendste zuerst, die Maße
+  aus der Artikelbeschreibung); jeder Schrank bekommt eine eigene Seite. *Montagefläche einfügen* fragt nur
+  Kennzeichen, Breite und Höhe und nimmt Löcher und Kanten von der passenden Herstellerplatte einer Baureihe
+  (KX, AX, VX …), auf das eigene Maß gestreckt.
 - *Aufbauprüfung* als Seitenleiste: Teile übereinander, im Kanal, über die Fläche hinaus, ohne Bohrbild,
   Klemmenleiste zu kurz für ihre Klemmen (Breiten aus den Modellen); ein Klick wählt das Teil aus und zeigt es, die
   Liste folgt jeder Änderung. Teile desselben Geräts und an ihrem Partner hängende Geräte (Kombinationsliste) gelten
@@ -256,7 +276,7 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
   (`-DQET_CLAUDE_KONTO=ON`) über das eigene Claude-Konto.
 - *Klemmleiste zeichnen*: ein Strich quer über Leitungen setzt auf jede eine Klemme aus dem Klemmenkatalog (Filter,
   maßstäbliche Vorschau, Foto), auch Mehrstockklemmen (L/N/PE).
-- Herstellerportale (Siemens, Rittal, 3Dfindit, SEW, WAGO, Keyence): Konten im Schlüsselspeicher des Systems, fehlende
+- Herstellerportale (Siemens, Rittal, 3Dfindit, SEW, WAGO, Keyence, Beckhoff, RS Components): Konten im Schlüsselspeicher des Systems, fehlende
   Bauteile automatisch holen (`--fetch-parts`). Läuft unter Windows und macOS (Workflow `macos-build.yml`).
 
 ## Gemeinsame Ablage (SharePoint, OneDrive, Netzlaufwerk)
@@ -272,6 +292,13 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
 ## Pneumatik, Hydraulik und Simulation
 
 Anders als im allgemeinen Teil über QElectroTech beschrieben, simuliert dieser Fork.
+
+- Fluid-Stückliste: Projekt > *Fluid-Stückliste exportieren…* bzw. `--export-fluid-bom` – Ventile, Zylinder und
+  andere Fluidbauteile (gleiche zusammengefasst, mit Kenndaten) und die Leitungen nach Art und Größe mit der Summe
+  ihrer Längen. Jede Fluidleitung kann eine eigene Länge tragen (Leitungsfenster, Skript/MCP `length`, z. B.
+  „1,5 m“); sie gilt nur für diese Leitung, nicht für das ganze Potential.
+- Reiter *Fluid power* im Eigenschaftsfenster eines Ventils oder Zylinders: eigene Zylindermaße je platziertem
+  Bauteil (Kolben, Stange, Hub), ohne das Symbol zu ändern.
 
 - Die 437 Pneumatik- und Hydrauliksymbole der Standardsammlung tragen Simulationsdaten (Grafik unverändert): benannte
   Anschlüsse mit Medium, Funktion, Stellungen und Schaltwege aller Wegeventile, Betätigung, Zylinderdaten und Kennwerte

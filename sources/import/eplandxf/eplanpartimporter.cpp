@@ -934,6 +934,8 @@ EplanPartImporter::Stored EplanPartImporter::store(QDomDocument &doc, const QStr
 	if (!writeElement(doc, path, &m_error, indent)) return Stored::Failed;
 	m_written << path;
 	return Stored::Written;
+}
+
 namespace {
 	/// name of a representation type of a macro (MacroFuncType)
 	const QMap<int, QString> MACRO_REPRESENTATION {
@@ -1065,8 +1067,10 @@ bool EplanPartImporter::importMacroPackage(MacroPackage &package, const QStringL
 		auto write = [&](QDomDocument doc, const QString &name) {
 			if (has_part) part.appendMountingData(doc);
 			const QString out = QDir(folder).filePath(safe(name) + QStringLiteral(".elmt"));
-			if (!writeElement(doc, out, &m_error)) return false;
-			written << out;
+			// with the fingerprint: an element edited since its import stays
+			const Stored stored = store(doc, out);
+			if (stored == Stored::Failed) return false;
+			if (stored == Stored::Written) written << out;
 			return true;
 		};
 
@@ -1141,7 +1145,7 @@ bool EplanPartImporter::importMacroPackage(MacroPackage &package, const QStringL
 		}
 		++m_imported;
 		m_written << written;
-		m_messages << PlcChannels::applyToFolders(written, has_part ? channelsOf(part) : QVector<PlcChannels::Channel>());
+		m_messages << PlcChannels::applyToFolders(written, {}, has_part ? channelsOf(part) : QVector<PlcChannels::Channel>());
 	}
 	if (m_written.isEmpty() && m_skipped == 0) {
 		m_error = m_failed.isEmpty() ? QStringLiteral("No article given")

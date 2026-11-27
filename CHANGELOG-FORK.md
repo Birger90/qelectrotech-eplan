@@ -3,6 +3,57 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.63.0 – 27.11.2026 – liegengebliebene Branches in main
+
+Die fertigen Feature-Branches, die noch nicht in `main` waren, sind jetzt übernommen und mit dem heutigen Stand
+zusammengeführt (Konflikte gelöst, gebaut, Kurztests über die Kommandozeile).
+
+- **sPlan-Import:** Datei > *sPlan-Plan importieren (.spl8)…* zeichnet einen Abacom-sPlan-8-Plan als QET-Projekt neu:
+  Netze aus der Zeichnung, Herstellermakros und SPS-Kanäle über eine Zuordnungsdatei, verdichtete Blätter
+  (`tools/splan_import`).
+- **Hersteller-Makropakete** (z. B. Beckhoff): ZIP oder Ordner mit EPLAN-Makros und Artikeldaten, Reiter
+  *Herstellerpakete* in der Bauteilsammlung, Umwandlung je Typ, SPS-Kanaltabelle aus den Funktionsschablonen;
+  `--import-eplan <sammlung> --macro-package <zip|ordner> --type T`, `--list-macro-package`. Geschrieben wird mit
+  dem Fingerabdruck (von Hand geänderte Bauteile bleiben), gelesen mit dem neuen Makro-Leser aus 1.54.1.
+- **Fluid-Stückliste und Schlauchlängen:** Projekt > *Fluid-Stückliste exportieren…* und `--export-fluid-bom`;
+  jede Fluidleitung kann eine eigene Länge tragen (Leitungsfenster, Skript/MCP `length`), die Liste summiert sie je
+  Art und Größe.
+- **Reiter „Fluid power“** im Eigenschaftsfenster: eigene Zylindermaße je platziertem Bauteil.
+- **THM-Druck:** Menü *Etikettendruck* neben *Schaltschrankaufbau* (THM-Etiketten drucken, THM-Drucker,
+  Beschriftung und Etiketten exportieren), Sendeweg LPD je Drucker, Etiketten von Hand, maßstäblicher
+  Etiketteneditor; gedruckt wird, was die Vorschau zeigt.
+- **SPS-Kanalwahl:** das Modul zeigt Art und Kanalzahl („DI 16“) statt der Bestellnummer.
+- **Schaltschrankaufbau** (löst die einfache Schranksuche aus 1.58.0 ab): Schrank über seine Maße finden. „Schaltschrank einfügen“ hat die Felder Breite, Höhe und
+  Tiefe (mm, leer = beliebig); gezeigt werden die Schränke mit mindestens diesen Maßen, der passendste zuerst.
+- Schaltschrankaufbau: „Data Portal…“ listet statt einer Textsuche die Produktgruppe „Schaltschrank“ des
+  Herstellers mit den Spalten Breite, Höhe und Tiefe und grenzt sie sofort nach den Maßen und nach Wörtern
+  (z. B. „VX Edelstahl“) ein. Die Maße kommen aus der Artikelbeschreibung, weil das Data Portal kein Maßfeld
+  hat; die Reihenfolge wird erkannt (BHT, B x H x T, WHD, bei US-Artikeln HWD).
+- Schaltschrankaufbau: Montageplatte allein nach Wunschmaß. „Montagefläche einfügen“ nimmt die Platte eines
+  gespeicherten Schranks als Vorlage (Löcher und Kanten des Herstellers, auf das eigene Maß gestreckt) und
+  schlägt das vor, sobald eine Vorlage da ist; im Assistenten „Schaltschrank aufbauen“ hat Schritt 1 dafür den
+  Knopf „Nur Platte…“.
+- Schaltschrankaufbau: jeder Schrank bekommt seine eigene Seite. Ist die offene Seite belegt (Schaltplan oder
+  schon ein Aufbau), legt „Schaltschrank einfügen“ am Projektende eine neue Seite „Schaltschrankaufbau +S1“ an
+  und wechselt dorthin; der nächste Schrank heißt +S2 und bekommt wieder eine eigene Seite. Eine einzelne
+  Platte kommt auf die offene Aufbauseite, aber nie in einen Schaltplan. Der Assistent arbeitet auf der neuen
+  Seite weiter.
+- Schaltschrankaufbau: „Montagefläche einfügen“ fragt nur noch Kennzeichen, Breite und Höhe. Löcher und Kanten
+  kommen von selbst von der gespeicherten Herstellerplatte, die dem Maß am nächsten liegt; Vorlage, Blechdicke,
+  Maßstab, Nullpunkt, Artikel und STEP stehen unter „Weitere Einstellungen“.
+- Schaltschrankaufbau: Platte mit den Befestigungen einer Baureihe. „Montagefläche einfügen“ hat die Auswahl
+  „Baureihe“ (KX, AX, VX …, aus der Produktgruppe „Montageplatten“ des Data Portal). Die Platte der Baureihe, die
+  dem eingegebenen Maß am nächsten liegt, wird mit OK aus dem Data Portal geholt (mit dem gespeicherten Token),
+  als Vorlage abgelegt und auf das eigene Maß gestreckt; ist sie schon da, geht es ohne Download.
+- Schaltschrankaufbau: „Geräte platzieren“ sieht alle Seiten des Projekts, auch noch nicht geladene (bisher
+  fehlten deren Geräte beim ersten Aufruf). Klemmen stehen nicht mehr in der Geräteliste, sie kommen mit
+  „Klemmenleisten platzieren“. Ein Schritt des Assistenten startet nicht ein zweites Mal, solange er läuft.
+- Herstellerportale: Beckhoff steht in der Liste (Konto für myBeckhoff; Makros als Paket, Zeichnungen je Gehäuseform).
+- Herstellerportale: RS Components steht in der Liste (Händler; STEP/DXF vieler Hersteller nach der RS-Anmeldung im Browser).
+
+Nicht übernommen, weil in `main` schon anders gelöst: `feature/fluidsim-beispiele`, `feature/fluid-line`,
+`feature/pneumatik`; veraltet: `feature/simulation-2a-konzept` (Konzeptpapier, Simulation ist umgesetzt).
+
 ## 1.62.1 – 27.11.2026 – .epdz-Import ohne fremde Verweispfeile
 
 - Der .epdz-Import brach im Dialog bei 84 % ab, wenn QETs Firmensammlung die Verweispfeile

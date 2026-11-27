@@ -11,6 +11,17 @@
 > ([qelectrotech-source-mirror](https://github.com/qelectrotech/qelectrotech-source-mirror)) is merged regularly;
 > everything below exists only here.
 >
+> **Bringing in plans from other programs** (all imports at a glance; details further down)
+> - **EPLAN project** (`.zw1`) and **EPLAN export** (`.epdz`, eView): File > *Import EPLAN project* -- a linked,
+>   editable project with parts, conductors, cross references and lists.
+> - **FluidSIM circuit** (`.circ`): File > *Import FluidSIM circuit* -- pneumatics, hydraulics, electrics and GRAFCET,
+>   ready to simulate.
+> - **sPlan schematic** (`.spl8`, Abacom): File > *Import sPlan schematic* -- drawn anew as a QET project; nets from
+>   the drawing, device boxes and PLC channels from a mapping file to manufacturer macros
+>   ([tools/splan_import](tools/splan_import/README.md)).
+> - **Parts**: EPLAN macros and EDZ, manufacturer macro packages (e.g. Beckhoff), DWG, WSCAD article data (`.wspak`)
+>   and the EPLAN Data Portal (part import below).
+>
 > **Part import** (menu "Part import", headless: `--import-eplan`)
 > - EPLAN macros and EDZ packages: graphics from DXF, schematic from `.ema`, terminals and article data; black box
 >   frames, channel names and broken lines are cleaned up. Terminal designations are split per line, terminal
@@ -18,6 +29,9 @@
 >   embedded drawings), every multi-line variant becomes a schematic of its own.
 > - DWG drawings (AutoCAD 2004–2018) read directly, no converter; mounting views at the scale of the EPLAN macros.
 > - Article data from WSCAD packages (`.wspak`).
+> - Manufacturer macro packages (ZIP or folder of `.ema` and article data, e.g. Beckhoff): tab *Manufacturer
+>   packages* in the collection, converted per type when needed; PLC cards get their channel table from the
+>   function templates. Headless: `--import-eplan <collection> --macro-package <zip|folder> --type T`.
 > - Search and import straight from the EPLAN Data Portal (manufacturer list, filters, picture preview).
 >
 > **Navigation like EPLAN** (in QET and in the exported PDF)
@@ -167,8 +181,10 @@
 > - *Build cabinet...*: the whole layout in six guided steps with a tick each -- enclosure with mounting plate
 >   (Rittal by order number), DIN rails and ducts as a grid (ducts on the edges and between the rows, one rail per
 >   row), devices and terminal strips of the schematic, check, 3D and export. The single commands stay under
->   *Single steps*. The Data Portal search for enclosures filters by width, height and depth, lists the smallest
->   first and leaves accessories out.
+>   *Single steps*. Enclosures are found by width, height and depth (closest fit first, sizes read from the
+>   article description); every enclosure gets a page of its own. *Insert mounting surface* asks only for tag,
+>   width and height and takes holes and edges from the nearest manufacturer plate of a series (KX, AX, VX ...),
+>   stretched to the size wanted.
 > - *Layout check* as a side panel: parts on each other, in a duct, beyond the surface, without holes, terminal
 >   strips too short for their terminals (widths from the models); a click selects and shows the part, the list
 >   follows every change. Parts of one device and a device hung onto its partner (combination list) are fine.
@@ -225,7 +241,7 @@
 >   (`-DQET_CLAUDE_KONTO=ON`) through one's own Claude account.
 > - *Draw terminal strip*: one stroke across conductors places a terminal on each, from a terminal catalogue (filter,
 >   preview to scale, photo), multi-level terminals (L/N/PE) included.
-> - Manufacturer portals (Siemens, Rittal, 3Dfindit, SEW, WAGO, Keyence): accounts in the system key store, missing
+> - Manufacturer portals (Siemens, Rittal, 3Dfindit, SEW, WAGO, Keyence, Beckhoff, RS Components): accounts in the system key store, missing
 >   parts fetched automatically (`--fetch-parts`). Runs on Windows and macOS (workflow `macos-build.yml`).
 >
 > **Shared storage (SharePoint, OneDrive, network drive)**
@@ -237,6 +253,12 @@
 > - OneDrive/SharePoint conflict copies ("project-<PC name>.qetz") beside the project are reported on opening.
 >
 > **Pneumatics, hydraulics and simulation** -- unlike the upstream note further down, this fork simulates
+> - Fluid parts list: Project > *Export the fluid parts list...* or `--export-fluid-bom` -- valves, cylinders and
+>   other fluid parts (identical ones grouped, with their figures) and the lines by kind and size with their lengths
+>   added up. Each fluid line can carry its own length (conductor panel, script/MCP `length`, e.g. "1.5 m"); it
+>   belongs to that line only, not to the whole potential.
+> - Tab *Fluid power* in the properties of a valve or cylinder: a placed part's own cylinder sizes (bore, rod,
+>   stroke) without changing the symbol.
 > - The 437 pneumatic and hydraulic symbols of the common collection carry simulation data (graphics unchanged):
 >   named ports with medium, function, positions and flow paths of every directional valve, actuation, cylinder data
 >   and characteristic values (`<fluid>`, generator `tools/symbole/qet_fluid_daten.py`). Valve coil ↔ valve and relay

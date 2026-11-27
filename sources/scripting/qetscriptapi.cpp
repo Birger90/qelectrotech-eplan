@@ -140,6 +140,7 @@
 #include <projectcheck/checkfixes.h>
 #include <autoNum/wirenumberpattern.h>
 #include <plc/plcaddressing.h>
+#include <network/networkaddresses.h>
 #include <qetgraphicsitem/reportelement.h>
 #include <undocommand/removediagramcommand.h>
 #include <utils/conductorcreator.h>

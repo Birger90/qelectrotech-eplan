@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "ui/wirenumberpatterndialog.h"
+#include "ui/networkaddressdialog.h"
 #include "revision/revisionui.h"
 #include "qetdiagrameditor.h"
 #include "itemdescription.h"

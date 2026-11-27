@@ -23,6 +23,12 @@ gemeldet, nie geschätzt.
 - FI und Steckdosen werden auch an französischen Symbolnamen erkannt („différentiel“, „sélectif“, IΔn im Namen);
   ein abgesicherter Neutralleiter (2-polige Absicherung) gilt als Rückleiter der Spulen. Das Prüfpanel ist offscreen
   angesehen (`tests/qttest/check_panel_probe.cpp`); 27 fehlende deutsche Texte des Panels ergänzt.
+- An den Beispielplänen geschärft: Doppelklick auf einen Befund zeigt Blatt und Bauteil (offscreen im Editor geprüft);
+  ein Schutzorgan speist nur ohne Schützkontakt/Spule am Eingang (Motorschutz-Hilfskontakt im Steuerkreis); gemeinsamer
+  Rückleiter = Netz mehrerer Spulen ohne Kontakt; alte Klemmen- und Sicherungssymbole ohne Link-Typ (Klemmblock,
+  Borne continuité, Odłącznik bezpiecznikowy) und Schutzschalter/FI als einfache Symbole werden erkannt; endet ein
+  Kreis an einem Gerät ohne Schaltfunktion, nennt „Angabe fehlt“ dieses Gerät; Steckdose ohne verfolgbare Zuleitung
+  oder hinter FI ohne IΔn ist „Angabe fehlt“ statt „ohne FI“.
 - **Behoben:** `qet.linkElements(spule, kontakt)` ersetzte die bisherigen Kontakte der Spule durch den neuen (der
   Befehl wurde von der Master-Seite gebaut); jetzt immer von der Kontaktseite, wie bisher nur bei SPS-Kanälen.
 - Tests: `tools/plancheck/pruefen_logik.py` baut 13 Testprojekte (Wendeschütz richtig/ohne/einseitig, Stern-Dreieck

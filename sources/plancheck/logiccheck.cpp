@@ -45,7 +45,7 @@ using Severity = ProjectCheck::Severity;
 
 QString labelOf(Element *e)
 {
-	return DuplicateLabels::displayedLabel(e).trimmed();
+	return DuplicateLabels::displayedLabel(e).simplified();   // "EDF↵Type S" in one line
 }
 
 QString shownOf(Element *e)
@@ -106,6 +106,18 @@ void add(QVector<Finding> &out, Severity severity, const char *rule, Diagram *fo
 	out << f;
 }
 
+	/// a terminal of a strip drawn as a plain symbol: named so in any of the
+	/// collection's languages, or kept in its folder of terminals
+bool isPlainTerminal(Element *e)
+{
+	static const QRegularExpression re(QStringLiteral(
+		"^(klemme|klemmblock|reihenklemme|durchgangsklemme|terminal|terminal block|borne|borne continuit[ée])\\b"),
+		QRegularExpression::CaseInsensitiveOption);
+	return e->terminals().size() >= 2
+		&& (e->name().trimmed().contains(re)
+			|| e->location().toString().contains(QLatin1String("130_terminals_terminal_strips")));
+}
+
 /* ---- the potentials of the plan ------------------------------------- */
 
 	/// Wires, junctions, folio reports and the two sides of a terminal
@@ -134,6 +146,16 @@ class Nets
 							for (Element *other : e->linkedElements())
 								if (!own.isEmpty() && !other->terminals().isEmpty())
 									unite(own.first(), other->terminals().first());
+						continue;
+					}
+						// a terminal drawn with an old or plain symbol (no
+						// link type: "Borne continuité", "Klemmblock"): its
+						// terminals one above the other are one potential
+					if (data.m_type == ElementData::Simple && isPlainTerminal(e)) {
+						QMap<int, QList<Terminal *>> column;
+						for (Terminal *t : own) column[qRound(e->mapFromScene(t->dockConductor()).x())] << t;
+						for (const QList<Terminal *> &c : std::as_const(column))
+							for (int i = 1; i < c.size(); ++i) unite(c.first(), c.at(i));
 						continue;
 					}
 					m_devices << qMakePair(d, e);
@@ -316,8 +338,25 @@ bool looksMake(Element *e)
 
 bool isFuse(Element *e)
 {
-	static const QRegularExpression re(QStringLiteral("fusible|sicherung|\\bfuse"), QRegularExpression::CaseInsensitiveOption);
+		// the name of an old embedded symbol may be missing: its file or
+		// folder names it too ("zabezpieczenia/odlacznik_bez_1f.elmt")
+	static const QRegularExpression re(QStringLiteral("fusible|fusibile|sicherung|bezpiecz|\\bfuse|odlacznik_bez"),
+									   QRegularExpression::CaseInsensitiveOption);
 	return e->name().contains(re) || e->location().toString().contains(re);
+}
+
+bool isRcd(Element *e);
+
+	/// a circuit-breaker or RCD drawn with a plain symbol (link type
+	/// "simple", as int_diff5 "Disjoncteur differentiel 1P+N"): a protective
+	/// device all the same
+bool isPlainProtection(Element *e)
+{
+	if (e->elementData().m_type != ElementData::Simple || e->terminals().size() < 2) return false;
+	static const QRegularExpression re(QStringLiteral(
+		"disjonct|circuit.?breaker|leitungsschutz|schutzschalter|motorschutz|protective_gears|residual_current"),
+		QRegularExpression::CaseInsensitiveOption);
+	return isRcd(e) || e->name().contains(re) || e->location().toString().contains(re);
 }
 
 int plcRow(Element *card, Element *channel)
@@ -377,6 +416,9 @@ class Circuit
 			}
 
 			QSet<int> explicit_plus, explicit_minus, fed;
+				// protective devices and fuses: their input and output nets,
+				// sorted out below (a supply only when nothing switches in front)
+			QList<QPair<QSet<int>, QSet<int>>> feeders;
 			for (const auto &de : nets.m_devices) {
 				Diagram *d = de.first;
 				Element *e = de.second;
@@ -430,11 +472,17 @@ class Circuit
 					}
 					continue;
 				}
-				if (data.m_type == ElementData::Master && data.m_master_type == ElementData::Protection) {
+				if ((data.m_type == ElementData::Master && data.m_master_type == ElementData::Protection)
+					|| isPlainProtection(e)) {
 					m_protection << de;
-					for (const Pair &p : pairsOf(e)) branch(p, -1, false, false, true);
-					for (Terminal *t : own)
-						if (PlanCheck::isOutput(t, own)) fed << nets.of(t);
+					QSet<int> ins, outs;
+					for (const Pair &p : pairsOf(e)) {
+						branch(p, -1, false, false, true);
+						if (p.directed) {ins << nets.of(p.a); outs << nets.of(p.b);}
+					}
+					if (outs.isEmpty())
+						for (Terminal *t : own) (PlanCheck::isOutput(t, own) ? outs : ins) << nets.of(t);
+					feeders << qMakePair(ins, outs);
 					continue;
 				}
 				if (data.m_type == ElementData::Master && data.m_master_type == ElementData::Commutator) {
@@ -483,8 +531,23 @@ class Circuit
 				if (own.size() == 2 && (letter == QLatin1Char('F') || isFuse(e))) {
 					Pair p; p.a = own.at(0); p.b = own.at(1);
 					branch(p, -1, false, false, true);
-					fed << nets.of(own.at(0)) << nets.of(own.at(1));
+						// no direction: either side may be the input
+					feeders << qMakePair(QSet<int>{nets.of(own.at(0))}, QSet<int>{nets.of(own.at(1))});
+					feeders << qMakePair(QSet<int>{nets.of(own.at(1))}, QSet<int>{nets.of(own.at(0))});
 				}
+			}
+
+				// a protective device feeds when no relay contact and no coil is at its
+				// input: one drawn inside a control path (the auxiliary contact
+				// of a motor protection, Q4 in a coil circuit) is no supply
+			QSet<int> switched_or_coil;
+			for (const Branch &b : std::as_const(m_branches))
+				if (b.var >= 0 && m_vars.at(b.var).coil) switched_or_coil << b.a << b.b;
+			for (const CoilInfo &c : std::as_const(m_coils)) switched_or_coil << c.n1 << c.n2;
+			for (const auto &f : std::as_const(feeders)) {
+				bool clean = true;
+				for (int n : f.first) if (switched_or_coil.contains(n)) clean = false;
+				if (clean) fed += f.second;
 			}
 
 				// the rails of the control circuit: given ones (sim_role,
@@ -505,11 +568,23 @@ class Circuit
 			m_plus = explicit_plus.isEmpty() ? fed : explicit_plus;
 			m_minus = explicit_minus;
 			if (m_minus.isEmpty()) {
-					// every common return: a net with the A2 of two coils or more
+					// every common return: a net with two coils or more and no
+					// contact (which side of a coil is A2 is not always named);
+					// a single coil: its side without a contact
+				QSet<int> switched;
+				for (const Branch &b : std::as_const(m_branches)) switched << b.a << b.b;
 				QHash<int, int> count;
-				for (const CoilInfo &c : std::as_const(m_coils)) ++count[c.n2];
+				for (const CoilInfo &c : std::as_const(m_coils)) {
+					++count[c.n1];
+					if (c.n2 != c.n1) ++count[c.n2];
+				}
 				for (auto it = count.cbegin(); it != count.cend(); ++it)
-					if (it.key() >= 0 && (it.value() >= 2 || m_coils.size() == 1)) m_minus << it.key();
+					if (it.key() >= 0 && it.value() >= 2 && !switched.contains(it.key())) m_minus << it.key();
+				if (m_coils.size() == 1) {
+					const CoilInfo &c = m_coils.first();
+					if (c.n2 >= 0 && !switched.contains(c.n2)) m_minus << c.n2;
+					else if (c.n1 >= 0 && !switched.contains(c.n1)) m_minus << c.n1;
+				}
 			}
 			m_plus.subtract(m_minus);
 			m_plus.remove(-1);
@@ -675,6 +750,40 @@ class CoilLogic
 	private:
 		Circuit &m_c;
 };
+
+	/// the devices where the circuit of @p coil ends without a rail: wired
+	/// to it through contacts, but neither a contact, a coil nor a supply
+	/// (a safety relay, a converter): the reader learns where data is missing
+QStringList boundaryOf(Circuit &c, const CoilInfo &coil)
+{
+	QSet<Element *> known;
+	for (const Branch &b : std::as_const(c.m_branches)) known << b.e;
+	for (auto it = c.m_coil_var.cbegin(); it != c.m_coil_var.cend(); ++it) known << it.key();
+	const QSet<int> rails = c.m_plus + c.m_minus + c.m_fed;
+	QSet<int> seen;
+	QList<int> todo;
+	for (int n : {coil.n1, coil.n2})
+		if (n >= 0 && !rails.contains(n)) {seen << n; todo << n;}
+	while (!todo.isEmpty()) {
+		const int n = todo.takeLast();
+		for (int i : c.m_adj.value(n)) {
+			const Branch &b = c.m_branches.at(i);
+			const int other = b.a == n ? b.b : b.a;
+			if (!seen.contains(other) && !rails.contains(other)) {seen << other; todo << other;}
+		}
+	}
+	QStringList out;
+	for (const auto &de : std::as_const(c.m_nets.m_devices)) {
+		Element *e = de.second;
+		if (known.contains(e) || e->terminals().size() < 2) continue;
+		bool touches = false;
+		for (Terminal *t : e->terminals()) if (seen.contains(c.m_nets.of(t))) touches = true;
+		const QString name = shownOf(e);
+		if (touches && !out.contains(name)) out << name;
+		if (out.size() >= 4) break;
+	}
+	return out;
+}
 
 	/// whether every product holds @p lit
 bool everyTermHas(const QList<Term> &terms, int lit)
@@ -871,9 +980,16 @@ void PlanCheck::Logic::checkControl(const QList<Diagram *> &diagrams, const QSet
 		const QString na = c.m_vars.at(A.var).name, nb = c.m_vars.at(B.var).name;
 		const QList<QUuid> items{A.e->uuid(), B.e->uuid()};
 		if (cond.at(ia).isEmpty() || cond.at(ib).isEmpty()) {
+			const CoilInfo &lost = cond.at(ia).isEmpty() ? A : B;
+			const QStringList ends = boundaryOf(c, lost);
 			add(out, Severity::Info, "control_data_missing", A.d, na + QStringLiteral(" / ") + nb,
-				ProjectCheck::tr("%1 is never supplied from the rails found: the interlock of %2 and %3 is not checked")
-					.arg(cond.at(ia).isEmpty() ? na : nb, na, nb),
+				ends.isEmpty()
+					? ProjectCheck::tr("%1 is never supplied from the rails found: the interlock of %2 and %3 is not checked")
+						  .arg(c.m_vars.at(lost.var).name, na, nb)
+					: ProjectCheck::tr("%1 is never supplied: its circuit ends at %4, a device with no known switching "
+									   "function; give the supply as wire function L+ and M or with sim_role. The "
+									   "interlock of %2 and %3 is not checked")
+						  .arg(c.m_vars.at(lost.var).name, na, nb, ends.join(QStringLiteral(", "))),
 				items, true);
 			continue;
 		}
@@ -1153,7 +1269,12 @@ bool isRcd(Element *e)
 	if (QET::infoFlagIsTrue(infoOf(e, "rcd")) || valueOf(e, "idn_ma") > 0) return true;
 	static const QRegularExpression re(QStringLiteral("\\b(FI|RCD|RCCB|RCBO|FI/LS)\\b|fehlerstrom|residual|diff[ée]rentiel|differential"),
 									   QRegularExpression::CaseInsensitiveOption);
-	return (describedOf(e) + QLatin1Char(' ') + e->name()).contains(re);
+	if ((describedOf(e) + QLatin1Char(' ') + e->name()).contains(re)) return true;
+		// the name of an old embedded symbol may be missing: its folder or
+		// file names it ("interrupteurs_differentiels/int_diff1.elmt")
+	static const QRegularExpression path(QStringLiteral("differenti|int_?diff|residual_current|fehlerstrom|/ddr\\d"),
+										 QRegularExpression::CaseInsensitiveOption);
+	return e->location().toString().contains(path);
 }
 
 	/// IΔn in A, 0 when not given
@@ -1482,7 +1603,10 @@ void PlanCheck::Logic::checkPower(QETProject *project, const QList<Diagram *> &d
 			const double i_up = ratedResidualOf(up->e), i_down = ratedResidualOf(down->e);
 			const bool known = i_up > 0 && i_down > 0;
 			if (known && isSelectiveRcd(up->e) && i_up >= 3 * i_down - 1e-12) continue;
-			add(out, Severity::Warning, "rcd_in_series", down->d, shownOf(down->e),
+				// unknown IΔn behind a type S: most likely selective, a datum is
+				// missing; unknown behind any other: worth a look
+			add(out, !known && isSelectiveRcd(up->e) ? Severity::Info : Severity::Warning,
+				"rcd_in_series", down->d, shownOf(down->e),
 				known
 					? ProjectCheck::tr("RCD behind RCD %1: not selective, the one in front must be of type S with "
 									   "IΔn of at least 3 × %2 mA (IEC 60364-5-53 535.3)")
@@ -1510,6 +1634,18 @@ void PlanCheck::Logic::checkPower(QETProject *project, const QList<Diagram *> &d
 			else if (idn <= 0.030 + 1e-12) ok = true;
 		}
 		if (ok) continue;
+			// the supply of the socket not followed back to any protective
+			// device: what is in front of it is not known
+		bool reached = !found.isEmpty();
+		for (const Device &dev : std::as_const(devices))
+			for (int n : dev.outs) if (above.contains(n)) reached = true;
+		if (!reached) {
+			add(out, Severity::Info, "socket_without_rcd", de.first, shownOf(e),
+				ProjectCheck::tr("Supply of the socket-outlet not followed back to a protective device: an RCD of "
+								 "at most 30 mA in front is not checked (IEC 60364-4-41 411.3.3)"),
+				{e->uuid()}, true);
+			continue;
+		}
 		if (unknown)
 			add(out, Severity::Info, "socket_without_rcd", de.first, shownOf(e),
 				ProjectCheck::tr("Socket-outlet behind an RCD without IΔn (idn_ma): 30 mA not checked "
@@ -1540,7 +1676,7 @@ void PlanCheck::Logic::checkPower(QETProject *project, const QList<Diagram *> &d
 							 nullptr, int(no_env.size())),
 			no_env, true);
 	if (feeds.isEmpty() && any_with_current)
-		add(out, Severity::Info, "feed_data_missing", first, QString(),
+		add(out, Severity::Info, "feed_data_missing", nullptr, QString(),
 			ProjectCheck::tr("No feed data in the plan (ik3_ka, ik1_ka, zs_ohm, sk_mva or sr_kva with ukr_pct and un_v "
 							 "at the supply): short-circuit current and disconnection are not checked"),
 			{}, true);

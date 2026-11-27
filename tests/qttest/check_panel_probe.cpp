@@ -29,7 +29,12 @@
 #include <QTreeWidget>
 #include <cstdio>
 
+#include "../../sources/diagram.h"
+#include "../../sources/diagramview.h"
+#include "../../sources/projectcheck.h"
 #include "../../sources/qetapp.h"
+#include "../../sources/qetdiagrameditor.h"
+#include "../../sources/qetgraphicsitem/element.h"
 #include "../../sources/qetmessagebox.h"
 #include "../../sources/qetproject.h"
 #include "../../sources/ui/checkpaneldockwidget.h"
@@ -78,5 +83,57 @@ int main(int argc, char **argv)
 		panel.grab().save(png);
 		std::printf("%s: %s\n", qPrintable(QFileInfo(path).fileName()), qPrintable(heads.join(QStringLiteral(" | "))));
 	}
+
+		// The editor: open the first project, run the panel docked in the
+		// window and activate (double-click) every finding of the new
+		// categories; it must show its folio with its devices selected
+	QETDiagramEditor *editor = QETApp::diagramEditors().isEmpty() ? nullptr : QETApp::diagramEditors().first();
+	if (!editor || !editor->openAndAddProject(QString::fromLocal8Bit(argv[3]), false)) {
+		std::printf("FEHLER Editor: Projekt nicht geöffnet\n");
+		return 1;
+	}
+	editor->resize(1500, 1000);
+	editor->show();
+	QApplication::processEvents();
+	auto *panel = editor->findChild<CheckPanelDockWidget *>();
+	if (!panel) {
+		std::printf("FEHLER Editor: kein Prüfpanel\n");
+		return 1;
+	}
+	panel->show();
+	panel->setProject(editor->currentProject());
+	panel->run();
+	QApplication::processEvents();
+	auto *tree = panel->findChild<QTreeWidget *>();
+	int shown = 0;
+	for (int i = 0; tree && i < tree->topLevelItemCount(); ++i) {
+		QTreeWidgetItem *root = tree->topLevelItem(i);
+		const QString title = root->text(0);
+		if (!title.contains(ProjectCheck::title(ProjectCheck::Kind::ControlCircuit))
+			&& !title.contains(ProjectCheck::title(ProjectCheck::Kind::FaultProtection)))
+			continue;
+		for (int j = 0; j < root->childCount(); ++j) {
+			QTreeWidgetItem *row = root->child(j);
+			for (Diagram *d : editor->currentProject()->diagrams()) d->clearSelection();
+			emit tree->itemActivated(row, 0);
+			QApplication::processEvents();
+			QStringList selected;
+			QString folio = QStringLiteral("-");
+			for (Diagram *d : editor->currentProject()->diagrams())
+				for (QGraphicsItem *item : d->selectedItems())
+					if (auto *e = dynamic_cast<Element *>(item)) {
+						selected << e->actualLabel();
+						folio = d->title();
+					}
+			std::printf("Doppelklick: %s -> Blatt %s, markiert: %s\n", qPrintable(row->text(0).left(60)),
+						qPrintable(folio), qPrintable(selected.join(QStringLiteral(", "))));
+			if (selected.isEmpty() && row->text(1).isEmpty())
+				continue;   // a note without a place (no feed data)
+			if (selected.isEmpty()) ++failed;
+			++shown;
+			if (shown == 1) editor->grab().save(QDir(output).filePath(QStringLiteral("editor_doppelklick.png")));
+		}
+	}
+	std::printf("Editor: %d Befund(e) per Doppelklick gezeigt, %d ohne Markierung\n", shown, failed);
 	return failed ? 1 : 0;
 }

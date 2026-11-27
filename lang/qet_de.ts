@@ -19881,6 +19881,14 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
         <source>Text: unanswered %1</source>
         <translation>Text: unbeantwortet %1</translation>
     </message>
+    <message>
+        <source>%1 is never supplied: its circuit ends at %4, a device with no known switching function; give the supply as wire function L+ and M or with sim_role. The interlock of %2 and %3 is not checked</source>
+        <translation>Angabe fehlt: %1 wird nie versorgt, sein Kreis endet an %4, einem Gerät ohne bekannte Schaltfunktion; Versorgung als Leitungsfunktion L+ und M oder mit sim_role angeben. Die Verriegelung von %2 und %3 ist nicht geprüft</translation>
+    </message>
+    <message>
+        <source>Supply of the socket-outlet not followed back to a protective device: an RCD of at most 30 mA in front is not checked (IEC 60364-4-41 411.3.3)</source>
+        <translation>Angabe fehlt: Zuleitung der Steckdose nicht bis zu einem Schutzorgan verfolgt, ein FI mit höchstens 30 mA davor ist nicht geprüft (IEC 60364-4-41 411.3.3)</translation>
+    </message>
 </context>
 <context>
     <name>ProjectDBModel</name>

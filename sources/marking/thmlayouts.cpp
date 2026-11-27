@@ -241,6 +241,8 @@ bool ThmLayouts::profile(const Variant &v, ThmJob::Family family, ThmJob::Profil
 		p.margin_right = v.marker_height - v.field_y1;
 		p.field_top = v.marker_y + v.field_x0;
 		p.field_bottom = v.marker_y + v.field_x1;
+		p.marker_top = v.marker_y;
+		p.marker_height = v.marker_width;
 	} else {
 		p.width = v.marker_width;
 		p.height = v.page_height;
@@ -252,6 +254,8 @@ bool ThmLayouts::profile(const Variant &v, ThmJob::Family family, ThmJob::Profil
 		p.margin_right = v.marker_width - v.field_x1;
 		p.field_top = v.marker_y + v.field_y0;
 		p.field_bottom = v.marker_y + v.field_y1;
+		p.marker_top = v.marker_y;
+		p.marker_height = v.marker_height;
 	}
 	p.text_rotation = ((v.orientation % 360) + 360) % 360;
 		//The font height of the layout (points) as text size, kept inside

@@ -18,6 +18,8 @@
 #include "thmprinters.h"
 
 #include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
 #include <QSet>
 #include <QSettings>
 
@@ -38,6 +40,11 @@ QList<ThmPrinter> ThmPrinters::load(QSettings &s)
 		p.model = s.value("model").toString();
 		p.host = s.value("host").toString();
 		p.port = quint16(s.value("port", 9100).toUInt());
+			//Same keys as ThmClient::transportKey(); spelled out here so the
+			//printer list needs no network code
+		p.transport = s.value("transport", "rawip").toString().compare(QLatin1String("lpd"), Qt::CaseInsensitive) == 0
+				? ThmClient::Transport::Lpd : ThmClient::Transport::RawIp;
+		p.lpd_queue = s.value("lpdQueue", "lp").toString();
 		p.material_no = s.value("materialNo").toString();
 		p.material_name = s.value("materialName").toString();
 		p.loaded_at = QDateTime::fromString(s.value("loadedAt").toString(), Qt::ISODate);
@@ -87,6 +94,8 @@ void ThmPrinters::save(QSettings &s, const QList<ThmPrinter> &printers)
 		s.setValue("model", p.model);
 		s.setValue("host", p.host);
 		s.setValue("port", p.port);
+		s.setValue("transport", p.transport == ThmClient::Transport::Lpd ? QStringLiteral("lpd") : QStringLiteral("rawip"));
+		s.setValue("lpdQueue", p.lpd_queue);
 		s.setValue("materialNo", p.material_no);
 		s.setValue("materialName", p.material_name);
 		s.setValue("loadedAt", p.loaded_at.isValid() ? p.loaded_at.toString(Qt::ISODate) : QString());
@@ -128,9 +137,47 @@ void ThmPrinters::save(const QList<ThmPrinter> &printers)
 	save(settings, printers);
 }
 
+namespace {
+QStringList data_dirs;
+
+QString firstExisting(const QStringList &files)
+{
+	for (const QString &f : files)
+		if (!f.isEmpty() && QFileInfo::exists(f)) return QDir::fromNativeSeparators(f);
+	return QString();
+}
+}
+
+void ThmPrinters::setDataDirs(const QStringList &dirs)
+{
+	data_dirs = dirs;
+}
+
+QStringList ThmPrinters::dataDirs()
+{
+		//First the folder installed with the program (the deployment puts
+		//the Weidmüller files there), then those the application set
+	QStringList dirs;
+	if (QCoreApplication::instance())
+		dirs << QCoreApplication::applicationDirPath() + QStringLiteral("/weidmueller");
+	return dirs + data_dirs;
+}
+
 QString ThmPrinters::catalogFile(QSettings &s)
 {
-	return s.value(QStringLiteral("%1/catalogFile").arg(QLatin1String(settings_group))).toString();
+	const QString chosen = s.value(QStringLiteral("%1/catalogFile").arg(QLatin1String(settings_group))).toString();
+	if (!chosen.isEmpty() && QFileInfo::exists(chosen)) return chosen;
+		//Where M-Print PRO keeps it, then the data folders
+	QStringList files;
+	const QString program_data = qEnvironmentVariable("ProgramData");
+	if (!program_data.isEmpty()) {
+		const QString products = program_data + QStringLiteral("/weidmueller/M-Print PRO/products/");
+		files << products + QStringLiteral("my_cat_DE.mca") << products + QStringLiteral("my_cat.mca");
+	}
+	for (const QString &d : dataDirs())
+		files << d + QStringLiteral("/my_cat_DE.mca") << d + QStringLiteral("/my_cat.mca");
+	const QString found = firstExisting(files);
+	return found.isEmpty() ? chosen : found;
 }
 
 void ThmPrinters::setCatalogFile(QSettings &s, const QString &path)
@@ -140,7 +187,12 @@ void ThmPrinters::setCatalogFile(QSettings &s, const QString &path)
 
 QString ThmPrinters::layoutsFile(QSettings &s)
 {
-	return s.value(QStringLiteral("%1/layoutsFile").arg(QLatin1String(settings_group))).toString();
+	const QString chosen = s.value(QStringLiteral("%1/layoutsFile").arg(QLatin1String(settings_group))).toString();
+	if (!chosen.isEmpty() && QFileInfo::exists(chosen)) return chosen;
+	QStringList files {qEnvironmentVariable("QET_THM_LAYOUTS")};
+	for (const QString &d : dataDirs()) files << d + QStringLiteral("/mprint-multimark-layouts.json");
+	const QString found = firstExisting(files);
+	return found.isEmpty() ? chosen : found;
 }
 
 void ThmPrinters::setLayoutsFile(QSettings &s, const QString &path)

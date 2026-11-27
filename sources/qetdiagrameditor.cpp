@@ -1685,11 +1685,8 @@ void QETDiagramEditor::setUpActions()
 	ShortcutManager::instance().registerAction(m_thm_print, "diagrameditor.thm_print", tr("Diagram editors"), QKeySequence());
 	m_thm_print->setStatusTip(tr("Print wire, cable, terminal and device markers directly on a Weidmüller THM printer"));
 	connect(m_thm_print, &QAction::triggered, [this]() {
-		QETProject *project = this->currentProject();
-		if (!project) {
-			return;
-		}
-		ThmPrintDialog dialog(project, this);
+			//Without a project: the labels are typed by hand
+		ThmPrintDialog dialog(this->currentProject(), this);
 		dialog.exec();
 	});
 
@@ -2568,6 +2565,11 @@ void QETDiagramEditor::setUpMenu()
 	insertMenu(settings_menu_, menu_affichage);
 		//Cabinet layout: mounting surfaces, rails, ducts, drilling, DXF, 3D
 	insertMenu(settings_menu_, new PanelMenu(this));
+		//Label printing beside it: the markers straight on a THM printer,
+		//or exported for the marking software of the manufacturers
+	QMenu *menu_labels = new QMenu(tr("Label printing"), this);
+	menu_labels->setObjectName(QStringLiteral("label_printing_menu"));
+	insertMenu(settings_menu_, menu_labels);
 	insertMenu(help_menu_, windows_menu);
 
 	// Part import: manufacturer EPLAN data as elements of a collection
@@ -2784,8 +2786,13 @@ void QETDiagramEditor::setUpMenu()
 	menu_project -> addAction(m_purchase_export);
 	menu_project -> addAction(m_cable_overview);
 	menu_project -> addAction(m_export_cable_list);
-	menu_project -> addAction(m_export_marking);
-	menu_project -> addAction(m_thm_print);
+	menu_labels -> addAction(m_thm_print);
+	menu_labels -> addSeparator();
+		//Printers and files need no project
+	connect(menu_labels->addAction(tr("THM printers...")), &QAction::triggered,
+			this, [this]() { ThmPrintMenu::managePrinters(this); });
+	menu_labels -> addSeparator();
+	menu_labels -> addAction(m_export_marking);
 	menu_project -> addAction(m_tia_tags);
 	menu_project -> addAction(m_project_export_conductor_num);
 	menu_project -> addAction(m_project_export_wiring_list);
@@ -4652,7 +4659,7 @@ void QETDiagramEditor::slot_updateActions()
 	m_add_signal_list             -> setEnabled(editable_project);
 	m_export_cable_list           -> setEnabled(editable_project);
 	m_export_marking              -> setEnabled(opened_project);
-	m_thm_print                   -> setEnabled(opened_project);
+	m_thm_print                   -> setEnabled(true); //texts typed by hand need no project
 	m_tia_tags                    -> setEnabled(editable_project);
 	m_cable_overview              -> setEnabled(editable_project);
 	if (auto *panel_menu = findChild<PanelMenu *>()) panel_menu->updateActions();

@@ -33,7 +33,7 @@ class QLineEdit;
 class QPushButton;
 
 /**
-	@brief The dialog of Project > Export markers...: one page, the choices
+	@brief The dialog of Label printing > Export markers...: one page, the choices
 	remembered from the last export, the number of markers shown as they
 	change, then the file.
 */

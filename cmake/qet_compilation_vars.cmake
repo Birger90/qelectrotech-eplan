@@ -1303,7 +1303,11 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/marking/thmjob.h
   ${QET_DIR}/sources/marking/thmlayouts.cpp
   ${QET_DIR}/sources/marking/thmlayouts.h
+  ${QET_DIR}/sources/marking/thmlabelsheet.cpp
+  ${QET_DIR}/sources/marking/thmlabelsheet.h
   ${QET_DIR}/sources/marking/thmmaterialdialog.cpp
+  ${QET_DIR}/sources/marking/thmrender.cpp
+  ${QET_DIR}/sources/marking/thmrender.h
   ${QET_DIR}/sources/marking/thmmaterialdialog.h
   ${QET_DIR}/sources/marking/thmmaterials.cpp
   ${QET_DIR}/sources/marking/thmmaterials.h

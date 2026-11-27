@@ -1056,7 +1056,7 @@ QString QetScriptApi::safetyFunction(const QString &functionJson) const
 /**
 	@brief QetScriptApi::exportMarking
 	Write the markers of this project for a marking software to @p output:
-	the file Project > Export markers... writes (docs/beschriftung-export.md).
+	the file Label printing > Export markers... writes (docs/beschriftung-export.md).
 	@param format phoenix, weidmueller, wago or neutral
 	@param optionsJson the choices, see markingOptions(); empty for all
 	@return the number of markers written, -1 when nothing was written
@@ -1183,7 +1183,7 @@ QString QetScriptApi::markings(const QString &optionsJson) const
 /**
 	@brief QetScriptApi::exportThmJob
 	Write the markers of this project as a print job for a THM printer
-	to @p output, the bytes Project > Print THM labels... sends
+	to @p output, the bytes Label printing > Print THM labels... sends
 	(docs/beschriftung-export.md). Nothing is sent to a printer.
 	@param optionsJson the choices of markingOptions() (kinds default to
 	"wires" here), and "printer" (ID) or "material" (article loaded) for
@@ -1218,7 +1218,11 @@ int QetScriptApi::exportThmJob(const QString &output, const QString &optionsJson
 	const QString layouts_file = j.value(QLatin1String("layouts")).toString();
 	QList<ThmLayouts::Variant> layouts;
 	if (!layouts_file.isEmpty()) layouts = ThmLayouts::read(layouts_file, &error);
-	else layouts = ThmLayouts::settingsLayouts(nullptr, &error);
+	else {
+		ThmPrinters::setDataDirs({QDir::cleanPath(QETApp::companyElementsDir() + QStringLiteral("../weidmueller")),
+								  QDir::cleanPath(QETApp::configDir())});
+		layouts = ThmLayouts::settingsLayouts(nullptr, &error);
+	}
 	if (!error.isEmpty()) {
 		log(QStringLiteral("qet.exportThmJob: %1").arg(error));
 		return -1;

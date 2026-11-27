@@ -22859,6 +22859,14 @@ Hier ist das Projekt ab sofort nur zum Lesen offen. Eigene Änderungen sichern S
         <source>Print wire, cable, terminal and device markers directly on a Weidmüller THM printer</source>
         <translation type="unfinished">Draht-, Kabel-, Klemmen- und Geräteschilder direkt auf einem Weidmüller-THM-Drucker drucken</translation>
     </message>
+    <message>
+        <source>Label printing</source>
+        <translation>Etikettendruck</translation>
+    </message>
+    <message>
+        <source>THM printers...</source>
+        <translation>THM-Drucker…</translation>
+    </message>
 </context>
 <context>
     <name>QETElementEditor</name>
@@ -33045,6 +33053,22 @@ Strg+Eingabe gibt die Zelle zurück, Escape verwirft den Text.</translation>
         <source>usually %1</source>
         <translation>üblich %1</translation>
     </message>
+    <message>
+        <source>%1 now gets its jobs by LPD (port 515, queue %2).</source>
+        <translation>%1 bekommt seine Aufträge jetzt über LPD (Port 515, Warteschlange %2).</translation>
+    </message>
+    <message>
+        <source>%1 now gets its jobs by RawIP on port %2.</source>
+        <translation>%1 bekommt seine Aufträge jetzt über RawIP auf Port %2.</translation>
+    </message>
+    <message>
+        <source>No status by RawIP (%1); sending by LPD all the same.</source>
+        <translation>Kein Status über RawIP (%1); es wird trotzdem über LPD gesendet.</translation>
+    </message>
+    <message>
+        <source>Sent to %1 by LPD; the printer confirmed the job.</source>
+        <translation>Über LPD an %1 gesendet; der Drucker hat den Auftrag bestätigt.</translation>
+    </message>
 </context>
 <context>
     <name>ThmClient</name>
@@ -33115,6 +33139,18 @@ Strg+Eingabe gibt die Zelle zurück, Escape verwirft den Text.</translation>
     <message>
         <source>The printer %1:%2 cannot be reached: %3</source>
         <translation type="unfinished">Der Drucker %1:%2 ist nicht erreichbar: %3</translation>
+    </message>
+    <message>
+        <source>The printer closed the LPD connection before the job was taken over.</source>
+        <translation>Der Drucker hat die LPD-Verbindung geschlossen, bevor der Auftrag übernommen war.</translation>
+    </message>
+    <message>
+        <source>The printer did not confirm the LPD job within %1 s.</source>
+        <translation>Der Drucker hat den LPD-Auftrag nicht innerhalb von %1 s bestätigt.</translation>
+    </message>
+    <message>
+        <source>The printer refused the LPD job (answer %1 in step %2).</source>
+        <translation>Der Drucker hat den LPD-Auftrag abgelehnt (Antwort %1 in Schritt %2).</translation>
     </message>
 </context>
 <context>
@@ -33417,6 +33453,20 @@ Strg+Eingabe gibt die Zelle zurück, Escape verwirft den Text.</translation>
     <message>
         <source>This printer only knows the speeds %1 mm/s.</source>
         <translation>Dieser Drucker kennt nur die Geschwindigkeiten %1 mm/s.</translation>
+    </message>
+</context>
+<context>
+    <name>ThmLabelSheet</name>
+    <message numerus="yes">
+        <source>... and %n more label(s)</source>
+        <translation>
+            <numerusform>… und %n weiteres Etikett</numerusform>
+            <numerusform>… und %n weitere Etiketten</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Choose the material: until then a plain label is shown.</source>
+        <translation>Material wählen: bis dahin wird ein einfaches Etikett gezeigt.</translation>
     </message>
 </context>
 <context>
@@ -33981,6 +34031,145 @@ Menge: %n Etiketten</numerusform>
         <source>Choose...</source>
         <translation>Auswählen…</translation>
     </message>
+    <message>
+        <source>From the project</source>
+        <translation>Aus dem Projekt</translation>
+    </message>
+    <message>
+        <source>One label per line, e.g.
+-K1
+-X1:1;2   (2 labels)</source>
+        <translation>Ein Etikett je Zeile, z. B.
+-K1
+-X1:1;2   (2 Etiketten)</translation>
+    </message>
+    <message>
+        <source>Texts</source>
+        <translation>Texte</translation>
+    </message>
+    <message>
+        <source>Type the texts, one label per line.</source>
+        <translation>Texte eingeben, ein Etikett je Zeile.</translation>
+    </message>
+    <message>
+        <source>Typed by hand</source>
+        <translation>Von Hand eingeben</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n label(s): %1</source>
+        <translation>
+            <numerusform>%n Etikett: %1</numerusform>
+            <numerusform>%n Etiketten: %1</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>After the last text</source>
+        <translation>Hinter den letzten Text</translation>
+    </message>
+    <message>
+        <source>Digits:</source>
+        <translation>Stellen:</translation>
+    </message>
+    <message>
+        <source>Each value:</source>
+        <translation>Jeder Wert:</translation>
+    </message>
+    <message>
+        <source>End:</source>
+        <translation>Ende:</translation>
+    </message>
+    <message>
+        <source>Fill the labels with a series: prefix, start, end, step, suffix</source>
+        <translation>Etiketten mit einer Reihe füllen: Präfix, Start, Ende, Schritt, Suffix</translation>
+    </message>
+    <message>
+        <source>Kind:</source>
+        <translation>Art:</translation>
+    </message>
+    <message>
+        <source>Letters (A, B, C)</source>
+        <translation>Buchstaben (A, B, C)</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation>Liste</translation>
+    </message>
+    <message>
+        <source>Numbering</source>
+        <translation>Nummerieren</translation>
+    </message>
+    <message>
+        <source>Numbering...</source>
+        <translation>Nummerieren…</translation>
+    </message>
+    <message>
+        <source>Numbers (1, 2, 3)</source>
+        <translation>Zahlen (1, 2, 3)</translation>
+    </message>
+    <message>
+        <source>On a strip begun already: the labels before this one stay empty</source>
+        <translation>Bei angebrochenem Streifen: die Etiketten davor bleiben leer</translation>
+    </message>
+    <message>
+        <source>PLC addresses (4.0 ... 4.7, 5.0)</source>
+        <translation>SPS-Adressen (4.0 … 4.7, 5.0)</translation>
+    </message>
+    <message>
+        <source>Prefix:</source>
+        <translation>Präfix:</translation>
+    </message>
+    <message>
+        <source>Put:</source>
+        <translation>Einfügen:</translation>
+    </message>
+    <message>
+        <source>Replace all texts</source>
+        <translation>Alle Texte ersetzen</translation>
+    </message>
+    <message>
+        <source>Start and end must be whole numbers.</source>
+        <translation>Start und Ende müssen ganze Zahlen sein.</translation>
+    </message>
+    <message>
+        <source>Start and end of a PLC series are byte.bit, e.g. 4.0 and 5.7.</source>
+        <translation>Start und Ende einer SPS-Reihe sind Byte.Bit, z. B. 4.0 und 5.7.</translation>
+    </message>
+    <message>
+        <source>Start and end of a letter series are single letters, e.g. A and Z.</source>
+        <translation>Start und Ende einer Buchstabenreihe sind einzelne Buchstaben, z. B. A und Z.</translation>
+    </message>
+    <message>
+        <source>Start at label:</source>
+        <translation>Druck ab Etikett:</translation>
+    </message>
+    <message>
+        <source>Start:</source>
+        <translation>Start:</translation>
+    </message>
+    <message>
+        <source>Step:</source>
+        <translation>Schritt:</translation>
+    </message>
+    <message>
+        <source>Suffix:</source>
+        <translation>Suffix:</translation>
+    </message>
+    <message>
+        <source>The series is too long.</source>
+        <translation>Die Reihe ist zu lang.</translation>
+    </message>
+    <message>
+        <source>Type straight into the labels of the preview: Tab or Return goes on to the next label.</source>
+        <translation>Direkt in die Etiketten der Vorschau schreiben: Tab oder Enter springt zum nächsten Etikett.</translation>
+    </message>
+    <message>
+        <source>as needed</source>
+        <translation>nach Bedarf</translation>
+    </message>
+    <message>
+        <source>e.g. -X1: or I</source>
+        <translation>z. B. -X1: oder E</translation>
+    </message>
 </context>
 <context>
     <name>ThmPrinters</name>
@@ -34202,6 +34391,22 @@ Menge: %n Etiketten</numerusform>
     <message>
         <source>Choose the material from the catalog, filtered by category, size and colour</source>
         <translation>Material aus dem Katalog wählen, gefiltert nach Kategorie, Maß und Farbe</translation>
+    </message>
+    <message>
+        <source>Choose LPD when the printer takes the connection on its RawIP port but prints nothing; status and material are still asked by RawIP.</source>
+        <translation>LPD wählen, wenn der Drucker auf seinem RawIP-Port die Verbindung annimmt, aber nichts druckt; Status und Material werden weiter über RawIP abgefragt.</translation>
+    </message>
+    <message>
+        <source>LPD (port 515, queue lp)</source>
+        <translation>LPD (Port 515, Warteschlange lp)</translation>
+    </message>
+    <message>
+        <source>RawIP on the port above</source>
+        <translation>RawIP auf dem Port oben</translation>
+    </message>
+    <message>
+        <source>Send jobs by:</source>
+        <translation>Aufträge senden über:</translation>
     </message>
 </context>
 <context>

@@ -31,15 +31,22 @@ class QETProject;
 class QCheckBox;
 class QComboBox;
 class QDoubleSpinBox;
+class QFormLayout;
+class QHBoxLayout;
 class QLabel;
 class QLineEdit;
 class QListWidget;
 class QPushButton;
 class QSpinBox;
+class QPlainTextEdit;
+class QRadioButton;
+class QGroupBox;
 class QTableWidget;
+class QTabWidget;
+class ThmLabelSheet;
 
 /**
-	@brief Project > Print THM labels...: the markers of the open project
+	@brief Label printing > Print THM labels...: the markers of the open project
 	printed straight on a THM printer, without the maker's software.
 
 	The markers are chosen as in the marking export, equal texts merged
@@ -54,6 +61,25 @@ class ThmPrintDialog : public QDialog
 		explicit ThmPrintDialog(QETProject *project, QWidget *parent = nullptr);
 
 		MarkingExport::Options options() const;
+			/// Texts typed by hand: one label per line, "text;n" for n
+			/// copies; empty lines are skipped, equal texts merged if asked
+		static QList<ThmJob::Label> freeLabels(const QString &text, int copies, bool merge);
+
+			/// A numbered series as M-Print PRO's automatic numbering
+		struct Series
+		{
+			enum Kind { Decimal, Plc, Letters };
+			Kind kind = Decimal;
+			QString prefix;
+			QString suffix;
+			QString start = QStringLiteral("1");  ///< 1, 4.0 (byte.bit), A
+			QString end = QStringLiteral("10");
+			int step = 1;
+			int repeat = 1;       ///< each value so many times in a row
+			int digits = 0;       ///< decimal: at least so many digits
+		};
+			/// The texts of @p s; empty and @p error set when it cannot be
+		static QStringList series(const Series &s, QString *error = nullptr);
 		QList<ThmJob::Label> labels() const;
 
 	private:
@@ -102,13 +128,33 @@ class ThmPrintDialog : public QDialog
 		QCheckBox *m_full = nullptr;
 		QCheckBox *m_both_ends = nullptr;
 		QCheckBox *m_merge = nullptr;
+			/// Source of the texts: the project, or texts typed by hand
+		QRadioButton *m_from_project = nullptr;
+		QRadioButton *m_from_text = nullptr;
+		QPlainTextEdit *m_free_text = nullptr;
+		QGroupBox *m_kinds_box = nullptr;
+		QGroupBox *m_range_box = nullptr;
+		void updateSource();
 		QSpinBox *m_copies = nullptr;
+		QSpinBox *m_first = nullptr;   ///< print from this label of the row on
+		void numberLabels();
 		QTableWidget *m_preview = nullptr;
+			/// The labels drawn as on the material, one field each
+		ThmLabelSheet *m_sheet = nullptr;
+		QTabWidget *m_views = nullptr;
+		bool m_sheet_typing = false;  ///< the change comes from the sheet
+		void sheetEdited(const QStringList &texts);
+			/// Every label of @p labels once per copy, for the sheet
+		static QStringList expanded(const QList<ThmJob::Label> &labels);
 		QLabel *m_count = nullptr;
 
 		QComboBox *m_article = nullptr;
 		QLabel *m_catalog_label = nullptr;
 		QLabel *m_layouts_label = nullptr;
+			/// The rows of the two files: shown only when a file is missing
+		QFormLayout *m_target_form = nullptr;
+		QHBoxLayout *m_catalog_row = nullptr;
+		QHBoxLayout *m_layouts_row = nullptr;
 		QComboBox *m_printer = nullptr;
 		QLabel *m_target_message = nullptr;
 		QLabel *m_profile_source = nullptr;
@@ -155,6 +201,7 @@ class ThmPrintersDialog : public QDialog
 		QLineEdit *m_model = nullptr;
 		QLineEdit *m_host = nullptr;
 		QSpinBox *m_port = nullptr;
+		QComboBox *m_transport = nullptr;
 		QComboBox *m_material = nullptr;
 		QComboBox *m_usual = nullptr;
 		QLineEdit *m_roller = nullptr;
@@ -178,5 +225,16 @@ class ThmPrintersDialog : public QDialog
 		QCheckBox *m_transfer = nullptr;
 		QCheckBox *m_rotate = nullptr;
 };
+
+/**
+	@brief The entry of the menu Label printing that needs no project:
+	the printers set up, with what each is loaded with. The Weidmüller
+	catalog and layout file are found by themselves (ThmPrinters).
+*/
+namespace ThmPrintMenu
+{
+		/// Add, change and remove printers; their loading and roller
+	void managePrinters(QWidget *parent);
+}
 
 #endif // THMPRINTDIALOG_H

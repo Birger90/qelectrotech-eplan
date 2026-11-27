@@ -207,7 +207,7 @@ Keine doppelten Funktionen – wo Upstream dasselbe kann wie der Fork, gibt es n
 
 ### THM-Etiketten direkt drucken
 
-- Menü Projekt > *THM-Etiketten drucken…*: Draht-, Kabel-, Klemmen- und Geräteschilder gehen ohne M-Print PRO
+- Menü Etikettendruck > *THM-Etiketten drucken…* (neben Schaltschrankaufbau): Draht-, Kabel-, Klemmen- und Geräteschilder gehen ohne M-Print PRO
   direkt an Weidmüller-Thermotransferdrucker THM (THM MMP, THM MultiMark) über TCP, Standardport 9100, in cabs
   Druckersprache JScript. Auswahl mit Blattfilter, gleiche Texte zusammengefasst, Kopien je Schild, Vorschau;
   Status (`ESC s`), Material (`ESC l`), Pause, Fortsetzen und Abbruch (nur nach Rückfrage); Druck erst nach einer
@@ -235,6 +235,21 @@ Keine doppelten Funktionen – wo Upstream dasselbe kann wie der Fork, gibt es n
   wechseln…* im Druckdialog zeigt Artikel, Farbband und Trägerplatte und übernimmt den Wechsel erst nach der
   Bestätigung „eingelegt“. CLI `--thm-load <Drucker> <Artikel> [--usual] [--roller …]`; `--thm-send` sendet nur an
   einen Drucker, dessen aktuelle Rüstung zum Artikel passt.
+- **Gedruckt wird, was die Vorschau zeigt**: jede Reihe als PNG mit 300 dpi wie M-Print PRO (`eIMG`, `dPNG`, `I:Field1`),
+  gleiche Schrift und Verkleinerung zu langer Texte in Vorschau und Druck; CLI `--picture`. Am THM MultiMark gedruckt.
+- **Etiketteneditor** wie in M-Print PRO: maßstäbliche Ansicht des Streifens nach der Weidmüller-Vorlage, jedes Etikett
+  ein eigenes Feld zum Tippen (Tab/Enter weiter), *Nummerieren…* (Zahlen, SPS-Adressen, Buchstaben, Präfix/Suffix,
+  Schritt, Wiederholung), *Druck ab Etikett* für angebrochene Streifen.
+- **Etiketten von Hand**: im Druckdialog *Von Hand eingeben* – ein Etikett je Zeile, `Text;n` für n Stück; geht auch
+  ohne offenes Projekt.
+- **Menü Etikettendruck** neben Schaltschrankaufbau: THM-Etiketten drucken, THM-Drucker (hinzufügen, ändern,
+  entfernen, auch ohne offenes Projekt), Beschriftung exportieren. Katalog und Layoutdatei findet QET selbst im
+  Ordner `weidmueller` neben dem Programm (`deploy_lokal.ps1` legt sie aus dem privaten Datenordner hinein, also
+  in jedes Verteilpaket); kein M-Print PRO nötig. Nur wenn eine fehlt, fragt der Druckdialog.
+- **Sendeweg LPD** je Drucker (*Drucker…* > *Aufträge senden über*, CLI `--thm-transport <Drucker> lpd|rawip`):
+  RFC 1179 auf Port 515, Warteschlange `lp`, jeder Schritt vom Drucker bestätigt. Für Geräte, die auf Port 9100 die
+  Verbindung annehmen, aber nichts verarbeiten; an einem THM MultiMark belegt (Zähler stieg nur über LPD). Status und
+  Material weiter über RawIP. Test `tst_thmprint` mit nachgebauter LPD-Gegenstelle.
 - **Material auswählen** wie in M-Print PRO: *Auswählen…* im Druckdialog (und *…* in der Druckerverwaltung) zeigt
   alle Varianten als Tabelle mit Suche und Filtern nach Kategorie, Maß, Farbe, ein-/zweiseitig, „nur druckbar“ und
   „nur gerüstet“; Doppelklick übernimmt das Material.
@@ -421,7 +436,7 @@ Einfache Revisionsverwaltung nach EPLAN-Vorbild (Skill `eplan-wissen`, `revision
 
 ### Beschriftungsexport
 
-- Menü Projekt > *Beschriftung exportieren…*: Draht-, Klemmen-, Geräte- und Kabelschilder für die
+- Menü Etikettendruck > *Beschriftung exportieren…*: Draht-, Klemmen-, Geräte- und Kabelschilder für die
   Beschriftungsprogramme Phoenix Contact MARKING system / PROJECT complete, Weidmüller M-Print PRO und WAGO Smart
   Script, dazu eine neutrale CSV mit allen Spalten. Auswahl nach Art, Blattbereich und Anlage/Ort; vollständiges
   oder kurzes Kennzeichen; ein Schild je Draht-/Kabelende oder eines. Die Zahl der Schilder steht im Dialog, bevor

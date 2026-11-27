@@ -1,4 +1,4 @@
-# Beschriftungsexport (Projekt > Beschriftung und Etiketten exportieren…)
+# Beschriftungsexport (Etikettendruck > Beschriftung und Etiketten exportieren…)
 
 Der Export schreibt die Schilder eines Projekts als Datei für die Beschriftungsprogramme der Klemmenhersteller:
 
@@ -166,7 +166,7 @@ Datei `--format list` (Etikettenliste, früher Upstreams *Export labels for prin
 - Geräte: Klemmen fehlen hier, sie stehen schon unter Klemmen. Querverweise fehlen ebenfalls. Ein Gerät aus mehreren Symbolen (Spule mit Kontakten) ist ein Schild.
 - Kabel ohne Bezeichnung bekommen kein Schild.
 
-## THM direkt drucken (Projekt > THM-Etiketten drucken…)
+## THM direkt drucken (Etikettendruck > THM-Etiketten drucken…)
 
 Die Schilder gehen ohne M-Print PRO direkt an einen Weidmüller-Thermotransferdrucker der Reihe THM (THM MMP, THM MultiMark). Diese Drucker beruhen auf cab-Technik und verstehen cabs Druckersprache JScript. QElectroTech schickt den Auftrag als rohe Bytes über TCP, Standardport 9100.
 
@@ -219,6 +219,10 @@ Die Zahlen sind ein Beispiel (Profil 12 × 6 mm, Lücke 2 mm); sie stammen aus d
 
 ### Drucker und Material einrichten
 
+Das Menü *Etikettendruck* (neben *Schaltschrankaufbau*) enthält *THM-Etiketten drucken…*, *THM-Drucker…* (Drucker hinzufügen, ändern und entfernen, mit Rüstung, Walze und Sendeweg, auch ohne offenes Projekt) und *Beschriftung und Etiketten exportieren…*.
+
+Katalog und Layoutdatei sucht QET selbst. Der Nutzer wählt nur das Etikett, M-Print PRO muss nicht installiert sein. Beide Dateien liegen im Ordner `weidmueller` neben dem Programm: `tools/deploy_lokal.ps1` kopiert sie dorthin, damit sind sie in jedem Verteilpaket und nach der Installation da. Es sind Herstellerdaten, darum liegen sie nicht im Repository. Quelle ist der private Datenordner (`QET_WEIDMUELLER_DIR`, sonst `weidmueller` neben der Firmensammlung). Weitere Suchorte in dieser Reihenfolge: eine von Hand gewählte Datei, beim Katalog ein installiertes M-Print PRO (`%ProgramData%/weidmueller/M-Print PRO/products/my_cat_DE.mca`), `weidmueller` neben der Firmensammlung, der Konfigurationsordner, bei der Layoutdatei auch `QET_THM_LAYOUTS`. Nur wenn eine Datei fehlt, zeigt der Druckdialog ihre Zeile, damit man sie einmal von Hand zeigen kann.
+
 Unter *Drucker…* legt man jeden Drucker mit ID, Name, Modell, Adresse, Port und der **gerüsteten Artikelvariante** an, dazu das Druckprofil dieses Materials: Breite, Höhe, Lücke, Sensor, Spalten, Spaltenabstand, Ränder links/rechts, Verschiebung x/y, Schriftnummer, Textgröße, Grundlinie, optional Geschwindigkeit/Heizung/Thermotransfer und Drehung. Gespeichert wird in den Einstellungen unter `thm_print/printers`. QET enthält keine Adresse und keine Etikettenmaße: Breite und Höhe 0 lassen keinen Druck zu.
 
 Den Materialkatalog liest QET zur Laufzeit aus einer Weidmüller-Katalogdatei (`my_cat*.mca`), die man unter *Katalogdatei…* wählt. Gelesen wird das Wurzelelement `multiprint_catalog`, darin der `cat_item` mit `title="MultiMark"` und darunter jedes Element mit Materialnummer (`materialno`), Name (`name`) und Beschreibung (`description`). Ob diese Werte im echten Katalog Attribute oder Unterelemente sind, ist nicht belegt; QET liest beides. Herstellerdaten liegen nicht im Repository. Der Test nutzt die erfundene Datei `tests/qttest/fixtures/thm_catalog_example.mca`.
@@ -231,6 +235,10 @@ Die Zielwahl richtet sich nach der Artikelvariante:
 
 ### Dialog
 
+- **Etikettenansicht** (Registerkarte *Etiketten*, daneben *Liste*): der Streifen maßstäblich nach der Vorlage des gewählten Materials – Reihen, Spalten, Markierer (gelb), Textfeld (gepunktet), Text in Größe und Drehung wie gedruckt. Wechselt man das Material, wechselt die Ansicht. Von Hand: jedes Etikett ist ein eigenes Feld, Tab, Enter oder Pfeil nach unten springt weiter, nach dem letzten Text steht immer ein leeres Etikett. Strg+Mausrad zoomt.
+- **Nummerieren…** (von Hand): Zahlen, SPS-Adressen (Byte.Bit, 4.0 … 4.7, 5.0) oder Buchstaben, mit Präfix, Suffix, Start, Ende (auch abwärts), Schritt, Wiederholung je Wert und Stellenzahl; hinter den letzten Text oder statt aller Texte.
+- **Druck ab Etikett**: bei angebrochenem Streifen bleiben die Etiketten davor leer.
+- **Texte**: *Aus dem Projekt* (wie unten) oder *Von Hand eingeben*, wie in M-Print PRO: ein Etikett je Zeile, `Text;n` für n Etiketten dieses Texts, leere Zeilen zählen nicht. Kopien je Schild und *Gleiche Texte zusammenfassen* gelten auch hier. Ohne offenes Projekt öffnet der Dialog gleich mit dieser Eingabe; der Menüpunkt ist darum immer aktiv.
 - Auswahl wie beim Export: Drähte, Kabel, Klemmen, Geräte; Blätter von … bis; vollständiges Kennzeichen; je Draht- und Kabelende ein Schild; gleiche Texte zusammenfassen; Kopien je Schild.
 - Vorschau: Text und Anzahl je Zeile, Summe der Etiketten.
 - *Status abfragen* (`v`, dann `ESC s`), *Material abfragen* (`ESC l`, mit Vergleich gegen Höhe + Lücke des Profils; bis 1 mm Abweichung gilt als passend, weil der Drucker ganze Millimeter meldet), *Pause*, *Fortsetzen*, *Auftrag abbrechen…* (nur nach Rückfrage).
@@ -285,7 +293,15 @@ Ohne Drucker geprüft sind die Bytes des Auftrags, die Auswertung der Antworten 
 | Geschwindigkeit | 30, 40, 50, 75, 100, 125 mm/s | 30, 40, 50, 75, 100, 125, 150 mm/s |
 | Druckkopf | 105,7 mm bei 11,8 Punkt/mm | 106 mm bei 12 Punkt/mm |
 
-Breitere Etiketten (die ganze Reihe, `wd` des `S`-Befehls) weist QET ab. Auf `v`, `ESC s` und `ESC l` antworteten ein MMP (`4.29 Jan 03, 2017 (THM MMP)`, `Y-000000N`/`Y-000000Y`, `Y0037`) und ein MultiMark (`5.36 Feb 23, 2021 (THM MultiMark)`, `Y-000000Y`, `Y0023`) wie beschrieben. Drei weitere MultiMark nahmen die TCP-Verbindung an, antworteten aber nicht (vermutlich hielt eine andere Verbindung den RawIP-Port); QET meldet das als „keine Antwort“. Ein Druckbild ist noch nicht geprüft.
+Breitere Etiketten (die ganze Reihe, `wd` des `S`-Befehls) weist QET ab. Auf `v`, `ESC s` und `ESC l` antworteten ein MMP (`4.29 Jan 03, 2017 (THM MMP)`, `Y-000000N`/`Y-000000Y`, `Y0037`) und ein MultiMark (`5.36 Feb 23, 2021 (THM MultiMark)`, `Y-000000Y`, `Y0023`) wie beschrieben. Drei weitere MultiMark nahmen die TCP-Verbindung auf Port 9100 an, antworteten aber nicht und verarbeiteten auch einen Auftrag nicht: Der Etikettenzähler der Weboberfläche (`cmd=3`, `labels`) blieb stehen, das Ereignisprotokoll (`cmd=4`) zeigte nichts. Über LPD druckten dieselben Geräte (siehe *Sendeweg LPD*). Ein Druckbild ist noch nicht begutachtet.
+
+### Sendeweg LPD
+
+Jeder Drucker hat unter *Drucker…* die Einstellung *Aufträge senden über*: **RawIP** (der Port oben, Standard 9100) oder **LPD** (RFC 1179, Port 515, Warteschlange `lp`, Druckdatei unverändert mit Format `l`). Die cab-Geräte haben LPD ab Werk eingeschaltet und geben LPD-Daten an denselben JScript-Interpreter. LPD bestätigt jeden Schritt (Warteschlange, Kopf und Inhalt der Druckdatei, Kopf und Inhalt der Steuerdatei) mit einem Nullbyte. QET meldet den Auftrag deshalb erst als gesendet, wenn alle fünf Bestätigungen da sind, und nennt sonst den abgelehnten Schritt.
+
+Wann LPD: wenn ein Drucker auf Port 9100 die Verbindung annimmt, aber weder auf `ESC s` antwortet noch druckt. Belegt an einem THM MultiMark (Firmware 5.36): Ein QET-Auftrag über RawIP ließ den Etikettenzähler stehen, derselbe Auftrag über LPD erhöhte ihn um eins. Status und Material fragt QET weiter über RawIP ab; antwortet der Drucker dort nicht, sendet `--thm-send` bei LPD trotzdem und sagt das, bei RawIP bricht es ab.
+
+Kommandozeile: `qelectrotech --thm-transport <Drucker> lpd` (zurück mit `rawip`, andere Warteschlange mit `--queue NAME`); `--thm-printers` zeigt den Sendeweg.
 
 ## Layoutdatei (Druckprofil je Artikel aus M-Print PRO)
 
@@ -308,7 +324,7 @@ Daraus wird das Profil so gebildet, wie M-Print PRO seine THM-Aufträge schreibt
 - **Abgelehnt** mit Begründung statt falsch gedruckt: Endlosmaterial (`sensor_type = continuous`, Layoutregel `multi_rows`, 46 Vorlagen mit 194 Varianten), Schneiden (`cut_mode = on`), Seiten breiter als der Druckkopf, Marker nicht in einer gleichmäßigen Reihe, Streifen mit mehreren Markern nebeneinander, Vorlagen ohne Textfeld `MARKER`.
 - Hat ein Artikel mehrere Varianten (z. B. ein- und zweiseitig), nimmt QET die erste druckbare; mit `Nummer/Vorlage.mcf` lässt sich eine bestimmte wählen.
 - Kennt die Layoutdatei den Artikel nicht, gilt wie bisher das eigene Profil des Druckers. Einen abgelehnten Artikel druckt QET auch nicht mit dem eigenen Profil.
-- Was M-Print anders macht: es setzt den Text als Bild (`I:Field1` mit PNG), QET schreibt `T`-Felder mit der Druckerschrift 3 (Swiss 721). Lage, Drehung und Raster folgen der Vorlage; das Schriftbild unterscheidet sich. M-Print schreibt `mm` und `O` vor `S`, QET `m m` und `O` nach `S` (cab-Handbuch S. 53 und 212). Die Lage gedrehter Texte (90°/270°) ist aus dem Handbuch abgeleitet und am Gerät noch zu prüfen.
+- **Druckbild wie die Vorschau** (Druckdialog, CLI mit `--picture`): QET zeichnet jede Reihe des Materials wie M-Print als schwarz-weißes PNG mit 300 dpi (TM-I 18: 768 × 124 Punkte für 65 × 10,5 mm) und schickt es so, wie M-Print es tut: `eIMG;*`, `dPNG;0`, das Bild zwischen `ESC :` und `ESC end-of-data`, dann `mm`, `zO`, `J`, `H`, `O`, `S`, `I:Field1;0,0,0;0`, `A n`. Gleiche Reihen nacheinander zählen einmal mit `A n`. Vorschau und Druck nutzen dieselbe Schrift (Arial, Größe aus der Vorlage) und dieselbe Anpassung: ein zu langer Text wird kleiner, nicht abgeschnitten. Am THM MultiMark über LPD geprüft (Etikettenzähler +1, kein Fehler im Protokoll). Ohne `--picture` schreibt die CLI weiter `T`-Felder in der Druckerschrift 3 (Swiss 721).
 - Der Test `tests/qttest/tst_thmlayouts.cpp` nutzt die erfundene Datei `tests/qttest/fixtures/thm_layouts_example.json` (Artikelnummern 99000000xx), keine Herstellerdaten.
 
 ## Material auswählen (wie in M-Print PRO)

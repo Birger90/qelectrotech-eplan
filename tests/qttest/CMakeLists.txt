@@ -2495,7 +2495,7 @@ target_include_directories(tst_thmlayouts PRIVATE ${QET_DIR}/sources)
 target_link_libraries(tst_thmlayouts PRIVATE Qt::Core Qt::Xml Qt::Test)
 target_compile_definitions(tst_thmlayouts PRIVATE
   THM_LAYOUTS_FIXTURE="${CMAKE_CURRENT_SOURCE_DIR}/fixtures/thm_layouts_example.json")
-# Project > Print THM labels...: preview of the markers and the printer
+# Label printing > Print THM labels...: preview of the markers and the printer
 # chosen by the article loaded (one preselected, none among several).
 qet_add_app_test(tst_thmprintdialog tst_thmprintdialog.cpp)
 

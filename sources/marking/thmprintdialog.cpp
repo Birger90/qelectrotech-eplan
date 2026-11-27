@@ -17,13 +17,17 @@
 */
 #include "thmprintdialog.h"
 
+#include "thmlabelsheet.h"
+#include "thmrender.h"
 #include "thmmaterialdialog.h"
 
 #include "../dataBase/projectdatabase.h"
 #include "../qet.h"
+#include "../qetapp.h"
 #include "../qetproject.h"
 
 #include <QCheckBox>
+#include <QCoreApplication>
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QDir>
@@ -32,6 +36,7 @@
 #include <QFileInfo>
 #include <QFormLayout>
 #include <QGroupBox>
+#include <QHash>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
@@ -39,11 +44,14 @@
 #include <QListWidget>
 #include <QLocale>
 #include <QMessageBox>
+#include <QPlainTextEdit>
 #include <QPushButton>
+#include <QRadioButton>
 #include <QSaveFile>
 #include <QSettings>
 #include <QSpinBox>
 #include <QSplitter>
+#include <QTabWidget>
 #include <QTableWidget>
 #include <QVBoxLayout>
 
@@ -61,11 +69,28 @@ QDoubleSpinBox *millimetres(QWidget *parent, double max = 500)
 }
 }
 
+namespace {
+	/// The Weidmüller files are looked for beside the company collection
+	/// (its folder "weidmueller") and in the configuration folder
+void useApplicationDirs()
+{
+	ThmPrinters::setDataDirs({QDir::cleanPath(QETApp::companyElementsDir() + QStringLiteral("../weidmueller")),
+							  QDir::cleanPath(QETApp::configDir())});
+}
+}
+
+	/// Whether the dialog opens with the texts typed by hand
+static bool by_hand_start(QSettings &settings, QETProject *project)
+{
+	return !project || settings.value("by_hand", false).toBool();
+}
+
 ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	QDialog(parent),
 	m_project(project),
 	m_client(new ThmClient(this))
 {
+	useApplicationDirs();
 	setWindowTitle(tr("Print THM labels"));
 	QET::trackDialogGeometry(this);
 	if (m_project && m_project->dataBase()) m_project->dataBase()->updateDB();
@@ -81,7 +106,39 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 		//What gets a label
 	auto *left = new QVBoxLayout;
 	top->addLayout(left, 1);
+		//From the project, or typed by hand as in M-Print PRO
+	auto *source = new QGroupBox(tr("Texts"), this);
+	auto *source_layout = new QVBoxLayout(source);
+	auto *source_row = new QHBoxLayout;
+	m_from_project = new QRadioButton(tr("From the project"), source);
+	m_from_text = new QRadioButton(tr("Typed by hand"), source);
+	m_from_text->setObjectName(QStringLiteral("thm_from_text"));
+	source_row->addWidget(m_from_project);
+	source_row->addWidget(m_from_text);
+	source_row->addStretch();
+	source_layout->addLayout(source_row);
+	m_free_text = new QPlainTextEdit(source);
+	m_free_text->setObjectName(QStringLiteral("thm_free_text"));
+	m_free_text->setPlaceholderText(tr("One label per line, e.g.\n-K1\n-X1:1;2   (2 labels)"));
+	m_free_text->setPlainText(settings.value("free_text").toString());
+	source_layout->addWidget(m_free_text);
+	m_free_text->setVisible(false);
+	auto *source_hint = new QLabel(tr("Type straight into the labels of the preview: Tab or Return goes on to the next label."), source);
+	source_hint->setWordWrap(true);
+	source_layout->addWidget(source_hint);
+	auto *number_button = new QPushButton(tr("Numbering..."), source);
+	number_button->setObjectName(QStringLiteral("thm_numbering"));
+	number_button->setToolTip(tr("Fill the labels with a series: prefix, start, end, step, suffix"));
+	source_layout->addWidget(number_button, 0, Qt::AlignLeft);
+	connect(number_button, &QPushButton::clicked, this, &ThmPrintDialog::numberLabels);
+	connect(m_from_text, &QRadioButton::toggled, number_button, &QWidget::setEnabled);
+	number_button->setEnabled(by_hand_start(settings, project));
+	left->addWidget(source);
+	const bool by_hand = by_hand_start(settings, m_project);
+	m_from_project->setEnabled(m_project != nullptr);
+	(by_hand ? m_from_text : m_from_project)->setChecked(true);
 	auto *kinds = new QGroupBox(tr("Markers"), this);
+	m_kinds_box = kinds;
 	auto *kinds_layout = new QHBoxLayout(kinds);
 	const int kind_flags = settings.value("kinds", int(MarkingExport::Wire)).toInt();
 	m_wires = new QCheckBox(tr("Wires"), kinds);
@@ -96,6 +153,7 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	left->addWidget(kinds);
 
 	auto *range = new QGroupBox(tr("Range"), this);
+	m_range_box = range;
 	auto *range_form = new QFormLayout(range);
 	const int folios = m_project ? m_project->diagrams().size() : 0;
 	auto *folio_row = new QHBoxLayout;
@@ -123,6 +181,13 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	range_form->addRow(m_both_ends);
 	range_form->addRow(m_merge);
 	range_form->addRow(tr("Copies of each marker:"), m_copies);
+		//A strip begun already: the first labels of the row stay empty
+	m_first = new QSpinBox(range);
+	m_first->setObjectName(QStringLiteral("thm_first_label"));
+	m_first->setRange(1, 999);
+	m_first->setValue(1);
+	m_first->setToolTip(tr("On a strip begun already: the labels before this one stay empty"));
+	range_form->addRow(tr("Start at label:"), m_first);
 	left->addWidget(range);
 
 	m_preview = new QTableWidget(0, 2, this);
@@ -133,12 +198,18 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	m_preview->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	m_preview->setSelectionMode(QAbstractItemView::NoSelection);
 	m_preview->setObjectName(QStringLiteral("thm_preview"));
-	left->addWidget(m_preview, 1);
+		//The labels as on the material, and the same as a list
+	m_sheet = new ThmLabelSheet(this);
+	m_views = new QTabWidget(this);
+	m_views->addTab(m_sheet, tr("Labels"));
+	m_views->addTab(m_preview, tr("List"));
+	connect(m_sheet, &ThmLabelSheet::textsChanged, this, &ThmPrintDialog::sheetEdited);
 	m_count = new QLabel(this);
 	m_count->setObjectName(QStringLiteral("thm_count"));
 	left->addWidget(m_count);
 
 		//Where to: the article picks the printer
+	top->addWidget(m_views, 2);
 	auto *target = new QGroupBox(tr("Target"), this);
 	top->addWidget(target, 1);
 	auto *target_layout = new QVBoxLayout(target);
@@ -179,6 +250,9 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	layouts_row->addWidget(m_layouts_label, 1);
 	layouts_row->addWidget(layouts_button);
 	target_form->addRow(tr("Layouts:"), layouts_row);
+	m_target_form = target_form;
+	m_catalog_row = catalog_row;
+	m_layouts_row = layouts_row;
 	m_printer = new QComboBox(target);
 	m_printer->setObjectName(QStringLiteral("thm_printer"));
 	target_form->addRow(tr("Printer:"), m_printer);
@@ -251,9 +325,11 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	for (auto *box : {m_wires, m_cables, m_terminals, m_devices, m_full, m_both_ends, m_merge}) {
 		connect(box, &QCheckBox::toggled, this, &ThmPrintDialog::updatePreview);
 	}
-	for (auto *spin : {m_folio_from, m_folio_to, m_copies}) {
+	for (auto *spin : {m_folio_from, m_folio_to, m_copies, m_first}) {
 		connect(spin, &QSpinBox::valueChanged, this, &ThmPrintDialog::updatePreview);
 	}
+	connect(m_from_text, &QRadioButton::toggled, this, &ThmPrintDialog::updateSource);
+	connect(m_free_text, &QPlainTextEdit::textChanged, this, &ThmPrintDialog::updatePreview);
 	connect(m_article, &QComboBox::currentTextChanged, this, &ThmPrintDialog::updateTarget);
 	connect(m_printer, &QComboBox::currentIndexChanged, this, [this]() {
 		m_material = ThmJob::Material();
@@ -267,7 +343,7 @@ ThmPrintDialog::ThmPrintDialog(QETProject *project, QWidget *parent) :
 	loadLayouts();
 	fillArticles();
 	if (!article.isEmpty()) m_article->setCurrentText(article);
-	updatePreview();
+	updateSource();
 	updateTarget();
 }
 
@@ -285,12 +361,217 @@ MarkingExport::Options ThmPrintDialog::options() const
 	return o;
 }
 
+QList<ThmJob::Label> ThmPrintDialog::freeLabels(const QString &text, int copies, bool merge)
+{
+	QList<ThmJob::Label> out;
+	QHash<QString, int> index;
+	for (const QString &raw : text.split(QLatin1Char('\n'))) {
+		QString line = raw.trimmed();
+		if (line.isEmpty()) continue;
+		int count = 1;
+			//"text;n": n labels of this text
+		const int semi = line.lastIndexOf(QLatin1Char(';'));
+		if (semi > 0) {
+			bool ok = false;
+			const int n = line.mid(semi + 1).trimmed().toInt(&ok);
+			if (ok && n > 0) {
+				count = n;
+				line = line.left(semi).trimmed();
+			}
+		}
+		count *= qMax(1, copies);
+		if (merge && index.contains(line)) {
+			out[index.value(line)].count += count;
+			continue;
+		}
+		index.insert(line, int(out.size()));
+		out << ThmJob::Label{line, count};
+	}
+	return out;
+}
+
+QStringList ThmPrintDialog::series(const Series &s, QString *error)
+{
+	const auto fail = [&](const QString &why) {
+		if (error) *error = why;
+		return QStringList();
+	};
+	if (error) error->clear();
+	const int step = qMax(1, qAbs(s.step));
+	const int repeat = qMax(1, s.repeat);
+	QList<int> values;
+	const auto range = [&](int a, int b) {
+		if (a <= b) for (int v = a; v <= b && values.size() <= ThmLabelSheet::kMaxFields; v += step) values << v;
+		else for (int v = a; v >= b && values.size() <= ThmLabelSheet::kMaxFields; v -= step) values << v;
+	};
+	QStringList texts;
+	switch (s.kind) {
+		case Series::Decimal: {
+			bool ok1 = false, ok2 = false;
+			const int a = s.start.trimmed().toInt(&ok1), b = s.end.trimmed().toInt(&ok2);
+			if (!ok1 || !ok2) return fail(tr("Start and end must be whole numbers."));
+			range(a, b);
+			for (int v : values) texts << QStringLiteral("%1").arg(v, s.digits, 10, QLatin1Char('0'));
+			break;
+		}
+		case Series::Plc: {
+				//Byte.bit, eight bits to a byte: 4.0 ... 4.7, 5.0
+			const auto bits = [](const QString &t, bool *ok) {
+				const QStringList p = t.trimmed().split(QLatin1Char('.'));
+				bool a = false, b = false;
+				const int byte = p.value(0).toInt(&a), bit = p.value(1, QStringLiteral("0")).toInt(&b);
+				*ok = a && b && p.size() <= 2 && bit >= 0 && bit < 8 && byte >= 0;
+				return byte * 8 + bit;
+			};
+			bool ok1 = false, ok2 = false;
+			const int a = bits(s.start, &ok1), b = bits(s.end, &ok2);
+			if (!ok1 || !ok2) return fail(tr("Start and end of a PLC series are byte.bit, e.g. 4.0 and 5.7."));
+			range(a, b);
+			for (int v : values) texts << QStringLiteral("%1.%2").arg(v / 8).arg(v % 8);
+			break;
+		}
+		case Series::Letters: {
+			const QString a = s.start.trimmed().toUpper(), b = s.end.trimmed().toUpper();
+			if (a.size() != 1 || b.size() != 1 || !a.at(0).isLetter() || !b.at(0).isLetter())
+				return fail(tr("Start and end of a letter series are single letters, e.g. A and Z."));
+			range(a.at(0).unicode(), b.at(0).unicode());
+			for (int v : values) texts << QString(QChar(v));
+			break;
+		}
+	}
+	if (values.size() * repeat > ThmLabelSheet::kMaxFields) return fail(tr("The series is too long."));
+	QStringList out;
+	for (const QString &t : std::as_const(texts))
+		for (int i = 0; i < repeat; ++i) out << s.prefix + t + s.suffix;
+	return out;
+}
+
+void ThmPrintDialog::numberLabels()
+{
+	QDialog dialog(this);
+	dialog.setWindowTitle(tr("Numbering"));
+	auto *form = new QFormLayout(&dialog);
+	auto *kind = new QComboBox(&dialog);
+	kind->addItem(tr("Numbers (1, 2, 3)"), int(Series::Decimal));
+	kind->addItem(tr("PLC addresses (4.0 ... 4.7, 5.0)"), int(Series::Plc));
+	kind->addItem(tr("Letters (A, B, C)"), int(Series::Letters));
+	auto *prefix = new QLineEdit(&dialog);
+	prefix->setPlaceholderText(tr("e.g. -X1: or I"));
+	auto *start = new QLineEdit(QStringLiteral("1"), &dialog);
+	auto *end = new QLineEdit(QStringLiteral("10"), &dialog);
+	auto *step = new QSpinBox(&dialog);
+	step->setRange(1, 1000);
+	auto *repeat = new QSpinBox(&dialog);
+	repeat->setRange(1, 99);
+	auto *digits = new QSpinBox(&dialog);
+	digits->setRange(0, 6);
+	digits->setSpecialValueText(tr("as needed"));
+	auto *suffix = new QLineEdit(&dialog);
+	auto *where = new QComboBox(&dialog);
+	where->addItem(tr("After the last text"));
+	where->addItem(tr("Replace all texts"));
+	auto *preview = new QLabel(&dialog);
+	preview->setWordWrap(true);
+	form->addRow(tr("Kind:"), kind);
+	form->addRow(tr("Prefix:"), prefix);
+	form->addRow(tr("Start:"), start);
+	form->addRow(tr("End:"), end);
+	form->addRow(tr("Step:"), step);
+	form->addRow(tr("Each value:"), repeat);
+	form->addRow(tr("Digits:"), digits);
+	form->addRow(tr("Suffix:"), suffix);
+	form->addRow(tr("Put:"), where);
+	form->addRow(preview);
+	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+	form->addRow(buttons);
+	connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+	connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+	const auto read = [=]() {
+		Series s;
+		s.kind = Series::Kind(kind->currentData().toInt());
+		s.prefix = prefix->text();
+		s.suffix = suffix->text();
+		s.start = start->text();
+		s.end = end->text();
+		s.step = step->value();
+		s.repeat = repeat->value();
+		s.digits = digits->value();
+		return s;
+	};
+	const auto show = [=]() {
+		QString error;
+		const QStringList t = series(read(), &error);
+		if (!error.isEmpty()) {
+			preview->setText(error);
+		} else {
+			QStringList head = t.mid(0, 6);
+			if (t.size() > 6) head << QStringLiteral("...") << t.last();
+			preview->setText(tr("%n label(s): %1", nullptr, int(t.size())).arg(head.join(QStringLiteral(", "))));
+		}
+		buttons->button(QDialogButtonBox::Ok)->setEnabled(error.isEmpty() && !t.isEmpty());
+	};
+	connect(kind, &QComboBox::currentIndexChanged, &dialog, [=]() {
+		if (kind->currentData().toInt() == Series::Plc) { start->setText(QStringLiteral("0.0")); end->setText(QStringLiteral("1.7")); }
+		else if (kind->currentData().toInt() == Series::Letters) { start->setText(QStringLiteral("A")); end->setText(QStringLiteral("F")); }
+		else { start->setText(QStringLiteral("1")); end->setText(QStringLiteral("10")); }
+		show();
+	});
+	for (QLineEdit *e : {prefix, start, end, suffix}) connect(e, &QLineEdit::textChanged, &dialog, show);
+	for (QSpinBox *b : {step, repeat, digits}) connect(b, &QSpinBox::valueChanged, &dialog, show);
+	show();
+	if (dialog.exec() != QDialog::Accepted) return;
+	const QStringList added = series(read());
+	QStringList texts = where->currentIndex() == 1 ? QStringList() : m_sheet->texts();
+	texts += added;
+	m_free_text->setPlainText(texts.join(QLatin1Char('\n')));
+}
+
+QStringList ThmPrintDialog::expanded(const QList<ThmJob::Label> &labels)
+{
+	QStringList out;
+	for (const ThmJob::Label &l : labels) {
+		for (int i = 0; i < l.count && out.size() <= ThmLabelSheet::kMaxFields; ++i) out << l.text;
+	}
+	return out;
+}
+
+void ThmPrintDialog::sheetEdited(const QStringList &texts)
+{
+		//The sheet holds one field per label: its texts are the lines
+	m_sheet_typing = true;
+	m_free_text->setPlainText(texts.join(QLatin1Char('\n')));
+	m_sheet_typing = false;
+}
+
+void ThmPrintDialog::updateSource()
+{
+	const bool by_hand = m_from_text->isChecked();
+	m_sheet->setEditable(by_hand);
+	m_free_text->setEnabled(by_hand);
+	m_kinds_box->setEnabled(!by_hand);
+		//Folios, ends and designation only mean something for the project;
+		//copies and merging hold for both
+	m_folio_from->setEnabled(!by_hand);
+	m_folio_to->setEnabled(!by_hand);
+	m_full->setEnabled(!by_hand);
+	m_both_ends->setEnabled(!by_hand);
+	updatePreview();
+}
+
 QList<ThmJob::Label> ThmPrintDialog::labels() const
 {
-	const MarkingExport::Options o = options();
-	if (!o.kinds) return {};
-	return ThmJob::toLabels(MarkingExport::collect(m_project, o), m_copies->value(),
-							m_merge->isChecked());
+	QList<ThmJob::Label> out;
+	if (m_from_text->isChecked()) {
+		out = freeLabels(m_free_text->toPlainText(), m_copies->value(), m_merge->isChecked());
+	} else if (m_project) {
+		const MarkingExport::Options o = options();
+		if (o.kinds)
+			out = ThmJob::toLabels(MarkingExport::collect(m_project, o), m_copies->value(),
+								   m_merge->isChecked());
+	}
+		//Empty labels before the first one, on a strip begun already
+	if (!out.isEmpty() && m_first->value() > 1) out.prepend(ThmJob::Label{QString(), m_first->value() - 1});
+	return out;
 }
 
 void ThmPrintDialog::loadCatalog()
@@ -301,6 +582,7 @@ void ThmPrintDialog::loadCatalog()
 	m_catalog_error.clear();
 	if (path.isEmpty()) {
 		m_catalog_label->setText(tr("none chosen"));
+		if (m_target_form) m_target_form->setRowVisible(m_catalog_row, true);
 		return;
 	}
 	m_catalog = ThmCatalog::read(path, &m_catalog_error);
@@ -308,6 +590,8 @@ void ThmPrintDialog::loadCatalog()
 							 ? tr("%1 (%n variant(s))", nullptr, int(m_catalog.size()))
 							   .arg(QFileInfo(path).fileName())
 							 : m_catalog_error);
+		//Found by itself and read: nothing for the user to do with it
+	if (m_target_form) m_target_form->setRowVisible(m_catalog_row, !m_catalog_error.isEmpty());
 }
 
 void ThmPrintDialog::chooseCatalog()
@@ -334,6 +618,7 @@ void ThmPrintDialog::loadLayouts()
 	m_layouts_error.clear();
 	if (path.isEmpty()) {
 		m_layouts_label->setText(tr("none chosen: the printer's own profile is used"));
+		if (m_target_form) m_target_form->setRowVisible(m_layouts_row, true);
 		return;
 	}
 	m_layouts = ThmLayouts::read(path, &m_layouts_error);
@@ -343,6 +628,8 @@ void ThmPrintDialog::loadLayouts()
 							 ? tr("%1 (%2 of %3 variants printable)").arg(QFileInfo(path).fileName())
 							   .arg(printable).arg(m_layouts.size())
 							 : m_layouts_error);
+		//Found by itself and read: nothing for the user to do with it
+	if (m_target_form) m_target_form->setRowVisible(m_layouts_row, !m_layouts_error.isEmpty());
 }
 
 void ThmPrintDialog::chooseLayouts()
@@ -489,6 +776,14 @@ void ThmPrintDialog::fillArticles()
 void ThmPrintDialog::updatePreview()
 {
 	const QList<ThmJob::Label> list = labels();
+		//Typed by hand, each label of the sheet is a line: one text per
+		//field, as typed (copies only multiply what is printed)
+	if (!m_sheet_typing) {
+		if (m_from_text->isChecked())
+			m_sheet->setTexts(expanded(freeLabels(m_free_text->toPlainText(), 1, false)));
+		else
+			m_sheet->setTexts(expanded(list));
+	}
 	m_preview->setRowCount(list.size());
 	for (int i = 0; i < list.size(); ++i) {
 		m_preview->setItem(i, 0, new QTableWidgetItem(list.at(i).text));
@@ -496,7 +791,9 @@ void ThmPrintDialog::updatePreview()
 		count->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 		m_preview->setItem(i, 1, count);
 	}
-	if (!options().kinds) {
+	if (m_from_text->isChecked() && list.isEmpty()) {
+		m_count->setText(tr("Type the texts, one label per line."));
+	} else if (!m_from_text->isChecked() && !options().kinds) {
 		m_count->setText(tr("Choose at least one kind of marker."));
 	} else {
 		m_count->setText(tr("%n label(s)", nullptr, ThmJob::labelCount(list))
@@ -550,9 +847,13 @@ void ThmPrintDialog::updateTarget()
 	{
 		QString source, error;
 		const ThmPrinter *p = currentPrinter();
+		ThmJob::Profile profile;
+		bool known = false;
 		if (material.isEmpty()) m_profile_source->clear();
-		else if (jobProfile(p, nullptr, &source, &error)) m_profile_source->setText(tr("Profile: %1").arg(source));
+		else if ((known = jobProfile(p, &profile, &source, &error))) m_profile_source->setText(tr("Profile: %1").arg(source));
 		else m_profile_source->setText(error);
+			//The sheet shows the labels of this material
+		m_sheet->setProfile(known ? profile : ThmJob::Profile(), known);
 	}
 	m_material = ThmJob::Material();
 	m_device_state->clear();
@@ -668,7 +969,7 @@ void ThmPrintDialog::saveJob()
 		QMessageBox::warning(this, tr("Print THM labels"), error);
 		return;
 	}
-	const QByteArray job = ThmJob::build(labels(), profile, &error);
+	const QByteArray job = ThmRender::build(labels(), profile, &error);
 	if (job.isEmpty()) {
 		QMessageBox::warning(this, tr("Print THM labels"), error);
 		return;
@@ -705,7 +1006,7 @@ void ThmPrintDialog::print()
 		QMessageBox::warning(this, tr("Print THM labels"), error);
 		return;
 	}
-	const QByteArray job = ThmJob::build(list, profile, &error);
+	const QByteArray job = ThmRender::build(list, profile, &error);
 	if (job.isEmpty()) {
 		QMessageBox::warning(this, tr("Print THM labels"), error);
 		return;
@@ -722,7 +1023,8 @@ void ThmPrintDialog::print()
 	}
 	const QString summary = tr("Target: %1 (%2:%3)%4\nArticle: %5\nQuantity: %n label(s)", nullptr,
 							   ThmJob::labelCount(list))
-			.arg(p->name, p->host).arg(p->port)
+			.arg(p->name, p->host)
+			.arg(p->transport == ThmClient::Transport::Lpd ? QStringLiteral("515, LPD") : QString::number(p->port))
 			.arg(p->model.isEmpty() ? QString() : QStringLiteral(", ") + p->model, article)
 			+ QStringLiteral("\n") + tr("%n different text(s)", nullptr, int(list.size()))
 			+ QStringLiteral("\n") + tr("Profile: %1").arg(source)
@@ -731,6 +1033,7 @@ void ThmPrintDialog::print()
 	if (QMessageBox::question(this, tr("Print THM labels"), summary) != QMessageBox::Yes) return;
 	remember();
 	m_client->setTarget(p->host, p->port);
+	m_client->setJobTransport(p->transport, p->lpd_queue);
 	m_queue.clear();
 	m_lines.clear();
 	m_device_state->setText(tr("Sending to %1 ...").arg(p->name));
@@ -748,6 +1051,8 @@ void ThmPrintDialog::remember() const
 	settings.setValue("merge", m_merge->isChecked());
 	settings.setValue("copies", m_copies->value());
 	settings.setValue("article", m_article->currentText());
+	settings.setValue("by_hand", m_from_text->isChecked());
+	settings.setValue("free_text", m_free_text->toPlainText());
 }
 
 void ThmPrintDialog::setBusy(bool busy)
@@ -795,6 +1100,11 @@ ThmPrintersDialog::ThmPrintersDialog(const QList<ThmPrinter> &printers,
 	m_host->setPlaceholderText(tr("IP address or host name"));
 	m_port = new QSpinBox(m_form);
 	m_port->setRange(1, 65535);
+	m_transport = new QComboBox(m_form);
+	m_transport->addItem(tr("RawIP on the port above"), ThmClient::transportKey(ThmClient::Transport::RawIp));
+	m_transport->addItem(tr("LPD (port 515, queue lp)"), ThmClient::transportKey(ThmClient::Transport::Lpd));
+	m_transport->setToolTip(tr("Choose LPD when the printer takes the connection on its RawIP port but prints nothing; "
+							   "status and material are still asked by RawIP."));
 	m_material = new QComboBox(m_form);
 	m_material->setEditable(true);
 	m_material->setInsertPolicy(QComboBox::NoInsert);
@@ -821,6 +1131,7 @@ ThmPrintersDialog::ThmPrintersDialog(const QList<ThmPrinter> &printers,
 	form->addRow(tr("Model:"), m_model);
 	form->addRow(tr("Address:"), m_host);
 	form->addRow(tr("Port:"), m_port);
+	form->addRow(tr("Send jobs by:"), m_transport);
 		//A combo of articles with a button opening the filtered choice
 	const auto with_choice = [this](QComboBox *combo) {
 		auto *box = new QWidget(m_form);
@@ -936,6 +1247,7 @@ void ThmPrintersDialog::showPrinter(int row)
 	m_model->setText(p.model);
 	m_host->setText(p.host);
 	m_port->setValue(p.port);
+	m_transport->setCurrentIndex(qMax(0, m_transport->findData(ThmClient::transportKey(p.transport))));
 	const int known = m_material->findData(p.material_no);
 	if (known >= 0) m_material->setCurrentIndex(known);
 	else m_material->setCurrentText(p.material_no);
@@ -975,6 +1287,7 @@ void ThmPrintersDialog::store()
 	p.model = m_model->text().trimmed();
 	p.host = m_host->text().trimmed();
 	p.port = quint16(m_port->value());
+	p.transport = ThmClient::transportFromKey(m_transport->currentData().toString());
 	const auto chosen = [](const QComboBox *combo) {
 		const int i = combo->findText(combo->currentText());
 		if (i >= 0 && !combo->itemData(i).toString().isEmpty()) return combo->itemData(i).toString();
@@ -1060,4 +1373,21 @@ void ThmPrintersDialog::accept()
 		}
 	}
 	QDialog::accept();
+}
+
+// ThmPrintMenu
+
+void ThmPrintMenu::managePrinters(QWidget *parent)
+{
+	useApplicationDirs();
+	QSettings settings;
+	QList<ThmCatalog::Variant> catalog;
+	QList<ThmLayouts::Variant> layouts;
+	QString error;
+	const QString catalog_path = ThmPrinters::catalogFile(settings);
+	if (!catalog_path.isEmpty()) catalog = ThmCatalog::read(catalog_path, &error);
+	const QString layouts_path = ThmPrinters::layoutsFile(settings);
+	if (!layouts_path.isEmpty()) layouts = ThmLayouts::read(layouts_path, &error);
+	ThmPrintersDialog dialog(ThmPrinters::load(), catalog, parent, layouts);
+	if (dialog.exec() == QDialog::Accepted) ThmPrinters::save(dialog.printers());
 }

@@ -44,6 +44,40 @@ void ThmClient::setTarget(const QString &host, quint16 port)
 	m_port = port;
 }
 
+void ThmClient::setJobTransport(Transport transport, const QString &queue, quint16 lpd_port)
+{
+	m_transport = transport;
+	m_lpd_queue = queue.trimmed().isEmpty() ? QStringLiteral("lp") : queue.trimmed();
+	m_lpd_port = lpd_port ? lpd_port : 515;
+}
+
+QString ThmClient::transportKey(Transport transport)
+{
+	return transport == Transport::Lpd ? QStringLiteral("lpd") : QStringLiteral("rawip");
+}
+
+ThmClient::Transport ThmClient::transportFromKey(const QString &key)
+{
+	return key.trimmed().compare(QLatin1String("lpd"), Qt::CaseInsensitive) == 0
+			? Transport::Lpd : Transport::RawIp;
+}
+
+QList<QByteArray> ThmClient::lpdSteps(const QString &queue, const QByteArray &job,
+									  int number, const QString &host)
+{
+	const QByteArray h = host.toLatin1();
+	const QByteArray n = QByteArray::number(qAbs(number) % 1000).rightJustified(3, '0');
+	const QByteArray data_name = "dfA" + n + h;
+	const QByteArray control = "H" + h + "\nPqet\nl" + data_name + "\nN" + data_name + "\n";
+	QList<QByteArray> steps;
+	steps << ("\x02" + queue.toLatin1() + "\n");
+	steps << ("\x03" + QByteArray::number(job.size()) + " " + data_name + "\n");
+	steps << (job + QByteArray(1, '\0'));
+	steps << ("\x02" + QByteArray::number(control.size()) + " cfA" + n + h + "\n");
+	steps << (control + QByteArray(1, '\0'));
+	return steps;
+}
+
 void ThmClient::setTimeouts(int connect_ms, int reply_ms)
 {
 	m_connect_ms = qMax(1, connect_ms);
@@ -107,6 +141,9 @@ bool ThmClient::start(Request request, const QByteArray &job)
 	m_out = request == Request::Job ? job : command(request);
 	m_in.clear();
 	m_connected = false;
+	m_lpd = request == Request::Job && m_transport == Transport::Lpd;
+	m_steps.clear();
+	if (m_lpd && !m_out.isEmpty()) m_steps = lpdSteps(m_lpd_queue, m_out, ++m_lpd_number);
 	if (m_host.isEmpty() || m_port == 0) {
 		QTimer::singleShot(0, this, [this]() {
 			finish(false, QCoreApplication::translate("ThmClient", "No printer address is set."));
@@ -160,7 +197,9 @@ void ThmClient::begin()
 	connect(m_socket, &QTcpSocket::errorOccurred, this, &ThmClient::onSocketError);
 	connect(m_socket, &QTcpSocket::disconnected, this, [this]() {
 		if (!m_busy) return;
-		if (!expectsReply(m_request) && m_connected && m_to_write <= 0) {
+		if (m_lpd) {
+			finish(false, QCoreApplication::translate("ThmClient", "The printer closed the LPD connection before the job was taken over."));
+		} else if (!expectsReply(m_request) && m_connected && m_to_write <= 0) {
 			finish(true);
 		} else if (expectsReply(m_request) && m_request == Request::Version && !m_in.trimmed().isEmpty()) {
 			finish(true);
@@ -169,13 +208,18 @@ void ThmClient::begin()
 		}
 	});
 	m_timer->start(m_connect_ms);
-	m_socket->connectToHost(m_host, m_port);
+	m_socket->connectToHost(m_host, m_lpd ? m_lpd_port : m_port);
 }
 
 void ThmClient::onConnected()
 {
 	m_connected = true;
 	m_timer->start(m_reply_ms);
+	if (m_lpd) {
+		m_to_write = m_steps.first().size();
+		m_socket->write(m_steps.first());
+		return;
+	}
 	m_to_write = m_out.size();
 	m_socket->write(m_out);
 }
@@ -183,6 +227,7 @@ void ThmClient::onConnected()
 void ThmClient::onBytesWritten(qint64 bytes)
 {
 	m_to_write -= bytes;
+	if (m_lpd) return; //each part waits for its zero byte
 	if (m_to_write > 0 || expectsReply(m_request)) return;
 	if (m_request == Request::Cancel) m_last_cancel.start();
 		//All handed over: close, the job goes on in the printer
@@ -193,6 +238,26 @@ void ThmClient::onBytesWritten(qint64 bytes)
 void ThmClient::onReadyRead()
 {
 	m_in += m_socket->readAll();
+	if (m_lpd) {
+		while (!m_in.isEmpty() && !m_steps.isEmpty()) {
+			const char ack = m_in.at(0);
+			m_in.remove(0, 1);
+			if (ack != '\0') {
+				finish(false, QCoreApplication::translate("ThmClient", "The printer refused the LPD job (answer %1 in step %2).")
+					   .arg(int(static_cast<unsigned char>(ack))).arg(6 - m_steps.size()));
+				return;
+			}
+			m_steps.removeFirst();
+			if (m_steps.isEmpty()) {
+				finish(true);
+				return;
+			}
+			m_timer->start(m_reply_ms);
+			m_to_write = m_steps.first().size();
+			m_socket->write(m_steps.first());
+		}
+		return;
+	}
 	const int length = replyLength(m_request);
 	if (length > 0) {
 			//Line ends the printer may add are not part of the reply
@@ -214,12 +279,17 @@ void ThmClient::onTimeout()
 	if (!m_busy) return;
 	if (!m_connected) {
 		finish(false, QCoreApplication::translate("ThmClient", "The printer %1:%2 cannot be reached (no connection within %3 s).")
-			   .arg(m_host).arg(m_port).arg(m_connect_ms / 1000.0));
+			   .arg(m_host).arg(m_lpd ? m_lpd_port : m_port).arg(m_connect_ms / 1000.0));
 		return;
 	}
 		//A version without line end is complete when nothing more comes
 	if (m_request == Request::Version && !m_in.trimmed().isEmpty()) {
 		finish(true);
+		return;
+	}
+	if (m_lpd) {
+		finish(false, QCoreApplication::translate("ThmClient", "The printer did not confirm the LPD job within %1 s.")
+			   .arg(m_reply_ms / 1000.0));
 		return;
 	}
 	if (!expectsReply(m_request) && m_to_write <= 0) {
@@ -270,5 +340,7 @@ void ThmClient::finish(bool ok, const QString &error)
 	r.data = m_in;
 	r.error = error;
 	m_out.clear();
+	m_steps.clear();
+	m_lpd = false;
 	emit finished(r);
 }

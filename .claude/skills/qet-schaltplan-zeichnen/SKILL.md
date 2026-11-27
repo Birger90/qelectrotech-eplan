@@ -264,7 +264,11 @@ Funktionsvorlage einfügen – mit Artikeldaten, Klemmen, Kabel und Verknüpfung
   (wird die Materialreferenz), Kabel als echtes Kabel mit Bezeichnung. Export: `--export-marking <qet> <csv>
   --format phoenix|weidmueller|wago|neutral [--kinds …] [--folios N-M] [--plant/--location]` oder
   `qet.exportMarking()`. Spalten und Belege: `docs/beschriftung-export.md`.
-- THM-Druck (Fork, Unveröffentlicht): dieselben Schilder direkt an einen Weidmüller THM (cab-JScript, TCP 9100).
+- THM-Druck (Fork, Unveröffentlicht; Menü *Etikettendruck* neben Schaltschrankaufbau): dieselben Schilder direkt
+  an einen Weidmüller THM (cab-JScript, TCP 9100). Nimmt ein Drucker auf 9100 die Verbindung an, druckt aber nichts
+  (Etikettenzähler `cmd=3` bleibt stehen), Sendeweg LPD wählen: `--thm-transport <ID> lpd` (Port 515, Warteschlange
+  `lp`, jeder Schritt bestätigt). Vor dem Senden Teilung (`ESC l`) mit `dy` der Vorlage vergleichen; Erfolg am
+  Zähler der Weboberfläche prüfen, nicht an der TCP-Übergabe.
   Für Skripte nur Dateien erzeugen: `qet.exportThmJob(<prn>, '{"printer": "<ID>", "kinds": "wires"}')` oder
   `--thm-prn <qet> <prn> --printer <ID>`; ohne eingerichteten Drucker mit `--width/--height/--gap/--sensor`.
   **Nie ohne ausdrückliche Zustimmung des Nutzers drucken**: `--thm-send` sendet nur mit `--yes`; `--thm-status

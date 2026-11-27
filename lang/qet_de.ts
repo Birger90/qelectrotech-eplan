@@ -1574,6 +1574,15 @@ Bemerkung: diese Optionen verhindern NICHT das automatische Nummerieren.</transl
         <comment>no button</comment>
         <translation>Nein</translation>
     </message>
+    <message>
+        <source>Do not ask again</source>
+        <translation>Nicht mehr fragen</translation>
+    </message>
+    <message>
+        <source>It can be asked again in Settings &gt; General, &quot;Ask for a backup copy when a project is opened&quot;.</source>
+        <comment>checkbox tooltip</comment>
+        <translation>Die Frage lässt sich unter Einstellungen &gt; Allgemein wieder einschalten: „Beim Öffnen eines Projekts nach einer Sicherungskopie fragen“.</translation>
+    </message>
 </context>
 <context>
     <name>BackupRestoreDialog</name>
@@ -2794,6 +2803,18 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
         <source>Enter at least one detail to create an entry.</source>
         <translation>Geben Sie mindestens eine Angabe ein, um einen Eintrag zu erstellen.</translation>
     </message>
+    <message>
+        <source>Add a color</source>
+        <translation>Farbe hinzufügen</translation>
+    </message>
+    <message>
+        <source>The color of each core, separated by a comma and in the order of the cores.</source>
+        <translation>Die Farbe jeder Ader, durch Komma getrennt und in der Reihenfolge der Adern.</translation>
+    </message>
+    <message>
+        <source>Adds the IEC 60757 code of a color at the end of the list</source>
+        <translation>Hängt den Farbcode nach IEC 60757 an das Ende der Liste an</translation>
+    </message>
 </context>
 <context>
     <name>CableTypeList</name>
@@ -3596,6 +3617,14 @@ Gesperrt durch die Option „Nur eine Potenzialbeschriftung je Seite anzeigen“
         <source>Exhaust line</source>
         <comment>fluid line kind</comment>
         <translation>Abluft-/Leckleitung</translation>
+    </message>
+    <message>
+        <source>Standard sections</source>
+        <translation>Standardquerschnitte</translation>
+    </message>
+    <message>
+        <source>%1 mm²</source>
+        <translation>%1 mm²</translation>
     </message>
 </context>
 <context>
@@ -11804,6 +11833,14 @@ Alle Einstellungen außer „Keine Rundung“ können je nach folgenden Faktoren
     <message>
         <source> px</source>
         <translation> px</translation>
+    </message>
+    <message>
+        <source>Ask for a backup copy when a project is opened</source>
+        <translation>Beim Öffnen eines Projekts nach einer Sicherungskopie fragen</translation>
+    </message>
+    <message>
+        <source>Each time a project is opened, ask whether a dated copy of its file should be made beside it. The previous versions kept when saving, above, already keep copies without asking.</source>
+        <translation>Bei jedem Öffnen eines Projekts fragen, ob daneben eine datierte Kopie der Datei angelegt werden soll. Die oben eingestellten Vorversionen beim Speichern legen schon ohne Frage Kopien an.</translation>
     </message>
 </context>
 <context>

@@ -184,7 +184,8 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
 - *Schaltschrank aufbauen…*: der ganze Aufbau in sechs geführten Schritten mit Haken – Schrank mit Montageplatte
   (Rittal über die Bestellnummer), Hutschienen und Kanäle als Raster (Kanäle am Rand und zwischen den Reihen, eine
   Schiene je Reihe), Geräte und Klemmenleisten aus dem Schaltplan, Prüfung, 3D und Export. Die Einzelbefehle
-  stehen unter *Einzelschritte*.
+  stehen unter *Einzelschritte*. Die Data-Portal-Suche nach Schränken filtert nach Breite, Höhe und Tiefe, zeigt
+  die kleinsten zuerst und lässt Zubehör weg.
 - *Aufbauprüfung* als Seitenleiste: Teile übereinander, im Kanal, über die Fläche hinaus, ohne Bohrbild,
   Klemmenleiste zu kurz für ihre Klemmen (Breiten aus den Modellen); ein Klick wählt das Teil aus und zeigt es, die
   Liste folgt jeder Änderung. Teile desselben Geräts und an ihrem Partner hängende Geräte (Kombinationsliste) gelten

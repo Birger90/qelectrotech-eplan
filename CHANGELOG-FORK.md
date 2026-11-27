@@ -3,6 +3,13 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.58.0 – 27.11.2026 – Schranksuche nach Maßen
+
+- **Schrank aus dem Data Portal nach Maßen suchen** (*Schaltschrank einfügen… > Data Portal…*): Felder für Breite, Höhe und
+  Tiefe (beliebig = alle), die Treffer mit ihren Maßen B x H x T aus der Beschreibung, die kleinsten zuerst;
+  Zubehör ohne Maße (Schaltplantaschen u. a.) bleibt weg, abschaltbar. *Mehr laden* holt die nächsten 100 Treffer
+  (Rittal hat über 370 Schränke mit DXF). Idee aus OpenECraft #251.
+
 ## 1.57.0 – 27.11.2026 – Leitungen ohne Kanal als Bündel
 
 - **Verdrahtung ohne Kabelkanal:** Leitungen, die kein Kanal aufnimmt (Montageplatte ohne Kanäle oder Geräte, die

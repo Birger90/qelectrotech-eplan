@@ -16228,6 +16228,50 @@ Ignoriert: %3</translation>
         <source>Downloading %1…</source>
         <translation>Lade %1…</translation>
     </message>
+    <message>
+        <source>any</source>
+        <translation>beliebig</translation>
+    </message>
+    <message>
+        <source>Width of the enclosure; any: all widths</source>
+        <translation>Breite des Gehäuses; beliebig: alle Breiten</translation>
+    </message>
+    <message>
+        <source>Height of the enclosure; any: all heights</source>
+        <translation>Höhe des Gehäuses; beliebig: alle Höhen</translation>
+    </message>
+    <message>
+        <source>Depth of the enclosure; any: all depths</source>
+        <translation>Tiefe des Gehäuses; beliebig: alle Tiefen</translation>
+    </message>
+    <message>
+        <source>Only enclosures with sizes (no accessories)</source>
+        <translation>Nur Gehäuse mit Maßen (kein Zubehör)</translation>
+    </message>
+    <message>
+        <source>Load more</source>
+        <translation>Mehr laden</translation>
+    </message>
+    <message>
+        <source>W</source>
+        <translation>B</translation>
+    </message>
+    <message>
+        <source>H</source>
+        <translation>H</translation>
+    </message>
+    <message>
+        <source>D</source>
+        <translation>T</translation>
+    </message>
+    <message>
+        <source>W x H x D</source>
+        <translation>B x H x T</translation>
+    </message>
+    <message>
+        <source>%1 enclosures shown, %2 of %3 hits loaded. Only parts with DXF data are listed.</source>
+        <translation>%1 Gehäuse angezeigt, %2 von %3 Treffern geladen. Nur Teile mit DXF-Daten werden aufgeführt.</translation>
+    </message>
 </context>
 <context>
     <name>PartArc</name>

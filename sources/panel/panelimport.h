@@ -19,17 +19,19 @@
 #define PANELIMPORT_H
 
 #include "paneldata.h"
+#include "../import/eplandxf/dataportalclient.h"
 
 #include <QDialog>
 #include <QMap>
 #include <QStringList>
+#include <QVector>
 
-class DataPortalClient;
+class QCheckBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
+class QSpinBox;
 class QTreeWidget;
-struct DataPortalPart;
 
 /**
 	@brief Mounting plates from outside: a DXF of a plate (one's own, or
@@ -62,6 +64,9 @@ class PanelImport
 			PanelOutline front, plate;
 			bool isNull() const {return front.isEmpty();}
 		};
+			/// width x height x depth written in a text ("BHT: 800x1400x500 mm",
+			/// "Breite/Höhe/Tiefe: 800 x 1200 x 500 mm"); false when there is none
+		static bool sizesFromText(const QString &text, double *width, double *height, double *depth);
 		static QString enclosuresDirectory();
 		static QStringList enclosureFolders();
 		static Enclosure readEnclosure(const QString &folder);
@@ -115,8 +120,15 @@ class PanelTemplateDialog : public QDialog
 		void download();
 		void downloaded(const QByteArray &data, const QString &file_name);
 		void failed(const QString &message);
+		void applyFilter();
 
 		DataPortalClient *m_client = nullptr;
+			// enclosures: the hits filtered by their sizes (0: any), smallest first
+		QSpinBox *m_width = nullptr, *m_height = nullptr, *m_depth = nullptr;
+		QCheckBox *m_only_enclosures = nullptr;
+		QPushButton *m_more = nullptr;
+		QVector<DataPortalPart> m_parts;
+		int m_total = 0;
 		QLineEdit *m_search = nullptr;
 		QLineEdit *m_manufacturer = nullptr;
 		QTreeWidget *m_list = nullptr;

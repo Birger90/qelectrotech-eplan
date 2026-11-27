@@ -159,7 +159,8 @@
 > - *Build cabinet...*: the whole layout in six guided steps with a tick each -- enclosure with mounting plate
 >   (Rittal by order number), DIN rails and ducts as a grid (ducts on the edges and between the rows, one rail per
 >   row), devices and terminal strips of the schematic, check, 3D and export. The single commands stay under
->   *Single steps*.
+>   *Single steps*. The Data Portal search for enclosures filters by width, height and depth, lists the smallest
+>   first and leaves accessories out.
 > - *Layout check* as a side panel: parts on each other, in a duct, beyond the surface, without holes, terminal
 >   strips too short for their terminals (widths from the models); a click selects and shows the part, the list
 >   follows every change. Parts of one device and a device hung onto its partner (combination list) are fine.

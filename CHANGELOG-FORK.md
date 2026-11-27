@@ -3,6 +3,38 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.67.0 – 27.11.2026 – Plan prüfen: Steuerstromkreis, Leistungsteil nach IEC, Berichtskopf
+
+*Plan prüfen* liest den Plan jetzt auch als Schaltung. Was aus dem Plan nicht sicher folgt, wird als „Angabe fehlt“
+gemeldet, nie geschätzt.
+
+- **Berichtskopf mit Ergebnis:** *Korrektur nötig* / *Prüfen* / *Unvollständig gelesen* / *Kein Befund* im Prüfpanel
+  und im JSON (`status`, `statusText`, `summary.incomplete`, `incomplete` je Befund). Fehlen Angaben, heißt es nie
+  „kein Befund“; auch die bisherigen Hinweise „ohne Bemessungsstrom“ und „ohne Querschnitt“ zählen als fehlende
+  Angabe.
+- **Steuerstromkreis** (neue Kategorie): Schütze, deren Hauptkontakte zusammen die Einspeisung kurzschließen
+  (Wendeschütz, Stern-Dreieck; der Netzschütz darf dabei an sein), dürfen nicht gleichzeitig anziehen können
+  (Fehler); Verriegelung nur in eine Richtung, nur über Taster; Selbsthaltung ohne Aus-Kontakt; Kreis ohne
+  Ruhezustand (Pumpen, Zeitglieder ausgenommen). EN 60204-1 9.3.4; Formeln P01–P07.
+- **Leistungsteil:** In ≤ Iz nach IEC 60364-5-52 Anhang B mit Verlegeart, Isolierung, Temperatur und Häufung, nur
+  wenn angegeben (P08–P10); Ik3 an der Einspeisung nach IEC 60909-0 vereinfacht gegen das Schaltvermögen (P11, P12);
+  Abschaltbedingung Zs × Ia ≤ U0 nach IEC 60364-4-41 411.4.4 (P13, P14); FI hintereinander (P15); Steckdose ohne FI
+  ≤ 30 mA (411.3.3, P16). Neue Kategorie *Kurzschluss, Abschaltung und FI*.
+- FI und Steckdosen werden auch an französischen Symbolnamen erkannt („différentiel“, „sélectif“, IΔn im Namen);
+  ein abgesicherter Neutralleiter (2-polige Absicherung) gilt als Rückleiter der Spulen. Das Prüfpanel ist offscreen
+  angesehen (`tests/qttest/check_panel_probe.cpp`); 27 fehlende deutsche Texte des Panels ergänzt.
+- An den Beispielplänen geschärft: Doppelklick auf einen Befund zeigt Blatt und Bauteil (offscreen im Editor geprüft);
+  ein Schutzorgan speist nur ohne Schützkontakt/Spule am Eingang (Motorschutz-Hilfskontakt im Steuerkreis); gemeinsamer
+  Rückleiter = Netz mehrerer Spulen ohne Kontakt; alte Klemmen- und Sicherungssymbole ohne Link-Typ (Klemmblock,
+  Borne continuité, Odłącznik bezpiecznikowy) und Schutzschalter/FI als einfache Symbole werden erkannt; endet ein
+  Kreis an einem Gerät ohne Schaltfunktion, nennt „Angabe fehlt“ dieses Gerät; Steckdose ohne verfolgbare Zuleitung
+  oder hinter FI ohne IΔn ist „Angabe fehlt“ statt „ohne FI“.
+- **Behoben:** `qet.linkElements(spule, kontakt)` ersetzte die bisherigen Kontakte der Spule durch den neuen (der
+  Befehl wurde von der Master-Seite gebaut); jetzt immer von der Kontaktseite, wie bisher nur bei SPS-Kanälen.
+- Tests: `tools/plancheck/pruefen_logik.py` baut 13 Testprojekte (Wendeschütz richtig/ohne/einseitig, Stern-Dreieck
+  richtig/falsch, Schütze in Reihe, Selbsthaltung, Pumpen, Kabel zu klein/richtig, ohne Angaben, Abschaltung, FI) und prüft Befunde und
+  Ergebnis.
+
 ## 1.66.0 – 27.11.2026 – Verwaltungsschale (AASX) als Bauteilquelle
 
 - **Bauteil-Import nimmt `.aasx`:** Ein Paket der Verwaltungsschale (Asset Administration Shell, IEC 63278 / IDTA)

@@ -102,6 +102,21 @@ In QET und im exportierten PDF:
   (IEC 60364-5-52 G, bei In des Schutzorgans; Grenze 3 %, sonst `voltage_drop_limit_pct`, Spannung
   `nominal_voltage_v`), IP-Adressen und PROFINET-Namen (gültig, eindeutig, im Subnetz; Elementinfos `ip_address`,
   `subnet_mask`, `network_name`, `profinet_name`), Schaltschrankaufbau.
+- Der Bericht beginnt mit seinem Ergebnis: *Korrektur nötig* (Fehler), *Prüfen* (Warnungen), *Unvollständig
+  gelesen* (nichts Falsches gefunden, aber Angaben fehlten) oder *Kein Befund*; eine fehlende Angabe ist nie
+  „kein Befund“ (JSON `status`, `statusText`, `summary.incomplete`, `incomplete` je Befund).
+- *Steuerstromkreis* liest die Schützlogik als Graph ihrer Potentiale: Schütze, deren Hauptkontakte zusammen die
+  Einspeisung kurzschließen (Wendeschütz, Stern-Dreieck) und die gleichzeitig anziehen können (Fehler), Verriegelung
+  nur in eine Richtung oder nur über Taster, Selbsthaltung ohne Aus-Kontakt, Kreis ohne Ruhezustand (Pumpen) –
+  EN 60204-1 9.3.4. Schienen: `sim_role` supply+/supply-, Leitungsfunktion L+/M/24V/0V, sonst die Ausgänge der
+  Schutzorgane und der gemeinsame A2-Rückleiter.
+- *Kurzschluss, Abschaltung und FI*: In ≤ Iz nach IEC 60364-5-52 Anhang B (Kupfer, Verlegeart A1, A2, B1, B2, C,
+  PVC oder VPE; Elementinfos `installation_method`, `insulation`, `ambient_c`, `grouping` oder Kabeltyp
+  NYM/NYY/N2X/H07V), Ik3 an der Einspeisung nach IEC 60909-0 (vereinfacht; `ik3_ka`, `sk_mva`, `sr_kva` + `ukr_pct`
+  + `un_v`) gegen das Schaltvermögen (`icu_ka` oder „6 kA“), Zs × Ia ≤ U0 nach IEC 60364-4-41 411.4.4 (`zs_ohm`
+  oder `ik1_ka`, `u0_v`; Ia aus B/C/D oder `ia_a`), FI hintereinander (selektiv nur mit Typ S und 3 × IΔn;
+  `idn_ma`, `rcd_type`), Steckdose ohne FI ≤ 30 mA (411.3.3). Formeln P01–P16 in `tools/simulation/FORMELN.md`,
+  Tests `tools/plancheck/pruefen_logik.py`.
 - Skript-API `qet.checkProject(folio = -1)`, CLI `--check-project <projekt.qet> [bericht.json]` (dieselben Regeln;
   Rückgabewert 3 bei Fehlern).
 

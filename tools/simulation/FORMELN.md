@@ -191,6 +191,32 @@ in `sim_link`; der FluidSIM-Import schreibt sie). Codestellen: `sig` = `simulati
 | E06 | Kontakt im Stromkreis: liegen beide Anschlüsse eines Tasters, Grenztasters oder Relaiskontakts auf Netzen des Stromkreises, ist er ein Widerstand R_on (geschlossen) bzw. R_off (offen); Zustand aus der Schaltlogik vor jedem Schritt. Vorgabe R_on = 10 mΩ, R_off = 1 GΩ, änderbar mit `sim_contact` „Ron=…;Roff=…“ | `model` `coupleCircuit`, `circuit` `step` | E02 | Projektfestlegung (Vorgabewerte); Kontaktwiderstand aus dem Datenblatt eintragen | kein Prellen, kein Lichtbogen beim Öffnen (eine Spule ohne Freilauf erzeugt am offenen Kontakt eine Spannungsspitze bis L·di/dt über R_off) | Kopplung Stromkreis (R17 Stufe 2) |
 | E07 | Spule im Stromkreis (Relais, Ventilmagnet): R und L in Reihe, implizit Euler i = (u + L/Δt·i_alt)/(R + L/Δt); zieht an bei |i| ≥ I_an, fällt ab bei |i| ≤ I_ab (Hysterese), dann wie bisher Ansprech- 10 ms und Abfallzeit 8 ms. `sim_coil` „R=…;L=…;Un=…“ mit I_an = on·Un/R, I_ab = off·Un/R (Vorgabe on = 0,8, off = 0,1) oder direkt „Ion=…;Ioff=…“ | `model` `coupleCircuit`, `electrics`; `circuit` `step` | E02, E04 | Spulengleichung u = R·i + L·di/dt (Lehrbuch Elektrotechnik); R, L, Un aus dem Datenblatt Pflicht, on/off Projektfestlegung bis zur Datenblatt-Ansprech- und -Abfallspannung | L konstant (keine Sättigung, kein Ankerhub), Kraft nicht gerechnet; die Schaltlogik sieht den Strom des vorigen Schritts | Kopplung Stromkreis (R17 Stufe 2) |
 
+## Plan prüfen: Steuerstromkreis und Leistungsteil (`sources/plancheck/logiccheck.cpp`)
+
+Keine Simulation, sondern Prüfregeln über dem Plan (Codestelle `logic` = `logiccheck.cpp`). Geprüft mit
+`tools/plancheck/pruefen_logik.py` (13 Testprojekte, Namen in der Spalte Prüfung). Grundsatz: Was aus dem Plan nicht
+sicher folgt, wird als Hinweis mit „Angabe fehlt“ (`incomplete`) gemeldet; der Berichtskopf zeigt dann nie
+„kein Befund“.
+
+| ID | Beziehung | Codestelle | Herkunft, Belege | Grenze | Prüfung |
+|---|---|---|---|---|---|
+| P01 | Kontaktart aus der Funktionsziffer: x1–x2 und x5–x6 Öffner, x3–x4 und x7–x8 Schließer; ohne Ziffern die Art des Folgekontakts (NO/NC), sonst „unbekannt“ = freie Variable | `logic` `kindOfDigits`, `pairsOf` | Literaturregel; QS20 (EN 50005 / IEC 60947-1 Anh. L) | Wechsler nur mit x1/x2/x4; Kontakte ohne Namen paarweise übereinander im Symbol | alle Steuerstromfälle |
+| P02 | Spulenbedingung als Summe von Produkten: Pfade A1→Plus × A2→Minus (und umgekehrt) über Kontakte, Sicherungen und Polbahnen; Selbsthaltung = Literal der eigenen Spule | `logic` `CoilLogic::condition` | eigene Ableitung (Kontaktplan als Schaltalgebra, Reihe = UND, Parallel = ODER) | ≤ 512 Produkte, ≤ 24 Glieder je Pfad, sonst „nicht verfolgt“; Lasten (Lampen, Spulen) leiten nicht | wende_*, stern_dreieck_* |
+| P03 | Schienen: gegeben (`sim_role` supply+/supply-, Potentialname L+/M/24V/0V/L1/N an der Leitung), sonst je Spule: liegt eine Spulenseite direkt an einem Schutzorgan-Ausgang (abgesicherter N, „230N“) oder an einem gemeinsamen Rückleiter (Netz mit ≥ 2 Spulen und ohne Schaltkontakt), ist das ihr Rückleiter, und die andere Seite muss einen anderen solchen Netz erreichen. Ein Schutzorgan speist nur, wenn an seinem Eingang kein Schützkontakt und keine Spule liegt (Hilfskontakt eines Motorschutzes im Steuerkreis speist nicht). Endet ein Kreis an einem Gerät ohne Schaltfunktion (Sicherheitsrelais), nennt die Meldung „Angabe fehlt“ dieses Gerät | `logic` `Circuit`, `CoilLogic::condition` | Projektdefinition; Grundlage QS21 (EN 60204-1 9.4.3: Spulen einseitig am gemeinsamen Rückleiter) | ohne Schienen: „Angabe fehlt“ | alle Steuerstromfälle |
+| P04 | Verriegelungspflicht: zwei Schütze A, B mit Hauptkontakten, wenn A ∪ B ∪ O zwei getrennte Einspeisepotentiale verbindet, A ∪ O und B ∪ O aber nicht; O = Teilmenge der Netzschütze (Hauptkontakt an der Einspeisung) | `logic` `exclusivePairs` | eigene Ableitung; Pflicht nach QS21 (EN 60204-1 9.3.4) | Einspeisepotential = Teil des Leistungsteils, der bei offenen Schützen ein Schutzorgan (sonst einen Hauptkontakt-Eingang) und keinen Hauptkontakt-Ausgang enthält – Schütze in Reihe verbinden also nichts; ≤ 8 Netzschütze je Gruppe | wende_*, stern_dreieck_*, reihe |
+| P05 | „können gleichzeitig anziehen“ ⇔ ∃ Produkt von A und von B ohne Widerspruch mit A = B = 1 (Fehler); jedes Produkt von A enthält ¬B, aber nicht umgekehrt → nur einseitig (Warnung); keines → nur über Taster (Warnung) | `logic` `checkControl` | eigene Ableitung; QS21 | stationäre Betrachtung, Laufzeiten nicht | wende_ohne, wende_einseitig, stern_dreieck_falsch |
+| P06 | Selbsthaltung ohne Aus: ein Produkt der Spule K besteht nur aus K | `logic` `checkControl` | eigene Ableitung | Halt über andere gehaltene Spulen nicht verfolgt | selbsthaltung_ohne_aus |
+| P07 | kommt nicht zur Ruhe: für eine Eingangsbelegung hat die rückgekoppelte Spulengruppe (starke Zusammenhangskomponente) keinen Fixpunkt x = f(x, e) | `logic` `checkControl` | eigene Ableitung (Fixpunkt der Schaltfunktion) | Gruppen mit Zeitkontakt ausgenommen (Blinker gewollt); ≤ 10 Spulen, ≤ 14 Eingänge | pumpen |
+| P08 | Iz = Tabellenwert × k_θ × k_H; In ≤ Iz; Kupfer, 30 °C Luft, Verlegeart A1, A2, B1, B2, C; 2 belastete Adern bei 1–2 Polen, 3 ab 3 Polen; Querschnitt zwischen zwei Zeilen: kleinere Zeile | `logic` `kIz`, `checkPower` | Literaturwert; QS22 (IEC 60364-5-52 Tab. B.52.2–B.52.5), geprüft gegen QS23 | 1,5–120 mm²; Verlegeart/Isolierung nur gegeben (Elementinfo `installation_method`, `insulation` oder Kabeltyp NYM/NYY = PVC, N2X = VPE, H0xV = PVC), sonst „Angabe fehlt“ | kabel_zu_klein, kabel_richtig, ohne_angaben |
+| P09 | k_θ Luft: PVC 25 °C 1,06 · 30 1,00 · 35 0,94 · 40 0,87 · 45 0,79 · 50 0,71 · 55 0,61 · 60 0,50; VPE 1,04 · 1,00 · 0,96 · 0,91 · 0,87 · 0,82 · 0,76 · 0,71; Zwischenwert: nächsthöhere Temperatur | `logic` `kTempFactor` | Literaturwert; QS22 (Tab. B.52.14), QS23 Tab. 4; Kontrolle √((70−θ)/40) | > 60 °C: nicht geprüft | kabel_richtig |
+| P10 | k_H Häufung (gebündelt, Zeile 1): 1 1,00 · 2 0,80 · 3 0,70 · 4 0,65 · 5 0,60 · 6 0,57 · 7 0,54 · 8 0,52 · 9 0,50 · 12 0,45 · 16 0,41 · 20 0,38; Zwischenwert: nächsthöhere Anzahl | `logic` `kGroupFactor` | Literaturwert; QS22 (Tab. B.52.17), QS23 Tab. 5 | ohne Angabe 1, als „Angabe fehlt“ gemeldet | kabel_richtig |
+| P11 | Ik3 = c·Un/(√3·(Z_Q + Z_T)), Z_T = u_kr/100·Un²/S_rT, Z_Q = c·Un²/S″kQ (ohne S″kQ: 0, starres Netz); nur Netz: Ik3 = S″kQ/(√3·Un); c_max = 1,10 | `logic` `checkPower` | Literaturformel; QS24 (IEC 60909-0 Gl. 29, Tab. 1: NS mit +10 % Toleranz) | Beträge addiert (X ≫ R angenommen, Fehler klein); Leitungen vor dem Schutzorgan vernachlässigt → oberer Wert | abschaltung |
+| P12 | Schaltvermögen Icu (Icn) ≥ Ik3 an der Einspeisung | `logic` `checkPower` | Grundlage QS24; Wert nur gegeben (`icu_ka` oder „6 kA“) | Kaskadierung nicht berücksichtigt | abschaltung |
+| P13 | Abschaltbedingung Zs·Ia ≤ U0; Zs = Zs,Ursprung + ρ70·l·(1/S + 1/S_PE); Ia = 5/10/20·In bei B/C/D | `logic` `checkPower` | Literaturformel QS25 (IEC 60364-4-41 411.4.4, Tab. 41.1); Ia nach QS26 (IEC 60898-1 Tab. 2, Obergrenze der unverzögerten Auslösung → hält 0,4 s und 5 s) | Zs,Ursprung gegeben (`zs_ohm`, oder U0/Ik1), Leitung vor dem Schutzorgan ohne Länge, sonst nur ein sicherer Verstoß gemeldet; Reaktanz vernachlässigt; K/Z, Sicherungen nur mit `ia_a` | abschaltung |
+| P14 | ρ70 = 0,017241·(1 + 0,00393·50) Ω·mm²/m | `logic` `kRho70` | wie Spannungsfall: ρ20 und α aus IEC 60228 (QS27) | Kupfer | abschaltung |
+| P15 | FI hintereinander selektiv, wenn der vordere Typ S ist und IΔn,vorn ≥ 3·IΔn,hinten | `logic` `checkPower` | übliche Umsetzung der Bedingung aus QS25-Teil 5-53 535.3 (Nichtauslösekennlinie vorn über Gesamtausschaltkennlinie hinten) nach QS23 | Richtung nur über nummerierte oder übereinanderliegende Anschlüsse | fi |
+| P16 | Steckdose ≤ 32 A: davor eine RCD mit IΔn ≤ 30 mA | `logic` `checkPower` | Literaturregel QS25 (IEC 60364-4-41:2005/AMD1:2017 411.3.3) | Ausnahme für Fachkräfte nicht geprüft; Steckdose am Namen oder `socket`; FI auch an Symbolpfad/Name (différentiel, residual), IΔn unbekannt oder Zuleitung nicht bis zu einem Schutzorgan verfolgt → „Angabe fehlt“, nie „ohne FI“ | fi |
+
 ## Herleitungen der eigenen Ableitungen
 
 - **P03/P04:** P02 mit φ(r) = 1 für r ≤ b und √(1 − ((r − b)/(1 − b))²) sonst; am Messpunkt ṁ = qNN·ρ_N (Normliter in
@@ -428,6 +454,32 @@ Zugriff am 15.11.2026, sofern nicht anders vermerkt.
   Nd = 10 („je größer Nd, desto idealer das D-Glied“), Ni = 0,9 („Ni·Ti ist die Zeitkonstante der
   Anti-Windup-Kompensation“), wd = 0 (Sollwertgewicht im D-Anteil). Die Filterformel T_d/Nd steht nicht auf der Seite.
   Zugriff 17.11.2026.
+
+- **QS20** – EN 50005:1976 / IEC 60947-1:2020 Anhang L (Anschlussbezeichnung, Funktionsziffern 1-2 Öffner,
+  3-4 Schließer, 5-6/7-8 besondere Öffner/Schließer). Zugriff 27.11.2026 (Inhalt aus der Norm, keine freie Leseprobe).
+- **QS21** – EN 60204-1:2018, 9.3.4 „Interlocks between different operations and for contrary motions“: „Reversing
+  contactors … shall be interlocked in such a way that in normal service no short-circuit can occur when
+  switching“; 9.4.3 Steuerstromkreise. https://eclass.uniwa.gr/modules/document/file.php/IDPE391/%CE%A0%CE%A1%CE%9F%CE%A4%CE%A5%CE%A0%CE%91/EN%2060204-1-2018.pdf
+  Zugriff 27.11.2026.
+- **QS22** – IEC 60364-5-52:2009, Anhang B: Tab. B.52.2–B.52.5 (Strombelastbarkeit Kupfer), B.52.14
+  (Umgebungstemperatur Luft), B.52.17 (Häufung). Zugriff über QS23.
+- **QS23** – ABB Electrical Installation Handbook Vol. 2, 2.2.1 Tab. 4, 5, 8 (Wiedergabe von IEC 60364-5-52;
+  TN-Abschaltung; Selektivität von RCDs nach IEC 60364-5-53).
+  https://library.e.abb.com/public/561a28a17753c444c125714f00360967/1SDC010001D0204.pdf Zugriff 27.11.2026;
+  alle Werte von P08–P10 Zeile für Zeile verglichen (PVC 25 °C: 1,06).
+- **QS24** – IEC 60909-0:2016 (DIN EN 60909-0 VDE 0102:2016-12), Tab. 1 Spannungsfaktor c (NS: c_max 1,05/1,10,
+  c_min 0,95/0,90 bei +6 %/+10 % Toleranz), Gl. für Ik″ dreipolig. Wiedergabe TÜV SÜD:
+  https://www.tuvsud.com/de-de/indust-re/elektrotechnik-info/kurzschlussstromberechnung Zugriff 27.11.2026.
+  Seit 07/2026 gibt es Ed. 3.0; eine Änderung von Tab. 1 ist nicht geprüft.
+- **QS25** – IEC 60364-4-41:2005/AMD1:2017: 411.4.4 (Zs × Ia ≤ U0, bei RCD Ia = IΔn), Tab. 41.1 (TN 230 V:
+  0,4 s), 411.3.2.3 (5 s), 411.3.3 (RCD ≤ 30 mA für Steckdosen ≤ 32 A). Leseprobe:
+  https://cdn.standards.iteh.ai/samples/22593/faab23b5c332418984d5b3c627cbd1b0/IEC-60364-4-41-2005-AMD1-2017.pdf ;
+  IEC 60364-5-53 Ed. 4 535.3 (Selektivität von RCDs), Inhaltsverzeichnis
+  https://vde-verlag.de/iec-normen/preview-pdf/info_iec60364-5-53{ed4.2}en.pdf Zugriff 27.11.2026.
+- **QS26** – IEC 60898-1, Tab. 2 (unverzögerte Auslösung B 3–5 In, C 5–10 In, D 10–20 In); IS/IEC 60898-1:2002
+  https://law.resource.org/pub/in/bis/S05/is.iec.60898.1.2002.pdf Zugriff 27.11.2026.
+- **QS27** – IEC 60228 (Leiterwiderstand Kupfer, ρ20 = 1/58 Ω·mm²/m) und α = 0,00393 1/K, wie beim Spannungsfall
+  von *Plan prüfen* (Fork 1.60).
 
 Eine neue Formel bekommt hier ihre Zeile mit Codestelle, Herkunft, Beleg, Grenze und Prüfung, bevor sie freigegeben
 wird; eine neue Quelle bekommt eine QS-Nummer mit Fundstelle und Zugriffsdatum.

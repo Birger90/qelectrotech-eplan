@@ -3274,7 +3274,12 @@ def tool_plan_check(binary: str, project: str, folio: int = -1,
         return answer
     summary = {k: sum(f.get("severity") == k for f in findings)
                for k in ("error", "warning", "info")}
-    return {"ok": summary["error"] == 0, "summary": summary, "findings": findings}
+    summary["incomplete"] = sum(bool(f.get("incomplete")) for f in findings)
+    # the head of the report, as the panel and --check-project give it: data
+    # missing is never "no_finding"
+    status = ("correction" if summary["error"] else "review" if summary["warning"]
+              else "incomplete" if summary["incomplete"] else "no_finding")
+    return {"ok": summary["error"] == 0, "status": status, "summary": summary, "findings": findings}
 
 
 # --------------------------------------------------------------------------
@@ -6278,7 +6283,14 @@ TOOLS = [
                        "devices without a part or label, terminals without a strip, "
                        "contacts without their coil, folio reports without a partner, "
                        "cables without a target, PLC channels without an address, "
-                       "cabinet layout. One "
+                       "cabinet layout, wire protection (EN 60204-1, IEC 60364-5-52), "
+                       "voltage drop, network addresses, the control circuit "
+                       "(interlocks of reversing and star-delta contactors, "
+                       "self-holding without an off contact, pumping) and fault "
+                       "protection (IEC 60909 short-circuit current, IEC 60364-4-41 "
+                       "loop impedance, RCDs in series, sockets without an RCD). "
+                       "status: correction / review / incomplete (data missing) / "
+                       "no_finding; findings with missing data carry incomplete. One "
                        "QElectroTech launch; read-only. Complements qet_check (SQL "
                        "heuristics over the project database).",
         "inputSchema": {

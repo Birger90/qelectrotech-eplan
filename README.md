@@ -78,6 +78,21 @@
 >   60364-5-52 G, at In of the protective device; limit 3 % unless `voltage_drop_limit_pct`, voltage
 >   `nominal_voltage_v`), IP addresses and PROFINET names (valid, unique, in the subnet; element information
 >   `ip_address`, `subnet_mask`, `network_name`, `profinet_name`), the cabinet layout.
+> - The report opens with its verdict: *Correction needed* (errors), *Review* (warnings), *Read incompletely*
+>   (nothing wrong found, but data were missing to check everything) or *No finding*; a missing datum is never
+>   "no finding" (JSON `status`, `statusText`, `summary.incomplete`, `incomplete` per finding).
+> - *Control circuit* reads the contactor logic as a graph of its potentials: contactors whose main contacts
+>   short-circuit the supply when both are closed (reversing, star-delta) and that can pull in together (error),
+>   an interlock in one direction only or by push-buttons alone, a self-holding without an off contact, a circuit
+>   without a stable state (pumping) — EN 60204-1 9.3.4. Rails: `sim_role` supply+/supply-, wire function L+/M/24V/0V,
+>   else the outputs of the protective devices and the common A2 return.
+> - *Short circuit, disconnection and RCDs*: In ≤ Iz after IEC 60364-5-52 annex B (copper, methods A1, A2, B1, B2, C,
+>   PVC or XLPE; element information `installation_method`, `insulation`, `ambient_c`, `grouping`, or the cable type
+>   NYM/NYY/N2X/H07V), Ik3 at the feed after IEC 60909-0 (simplified; `ik3_ka`, `sk_mva`, `sr_kva` + `ukr_pct` +
+>   `un_v`) against the breaking capacity (`icu_ka` or "6 kA"), Zs × Ia ≤ U0 after IEC 60364-4-41 411.4.4 (`zs_ohm`
+>   or `ik1_ka`, `u0_v`; Ia from B/C/D or `ia_a`), RCDs in series (selective only with type S and 3 × IΔn;
+>   `idn_ma`, `rcd_type`), socket-outlets without an RCD of at most 30 mA (411.3.3). Formulas P01–P16 in
+>   `tools/simulation/FORMELN.md`, tests `tools/plancheck/pruefen_logik.py`.
 > - Script API `qet.checkProject(folio = -1)`, CLI `--check-project <project.qet> [report.json]` (the same rules;
 >   exit code 3 when errors are found).
 >

@@ -17,6 +17,7 @@
 */
 // SPDX-License-Identifier: GPL-2.0-or-later
 #include "plancheck.h"
+#include "logiccheck.h"
 
 #include "../TerminalStrip/realterminal.h"
 #include "../cable/cable.h"
@@ -78,6 +79,18 @@ const RuleDef kRules[] = {
 	{"network_address",         "004037", Kind::Network},
 	{"profinet_name",           "",       Kind::Network},
 	{"cabinet_layout",          "",       Kind::CabinetLayout},
+	{"cable_capacity",          "",       Kind::WireProtection},
+	{"interlock_missing",       "",       Kind::ControlCircuit},
+	{"interlock_one_way",       "",       Kind::ControlCircuit},
+	{"interlock_buttons_only",  "",       Kind::ControlCircuit},
+	{"self_hold_no_off",        "",       Kind::ControlCircuit},
+	{"circuit_unstable",        "",       Kind::ControlCircuit},
+	{"control_data_missing",    "",       Kind::ControlCircuit},
+	{"short_circuit",           "",       Kind::FaultProtection},
+	{"loop_impedance",          "",       Kind::FaultProtection},
+	{"rcd_in_series",           "",       Kind::FaultProtection},
+	{"socket_without_rcd",      "",       Kind::FaultProtection},
+	{"feed_data_missing",       "",       Kind::FaultProtection},
 };
 
 int checkOrder(const QString &key)
@@ -119,6 +132,8 @@ class Collector
 			f.items = items;
 			m_findings << f;
 		}
+			/// the last finding says what was not checked for want of data
+		void markIncomplete() { if (!m_findings.isEmpty()) m_findings.last().incomplete = true; }
 		QVector<Finding> m_findings;
 	private:
 		QETProject *m_project;
@@ -686,6 +701,7 @@ void checkWireProtection(Collector &c, const QList<Diagram *> &diagrams, const Q
 				  ProjectCheck::tr("Protective device without a rated current: the wires behind it are not checked "
 								   "(enter rated_current_a or the current in its designation, e.g. C16)"),
 				  {e->uuid()});
+			c.markIncomplete();
 			continue;
 		}
 		double smallest = 0;
@@ -707,6 +723,7 @@ void checkWireProtection(Collector &c, const QList<Diagram *> &diagrams, const Q
 				  ProjectCheck::tr("%n wire(s) behind this protective device (%1 A) without a cross-section: not checked",
 								   nullptr, int(unknown.size())).arg(QLocale().toString(in, 'g', 4)),
 				  QList<QUuid>{e->uuid()} + unknown);
+		if (!unknown.isEmpty()) c.markIncomplete();
 		if (too_thin.isEmpty()) continue;
 		c.add(Severity::Warning, QStringLiteral("wire_protection"), dev.first, shown,
 			  ProjectCheck::tr("Protected with %1 A, but %n wire(s) behind it are too thin: %2 mm² carries "
@@ -780,6 +797,10 @@ void checkWireProtection(Collector &c, const QList<Diagram *> &diagrams, const Q
 
 } // namespace
 
+double PlanCheck::ratedCurrentOf(Element *e) { return ::ratedCurrentOf(e); }
+double PlanCheck::sectionOf(QString text) { return ::sectionOf(text); }
+bool PlanCheck::isOutput(Terminal *t, const QList<Terminal *> &all) { return ::isOutput(t, all); }
+
 ProjectCheck::Kind PlanCheck::kindOf(const QString &rule)
 {
 	for (const RuleDef &c : kRules)
@@ -846,6 +867,8 @@ QVector<PlanCheck::Finding> PlanCheck::run(QETProject *project)
 	checkCables(c, project, wires);
 	checkWireProtection(c, diagrams, panel_folios);
 	checkNetwork(c, diagrams, panel_folios);
+	PlanCheck::Logic::checkControl(diagrams, panel_folios, c.m_findings);
+	PlanCheck::Logic::checkPower(project, diagrams, panel_folios, c.m_findings);
 
 	QVector<Finding> out = c.m_findings;
 	std::stable_sort(out.begin(), out.end(), [project](const Finding &a, const Finding &b) {
@@ -1013,6 +1036,8 @@ bool ProjectCheck::isForkKind(Kind kind)
 		case Kind::WireProtection:
 		case Kind::Network:
 		case Kind::CabinetLayout:
+		case Kind::ControlCircuit:
+		case Kind::FaultProtection:
 			return true;
 		default:
 			return false;
@@ -1031,6 +1056,8 @@ QString ProjectCheck::forkTitle(Kind kind)
 		case Kind::WireProtection: return tr("Wire cross-section, protection and voltage drop");
 		case Kind::Network: return tr("IP addresses and PROFINET names");
 		case Kind::CabinetLayout: return tr("Cabinet layout");
+		case Kind::ControlCircuit: return tr("Control circuit: interlocks and self-holding");
+		case Kind::FaultProtection: return tr("Short circuit, disconnection and RCDs");
 		default: return QString();
 	}
 }
@@ -1072,6 +1099,18 @@ QString ProjectCheck::forkToolTip(Kind kind)
 		case Kind::CabinetLayout:
 			return tr("The warnings of the cabinet layouts: devices outside their mounting "
 					  "surface, overlapping or without a size.");
+		case Kind::ControlCircuit:
+			return tr("The contactor logic as a graph of its potentials: contactors whose main "
+					  "contacts short-circuit when both are closed (reversing, star-delta) and that "
+					  "can pull in together, an interlock in one direction only, a self-holding "
+					  "without an off contact, a circuit without a stable state (pumping). "
+					  "Interlocks for contrary motions: EN 60204-1 9.3.4.");
+		case Kind::FaultProtection:
+			return tr("With feed data (ik3_ka, ik1_ka, zs_ohm, sk_mva, sr_kva/ukr_pct, un_v): "
+					  "short-circuit current after IEC 60909-0 (simplified) against the breaking "
+					  "capacity, loop impedance Zs × Ia ≤ U0 after IEC 60364-4-41 411.4.4; RCDs in "
+					  "series; socket-outlets without an RCD of at most 30 mA (IEC 60364-4-41 "
+					  "411.3.3). A missing datum is listed, never assumed.");
 		default: return QString();
 	}
 }
@@ -1095,6 +1134,9 @@ QString ProjectCheck::key(Kind kind)
 		case Kind::WireProtection: return QStringLiteral("wire_protection");
 		case Kind::Network: return QStringLiteral("network");
 		case Kind::CabinetLayout: return QStringLiteral("cabinet_layout");
+		case Kind::ControlCircuit: return QStringLiteral("control_circuit");
+		case Kind::FaultProtection: return QStringLiteral("fault_protection");
+		case Kind::TerminalBranches: return QStringLiteral("terminal_branches");
 	}
 	return QString();
 }
@@ -1114,6 +1156,49 @@ QString ProjectCheck::severityText(Severity severity)
 		case Severity::Error:   return tr("Error");
 		case Severity::Warning: return tr("Warning");
 		default:                return tr("Note");
+	}
+}
+
+/**
+	@brief ProjectCheck::status
+	The head line of the report: an error asks for a correction, a warning
+	for a look; with neither, a finding that could not be checked for want
+	of data makes the report incomplete. Only then is it "no finding".
+	@p counts, if given, takes four numbers: errors, warnings, notes and
+	findings with missing data.
+*/
+ProjectCheck::Status ProjectCheck::status(const QVector<Result> &results, int *counts)
+{
+	int n[4] = {0, 0, 0, 0};
+	for (const Result &result : results)
+		for (const Finding &f : result.findings) {
+			++n[qBound(0, int(f.severity), 2)];
+			if (f.incomplete) ++n[3];
+		}
+	if (counts) for (int i = 0; i < 4; ++i) counts[i] = n[i];
+	if (n[0]) return Status::Correction;
+	if (n[1]) return Status::Review;
+	if (n[3]) return Status::Incomplete;
+	return Status::NoFinding;
+}
+
+QString ProjectCheck::statusKey(Status status)
+{
+	switch (status) {
+		case Status::Correction: return QStringLiteral("correction");
+		case Status::Review:     return QStringLiteral("review");
+		case Status::Incomplete: return QStringLiteral("incomplete");
+		default:                 return QStringLiteral("no_finding");
+	}
+}
+
+QString ProjectCheck::statusText(Status status)
+{
+	switch (status) {
+		case Status::Correction: return tr("Correction needed");
+		case Status::Review:     return tr("Review");
+		case Status::Incomplete: return tr("Read incompletely");
+		default:                 return tr("No finding");
 	}
 }
 
@@ -1154,6 +1239,7 @@ QVector<ProjectCheck::Result> ProjectCheck::runAll(QETProject *project)
 		finding.severity = f.severity;
 		finding.rule = f.rule;
 		finding.eplan = f.eplan;
+		finding.incomplete = f.incomplete;
 		//: %1 is the label of the device, cable or strip, %2 what is wrong with it
 		finding.text = f.label.isEmpty() ? f.text : tr("%1: %2").arg(f.label, f.text);
 		for (const QUuid &uuid : f.items)
@@ -1218,6 +1304,7 @@ QVariantMap ProjectCheck::toVariant(const Result &result, const Finding &finding
 	m.insert(QStringLiteral("label"), label);
 	m.insert(QStringLiteral("text"), finding.text);
 	m.insert(QStringLiteral("items"), uuids);
+	m.insert(QStringLiteral("incomplete"), finding.incomplete);
 	return m;
 }
 
@@ -1237,25 +1324,24 @@ QVariantList ProjectCheck::toVariantList(const QVector<Result> &results,
 QJsonObject ProjectCheck::toJson(const QVector<Result> &results, QETProject *project)
 {
 	QJsonArray list;
-	int errors = 0, warnings = 0, infos = 0;
-	for (const QVariant &v : toVariantList(results, project)) {
-		const QVariantMap m = v.toMap();
-		const QString severity = m.value(QStringLiteral("severity")).toString();
-		if (severity == QLatin1String("error")) ++errors;
-		else if (severity == QLatin1String("warning")) ++warnings;
-		else ++infos;
-		list.append(QJsonObject::fromVariantMap(m));
-	}
+	for (const QVariant &v : toVariantList(results, project))
+		list.append(QJsonObject::fromVariantMap(v.toMap()));
+	int n[4];
+	const Status verdict = status(results, n);
+	const int errors = n[0];
 	QJsonObject summary;
-	summary[QStringLiteral("errors")] = errors;
-	summary[QStringLiteral("warnings")] = warnings;
-	summary[QStringLiteral("infos")] = infos;
+	summary[QStringLiteral("errors")] = n[0];
+	summary[QStringLiteral("warnings")] = n[1];
+	summary[QStringLiteral("infos")] = n[2];
+	summary[QStringLiteral("incomplete")] = n[3];
 	QJsonObject notes;
 	for (const Result &result : results)
 		if (!result.note.isEmpty()) notes[key(result.kind)] = result.note;
 	QJsonObject root;
 	root[QStringLiteral("project")] = project ? project->title() : QString();
 	root[QStringLiteral("ok")] = errors == 0;
+	root[QStringLiteral("status")] = statusKey(verdict);
+	root[QStringLiteral("statusText")] = statusText(verdict);
 	root[QStringLiteral("summary")] = summary;
 	if (!notes.isEmpty()) root[QStringLiteral("notes")] = notes;
 	root[QStringLiteral("findings")] = list;

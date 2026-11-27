@@ -27,7 +27,9 @@
 #include <QVector>
 
 class Diagram;
+class Element;
 class QETProject;
+class Terminal;
 
 /**
 	@brief The PlanCheck namespace
@@ -57,6 +59,7 @@ namespace PlanCheck
 		QString label;        ///< label (BMK) of the device, cable or strip
 		QString text;         ///< what is wrong, in the language of the interface
 		QList<QUuid> items;   ///< elements or conductors to show, may be empty
+		bool incomplete = false;   ///< a datum was missing: not checked ("Angabe fehlt")
 	};
 
 		/// the panel's category of a rule
@@ -64,6 +67,11 @@ namespace PlanCheck
 
 		/// every rule, the folios loaded first
 	QVector<Finding> run(QETProject *project);
+
+		// shared with the checks of logiccheck.cpp
+	double ratedCurrentOf(Element *e);         ///< In in A, 0 when unknown
+	double sectionOf(QString text);            ///< mm² of "1,5", "3x2.5"; 0 when none
+	bool isOutput(Terminal *t, const QList<Terminal *> &all);   ///< even numbered, else at the bottom
 }
 
 #endif // PLANCHECK_H

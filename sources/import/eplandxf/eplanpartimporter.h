@@ -78,6 +78,12 @@ class EplanPartImporter
 			       const QString &type, const QString &collection_dir);
 		/// manufacturer, order, type and description from a WSCAD Universe package (.wspak)
 		static QMap<QString, QString> wspakPartInfo(const QString &path);
+		/// an Asset Administration Shell package (.aasx): part data, the element
+		/// from its EDZ/DXF/DWG, STEP and documents into the 3D and raw folders
+		bool importAasx(const QString &aasx_path, const QString &category,
+				const QString &collection_dir);
+		/// "Phoenix Contact GmbH & Co. KG" -> "Phoenix Contact"
+		static QString shortManufacturer(const QString &name);
 
 		/// display name of a manufacturer ("SIE" -> "Siemens")
 		static QString manufacturerName(const QString &name);

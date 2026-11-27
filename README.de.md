@@ -28,8 +28,8 @@ Alle Importe auf einen Blick; Einzelheiten stehen in den Abschnitten darunter.
   verknüpften Verweisen und Master/Slave; fehlende Artikel kommen sortiert in die Firmensammlung
   ([EPLAN-Projekte](#eplan-projekte-und-eingebauter-assistent),
   [Formatbeschreibung](tools/wscad_import/FORMATBESCHREIBUNG_WSCAD.md)).
-- **Bauteile**: EPLAN-Makros und EDZ, Hersteller-Makropakete (z. B. Beckhoff), DWG, WSCAD-Artikeldaten (`.wspak`) und
-  das EPLAN Data Portal ([Bauteil-Import](#bauteil-import)).
+- **Bauteile**: EPLAN-Makros und EDZ, Hersteller-Makropakete (z. B. Beckhoff), DWG, WSCAD-Artikeldaten (`.wspak`),
+  Verwaltungsschalen (`.aasx`) und das EPLAN Data Portal ([Bauteil-Import](#bauteil-import)).
 
 ## Bauteil-Import
 
@@ -41,6 +41,9 @@ Menü „Bauteil-Import“, ohne Oberfläche: `--import-eplan`
   Bögen, Texte, eingebettete Zeichnungen), jede allpolige Variante wird ein eigenes Schaltbild.
 - DWG-Zeichnungen (AutoCAD 2004–2018) direkt, ohne Konverter; Aufbauansichten im Maßstab der EPLAN-Aufbaumakros.
 - Artikeldaten aus WSCAD-Paketen (`.wspak`).
+- Verwaltungsschale (`.aasx`, IEC 63278 / IDTA): Hersteller und Bestellnummer aus dem *Digital Nameplate*, das
+  Bauteil aus dem eingebetteten EDZ (sonst DXF/DWG), STEP nach `3D`, Datenblätter und alle Teilmodelle (`aasx.json`)
+  nach `herstellerdaten`.
 - Hersteller-Makropakete (ZIP oder Ordner mit `.ema` und Artikeldaten, z. B. Beckhoff): Reiter *Herstellerpakete* in
   der Bauteilsammlung, Umwandlung je Typ bei Bedarf; SPS-Karten bekommen ihre Kanaltabelle aus den
   Funktionsschablonen. Ohne Oberfläche: `--import-eplan <sammlung> --macro-package <zip|ordner> --type T`.

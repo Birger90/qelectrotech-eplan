@@ -3,6 +3,22 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.66.0 – 27.11.2026 – Verwaltungsschale (AASX) als Bauteilquelle
+
+- **Bauteil-Import nimmt `.aasx`:** Ein Paket der Verwaltungsschale (Asset Administration Shell, IEC 63278 / IDTA)
+  liefert Hersteller, Bestell- und Typnummer aus dem Teilmodell *Digital Nameplate* (IDTA 02006). Aus dem Paket wird
+  das Bauteil gebaut, bevorzugt aus einem eingebetteten EPLAN-Artikel (`.edz`, mit Herstellermakro), sonst aus einer
+  DXF oder DWG. Ein STEP-Modell geht nach `3D/<Hersteller>/<Bestellnr>.stp`. Datenblätter und alle anderen Dateien
+  gehen samt `aasx.json` (alle Teilmodelle mit ihren Werten) nach `herstellerdaten/<Hersteller>/<Bestellnr>/`.
+  Ohne Schaltbildquelle bleiben Artikeldaten, 3D-Modell und Datenblätter, mit Hinweis.
+- Gelesen wird das OPC-Paket über die `aas-spec`-Beziehung, mit XML oder JSON, Metamodell 2.0 und 3.0, nach
+  Elementnamen statt Schema (`sources/import/aasx/aasxpackage.*`). Mehrsprachige Werte nimmt der Import auf
+  Englisch, sonst auf Deutsch. Rechtsformen fallen aus dem Ordnernamen weg („Phoenix Contact GmbH & Co. KG“ →
+  „Phoenix Contact“).
+- Ohne Oberfläche: `qelectrotech --import-eplan teil.aasx <Sammlung> [--category C] [--force]`.
+- Skill `eplan-wissen`: neue Referenz `api-erfahrungen.md`, Beobachtungen am laufenden EPLAN aus dem Projekt
+  eplan-mcp (MIT).
+
 ## 1.65.0 – 27.11.2026 – WSCAD-Projekte importieren
 
 - **Datei > WSCAD-Projekt importieren:** liest einen WSCAD-Projektordner (ELECTRIX/SUITE ab 6.x) als

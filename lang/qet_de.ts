@@ -9502,8 +9502,8 @@ Geschrieben nach %4</translation>
         <translation>Die Bauteile werden in Ordnern Hersteller / Kategorie / Typ abgelegt. Jedes leere EPLAN-Feld (SPS-Adresse, symbolische Adresse, Funktionstext) wird ein eigener Text, der je Platzierung im Plan ausgefüllt wird.</translation>
     </message>
     <message>
-        <source>Parts (*.zip *.edz *.dxf *.dwg)</source>
-        <translation>Artikel (*.zip *.edz *.dxf *.dwg)</translation>
+        <source>Parts (*.zip *.edz *.dxf *.dwg *.aasx)</source>
+        <translation>Artikel (*.zip *.edz *.dxf *.dwg *.aasx)</translation>
     </message>
     <message>
         <source>EPLAN Data Portal DXF package (*.zip)</source>
@@ -9522,6 +9522,16 @@ Geschrieben nach %4</translation>
         <translation>DWG-Zeichnungen, z. B. WSCAD Universe (*.dwg)</translation>
     </message>
     <message>
+        <source>Asset Administration Shell (*.aasx)</source>
+        <translation>Verwaltungsschale (*.aasx)</translation>
+    </message>
+    <message>
+        <source>This is no Asset Administration Shell package:
+%1</source>
+        <translation>Das ist kein Verwaltungsschalen-Paket (AASX):
+%1</translation>
+    </message>
+    <message>
         <source>Import part</source>
         <translation>Artikel importieren</translation>
     </message>
@@ -9530,8 +9540,8 @@ Geschrieben nach %4</translation>
         <translation>Entpacktes EPLAN-DXF-Paket</translation>
     </message>
     <message>
-        <source>%1 is no part file: choose a ZIP package, an .edz part, a DXF, a DWG or the folder of an unpacked package.</source>
-        <translation>%1 ist keine Artikeldatei: Ein ZIP-Paket, einen .edz-Artikel, eine DXF, eine DWG oder den Ordner eines entpackten Pakets wählen.</translation>
+        <source>%1 is no part file: choose a ZIP package, an .edz part, a DXF, a DWG, an .aasx or the folder of an unpacked package.</source>
+        <translation>%1 ist keine Artikeldatei: Ein ZIP-Paket, einen .edz-Artikel, eine DXF, eine DWG, eine .aasx oder den Ordner eines entpackten Pakets wählen.</translation>
     </message>
     <message>
         <source>This is no EPLAN DXF package:

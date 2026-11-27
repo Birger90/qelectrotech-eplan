@@ -23,8 +23,8 @@
 >   File > *Import WSCAD project* -- an editable project with the WSCAD frame and title block, parts, conductors,
 >   linked report arrows and master/slave; missing articles go sorted into the company collection
 >   ([format description](tools/wscad_import/FORMATBESCHREIBUNG_WSCAD.md)).
-> - **Parts**: EPLAN macros and EDZ, manufacturer macro packages (e.g. Beckhoff), DWG, WSCAD article data (`.wspak`)
->   and the EPLAN Data Portal (part import below).
+> - **Parts**: EPLAN macros and EDZ, manufacturer macro packages (e.g. Beckhoff), DWG, WSCAD article data (`.wspak`),
+>   Asset Administration Shells (`.aasx`) and the EPLAN Data Portal (part import below).
 >
 > **Part import** (menu "Part import", headless: `--import-eplan`)
 > - EPLAN macros and EDZ packages: graphics from DXF, schematic from `.ema`, terminals and article data; black box
@@ -33,6 +33,9 @@
 >   embedded drawings), every multi-line variant becomes a schematic of its own.
 > - DWG drawings (AutoCAD 2004–2018) read directly, no converter; mounting views at the scale of the EPLAN macros.
 > - Article data from WSCAD packages (`.wspak`).
+> - Asset Administration Shell (`.aasx`, IEC 63278 / IDTA): manufacturer and order number from the *Digital
+>   Nameplate*, the element from the embedded EDZ (else DXF/DWG), STEP into `3D`, datasheets and all submodels
+>   (`aasx.json`) into `herstellerdaten`.
 > - Manufacturer macro packages (ZIP or folder of `.ema` and article data, e.g. Beckhoff): tab *Manufacturer
 >   packages* in the collection, converted per type when needed; PLC cards get their channel table from the
 >   function templates. Headless: `--import-eplan <collection> --macro-package <zip|folder> --type T`.

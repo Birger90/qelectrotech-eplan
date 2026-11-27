@@ -71,6 +71,7 @@ Abschnitt lesen, die großen Tabellen (IDs, XML, Meldungen) per Grep durchsuchen
 | Revision, Änderungsmarkierung, Vergleich ohne UUIDs | [revision.md](referenz/revision.md) |
 | Einstellungsebenen, Schemata, wichtige Einstellungen mit Wirkung, Mehrbenutzer | [einstellungen-oberflaeche.md](referenz/einstellungen-oberflaeche.md) |
 | API-Aktionen mit Parametern (export, check, …), Skripte, Kommandozeile | [api-aktionen.md](referenz/api-aktionen.md) |
+| Beobachtungen am laufenden EPLAN über die API (eplan-mcp): Koordinaten +Y oben, `Function.Name`, Platzieren per Skript/F3, Autoconnect und `generate`, Verbindungssymbol-Nummern, `MacroBox`, Hauptfunktion verlegen, lückenhafte Symbolnummern, Bild → Schaltplan, Fallen | [api-erfahrungen.md](referenz/api-erfahrungen.md) |
 | Neuerungen 2.9–2026 nach Thema | [neuerungen.md](referenz/neuerungen.md) |
 | Begriff unklar | [glossar.md](referenz/glossar.md) |
 

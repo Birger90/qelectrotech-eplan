@@ -22,10 +22,12 @@
 #include <qetapp.h>
 #include <qtextorientationspinboxwidget.h>
 #include "definitionmarkstyleeditor.h"
+#include <TerminalStrip/terminalcatalog.h>
 #include "ui_conductorpropertieswidget.h"
 
 #include <QCompleter>
 #include <QIcon>
+#include <QLocale>
 #include <QMenu>
 #include <QPainter>
 #include <QPixmap>
@@ -141,6 +143,7 @@ void ConductorPropertiesWidget::setProperties(
 	ui->m_wire_color_le->setDisabled(from_cable);
 	ui->m_wire_color_codes_tb->setDisabled(from_cable);
 	ui->m_wire_section_le->setDisabled(from_cable);
+	ui->m_wire_section_values_tb->setDisabled(from_cable);
 	ui->m_conductor_type_le->setDisabled(from_cable);
 	ui->m_wire_color_locked_info->setVisible(from_cable);
 	ui->m_wire_section_locked_info->setVisible(from_cable);
@@ -480,6 +483,19 @@ void ConductorPropertiesWidget::initWidget()
 	auto *completer = new QCompleter(code_list, ui->m_wire_color_le);
 	completer->setCaseSensitivity(Qt::CaseInsensitive);
 	ui->m_wire_color_le->setCompleter(completer);
+
+		//The usual sections: picking one writes it in the section field,
+		//which stays free text
+	auto *sections_menu = new QMenu(ui->m_wire_section_values_tb);
+	for (const double section : TerminalCatalog::sections())
+	{
+		const QString text = QLocale().toString(section, 'g', 6);
+		QAction *a = sections_menu->addAction(tr("%1 mm²").arg(text));
+		connect(a, &QAction::triggered, this, [this, text]() {
+			ui->m_wire_section_le->setText(text);
+		});
+	}
+	ui->m_wire_section_values_tb->setMenu(sections_menu);
 
 	connect(ui->m_multiwires_gb, &QGroupBox::toggled, [this](bool toggle) {this->ui->m_singlewire_gb->setChecked(!toggle);});
 	connect(ui->m_singlewire_gb, &QGroupBox::toggled, [this](bool toggle) {this->ui->m_multiwires_gb->setChecked(!toggle);});

@@ -790,6 +790,41 @@ class QetScriptApi : public QObject
 		// -- "Check project": every check of the project at once
 		// (ProjectCheck::runAll), as the Check panel lists them --
 		Q_INVOKABLE QVariantList checkProject(int folioIndex = -1);
+		// -- the one-click corrections of the Check panel (CheckFixes):
+		// the findings that have one, with "index" and "fix", and putting
+		// one right by that index (one undo step) --
+		Q_INVOKABLE QVariantList checkFixes();
+		Q_INVOKABLE QString applyCheckFix(int index);
+
+		// -- wire numbers from a readable pattern, "{seite}.{n:2}"
+		// (WireNumberPattern): the project's settings {active, pattern,
+		// scope folio|cabinet|project, reserve, order columns|rows, mode
+		// fixed|recalculate, start}; what numbering would do; doing it --
+		Q_INVOKABLE QVariantMap wireNumberPattern() const;
+		Q_INVOKABLE bool setWireNumberPattern(const QVariantMap &settings);
+		Q_INVOKABLE QVariantList previewWireNumbers(const QVariantMap &settings = QVariantMap());
+		Q_INVOKABLE int numberWires(const QVariantMap &settings = QVariantMap());
+
+		// -- PLC addresses per station (PlcAddressing): the stations
+		// (element information plc_station of the modules), the settings
+		// of one {format siemens|siemens_de|iec|omron|twincat, order
+		// cards|analog_first, inputStart, outputStart, analogInputStart,
+		// analogOutputStart}, and giving the addresses (all: anew) --
+		Q_INVOKABLE QStringList plcStations();
+		Q_INVOKABLE QVariantMap plcStation(const QString &name) const;
+		Q_INVOKABLE bool setPlcStation(const QString &name, const QVariantMap &settings);
+		Q_INVOKABLE QVariantList assignPlcAddresses(bool all = false, bool preview = false);
+
+		// -- the network address table (NetworkAddresses): every device
+		// with an IP or PROFINET field; the IP networks as text
+		// "Name = 10.0.0.0/24, gw 10.0.0.1, from 10; ..."; giving IP
+		// addresses and PROFINET names (each one undo step, the number
+		// given), CSV export --
+		Q_INVOKABLE QVariantList networkAddresses();
+		Q_INVOKABLE bool setIpNetworks(const QString &networks);
+		Q_INVOKABLE int assignIpAddresses();
+		Q_INVOKABLE int assignProfinetNames();
+		Q_INVOKABLE bool exportNetworkAddresses(const QString &path);
 
 		// -- navigate and message --
 		Q_INVOKABLE bool selectElement(const QString &elementUuid);

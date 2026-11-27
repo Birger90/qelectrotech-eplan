@@ -15,6 +15,7 @@
 	You should have received a copy of the GNU General Public License
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "autoNum/wirenumberpattern.h"
 #include "conductorautonumerotation.h"
 #include "qetproject.h"
 #include "QPropertyUndoCommand/qpropertyundocommand.h"
@@ -236,6 +237,24 @@ void ConductorAutoNumerotation::numerateNewConductor()
 {
 	if (!m_conductor) {
 		return;
+	}
+
+		//The project numbers its wires by a pattern (WireNumberPattern):
+		//fixed, the new wire takes the first free number of its folio;
+		//recalculate, every wire is numbered anew in order
+	if (QETProject *project = m_diagram ? m_diagram->project() : nullptr) {
+		const WireNumberPattern::Settings pattern = WireNumberPattern::settings(project);
+		if (pattern.active) {
+			const QList<Conductor *> only = pattern.mode == WireNumberPattern::Mode::Fixed
+					? QList<Conductor *>{m_conductor} : QList<Conductor *>();
+			const WireNumberPattern::Plan plan = WireNumberPattern::plan(project, pattern, only);
+			if (m_parent_undo) {
+				WireNumberPattern::command(plan, m_parent_undo);
+			} else if (QUndoCommand *undo = WireNumberPattern::command(plan)) {
+				m_diagram->undoStack().push(undo);
+			}
+			return;
+		}
 	}
 
 	if (!m_diagram->conductorsAutonumName().isEmpty())

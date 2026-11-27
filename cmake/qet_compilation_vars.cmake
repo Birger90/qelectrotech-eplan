@@ -520,6 +520,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/devicetype/devicetypeplacement.h
   ${QET_DIR}/sources/autoNum/renumberconductorscommand.cpp
   ${QET_DIR}/sources/autoNum/renumberconductorscommand.h
+  ${QET_DIR}/sources/autoNum/wirenumberpattern.cpp
+  ${QET_DIR}/sources/autoNum/wirenumberpattern.h
   ${QET_DIR}/sources/autoNum/renumberelementscommand.cpp
   ${QET_DIR}/sources/autoNum/renumberelementscommand.h
   ${QET_DIR}/sources/autoNum/autonumschemecommand.cpp
@@ -1163,6 +1165,12 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/ui/fluidcheckdialog.h
   ${QET_DIR}/sources/ui/openwireendsdialog.cpp
   ${QET_DIR}/sources/ui/openwireendsdialog.h
+  ${QET_DIR}/sources/ui/wirenumberpatterndialog.cpp
+  ${QET_DIR}/sources/ui/wirenumberpatterndialog.h
+  ${QET_DIR}/sources/ui/networkaddressdialog.cpp
+  ${QET_DIR}/sources/ui/networkaddressdialog.h
+  ${QET_DIR}/sources/network/networkaddresses.cpp
+  ${QET_DIR}/sources/network/networkaddresses.h
   ${QET_DIR}/sources/projectcheck/checksettings.cpp
   ${QET_DIR}/sources/projectcheck/checksettings.h
   ${QET_DIR}/sources/projectcheck/openwireends.cpp

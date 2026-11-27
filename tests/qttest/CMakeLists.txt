@@ -700,6 +700,10 @@ qet_add_app_test(tst_elementarticleswidget tst_elementarticleswidget.cpp)
 target_compile_definitions(tst_elementarticleswidget PRIVATE
   "QET_EXAMPLES_DIR=\"${QET_DIR}/examples\"")
 
+# The "Fluid power" tab of a placed symbol with fluid data: a cylinder's own
+# bore, rod and stroke, through the undo stack.
+qet_add_app_test(tst_fluidpropertieswidget tst_fluidpropertieswidget.cpp)
+
 # An elements collection item set up after the application object is gone.
 qet_add_app_test(tst_collectionitemafterquit tst_collectionitemafterquit.cpp)
 
@@ -1949,6 +1953,19 @@ if(QET_HAS_SCRIPTING)
   add_dependencies(tst_xrefdisplay qelectrotech)
   target_link_libraries(tst_xrefdisplay PRIVATE Qt::Test Qt::Xml)
   target_compile_definitions(tst_xrefdisplay PRIVATE
+    "QET_TEST_BINARY_PATH=\"$<TARGET_FILE:qelectrotech>\"")
+endif()
+
+# A placed cylinder can have its own bore, rod and stroke (<fluidOverride>
+# on the element), saved only when set and held by the project database.
+if(QET_HAS_SCRIPTING)
+  add_executable(
+    tst_fluidoverride
+    tst_fluidoverride.cpp)
+  add_test(NAME tst_fluidoverride COMMAND tst_fluidoverride)
+  add_dependencies(tst_fluidoverride qelectrotech)
+  target_link_libraries(tst_fluidoverride PRIVATE Qt::Test Qt::Xml)
+  target_compile_definitions(tst_fluidoverride PRIVATE
     "QET_TEST_BINARY_PATH=\"$<TARGET_FILE:qelectrotech>\"")
 endif()
 

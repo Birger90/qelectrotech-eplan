@@ -6905,7 +6905,8 @@ void projectDataBase::forgetElementTexts(const QUuid &element)
 	other table does: its frozen label, whether it moves and its prefix, as
 	Element::fromXml() reads them (a file that leaves one out gives the
 	value it is read as), whether a T-junction is shown as a dot, then its
-	<properties>, <plcMasterData>, <xrefDisplay> and <potentialSources>
+	<properties>, <plcMasterData>, <xrefDisplay>, <potentialSources> and
+	<fluidOverride>
 */
 QList<projectDataBase::ProjectSetting> projectDataBase::elementValueRowsOf(const QDomElement &element)
 {
@@ -6922,7 +6923,8 @@ QList<projectDataBase::ProjectSetting> projectDataBase::elementValueRowsOf(const
 	if (element.attribute(QStringLiteral("shownAsDot")) == QLatin1String("true"))
 		rows.append({section, 0, QStringLiteral("shownAsDot"), QStringLiteral("true")});
 	for (const QString &tag : {QStringLiteral("properties"), QStringLiteral("plcMasterData"),
-							   QStringLiteral("xrefDisplay"), QStringLiteral("potentialSources")}) {
+							   QStringLiteral("xrefDisplay"), QStringLiteral("potentialSources"),
+							   QStringLiteral("fluidOverride")}) {
 		const QDomElement child = element.firstChildElement(tag);
 		if (!child.isNull())
 			xmlRows(child, tag, 0, rows);

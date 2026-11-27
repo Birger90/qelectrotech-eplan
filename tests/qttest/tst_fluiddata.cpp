@@ -332,6 +332,83 @@ class tst_fluiddata : public QObject
 			target.applyChanges(shown, other_edit);
 			QCOMPARE(target.m_fluid_line, Fluid::LineKind::Pilot);
 		}
+
+			// the values of one placed cylinder read back as written,
+			// through text as a project file would
+		void overrideRoundTrips()
+		{
+			FluidOverride own;
+			own.m_bore_mm = 50.0;
+			own.m_stroke_mm = 123.4;
+			QDomDocument doc;
+			auto element = doc.createElement("element");
+			doc.appendChild(element);
+			element.appendChild(own.toXml(doc));
+
+			QDomDocument read;
+			read.setContent(doc.toString());
+			FluidOverride back;
+			QVERIFY(back.fromXml(read.documentElement()
+				.firstChildElement(FluidOverride::xmlTagName())));
+			QCOMPARE(back, own);
+			QCOMPARE(back.m_rod_mm, 0.0);
+				// a value not set is not written
+			QVERIFY(!read.documentElement()
+				.firstChildElement(FluidOverride::xmlTagName())
+				.hasAttribute("rod_mm"));
+		}
+
+			// a placed element with the values of its definition writes
+			// nothing, and reading nothing gives a null override
+		void nullOverrideWritesNothing()
+		{
+			QDomDocument doc;
+			QVERIFY(FluidOverride().toXml(doc).isNull());
+			FluidOverride read;
+			read.m_bore_mm = 10.0;
+			QVERIFY(!read.fromXml(QDomElement()));
+			QVERIFY(read.isNull());
+				// 0, negative or unreadable values are not set
+			auto e = doc.createElement(FluidOverride::xmlTagName());
+			e.setAttribute("bore_mm", "0");
+			e.setAttribute("rod_mm", "-3");
+			e.setAttribute("stroke_mm", "long");
+			QVERIFY(!read.fromXml(e));
+			QVERIFY(read.isNull());
+		}
+
+			// without an override, the definition's values apply unchanged
+		void noOverrideKeepsTheDefinition()
+		{
+			FluidData cyl;
+			cyl.m_kind = FluidData::Kind::Cylinder;
+			cyl.m_bore_mm = 32.0;
+			cyl.m_rod_mm = 12.0;
+			cyl.m_stroke_mm = 100.0;
+			QCOMPARE(FluidOverride().appliedTo(cyl), cyl);
+			QCOMPARE(FluidOverride().appliedTo(valve52()), valve52());
+		}
+
+			// each value set replaces the definition's, the others stay
+		void overrideReplacesOnlyWhatIsSet()
+		{
+			FluidData cyl;
+			cyl.m_kind = FluidData::Kind::Cylinder;
+			cyl.m_bore_mm = 32.0;
+			cyl.m_rod_mm = 12.0;
+			cyl.m_stroke_mm = 100.0;
+			FluidOverride own;
+			own.m_stroke_mm = 250.0;
+			const FluidData placed = own.appliedTo(cyl);
+			QCOMPARE(placed.m_bore_mm, 32.0);
+			QCOMPARE(placed.m_rod_mm, 12.0);
+			QCOMPARE(placed.m_stroke_mm, 250.0);
+			QCOMPARE(placed.m_kind, FluidData::Kind::Cylinder);
+
+				// cylinder values do not reach a valve
+			own.m_bore_mm = 40.0;
+			QCOMPARE(own.appliedTo(valve52()), valve52());
+		}
 };
 
 QTEST_GUILESS_MAIN(tst_fluiddata)

@@ -1890,6 +1890,11 @@ bool Element::fromXml(QDomElement &e,
 		m_data.m_master_type != ElementData::PLC)
 		m_data.slaveContactGroupsFromXml(e.firstChildElement(QStringLiteral("slaveContactGroups")));
 
+		//The fluid values of this placed element (a cylinder's bore,
+		//stroke...) in place of those of its definition
+	m_data.m_fluid_override.fromXml(
+				e.firstChildElement(FluidOverride::xmlTagName()));
+
 	//We must block the update of the alignment when loading the information
 	//otherwise the pos of the text will not be the same as it was at save time.
 	for(DynamicElementTextItem *deti : m_dynamic_text_list)
@@ -2991,6 +2996,12 @@ void Element::appendDataXml(QDomDocument &document, QDomElement &element) const
 		if (!xml_groups.isNull())
 			element.appendChild(xml_groups);
 	}
+
+		//Written only when set, so an element with the fluid values of
+		//its definition saves exactly as before
+	auto xml_fluid = m_data.m_fluid_override.toXml(document);
+	if (!xml_fluid.isNull())
+		element.appendChild(xml_fluid);
 }
 
 /**

@@ -26,6 +26,10 @@ zeichnet keine Schalldämpfer.
 - Eine Leitung verbindet nur gleiches Medium (`Terminal::canBeLinkedTo`); zwei elektrische immer.
 - Ventil: `<positions initial="2"><position/>…</positions>`, `<actuation side="left" types="solenoid,manual" spring="true" pilot="true"/>`.
   Zylinder: `<cylinder action="single|double" spring="rod|piston" bore_mm= rod_mm= stroke_mm=/>`.
+- Pro platziertem Zylinder eigene Maße: `<fluidOverride bore_mm= rod_mm= stroke_mm=/>` im `<element>` des
+  .qet (nur gesetzte Werte > 0, fehlt = Werte des Symbols). Code: `FluidOverride`, `ElementData::m_fluid_override`,
+  wirksame Daten `elementData().fluid()` (nicht `m_fluid`, das ist die Definition). Bearbeiten im
+  Eigenschaftsfenster, Reiter „Fluid power“ (Ventile: Stellungen und Betätigung nur angezeigt).
 - Ventil mit Magnet = **Master** (`kindInformation type=coil`, `max_slaves` = Zahl der Magnete),
   Ventilspule = **Slave** (`state=Other`, `<fluid kind="solenoid"/>`). Der Querverweis am Ventil zeigt die
   Spule mit dem Magnetsymbol (Kasten mit Diagonale). Relaisspule = Master, Kontakte = Slave (NO/NC/SW).

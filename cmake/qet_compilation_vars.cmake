@@ -1159,6 +1159,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/ui/tiatagsdialog.h
   ${QET_DIR}/sources/projectcheck/terminalbranches.cpp
   ${QET_DIR}/sources/projectcheck/terminalbranches.h
+  ${QET_DIR}/sources/ui/fluidpropertieswidget.cpp
+  ${QET_DIR}/sources/ui/fluidpropertieswidget.h
   ${QET_DIR}/sources/ui/potentialsourceswidget.cpp
   ${QET_DIR}/sources/ui/potentialsourceswidget.h
   ${QET_DIR}/sources/ui/potentialtypeswidget.cpp

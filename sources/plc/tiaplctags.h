@@ -128,7 +128,14 @@ namespace TiaPlcTags
 	*/
 	QString normalizedAddress(const QString &raw);
 
-	/// write @p channels as tag table @p table: .xlsx or .xml by suffix
+	/**
+		write @p channels as tag table @p table, by the end of @p path:
+		.xlsx (TIA tag table editor), .xml (TIA Openness, SimaticML),
+		.gvl/.st/.exp (CODESYS global variable list: VAR_GLOBAL with
+		AT %IX0.0 : BOOL), .plcopen.xml (PLCopen XML TC6 v2.01, global
+		variables of a resource; CODESYS, TwinCAT, Beremiz). IEC
+		addresses give a bit its size X (%I50.0 -> %IX50.0).
+	*/
 	bool write(const QString &path, const QVector<Channel> &channels,
 			   const QString &table, const QString &culture, QString *error);
 

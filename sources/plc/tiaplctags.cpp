@@ -22,9 +22,11 @@
 #include "../properties/elementdata.h"
 #include "../qetgraphicsitem/element.h"
 #include "../qetproject.h"
+#include "../qetversion.h"
 #include "../undocommand/changeelementdatacommand.h"
 
 #include <QCoreApplication>
+#include <QDateTime>
 #include <QDomDocument>
 #include <QFile>
 #include <QFileInfo>
@@ -506,6 +508,132 @@ QVector<Tag> readXml(const QString &path, QString *error)
 	return tags;
 }
 
+// ------------------------------------------------- IEC 61131-3 (CODESYS, PLCopen)
+
+/// @p address of TIA (%I50.0, %IW256, %QB3) as IEC 61131-3 writes it:
+/// a bit gets its size X (%IX50.0), the rest stays
+QString iecAddress(const QString &address)
+{
+	static const QRegularExpression bit(QStringLiteral("^%([IQ])(\\d+\\.\\d+)$"));
+	const QRegularExpressionMatch m = bit.match(address);
+	if (m.hasMatch()) return QStringLiteral("%%1X%2").arg(m.captured(1), m.captured(2));
+	return address;
+}
+
+/// a TIA data type (Bool, Int, Word ...) as IEC 61131-3 elementary type
+QString iecType(const QString &type)
+{
+	return type.isEmpty() ? QStringLiteral("BOOL") : type.toUpper();
+}
+
+/// @p name as IEC 61131-3 identifier: letters, digits and single
+/// underscores, not beginning with a digit
+QString iecName(const QString &name)
+{
+	QString s;
+	for (const QChar ch : name) {
+		const bool ok = (ch >= QLatin1Char('a') && ch <= QLatin1Char('z')) || (ch >= QLatin1Char('A') && ch <= QLatin1Char('Z'))
+						|| (ch >= QLatin1Char('0') && ch <= QLatin1Char('9'));
+		if (ok) s += ch;
+		else if (!s.endsWith(QLatin1Char('_'))) s += QLatin1Char('_');
+	}
+	while (s.endsWith(QLatin1Char('_'))) s.chop(1);
+	while (s.startsWith(QLatin1Char('_'))) s.remove(0, 1);   // "-G1" -> "G1"
+	if (s.isEmpty() || s.at(0).isDigit()) s.prepend(QStringLiteral("T_"));
+	return s;
+}
+
+/// the channels with an address, each with a unique IEC name
+QVector<QPair<QString, const Channel *>> iecChannels(const QVector<Channel> &channels)
+{
+	QVector<QPair<QString, const Channel *>> out;
+	QSet<QString> used;
+	for (const Channel &c : channels) {
+		if (c.address.isEmpty()) continue;
+		QString name = iecName(c.name);
+		const QString base = name;
+		for (int n = 2; used.contains(name.toUpper()); ++n) name = base + QStringLiteral("_%1").arg(n);
+		used << name.toUpper();
+		out << qMakePair(name, &c);
+	}
+	return out;
+}
+
+bool saveText(const QString &path, const QString &text, QString *error)
+{
+	QSaveFile file(path);
+	if (!file.open(QIODevice::WriteOnly)) {
+		if (error) *error = file.errorString();
+		return false;
+	}
+	file.write(text.toUtf8());
+	if (!file.commit()) {
+		if (error) *error = file.errorString();
+		return false;
+	}
+	return true;
+}
+
+/// CODESYS global variable list (Structured Text): one variable per
+/// channel, at its address, the function text as comment
+bool writeCodesysGvl(const QString &path, const QVector<Channel> &channels, const QString &table,
+					 QString *error)
+{
+	QString s = QStringLiteral("{attribute 'qualified_only'}\n// %1: PLC channels from QElectroTech\n"
+							   "VAR_GLOBAL\n").arg(iecName(table));
+	for (const auto &e : iecChannels(channels)) {
+		const Channel &c = *e.second;
+		s += QStringLiteral("\t%1 AT %2 : %3;").arg(e.first, iecAddress(c.address), iecType(c.dataType));
+		QString comment = c.function.isEmpty() ? c.symbol : c.function;
+		comment.replace(QStringLiteral("*)"), QStringLiteral("* )")).replace(QLatin1Char('\n'), QLatin1Char(' '));
+		if (!comment.trimmed().isEmpty()) s += QStringLiteral(" (* %1 *)").arg(comment.trimmed());
+		s += QLatin1Char('\n');
+	}
+	s += QStringLiteral("END_VAR\n");
+	return saveText(path, s, error);
+}
+
+/// PLCopen XML (IEC 61131-10 / TC6 XML v2.01): a project whose resource
+/// holds the channels as global variables, for CODESYS, TwinCAT, Beremiz
+/// and other tools that import PLCopen
+bool writePlcOpen(const QString &path, const QVector<Channel> &channels, const QString &table,
+				  QString *error)
+{
+	const QString now = QDateTime::currentDateTime().toString(Qt::ISODate);
+	QString s = QStringLiteral("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+							   "<project xmlns=\"http://www.plcopen.org/xml/tc6_0201\" "
+							   "xmlns:xhtml=\"http://www.w3.org/1999/xhtml\">\n"
+							   "  <fileHeader companyName=\"\" productName=\"QElectroTech\" "
+							   "productVersion=\"%1\" creationDateTime=\"%2\"/>\n"
+							   "  <contentHeader name=\"%3\" modificationDateTime=\"%2\">\n"
+							   "    <coordinateInfo>\n"
+							   "      <fbd><scaling x=\"1\" y=\"1\"/></fbd>\n"
+							   "      <ld><scaling x=\"1\" y=\"1\"/></ld>\n"
+							   "      <sfc><scaling x=\"1\" y=\"1\"/></sfc>\n"
+							   "    </coordinateInfo>\n"
+							   "  </contentHeader>\n"
+							   "  <types>\n    <dataTypes/>\n    <pous/>\n  </types>\n"
+							   "  <instances>\n    <configurations>\n"
+							   "      <configuration name=\"Config\">\n"
+							   "        <resource name=\"Resource\">\n"
+							   "          <globalVars name=\"%3\">\n")
+					.arg(QetVersion::displayedVersionWithFork(), now, xmlEscape(iecName(table)));
+	for (const auto &e : iecChannels(channels)) {
+		const Channel &c = *e.second;
+		s += QStringLiteral("            <variable name=\"%1\" address=\"%2\">\n"
+							"              <type><%3/></type>\n")
+				 .arg(xmlEscape(e.first), xmlEscape(iecAddress(c.address)), iecType(c.dataType));
+		const QString comment = c.function.isEmpty() ? c.symbol : c.function;
+		if (!comment.trimmed().isEmpty())
+			s += QStringLiteral("              <documentation><xhtml:p>%1</xhtml:p></documentation>\n")
+					 .arg(xmlEscape(comment.trimmed()));
+		s += QStringLiteral("            </variable>\n");
+	}
+	s += QStringLiteral("          </globalVars>\n        </resource>\n      </configuration>\n"
+						"    </configurations>\n  </instances>\n</project>\n");
+	return saveText(path, s, error);
+}
+
 bool writeXml(const QString &path, const QVector<Channel> &channels, const QString &table,
 			  const QString &culture, QString *error)
 {
@@ -724,6 +852,11 @@ bool write(const QString &path, const QVector<Channel> &channels, const QString 
 		   const QString &culture, QString *error)
 {
 	const QString name = table.isEmpty() ? QStringLiteral("QET_EA") : table;
+	const QString suffix = QFileInfo(path).suffix().toLower();
+	if (suffix == QLatin1String("gvl") || suffix == QLatin1String("st") || suffix == QLatin1String("exp"))
+		return writeCodesysGvl(path, channels, name, error);
+	if (path.endsWith(QLatin1String(".plcopen.xml"), Qt::CaseInsensitive))
+		return writePlcOpen(path, channels, name, error);
 	if (QFileInfo(path).suffix().compare(QLatin1String("xml"), Qt::CaseInsensitive) == 0)
 		return writeXml(path, channels, name, culture.isEmpty() ? QStringLiteral("de-DE") : culture, error);
 	return writeXlsx(path, channels, name, error);

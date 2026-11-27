@@ -35,6 +35,7 @@
 #include <QTranslator>
 #include "marking/mprintpro.h"
 #include "fluid/fluidbom.h"
+#include "fluid/fluidbomproject.h"
 
 #include "bordertitleblock.h"
 #include "conductornumexport.h"
@@ -1382,40 +1383,15 @@ int fetchCommercial(QETProject &project, bool online)
 */
 int exportFluidBom(QETProject &project, const QString &output)
 {
-	QList<FluidBom::Part> parts;
-	QList<FluidBom::Line> lines;
-	for (Diagram *diagram : project.diagrams()) {
-		for (Element *element : diagram->elements()) {
-			const FluidData fluid = element->elementData().m_fluid;
-			if (fluid.isNull())
-				continue;
-			const DiagramContext info = element->elementInformations();
-			FluidBom::Part p;
-			p.name = element->name();
-			p.kind = FluidBom::kindText(fluid.m_kind);
-			p.details = FluidBom::details(fluid);
-			p.manufacturer = info.value(QStringLiteral("manufacturer")).toString();
-			p.reference = info.value(QStringLiteral("manufacturer_reference")).toString();
-			p.label = element->actualLabel();
-			parts << p;
-		}
-		for (Conductor *conductor : diagram->conductors()) {
-			const ConductorProperties cp = conductor->properties();
-			if (cp.m_fluid_line == Fluid::LineKind::None)
-				continue;
-			lines << FluidBom::Line{cp.m_fluid_line, cp.m_wire_section,
-						cp.m_length};
-		}
-	}
-	int rows = 0;
-	const QByteArray csv = FluidBom::csv(parts, lines, &rows);
+	int parts = 0, lines = 0, rows = 0;
+	const QByteArray csv = FluidBom::projectCsv(project, &parts, &lines, &rows);
 	QString error;
 	if (!BomExport::writeCsv(output, csv, &error)) {
 		err << "Cannot write '" << output << "': " << error << "\n";
 		return 1;
 	}
-	out << "Exported " << rows << " fluid line item(s) from " << parts.size()
-		<< " part(s) and " << lines.size() << " line(s) -> " << output << "\n";
+	out << "Exported " << rows << " fluid line item(s) from " << parts
+		<< " part(s) and " << lines << " line(s) -> " << output << "\n";
 	return 0;
 }
 

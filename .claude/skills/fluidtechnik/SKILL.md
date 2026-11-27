@@ -91,7 +91,8 @@ nur an, wenn noch keine `qet_labels.xml` da ist). ISO/IEC 81346-2 selbst liegt n
   wie das Leitungs-Fenster auch das Strichmuster (Steuer-/Abluftleitung gestrichelt). Gilt für das ganze Potential.
 - Prüfen: Menü Projekt → „Fluidtechnik prüfen…“ (offene Fluidanschlüsse ohne Leitung/Abschluss,
   Magnetventil mit weniger Spulen als Magneten, Spule ohne Ventil).
-- Stückliste: `QElectroTech --export-fluid-bom PROJEKT.qet AUSGABE.csv`. Eine Zeile je gleichem Teil
+- Stückliste: Menü Projekt → „Fluid-Stückliste exportieren…“ oder
+  `QElectroTech --export-fluid-bom PROJEKT.qet AUSGABE.csv` (beide `FluidBom::projectCsv`). Eine Zeile je gleichem Teil
   (Name, Bauart, Kenndaten, Hersteller, Bestellnummer aus den Bauteilinformationen `manufacturer`,
   `manufacturer_reference`), mit Anzahl und Kennzeichnungen; Zylinder mit Ø/Stange/Hub, Ventile mit Stellungen
   und Betätigung. Leitungen mit Leitungsart als Schläuche nach Art und Feld „Querschnitt“ gezählt, dazu die

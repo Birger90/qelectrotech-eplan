@@ -127,6 +127,8 @@
 #include "ui/fluidcheckdialog.h"
 #include "ui/openwireendsdialog.h"
 #include "ui/tiatagsdialog.h"
+#include "fluid/fluidbomproject.h"
+#include "bomexport.h"
 #include "ui/duplicateoffsetdialog.h"
 #include "ui/jumptoelementdialog.h"
 #include "ui/diagrampropertieseditordockwidget.h"
@@ -1501,6 +1503,37 @@ void QETDiagramEditor::setUpActions()
 			dialog->show();
 		}
 	});
+		// Parts list of the fluid power side, as the command line writes it
+	m_export_fluid_bom = new QAction(QET::Icons::DocumentSpreadsheet, tr("Export the fluid parts list..."), this);
+	m_export_fluid_bom->setObjectName(QStringLiteral("exportFluidBom"));
+	m_export_fluid_bom->setStatusTip(tr("Write valves, cylinders and other fluid parts, and the fluid lines by kind and size, to a CSV file"));
+	ShortcutManager::instance().registerAction(m_export_fluid_bom, "diagrameditor.export_fluid_bom", tr("Diagram editors"), QKeySequence());
+	connect(m_export_fluid_bom, &QAction::triggered, this, [this]() {
+		QETProject *project = currentProject();
+		if (!project)
+			return;
+		const QFileInfo info(project->filePath());
+		const QString name = tr("%1 - fluid parts.csv").arg(
+					info.completeBaseName().isEmpty() ? tr("Project") : info.completeBaseName());
+		QString path = QFileDialog::getSaveFileName(
+					this, tr("Export the fluid parts list"),
+					info.completeBaseName().isEmpty() ? name : info.dir().filePath(name),
+					tr("CSV file (*.csv)"));
+		if (path.isEmpty())
+			return;
+		if (!path.endsWith(QStringLiteral(".csv"), Qt::CaseInsensitive))
+			path += QStringLiteral(".csv");
+		int parts = 0, lines = 0, rows = 0;
+		const QByteArray csv = FluidBom::projectCsv(*project, &parts, &lines, &rows);
+		QString error;
+		if (!BomExport::writeCsv(path, csv, &error)) {
+			QMessageBox::warning(this, tr("Export the fluid parts list"),
+								 tr("The file could not be written: %1").arg(error));
+			return;
+		}
+		statusBar()->showMessage(tr("%n line(s) from %1 fluid part(s) and %2 fluid line(s) written to %3", nullptr, rows)
+								 .arg(parts).arg(lines).arg(QDir::toNativeSeparators(path)), 5000);
+	});
 		//The texts of the project in other languages
 	m_project_languages = new QAction(tr("Project languages..."), this);
 	m_project_languages->setStatusTip(tr("Show the texts of the project in another language"));
@@ -2808,6 +2841,7 @@ void QETDiagramEditor::setUpMenu()
 	menu_labels -> addSeparator();
 	menu_labels -> addAction(m_export_marking);
 	menu_project -> addAction(m_tia_tags);
+	menu_project->addAction(m_export_fluid_bom);
 	menu_project -> addAction(m_project_export_conductor_num);
 	menu_project -> addAction(m_project_export_wiring_list);
 	menu_project -> addAction(m_project_wiring_list_view);
@@ -4649,6 +4683,7 @@ void QETDiagramEditor::slot_updateActions()
 	m_part_types->setEnabled(opened_project);
 	m_reports->setEnabled(opened_project);
 	m_plants_locations->setEnabled(opened_project);
+	m_export_fluid_bom->setEnabled(opened_project);
 	m_project_languages->setEnabled(opened_project);
 	m_project_history             -> setEnabled(opened_project);
 	m_export_delivery             -> setEnabled(opened_project);

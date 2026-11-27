@@ -57,6 +57,27 @@ Codestelle: `sources/plancheck/plancheck.cpp` (`checkWireProtection`, `capacityO
 | F4 | Iz(40 °C) = 0,87 · Iz(30 °C) | `capacityOf` | Umrechnungsfaktor für 70 °C Leitertemperatur bei 40 °C Umgebung, Q8 (Tabelle 12-2) | Schrankinnentemperatur fest 40 °C wie EN 60204-1; Häufung nicht berücksichtigt |
 | F5 | Bemessungsstrom: `rated_current_a` → `In=` aus `sim_params` → Siemens-Bestellnummer `5S[YLJP]` + Pole + zwei Ziffern In (5SY4310-7 → 10 A) → größter Strom im Text („C16“, „B 10 A“, „8A“) von Beschreibung, Bezeichnung, Kommentar, Kennzeichen | `ratedCurrentOf` | Projektdefinition; Siemens-Bestellschlüssel 5SY/5SL | Motorschutzschalter mit Einstellbereich: der größte Wert im Text |
 
+## Spannungsfall (Plan prüfen)
+
+| ID | Beziehung | Codestelle | Herkunft, Quelle | Grenze |
+|---|---|---|---|---|
+| V1 | ΔU = k · I · R mit R = ρ_70 · L / S; k = 2 bei Wechsel- oder Gleichstrom (Hin- und Rückleiter), k = √3 bei Drehstrom; cos φ = 1, Reaktanz vernachlässigt | `checkWireProtection` (Teil Spannungsfall) | IEC 60364-5-52 Anhang G (Q9); Umsetzung nach KoperCad `novo-checks/src/calc/drop.rs` (Q10) | rein ohmsch; bei großen Querschnitten (> 50 mm²) und cos φ < 1 zu klein |
+| V2 | ρ_70 = 0,017241 · (1 + 0,00393 · (70 − 20)) Ω·mm²/m = 0,02063 Ω·mm²/m (Kupfer bei 70 °C Leitertemperatur, PVC) | dto. | Q9, Q10 | – |
+| V3 | Strom I = Bemessungsstrom In des vorgeschalteten Schutzorgans (F5); Länge L aus der Kabellänge (Zahl, Einheit m, sonst mm/cm umgerechnet); Querschnitt S = kleinster Leiterquerschnitt der Adern, sonst aus dem Kabeltyp („5G2,5“, „4x1,5“) | dto. | Projektdefinition (Auslegung auf In, nicht auf den Laststrom) | ohne Länge, Querschnitt oder Schutzorgan keine Prüfung |
+| V4 | Nennspannung U: Elementinfo `nominal_voltage_v` des Schutzorgans, sonst 400 V bei drei oder mehr abgehenden Potentialen (Drehstrom), sonst 230 V | dto. | **Vorgabe** (Projektdefinition) | 24-V-Kreise brauchen `nominal_voltage_v` = 24 |
+| V5 | Grenze: Elementinfo `voltage_drop_limit_pct` des Schutzorgans, sonst **3 % (Vorgabe)**; Warnung über der Grenze, Fehler über dem Doppelten; größte Länge L_max = Grenze / ΔU% · L | dto. | Vorgabe; IEC 60364-5-52 G nennt 3 % (Beleuchtung) und 5 % (übrige Verbraucher) am öffentlichen Netz (Q9) | – |
+
+## Sicherheitsfunktion, Performance Level (Skript `safetyFunction`)
+
+| ID | Beziehung | Codestelle | Herkunft, Quelle | Grenze |
+|---|---|---|---|---|
+| S1 | MTTFd eines Bauteils = B10d / (0,1 · n_op); n_op = Tage · Stunden · 3600 / Taktzeit | `Iso13849::Component::years`, `operationsPerYear` | ISO 13849-1 Anhang C.2 (Q11), Umsetzung nach KoperCad `novo-safety` (Q10) | – |
+| S2 | Kanal: 1/MTTFd = Σ 1/MTTFd_i, höchstens 100 Jahre; zwei ungleiche Kanäle (Kat. 3, 4): MTTFd = 2/3 · (M1 + M2 − 1/(1/M1 + 1/M2)); Stufen niedrig 3–10, mittel 10–30, hoch ≥ 30 Jahre | `channelMttfd`, `calculate` | ISO 13849-1 Anhang D (Q11) | unter 3 Jahren unzulässig |
+| S3 | DCavg-Stufen: keine < 60 %, niedrig ≥ 60 %, mittel ≥ 90 %, hoch ≥ 99 %; CCF ≥ 65 Punkte für Kat. 2–4 | `dcRank`, `calculate` | ISO 13849-1 Tab. 5, Anhang F (Q11) | – |
+| S4 | PFHd: Kat. B/1 λd = 1/(MTTFd · 8760 h); Kat. 2 λd · (1 − DC); Kat. 3/4 2 · a · b · t_ce + β · λd mit β = 0,02 (CCF erfüllt, sonst 0,1), T_M = 20 Jahre, MTTR = 8 h | `pfhdModel` | **Näherung** aus KoperCad (Q10), **nicht** Tabelle K.1 der Norm | Planungshilfe; Nachweis mit SISTEMA oder Tabelle K.1 |
+| S5 | PL aus PFHd: e < 10⁻⁷, d < 10⁻⁶, c < 3·10⁻⁶, b < 10⁻⁵, a < 10⁻⁴; begrenzt durch die Kategorie (B → b, 1 → c, 2/3 → d, 4 → e); Reihenschaltung: PFHd addieren, kleinster PL begrenzt | `fromPfhd`, `evaluate` | ISO 13849-1 Tab. 2 und Abschnitt 6.3 (Q11) | – |
+| S6 | Erforderlicher PL aus dem Risikographen: S1F1P1 a, S1F1P2 b, S1F2P1 b, S1F2P2 c, S2F1P1 c, S2F1P2 d, S2F2P1 d, S2F2P2 e | `requiredPl` | ISO 13849-1 Anhang A (Q11) | – |
+
 ## Quellen
 
 - Q1: IEC/TR 60890:2022 bzw. DIN VDE 0660-507, *A method of temperature-rise verification of low-voltage switchgear
@@ -79,3 +100,6 @@ Codestelle: `sources/plancheck/plancheck.cpp` (`checkWireProtection`, `capacityO
   https://content.voltimum.com/de/137631/201108022505.pdf
 - Q8: Lapp, Technische Tabellen T12, Tabelle 12-1 (DIN VDE 0298-4 Tabelle 11, 30 °C) und Tabelle 12-2
   (Umrechnungsfaktor 40 °C bei 70 °C Leitertemperatur: 0,87).
+- Q9: IEC 60364-5-52 / DIN VDE 0100-520, Anhang G (Spannungsfall in Verbraucheranlagen).
+- Q10: KoperCad, https://github.com/Herepiggypiggypiggy/KoperCad (MIT), `crates/novo-checks/src/calc/drop.rs` und `crates/novo-safety/src/` (pl.rs, subsystem.rs, components.rs).
+- Q11: DIN EN ISO 13849-1:2023, Sicherheitsbezogene Teile von Steuerungen – Allgemeine Gestaltungsleitsätze (Anhänge A, C, D, F, K).

@@ -49,7 +49,12 @@ In QET und im exportierten PDF:
   Rückgängig-Schritt). EPLAN-Adressen (E 50.0, PEW256) werden zu %I50.0/%IW256; Kanäle, die nur DI0/DQ3 heißen,
   werden ab der Startadresse des Moduls gezählt (Elementinformation `plc_start_address`/`plc_start_address_2`,
   sonst die nächsten freien Bytes). Auch per `--export-tia-tags`, `--compare-tia-tags … [--apply neu.qet]` und
-  `qet.exportTiaTags/compareTiaTags/applyTiaTags` in Skripten.
+  `qet.exportTiaTags/compareTiaTags/applyTiaTags` in Skripten. Derselbe Export schreibt auch eine CODESYS-Liste
+  globaler Variablen (`.gvl`, `.st`: `VAR_GLOBAL … AT %IX0.0 : BOOL`) und PLCopen-XML TC6 v2.01 (`.plcopen.xml`)
+  für CODESYS, TwinCAT und Beremiz.
+- Sicherheit: `qet.safetyFunction(json)` liefert den PL einer Sicherheitsfunktion nach ISO 13849-1 (Teilsysteme mit
+  Kategorie, MTTFd oder B10d, DCavg, CCF) und den erforderlichen PL aus S/F/P – eine Planungsnäherung nach KoperCad,
+  nicht Tabelle K.1 (Formeln S1–S6 in `FORMELN.md`).
 - Kontakte: Eine platzierte Spule kann eigene Kontaktgruppen tragen (11/12/14, 21/22/24 …), wie die
   Funktionsschablone eines EPLAN-Artikels; die Kontakte übernehmen daraus ihre Anschlussbezeichnungen, der
   Kontaktspiegel zeigt sie.
@@ -65,7 +70,10 @@ In QET und im exportierten PDF:
   Leiternummern, Potenzialtypen, offene Leitungsenden, Symbole ohne Leitung, Gerätetypen, Leitungen je Anschluss,
   Anschlussnamen und die Regeln des Forks: Kontakte, Spulen und Abbruchstellen ohne Gegenstück, SPS-Kanäle ohne
   Adresse, Kabel ohne Ziel, Klemmen ohne Klemmleiste, Geräte ohne Kennzeichen oder Artikel, offene Anschlüsse und
-  Fluidanschlüsse, Leitungsquerschnitt zur Absicherung (In ≤ Iz nach EN 60204-1), Schaltschrankaufbau.
+  Fluidanschlüsse, Leitungsquerschnitt zur Absicherung (In ≤ Iz nach EN 60204-1), Spannungsfall je Kabel mit Länge
+  (IEC 60364-5-52 G, bei In des Schutzorgans; Grenze 3 %, sonst `voltage_drop_limit_pct`, Spannung
+  `nominal_voltage_v`), IP-Adressen und PROFINET-Namen (gültig, eindeutig, im Subnetz; Elementinfos `ip_address`,
+  `subnet_mask`, `network_name`, `profinet_name`), Schaltschrankaufbau.
 - Skript-API `qet.checkProject(folio = -1)`, CLI `--check-project <projekt.qet> [bericht.json]` (dieselben Regeln;
   Rückgabewert 3 bei Fehlern).
 

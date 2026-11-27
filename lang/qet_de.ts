@@ -3626,6 +3626,14 @@ Gesperrt durch die Option „Nur eine Potenzialbeschriftung je Seite anzeigen“
         <source>%1 mm²</source>
         <translation>%1 mm²</translation>
     </message>
+    <message>
+        <source>Text at each end of the conductor</source>
+        <translation>Text an beiden Leiterenden</translation>
+    </message>
+    <message>
+        <source>The conductor&apos;s text is also written at each end of the conductor, along its direction.</source>
+        <translation>Der Leitertext steht zusätzlich an beiden Enden des Leiters, in seiner Richtung.</translation>
+    </message>
 </context>
 <context>
     <name>ConfigSaveLoaderWidget</name>
@@ -18491,6 +18499,92 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
         <extracomment>%1 is the symbol&apos;s name; %2 the names, such as &quot;L (2), N (2)&quot;</extracomment>
         <translation>%1: Anschlüsse gleichen Namens: %2</translation>
     </message>
+    <message>
+        <source>IP addresses and PROFINET names</source>
+        <translation>IP-Adressen und PROFINET-Namen</translation>
+    </message>
+    <message>
+        <source>Bus devices (element information ip_address, subnet_mask, network_name, profinet_name): an IP address that is no valid IPv4 address, used twice or outside the subnet of its network; a PROFINET device name against the rules (IEC 61158-6-10: labels a-z, 0-9 and - of at most 63 characters, 240 in all, not port-xyz, not like an IP address) or used twice.</source>
+        <translation>Busteilnehmer (Elementinformationen ip_address, subnet_mask, network_name, profinet_name): eine IP-Adresse, die keine gültige IPv4-Adresse ist, doppelt vergeben ist oder außerhalb des Subnetzes ihres Netzes liegt; ein PROFINET-Gerätename gegen die Regeln (IEC 61158-6-10: Teile aus a-z, 0-9 und - mit höchstens 63 Zeichen, insgesamt 240, nicht port-xyz, nicht wie eine IP-Adresse) oder doppelt vergeben.</translation>
+    </message>
+    <message>
+        <source>Wire cross-section, protection and voltage drop</source>
+        <translation>Leitungsquerschnitt, Absicherung und Spannungsfall</translation>
+    </message>
+    <message>
+        <source>is longer than 240 characters</source>
+        <translation>ist länger als 240 Zeichen</translation>
+    </message>
+    <message>
+        <source>has the form of an IP address</source>
+        <translation>hat die Form einer IP-Adresse</translation>
+    </message>
+    <message>
+        <source>has an empty part between dots</source>
+        <translation>hat einen leeren Teil zwischen zwei Punkten</translation>
+    </message>
+    <message>
+        <source>has a part longer than 63 characters</source>
+        <translation>hat einen Teil mit mehr als 63 Zeichen</translation>
+    </message>
+    <message>
+        <source>holds &quot;%1&quot;: only a-z, 0-9, - and . are allowed</source>
+        <translation>enthält „%1“: erlaubt sind nur a-z, 0-9, - und .</translation>
+    </message>
+    <message>
+        <source>has a part beginning or ending with -</source>
+        <translation>hat einen Teil, der mit - beginnt oder endet</translation>
+    </message>
+    <message>
+        <source>begins like a port name (port-xyz)</source>
+        <translation>beginnt wie ein Portname (port-xyz)</translation>
+    </message>
+    <message>
+        <source>IP address &quot;%1&quot; is no valid IPv4 address</source>
+        <translation>IP-Adresse „%1“ ist keine gültige IPv4-Adresse</translation>
+    </message>
+    <message>
+        <source>subnet mask &quot;%1&quot; is no valid mask</source>
+        <translation>Subnetzmaske „%1“ ist keine gültige Maske</translation>
+    </message>
+    <message>
+        <source>IP address %1 is the network address of its subnet</source>
+        <translation>IP-Adresse %1 ist die Netzadresse ihres Subnetzes</translation>
+    </message>
+    <message>
+        <source>IP address %1 is the broadcast address of its subnet</source>
+        <translation>IP-Adresse %1 ist die Broadcast-Adresse ihres Subnetzes</translation>
+    </message>
+    <message numerus="yes">
+        <source>IP address %1 is used %n times: %2</source>
+        <translation>
+            <numerusform>IP-Adresse %1 ist %n-mal vergeben: %2</numerusform>
+            <numerusform>IP-Adresse %1 ist %n-mal vergeben: %2</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>IP address %1 lies outside the subnet of the other devices</source>
+        <translation>IP-Adresse %1 liegt außerhalb des Subnetzes der übrigen Geräte</translation>
+    </message>
+    <message>
+        <source>IP address %1 lies outside the subnet of the other devices of network %2</source>
+        <translation>IP-Adresse %1 liegt außerhalb des Subnetzes der übrigen Geräte im Netz %2</translation>
+    </message>
+    <message>
+        <source>PROFINET name &quot;%1&quot; %2</source>
+        <translation>PROFINET-Name „%1“ %2</translation>
+    </message>
+    <message numerus="yes">
+        <source>PROFINET name %1 is used %n times: %2</source>
+        <translation>
+            <numerusform>PROFINET-Name %1 ist %n-mal vergeben: %2</numerusform>
+            <numerusform>PROFINET-Name %1 ist %n-mal vergeben: %2</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Voltage drop %1 % (%2 V of %3 V) over %4 m of %5 mm² at %6 A of %7, limit %8 %; this section reaches %9 m (IEC 60364-5-52 G, copper 70 °C, cos φ 1)</source>
+        <translation>Spannungsfall %1 % (%2 V von %3 V) über %4 m mit %5 mm² bei %6 A von %7, Grenze %8 %; dieser Querschnitt reicht für %9 m (IEC 60364-5-52 G, Kupfer 70 °C, cos φ 1)</translation>
+    </message>
 </context>
 <context>
     <name>ProjectDBModel</name>
@@ -27148,6 +27242,22 @@ Wie möchten Sie sie platzieren?</translation>
     <message>
         <source>The installer %1 could not be started.</source>
         <translation>Das Installierskript %1 ließ sich nicht starten.</translation>
+    </message>
+    <message>
+        <source>E3D format version %1 is not supported (1 to 4)</source>
+        <translation>E3D-Formatversion %1 wird nicht unterstützt (1 bis 4)</translation>
+    </message>
+    <message>
+        <source>Unexpected data at the end of the E3D file (at %1 of %2 bytes)</source>
+        <translation>Unerwartete Daten am Ende der E3D-Datei (bei %1 von %2 Bytes)</translation>
+    </message>
+    <message>
+        <source>The E3D file has no faces to show</source>
+        <translation>Die E3D-Datei enthält keine darstellbaren Flächen</translation>
+    </message>
+    <message>
+        <source>Not a readable E3D file: %1</source>
+        <translation>Keine lesbare E3D-Datei: %1</translation>
     </message>
 </context>
 <context>

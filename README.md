@@ -42,6 +42,11 @@
 >   become %I50.0/%IW256; channels named only DI0/DQ3 are counted from the module start (element information
 >   `plc_start_address`/`plc_start_address_2`, else the next free bytes). Also `--export-tia-tags`,
 >   `--compare-tia-tags … [--apply out.qet]` and `qet.exportTiaTags/compareTiaTags/applyTiaTags` in scripts.
+>   The same export writes a CODESYS global variable list (`.gvl`, `.st`: `VAR_GLOBAL … AT %IX0.0 : BOOL`) and
+>   PLCopen XML TC6 v2.01 (`.plcopen.xml`) for CODESYS, TwinCAT and Beremiz.
+> - Safety: `qet.safetyFunction(json)` gives the PL of a safety function after ISO 13849-1 (subsystems with
+>   category, MTTFd or B10d, DCavg, CCF) and the required PL of S/F/P -- a planning estimate after KoperCad, not
+>   table K.1 (formulas S1–S6 in `FORMELN.md`).
 > - Contacts: a placed coil can carry its own contact groups (11/12/14, 21/22/24 …), like the function template of
 >   an EPLAN article; the contacts take their terminal names from it and the contact mirror shows them.
 > - Cross reference formula `%=M`: the plant is shown only when it differs from the sheet's own (`/42/1`,
@@ -55,7 +60,10 @@
 >   symbols with no wire, device types, wires per terminal, terminal names, and the fork's rules: contacts, coils and
 >   folio reports without their partner, PLC channels without an address, cables without a target, terminals without
 >   a terminal strip, devices without a label or part, unconnected terminals and fluid ports, wire cross-section
->   against the protective device (In ≤ Iz per EN 60204-1), the cabinet layout.
+>   against the protective device (In ≤ Iz per EN 60204-1), the voltage drop over each cable with a length (IEC
+>   60364-5-52 G, at In of the protective device; limit 3 % unless `voltage_drop_limit_pct`, voltage
+>   `nominal_voltage_v`), IP addresses and PROFINET names (valid, unique, in the subnet; element information
+>   `ip_address`, `subnet_mask`, `network_name`, `profinet_name`), the cabinet layout.
 > - Script API `qet.checkProject(folio = -1)`, CLI `--check-project <project.qet> [report.json]` (the same rules;
 >   exit code 3 when errors are found).
 >

@@ -3,6 +3,30 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.60.0 – 27.11.2026 – Übernahmen aus Forks und anderer Software
+
+Herkunft und Lizenz stehen in den Commits und in den Dateiköpfen.
+
+- **Aus QET-Forks (GPL-2.0-or-later):** Frage nach der Sicherungskopie beim Öffnen abschaltbar (Opus-id); Leitertext
+  per Strg+Klick wählen (Opus-id); Menü mit Standardquerschnitten am Querschnittsfeld (AJOL42300); XML-Fehler im
+  Elementeditor mit Zeile und Spalte (DieterMayerOSS); Aderfarben nach IEC 60757 im Kabeltyp-Editor (frank-yann);
+  **Anschlussbezeichnungen je platziertem Bauteil** mit Registerkarte *Anschlüsse* (Kellermorph, Upstream-PR #2015);
+  **Leitertext zusätzlich an beiden Leiterenden**, in Leitungsrichtung, nie kopfüber, je Leiter abschaltbar
+  (AJOL42300).
+- **PDF-Lesezeichen:** jedes Blatt als Lesezeichen („3 Motoren“), das PDF öffnet mit der Lesezeichenleiste, wie bei
+  EPLAN; im Druckdialog und in `--export-pdf`, als inkrementelles Update nach den Sprungrahmen (Idee DieterMayerOSS).
+- **Plan prüfen – Spannungsfall:** je Kabel mit Länge ΔU beim Bemessungsstrom des vorgeschalteten Schutzorgans
+  (IEC 60364-5-52 G, Kupfer 70 °C), Grenze 3 % als Vorgabe, je Schutzorgan einstellbar; Formeln V1–V5 (nach KoperCad,
+  MIT).
+- **Plan prüfen – IP-Adressen und PROFINET-Namen:** ungültig, doppelt, Netz-/Broadcast-Adresse, außerhalb des
+  Subnetzes; PROFINET-Gerätename nach IEC 61158-6-10 (eigener Code, Idee OpenWiring).
+- **SPS-Variablen für CODESYS und PLCopen:** der TIA-Export schreibt nach Endung auch `.gvl`/`.st` und
+  `.plcopen.xml` (TC6 v2.01).
+- **ISO 13849-1:** `qet.safetyFunction(json)` rechnet PL und PFHd einer Sicherheitsfunktion und den erforderlichen PL;
+  Modell aus KoperCad (MIT, Lizenz in `sources/safety/`), als Planungsnäherung gekennzeichnet; Formeln S1–S6.
+- **EPLAN-3D (.e3d) in der 3D-Ansicht:** liegt zu einer Bestellnummer keine STEP-, aber eine .e3d-Datei im
+  3D-Ordner, wird sie gezeigt (Format nach ecad-view, MIT; eigener Leser, ohne Open CASCADE).
+
 ## 1.59.0 – 27.11.2026 – Tür in der 3D-Ansicht öffnen
 
 - **Türwinkel in der 3D-Ansicht:** Hat der Schrank eine Türfläche (`face="door"`), erscheint jetzt auch das

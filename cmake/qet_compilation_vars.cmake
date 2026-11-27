@@ -167,6 +167,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/safety/iso13849.cpp
   ${QET_DIR}/sources/safety/iso13849.h
   ${QET_DIR}/sources/plc/tiaplctags.h
+  ${QET_DIR}/sources/plc/plcaddressing.cpp
+  ${QET_DIR}/sources/plc/plcaddressing.h
   ${QET_DIR}/sources/import/eplanproject/epdzimport.cpp
   ${QET_DIR}/sources/import/eplanproject/epdzimport.h
   ${QET_DIR}/sources/import/eplanproject/eplanprojectimportdialog.cpp

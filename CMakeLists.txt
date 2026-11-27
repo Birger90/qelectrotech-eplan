@@ -515,6 +515,11 @@ install(FILES tools/fluidsim_import/fluidsim_plan.py tools/fluidsim_import/fluid
 	tools/fluidsim_import/fluidsim_batch.py DESTINATION ${QET_DATA_PATH}fluidsim_import)
 install(FILES tools/symbole/fluidsim_symbole.py tools/symbole/fluid_schaltwege.py tools/symbole/fluid_kennwerte.py
 	DESTINATION ${QET_DATA_PATH}fluidsim_import/symbole)
+# sPlan import (File > Import sPlan schematic); it draws with eplan_import/planvorlagen
+install(DIRECTORY tools/splan_import/
+	DESTINATION ${QET_DATA_PATH}splan_import
+	FILES_MATCHING PATTERN "*.py" PATTERN "*.md"
+	PATTERN "__pycache__" EXCLUDE)
 install(FILES LICENSE ELEMENTS.LICENSE CREDIT README ChangeLog DESTINATION ${QET_LICENSE_PATH})
 if(UNIX AND NOT APPLE)
     install(FILES misc/org.qelectrotech.qelectrotech.desktop DESTINATION ${QET_DESKTOP_PATH})

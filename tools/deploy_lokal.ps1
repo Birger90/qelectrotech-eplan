@@ -1,5 +1,5 @@
 ﻿# Bringt einen fertigen Build in den lauffähigen Ordner build\deploy:
-# Programm, Übersetzungen (lang\*.qm), MCP-Server, Assistent-Brücke und EPLAN-Import.
+# Programm, Übersetzungen (lang\*.qm), MCP-Server, Assistent-Brücke, EPLAN- und sPlan-Import.
 # Aufruf nach "ninja" im Ordner build:  powershell -File tools\deploy_lokal.ps1
 # QElectroTech aus build\deploy muss dafür geschlossen sein (die exe ist sonst gesperrt).
 $ErrorActionPreference = "Stop"
@@ -107,5 +107,8 @@ if (Test-Path $weid) {
 } else {
     Write-Warning "Weidmüller-Dateien nicht gefunden (QET_WEIDMUELLER_DIR): THM-Druck braucht dann M-Print PRO oder eine gewählte Datei."
 }
+$ziel = Join-Path $deploy "splan_import"
+New-Item -ItemType Directory -Force $ziel | Out-Null
+Copy-Item (Join-Path $repo "tools\splan_import\*") $ziel -Include "*.py", "*.md" -Force
 
 Write-Output "build\deploy aktuell: $((& $exe --version | Out-String).Trim())"

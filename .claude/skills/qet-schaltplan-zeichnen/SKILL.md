@@ -363,3 +363,15 @@ Die Zahl in Klammern ist der Beleg; so zeichnen, wenn der Hausstil oben nichts a
   nur Kennwerte (24 V, p = 6 bar, 47 kOhm) als Text am Bauteil.
 - **Endschalter** stehen im Steuerstromkreis als Schließer/Wechsler mit -BG-Kennzeichen; am Zylinder sind sie
   nur eine Wegmarke (siehe Skill `fluidtechnik`).
+
+## Redrawing foreign schematics: sPlan 8
+
+- Importer `tools/splan_import/splan_nach_qet.py` (File > Import sPlan schematic); format in `FORMATBESCHREIBUNG_SPL8.md`.
+- sPlan stores no nets or pins: connections come from line ends (end on a line or a junction dot = connected, crossing
+  without dot = not). Assign arrow texts globally by distance, otherwise closely spaced arrows swap their targets.
+- Redraw, do not trace: rows in the original's top-to-bottom order, a terminal strip as one block, each device above or
+  below its partner. Fixed bands (terminals always at the bottom) make detours when the original feeds devices from above.
+- Several wires between two rows: one track each (corner elements, `Blatt.leitung(ueber=…)`); QET's autoroute puts them
+  on one height, which reads like a busbar.
+- Never rewrite a generated symbol with new terminal UUIDs while `symbole.symbol` has it cached (add_conductor fails).
+- Apply `qet_layout_check` fixes automatically; `tool_edit` needs a different output file.

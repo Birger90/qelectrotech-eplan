@@ -25,6 +25,7 @@
 #include <QList>
 #include <QMap>
 #include <QPointF>
+#include <QRectF>
 #include <QSet>
 #include <QSize>
 #include <QString>
@@ -73,6 +74,24 @@ class QGraphicsItem;
 	for any template; terminals labelled "X1:3" are filed into their
 	strip; a PLC channel whose plc_address one of the PLC modules of the
 	project offers is linked to that module.
+
+	Version 2 of the block (docs/konfigurator.md) adds what makes a
+	template an EEC-like "typical":
+
+	@code
+	<table name="3RV2" file="../Tabellen/siemens_3RV2_direktstart.csv" key="I_max"/>
+	<formula name="QA_ART" expr="lookup('3RV2'; I_N; 'QA_ART')"/>
+	<variant name="Stern-Dreieck" when="P_kW > 5.5" template="Motoren/Motorabgang Stern-Dreieck"/>
+	<variant name="Direktstart" template="Motoren/Motorabgang DOL"/>
+	<parameter name="ADR" kind="address" io="DQ" count="3"/>
+	@endcode
+
+	A table may be a CSV file beside the template. Formulas
+	(TemplateExpression) fill placeholders after the values and tables.
+	The first variant whose condition holds is what is placed, with every
+	value passed on; a template made of variants only has no drawing. An
+	address parameter proposes the next free PLC channel of its kind, and
+	{ADR+1} counts channels: %Q0.7 + 1 is %Q1.0.
 */
 class FunctionTemplate
 {
@@ -89,6 +108,8 @@ class FunctionTemplate
 			QString of;				///< for a terminal: the parameter naming its strip
 			QString help;			///< a tool tip
 			QStringList choices;	///< offered values; a table key offers its rows
+			QString io;				///< for an address: DI, DQ, AI or AQ
+			int count = 1;			///< for an address: channels in a row it takes
 		};
 
 		struct Table
@@ -97,6 +118,20 @@ class FunctionTemplate
 			QString key;			///< the parameter which picks the row
 			QStringList columns;	///< in file order, the key first
 			QList<QMap<QString, QString>> rows;
+			QString file;			///< the CSV it was read from, if any
+		};
+
+		struct Formula
+		{
+			QString name;			///< the placeholder it fills
+			QString expression;
+		};
+
+		struct Variant
+		{
+			QString name;			///< "Stern-Dreieck"
+			QString condition;		///< when it is taken; empty: always
+			QString target;			///< the template placed, by name or path
 		};
 
 		struct Placed
@@ -107,6 +142,8 @@ class FunctionTemplate
 			QList<Element *> elements;
 			QStringList notes;				///< what the user should know
 			QMap<QString, QString> values;	///< every placeholder as it was filled
+			QString variant;				///< the variants taken, "Stern-Dreieck"
+			QString placedTemplate;			///< the template drawn in the end
 		};
 
 		struct SaveOptions
@@ -136,6 +173,10 @@ class FunctionTemplate
 		QString description() const {return m_description;}
 		QList<Parameter> parameters() const {return m_parameters;}
 		QList<Table> tables() const {return m_tables;}
+		QList<Formula> formulas() const {return m_formulas;}
+		QList<Variant> variants() const {return m_variants;}
+			/// A drawing of its own; a template of variants only has none
+		bool hasDrawing() const {return m_has_drawing;}
 		QDomDocument document() const {return m_document;}
 			/// The choices a parameter offers, its own or the rows of its table
 		QStringList choicesFor(const Parameter &parameter) const;
@@ -160,6 +201,18 @@ class FunctionTemplate
 			/// @p pos keeps the places it was saved at), one undo step
 		Placed place(Diagram *folio, const QMap<QString, QString> &given,
 					 QPointF pos = QPointF()) const;
+			/// The template its variants choose for @p resolved, the values
+			/// resolve() made; itself when it has no variant. Not valid
+			/// when none fits and it has no drawing; @p chain names the
+			/// variants taken, "Stern-Dreieck"
+		FunctionTemplate chosen(const QMap<QString, QString> &resolved, QString *chain = nullptr,
+								QStringList *notes = nullptr, QString *error = nullptr) const;
+			/// The cell @p column of the row of @p table for @p value,
+			/// picked by its key or by the column @p key
+		QString lookup(const QString &table, const QString &value, const QString &column,
+					   const QString &key = QString(), QString *note = nullptr) const;
+			/// Where its drawing lies when placed where it was saved
+		QRectF extent(const QMap<QString, QString> &values = {}) const;
 			/// Put it on a new folio at the end of @p project
 		Placed placeOnNewFolio(QETProject *project, const QMap<QString, QString> &given) const;
 
@@ -181,6 +234,18 @@ class FunctionTemplate
 								  QSet<QString> *unknown = nullptr);
 			/// The row of @p table for @p value; -1 when none fits
 		static int rowFor(const Table &table, const QString &value, QString *note = nullptr);
+			/// A PLC address counted on by @p offset channels: %Q0.7 + 1 is
+			/// %Q1.0; false when @p address is none of the form %Ib.b
+		static bool addressPlus(const QString &address, int offset, QString *result);
+			/// I for DI and AI, Q for DQ and AQ
+		static QString addressLetter(const QString &io);
+			/// The first of @p count free channels in a row of the kind
+			/// @p io the PLC modules of @p project offer; empty for none
+		static QString nextFreeAddress(QETProject *project, const QString &io, int count = 1);
+			/// A CSV of @p path as rows of its header's columns; # lines
+			/// and empty ones left out
+		static QList<QMap<QString, QString>> readCsv(const QString &path, QStringList *columns,
+													 QString *error = nullptr);
 
 			/// Write @p items of @p folio as a function template.
 			/// @return the file written, empty on failure
@@ -188,12 +253,15 @@ class FunctionTemplate
 							const SaveOptions &options, QString *error = nullptr);
 			/// The parameters to propose for @p items: one per placeholder
 		static QList<Parameter> parametersFor(Diagram *folio, const QList<QGraphicsItem *> &items);
+			/// Link each PLC channel of @p addresses (channel -> its
+			/// plc_address) to the module of the project offering that
+			/// address, where that channel of the module is free
+		static void linkPlcChannels(Diagram *folio, const QHash<Element *, QString> &addresses,
+									QStringList *notes);
 
 	private:
 		void readBlock();
 		static QDomElement blockXml(QDomDocument &document, const SaveOptions &options);
-		static void linkPlcChannels(Diagram *folio, const QHash<Element *, QString> &addresses,
-									QStringList *notes);
 
 		QDomDocument m_document;
 			/// Parameters made from a ?name value (MacroLabels), not {NAME}
@@ -204,8 +272,11 @@ class FunctionTemplate
 		QString m_description;
 		QList<Parameter> m_parameters;
 		QList<Table> m_tables;
+		QList<Formula> m_formulas;
+		QList<Variant> m_variants;
 		bool m_valid = false;
 		bool m_has_block = false;
+		bool m_has_drawing = false;
 };
 
 #endif // FUNCTIONTEMPLATE_H

@@ -11117,6 +11117,50 @@ Texte und Zahlen sind ebenso erlaubt.</translation>
         <source>The file %1 cannot be written.</source>
         <translation>Die Datei %1 kann nicht geschrieben werden.</translation>
     </message>
+    <message>
+        <source>Formula %1 of %2: %3</source>
+        <translation>Formel %1 von %2: %3</translation>
+    </message>
+    <message>
+        <source>%1: %2</source>
+        <translation>%1: %2</translation>
+    </message>
+    <message>
+        <source>%1: %2 = %3 is below the range of the row picked (%4 ... %5).</source>
+        <translation>%1: %2 = %3 liegt unter dem Bereich der gewählten Zeile (%4 ... %5).</translation>
+    </message>
+    <message>
+        <source>The table %1 has no column %2.</source>
+        <translation>Die Tabelle %1 hat keine Spalte %2.</translation>
+    </message>
+    <message>
+        <source>The template %1 has no table %2.</source>
+        <translation>Die Vorlage %1 hat keine Tabelle %2.</translation>
+    </message>
+    <message>
+        <source>The variants of %1 go deeper than eight levels.</source>
+        <translation>Die Varianten von %1 gehen tiefer als acht Stufen.</translation>
+    </message>
+    <message>
+        <source>Condition of the variant %1 of %2: %3</source>
+        <translation>Bedingung der Variante %1 von %2: %3</translation>
+    </message>
+    <message>
+        <source>No variant of %1 fits.</source>
+        <translation>Keine Variante von %1 passt.</translation>
+    </message>
+    <message>
+        <source>The variant %1 of %2 names no template.</source>
+        <translation>Die Variante %1 von %2 nennt keine Vorlage.</translation>
+    </message>
+    <message>
+        <source>The variant %1 of %2 names %3, which is no template.</source>
+        <translation>Die Variante %1 von %2 nennt %3, das ist keine Vorlage.</translation>
+    </message>
+    <message>
+        <source>The variants of %1 lead back to %2.</source>
+        <translation>Die Varianten von %1 führen zurück zu %2.</translation>
+    </message>
 </context>
 <context>
     <name>FunctionTemplateDock</name>
@@ -23878,6 +23922,14 @@ Hier ist das Projekt ab sofort nur zum Lesen offen. Eigene Änderungen sichern S
     <message>
         <source>From a manufacturer macro package (ZIP)…</source>
         <translation>Aus einem Hersteller-Makropaket (ZIP)…</translation>
+    </message>
+    <message>
+        <source>Generate plan from configuration...</source>
+        <translation>Plan aus Konfiguration erzeugen…</translation>
+    </message>
+    <message>
+        <source>Draw a plan from a table of drives, valves and sensors with their function templates</source>
+        <translation>Einen Plan aus einer Tabelle von Antrieben, Ventilen und Sensoren mit ihren Funktionsvorlagen zeichnen</translation>
     </message>
 </context>
 <context>
@@ -37559,6 +37611,319 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
 %2</source>
         <translation>%1 konnte nicht umgewandelt werden:
 %2</translation>
+    </message>
+</context>
+<context>
+    <name>ConfigGenerator</name>
+    <message>
+        <source>The table %1 cannot be read.</source>
+        <translation>Die Tabelle %1 kann nicht gelesen werden.</translation>
+    </message>
+    <message>
+        <source>The workbook %1 cannot be read: %2</source>
+        <translation>Die Arbeitsmappe %1 kann nicht gelesen werden: %2</translation>
+    </message>
+    <message>
+        <source>The workbook %1 has no sheet.</source>
+        <translation>Die Arbeitsmappe %1 hat kein Tabellenblatt.</translation>
+    </message>
+    <message>
+        <source>The table %1 is empty.</source>
+        <translation>Die Tabelle %1 ist leer.</translation>
+    </message>
+    <message>
+        <source>The project %1 cannot be opened.</source>
+        <translation>Das Projekt %1 kann nicht geöffnet werden.</translation>
+    </message>
+    <message>
+        <source>The project as it was: %1</source>
+        <translation>Das Projekt, wie es vorher war: %1</translation>
+    </message>
+    <message>
+        <source>The project cannot be written: %1</source>
+        <translation>Das Projekt kann nicht geschrieben werden: %1</translation>
+    </message>
+    <message>
+        <source>There is no project to generate into.</source>
+        <translation>Es gibt kein Projekt, in das erzeugt werden kann.</translation>
+    </message>
+    <message>
+        <source>The project is read-only.</source>
+        <translation>Das Projekt ist schreibgeschützt.</translation>
+    </message>
+    <message>
+        <source>The project was not made by the configurator: its %1 folios stay as they are, the generated ones come after them.</source>
+        <translation>Das Projekt stammt nicht vom Konfigurator: seine %1 Blätter bleiben, wie sie sind, die erzeugten folgen dahinter.</translation>
+    </message>
+    <message>
+        <source>Row %1: no object name, left out.</source>
+        <translation>Zeile %1: kein Objektname, ausgelassen.</translation>
+    </message>
+    <message>
+        <source>Row %1: the object %2 is there twice, left out.</source>
+        <translation>Zeile %1: das Objekt %2 steht doppelt in der Tabelle, ausgelassen.</translation>
+    </message>
+    <message>
+        <source>Row %1 (%2): there is no function template %3, left out.</source>
+        <translation>Zeile %1 (%2): es gibt keine Funktionsvorlage %3, ausgelassen.</translation>
+    </message>
+    <message>
+        <source>Row %1 (%2): %3</source>
+        <translation>Zeile %1 (%2): %3</translation>
+    </message>
+    <message>
+        <source>Row %1 (%2): the column %3 is no value of %4, it is passed on as it is.</source>
+        <translation>Zeile %1 (%2): die Spalte %3 ist kein Wert von %4, sie wird unverändert weitergegeben.</translation>
+    </message>
+    <message>
+        <source>The table names no object to draw.</source>
+        <translation>Die Tabelle nennt kein Objekt, das gezeichnet werden kann.</translation>
+    </message>
+    <message>
+        <source>%1: analog channels (%2) are not counted by the configurator yet; give the address in the table.</source>
+        <translation>%1: Analogkanäle (%2) zählt der Konfigurator noch nicht; die Adresse in der Tabelle angeben.</translation>
+    </message>
+    <message>
+        <source>The PLC overview (folio %1) was changed by hand; modules are only added to it.</source>
+        <translation>Die SPS-Übersicht (Blatt %1) wurde von Hand geändert; es werden nur Module ergänzt.</translation>
+    </message>
+    <message>
+        <source>Folio %1 (%2) was changed by hand since it was generated; it is kept, the new one follows it with [new] in its title:</source>
+        <translation>Blatt %1 (%2) wurde seit dem Erzeugen von Hand geändert; es bleibt, das neue folgt mit [neu] im Titel:</translation>
+    </message>
+    <message>
+        <source>A generated folio of %1 was deleted by hand.</source>
+        <translation>Ein erzeugtes Blatt von %1 wurde von Hand gelöscht.</translation>
+    </message>
+    <message>
+        <source>Folio %1 is still there from an earlier conflict; delete it when its changes are taken over.</source>
+        <translation>Blatt %1 stammt noch aus einem früheren Konflikt; löschen, sobald seine Änderungen übernommen sind.</translation>
+    </message>
+    <message>
+        <source>Folio %1 (%2) is no longer generated but was changed by hand; it is kept.</source>
+        <translation>Blatt %1 (%2) wird nicht mehr erzeugt, wurde aber von Hand geändert; es bleibt.</translation>
+    </message>
+    <message>
+        <source>Digital input module, 16 channels (generic)</source>
+        <translation>Digitaleingabemodul, 16 Kanäle (allgemein)</translation>
+    </message>
+    <message>
+        <source>Digital output module, 16 channels (generic)</source>
+        <translation>Digitalausgabemodul, 16 Kanäle (allgemein)</translation>
+    </message>
+    <message>
+        <source>The PLC module %1 cannot be made.</source>
+        <translation>Das SPS-Modul %1 kann nicht angelegt werden.</translation>
+    </message>
+    <message>
+        <source>PLC overview</source>
+        <translation>SPS-Übersicht</translation>
+    </message>
+    <message>
+        <source>PLC module %1: %2 (%3 ... %4)</source>
+        <translation>SPS-Modul %1: %2 (%3 ... %4)</translation>
+    </message>
+    <message>
+        <source>No folio could be added.</source>
+        <translation>Es konnte kein Blatt angelegt werden.</translation>
+    </message>
+    <message>
+        <source>%1: %2</source>
+        <translation>%1: %2</translation>
+    </message>
+    <message>
+        <source> [new]</source>
+        <translation> [neu]</translation>
+    </message>
+    <message>
+        <source>Order list</source>
+        <translation>Bestellliste</translation>
+    </message>
+    <message>
+        <source>Device</source>
+        <translation>Gerät</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation>Bezeichnung</translation>
+    </message>
+    <message>
+        <source>article open</source>
+        <translation>Artikel offen</translation>
+    </message>
+    <message>
+        <source>Article</source>
+        <translation>Artikel</translation>
+    </message>
+    <message>
+        <source>Folio</source>
+        <translation>Blatt</translation>
+    </message>
+    <message>
+        <source>Terminal plan</source>
+        <translation>Klemmenplan</translation>
+    </message>
+    <message>
+        <source>Strip</source>
+        <translation>Klemmleiste</translation>
+    </message>
+    <message>
+        <source>Terminal</source>
+        <translation>Klemme</translation>
+    </message>
+    <message>
+        <source>Connected</source>
+        <translation>Ziel</translation>
+    </message>
+    <message>
+        <source>Cable list</source>
+        <translation>Kabelliste</translation>
+    </message>
+    <message>
+        <source>Cable</source>
+        <translation>Kabel</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>Typ</translation>
+    </message>
+    <message>
+        <source>Cores</source>
+        <translation>Adern</translation>
+    </message>
+    <message>
+        <source>Lists: %1 devices, %2 terminals, %3 cables.</source>
+        <translation>Listen: %1 Geräte, %2 Klemmen, %3 Kabel.</translation>
+    </message>
+    <message>
+        <source>%1 objects: %2 folios drawn new, %3 drawn again, %4 kept, %5 removed, %6 conflicts.</source>
+        <translation>%1 Objekte: %2 Blätter neu, %3 neu gezeichnet, %4 behalten, %5 entfernt, %6 Konflikte.</translation>
+    </message>
+    <message>
+        <source>%1: %2%3, folio %4</source>
+        <translation>%1: %2%3, Blatt %4</translation>
+    </message>
+</context>
+<context>
+    <name>ConfigGeneratorUi</name>
+    <message>
+        <source>Generate plan from configuration</source>
+        <translation>Plan aus Konfiguration erzeugen</translation>
+    </message>
+    <message>
+        <source>Configuration tables (*.xlsx *.csv);;All files (*)</source>
+        <translation>Konfigurationstabellen (*.xlsx *.csv);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <source>Project the plan goes into</source>
+        <translation>Projekt, in das der Plan erzeugt wird</translation>
+    </message>
+    <message>
+        <source>QElectroTech projects (*.qet)</source>
+        <translation>QElectroTech-Projekte (*.qet)</translation>
+    </message>
+    <message>
+        <source>%1 exists. Objects which did not change keep their folios; changed ones are drawn again.
+
+A folio changed by hand since it was generated:</source>
+        <translation>%1 gibt es schon. Unveränderte Objekte behalten ihre Blätter, geänderte werden neu gezeichnet.
+
+Ein Blatt, das seit dem Erzeugen von Hand geändert wurde:</translation>
+    </message>
+    <message>
+        <source>Keep it, the new one beside it</source>
+        <translation>Behalten, das neue daneben</translation>
+    </message>
+    <message>
+        <source>Overwrite it</source>
+        <translation>Überschreiben</translation>
+    </message>
+    <message>
+        <source>The project is open. Close it to generate into it?</source>
+        <translation>Das Projekt ist geöffnet. Schließen, um hinein zu erzeugen?</translation>
+    </message>
+    <message>
+        <source>Folios changed by hand were kept; the new ones follow them with [new] in their title. See the details.</source>
+        <translation>Von Hand geänderte Blätter wurden behalten; die neuen folgen mit [neu] im Titel. Einzelheiten unter „Details“.</translation>
+    </message>
+</context>
+<context>
+    <name>TemplateExpression</name>
+    <message>
+        <source>Text opened at %1 is not closed.</source>
+        <translation>Der Text ab Stelle %1 ist nicht geschlossen.</translation>
+    </message>
+    <message>
+        <source>Unknown sign &apos;%1&apos; at %2.</source>
+        <translation>Unbekanntes Zeichen „%1“ an Stelle %2.</translation>
+    </message>
+    <message>
+        <source>Unexpected &apos;%1&apos; at %2.</source>
+        <translation>Unerwartetes „%1“ an Stelle %2.</translation>
+    </message>
+    <message>
+        <source>&apos;%1 - %2&apos; is no subtraction of numbers.</source>
+        <translation>„%1 - %2“ ist keine Subtraktion von Zahlen.</translation>
+    </message>
+    <message>
+        <source>&apos;%1 %2 %3&apos; needs two numbers.</source>
+        <translation>„%1 %2 %3“ braucht zwei Zahlen.</translation>
+    </message>
+    <message>
+        <source>Division by zero.</source>
+        <translation>Division durch null.</translation>
+    </message>
+    <message>
+        <source>&apos;%1 ^ %2&apos; needs two numbers.</source>
+        <translation>„%1 ^ %2“ braucht zwei Zahlen.</translation>
+    </message>
+    <message>
+        <source>&apos;-%1&apos; is no number.</source>
+        <translation>„-%1“ ist keine Zahl.</translation>
+    </message>
+    <message>
+        <source>&apos;)&apos; missing at %1.</source>
+        <translation>„)“ fehlt an Stelle %1.</translation>
+    </message>
+    <message>
+        <source>The formula ends too early.</source>
+        <translation>Die Formel endet zu früh.</translation>
+    </message>
+    <message>
+        <source>has() takes one name.</source>
+        <translation>has() erwartet einen Namen.</translation>
+    </message>
+    <message>
+        <source>&apos;)&apos; missing after the arguments of %1 at %2.</source>
+        <translation>„)“ fehlt nach den Argumenten von %1 an Stelle %2.</translation>
+    </message>
+    <message>
+        <source>%1() needs numbers, not &apos;%2&apos;.</source>
+        <translation>%1() braucht Zahlen, nicht „%2“.</translation>
+    </message>
+    <message>
+        <source>%1() takes %2 arguments.</source>
+        <translation>%1() erwartet %2 Argumente.</translation>
+    </message>
+    <message>
+        <source>%1() takes %2 to %3 arguments.</source>
+        <translation>%1() erwartet %2 bis %3 Argumente.</translation>
+    </message>
+    <message>
+        <source>There is no table to look up.</source>
+        <translation>Es gibt keine Tabelle zum Nachschlagen.</translation>
+    </message>
+    <message>
+        <source>sqrt() of a negative number.</source>
+        <translation>sqrt() einer negativen Zahl.</translation>
+    </message>
+    <message>
+        <source>text() needs a number of digits.</source>
+        <translation>text() braucht eine Anzahl Nachkommastellen.</translation>
+    </message>
+    <message>
+        <source>Unknown function %1().</source>
+        <translation>Unbekannte Funktion %1().</translation>
     </message>
 </context>
 </TS>

@@ -3,6 +3,36 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## Unveröffentlicht – Konfigurator (Branch feature/konfigurator)
+
+Ein Plan aus einer Tabelle, nach dem Vorbild von EPLAN EEC Pro; Konzept in [docs/konfigurator.md](docs/konfigurator.md).
+
+- **Projekt > Plan aus Konfiguration erzeugen…**, `--generate-from-config <tabelle.xlsx|csv> <ziel.qet>
+  [--overwrite] [--json]` und MCP `qet_generate_from_config` (beide MCP-Kopien): je Tabellenzeile ein Objekt
+  (`Objekt`, `Typical`, `BMK`, `Anlage`, `Ort`, `Blatt`, Werte der Vorlage). Erzeugt Schaltplanblätter (kleine
+  Objekte gleicher Art teilen sich ein Blatt), die SPS-Übersicht mit allgemeinen DI-/DQ-Modulen zu 16 Kanälen
+  (`-KF1` …, Kanaltabelle mit Querverweisen, jeder Kanal im Strompfad damit verknüpft) und Bestellliste,
+  Klemmenplan und Kabelliste als Listenblätter.
+- **Funktionsvorlagen Version 2:** `<variant when="…" template="…">` (erste passende Variante wird eingefügt, auch in
+  der Seitenleiste und bei `insertTemplate`; ein Typical darf nur aus Varianten bestehen), `<formula name expr>`
+  (Formelsprache `sources/functiontemplates/templateexpression.*`: Rechnen, Vergleiche, Logik, `if`, `min`,
+  `max`, `round`, `ceil`, `floor`, `abs`, `sqrt`, `text`, `lookup` mit wählbarer Schlüsselspalte, `has`),
+  `<table file="….csv">` (Tabelle aus Datenblatt/Norm neben der Vorlage, Spalte `Quelle`), Parameterart
+  `kind="address" io="DI|DQ" count="n"` (nächster freier SPS-Kanal). `{ADR+1}` zählt jetzt Kanäle
+  (`%Q0.7` + 1 = `%Q1.0`, vorher `%Q0.8`).
+- **Typicals** in `funktionsvorlagen/Typicals`: *Antrieb* (über 5,5 kW Stern-Dreieck, sonst Direktstart;
+  Motorschutzschalter nach Typenschildstrom oder Leistung aus `funktionsvorlagen/Tabellen/siemens_3RV2_direktstart.csv`,
+  Werte wörtlich aus der Siemens-Auswahlhilfe „SIRIUS Systembaukasten“ S. 4–5), *Ventil*, *Sensor*. Die SPS-Adressen
+  der Beispielvorlagen sind jetzt Adressparameter.
+- **Korrektur Beispielvorlagen** (Direktstart, Stern-Dreieck) nach derselben Auswahlhilfe: 7,5 kW 3RV2011-4AA10
+  „11...16 A“ (stand „10...16 A“), 11 kW 3RV2021-4DA10 „18...25 A“ (stand 3RV2021-4CA10, dessen Bereich 16...22 A ist).
+- **Neu erzeugen ohne stilles Überschreiben:** Das Projekt merkt sich im Block `<configurator>` je Objekt Prüfsumme,
+  Vorlage, Variante, BMK und Adressen, je Blatt den Fingerabdruck der Revisionsverwaltung. Unverändert → Blatt
+  bleibt; geändert → neu gezeichnet mit denselben BMK/Adressen; geändert und von Hand geändert → altes Blatt bleibt,
+  das neue folgt mit „[new]“, Bericht mit jeder Handänderung, Exit 3 (erst `--overwrite` ersetzt). Alte Datei als
+  `<name>.vor-konfigurator.qet`.
+- Beispiel `examples/konfigurator/maschine.csv`, Prüfung `tools/konfigurator/test_konfigurator.py`.
+
 ## 1.63.0 – 27.11.2026 – liegengebliebene Branches in main
 
 Die fertigen Feature-Branches, die noch nicht in `main` waren, sind jetzt übernommen und mit dem heutigen Stand

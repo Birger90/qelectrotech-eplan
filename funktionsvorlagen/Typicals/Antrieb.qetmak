@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qet_macro>
+    <function_template category="Typicals" name="Antrieb" version="2">
+        <description>Typical Drehstromantrieb: über 5,5 kW Stern-Dreieck-Anlauf, sonst Direktstart. Der Motorschutzschalter folgt dem Bemessungsstrom vom Typenschild (I_N), ohne ihn der Leistung, nach der Siemens-Auswahlhilfe SIRIUS (Tabellen/siemens_3RV2_direktstart.csv).</description>
+        <parameter default="MA1" kind="label" label="Kennzeichen Motor" name="BMK"/>
+        <parameter default="4" label="Leistung" name="P_kW" unit="kW"/>
+        <parameter default="" label="Bemessungsstrom (Typenschild)" name="I_N" unit="A" help="leer: Schutzschalter nach der Leistung"/>
+        <parameter default="Antrieb" label="Funktion" name="TEXT"/>
+        <parameter default="X1" label="Klemmleiste" name="X"/>
+        <table file="../Tabellen/siemens_3RV2_direktstart.csv" key="I_max" name="3RV2"/>
+        <formula expr="if(has(I_N); lookup('3RV2'; I_N; 'QA_ART'); lookup('3RV2'; P_kW; 'QA_ART'; 'P_kW'))" name="QA_ART"/>
+        <formula expr="if(has(I_N); lookup('3RV2'; I_N; 'QA_I'); lookup('3RV2'; P_kW; 'QA_I'; 'P_kW'))" name="QA_I"/>
+        <variant name="Stern-Dreieck" template="../Motoren/Motorabgang Stern-Dreieck" when="P_kW &gt; 5.5"/>
+        <variant name="Direktstart" template="../Motoren/Motorabgang DOL"/>
+    </function_template>
+</qet_macro>

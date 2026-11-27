@@ -150,6 +150,27 @@ Funktionsvorlage einfügen – mit Artikeldaten, Klemmen, Kabel und Verknüpfung
   wählen (Ventilstecker, eigener 3-Leiter-Sensor), damit ein Kabel alle Adern auf einer Linie kreuzt. Anschlussbelegung
   des Symbols vorher prüfen (Ventilstecker: +, −, PE).
 
+
+## Konfigurator (Plan aus einer Tabelle, nach EEC Pro)
+
+Ab Fork-Branch `feature/konfigurator`, Konzept `docs/konfigurator.md`. Für Maschinen aus wiederkehrenden Objekten
+(Antriebe, Ventile, Sensoren) nicht Blatt für Blatt zeichnen, sondern eine Tabelle anlegen und erzeugen:
+- Tabelle (xlsx erstes Blatt oder CSV `;`): `Objekt;Typical;Anlage;Ort;P_kW;TEXT` …, eine Zeile je Objekt.
+  `Typical` = Funktionsvorlage („Antrieb“, „Ventil“, „Sensor“ aus `funktionsvorlagen/Typicals`, oder jede andere).
+  `BMK` und SPS-Adressen nicht eintragen: sie werden gezählt und bleiben beim Neuerzeugen stabil.
+- Erzeugen: Menü *Projekt > Plan aus Konfiguration erzeugen…*, CLI `--generate-from-config <tabelle> <ziel.qet>
+  [--overwrite] [--json]` oder MCP `qet_generate_from_config`. Danach `qet_layout_check` und PDF ansehen.
+- Neu erzeugen nach Tabellenänderung in dasselbe Ziel: Unverändertes bleibt, Geändertes wird neu gezeichnet.
+  Exit 3 = Konflikt: ein Blatt war von Hand geändert, es bleibt, das neue folgt mit „[new]“. Handänderung in die
+  Tabelle bzw. Vorlage übernehmen, altes Blatt löschen – oder `--overwrite`. Nie still überschreiben.
+- Eigene Typicals: `.qetmak` mit `<variant when="P_kW &gt; 5.5" template="../Motoren/…"/>` (erste passende gilt),
+  `<formula name="QA_ART" expr="lookup('3RV2'; I_N; 'QA_ART')"/>`, `<table name="…" file="../Tabellen/….csv"
+  key="…"/>` (Tabellenwerte nur aus Datenblatt/Norm, Spalte `Quelle`), Adressparameter
+  `kind="address" io="DQ" count="3"`. `{ADR+1}` zählt Kanäle (`%Q0.7` + 1 = `%Q1.0`).
+- SPS: Der Generator legt allgemeine DI/DQ-Module zu 16 Kanälen auf die SPS-Übersicht und verknüpft die Kanäle.
+  Soll eine bestimmte Station (Herstellermakro) her: deren Module vorher auf ein Blatt des Ziels legen – Kanäle mit
+  passender Adresse werden mit ihnen verknüpft (Hausstil: Station/Fabrikat nur nach Rückfrage tauschen).
+
 ## Gelernt (fortschreiben)
 
 - 23.11.2026, Plan prüfen: Nach dem Zeichnen `--check-project <plan.qet> bericht.json` (oder MCP `qet_plan_check`, im Programm Projekt > *Projekt prüfen*, ein Panel für alle Prüfungen) laufen lassen und alle Fehler beheben; Warnungen ansehen. Klemmen nur dann ohne Warnung, wenn sie in einer Klemmleiste stehen (`add_terminal_strip` + `add_to_strip`), Geräte brauchen `manufacturer_reference`, SPS-Kanäle eine Karte mit Adresse (`link_plc_io`). Rückgabewert 3 = Fehler gefunden.

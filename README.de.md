@@ -142,6 +142,32 @@ Seitenleiste *Anzeige > Funktionsvorlagen*, wie EPLAN-Makros mit Wertesätzen:
 - Skript-API `listTemplates()`, `templateInfo()`, `insertTemplate(folio, vorlage, werte, x, y)`,
   `saveTemplate(folio, name, optionen)`; MCP: `qet_edit`-Operationen `insert_template` und `save_template`.
 
+## Konfigurator (Plan aus einer Tabelle)
+
+Nach dem Vorbild von EPLAN EEC Pro, Konzept in [docs/konfigurator.md](docs/konfigurator.md):
+
+- Menü *Projekt > Plan aus Konfiguration erzeugen…*: eine Excel- oder CSV-Tabelle mit einer Zeile je Objekt
+  (Spalten `Objekt`, `Typical`, wahlweise `BMK`, `Anlage`, `Ort`, `Blatt` und die Werte der Vorlage wie `P_kW`,
+  `TEXT`) wird zum Plan: Schaltplanblätter in Tabellenreihenfolge (kleine Objekte teilen sich ein Blatt), die
+  SPS-Übersicht mit allgemeinen Modulen zu 16 Kanälen, deren Kanäle mit den Kanälen im Strompfad verknüpft sind
+  (Querverweise in beide Richtungen), dazu Bestellliste, Klemmenplan und Kabelliste als Listenblätter.
+- Typicals sind Funktionsvorlagen mit **Varianten und Bedingungen** (`<variant when="P_kW > 5.5" …>`): das Typical
+  *Antrieb* wählt über 5,5 kW den Stern-Dreieck-, sonst den Direktstart-Abgang. **Formeln** (`<formula>`) rechnen
+  Werte aus Werten und Tabellen: der Motorschutzschalter kommt aus der Siemens-Auswahlhilfe SIRIUS
+  (`funktionsvorlagen/Tabellen/siemens_3RV2_direktstart.csv`, nach Typenschildstrom `I_N` oder nach Leistung).
+  Tabellen dürfen CSV-Dateien neben der Vorlage sein. Formelsprache: `+ - * / ^`, Vergleiche, `and/or/not`,
+  `if`, `min`, `max`, `round`, `text`, `lookup`, `has`.
+- **Zähler:** BMK auf das nächste freie, SPS-Adressen mit der neuen Parameterart `kind="address" io="DQ" count="3"`
+  auf den nächsten freien Kanal; `{ADR+1}` zählt Kanäle (`%Q0.7` + 1 = `%Q1.0`).
+- **Neu erzeugen** mit geänderter Tabelle in dasselbe Projekt: Unveränderte Objekte behalten ihr Blatt,
+  geänderte werden neu gezeichnet, BMK und Adressen bleiben. Ein Blatt, das seit dem Erzeugen von Hand geändert
+  wurde, wird nicht still überschrieben: es bleibt, das neue folgt mit „[neu]“, der Bericht nennt jede Änderung
+  (erst „Überschreiben“ bzw. `--overwrite` ersetzt es). Die alte Datei bleibt als `<name>.vor-konfigurator.qet`.
+- Kommandozeile `--generate-from-config <tabelle.xlsx|csv> <ziel.qet> [--overwrite] [--json]` (Exit 3 bei
+  Konflikten), MCP-Werkzeug `qet_generate_from_config`. Beispiel: `examples/konfigurator/maschine.csv`
+  (vier Antriebe gemischt Direkt/Stern-Dreieck, zwei Ventile, drei Sensoren); Prüfung:
+  `python tools/konfigurator/test_konfigurator.py`.
+
 ## Kabel
 
 - Menü Projekt > *Kabelliste (Typen wählen)…*: alle Kabel des Projekts mit Typ, Adern, Farben, Anlage, Ort und

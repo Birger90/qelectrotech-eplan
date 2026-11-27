@@ -15,6 +15,7 @@
 	You should have received a copy of the GNU General Public License
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "functiontemplates/configgenerator.h"
 #include "cli_export.h"
 #include "import/eplanproject/epdzimport.h"
 #include "plc/simaticml.h"
@@ -182,6 +183,7 @@ const QHash<QString, QString> &exportFlags()
 		{"--revisions", "revisions"},
 		{"--revision-marks", "revisionmarks"},
 		{"--compare-revisions", "comparerevisions"},
+		{"--generate-from-config", "generateconfig"},
 	};
 	return flags;
 }
@@ -2771,6 +2773,7 @@ int run(const QStringList &args)
 	const bool grid = filtered.removeAll("--grid") > 0;
 	const bool noPdf = filtered.removeAll("--no-pdf") > 0;
 	const bool fullDesignation = filtered.removeAll("--full-designation") > 0;
+	const bool overwrite = filtered.removeAll("--overwrite") > 0;
 
 	QString flag;
 	QStringList rest;
@@ -2898,6 +2901,65 @@ int run(const QStringList &args)
 		}
 		out << "Imported -> " << target << Qt::endl;
 		return 0;
+	}
+
+	// --generate-from-config: a plan made from a table of objects
+	// (docs/konfigurator.md), into a new project or generated again into
+	// one made so before
+	if (format == "generateconfig") {
+		if (rest.size() < 2) {
+			err << "Usage: qelectrotech --generate-from-config <table.xlsx|csv> <project.qet> "
+				   "[--overwrite] [--json]" << Qt::endl;
+			return 2;
+		}
+			//The folios it writes are read by people: their titles and the
+			//report in the language of the settings, as the purchase list
+		static QTranslator translator;
+		const QString language = QETApp::langFromSetting();
+		bool translated = false;
+		for (const QString &dir : {QETApp::languagesPath(),
+								   QCoreApplication::applicationDirPath() + QStringLiteral("/lang")})
+			for (const QString &name : {language, language.section(QLatin1Char('_'), 0, 0)})
+				if (!translated && translator.load(QStringLiteral("qet_") + name, dir) && !translator.isEmpty())
+					translated = true;
+		if (translated) QCoreApplication::installTranslator(&translator);
+		ConfigGenerator::Options options;
+		options.overwrite = overwrite;
+		const ConfigGenerator::Result r = ConfigGenerator::generate(rest.at(0), rest.at(1), options);
+		if (json) {
+			QJsonObject o;
+			o.insert("ok", r.ok);
+			if (!r.error.isEmpty()) o.insert("error", r.error);
+			o.insert("project", r.target);
+			o.insert("objects", r.objects);
+			o.insert("created", r.created);
+			o.insert("replaced", r.replaced);
+			o.insert("kept", r.kept);
+			o.insert("removed", r.removed);
+			o.insert("folios", r.folios);
+			o.insert("report", QJsonArray::fromStringList(r.report));
+			o.insert("conflicts", QJsonArray::fromStringList(r.conflicts));
+				//Object names have umlauts: written as JSON escapes, which read
+				//the same whatever code page the console or a caller assumes
+			const QString text = QString::fromUtf8(QJsonDocument(o).toJson(QJsonDocument::Indented));
+			QString ascii;
+			ascii.reserve(text.size());
+			for (const QChar c : text) {
+				if (c.unicode() < 0x80) ascii += c;
+				else ascii += QStringLiteral("\\u%1").arg(int(c.unicode()), 4, 16, QLatin1Char('0'));
+			}
+			out << ascii;
+		} else {
+			for (const QString &line : r.report) out << line << Qt::endl;
+			for (const QString &line : r.conflicts) out << "CONFLICT: " << line << Qt::endl;
+			if (r.ok) out << "Generated -> " << r.target << Qt::endl;
+		}
+		out.flush();
+		if (!r.ok) {
+			err << "Cannot generate '" << rest.at(1) << "': " << r.error << Qt::endl;
+			return 1;
+		}
+		return r.conflicts.isEmpty() ? 0 : 3;
 	}
 
 	// --import-eplan turns manufacturer EPLAN DXF data into elements of a

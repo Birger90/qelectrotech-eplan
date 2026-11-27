@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "revision/revisionui.h"
+#include "functiontemplates/configgeneratorui.h"
 #include "qetdiagrameditor.h"
 #include "itemdescription.h"
 #include "container/qetcontainer.h"
@@ -2824,6 +2825,14 @@ void QETDiagramEditor::setUpMenu()
 	menu_project -> addAction(m_terminal_strip_labels);
 	menu_project -> addAction(m_terminal_strip_bridges);
 	menu_project -> addSeparator();
+	{
+			//A plan made from a table of objects, after EEC Pro (docs/konfigurator.md)
+		auto *generate = new QAction(QET::Icons::DocumentSpreadsheet, tr("Generate plan from configuration..."), this);
+		generate->setStatusTip(tr("Draw a plan from a table of drives, valves and sensors with their function templates"));
+		ShortcutManager::instance().registerAction(generate, "diagrameditor.generate_from_config", tr("Diagram editors"), QKeySequence());
+		connect(generate, &QAction::triggered, this, [this]() { ConfigGeneratorUi::run(this); });
+		menu_project -> addAction(generate);
+	}
 	menu_project -> addAction(m_project_add_diagram);
 	menu_project -> addAction(m_remove_diagram_from_project);
 	menu_project -> addAction(m_clean_project);

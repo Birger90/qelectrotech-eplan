@@ -1405,6 +1405,35 @@ def tool_simulate_reference(binary: str, reference_dir: str | None = None,
     return out
 
 
+def tool_generate_from_config(binary: str, table: str, output: str, overwrite: bool = False,
+                              timeout: int = 600) -> dict:
+    """The configurator (docs/konfigurator.md): a plan drawn from a table of objects."""
+    src = Path(table).expanduser()
+    if not src.is_file():
+        raise ValueError(f"no such table: {src}")
+    if src.suffix.lower() not in (".xlsx", ".csv", ".txt"):
+        raise ValueError("table: expected a .xlsx or .csv file")
+    out = Path(output).expanduser()
+    if out.suffix.lower() != ".qet":
+        raise ValueError("output: expected a .qet project")
+    args = ["--generate-from-config", str(src), str(out), "--json"]
+    if overwrite:
+        args.append("--overwrite")
+    result = _run_qet(binary, args, timeout, tail=400000)
+    text = result.get("stdout", "")
+    start = text.find("{")
+    try:
+        data = json.loads(text[start:]) if start >= 0 else {}
+    except json.JSONDecodeError:
+        data = {}
+    if not data:
+        return {"ok": False, "exit_code": result.get("exit_code"),
+                "stderr": _keep_tail(result.get("stderr", ""), 4000), "stdout": _keep_tail(text, 4000),
+                "hint": "this QElectroTech has no --generate-from-config (a build of the configurator branch or later)"}
+    data["exit_code"] = result.get("exit_code")
+    return data
+
+
 def _fluidsim_program() -> Path | None:
     """fluidsim_plan.py: next to an installed QElectroTech (<data>/fluidsim_import, beside this
     server's mcp folder) or in the source tree (tools/fluidsim_import)."""
@@ -5740,6 +5769,32 @@ TOOLS = [
                                                   a.get("timeout", 600)),
     },
     {
+        "name": "qet_generate_from_config",
+        "description": "The configurator (after EPLAN EEC Pro): draw a plan from a table (.xlsx or .csv, "
+                       "one row per object: columns Objekt, Typical, optional BMK, Anlage, Ort, Blatt and "
+                       "the values of the function template, e.g. P_kW, TEXT). Each typical chooses its "
+                       "variant by its conditions (Antrieb: above 5.5 kW star-delta, else direct start), its "
+                       "formulas pick the breaker from a data-sheet table, device tags and PLC channels are "
+                       "counted on. Writes folios with cross references, a PLC overview whose modules the "
+                       "channels are linked to, the order list, terminal plan and cable list. Run again on "
+                       "the same output after the table changed: unchanged objects keep their folios, "
+                       "changed ones are drawn again, a folio changed by hand is kept and reported as a "
+                       "conflict (exit 3) unless overwrite. Returns the report.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "binary": {"type": "string", "description": "the qelectrotech executable; leave it out to use the one this server is configured with"},
+                "table": {"type": "string", "description": "the configuration table (.xlsx first sheet, or .csv with ; , or tab)"},
+                "output": {"type": "string", "description": "the project (.qet) to make or to generate again"},
+                "overwrite": {"type": "boolean", "default": False, "description": "also replace folios changed by hand"},
+                "timeout": {"type": "integer", "default": 600},
+            },
+            "required": ["table", "output"],
+        },
+        "handler": lambda a: tool_generate_from_config(a["binary"], a["table"], a["output"],
+                                                       a.get("overwrite", False), a.get("timeout", 600)),
+    },
+    {
         "name": "qet_simulate_reference",
         "description": "Check the simulation core against reference cases with known solutions "
                        "(gas and oil charging, pump, orifice, accumulator, PLC counter and "
@@ -6848,6 +6903,7 @@ _DATA_PATHS = {
     "qet_export":        {"read": ("project",), "write": ("output",)},
     "qet_simulate":       {"read": ("project",), "write": ("csv", "png_dir", "meta")},
     "qet_simulate_reference": {"read": ("reference_dir",)},
+    "qet_generate_from_config": {"read": ("table",), "write": ("output",)},
     "qet_fluidsim_import": {"read": ("circuit",), "write": ("output",)},
     "qet_edit":           {"read": ("project",), "write": ("output",)},
     "qet_query":          {"read": ("project",)},
@@ -6876,7 +6932,7 @@ _DATA_PATHS = {
 }
 
 # Tools that launch QElectroTech, and so take "binary" and "elements_dir".
-_LAUNCHES_QET = {"qet_simulate", "qet_simulate_reference", "qet_fluidsim_import", "qet_export", "qet_edit", "qet_query", "qet_continuity",
+_LAUNCHES_QET = {"qet_generate_from_config", "qet_simulate", "qet_simulate_reference", "qet_fluidsim_import", "qet_export", "qet_edit", "qet_query", "qet_continuity",
                  "qet_check", "qet_plan_check", "qet_layout_check", "qet_project_new", "qet_script_api",
                  "qet_script_test", "qet_recording_check", "qet_live_layout_check",
                  "qet_dataportal_import"}

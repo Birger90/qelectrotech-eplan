@@ -214,6 +214,15 @@ namespace CLIExport {
 		      what changed from one state to another, one line each; with
 		      an output, a PDF of the newer with the changes marked.
 		      <older> is a project file or a revision index of <newer>.
+		Configurator (functiontemplates/configgenerator.h, docs/konfigurator.md):
+		  --generate-from-config <table.xlsx|csv> <project.qet> [--overwrite] [--json]
+		      draw a plan from a table of objects (one row each: Objekt,
+		      Typical and the template's values): variants, formulas,
+		      device tags and PLC channels counted on, a PLC overview, the
+		      order list, terminal plan and cable list. Into an existing
+		      project made so before: unchanged objects keep their folios,
+		      changed ones are drawn again, a folio changed by hand is kept
+		      (exit 3, the report names the changes) unless --overwrite.
 	*/
 	int run(const QStringList &args);
 

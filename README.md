@@ -120,6 +120,27 @@
 > - Script API `listTemplates()`, `templateInfo()`, `insertTemplate(folio, template, values, x, y)`,
 >   `saveTemplate(folio, name, options)`; MCP: `qet_edit` operations `insert_template` and `save_template`.
 >
+> **Configurator** (a plan from a table, after EPLAN EEC Pro; concept in [docs/konfigurator.md](docs/konfigurator.md))
+> - Menu *Project > Generate plan from configuration…*: an Excel or CSV table with one row per object (columns
+>   `Objekt`, `Typical`, optionally `BMK`, `Anlage`, `Ort`, `Blatt` and the template's values such as `P_kW`, `TEXT`)
+>   becomes a plan: schematic folios in table order (small objects share a folio), a PLC overview with generic
+>   16-channel modules linked to the channels in the circuits (cross references both ways), and the order list,
+>   terminal plan and cable list as list folios.
+> - Typicals are function templates with **variants and conditions** (`<variant when="P_kW > 5.5" …>`): the typical
+>   *Antrieb* takes star-delta above 5.5 kW, direct start otherwise. **Formulas** (`<formula>`) compute values from
+>   values and tables: the motor starter protector comes from Siemens' SIRIUS selection guide
+>   (`funktionsvorlagen/Tabellen/siemens_3RV2_direktstart.csv`, by nameplate current `I_N` or by power). Tables
+>   may be CSV files beside the template.
+> - **Counters:** device tags to the next free one, PLC addresses with the new parameter kind
+>   `kind="address" io="DQ" count="3"` to the next free channel; `{ADR+1}` counts channels (`%Q0.7` + 1 = `%Q1.0`).
+> - **Generate again** from a changed table into the same project: unchanged objects keep their folio, changed ones
+>   are drawn again with the same tags and addresses. A folio changed by hand since is never overwritten silently: it
+>   stays, the new one follows with "[new]" and the report lists every change (only *Overwrite* / `--overwrite`
+>   replaces it). The old file stays as `<name>.vor-konfigurator.qet`.
+> - CLI `--generate-from-config <table.xlsx|csv> <project.qet> [--overwrite] [--json]` (exit 3 on conflicts),
+>   MCP tool `qet_generate_from_config`. Example: `examples/konfigurator/maschine.csv`; test:
+>   `python tools/konfigurator/test_konfigurator.py`.
+>
 > **Cables**
 > - Menu Project > *Cable list (choose types)…*: every cable of the project with type, cores, colours, plant,
 >   location and folios; *Choose type…* changes the type in one undo step.

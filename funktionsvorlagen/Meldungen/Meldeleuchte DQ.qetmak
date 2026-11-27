@@ -4,7 +4,7 @@
         <parameter default="PF1" kind="label" label="Kennzeichen" name="BMK"/>
         <parameter default="Betrieb" label="Funktion" name="TEXT"/>
         <parameter default="grün" label="Farbe" name="FARBE"/>
-        <parameter default="%Q0.2" label="SPS-Ausgang" name="ADR"/>
+        <parameter default="%Q0.2" io="DQ" kind="address" label="SPS-Ausgang" name="ADR"/>
         <table key="FARBE">
             <row FARBE="grün" P_ART="M22-L-G + M22-A + M22-LED-G"/>
             <row FARBE="gelb" P_ART="M22-L-Y + M22-A + M22-LED-Y"/>
@@ -102,7 +102,7 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
     <diagram_content>
         <diagram projectId="-1">
             <elements>
-                <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="macro://import/Allgemein/SPS/SPS_Kanal_DQ.elmt" uuid="{54151cc2-958f-4f2b-938f-c52d5771b5a4}" x="200" y="150" z="10">
+                <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="macro://import/Allgemein/SPS/SPS_Kanal_DQ.elmt" uuid="{97ac19d0-e98e-4a55-bd92-df56ece8efb3}" x="200" y="150" z="10">
                     <terminals>
                         <terminal id="0" orientation="2" x="0" y="16"/>
                     </terminals>
@@ -112,18 +112,18 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                         <elementInformation name="plc_address" show="1">{ADR}</elementInformation>
                     </elementInformations>
                     <dynamic_texts>
-                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{fabdc9bb-cd60-4012-a705-ba0e9701e044}" x="-27" y="-6">
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{8c3ec008-1975-48c2-a252-f6073cf93b22}" x="-27" y="-6">
                             <text>{ADR}</text>
                             <info_name>plc_address</info_name>
                         </dynamic_elmt_text>
-                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{61825033-a989-401c-8208-5fe4dd495a76}" x="34" y="-20">
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{ac68d7b9-bfab-450c-a70a-f85cbdd59592}" x="34" y="-20">
                             <text></text>
                             <info_name>label</info_name>
                         </dynamic_elmt_text>
                     </dynamic_texts>
                     <texts_groups/>
                 </element>
-                <element freezeLabel="false" is_movable="1" orientation="0" prefix="P" type="macro://import/10_electric/10_allpole/380_signaling_operating/11_optical_signaling/lampe2.elmt" uuid="{e2398ccb-e0f4-4cd7-b8a2-4bf9711352db}" x="200" y="230" z="10">
+                <element freezeLabel="false" is_movable="1" orientation="0" prefix="P" type="macro://import/10_electric/10_allpole/380_signaling_operating/11_optical_signaling/lampe2.elmt" uuid="{44736b4a-ab26-4865-a7cc-ea6239a3923f}" x="200" y="230" z="10">
                     <terminals>
                         <terminal id="1" orientation="0" x="0" y="-16"/>
                         <terminal id="2" orientation="2" x="0" y="16"/>
@@ -137,7 +137,7 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                         <elementInformation name="manufacturer_reference" show="1">{P_ART}</elementInformation>
                     </elementInformations>
                     <dynamic_texts>
-                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{fc98084f-97a8-4858-bb3c-4351d60fb066}" x="15" y="-9.5">
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{7ae9420e-ea88-40df-a0fc-6e3dd1735ff6}" x="15" y="-9.5">
                             <text>{BMK}</text>
                             <info_name>label</info_name>
                         </dynamic_elmt_text>
@@ -146,12 +146,12 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                 </element>
             </elements>
             <conductors>
-                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{54151cc2-958f-4f2b-938f-c52d5771b5a4}" element1_label="" element1_name="PLC output channel (generic)" element2="{e2398ccb-e0f4-4cd7-b8a2-4bf9711352db}" element2_label="{BMK}" element2_name="Light" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{64a60bc1-30d8-5898-85e1-f24932247e6d}" terminal2="{e8f2916b-c880-40ab-99eb-0b6842bd3a4c}" terminalname1="1" terminalname2="A1" text_color="#000000" type="multi" uuid="{7f74a0dc-b423-4cd6-a006-cae6ca29f40b}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{97ac19d0-e98e-4a55-bd92-df56ece8efb3}" element1_label="" element1_name="PLC output channel (generic)" element2="{44736b4a-ab26-4865-a7cc-ea6239a3923f}" element2_label="{BMK}" element2_name="Light" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{64a60bc1-30d8-5898-85e1-f24932247e6d}" terminal2="{e8f2916b-c880-40ab-99eb-0b6842bd3a4c}" terminalname1="1" terminalname2="A1" text_color="#000000" type="multi" uuid="{c13d8ce3-d767-46e8-8d47-a273da155d79}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                     <sequentialNumbers/>
                 </conductor>
             </conductors>
             <inputs>
-                <input font="Liberation Sans,9,-1,0,50,0,0,0,0,0,Regular" rotation="0" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;meta charset=&quot;utf-8&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;hr { height: 1px; border-width: 0; }&#xa;li.unchecked::marker { content: &quot;\2610&quot;; }&#xa;li.checked::marker { content: &quot;\2612&quot;; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Liberation Sans'; font-size:9pt; font-weight:400; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>M&lt;/p>&lt;/body>&lt;/html>" uuid="{49699324-7e85-4cc4-8b82-fc839de899e6}" x="206" y="246"/>
+                <input font="Liberation Sans,9,-1,0,50,0,0,0,0,0,Regular" rotation="0" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;meta charset=&quot;utf-8&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;hr { height: 1px; border-width: 0; }&#xa;li.unchecked::marker { content: &quot;\2610&quot;; }&#xa;li.checked::marker { content: &quot;\2612&quot;; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Liberation Sans'; font-size:9pt; font-weight:400; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>M&lt;/p>&lt;/body>&lt;/html>" uuid="{76ac813b-98ea-4a93-b162-6484c21c0046}" x="206" y="246"/>
             </inputs>
         </diagram>
     </diagram_content>

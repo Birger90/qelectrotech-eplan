@@ -16,6 +16,7 @@
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "functiontemplate.h"
+#include "templateexpression.h"
 
 #include "../ElementsCollection/elementslocation.h"
 #include "../ElementsCollection/xmlelementcollection.h"
@@ -246,7 +247,11 @@ FunctionTemplate FunctionTemplate::fromDocument(const QDomDocument &document, co
 	tpl.m_document = document;
 	tpl.m_path = path;
 	const QDomElement root = document.documentElement();
-	tpl.m_valid = root.tagName() == QLatin1String("qet_macro") && !diagramOf(root).isNull();
+	tpl.m_has_drawing = !diagramOf(root).isNull();
+		//A typical made of variants only has no drawing of its own
+	const bool variants = !root.firstChildElement(QLatin1String(BlockTag))
+			.firstChildElement(QStringLiteral("variant")).isNull();
+	tpl.m_valid = root.tagName() == QLatin1String("qet_macro") && (tpl.m_has_drawing || variants);
 	if (tpl.m_valid) tpl.readBlock();
 	return tpl;
 }
@@ -278,12 +283,14 @@ void FunctionTemplate::readBlock()
 		parameter.help = p.attribute(QStringLiteral("help"));
 		const QString choices = p.attribute(QStringLiteral("choices"));
 		if (!choices.isEmpty()) parameter.choices = choices.split(QLatin1Char(';'), Qt::SkipEmptyParts);
+		parameter.io = p.attribute(QStringLiteral("io")).trimmed().toUpper();
+		parameter.count = qMax(1, p.attribute(QStringLiteral("count"), QStringLiteral("1")).toInt());
 		m_parameters << parameter;
 	}
 		//A ?name value of a plain macro (MacroLabels, upstream's way of
 		//asking) is a text parameter of the same form, so a template
 		//never asks twice
-	if (m_has_block) {
+	if (m_has_block && m_has_drawing) {
 		QStringList asked;
 		rewrite(diagramOf(m_document.documentElement()), [&](const QDomElement &, const QString &, const QString &value) {
 			if (value.contains(QLatin1Char('?')))
@@ -309,6 +316,19 @@ void FunctionTemplate::readBlock()
 		table.key = t.attribute(QStringLiteral("key"));
 		if (table.key.isEmpty()) continue;
 		table.columns << table.key;
+			//A table of a data sheet or a standard, as a CSV beside the
+			//template: its rows come before the ones written in the block
+		table.file = t.attribute(QStringLiteral("file"));
+		if (!table.file.isEmpty()) {
+			const QString path = QFileInfo(table.file).isAbsolute() || m_path.isEmpty()
+					? table.file : QFileInfo(m_path).dir().filePath(table.file);
+			QStringList columns;
+			for (const auto &row : readCsv(path, &columns)) {
+				if (row.contains(table.key)) table.rows << row;
+			}
+			for (const QString &c : std::as_const(columns))
+				if (!table.columns.contains(c)) table.columns << c;
+		}
 		for (const QDomElement &r : childrenOf(t, QStringLiteral("row"))) {
 			QMap<QString, QString> row;
 			const QDomNamedNodeMap attributes = r.attributes();
@@ -321,6 +341,70 @@ void FunctionTemplate::readBlock()
 		}
 		m_tables << table;
 	}
+	for (const QDomElement &f : childrenOf(block, QStringLiteral("formula"))) {
+		Formula formula;
+		formula.name = f.attribute(QStringLiteral("name")).trimmed();
+		formula.expression = f.attribute(QStringLiteral("expr"));
+		if (formula.expression.isEmpty()) formula.expression = f.text().trimmed();
+		if (!formula.name.isEmpty() && !formula.expression.trimmed().isEmpty()) m_formulas << formula;
+	}
+	for (const QDomElement &v : childrenOf(block, QStringLiteral("variant"))) {
+		Variant variant;
+		variant.name = v.attribute(QStringLiteral("name"));
+		variant.condition = v.attribute(QStringLiteral("when"));
+		variant.target = v.attribute(QStringLiteral("template")).trimmed();
+		if (variant.name.isEmpty()) variant.name = QFileInfo(variant.target).completeBaseName();
+		m_variants << variant;
+	}
+}
+
+QList<QMap<QString, QString>> FunctionTemplate::readCsv(const QString &path, QStringList *columns,
+														  QString *error)
+{
+	QList<QMap<QString, QString>> rows;
+	QFile file(path);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		if (error) *error = tr("The file %1 cannot be read.").arg(QDir::toNativeSeparators(path));
+		return rows;
+	}
+	QString text = QString::fromUtf8(file.readAll());
+	if (text.startsWith(QChar(0xFEFF))) text.remove(0, 1);
+	const QStringList lines = text.split(QLatin1Char('\n'));
+	QStringList header;
+	QChar separator = QLatin1Char(';');
+	for (QString line : lines) {
+		line.remove(QLatin1Char('\r'));
+		if (line.trimmed().isEmpty() || line.trimmed().startsWith(QLatin1Char('#'))) continue;
+		if (header.isEmpty() && !line.contains(QLatin1Char(';')))
+			separator = line.contains(QLatin1Char('\t')) ? QLatin1Char('\t') : QLatin1Char(',');
+			//Cells in quotes may hold the separator
+		QStringList cells;
+		QString cell;
+		bool quoted = false;
+		for (int i = 0 ; i < line.size() ; ++i) {
+			const QChar c = line.at(i);
+			if (c == QLatin1Char('"')) {
+				if (quoted && i + 1 < line.size() && line.at(i + 1) == QLatin1Char('"')) { cell += c; ++i; }
+				else quoted = !quoted;
+			} else if (c == separator && !quoted) {
+				cells << cell.trimmed();
+				cell.clear();
+			} else {
+				cell += c;
+			}
+		}
+		cells << cell.trimmed();
+		if (header.isEmpty()) {
+			header = cells;
+			continue;
+		}
+		QMap<QString, QString> row;
+		for (int i = 0 ; i < header.size() && i < cells.size() ; ++i)
+			if (!header.at(i).isEmpty()) row.insert(header.at(i), cells.at(i));
+		rows << row;
+	}
+	if (columns) *columns = header;
+	return rows;
 }
 
 bool FunctionTemplate::isExample() const
@@ -431,6 +515,10 @@ QMap<QString, QString> FunctionTemplate::resolve(const QMap<QString, QString> &g
 				}
 			}
 			values.insert(p.name, value);
+		} else if (p.kind == QLatin1String("address")) {
+				//The next free channel of its kind the PLC modules offer
+			const QString address = project ? nextFreeAddress(project, p.io, p.count) : QString();
+			values.insert(p.name, address.isEmpty() ? p.defaultValue : address);
 		} else if (p.kind == QLatin1String("terminal")) {
 			const QString strip = values.contains(p.of) ? values.value(p.of)
 														: given.value(p.of, p.of);
@@ -448,6 +536,8 @@ QMap<QString, QString> FunctionTemplate::resolve(const QMap<QString, QString> &g
 		values.insert(it.key(), it.value());
 
 	for (const Table &table : m_tables) {
+			//A table only formulas look up in (its key no value) is left alone
+		if (values.value(table.key).trimmed().isEmpty()) continue;
 		QString note;
 		const int row = rowFor(table, values.value(table.key), &note);
 		if (!note.isEmpty() && notes) notes->append(note);
@@ -460,7 +550,138 @@ QMap<QString, QString> FunctionTemplate::resolve(const QMap<QString, QString> &g
 			if (!is_parameter) values.insert(it.key(), it.value());
 		}
 	}
+
+		//The formulas, in file order: each sees the values before it. A
+		//value given for its name stands; the formula fills what is missing
+	TemplateExpression::Context context;
+	context.values = &values;
+	context.notes = notes;
+	context.lookup = [this](const QString &table, const QString &value, const QString &column,
+							const QString &key, QString *note) {
+		return lookup(table, value, column, key, note);
+	};
+	for (const Formula &f : m_formulas) {
+		if (!given.value(f.name).trimmed().isEmpty()) continue;
+		QString error;
+		const QString value = TemplateExpression::evaluate(f.expression, context, &error);
+		if (!error.isEmpty()) {
+			if (notes) notes->append(tr("Formula %1 of %2: %3").arg(f.name, m_name, error));
+			continue;
+		}
+		values.insert(f.name, value);
+	}
 	return values;
+}
+
+QString FunctionTemplate::lookup(const QString &table_name, const QString &value, const QString &column,
+								 const QString &key, QString *note) const
+{
+	for (const Table &table : m_tables) {
+		if (table.name.compare(table_name, Qt::CaseInsensitive) != 0) continue;
+		Table picked = table;
+		if (!key.isEmpty()) picked.key = key;
+		QString row_note;
+		const int row = rowFor(picked, value, &row_note);
+		if (row < 0) {
+			if (note) *note = tr("%1: %2").arg(table_name, row_note);
+			return QString();
+		}
+		const auto &cells = picked.rows.at(row);
+		if (!row_note.isEmpty() && note) *note = tr("%1: %2").arg(table_name, row_note);
+			//A key column I_max of a table with I_min: the value has to
+			//lie in the range, not only below its top
+		if (picked.key.endsWith(QLatin1String("_max"), Qt::CaseInsensitive)) {
+			const QString lower = picked.key.left(picked.key.size() - 4) + QStringLiteral("_min");
+			double v = 0, least = 0;
+			if (cells.contains(lower) && TemplateExpression::toNumber(value, &v)
+					&& TemplateExpression::toNumber(cells.value(lower), &least) && v < least - 1e-9 && note)
+				*note = tr("%1: %2 = %3 is below the range of the row picked (%4 ... %5).")
+						.arg(table_name, picked.key.left(picked.key.size() - 4), value,
+							 cells.value(lower), cells.value(picked.key));
+		}
+		if (!cells.contains(column)) {
+			if (note) *note = tr("The table %1 has no column %2.").arg(table_name, column);
+			return QString();
+		}
+		return cells.value(column);
+	}
+	if (note) *note = tr("The template %1 has no table %2.").arg(m_name, table_name);
+	return QString();
+}
+
+FunctionTemplate FunctionTemplate::chosen(const QMap<QString, QString> &resolved, QString *chain,
+										  QStringList *notes, QString *error) const
+{
+	FunctionTemplate current = *this;
+	QMap<QString, QString> values = resolved;
+	QStringList taken;
+	QStringList visited{QFileInfo(m_path).absoluteFilePath()};
+	for (int depth = 0 ; ; ++depth) {
+		if (current.m_variants.isEmpty()) break;
+		if (depth >= 8) {
+			if (error) *error = tr("The variants of %1 go deeper than eight levels.").arg(m_name);
+			return FunctionTemplate();
+		}
+		TemplateExpression::Context context;
+		context.values = &values;
+		context.notes = notes;
+		context.lookup = [&current](const QString &table, const QString &value, const QString &column,
+									const QString &key, QString *note) {
+			return current.lookup(table, value, column, key, note);
+		};
+		const Variant *match = nullptr;
+		for (const Variant &v : std::as_const(current.m_variants)) {
+			if (v.condition.trimmed().isEmpty()) { match = &v; break; }
+			QString e;
+			const QString truth = TemplateExpression::evaluate(v.condition, context, &e);
+			if (!e.isEmpty()) {
+				if (notes) notes->append(tr("Condition of the variant %1 of %2: %3").arg(v.name, current.m_name, e));
+				continue;
+			}
+			if (TemplateExpression::isTrue(truth)) { match = &v; break; }
+		}
+		if (!match) {
+			if (current.m_has_drawing) break;
+			if (error) *error = tr("No variant of %1 fits.").arg(current.m_name);
+			return FunctionTemplate();
+		}
+		taken << match->name;
+		if (match->target.isEmpty()) {
+			if (current.m_has_drawing) break; // the template's own drawing
+			if (error) *error = tr("The variant %1 of %2 names no template.").arg(match->name, current.m_name);
+			return FunctionTemplate();
+		}
+			//A target beside this template first, then in the template
+			//folders, then any by its name
+		const QString target = match->target;
+		FunctionTemplate next;
+		QStringList candidates;
+		if (!current.m_path.isEmpty()) {
+			const QDir here = QFileInfo(current.m_path).dir();
+			candidates << here.filePath(target) << here.filePath(target + QStringLiteral(".qetmak"));
+		}
+		for (const QString &dir : directories())
+			candidates << QDir(dir).filePath(target) << QDir(dir).filePath(target + QStringLiteral(".qetmak"));
+		for (const QString &candidate : std::as_const(candidates))
+			if (QFileInfo(candidate).isFile()) { next = fromFile(candidate); if (next.isValid()) break; }
+		if (!next.isValid()) next = find(target);
+		if (!next.isValid()) {
+			if (error) *error = tr("The variant %1 of %2 names %3, which is no template.")
+							.arg(match->name, current.m_name, target);
+			return FunctionTemplate();
+		}
+		const QString path = QFileInfo(next.m_path).absoluteFilePath();
+		if (visited.contains(path, Qt::CaseInsensitive)) {
+			if (error) *error = tr("The variants of %1 lead back to %2.").arg(m_name, next.m_name);
+			return FunctionTemplate();
+		}
+		visited << path;
+		current = next;
+			//The next one's own tables and formulas, for its variants
+		values = current.resolve(values, nullptr, nullptr);
+	}
+	if (chain) *chain = taken.join(QStringLiteral(" > "));
+	return current;
 }
 
 QString FunctionTemplate::substitute(const QString &text, const QMap<QString, QString> &values,
@@ -483,7 +704,11 @@ QString FunctionTemplate::substitute(const QString &text, const QMap<QString, QS
 					* (match.captured(2) == QLatin1String("-") ? -1 : 1);
 			static const QRegularExpression last_number(QStringLiteral("(\\d+)(\\D*)$"));
 			const auto number_match = last_number.match(value);
-			if (number_match.hasMatch()) {
+			QString address;
+				//A PLC channel counts in bits: %Q0.7 + 1 is %Q1.0
+			if (addressPlus(value, int(offset), &address)) {
+				value = address;
+			} else if (number_match.hasMatch()) {
 				value = value.left(number_match.capturedStart(1))
 						+ QString::number(number_match.captured(1).toLongLong() + offset)
 						+ number_match.captured(2);
@@ -592,6 +817,14 @@ QDomDocument FunctionTemplate::instantiate(const QMap<QString, QString> &resolve
 QImage FunctionTemplate::preview(const QMap<QString, QString> &values, const QSize &max) const
 {
 	if (!m_valid) return QImage();
+	if (!m_has_drawing) {
+		const QMap<QString, QString> all = resolve(values, nullptr);
+		QMap<QString, QString> resolved;
+		for (auto it = all.cbegin() ; it != all.cend() ; ++it)
+			if (!it.value().trimmed().isEmpty()) resolved.insert(it.key(), it.value());
+		const FunctionTemplate target = chosen(resolved);
+		return target.isValid() ? target.preview(resolved, max) : QImage();
+	}
 	QScopedPointer<QETProject> project(new QETProject());
 	embedCollection(project.data(), m_document.documentElement());
 	Diagram *folio = project->addNewDiagram();
@@ -641,6 +874,32 @@ FunctionTemplate::Placed FunctionTemplate::place(Diagram *folio, const QMap<QStr
 		return placed;
 	}
 	project->buildFolioToShow(folio);
+
+	if (!m_variants.isEmpty()) {
+			//A typical: its values made, then the variant they choose
+			//placed with all of them
+		QStringList notes;
+		const QMap<QString, QString> values = resolve(given, folio, &notes);
+		QString chain, error;
+		const FunctionTemplate target = chosen(values, &chain, &notes, &error);
+		if (!target.isValid()) {
+			placed.error = error;
+			placed.notes = notes;
+			return placed;
+		}
+		FunctionTemplate drawn = target;
+		drawn.m_variants.clear();	// chosen already
+			//An empty value is none: the variant fills it from its own
+			//tables (a current left empty, the article of its row)
+		QMap<QString, QString> passed;
+		for (auto it = values.cbegin() ; it != values.cend() ; ++it)
+			if (!it.value().trimmed().isEmpty()) passed.insert(it.key(), it.value());
+		Placed result = drawn.place(folio, passed, pos);
+		result.notes = notes + result.notes;
+		result.variant = chain;
+		return result;
+	}
+	placed.placedTemplate = m_path;
 
 	placed.values = resolve(given, folio, &placed.notes);
 	QDomDocument document = instantiate(placed.values, folio, &placed.notes);
@@ -902,6 +1161,8 @@ QDomElement FunctionTemplate::blockXml(QDomDocument &document, const SaveOptions
 		if (!p.of.isEmpty()) e.setAttribute(QStringLiteral("of"), p.of);
 		if (!p.help.isEmpty()) e.setAttribute(QStringLiteral("help"), p.help);
 		if (!p.choices.isEmpty()) e.setAttribute(QStringLiteral("choices"), p.choices.join(QLatin1Char(';')));
+		if (!p.io.isEmpty()) e.setAttribute(QStringLiteral("io"), p.io);
+		if (p.count > 1) e.setAttribute(QStringLiteral("count"), p.count);
 		block.appendChild(e);
 	}
 	for (const Table &t : options.tables) {
@@ -1018,4 +1279,102 @@ QString FunctionTemplate::save(Diagram *folio, const QList<QGraphicsItem *> &ite
 	out.setEncoding(QStringConverter::Utf8);
 	out << macro.toString(4);
 	return QFileInfo(path).absoluteFilePath();
+}
+
+bool FunctionTemplate::addressPlus(const QString &address, int offset, QString *result)
+{
+		//%I0.0, %Q2.7, E1.3, I 0.0: a byte and a bit of eight
+	static const QRegularExpression pattern(
+				QStringLiteral("^(\\s*%?\\s*[A-Za-z]{1,2}\\s*)(\\d+)\\.([0-7])(\\s*)$"));
+	const QRegularExpressionMatch match = pattern.match(address);
+	if (!match.hasMatch()) return false;
+	const long long bit = match.captured(2).toLongLong() * 8 + match.captured(3).toInt() + offset;
+	if (bit < 0) return false;
+	if (result)
+		*result = match.captured(1) + QString::number(bit / 8) + QLatin1Char('.')
+				+ QString::number(bit % 8) + match.captured(4);
+	return true;
+}
+
+QString FunctionTemplate::addressLetter(const QString &io)
+{
+	const QString kind = io.trimmed().toUpper();
+	return kind == QLatin1String("DQ") || kind == QLatin1String("AQ") || kind == QLatin1String("DO")
+			|| kind == QLatin1String("AO") ? QStringLiteral("Q") : QStringLiteral("I");
+}
+
+QString FunctionTemplate::nextFreeAddress(QETProject *project, const QString &io, int count)
+{
+	if (!project) return QString();
+	const QString kind = io.trimmed().toUpper();
+	const bool analog = kind.startsWith(QLatin1Char('A'));
+	const bool output = addressLetter(kind) == QLatin1String("Q");
+	QStringList offered;	// in the order of the modules
+	QSet<QString> taken;
+	for (Diagram *d : project->diagrams()) {
+		project->buildFolioToShow(d);
+		for (QGraphicsItem *item : d->items()) {
+			auto *element = qgraphicsitem_cast<Element *>(item);
+			if (!element) continue;
+			const ElementData data = element->elementData();
+			if (data.m_type == ElementData::Master && data.m_master_type == ElementData::PLC) {
+				const auto ios = data.plcMasterData().ios;
+				QSet<int> used;
+				for (Element *other : element->linkedElements()) used.insert(element->groupIndexForElement(other));
+				for (int i = 0 ; i < ios.size() ; ++i) {
+					const auto t = ios.at(i).type;
+					const bool is_output = t == ElementData::SortieDigitale || t == ElementData::SortieAnalogique
+							|| t == ElementData::SortieUniverselle;
+					const bool is_analog = t == ElementData::EntreeAnalogique || t == ElementData::SortieAnalogique;
+					if (is_output != output || (!kind.isEmpty() && is_analog != analog)) continue;
+					QString address = plainAddress(ios.at(i).address);
+					if (!address.isEmpty() && address.at(0).isDigit())
+						address.prepend(addressLetter(kind));
+					offered << address;
+					if (used.contains(i)) taken.insert(address);
+				}
+			} else if (element->linkType() == Element::Slave) {
+				const QString address = element->elementInformations()
+						.value(QStringLiteral("plc_address")).toString();
+				if (!address.trimmed().isEmpty()) taken.insert(plainAddress(address));
+			}
+		}
+	}
+	for (const QString &first : std::as_const(offered)) {
+		bool free = !taken.contains(first);
+		for (int k = 1 ; k < count && free ; ++k) {
+			QString next;
+			free = addressPlus(first, k, &next) && offered.contains(next) && !taken.contains(next);
+		}
+		if (free) return QLatin1Char('%') + first;
+	}
+	return QString();
+}
+
+QRectF FunctionTemplate::extent(const QMap<QString, QString> &values) const
+{
+	if (!m_valid) return QRectF();
+	if (!m_has_drawing) {
+		const QMap<QString, QString> all = resolve(values, nullptr);
+		QMap<QString, QString> resolved;
+		for (auto it = all.cbegin() ; it != all.cend() ; ++it)
+			if (!it.value().trimmed().isEmpty()) resolved.insert(it.key(), it.value());
+		const FunctionTemplate target = chosen(resolved);
+		return target.isValid() ? target.extent(resolved) : QRectF();
+	}
+	QScopedPointer<QETProject> project(new QETProject());
+	embedCollection(project.data(), m_document.documentElement());
+	Diagram *folio = project->addNewDiagram();
+	if (!folio) return QRectF();
+	QDomDocument document = instantiate(resolve(values, nullptr), nullptr);
+	QList<CablePart *> cables;
+	folio->fromXml(document, QPointF(), false, nullptr, &cables, nullptr);
+	folio->refreshContents();
+	QRectF rect;
+	for (QGraphicsItem *item : folio->items()) {
+		if (item->parentItem() || !item->isVisible()) continue;
+		if (!qgraphicsitem_cast<Element *>(item) && !(item->flags() & QGraphicsItem::ItemIsSelectable)) continue;
+		rect = rect.united(item->sceneBoundingRect());
+	}
+	return rect;
 }

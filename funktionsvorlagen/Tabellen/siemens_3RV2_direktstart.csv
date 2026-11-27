@@ -1,0 +1,27 @@
+# Motorschutzschalter SIRIUS 3RV2, Schraubanschluss, CLASS 10, Drehstrommotor 400 V.
+# Quelle: Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10; Spalten P_kW, Einstellbereich I_min...I_max und Bestellnummer wörtlich von der genannten Seite.
+# Seite 4/5 ordnet je Motorleistung zu (Schlüssel P_kW); nach Motorstrom (Typenschild) wählt der Schlüssel I_max den kleinsten Bereich, der den Strom umfasst.
+# 3RV2011-1FA10 steht nur auf Seite 6 (Sanftstarter-Abzweige). Seite 6 nennt für 3RV2021-4AA10/-4BA10/-4CA10/-4DA10 abweichend 11...16/14...20/17...22/20...25 A: vor der Bestellung im Produktdatenblatt prüfen.
+P_kW;I_min;I_max;QA_ART;QA_I;Baugroesse;Quelle
+0.09;0.22;0.32;3RV2011-0DA10;0,22...0,32 A;S00;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 4
+0.12;0.35;0.5;3RV2011-0FA10;0,35...0,5 A;S00;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 4
+0.18;0.45;0.63;3RV2011-0GA10;0,45...0,63 A;S00;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 4
+0.25;0.7;1;3RV2011-0JA10;0,7...1 A;S00;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 4
+0.37;0.9;1.25;3RV2011-0KA10;0,9...1,25 A;S00;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 4
+0.55;1.1;1.6;3RV2011-1AA10;1,1...1,6 A;S00;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 4
+0.75;1.4;2;3RV2011-1BA10;1,4...2 A;S00;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 4
+1.1;2.2;3.2;3RV2011-1DA10;2,2...3,2 A;S00;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 4
+1.5;2.8;4;3RV2011-1EA10;2,8...4 A;S00;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 4
+1.5;3.5;5;3RV2011-1FA10;3,5...5 A;S00;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 6
+2.2;4.5;6.3;3RV2011-1GA10;4,5...6,3 A;S00;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 4
+3;5.5;8;3RV2011-1HA10;5,5...8 A;S00;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 4
+4;7;10;3RV2011-1JA10;7...10 A;S00;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 4
+5.5;9;12.5;3RV2011-1KA10;9...12,5 A;S00;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 4
+7.5;11;16;3RV2011-4AA10;11...16 A;S00;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 4
+7.5;13;20;3RV2021-4BA10;13...20 A;S0;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 5
+11;16;22;3RV2021-4CA10;16...22 A;S0;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 5
+11;18;25;3RV2021-4DA10;18...25 A;S0;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 5
+15;23;28;3RV2021-4NA10;23...28 A;S0;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 5
+15;27;32;3RV2021-4EA10;27...32 A;S0;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 5
+18.5;30;36;3RV2021-4PA10;30...36 A;S0;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 5
+18.5;34;40;3RV2021-4FA10;34...40 A;S0;Siemens, Auswahlhilfe SIRIUS Systembaukasten (dfcp-t10133), Lastabzweige Direktstart CLASS 10, S. 5

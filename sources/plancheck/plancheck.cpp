@@ -49,6 +49,7 @@
 
 #include <algorithm>
 #include <climits>
+#include <cmath>
 #include <functional>
 
 namespace {
@@ -73,6 +74,9 @@ const RuleDef kRules[] = {
 	{"open_terminal",           "005026", Kind::OpenTerminals},
 	{"open_port",               "005026", Kind::OpenTerminals},
 	{"wire_protection",         "",       Kind::WireProtection},
+	{"voltage_drop",            "",       Kind::WireProtection},
+	{"network_address",         "004037", Kind::Network},
+	{"profinet_name",           "",       Kind::Network},
 	{"cabinet_layout",          "",       Kind::CabinetLayout},
 };
 
@@ -470,6 +474,148 @@ bool isOutput(Terminal *t, const QList<Terminal *> &all)
 	return t->orientation() == Qet::South;
 }
 
+	/// an IPv4 address as a number; false when @p text is none
+bool ipv4(const QString &text, quint32 *value)
+{
+	const QStringList parts = text.trimmed().split(QLatin1Char('.'));
+	if (parts.size() != 4) return false;
+	quint32 v = 0;
+	for (const QString &p : parts) {
+		bool ok = false;
+		const int n = p.toInt(&ok);
+		if (!ok || n < 0 || n > 255 || p.isEmpty() || (p.size() > 1 && p.startsWith(QLatin1Char('0')))) return false;
+		v = (v << 8) | quint32(n);
+	}
+	if (value) *value = v;
+	return true;
+}
+
+	/// why @p name is no valid PROFINET device name (IEC 61158-6-10,
+	/// DNS rules: labels of a-z, 0-9 and -, 1 to 63 characters, not
+	/// beginning or ending with -, at most 240 in all; not "port-xyz" or
+	/// "port-xyz-abcde"; not in the form n.n.n.n); empty when it is one
+QString profinetNameProblem(const QString &name)
+{
+	if (name.size() > 240) return ProjectCheck::tr("is longer than 240 characters");
+	if (ipv4(name, nullptr)) return ProjectCheck::tr("has the form of an IP address");
+	static const QRegularExpression port(QStringLiteral("^port-\\d{3}(-\\d{5})?$"));
+	for (const QString &label : name.split(QLatin1Char('.'))) {
+		if (label.isEmpty()) return ProjectCheck::tr("has an empty part between dots");
+		if (label.size() > 63) return ProjectCheck::tr("has a part longer than 63 characters");
+		for (const QChar ch : label)
+			if (!((ch >= QLatin1Char('a') && ch <= QLatin1Char('z')) || (ch >= QLatin1Char('0') && ch <= QLatin1Char('9'))
+				  || ch == QLatin1Char('-')))
+				return ProjectCheck::tr("holds \"%1\": only a-z, 0-9, - and . are allowed").arg(ch);
+		if (label.startsWith(QLatin1Char('-')) || label.endsWith(QLatin1Char('-')))
+			return ProjectCheck::tr("has a part beginning or ending with -");
+	}
+	if (port.match(name.section(QLatin1Char('.'), 0, 0)).hasMatch())
+		return ProjectCheck::tr("begins like a port name (port-xyz)");
+	return QString();
+}
+
+	/// the bus devices of the plan: IP address valid, unique and in the
+	/// subnet of its network, PROFINET name valid and unique
+void checkNetwork(Collector &c, const QList<Diagram *> &diagrams, const QSet<Diagram *> &panel_folios)
+{
+	struct Device {Diagram *folio; Element *element; QString label, ip, mask, net, name; quint32 ip_value = 0;};
+	QList<Device> devices;
+	QSet<QString> seen;
+	for (Diagram *d : diagrams) {
+		if (panel_folios.contains(d)) continue;
+		for (Element *e : d->elements()) {
+			const DiagramContext info = e->elementInformations();
+			const QString ip = info.value(QStringLiteral("ip_address")).toString().trimmed();
+			const QString name = info.value(QStringLiteral("profinet_name")).toString().trimmed();
+			if (ip.isEmpty() && name.isEmpty()) continue;
+			const QString label = labelOf(e);
+				// a device drawn more than once is one device
+			const QString key = label + QLatin1Char('|') + ip + QLatin1Char('|') + name;
+			if (!label.isEmpty() && seen.contains(key)) continue;
+			seen << key;
+			devices << Device{d, e, label, ip, info.value(QStringLiteral("subnet_mask")).toString().trimmed(),
+							  info.value(QStringLiteral("network_name")).toString().trimmed(), name};
+		}
+	}
+
+		// IP addresses: valid, unique, in the subnet of their network
+	QHash<quint32, QList<int>> by_ip;
+	QHash<QString, QHash<quint32, int>> subnets;   // network -> subnet -> devices
+	QHash<int, quint32> mask_of;
+	for (int i = 0; i < devices.size(); ++i) {
+		Device &dev = devices[i];
+		if (dev.ip.isEmpty()) continue;
+		if (!ipv4(dev.ip, &dev.ip_value)) {
+			c.add(Severity::Error, QStringLiteral("network_address"), dev.folio, dev.label,
+				  ProjectCheck::tr("IP address \"%1\" is no valid IPv4 address").arg(dev.ip), {dev.element->uuid()});
+			continue;
+		}
+		quint32 mask = 0xFFFFFF00u;   // 255.255.255.0 when none is given
+		if (!dev.mask.isEmpty() && !ipv4(dev.mask, &mask)) {
+			c.add(Severity::Error, QStringLiteral("network_address"), dev.folio, dev.label,
+				  ProjectCheck::tr("subnet mask \"%1\" is no valid mask").arg(dev.mask), {dev.element->uuid()});
+			continue;
+		}
+		mask_of.insert(i, mask);
+		by_ip[dev.ip_value] << i;
+		++subnets[dev.net][dev.ip_value & mask];
+		const quint32 host = dev.ip_value & ~mask;
+		if (host == 0 || host == ~mask)
+			c.add(Severity::Error, QStringLiteral("network_address"), dev.folio, dev.label,
+				  (host == 0 ? ProjectCheck::tr("IP address %1 is the network address of its subnet")
+							 : ProjectCheck::tr("IP address %1 is the broadcast address of its subnet")).arg(dev.ip),
+				  {dev.element->uuid()});
+	}
+	for (auto it = by_ip.cbegin(); it != by_ip.cend(); ++it) {
+		if (it.value().size() < 2) continue;
+		QStringList labels;
+		QList<QUuid> items;
+		for (int i : it.value()) {labels << devices.at(i).label; items << devices.at(i).element->uuid();}
+		const Device &first = devices.at(it.value().first());
+		c.add(Severity::Error, QStringLiteral("network_address"), first.folio, first.label,
+			  ProjectCheck::tr("IP address %1 is used %n times: %2", nullptr, int(it.value().size()))
+				  .arg(first.ip, labels.join(QStringLiteral(", "))), items);
+	}
+		// the subnet most devices of a network share is the network's own
+	for (auto it = mask_of.cbegin(); it != mask_of.cend(); ++it) {
+		const Device &dev = devices.at(it.key());
+		const QHash<quint32, int> nets = subnets.value(dev.net);
+		quint32 main = 0;
+		int most = 0;
+		for (auto n = nets.cbegin(); n != nets.cend(); ++n)
+			if (n.value() > most || (n.value() == most && n.key() < main)) {main = n.key(); most = n.value();}
+		if (nets.size() > 1 && most > 1 && (dev.ip_value & it.value()) != main)
+			c.add(Severity::Warning, QStringLiteral("network_address"), dev.folio, dev.label,
+				  dev.net.isEmpty()
+					  ? ProjectCheck::tr("IP address %1 lies outside the subnet of the other devices").arg(dev.ip)
+					  : ProjectCheck::tr("IP address %1 lies outside the subnet of the other devices of network %2")
+							.arg(dev.ip, dev.net),
+				  {dev.element->uuid()});
+	}
+
+		// PROFINET names: valid and unique
+	QHash<QString, QList<int>> by_name;
+	for (int i = 0; i < devices.size(); ++i) {
+		const Device &dev = devices.at(i);
+		if (dev.name.isEmpty()) continue;
+		const QString problem = profinetNameProblem(dev.name);
+		if (!problem.isEmpty())
+			c.add(Severity::Error, QStringLiteral("profinet_name"), dev.folio, dev.label,
+				  ProjectCheck::tr("PROFINET name \"%1\" %2").arg(dev.name, problem), {dev.element->uuid()});
+		by_name[dev.name.toLower()] << i;
+	}
+	for (auto it = by_name.cbegin(); it != by_name.cend(); ++it) {
+		if (it.value().size() < 2) continue;
+		QStringList labels;
+		QList<QUuid> items;
+		for (int i : it.value()) {labels << devices.at(i).label; items << devices.at(i).element->uuid();}
+		const Device &first = devices.at(it.value().first());
+		c.add(Severity::Error, QStringLiteral("profinet_name"), first.folio, first.label,
+			  ProjectCheck::tr("PROFINET name %1 is used %n times: %2", nullptr, int(it.value().size()))
+				  .arg(first.name, labels.join(QStringLiteral(", "))), items);
+	}
+}
+
 	/// EN 60204-1 7.2 / IEC 60364-4-43: every wire behind a protective
 	/// device must carry its rated current, In ≤ Iz
 void checkWireProtection(Collector &c, const QList<Diagram *> &diagrams, const QSet<Diagram *> &panel_folios)
@@ -515,6 +661,10 @@ void checkWireProtection(Collector &c, const QList<Diagram *> &diagrams, const Q
 	}
 	QHash<Terminal *, QList<Conductor *>> net_wires;
 	for (Conductor *w : std::as_const(wires)) net_wires[root(w->terminal1)] << w;
+		// for the voltage drop: the protective device in front of a wire,
+		// its rated current and how many outgoing potentials it has
+	struct Feed {Element *device = nullptr; Diagram *folio = nullptr; double in = 0; int poles = 0;};
+	QHash<QUuid, Feed> feed_of;
 
 	for (const auto &dev : std::as_const(devices)) {
 		Element *e = dev.second;
@@ -541,6 +691,10 @@ void checkWireProtection(Collector &c, const QList<Diagram *> &diagrams, const Q
 		double smallest = 0;
 		QList<QUuid> too_thin, unknown;
 		for (Terminal *net : std::as_const(nets))
+			for (Conductor *w : net_wires.value(net))
+				if (feed_of.value(w->uuid()).in < in)
+					feed_of.insert(w->uuid(), Feed{e, dev.first, in, int(nets.size())});
+		for (Terminal *net : std::as_const(nets))
 			for (Conductor *w : net_wires.value(net)) {
 				const double s = sectionOf(w->properties().m_wire_section);
 				if (s <= 0) unknown << w->uuid();
@@ -560,6 +714,67 @@ void checkWireProtection(Collector &c, const QList<Diagram *> &diagrams, const Q
 				  .arg(QLocale().toString(in, 'g', 4), QLocale().toString(smallest, 'g', 4),
 					   QLocale().toString(capacityOf(smallest), 'f', 1)),
 			  QList<QUuid>{e->uuid()} + too_thin);
+	}
+
+		// voltage drop over each cable with a length (IEC 60364-5-52
+		// annex G, as KoperCad novo-checks calc/drop.rs): the rated current
+		// of the protective device in front of it flows, cos phi = 1
+	QETProject *project = diagrams.isEmpty() ? nullptr : diagrams.first()->project();
+	if (!project) return;
+	QHash<QUuid, Conductor *> by_uuid;
+	for (Conductor *w : std::as_const(wires)) by_uuid.insert(w->uuid(), w);
+	static const QRegularExpression number(QStringLiteral("(\\d+(?:[.,]\\d+)?)"));
+	static const QRegularExpression type_section(QStringLiteral("\\d+\\s*[xXG×]\\s*(\\d+(?:[.,]\\d+)?)"));
+	for (Cable *cable : project->cables()) {
+		const QString length_text = cable->length().trimmed();
+		const QRegularExpressionMatch lm = number.match(length_text);
+		if (!lm.hasMatch()) continue;
+		double length_m = lm.captured(1).replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+		if (length_text.contains(QLatin1String("mm"), Qt::CaseInsensitive)) length_m /= 1000;
+		else if (length_text.contains(QLatin1String("cm"), Qt::CaseInsensitive)) length_m /= 100;
+		if (length_m <= 0) continue;
+		Feed feed;
+		double section = 0;
+		QList<QUuid> items;
+		for (const CableCore &core : cable->usedCores()) {
+			Conductor *w = by_uuid.value(core.conductor);
+			if (!w) continue;
+			items << w->uuid();
+			const Feed f = feed_of.value(w->uuid());
+			if (f.in > feed.in) feed = f;
+			const double s = sectionOf(w->properties().m_wire_section);
+			if (s > 0 && (section <= 0 || s < section)) section = s;
+		}
+		if (!feed.device) continue;
+		if (section <= 0) {
+			const QRegularExpressionMatch tm = type_section.match(cable->type());
+			if (tm.hasMatch()) section = tm.captured(1).replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+		}
+		if (section <= 0) continue;
+		const DiagramContext info = feed.device->elementInformations();
+		bool ok = false;
+		double voltage = info.value(QStringLiteral("nominal_voltage_v")).toString()
+							 .replace(QLatin1Char(','), QLatin1Char('.')).toDouble(&ok);
+		const bool three_phase = feed.poles >= 3;
+		if (!ok || voltage <= 0) voltage = three_phase ? 400 : 230;
+		double limit = info.value(QStringLiteral("voltage_drop_limit_pct")).toString()
+						   .replace(QLatin1Char(','), QLatin1Char('.')).toDouble(&ok);
+		if (!ok || limit <= 0) limit = 3.0;
+		const double rho = 0.017241 * (1.0 + 0.00393 * (70.0 - 20.0));   // copper at 70 °C, ohm mm²/m
+		const double drop_v = (three_phase ? std::sqrt(3.0) : 2.0) * feed.in * rho * length_m / section;
+		const double percent = 100.0 * drop_v / voltage;
+		if (percent <= limit * (1.0 + 1e-9)) continue;
+		const double longest = limit / percent * length_m;
+		const QString name = cable->designation().trimmed().isEmpty() ? cable->type() : cable->designation().trimmed();
+		const QString shown_dev = labelOf(feed.device).isEmpty() ? feed.device->name() : labelOf(feed.device);
+		c.add(percent > 2 * limit ? Severity::Error : Severity::Warning, QStringLiteral("voltage_drop"), feed.folio, name,
+			  ProjectCheck::tr("Voltage drop %1 % (%2 V of %3 V) over %4 m of %5 mm² at %6 A of %7, limit %8 %; "
+							   "this section reaches %9 m (IEC 60364-5-52 G, copper 70 °C, cos φ 1)")
+				  .arg(QLocale().toString(percent, 'f', 1), QLocale().toString(drop_v, 'f', 1),
+					   QLocale().toString(voltage, 'g', 4), QLocale().toString(length_m, 'g', 4),
+					   QLocale().toString(section, 'g', 4), QLocale().toString(feed.in, 'g', 4), shown_dev,
+					   QLocale().toString(limit, 'g', 3), QLocale().toString(std::floor(longest), 'f', 0)),
+			  QList<QUuid>{feed.device->uuid()} + items);
 	}
 }
 
@@ -630,6 +845,7 @@ QVector<PlanCheck::Finding> PlanCheck::run(QETProject *project)
 
 	checkCables(c, project, wires);
 	checkWireProtection(c, diagrams, panel_folios);
+	checkNetwork(c, diagrams, panel_folios);
 
 	QVector<Finding> out = c.m_findings;
 	std::stable_sort(out.begin(), out.end(), [project](const Finding &a, const Finding &b) {
@@ -795,6 +1011,7 @@ bool ProjectCheck::isForkKind(Kind kind)
 		case Kind::LabelsAndParts:
 		case Kind::OpenTerminals:
 		case Kind::WireProtection:
+		case Kind::Network:
 		case Kind::CabinetLayout:
 			return true;
 		default:
@@ -811,7 +1028,8 @@ QString ProjectCheck::forkTitle(Kind kind)
 		case Kind::TerminalStrips: return tr("Terminals without a terminal strip");
 		case Kind::LabelsAndParts: return tr("Devices without a label or part");
 		case Kind::OpenTerminals: return tr("Unconnected terminals");
-		case Kind::WireProtection: return tr("Wire cross-section and protection");
+		case Kind::WireProtection: return tr("Wire cross-section, protection and voltage drop");
+		case Kind::Network: return tr("IP addresses and PROFINET names");
 		case Kind::CabinetLayout: return tr("Cabinet layout");
 		default: return QString();
 	}
@@ -845,6 +1063,12 @@ QString ProjectCheck::forkToolTip(Kind kind)
 					  "In must not exceed Iz of the thinnest wire (EN 60204-1 table 6, PVC single "
 					  "cores in a duct, 40 °C). The rated current comes from rated_current_a, "
 					  "In= of the simulation or the designation (C16, 8 A).");
+		case Kind::Network:
+			return tr("Bus devices (element information ip_address, subnet_mask, network_name, "
+					  "profinet_name): an IP address that is no valid IPv4 address, used twice "
+					  "or outside the subnet of its network; a PROFINET device name against the "
+					  "rules (IEC 61158-6-10: labels a-z, 0-9 and - of at most 63 characters, "
+					  "240 in all, not port-xyz, not like an IP address) or used twice.");
 		case Kind::CabinetLayout:
 			return tr("The warnings of the cabinet layouts: devices outside their mounting "
 					  "surface, overlapping or without a size.");
@@ -869,6 +1093,7 @@ QString ProjectCheck::key(Kind kind)
 		case Kind::LabelsAndParts: return QStringLiteral("labels_and_parts");
 		case Kind::OpenTerminals: return QStringLiteral("open_terminals");
 		case Kind::WireProtection: return QStringLiteral("wire_protection");
+		case Kind::Network: return QStringLiteral("network");
 		case Kind::CabinetLayout: return QStringLiteral("cabinet_layout");
 	}
 	return QString();

@@ -71,6 +71,7 @@ class ProjectCheck
 			LabelsAndParts,    ///< devices without a label or a part number
 			OpenTerminals,     ///< terminals and fluid ports left open on a wired symbol
 			WireProtection,    ///< wires too thin for the protective device in front of them
+			Network,           ///< IP addresses and PROFINET device names: valid, unique, in the subnet
 			CabinetLayout      ///< the warnings of the cabinet layouts
 		};
 

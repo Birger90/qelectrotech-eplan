@@ -113,7 +113,7 @@ QList<ProjectCheck::Kind> ProjectCheck::kinds()
 				// Fork: the rules of "Check plan" (PlanCheck)
 			Kind::Links, Kind::PlcChannels, Kind::Cables, Kind::TerminalStrips,
 			Kind::LabelsAndParts, Kind::OpenTerminals, Kind::WireProtection,
-			Kind::CabinetLayout};
+			Kind::Network, Kind::CabinetLayout};
 }
 
 QString ProjectCheck::title(Kind kind)

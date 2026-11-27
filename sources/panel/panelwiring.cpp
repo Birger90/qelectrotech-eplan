@@ -136,6 +136,159 @@ struct Graph
 	}
 };
 
+	/// the free ways on the plate, for wires no duct takes: a grid of
+	/// PanelWiring::kGridMm, the devices are in the way; a step along wires
+	/// laid before costs less, so later wires follow them and form a bundle
+	/// (OpenECraft #275 does the same in 3D); a turn costs half a step
+class FreeGrid
+{
+public:
+	explicit FreeGrid(const QList<PanelDevice> &devices) : m_devices(devices)
+	{
+		QRectF all;
+		for (const PanelDevice &d : devices) all |= d.rect_mm.normalized();
+		if (all.isEmpty()) return;
+		m_step = PanelWiring::kGridMm;
+		while ((all.width() / m_step + 5) * (all.height() / m_step + 5) > 60000) m_step *= 2;
+		all.adjust(-2 * m_step, -2 * m_step, 2 * m_step, 2 * m_step);
+		m_origin = all.topLeft();
+		m_nx = int(std::ceil(all.width() / m_step)) + 1;
+		m_ny = int(std::ceil(all.height() / m_step)) + 1;
+		const int n = m_nx * m_ny;
+		m_blocked.fill(false, n);
+		m_h.fill(0, n); m_v.fill(0, n);
+		m_h_mm2.fill(0, n); m_v_mm2.fill(0, n);
+		for (const PanelDevice &d : devices) {
+			const QRectF r = d.rect_mm.normalized().adjusted(0.5, 0.5, -0.5, -0.5);
+			if (r.isEmpty()) continue;
+			for (int y = 0; y < m_ny; ++y)
+				for (int x = 0; x < m_nx; ++x)
+					if (r.contains(at(node(x, y)))) m_blocked[node(x, y)] = true;
+		}
+	}
+
+		/// lays one wire between two devices; its length device to device,
+		/// mm, or -1 when no free way joins them
+	double lay(int a, int b, double mm2)
+	{
+		const int from = entry(a), to = entry(b);
+		if (from < 0 || to < 0) return -1;
+		auto stub = [&](int device, int point) {
+			const QPointF c = m_devices.at(device).rect_mm.normalized().center(), p = at(point);
+			return qAbs(c.x() - p.x()) + qAbs(c.y() - p.y());
+		};
+		const double stubs = stub(a, from) + stub(b, to);
+		if (from == to) return stubs;
+			// states: point * 4 + direction (0 +x, 1 -x, 2 +y, 3 -y)
+		const int states = m_nx * m_ny * 4;
+		QVector<double> dist(states, kInf);
+		QVector<int> prev(states, -1);
+		using Item = std::pair<double, int>;
+		std::priority_queue<Item, std::vector<Item>, std::greater<Item>> queue;
+		for (int d = 0; d < 4; ++d) {dist[from * 4 + d] = 0; queue.push({0, from * 4 + d});}
+		static const int dx[] = {1, -1, 0, 0}, dy[] = {0, 0, 1, -1};
+		int end = -1;
+		while (!queue.empty()) {
+			const auto [cost, s] = queue.top();
+			queue.pop();
+			if (cost > dist[s]) continue;
+			const int p = s / 4, dir = s % 4;
+			if (p == to) {end = s; break;}
+			const int x = p % m_nx, y = p / m_nx;
+			for (int d = 0; d < 4; ++d) {
+				const int nx = x + dx[d], ny = y + dy[d];
+				if (nx < 0 || ny < 0 || nx >= m_nx || ny >= m_ny) continue;
+				const int q = node(nx, ny);
+				if (m_blocked.at(q) && q != to) continue;
+				const int used = d < 2 ? m_h.at(node(qMin(x, nx), y)) : m_v.at(node(x, qMin(y, ny)));
+				double step = m_step * (used > 0 ? PanelWiring::kBundleCost : 1.0);
+				if (d != dir) step += m_step / 2;
+				const int t = q * 4 + d;
+				if (cost + step < dist[t]) {dist[t] = cost + step; prev[t] = s; queue.push({cost + step, t});}
+			}
+		}
+		if (end < 0) return -1;
+		int steps = 0;
+		for (int s = end; prev[s] >= 0; s = prev[s]) {
+			const int p = s / 4, q = prev[s] / 4;
+			const int x = p % m_nx, y = p / m_nx, qx = q % m_nx, qy = q / m_nx;
+			if (y == qy) {const int e = node(qMin(x, qx), y); ++m_h[e]; m_h_mm2[e] += mm2;}
+			else {const int e = node(x, qMin(y, qy)); ++m_v[e]; m_v_mm2[e] += mm2;}
+			++steps;
+		}
+		return steps * m_step + stubs;
+	}
+
+		/// the straight runs of the free ways, the cable ties and the
+		/// thickest bundle into @p out
+	void bundles(PanelWiring &out) const
+	{
+		if (!m_nx) return;
+		auto scan = [&](bool horizontal) {
+			const int lines = horizontal ? m_ny : m_nx, along = horizontal ? m_nx - 1 : m_ny - 1;
+			for (int l = 0; l < lines; ++l) {
+				auto edge = [&](int i) {return horizontal ? node(i, l) : node(l, i);};
+				auto wires = [&](int i) {return horizontal ? m_h.at(edge(i)) : m_v.at(edge(i));};
+				auto mm2 = [&](int i) {return horizontal ? m_h_mm2.at(edge(i)) : m_v_mm2.at(edge(i));};
+				auto point = [&](int i) {return at(horizontal ? node(i, l) : node(l, i));};
+				for (int i = 0; i < along;) {
+					if (!wires(i)) {++i; continue;}
+					int j = i;
+					double most = 0;
+					while (j < along && wires(j) == wires(i)) most = qMax(most, mm2(j++));
+					PanelBundleRun run;
+					run.line_mm = QLineF(point(i), point(j));
+					run.wires = wires(i);
+					run.diameter_mm = std::sqrt(most / 0.75);
+					out.bundles << run;
+					if (run.wires >= 2) out.max_bundle_mm = qMax(out.max_bundle_mm, run.diameter_mm);
+					i = j;
+				}
+					// cable ties: along each stretch where two wires or more lie together
+				for (int i = 0; i < along;) {
+					if (wires(i) < 2) {++i; continue;}
+					int j = i;
+					while (j < along && wires(j) >= 2) ++j;
+					out.cable_ties += qMax(1, int(std::lround((j - i) * m_step / PanelWiring::kTieSpacingMm)));
+					i = j;
+				}
+			}
+		};
+		scan(true);
+		scan(false);
+	}
+
+private:
+	int node(int x, int y) const {return y * m_nx + x;}
+	QPointF at(int n) const {return m_origin + QPointF((n % m_nx) * m_step, (n / m_nx) * m_step);}
+		/// the free point nearest the outline of a device
+	int entry(int device)
+	{
+		if (m_entry.contains(device)) return m_entry.value(device);
+		const QRectF r = m_devices.at(device).rect_mm.normalized();
+		int best = -1;
+		double best_gap = kInf, best_centre = kInf;
+		for (int n = 0; n < m_nx * m_ny; ++n) {
+			if (m_blocked.at(n)) continue;
+			const QPointF p = at(n);
+			const double g = gap(QRectF(p, QSizeF(0, 0)), r);
+			const double c = QLineF(p, r.center()).length();
+			if (g < best_gap - 1e-6 || (g < best_gap + 1e-6 && c < best_centre)) {best = n; best_gap = g; best_centre = c;}
+		}
+		m_entry.insert(device, best);
+		return best;
+	}
+
+	const QList<PanelDevice> &m_devices;
+	double m_step = PanelWiring::kGridMm;
+	QPointF m_origin;
+	int m_nx = 0, m_ny = 0;
+	QVector<bool> m_blocked;
+	QVector<int> m_h, m_v;            ///< wires on the edge to the right / below of a point
+	QVector<double> m_h_mm2, m_v_mm2;
+	QHash<int, int> m_entry;
+};
+
 } // namespace
 
 /* ------------------------------------------------------------------ */
@@ -182,8 +335,6 @@ PanelWiring PanelWiring::route(const PanelLayout &layout)
 		ducts << Duct{line, qAbs(line.dx()) >= qAbs(line.dy()) ? r.adjusted(0, -half, 0, half)
 															 : r.adjusted(-half, 0, half, 0)};
 	}
-	if (ducts.isEmpty()) return out;
-
 		// the devices of this surface by what they stand for
 	const QList<PanelDevice> devices = layout.devices();
 	QHash<QString, int> by_key, by_label;
@@ -301,7 +452,7 @@ PanelWiring PanelWiring::route(const PanelLayout &layout)
 		}
 		const double d = outerDiameter(s);
 		net_mm2 << d * d;
-		for (int i : it.value()) entry(i);
+		if (!ducts.isEmpty()) for (int i : it.value()) entry(i);
 	}
 	QList<int> stretch_duct;
 	for (int k = 0; k < ducts.size(); ++k) {
@@ -324,35 +475,57 @@ PanelWiring PanelWiring::route(const PanelLayout &layout)
 	};
 	QVector<double> used(stretch_duct.size(), 0);
 	QVector<int> count(stretch_duct.size(), 0);
+	FreeGrid free(devices);
 	for (int n = 0; n < nets.size(); ++n) {
-		const QList<int> &net = nets.at(n);
-		QList<int> points;
-		for (int i : net) points << device_point.value(i);
-		QList<int> in_tree{points.first()};
-		QList<int> left = points.mid(1);
-		while (!left.isEmpty()) {
+		const QList<int> &net = nets.at(n);   // layout devices
+		QList<int> in_tree{net.first()};
+		QList<int> left = net.mid(1);
+		while (!ducts.isEmpty() && !left.isEmpty()) {
 			double best = kInf;
 			int bi = -1, bt = -1;
 			for (int t : std::as_const(in_tree)) {
-				from(t);
-				for (int j = 0; j < left.size(); ++j)
-					if (dist[t].at(left.at(j)) < best) {best = dist[t].at(left.at(j)); bi = j; bt = t;}
+				const int tp = device_point.value(t);
+				from(tp);
+				for (int j = 0; j < left.size(); ++j) {
+					const double d = dist[tp].at(device_point.value(left.at(j)));
+					if (d < best) {best = d; bi = j; bt = tp;}
+				}
 			}
-			if (bi < 0) {out.unrouted += int(left.size()); break;}
+			if (bi < 0) break;
 			const int target = left.takeAt(bi);
 			in_tree << target;
 			++out.wires;
 			out.length_mm += best;
-			for (int p = target; p != bt && p >= 0; p = prev_point[bt].at(p)) {
+			for (int p = device_point.value(target); p != bt && p >= 0; p = prev_point[bt].at(p)) {
 				const int s = prev_stretch[bt].at(p);
 				if (s >= 0) {used[s] += net_mm2.at(n); ++count[s];}
 			}
+		}
+			// what no duct joins: laid on the plate, the shortest free way,
+			// along the bundles laid before (Prim over the straight distances)
+		while (!left.isEmpty()) {
+			double best = kInf;
+			int bi = -1, bt = -1;
+			for (int t : std::as_const(in_tree))
+				for (int j = 0; j < left.size(); ++j) {
+					const QPointF a = devices.at(t).rect_mm.center(), b = devices.at(left.at(j)).rect_mm.center();
+					const double d = qAbs(a.x() - b.x()) + qAbs(a.y() - b.y());
+					if (d < best) {best = d; bi = j; bt = t;}
+				}
+			const int target = left.takeAt(bi);
+			in_tree << target;
+			const double length = free.lay(bt, target, net_mm2.at(n));
+			if (length < 0) {++out.unrouted; continue;}
+			++out.free_wires;
+			out.length_mm += length;
+			out.free_length_mm += length;
 		}
 	}
 	for (int s = 0; s < stretch_duct.size(); ++s) {
 		PanelDuctFill &f = out.ducts[stretch_duct.at(s)];
 		if (used.at(s) > f.used_mm2) {f.used_mm2 = used.at(s); f.wires = count.at(s);}
 	}
+	free.bundles(out);
 	return out;
 }
 
@@ -369,15 +542,26 @@ QStringList PanelWiring::warnings() const
 
 QString PanelWiring::summary() const
 {
-	if (ducts.isEmpty()) return QString();
-	const PanelDuctFill *full = nullptr;
-	for (const PanelDuctFill &f : ducts) if (!full || f.percent() > full->percent()) full = &f;
-	QString text = QStringLiteral("Kanäle: %1 Leitungen durch die Kanäle (%2 m)").arg(wires).arg(fmt(length_mm / 1000, 1));
-	if (full && full->used_mm2 > 0)
-		text += QStringLiteral(", am vollsten %1 mit %2 %").arg(full->name, fmt(full->percent()));
-	if (assumed_section) text += QStringLiteral(", %1 ohne Querschnitt (1,5 mm² angenommen)").arg(assumed_section);
-	if (unrouted) text += QStringLiteral(", %1 ohne Kanalweg").arg(unrouted);
-	return text;
+	if (ducts.isEmpty() && !free_wires && !unrouted) return QString();
+	QStringList parts;
+	if (!ducts.isEmpty()) {
+		const PanelDuctFill *full = nullptr;
+		for (const PanelDuctFill &f : ducts) if (!full || f.percent() > full->percent()) full = &f;
+		QString text = QStringLiteral("%1 Leitungen durch die Kanäle (%2 m)")
+						   .arg(wires).arg(fmt((length_mm - free_length_mm) / 1000, 1));
+		if (full && full->used_mm2 > 0)
+			text += QStringLiteral(", am vollsten %1 mit %2 %").arg(full->name, fmt(full->percent()));
+		parts << text;
+	}
+	if (free_wires) {
+		QString text = QStringLiteral("%1 Leitungen ohne Kanal auf der Platte gebündelt (%2 m")
+						   .arg(free_wires).arg(fmt(free_length_mm / 1000, 1));
+		if (cable_ties) text += QStringLiteral(", %1 Kabelbinder, Bündel bis %2 mm").arg(cable_ties).arg(fmt(max_bundle_mm));
+		parts << text + QLatin1Char(')');
+	}
+	if (assumed_section) parts << QStringLiteral("%1 ohne Querschnitt (1,5 mm² angenommen)").arg(assumed_section);
+	if (unrouted) parts << QStringLiteral("%1 ohne Weg (von Geräten eingeschlossen)").arg(unrouted);
+	return QStringLiteral("Verdrahtung: ") + parts.join(QStringLiteral(", "));
 }
 
 QJsonObject PanelWiring::toJson() const
@@ -391,8 +575,19 @@ QJsonObject PanelWiring::toJson() const
 								{QStringLiteral("used_mm2"), qRound(f.used_mm2 * 10) / 10.0},
 								{QStringLiteral("wires"), f.wires},
 								{QStringLiteral("percent"), qRound(f.percent() * 10) / 10.0}});
+	QJsonArray runs;
+	for (const PanelBundleRun &b : bundles)
+		runs.append(QJsonObject{{QStringLiteral("x1"), b.line_mm.x1()}, {QStringLiteral("y1"), b.line_mm.y1()},
+								{QStringLiteral("x2"), b.line_mm.x2()}, {QStringLiteral("y2"), b.line_mm.y2()},
+								{QStringLiteral("wires"), b.wires},
+								{QStringLiteral("diameter_mm"), qRound(b.diameter_mm * 10) / 10.0}});
 	return QJsonObject{{QStringLiteral("ducts"), list},
+					   {QStringLiteral("bundles"), runs},
 					   {QStringLiteral("wires"), wires},
+					   {QStringLiteral("free_wires"), free_wires},
+					   {QStringLiteral("free_length_mm"), qRound(free_length_mm)},
+					   {QStringLiteral("cable_ties"), cable_ties},
+					   {QStringLiteral("max_bundle_mm"), qRound(max_bundle_mm * 10) / 10.0},
 					   {QStringLiteral("unrouted"), unrouted},
 					   {QStringLiteral("assumed_section"), assumed_section},
 					   {QStringLiteral("length_mm"), qRound(length_mm)},

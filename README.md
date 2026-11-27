@@ -174,7 +174,9 @@
 >   flush to a free edge of a neighbour within 4 mm, on the rail or free on the plate (Shift: free).
 > - *Climate calculation...* (IEC/TR 60890 surfaces, power loss `power_loss_w` from the EDZ import, fan or cooling
 >   unit needed) and the duct fill of the wires of the schematic routed through the ducts (finding from 70 %, coloured
->   in the *Duct fill view*) also show in the layout check; formulas and sources in `FORMELN.md`.
+>   in the *Duct fill view*) also show in the layout check; formulas and sources in `FORMELN.md`. Wires no duct
+>   takes (a plate without ducts, or devices no duct joins) are laid on the plate as bundles: later wires follow
+>   the earlier ones, with the cable ties and the bundle diameter in the summary and the bundles drawn in the view.
 > - Devices are drawn with the manufacturer's panel layout drawing from the EPLAN Data Portal (by order
 >   number, cached in Documents/panel-templates/devices), which also gives their size.
 > - Mounting variants per part (`<drillingpatterns>`): on a DIN rail it leaves no hole, screwed it leaves its

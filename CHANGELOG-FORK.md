@@ -3,6 +3,16 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.57.0 – 27.11.2026 – Leitungen ohne Kanal als Bündel
+
+- **Verdrahtung ohne Kabelkanal:** Leitungen, die kein Kanal aufnimmt (Montageplatte ohne Kanäle oder Geräte, die
+  kein Kanal erreicht), werden jetzt auf der Platte verlegt statt nur als „ohne Kanalweg“ gezählt: auf einem
+  25-mm-Raster um die Geräte herum, der kürzeste Weg mit wenig Ecken, und ein Schritt entlang schon verlegter
+  Leitungen kostet nur ein Drittel, sodass sie sich zu Bündeln sammeln (Idee aus OpenECraft #275). Zusammenfassung
+  mit Länge, Kabelbindern (alle 150 mm, wo zwei Leitungen oder mehr zusammenliegen) und dickstem Bündel; die Bündel
+  erscheinen in *Kanalfüllgrad anzeigen*, die Skript-API `panelDuctFill` liefert sie als `bundles`. Formeln W6–W8 in
+  `FORMELN.md`.
+
 ## 1.56.1 – 27.11.2026 – Hauptrepo nachgezogen
 
 - 35 Commits aus dem Hauptrepo: Prüfungen je Projekt abschalten und Befunde akzeptieren, neue Prüfungen (Leitung in

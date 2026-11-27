@@ -19,6 +19,7 @@
 #define PANELWIRING_H
 
 #include <QJsonObject>
+#include <QLineF>
 #include <QList>
 #include <QString>
 #include <QStringList>
@@ -61,13 +62,29 @@ struct PanelDuctFill
 	Wires to devices off this surface (motors, field devices) are not
 	counted; neither are cables and the wiring of a device to itself.
 */
+/**
+	@brief One straight run of a bundle: wires without a duct, laid on the
+	mounting plate along a grid and tied together where they share a way.
+*/
+struct PanelBundleRun
+{
+	QLineF line_mm;             ///< on the surface
+	int wires = 0;
+	double diameter_mm = 0;     ///< sqrt(sum d² / 0.75): round wires packed in a bundle
+};
+
 struct PanelWiring
 {
 	QList<PanelDuctFill> ducts;
-	int wires = 0;              ///< wires routed
-	int unrouted = 0;           ///< wires between devices no duct joins
+	QList<PanelBundleRun> bundles;  ///< the free ways, wires without a duct
+	int wires = 0;              ///< wires routed through ducts
+	int free_wires = 0;         ///< wires laid freely on the plate (no duct, or no duct joins them)
+	int unrouted = 0;           ///< wires with no way at all (enclosed by devices)
 	int assumed_section = 0;    ///< wires without a cross-section in the schematic
-	double length_mm = 0;       ///< the routed wires together, device to device
+	int cable_ties = 0;         ///< on the bundles: one each 150 mm where two wires or more share a way
+	double length_mm = 0;       ///< the routed wires together, device to device, ducts and free
+	double free_length_mm = 0;  ///< the free ones of them
+	double max_bundle_mm = 0;   ///< thickest bundle
 
 		/// one finding per duct filled to the limit or above, like the layout check
 	QStringList warnings() const;
@@ -80,6 +97,9 @@ struct PanelWiring
 	static constexpr double kWarnPercent = 70;      ///< a duct this full is a finding
 	static constexpr double kHintPercent = 56;      ///< 80 % of the limit: shown orange
 	static constexpr double kDefaultSection = 1.5;  ///< mm², for conductors without one
+	static constexpr double kGridMm = 25;           ///< grid of the free ways
+	static constexpr double kBundleCost = 0.35;     ///< a step along a bundle against a free one
+	static constexpr double kTieSpacingMm = 150;    ///< cable ties along a bundle
 };
 
 #endif // PANELWIRING_H

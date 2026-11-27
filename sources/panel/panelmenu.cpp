@@ -185,6 +185,7 @@ class PanelHoleOverlay : public QGraphicsObject
 			m_outlines.clear();
 			m_bad.clear();
 			m_fill.clear();
+			m_runs.clear();
 			m_rect = QRectF();
 			if (!m_diagram) return;
 			for (QetShapeItem *surface : PanelLayout::surfaces(m_diagram))
@@ -192,9 +193,15 @@ class PanelHoleOverlay : public QGraphicsObject
 				const PanelLayout layout(surface);
 				const double k = layout.mmPerUnit() > 0 ? layout.mmPerUnit() : 1;
 				m_rect |= sceneRectOf(surface).adjusted(-20, -20, 20, 20);
-				if (m_show_fill && surface->panelData().face.isEmpty())
-					for (const PanelDuctFill &f : PanelWiring::route(layout).ducts)
+				if (m_show_fill && surface->panelData().face.isEmpty()) {
+					const PanelWiring wiring = PanelWiring::route(layout);
+					for (const PanelDuctFill &f : wiring.ducts)
 						if (f.duct) m_fill << Fill{sceneRectOf(f.duct), f.percent()};
+						// the wires without a duct, as bundles on the plate
+					for (const PanelBundleRun &b : wiring.bundles)
+						m_runs << Run{QLineF(layout.toScene(b.line_mm.p1()), layout.toScene(b.line_mm.p2())),
+									  qMax(1.0, b.diameter_mm / k), b.wires};
+				}
 				if (!m_show_holes) continue;
 				for (const PanelHole &h : layout.holes()) {
 					Hole s;
@@ -227,6 +234,11 @@ class PanelHoleOverlay : public QGraphicsObject
 		void paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *) override
 		{
 			p->setRenderHint(QPainter::Antialiasing, true);
+			for (const Run &r : std::as_const(m_runs)) {
+				p->setPen(QPen(r.wires >= 2 ? QColor(70, 110, 200, 170) : QColor(110, 110, 110, 150),
+							   r.width, Qt::SolidLine, Qt::RoundCap));
+				p->drawLine(r.line);
+			}
 			for (const Fill &f : std::as_const(m_fill)) {
 				const QColor c = f.percent >= PanelWiring::kWarnPercent ? QColor(220, 40, 40)
 							   : f.percent >= PanelWiring::kHintPercent ? QColor(240, 150, 30)
@@ -278,9 +290,11 @@ class PanelHoleOverlay : public QGraphicsObject
 	private:
 		struct Hole {QPointF centre; double w = 0, h = 0, angle = 0; bool round = true, thread = false;};
 		struct Fill {QRectF rect; double percent = 0;};
+		struct Run {QLineF line; double width = 1; int wires = 0;};
 		QPointer<Diagram> m_diagram;
 		bool m_show_holes = true, m_show_fill = false;
 		QList<Fill> m_fill;
+		QList<Run> m_runs;
 		QList<Hole> m_holes;
 		QList<QRectF> m_outlines;
 		QList<QRectF> m_bad;

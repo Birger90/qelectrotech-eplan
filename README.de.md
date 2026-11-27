@@ -203,6 +203,9 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
 - *Klimaberechnung…* (Flächen nach IEC/TR 60890, Verlustleistung `power_loss_w` aus dem EDZ-Import, nötiger Lüfter
   oder Kühlgerät) und der Kanalfüllgrad der Schaltplan-Leitungen auf dem kürzesten Weg durch die Kanäle (Befund ab
   70 %, farbig in *Kanalfüllgrad anzeigen*) stehen auch in der Aufbauprüfung; Formeln und Quellen in `FORMELN.md`.
+  Leitungen ohne Kanal (Platte ohne Kanäle oder Geräte, die kein Kanal erreicht) werden als Bündel auf der Platte
+  verlegt: spätere Leitungen folgen den früheren; Kabelbinder und Bündeldurchmesser stehen in der Zusammenfassung,
+  die Bündel in der Anzeige.
 - Geräte erscheinen mit der Herstellergrafik (Schaltschrankaufbau) aus dem EPLAN Data Portal (über die
   Bestellnummer, zwischengespeichert in Dokumente\panel-templates\devices); sie liefert auch die Maße.
 - Montagevarianten je Artikel (`<drillingpatterns>`): auf der Hutschiene keine Bohrung, geschraubt das Bohrbild; der

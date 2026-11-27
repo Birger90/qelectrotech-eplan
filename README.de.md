@@ -272,6 +272,14 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
   gezeichnet hat, mit Farbe, Querschnitt und Potential; Unterbrechungspunkte werden verknüpfte Verweispfeile, Spulen
   und Kontakte Master und Slave; Rahmen, Schriftfeld und Strukturkästen bleiben. Daneben Geräteliste,
   Verbindungsliste und die 3D-Bauräume (`.e3d`). Ohne Python kommen die Seiten als Bild (`--import-epdz export.epdz`).
+- Datei > *WSCAD-Projekt importieren*: ein WSCAD-Projektordner (ELECTRIX/SUITE ab 6.x, `Database/WSCAD6.db` und
+  die `.wsELD`-Schaltplanseiten) wird ein bearbeitbares QET-Projekt – jede Seite ein Blatt mit WSCAD-Rahmen und
+  Schriftfeld, jedes Symbol ein Bauteil mit seiner Grafik, seinen Anschlüssen, BMK, Artikel und Funktionstext;
+  die Verbindungsliste wird zu Leitungen, die so laufen, wie WSCAD sie zeichnet (mit Farbe, Querschnitt,
+  Potential); Pfeile mit Ziel werden verknüpfte Verweise, Spulen und Kontakte Master und Slave, SPS-Kanäle zeigen
+  ihre Adressen (E0.7, AEW1); Texte in WSCADs Schrift Roboto Mono. Artikel, die die Firmensammlung noch nicht kennt,
+  kommen als Bauteil nach Hersteller/Kategorie/Bestellnummer. Daneben Geräte- und Verbindungsliste (CSV). Format:
+  [tools/wscad_import/FORMATBESCHREIBUNG_WSCAD.md](tools/wscad_import/FORMATBESCHREIBUNG_WSCAD.md).
 - Claude-Assistent als Andockfenster (Knopf *Claude* in der Hauptwerkzeugleiste): liest und ändert das offene Projekt
   über den MCP-Server unten; Bilder und PDFs lassen sich mitschicken. Mit API-Schlüssel oder in eigenen Builds
   (`-DQET_CLAUDE_KONTO=ON`) über das eigene Claude-Konto.

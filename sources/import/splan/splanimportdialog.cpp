@@ -43,11 +43,26 @@
 #include <QVBoxLayout>
 
 namespace {
-	const char DIR_KEY[]     = "splanimport/dir";
-	const char PYTHON_KEY[]  = "splanimport/python";
-	const char SCRIPT_KEY[]  = "splanimport/script";
-	const char PDF_KEY[]     = "splanimport/pdf";
-	const char SCRIPT_NAME[] = "splan_nach_qet.py";
+	using Kind = SplanImportDialog::Kind;
+
+	/// the settings of each import apart: "splanimport/dir", "wscadimport/dir" ...
+	QString key(Kind kind, const char *name)
+	{
+		return QStringLiteral("%1/%2").arg(kind == Kind::Wscad ? QStringLiteral("wscadimport")
+								      : QStringLiteral("splanimport"),
+						   QLatin1String(name));
+	}
+
+	QString scriptName(Kind kind)
+	{
+		return kind == Kind::Wscad ? QStringLiteral("wscad_nach_qet.py") : QStringLiteral("splan_nach_qet.py");
+	}
+
+	/// the folder of the program, beside an installed QElectroTech and in tools/
+	QString scriptFolder(Kind kind)
+	{
+		return kind == Kind::Wscad ? QStringLiteral("wscad_import/") : QStringLiteral("splan_import/");
+	}
 
 	/// what the program needs besides the arguments: this QElectroTech
 	/// for its own runs, the collections the user set, UTF-8 output
@@ -83,34 +98,45 @@ namespace {
 	}
 }
 
-SplanImportDialog::SplanImportDialog(QWidget *parent) :
-	QDialog(parent)
+SplanImportDialog::SplanImportDialog(QWidget *parent, Kind kind) :
+	QDialog(parent),
+	m_kind(kind)
 {
-	setWindowTitle(tr("Import an sPlan schematic"));
+	const bool wscad = m_kind == Kind::Wscad;
+	setWindowTitle(wscad ? tr("Import a WSCAD project") : tr("Import an sPlan schematic"));
 	setAcceptDrops(true);
 	resize(760, 560);
 
-	auto *intro = new QLabel(tr("Reads an sPlan 8 schematic (.spl8) and draws it anew as a QElectroTech "
-				    "project: the same devices and connections on the grid, with cross references "
-				    "between coils and contacts. What the schematic leaves open is listed in "
-				    "Offene_Fragen.txt next to the project."), this);
+	auto *intro = new QLabel(wscad
+		? tr("Reads a WSCAD project (the project folder with Database/WSCAD6.db and the .wsELD "
+		     "schematic pages, WSCAD ELECTRIX / SUITE 6 and later) and turns it into an editable "
+		     "QElectroTech project: every schematic page a folio with its frame and title block, "
+		     "every symbol a part with its terminals, the wires of the WSCAD connection list, "
+		     "linked cross references and coil/contact links. Device and wire lists (CSV) are "
+		     "written next to the project.")
+		: tr("Reads an sPlan 8 schematic (.spl8) and draws it anew as a QElectroTech "
+		     "project: the same devices and connections on the grid, with cross references "
+		     "between coils and contacts. What the schematic leaves open is listed in "
+		     "Offene_Fragen.txt next to the project."), this);
 	intro->setWordWrap(true);
 
 	auto *form = new QFormLayout;
 	QPushButton *source_button = nullptr, *target_button = nullptr,
 		*script_button = nullptr, *python_button = nullptr;
-	m_source = pathRow(this, form, tr("sPlan schematic (.spl8):"), &source_button);
+	m_source = pathRow(this, form, wscad ? tr("WSCAD project folder:") : tr("sPlan schematic (.spl8):"),
+			   &source_button);
 	m_target = pathRow(this, form, tr("Save as:"), &target_button);
 
 	QSettings settings;
-	m_pdf = new QCheckBox(tr("Also write a PDF and a comparison with the original"), this);
-	m_pdf->setChecked(settings.value(PDF_KEY, false).toBool());
+	m_pdf = new QCheckBox(wscad ? tr("Also write a PDF")
+				    : tr("Also write a PDF and a comparison with the original"), this);
+	m_pdf->setChecked(settings.value(key(m_kind, "pdf"), false).toBool());
 	form->addRow(QString(), m_pdf);
 
 	m_script = pathRow(this, form, tr("Import program:"), &script_button);
-	m_script->setText(QDir::toNativeSeparators(findScript(QCoreApplication::applicationDirPath())));
+	m_script->setText(QDir::toNativeSeparators(findScript(QCoreApplication::applicationDirPath(), m_kind)));
 	m_python = pathRow(this, form, tr("Python:"), &python_button);
-	m_python->setText(settings.value(PYTHON_KEY).toString());
+	m_python->setText(settings.value(key(m_kind, "python")).toString());
 	m_python->setPlaceholderText(tr("found when the import starts"));
 
 	m_status = new QLabel(this);
@@ -151,7 +177,7 @@ SplanImportDialog::SplanImportDialog(QWidget *parent) :
 	connect(python_button, &QPushButton::clicked, this, &SplanImportDialog::choosePython);
 	connect(m_source, &QLineEdit::textChanged, this, [this]() {
 		if (!m_target_edited)
-			m_target->setText(QDir::toNativeSeparators(defaultTarget(m_source->text().trimmed())));
+			m_target->setText(QDir::toNativeSeparators(defaultTarget(m_source->text().trimmed(), m_kind)));
 		updateButtons();
 	});
 	connect(m_target, &QLineEdit::textEdited, this, [this]() { m_target_edited = true; });
@@ -173,20 +199,20 @@ SplanImportDialog::~SplanImportDialog()
 }
 
 /**
-	The program in this order: the environment variable QET_SPLAN_IMPORT,
-	the path chosen earlier, next to an installed QElectroTech
-	(splan_import/), and in the source tree a build/deploy folder lies in
-	(tools/splan_import/).
+	The program in this order: the environment variable QET_SPLAN_IMPORT
+	(QET_WSCAD_IMPORT), the path chosen earlier, next to an installed
+	QElectroTech (splan_import/, wscad_import/), and in the source tree a
+	build/deploy folder lies in (tools/splan_import/, tools/wscad_import/).
 */
-QString SplanImportDialog::findScript(const QString &application_dir)
+QString SplanImportDialog::findScript(const QString &application_dir, Kind kind)
 {
 	QStringList candidates;
-	const QString env = qEnvironmentVariable("QET_SPLAN_IMPORT").trimmed();
+	const QString env = qEnvironmentVariable(kind == Kind::Wscad ? "QET_WSCAD_IMPORT" : "QET_SPLAN_IMPORT").trimmed();
 	if (!env.isEmpty()) candidates << env;
-	const QString chosen = QSettings().value(SCRIPT_KEY).toString();
+	const QString chosen = QSettings().value(key(kind, "script")).toString();
 	if (!chosen.isEmpty()) candidates << chosen;
 	const QDir app(application_dir);
-	const QString tail = QStringLiteral("splan_import/") + SCRIPT_NAME;
+	const QString tail = scriptFolder(kind) + scriptName(kind);
 	candidates << app.filePath(tail)
 		   << app.filePath(QStringLiteral("../") + tail)
 		   << app.filePath(QStringLiteral("../share/qelectrotech/") + tail)
@@ -199,22 +225,48 @@ QString SplanImportDialog::findScript(const QString &application_dir)
 	return QString();
 }
 
-QString SplanImportDialog::defaultTarget(const QString &source)
+QString SplanImportDialog::defaultTarget(const QString &source, Kind kind)
 {
 	if (source.isEmpty()) return QString();
+	static const QRegularExpression unsafe(QStringLiteral("[^A-Za-z0-9ÄÖÜäöüß_.+-]+"));
+	if (kind == Kind::Wscad) {
+		const QString folder = wscadProjectFolder(source);
+		if (folder.isEmpty()) return QString();
+		QString name = QDir(folder).dirName();
+		name.replace(unsafe, QStringLiteral("_"));
+		return QDir(folder).filePath(QStringLiteral("QET/") + name + QStringLiteral("_WSCAD_Import.qet"));
+	}
 	const QFileInfo fi(source);
 	QString name = fi.completeBaseName();
-	static const QRegularExpression unsafe(QStringLiteral("[^A-Za-z0-9ÄÖÜäöüß_.+-]+"));
 	name.replace(unsafe, QStringLiteral("_"));
 	return QDir(fi.absolutePath()).filePath(QStringLiteral("QET/") + name + QStringLiteral(".qet"));
 }
 
-QStringList SplanImportDialog::arguments(const QString &script, const QString &source,
-					 const QString &target, bool pdf)
+/**
+	A WSCAD project is a folder with Database/WSCAD6.db; @p path may be the
+	folder, a page file in it (.wsELD …) or the database itself.
+*/
+QString SplanImportDialog::wscadProjectFolder(const QString &path)
 {
+	if (path.isEmpty()) return QString();
+	const QFileInfo fi(path);
+	QDir dir = fi.isDir() ? QDir(fi.absoluteFilePath()) : fi.absoluteDir();
+	if (dir.dirName().compare(QStringLiteral("Database"), Qt::CaseInsensitive) == 0
+	    && !QFileInfo(dir.filePath(QStringLiteral("Database/WSCAD6.db"))).isFile())
+		dir.cdUp();
+	if (!QFileInfo(dir.filePath(QStringLiteral("Database/WSCAD6.db"))).isFile()) return QString();
+	return QDir::cleanPath(dir.absolutePath());
+}
+
+QStringList SplanImportDialog::arguments(const QString &script, const QString &source,
+					 const QString &target, bool pdf, Kind kind)
+{
+	const QString from = kind == Kind::Wscad ? wscadProjectFolder(source) : source;
 	QStringList args{QStringLiteral("-u"), QDir::toNativeSeparators(script),
-			 QDir::toNativeSeparators(source), QDir::toNativeSeparators(target)};
-	if (pdf) {
+			 QDir::toNativeSeparators(from.isEmpty() ? source : from), QDir::toNativeSeparators(target)};
+	if (pdf && kind == Kind::Wscad) {
+		args << QStringLiteral("--pdf");
+	} else if (pdf) {
 		args << QStringLiteral("--pdf");
 		// a PDF printed from sPlan next to the schematic as <name>.pdf: compare with it
 		const QFileInfo fi(source);
@@ -235,14 +287,19 @@ QString SplanImportDialog::resultFromOutput(const QString &output)
 	return result;
 }
 
-QString SplanImportDialog::progressText(const QString &line, int *percent)
+QString SplanImportDialog::progressText(const QString &line, int *percent, Kind kind)
 {
 	static const QRegularExpression progress(QStringLiteral("^FORTSCHRITT (\\d+) (\\w+)\\s*$"));
 	const auto m = progress.match(line);
 	if (!m.hasMatch()) return QString();
 	if (percent) *percent = qBound(0, m.captured(1).toInt(), 100);
 	const QString step = m.captured(2);
-	if (step == QLatin1String("lesen"))     return tr("Reading the sPlan schematic");
+	if (step == QLatin1String("lesen"))
+		return kind == Kind::Wscad ? tr("Reading the WSCAD project") : tr("Reading the sPlan schematic");
+	if (step == QLatin1String("seiten"))       return tr("Reading the schematic pages and their symbols");
+	if (step == QLatin1String("verweise"))     return tr("Pairing the cross reference arrows");
+	if (step == QLatin1String("verbindungen")) return tr("Drawing the wires of the connection list");
+	if (step == QLatin1String("listen"))       return tr("Writing the device and wire lists");
 	if (step == QLatin1String("blatt"))     return tr("Recognising devices and connections, laying out the sheets");
 	if (step == QLatin1String("schreiben")) return tr("Writing the QElectroTech project");
 	if (step == QLatin1String("pruefen"))   return tr("Checking and tidying the layout");
@@ -253,9 +310,16 @@ QString SplanImportDialog::progressText(const QString &line, int *percent)
 
 bool SplanImportDialog::chooseSource()
 {
-	QString dir = QSettings().value(DIR_KEY).toString();
+	QString dir = QSettings().value(key(m_kind, "dir")).toString();
 	if (!m_source->text().trimmed().isEmpty())
 		dir = QFileInfo(m_source->text().trimmed()).absolutePath();
+	if (m_kind == Kind::Wscad) {
+		const QString folder = QFileDialog::getExistingDirectory(this,
+			tr("Choose the WSCAD project folder (with Database/WSCAD6.db)"), dir);
+		if (folder.isEmpty()) return false;
+		setSource(folder);
+		return true;
+	}
 	const QString path = QFileDialog::getOpenFileName(this, tr("Import an sPlan schematic"), dir,
 		tr("sPlan 8 schematics (*.spl8);;All files (*)"));
 	if (path.isEmpty()) return false;
@@ -265,14 +329,14 @@ bool SplanImportDialog::chooseSource()
 
 void SplanImportDialog::setSource(const QString &path)
 {
-	QSettings().setValue(DIR_KEY, QFileInfo(path).absolutePath());
+	QSettings().setValue(key(m_kind, "dir"), QFileInfo(path).absolutePath());
 	m_source->setText(QDir::toNativeSeparators(path));
 }
 
 void SplanImportDialog::chooseTarget()
 {
 	QString start = m_target->text().trimmed();
-	if (start.isEmpty()) start = defaultTarget(m_source->text().trimmed());
+	if (start.isEmpty()) start = defaultTarget(m_source->text().trimmed(), m_kind);
 	const QString path = QFileDialog::getSaveFileName(this, tr("Save the imported project as"), start,
 		tr("QElectroTech projects (*.qet)"));
 	if (path.isEmpty()) return;
@@ -284,9 +348,9 @@ void SplanImportDialog::chooseTarget()
 void SplanImportDialog::chooseScript()
 {
 	const QString path = QFileDialog::getOpenFileName(this, tr("Where is the import program?"),
-		m_script->text().trimmed(), tr("Import program (%1)").arg(QString::fromLatin1(SCRIPT_NAME)));
+		m_script->text().trimmed(), tr("Import program (%1)").arg(scriptName(m_kind)));
 	if (path.isEmpty()) return;
-	QSettings().setValue(SCRIPT_KEY, path);
+	QSettings().setValue(key(m_kind, "script"), path);
 	m_script->setText(QDir::toNativeSeparators(path));
 }
 
@@ -309,15 +373,19 @@ void SplanImportDialog::updateButtons()
 	const QString source = m_source->text().trimmed();
 	QString missing;
 	if (source.isEmpty())
-		missing = tr("Choose the sPlan schematic (.spl8).");
-	else if (!QFileInfo(source).isFile())
+		missing = m_kind == Kind::Wscad ? tr("Choose the WSCAD project folder.")
+						: tr("Choose the sPlan schematic (.spl8).");
+	else if (m_kind == Kind::Wscad && wscadProjectFolder(source).isEmpty())
+		missing = tr("%1 is not a WSCAD project folder (Database/WSCAD6.db is missing).").arg(source);
+	else if (m_kind == Kind::Splan && !QFileInfo(source).isFile())
 		missing = tr("The sPlan schematic %1 does not exist.").arg(source);
 	else if (m_target->text().trimmed().isEmpty())
 		missing = tr("Choose where the QElectroTech project is to be saved.");
 	else if (!QFileInfo(m_script->text().trimmed()).isFile())
 		missing = tr("The import program (%1) was not found. Choose it with \"Change…\".")
-			.arg(QString::fromLatin1(SCRIPT_NAME));
-	if (!running && !missing.isEmpty()) m_status->setText(missing);
+			.arg(scriptName(m_kind));
+	// a hint about a missing input goes once the input is there
+	if (!running) m_status->setText(missing);
 	m_start->setEnabled(!running && missing.isEmpty());
 	m_close->setText(running ? tr("Cancel") : tr("Close"));
 	const QList<QWidget *> inputs{m_source, m_target, m_script, m_python, m_pdf};
@@ -325,14 +393,18 @@ void SplanImportDialog::updateButtons()
 }
 
 /**
-	Whether @p python imports the program with everything it needs (Pillow
-	for the pictures, pymupdf for the comparison PDF).
+	Whether @p python imports the program with everything it needs (sPlan:
+	Pillow for the pictures, pymupdf for the comparison PDF; WSCAD:
+	cryptography for the pages, pymupdf for the pictures, fontTools for the
+	text widths).
 */
 bool SplanImportDialog::pythonRuns(const QString &python, const QString &script, QString *error)
 {
 	const QString dir = QFileInfo(script).absolutePath();
-	const QString code = QStringLiteral("import sys; sys.path[:0] = [r'%1']; import splan_nach_qet, PIL, pymupdf")
-		.arg(QDir::toNativeSeparators(dir));
+	const QString modules = m_kind == Kind::Wscad ? QStringLiteral("wscad_nach_qet, cryptography, pymupdf, fontTools")
+						       : QStringLiteral("splan_nach_qet, PIL, pymupdf");
+	const QString code = QStringLiteral("import sys; sys.path[:0] = [r'%1']; import %2")
+		.arg(QDir::toNativeSeparators(dir), modules);
 	QProcess p;
 	p.setProcessEnvironment(importEnvironment());
 	p.setWorkingDirectory(dir);
@@ -401,8 +473,11 @@ QString SplanImportDialog::usablePython(const QString &script)
 	}
 	m_log->appendPlainText(tr("No Python runs the import program:") + QLatin1Char('\n')
 			       + reasons.join(QLatin1Char('\n')) + QLatin1Char('\n')
-			       + tr("Install what is missing, e.g. \"py -m pip install pillow pymupdf\", "
-				    "or choose another Python."));
+			       + (m_kind == Kind::Wscad
+				  ? tr("Install what is missing, e.g. \"py -m pip install cryptography pymupdf fonttools\", "
+				       "or choose another Python.")
+				  : tr("Install what is missing, e.g. \"py -m pip install pillow pymupdf\", "
+				       "or choose another Python.")));
 	return QString();
 }
 
@@ -448,8 +523,8 @@ void SplanImportDialog::start()
 	m_python->setText(QDir::toNativeSeparators(python));
 
 	QSettings settings;
-	settings.setValue(PYTHON_KEY, python);
-	settings.setValue(PDF_KEY, m_pdf->isChecked());
+	settings.setValue(key(m_kind, "python"), python);
+	settings.setValue(key(m_kind, "pdf"), m_pdf->isChecked());
 
 	m_process = new QProcess(this);
 	m_process->setProcessEnvironment(importEnvironment());
@@ -465,7 +540,7 @@ void SplanImportDialog::start()
 		updateButtons();
 		m_status->setText(tr("The import did not start."));
 	});
-	const QStringList args = arguments(script, source, target, m_pdf->isChecked());
+	const QStringList args = arguments(script, source, target, m_pdf->isChecked(), m_kind);
 	m_log->appendPlainText(QStringLiteral("> %1 %2").arg(QDir::toNativeSeparators(python), args.join(QLatin1Char(' '))));
 	m_process->start(python, args);
 	updateButtons();
@@ -483,7 +558,7 @@ void SplanImportDialog::readOutput()
 	for (QString line : lines) {
 		line.remove(QLatin1Char('\r'));
 		int percent = 0;
-		const QString step = progressText(line, &percent);
+		const QString step = progressText(line, &percent, m_kind);
 		if (!step.isEmpty()) {
 			m_progress->setValue(percent);
 			m_status->setText(step);
@@ -502,7 +577,7 @@ void SplanImportDialog::processFinished(int exit_code, QProcess::ExitStatus stat
 		m_pending.clear();
 		for (const QString &line : rest.split(QLatin1Char('\n'), Qt::SkipEmptyParts)) {
 			int percent = 0;
-			if (progressText(line.trimmed(), &percent).isEmpty()) {
+			if (progressText(line.trimmed(), &percent, m_kind).isEmpty()) {
 				m_output += line + QLatin1Char('\n');
 				m_log->appendPlainText(line);
 			} else {
@@ -541,13 +616,16 @@ void SplanImportDialog::reject()
 void SplanImportDialog::dragEnterEvent(QDragEnterEvent *event)
 {
 	const auto urls = event->mimeData()->urls();
-	if (!m_process && urls.size() == 1 && urls.first().isLocalFile()
-	    && urls.first().toLocalFile().endsWith(QStringLiteral(".spl8"), Qt::CaseInsensitive))
+	if (m_process || urls.size() != 1 || !urls.first().isLocalFile()) return;
+	const QString path = urls.first().toLocalFile();
+	if (m_kind == Kind::Wscad ? !wscadProjectFolder(path).isEmpty()
+				  : path.endsWith(QStringLiteral(".spl8"), Qt::CaseInsensitive))
 		event->acceptProposedAction();
 }
 
 void SplanImportDialog::dropEvent(QDropEvent *event)
 {
-	setSource(event->mimeData()->urls().first().toLocalFile());
+	const QString path = event->mimeData()->urls().first().toLocalFile();
+	setSource(m_kind == Kind::Wscad ? wscadProjectFolder(path) : path);
 	event->acceptProposedAction();
 }

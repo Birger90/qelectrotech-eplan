@@ -31,44 +31,60 @@ class QProgressBar;
 class QPushButton;
 
 /**
-	@brief Dialog of "File > Import sPlan schematic": turns an sPlan 8
-	schematic (.spl8, Abacom) into a QElectroTech project that is drawn
-	anew: the same devices and connections, laid out on the grid.
+	@brief Dialog of the imports that a Python program translates:
+	- "File > Import sPlan schematic": turns an sPlan 8 schematic (.spl8,
+	  Abacom) into a QElectroTech project that is drawn anew: the same
+	  devices and connections, laid out on the grid
+	  (tools/splan_import/splan_nach_qet.py);
+	- "File > Import WSCAD project": turns a WSCAD project folder
+	  (Database/WSCAD6.db and the .wsELD schematic pages, WSCAD ELECTRIX /
+	  SUITE 6.x and later) into an editable QElectroTech project with the
+	  same sheets, symbols, wires and cross references
+	  (tools/wscad_import/wscad_nach_qet.py).
 
-	The translation is the Python program
-	tools/splan_import/splan_nach_qet.py; the dialog finds it and a Python
-	that can run it, starts it as a QProcess, moves the progress bar with
-	its FORTSCHRITT lines and hands back the written .qet, which the editor
-	then opens.
+	The dialog finds the program and a Python that can run it, starts it as
+	a QProcess, moves the progress bar with its FORTSCHRITT lines and hands
+	back the written .qet, which the editor then opens. Both imports share
+	this one dialog; Kind picks the texts, the program and the settings.
 */
 class SplanImportDialog : public QDialog
 {
 	Q_OBJECT
 
 	public:
-		explicit SplanImportDialog(QWidget *parent = nullptr);
+		/// which import the dialog runs
+		enum class Kind { Splan, Wscad };
+
+		explicit SplanImportDialog(QWidget *parent = nullptr, Kind kind = Kind::Splan);
 		~SplanImportDialog() override;
 
-		/// asks for the schematic; false when the user cancels
+		/// asks for the schematic (sPlan) or the project folder (WSCAD); false
+		/// when the user cancels
 		bool chooseSource();
-		/// takes @p path as the schematic to import
+		/// takes @p path as the schematic or project to import
 		void setSource(const QString &path);
 		/// the .qet the last import wrote, empty while there is none
 		QString resultPath() const { return m_result; }
 
-		/// splan_nach_qet.py, or empty when it is nowhere to be found
-		static QString findScript(const QString &application_dir);
-		/// <folder of the schematic>/QET/<name>.qet, as the program names it
-		static QString defaultTarget(const QString &source);
+		/// splan_nach_qet.py or wscad_nach_qet.py, or empty when it is nowhere
+		/// to be found
+		static QString findScript(const QString &application_dir, Kind kind = Kind::Splan);
+		/// sPlan: <folder of the schematic>/QET/<name>.qet; WSCAD:
+		/// <project folder>/QET/<project>_WSCAD_Import.qet, as the programs
+		/// name them
+		static QString defaultTarget(const QString &source, Kind kind = Kind::Splan);
 		/// the command line for the program
 		static QStringList arguments(const QString &script, const QString &source,
-					     const QString &target, bool pdf);
+					     const QString &target, bool pdf, Kind kind = Kind::Splan);
 		/// the path after "fertig: " in the program's output, or empty
 		static QString resultFromOutput(const QString &output);
 		/// the text for a progress line "FORTSCHRITT <percent> <step>" of the
 		/// program, in the language of QElectroTech; @p percent gets the
 		/// percentage. Empty when @p line is no progress line.
-		static QString progressText(const QString &line, int *percent);
+		static QString progressText(const QString &line, int *percent, Kind kind = Kind::Splan);
+		/// WSCAD: the project folder of @p path (the folder itself, a page
+		/// file in it or Database/WSCAD6.db), empty when it is none
+		static QString wscadProjectFolder(const QString &path);
 
 	protected:
 		void reject() override;
@@ -101,6 +117,7 @@ class SplanImportDialog : public QDialog
 		QString m_pending;	///< output after the last line break
 		QString m_result;
 		bool m_target_edited = false;	///< the user chose the target themself
+		Kind m_kind = Kind::Splan;
 };
 
 #endif // SPLANIMPORTDIALOG_H

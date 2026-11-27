@@ -27,6 +27,7 @@ class QDir;
 class QFile;
 class QAbstractItemModel;
 class QGraphicsItem;
+class QIODevice;
 
 /**
  *This namespace contain some function to use xml with QET.
@@ -55,6 +56,16 @@ namespace QETXML
 	bool writeXmlFile(
 			const QDomDocument &xml_document,
 			const QString &file_path,
+			QString *error_message = nullptr);
+
+	bool setContentWithError(
+			QDomDocument &xml_document,
+			QIODevice *device,
+			QString *error_message = nullptr);
+
+	bool setContentWithError(
+			QDomDocument &xml_document,
+			const QString &content,
 			QString *error_message = nullptr);
 
 	QDomElement textToDomElement (

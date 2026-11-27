@@ -288,6 +288,109 @@ bool QETXML::writeXmlFile(
 }
 
 /**
+	@brief QETXML::setContentWithError
+	Wrapper around QDomDocument::setContent which, on parse failure, gives
+	a human-readable error with line and column (Qt >= 6.5 uses the
+	structured QDomDocument::ParseResult, older versions the legacy
+	out-parameters).
+	@param xml_document : document to fill
+	@param device : device to read the XML content from
+	@param error_message : If non-zero, will contain the parse error
+	(message, line and column) when this function returns false.
+	@return false if parsing failed, true otherwise
+*/
+bool QETXML::setContentWithError(
+		QDomDocument &xml_document,
+		QIODevice *device,
+		QString *error_message)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+	if (const auto result = xml_document.setContent(device); !result)
+	{
+		if (error_message)
+		{
+			*error_message = QString(
+						QObject::tr(
+							"ligne %1, colonne %2 : %3",
+							"XML parse error: line, column, parser message")
+							).arg(result.errorLine)
+							 .arg(result.errorColumn)
+							 .arg(result.errorMessage);
+		}
+		return(false);
+	}
+	return(true);
+#else
+	QString error;
+	int line = 0;
+	int column = 0;
+	if (!xml_document.setContent(device, &error, &line, &column))
+	{
+		if (error_message)
+		{
+			*error_message = QString(
+						QObject::tr(
+							"ligne %1, colonne %2 : %3",
+							"XML parse error: line, column, parser message")
+							).arg(line)
+							 .arg(column)
+							 .arg(error);
+		}
+		return(false);
+	}
+	return(true);
+#endif
+}
+
+/**
+	@brief QETXML::setContentWithError
+	Overload reading the XML content from a string.
+	@see QETXML::setContentWithError(QDomDocument &, QIODevice *, QString *)
+*/
+bool QETXML::setContentWithError(
+		QDomDocument &xml_document,
+		const QString &content,
+		QString *error_message)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+	if (const auto result = xml_document.setContent(content); !result)
+	{
+		if (error_message)
+		{
+			*error_message = QString(
+						QObject::tr(
+							"ligne %1, colonne %2 : %3",
+							"XML parse error: line, column, parser message")
+							).arg(result.errorLine)
+							 .arg(result.errorColumn)
+							 .arg(result.errorMessage);
+		}
+		return(false);
+	}
+	return(true);
+#else
+	QString error;
+	int line = 0;
+	int column = 0;
+	if (!xml_document.setContent(content, &error, &line, &column))
+	{
+		if (error_message)
+		{
+			*error_message = QString(
+						QObject::tr(
+							"ligne %1, colonne %2 : %3",
+							"XML parse error: line, column, parser message")
+							).arg(line)
+							 .arg(column)
+							 .arg(error);
+		}
+		return(false);
+	}
+	return(true);
+#endif
+}
+
+/**
 	@brief QETXML::textToDomElement
 	Return a QDomElement, created from document,
 	with tag name tag_name and text value.

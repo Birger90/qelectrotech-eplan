@@ -22,6 +22,7 @@
 #include <shortcutmanager.h>
 #include <editor/elementview.h>
 #include <qetmessagebox.h>
+#include <qetxml.h>
 #include <qetapp.h>
 #include <qetmainwindow.h>
 #include <recentfiles.h>
@@ -260,9 +261,11 @@ void QETElementEditor::fromFile(const QString &filepath)
 
 	QDomDocument document_xml;
 	if (state_) {
-		if (!document_xml.setContent(&file)) {
+		QString parse_error;
+		if (!QETXML::setContentWithError(document_xml, &file, &parse_error)) {
 			state_ = false;
-			error_message = tr("This file is not a valid XML document", "message box content");
+			error_message = tr("This file is not a valid XML document", "message box content")
+					+ "\n" + parse_error;
 		}
 		file.close();
 	}
@@ -2006,8 +2009,10 @@ void QETElementEditor::on_m_paste_from_file_action_triggered()
 	}
 	else {
 		// le fichier doit etre un document XML
-		if (!xml_document.setContent(&element_file)) {
-			error_message = tr("This file is not a valid XML document", "message box content");
+		QString parse_error;
+		if (!QETXML::setContentWithError(xml_document, &element_file, &parse_error)) {
+			error_message = tr("This file is not a valid XML document", "message box content")
+					+ "\n" + parse_error;
 		}
 		element_file.close();
 	}

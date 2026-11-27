@@ -2515,6 +2515,11 @@ target_compile_definitions(tst_thmlayouts PRIVATE
 # Label printing > Print THM labels...: preview of the markers and the printer
 # chosen by the article loaded (one preselected, none among several).
 qet_add_app_test(tst_thmprintdialog tst_thmprintdialog.cpp)
+# File > Import WSCAD project: the sPlan import dialog in its WSCAD kind
+# (project folder, target, arguments, progress, menu command).
+qet_add_app_test(tst_wscadimportdialog tst_wscadimportdialog.cpp)
+target_compile_definitions(tst_wscadimportdialog PRIVATE
+  QET_WSCAD_SCRIPT="${QET_DIR}/tools/wscad_import/wscad_nach_qet.py")
 
 # A project split into the parts of a .qetz and joined back is the same
 # document, on every example (and QET_CONTAINER_CORPUS if set).

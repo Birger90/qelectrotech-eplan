@@ -20367,6 +20367,14 @@ Verfügbare Optionen:
         <translation>Liest einen sPlan-8-Plan und zeichnet ihn als QElectroTech-Projekt neu</translation>
     </message>
     <message>
+        <source>Import WSCAD project…</source>
+        <translation>WSCAD-Projekt importieren…</translation>
+    </message>
+    <message>
+        <source>Reads a WSCAD project (schematic pages, symbols, wires, cross references) as an editable QElectroTech project</source>
+        <translation>Liest ein WSCAD-Projekt (Schaltplanseiten, Symbole, Leitungen, Verweise) als bearbeitbares QElectroTech-Projekt</translation>
+    </message>
+    <message>
         <source>Show or hide the assistant (Claude)</source>
         <translation>Assistent (Claude) ein- oder ausblenden</translation>
     </message>
@@ -36470,6 +36478,58 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <message>
         <source>Stop the running import?</source>
         <translation>Laufenden Import abbrechen?</translation>
+    </message>
+    <message>
+        <source>Import a WSCAD project</source>
+        <translation>WSCAD-Projekt importieren</translation>
+    </message>
+    <message>
+        <source>Reads a WSCAD project (the project folder with Database/WSCAD6.db and the .wsELD schematic pages, WSCAD ELECTRIX / SUITE 6 and later) and turns it into an editable QElectroTech project: every schematic page a folio with its frame and title block, every symbol a part with its terminals, the wires of the WSCAD connection list, linked cross references and coil/contact links. Device and wire lists (CSV) are written next to the project.</source>
+        <translation>Liest ein WSCAD-Projekt (den Projektordner mit Database/WSCAD6.db und den .wsELD-Schaltplanseiten, WSCAD ELECTRIX / SUITE ab 6) und macht daraus ein bearbeitbares QElectroTech-Projekt: jede Schaltplanseite ein Blatt mit Rahmen und Schriftfeld, jedes Symbol ein Bauteil mit seinen Anschlüssen, die Leitungen aus der WSCAD-Verbindungsliste, verknüpfte Verweise und Spule/Kontakt-Verknüpfungen. Geräte- und Verbindungsliste (CSV) kommen neben das Projekt.</translation>
+    </message>
+    <message>
+        <source>WSCAD project folder:</source>
+        <translation>WSCAD-Projektordner:</translation>
+    </message>
+    <message>
+        <source>Also write a PDF</source>
+        <translation>Zusätzlich ein PDF schreiben</translation>
+    </message>
+    <message>
+        <source>Reading the WSCAD project</source>
+        <translation>WSCAD-Projekt lesen</translation>
+    </message>
+    <message>
+        <source>Reading the schematic pages and their symbols</source>
+        <translation>Schaltplanseiten und Symbole lesen</translation>
+    </message>
+    <message>
+        <source>Pairing the cross reference arrows</source>
+        <translation>Verweispfeile paaren</translation>
+    </message>
+    <message>
+        <source>Drawing the wires of the connection list</source>
+        <translation>Leitungen aus der Verbindungsliste zeichnen</translation>
+    </message>
+    <message>
+        <source>Writing the device and wire lists</source>
+        <translation>Geräte- und Verbindungsliste schreiben</translation>
+    </message>
+    <message>
+        <source>Choose the WSCAD project folder (with Database/WSCAD6.db)</source>
+        <translation>WSCAD-Projektordner wählen (mit Database/WSCAD6.db)</translation>
+    </message>
+    <message>
+        <source>Choose the WSCAD project folder.</source>
+        <translation>WSCAD-Projektordner wählen.</translation>
+    </message>
+    <message>
+        <source>%1 is not a WSCAD project folder (Database/WSCAD6.db is missing).</source>
+        <translation>%1 ist kein WSCAD-Projektordner (Database/WSCAD6.db fehlt).</translation>
+    </message>
+    <message>
+        <source>Install what is missing, e.g. &quot;py -m pip install cryptography pymupdf fonttools&quot;, or choose another Python.</source>
+        <translation>Fehlendes installieren, z. B. „py -m pip install cryptography pymupdf fonttools“, oder ein anderes Python wählen.</translation>
     </message>
 </context>
 </TS>

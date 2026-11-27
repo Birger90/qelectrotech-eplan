@@ -220,6 +220,14 @@
 >   section and potential; interruption points become linked report arrows, coils and contacts master and slave;
 >   frame, title block and structure boxes are kept. Beside it the device list, the connection list and the 3D
 >   installation spaces (`.e3d`). Without Python the pages come in as pictures (`--import-epdz export.epdz`).
+> - File > *Import WSCAD project*: a WSCAD project folder (ELECTRIX/SUITE 6.x and later, `Database/WSCAD6.db`
+>   and the `.wsELD` schematic pages) becomes an editable QET project -- every page a folio with the WSCAD frame
+>   and title block, every symbol a part with its graphics, terminals, device tag, article and function text; the
+>   connection list becomes conductors running where WSCAD draws them (with colour, section, potential); arrows
+>   with a target become linked report arrows, coils and contacts master and slave, PLC channels show their
+>   addresses (E0.7, AEW1); texts in WSCAD's font Roboto Mono. Articles the company collection does not know yet
+>   become parts under manufacturer/category/order number. Beside it a device and a connection list (CSV). Format:
+>   [tools/wscad_import/FORMATBESCHREIBUNG_WSCAD.md](tools/wscad_import/FORMATBESCHREIBUNG_WSCAD.md).
 > - Claude assistant as a dock window (button *Claude* in the main toolbar): it reads and changes the open project
 >   through the MCP server below; images and PDFs can be attached. With an API key, or in own builds
 >   (`-DQET_CLAUDE_KONTO=ON`) through one's own Claude account.

@@ -65,6 +65,7 @@ Abschnitt lesen, die großen Tabellen (IDs, XML, Meldungen) per Grep durchsuchen
 |---|---|
 | Prüfliste für QET-Nachbauten, Prüfläufe, Schemata | [pruefungen.md](referenz/pruefungen.md) |
 | EPLAN-Projektarchiv **.zw1** lesen (7z + EOD-Tabellen, Satzkopf, Eigenschaftsstrom, Verbindungen, Artikel, Kabel); Import nach QET: `Datenorlagen\eplan_zw1\eplan_nach_qet.py` bzw. `EPLAN-Import.cmd` | [zw1-projektarchiv.md](referenz/zw1-projektarchiv.md) |
+| WSCAD-Projekt (ELECTRIX/SUITE 6.x) lesen: `.wsELD` (AES+GZip → XML), `WSCAD6.db` (Symbol, Pin, Connection), Textausrichtung, SPS-Adressen; Import nach QET: Datei > WSCAD-Projekt importieren bzw. `tools/wscad_import/wscad_nach_qet.py` | [wscad-projekt.md](referenz/wscad-projekt.md) |
 | Meldung Pnnnnnn: Ursache, Korrektur, QET-Prüfweg (alle 586; 130 als **Regel** markiert) | [meldungen.md](referenz/meldungen.md) (Grep) |
 | Projektarten, Dateiendungen, Vorlagen, Sichern/Packen, Normwechsel, Projektkorrektur | [projektverwaltung.md](referenz/projektverwaltung.md) |
 | Revision, Änderungsmarkierung, Vergleich ohne UUIDs | [revision.md](referenz/revision.md) |

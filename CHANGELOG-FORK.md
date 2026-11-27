@@ -3,6 +3,30 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## Nächste Version – 27.11.2026 – WSCAD-Projekte importieren
+
+- **Datei > WSCAD-Projekt importieren:** liest einen WSCAD-Projektordner (ELECTRIX/SUITE ab 6.x) als
+  bearbeitbares Projekt. Die Schaltplanseiten (`.wsELD`) sind AES-verschleierte GZip-Abschnitte mit XML; Schlüssel
+  und IV stehen im Abschnitt selbst (`tools/wscad_import/wscad.py`, Formatbeschreibung
+  `FORMATBESCHREIBUNG_WSCAD.md`). `wscad_nach_qet.py` macht daraus je Seite ein Blatt mit WSCAD-Rahmen und
+  Schriftfeld (Maßstab 1:1), je Symbol ein Bauteil mit seiner Grafik, Texten (am WSCAD-PDF geeichte Ausrichtung),
+  Anschlüssen, BMK und Artikel; die Verbindungsliste der Projektdatenbank (`WSCAD6.db`) wird zu Leitungen auf dem
+  gezeichneten Weg (Winkel/T, Brücken als Spannbaum) mit Farbe, Querschnitt und Potential; Pfeile mit Ziel werden
+  verknüpfte Verweise, Spule/Kontakte Master/Slave; SPS-Kanaladressen werden lesbar (E0.7). Am WSCAD-Demoprojekt:
+  27 Seiten, 311 Bauteile, 1080 Anschlüsse, 574 Leitungen (218 mit Ecken wie gezeichnet), 151 verknüpfte
+  Verweispaare, 13 Master/Slave, keine fehlgeschlagene Operation; Blätter gegen das WSCAD-PDF verglichen (Linien
+  auf 0,1 mm, Texte auf rund 0,5 mm). Ebenso das P&I-Musterprojekt (45 Seiten, 377 Bauteile, 654 Leitungen,
+  151 Verweispaare) und das ProjectWizard-Projekt (5 Seiten). Texte in WSCADs Schrift Roboto Mono.
+- **Bauteile in die Firmensammlung:** Artikel aus dem WSCAD-Plan, die die Sammlung noch nicht kennt, werden ein
+  sauberes Bauteil unter Hersteller/Kategorie/Bestellnummer (Hersteller auf vorhandene Ordner abgeglichen, sonst aus
+  der Artikeldatenbank des Projekts); vorhandene bleiben unberührt. Aus den drei Projekten 138 neue, 125 schon da.
+- Derselbe Dialog wie der sPlan-Import (`SplanImportDialog` mit Art sPlan/WSCAD), kein zweiter Dialog; das
+  Programm liegt neben QET in `wscad_import/` (Installation und `tools/deploy_lokal.ps1`).
+- Tests: `python -m unittest tools/wscad_import/test_wscad_import.py` (selbst gebaute Seite und Datenbank;
+  mit `QET_WSCAD_TESTPROJEKT` der ganze Import eines Projekts).
+- Offen: PE-Leitungen gestrichelt, SPS-Karte/Kanäle als SPS-Master verknüpfen, Drahtnummern, Fluid- und
+  Auswertungsseiten.
+
 ## 1.62.1 – 27.11.2026 – .epdz-Import ohne fremde Verweispfeile
 
 - Der .epdz-Import brach im Dialog bei 84 % ab, wenn QETs Firmensammlung die Verweispfeile

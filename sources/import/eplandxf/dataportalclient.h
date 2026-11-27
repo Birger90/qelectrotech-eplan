@@ -62,6 +62,8 @@ struct DataPortalQuery
 	bool only_dxf = false; ///< only parts with a DXF package
 	bool exact = false;    ///< no fuzzy matching
 	QString catalog_eplan; ///< EPLAN product group UID, e.g. 200040005 (terminals); empty: all
+	QString catalog;       ///< id of an EPLAN product group, e.g. 400560000 (enclosures); empty: all
+	bool brief = false;    ///< numbers and texts only (no picture, no group): for long lists
 	int offset = 0;
 	int limit = 50;
 };

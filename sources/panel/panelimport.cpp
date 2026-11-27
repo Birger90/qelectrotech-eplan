@@ -25,10 +25,8 @@
 #include <QDirIterator>
 #include <QDomDocument>
 
-#include <QCheckBox>
 #include <QDialogButtonBox>
 #include <QEventLoop>
-#include <QSpinBox>
 #include <QTimer>
 #include <QDir>
 #include <QFile>
@@ -36,6 +34,10 @@
 #include <QHBoxLayout>
 #include <QHash>
 #include <QHeaderView>
+#include <QIntValidator>
+#include <QKeyEvent>
+#include <QPair>
+#include <QSignalBlocker>
 #include <QLabel>
 #include <QLineEdit>
 #include <QLocale>
@@ -765,18 +767,6 @@ PanelOutline PanelImport::fetchDeviceView(const QString &order_number, const QSt
 	return frontView(o);
 }
 
-bool PanelImport::sizesFromText(const QString &text, double *width, double *height, double *depth)
-{
-		//"BHT: 800x1400x500 mm", "Breite/Höhe/Tiefe: 800 x 1200 x 500 mm", "B x H x T: 1200x2000x800"
-	static const QRegularExpression bht(QStringLiteral("(\\d{2,4})\\s*[xX×]\\s*(\\d{2,4})\\s*[xX×]\\s*(\\d{2,4})"));
-	const QRegularExpressionMatch m = bht.match(text);
-	if (!m.hasMatch()) return false;
-	if (width) *width = m.captured(1).toDouble();
-	if (height) *height = m.captured(2).toDouble();
-	if (depth) *depth = m.captured(3).toDouble();
-	return true;
-}
-
 QString PanelImport::enclosuresDirectory()
 {
 	return templatesDirectory() + QStringLiteral("/enclosures");
@@ -791,21 +781,70 @@ QStringList PanelImport::enclosureFolders()
 	return out;
 }
 
+namespace {
+		/// the description stored with an enclosure (info.txt)
+	QString enclosureDescription(const QString &folder)
+	{
+		QFile info(QDir(folder).filePath(QStringLiteral("info.txt")));
+		if (!info.open(QIODevice::ReadOnly)) return QString();
+		return QString::fromUtf8(info.readAll()).trimmed();
+	}
+}
+
+EnclosureSize PanelImport::enclosureSize(const QString &folder)
+{
+		//the folder is named "<type> - <description>": it names the sizes
+		//too, should info.txt be missing
+	const EnclosureSize s = EnclosureSize::fromText(enclosureDescription(folder));
+	return s.isNull() ? EnclosureSize::fromText(QFileInfo(folder).fileName()) : s;
+}
+
+QStringList PanelImport::enclosureFolders(const EnclosureSize &size)
+{
+	const QStringList all = enclosureFolders();
+	if (size.isNull()) return all;
+	QList<QPair<double, QString>> fits;
+	for (const QString &f : all) {
+		const double e = size.excess(enclosureSize(f));
+		if (e >= 0) fits << qMakePair(e, f);
+	}
+	std::stable_sort(fits.begin(), fits.end(), [](const QPair<double, QString> &a, const QPair<double, QString> &b) {
+		return a.first < b.first;
+	});
+	QStringList out;
+	for (const auto &f : fits) out << f.second;
+	return out;
+}
+
+QStringList PanelImport::enclosurePlateFiles()
+{
+	QStringList out;
+	for (const QString &f : enclosureFolders()) {
+		const QString plate = QDir(f).filePath(QStringLiteral("B.dxf"));
+		if (QFileInfo::exists(plate)) out << plate;
+	}
+	return out;
+}
+
 PanelImport::Enclosure PanelImport::readEnclosure(const QString &folder)
 {
 	Enclosure e;
 	e.folder = folder;
 	e.name = QFileInfo(folder).fileName();
-	QFile info(QDir(folder).filePath(QStringLiteral("info.txt")));
-	if (info.open(QIODevice::ReadOnly)) e.description = QString::fromUtf8(info.readAll()).trimmed();
-	const bool sized = sizesFromText(e.description, &e.width, &e.height, &e.depth);
+	e.description = enclosureDescription(folder);
+		//"BHT: 800x1400x500 mm", "Breite/Höhe/Tiefe: 800 x 1200 x 500 mm"
+	const EnclosureSize size = enclosureSize(folder);
 	e.front = readDxfFile(QDir(folder).filePath(QStringLiteral("A.dxf")));
 	e.front.name = e.name;
 	if (QFileInfo::exists(QDir(folder).filePath(QStringLiteral("B.dxf")))) {
 		e.plate = readDxfFile(QDir(folder).filePath(QStringLiteral("B.dxf")));
 		e.plate.name = e.name;
 	}
-	if (!sized) {
+	if (!size.isNull()) {
+		e.width = size.width;
+		e.height = size.height;
+		e.depth = size.depth;
+	} else {
 		e.width = e.front.width;
 		e.height = e.front.height;
 		e.depth = 400;
@@ -873,22 +912,107 @@ QString PanelImport::saveTemplate(const QString &name, const QByteArray &dxf, QS
 
 /* ------------------------------------------------------------------ */
 
-PanelTemplateDialog::PanelTemplateDialog(QWidget *parent, bool enclosure) :
+namespace {
+		/// the EPLAN Data Portal's product group "Mechanics > Enclosure"
+	const char ENCLOSURE_GROUP[] = "400560000";
+	const int GROUP_PAGE = 1000;     ///< parts per request, the most the portal gives
+	const int GROUP_MOST = 5000;     ///< no manufacturer has that many enclosures
+
+		/// the product groups loaded in this session, by manufacturer and
+		/// language: the list is the same every time the dialog opens
+	QHash<QString, QVector<DataPortalPart>> &groupCache()
+	{
+		static QHash<QString, QVector<DataPortalPart>> cache;
+		return cache;
+	}
+
+	QString mm(double v)
+	{
+		return v > 0 ? QString::number(v, 'f', qFuzzyCompare(v, double(qRound(v))) ? 0 : 1) : QString();
+	}
+}
+
+EnclosureSizeFields::EnclosureSizeFields(QWidget *parent) :
+	QWidget(parent)
+{
+	auto *row = new QHBoxLayout(this);
+	row->setContentsMargins(0, 0, 0, 0);
+	const QString tip = tr("In millimetres; empty: any. Listed are the enclosures of at least "
+						   "this size, the closest fit first.");
+	auto field = [&](const QString &label) {
+		auto *edit = new QLineEdit(this);
+		edit->setValidator(new QIntValidator(0, 9999, edit));
+		edit->setPlaceholderText(tr("any"));
+		edit->setMaximumWidth(80);
+		edit->setClearButtonEnabled(true);
+		edit->setToolTip(tip);
+		row->addWidget(new QLabel(label, this));
+		row->addWidget(edit);
+		connect(edit, &QLineEdit::textChanged, this, &EnclosureSizeFields::changed);
+		return edit;
+	};
+	m_width = field(tr("Width"));
+	m_height = field(tr("Height"));
+	m_depth = field(tr("Depth"));
+	row->addWidget(new QLabel(tr("mm"), this));
+	row->addStretch(1);
+	setFocusProxy(m_width);
+}
+
+/// Enter in a field narrows nothing more (the list follows every key): it
+/// must not press the dialog's OK either
+void EnclosureSizeFields::keyPressEvent(QKeyEvent *event)
+{
+	if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
+		event->accept();
+		return;
+	}
+	QWidget::keyPressEvent(event);
+}
+
+EnclosureSize EnclosureSizeFields::size() const
+{
+	EnclosureSize s;
+	s.width = m_width->text().toDouble();
+	s.height = m_height->text().toDouble();
+	s.depth = m_depth->text().toDouble();
+	return s;
+}
+
+void EnclosureSizeFields::setSize(const EnclosureSize &size)
+{
+	auto set = [](QLineEdit *edit, double v) {
+		const QSignalBlocker blocker(edit);
+		edit->setText(v > 0 ? QString::number(qRound(v)) : QString());
+	};
+	set(m_width, size.width);
+	set(m_height, size.height);
+	set(m_depth, size.depth);
+}
+
+/* ------------------------------------------------------------------ */
+
+PanelTemplateDialog::PanelTemplateDialog(QWidget *parent, bool enclosure, const EnclosureSize &size) :
 	QDialog(parent),
 	m_enclosure(enclosure)
 {
 	setWindowTitle(enclosure ? tr("Enclosure from the EPLAN Data Portal")
 							 : tr("Mounting plate from the EPLAN Data Portal"));
-	resize(820, 520);
+	resize(enclosure ? 900 : 820, 520);
 	m_client = new DataPortalClient(this);
 	m_client->setLanguage(QLocale(QETApp::langFromSetting()).name());
 
 		// the Data Portal finds plates best by the German designation
-	m_search = new QLineEdit(enclosure ? QStringLiteral("Schrank") : QStringLiteral("Montageplatte"), this);
+	m_search = new QLineEdit(enclosure ? QString() : QStringLiteral("Montageplatte"), this);
+	if (enclosure) {
+		m_search->setPlaceholderText(tr("Narrow by words, e.g. VX stainless"));
+		m_search->setClearButtonEnabled(true);
+		m_search->setToolTip(tr("Only the enclosures whose type or description holds every word"));
+	}
 	m_manufacturer = new QLineEdit(QStringLiteral("RIT"), this);
 	m_manufacturer->setMaximumWidth(80);
 	m_manufacturer->setToolTip(tr("Short name of the manufacturer (RIT = Rittal), empty: all"));
-	auto *go = new QPushButton(tr("Search"), this);
+	auto *go = new QPushButton(enclosure ? tr("Load") : tr("Search"), this);
 	auto *row = new QHBoxLayout;
 	row->addWidget(m_search, 1);
 	row->addWidget(new QLabel(tr("Manufacturer"), this));
@@ -897,13 +1021,18 @@ PanelTemplateDialog::PanelTemplateDialog(QWidget *parent, bool enclosure) :
 
 	m_list = new QTreeWidget(this);
 	m_list->setRootIsDecorated(false);
-	m_list->setHeaderLabels({tr("Order number"), tr("Type"), tr("Description")});
+	if (enclosure)
+		m_list->setHeaderLabels({tr("Order number"), tr("Type"), tr("Width"), tr("Height"), tr("Depth"),
+								 tr("Description")});
+	else
+		m_list->setHeaderLabels({tr("Order number"), tr("Type"), tr("Description")});
 	m_list->header()->setStretchLastSection(true);
 	m_status = new QLabel(this);
 	m_status->setWordWrap(true);
 
 	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Cancel, this);
-	m_take = buttons->addButton(tr("Use as template"), QDialogButtonBox::ActionRole);
+	m_take = buttons->addButton(enclosure ? tr("Use this enclosure") : tr("Use as template"),
+								QDialogButtonBox::ActionRole);
 	m_take->setEnabled(false);
 	connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 	connect(m_take, &QPushButton::clicked, this, &PanelTemplateDialog::download);
@@ -912,66 +1041,106 @@ PanelTemplateDialog::PanelTemplateDialog(QWidget *parent, bool enclosure) :
 	});
 	connect(m_list, &QTreeWidget::itemDoubleClicked, this, &PanelTemplateDialog::download);
 	connect(go, &QPushButton::clicked, this, &PanelTemplateDialog::runSearch);
-	connect(m_search, &QLineEdit::returnPressed, this, &PanelTemplateDialog::runSearch);
+	connect(m_manufacturer, &QLineEdit::returnPressed, this, &PanelTemplateDialog::runSearch);
 	connect(m_client, &DataPortalClient::searchFinished, this, &PanelTemplateDialog::showParts);
 	connect(m_client, &DataPortalClient::downloadFinished, this, &PanelTemplateDialog::downloaded);
 	connect(m_client, &DataPortalClient::failed, this, &PanelTemplateDialog::failed);
 
 	auto *box = new QVBoxLayout(this);
-	box->addLayout(row);
 	if (enclosure) {
-			// EPLAN/OpenECraft-like: find the enclosure by its size
-		auto size_box = [this](const QString &tip) {
-			auto *s = new QSpinBox(this);
-			s->setRange(0, 5000);
-			s->setSingleStep(100);
-			s->setSuffix(QStringLiteral(" mm"));
-			s->setSpecialValueText(tr("any"));
-			s->setToolTip(tip);
-			connect(s, &QSpinBox::valueChanged, this, &PanelTemplateDialog::applyFilter);
-			return s;
-		};
-		m_width = size_box(tr("Width of the enclosure; any: all widths"));
-		m_height = size_box(tr("Height of the enclosure; any: all heights"));
-		m_depth = size_box(tr("Depth of the enclosure; any: all depths"));
-		m_only_enclosures = new QCheckBox(tr("Only enclosures with sizes (no accessories)"), this);
-		m_only_enclosures->setChecked(true);
-		connect(m_only_enclosures, &QCheckBox::toggled, this, &PanelTemplateDialog::applyFilter);
-		m_more = new QPushButton(tr("Load more"), this);
-		m_more->setEnabled(false);
-		connect(m_more, &QPushButton::clicked, this, [this]() {
-			DataPortalQuery q;
-			q.text = m_search->text().trimmed();
-			q.manufacturer = m_manufacturer->text().trimmed();
-			q.only_dxf = true;
-			q.exact = true;
-			q.offset = int(m_parts.size());
-			q.limit = 100;
-			m_more->setEnabled(false);
-			m_status->setText(tr("Searching…"));
-			m_client->search(q);
-		});
-		auto *sizes = new QHBoxLayout;
-		sizes->addWidget(new QLabel(tr("W"), this));
-		sizes->addWidget(m_width);
-		sizes->addWidget(new QLabel(tr("H"), this));
-		sizes->addWidget(m_height);
-		sizes->addWidget(new QLabel(tr("D"), this));
-		sizes->addWidget(m_depth);
-		sizes->addWidget(m_only_enclosures, 1);
-		sizes->addWidget(m_more);
-		box->addLayout(sizes);
-		m_list->setHeaderLabels({tr("Order number"), tr("Type"), tr("W x H x D"), tr("Description")});
-		m_list->setSortingEnabled(false);
+			// the sizes first: they are what one knows of the enclosure
+		m_size = new EnclosureSizeFields(this);
+		m_size->setSize(size);
+		box->addWidget(m_size);
+		connect(m_size, &EnclosureSizeFields::changed, this, &PanelTemplateDialog::applyFilter);
+		connect(m_search, &QLineEdit::textChanged, this, &PanelTemplateDialog::applyFilter);
+	} else {
+		connect(m_search, &QLineEdit::returnPressed, this, &PanelTemplateDialog::runSearch);
 	}
+	box->addLayout(row);
 	box->addWidget(m_list, 1);
 	box->addWidget(m_status);
 	box->addWidget(buttons);
 	runSearch();
+	if (m_size) m_size->setFocus();
+}
+
+EnclosureSize PanelTemplateDialog::sizeFilter() const
+{
+	return m_size ? m_size->size() : EnclosureSize();
+}
+
+void PanelTemplateDialog::loadGroup(int offset)
+{
+	DataPortalQuery q;
+	q.manufacturer = m_manufacturer->text().trimmed();
+	q.only_dxf = true;
+	q.catalog = QString::fromLatin1(ENCLOSURE_GROUP);
+	q.brief = true;
+	q.offset = offset;
+	q.limit = GROUP_PAGE;
+	m_status->setText(offset > 0 ? tr("Loading the enclosures… (%1)").arg(offset)
+								 : tr("Loading the enclosures…"));
+	m_client->search(q);
+}
+
+void PanelTemplateDialog::applyFilter()
+{
+	if (!m_enclosure || m_client->isBusy()) return;
+	const EnclosureSize size = m_size->size();
+		// one text per enclosure, the description first: it names the sizes;
+		// configuration parts without an order number are left out
+	QStringList texts;
+	texts.reserve(m_parts.size());
+	for (const DataPortalPart &p : m_parts)
+		texts << (p.order_number.isEmpty() ? QString()
+				  : p.description + QLatin1Char(' ') + p.designation + QLatin1Char(' ')
+					+ p.type_number + QLatin1Char(' ') + p.part_number);
+	QVector<EnclosureSize> sizes;
+	const QVector<int> rows = size.choose(texts, m_search->text(), &sizes);
+	m_list->setUpdatesEnabled(false);
+	m_list->clear();
+	QList<QTreeWidgetItem *> items;
+	for (int i : rows) {
+		const DataPortalPart &p = m_parts.at(i);
+		const EnclosureSize &s = sizes.at(i);
+		auto *item = new QTreeWidgetItem({p.order_number, p.type_number, mm(s.width), mm(s.height),
+										  mm(s.depth), p.description.isEmpty() ? p.designation : p.description});
+		item->setData(0, Qt::UserRole, p.id);
+		item->setToolTip(5, p.description);
+		for (int c = 2; c <= 4; ++c) item->setTextAlignment(c, Qt::AlignRight | Qt::AlignVCenter);
+		items << item;
+	}
+	m_list->addTopLevelItems(items);
+	for (int c = 0; c <= 4; ++c) m_list->resizeColumnToContents(c);
+	m_list->setUpdatesEnabled(true);
+	if (rows.isEmpty() && !size.isNull())
+		m_status->setText(tr("No enclosure of at least this size among the %1 of this manufacturer.")
+						  .arg(m_parts.size()));
+	else if (size.isNull())
+		m_status->setText(tr("%1 of %2 enclosures. Enter a width, height or depth to narrow the list.")
+						  .arg(rows.size()).arg(m_parts.size()));
+	else
+		m_status->setText(tr("%1 of %2 enclosures of at least this size, the closest fit first.")
+						  .arg(rows.size()).arg(m_parts.size()));
 }
 
 void PanelTemplateDialog::runSearch()
 {
+	if (m_enclosure) {
+			// the whole product group once, then narrowed here
+		m_group_key = m_manufacturer->text().trimmed().toUpper() + QLatin1Char('|')
+					  + QLocale(QETApp::langFromSetting()).name();
+		if (groupCache().contains(m_group_key)) {
+			m_parts = groupCache().value(m_group_key);
+			applyFilter();
+			return;
+		}
+		m_parts.clear();
+		m_list->clear();
+		loadGroup(0);
+		return;
+	}
 	DataPortalQuery q;
 	q.text = m_search->text().trimmed();
 	q.manufacturer = m_manufacturer->text().trimmed();
@@ -979,55 +1148,19 @@ void PanelTemplateDialog::runSearch()
 	q.exact = true;
 	q.limit = 100;
 	m_list->clear();
-	m_parts.clear();
 	m_status->setText(tr("Searching…"));
 	m_client->search(q);
-}
-
-void PanelTemplateDialog::applyFilter()
-{
-	if (!m_enclosure) return;
-	struct Hit {const DataPortalPart *part; double w, h, d;};
-	QList<Hit> hits;
-	for (const DataPortalPart &p : std::as_const(m_parts)) {
-		if (p.order_number.isEmpty()) continue;
-		Hit hit{&p, 0, 0, 0};
-		const bool sized = PanelImport::sizesFromText(p.description, &hit.w, &hit.h, &hit.d)
-						|| PanelImport::sizesFromText(p.designation, &hit.w, &hit.h, &hit.d);
-		if (m_only_enclosures->isChecked() && !sized) continue;
-		if (m_width->value() && qAbs(hit.w - m_width->value()) > 0.5) continue;
-		if (m_height->value() && qAbs(hit.h - m_height->value()) > 0.5) continue;
-		if (m_depth->value() && qAbs(hit.d - m_depth->value()) > 0.5) continue;
-		hits << hit;
-	}
-		// smallest first: width, then height, then depth; those without sizes last
-	std::stable_sort(hits.begin(), hits.end(), [](const Hit &a, const Hit &b) {
-		if ((a.w > 0) != (b.w > 0)) return a.w > 0;
-		if (a.w != b.w) return a.w < b.w;
-		if (a.h != b.h) return a.h < b.h;
-		return a.d < b.d;
-	});
-	m_list->clear();
-	for (const Hit &hit : std::as_const(hits)) {
-		const DataPortalPart &p = *hit.part;
-		const QString size = hit.w > 0 ? QStringLiteral("%1 x %2 x %3").arg(hit.w).arg(hit.h).arg(hit.d) : QString();
-		auto *item = new QTreeWidgetItem(m_list, {p.order_number, p.type_number, size,
-												  p.description.isEmpty() ? p.designation : p.description});
-		item->setData(0, Qt::UserRole, p.id);
-		item->setToolTip(3, p.description);
-	}
-	for (int c = 0; c < 3; ++c) m_list->resizeColumnToContents(c);
-	m_more->setEnabled(m_parts.size() < m_total && !m_client->isBusy());
-	m_status->setText(tr("%1 enclosures shown, %2 of %3 hits loaded. Only parts with DXF data are listed.")
-						  .arg(hits.size()).arg(m_parts.size()).arg(m_total));
 }
 
 void PanelTemplateDialog::showParts(const QVector<DataPortalPart> &parts, int total, int offset)
 {
 	if (m_enclosure) {
-		if (offset == 0) m_parts.clear();
 		m_parts += parts;
-		m_total = total;
+		if (!parts.isEmpty() && m_parts.size() < total && m_parts.size() < GROUP_MOST) {
+			loadGroup(offset + int(parts.size()));
+			return;
+		}
+		groupCache().insert(m_group_key, m_parts);
 		applyFilter();
 		return;
 	}
@@ -1035,12 +1168,8 @@ void PanelTemplateDialog::showParts(const QVector<DataPortalPart> &parts, int to
 		// configuration parts without an order number are left out
 	QVector<DataPortalPart> sorted;
 	for (const DataPortalPart &p : parts) if (!p.order_number.isEmpty()) sorted << p;
-	std::stable_sort(sorted.begin(), sorted.end(), [this](const DataPortalPart &a, const DataPortalPart &b) {
-		auto plate = [this](const DataPortalPart &p) {
-			if (m_enclosure)
-				return p.designation.contains(QLatin1String("schrank"), Qt::CaseInsensitive)
-					|| p.designation.contains(QLatin1String("gehäuse"), Qt::CaseInsensitive)
-					|| p.designation.contains(QLatin1String("enclosure"), Qt::CaseInsensitive);
+	std::stable_sort(sorted.begin(), sorted.end(), [](const DataPortalPart &a, const DataPortalPart &b) {
+		auto plate = [](const DataPortalPart &p) {
 			return p.designation.contains(QLatin1String("Montageplatte"), Qt::CaseInsensitive)
 				|| p.designation.contains(QLatin1String("mounting plate"), Qt::CaseInsensitive);
 		};
@@ -1068,7 +1197,7 @@ void PanelTemplateDialog::download()
 		return;
 	}
 	QTreeWidgetItem *item = sel.first();
-	const int text = m_enclosure ? 3 : 2;
+	const int text = m_list->columnCount() - 1;   // the description is the last column
 	m_pending_name = item->text(1) + QStringLiteral(" - ") + item->text(text);
 	m_pending_description = item->text(text);
 	m_client->setToken(token);
@@ -1101,4 +1230,147 @@ void PanelTemplateDialog::failed(const QString &message)
 {
 	m_status->setText(message);
 	m_take->setEnabled(!m_list->selectedItems().isEmpty());
+}
+
+/* ------------------------------------------------------------------ */
+
+namespace {
+		/// the EPLAN Data Portal's product group "Mechanics > Housing > Mounting plates"
+	const char PLATE_GROUP[] = "400500136";
+	const char PLATE_MANUFACTURER[] = "RIT";
+
+		/// the plates loaded in this session, by language
+	QHash<QString, QVector<PlateFinder::Plate>> &plateCache()
+	{
+		static QHash<QString, QVector<PlateFinder::Plate>> cache;
+		return cache;
+	}
+}
+
+PlateFinder::PlateFinder(QObject *parent) :
+	QObject(parent)
+{
+	m_client = new DataPortalClient(this);
+	m_client->setLanguage(QLocale(QETApp::langFromSetting()).name());
+	connect(m_client, &DataPortalClient::searchFinished, this,
+			[this](const QVector<DataPortalPart> &parts, int total, int offset) {
+		m_loading += parts;
+		if (!parts.isEmpty() && m_loading.size() < total && m_loading.size() < GROUP_MOST) {
+			loadPage(offset + int(parts.size()));
+			return;
+		}
+		m_plates = platesOf(m_loading);
+		m_loading.clear();
+		plateCache().insert(QLocale(QETApp::langFromSetting()).name(), m_plates);
+		m_ready = true;
+		emit ready();
+	});
+	connect(m_client, &DataPortalClient::downloadFinished, this, [this](const QByteArray &data, const QString &) {
+		QString error;
+		const QByteArray view = PanelImport::plateViewFromPackage(data, &error);
+		const QString file = view.isEmpty() ? QString() : PanelImport::saveTemplate(m_pending.name(), view, &error);
+		if (file.isEmpty()) emit failed(error);
+		else emit fetched(file);
+	});
+	connect(m_client, &DataPortalClient::failed, this, &PlateFinder::failed);
+}
+
+bool PlateFinder::isBusy() const
+{
+	return m_client->isBusy();
+}
+
+void PlateFinder::load()
+{
+	const QString key = QLocale(QETApp::langFromSetting()).name();
+	if (plateCache().contains(key)) {
+		m_plates = plateCache().value(key);
+		m_ready = true;
+		emit ready();
+		return;
+	}
+	m_loading.clear();
+	loadPage(0);
+}
+
+void PlateFinder::loadPage(int offset)
+{
+	DataPortalQuery q;
+	q.manufacturer = QString::fromLatin1(PLATE_MANUFACTURER);
+	q.only_dxf = true;
+	q.catalog = QString::fromLatin1(PLATE_GROUP);
+	q.brief = true;
+	q.offset = offset;
+	q.limit = GROUP_PAGE;
+	m_client->search(q);
+}
+
+QVector<PlateFinder::Plate> PlateFinder::platesOf(const QVector<DataPortalPart> &parts)
+{
+	QVector<Plate> plates;
+	for (const DataPortalPart &p : parts) {
+		if (p.order_number.isEmpty() || EnclosureSize::seriesOf(p.type_number).isEmpty()) continue;
+		const EnclosureSize size = EnclosureSize::plateFromText(p.description);
+		if (size.isNull()) continue;
+		Plate plate;
+		plate.id = p.id;
+		plate.type = p.type_number;
+		plate.description = p.description;
+		plate.width = size.width;
+		plate.height = size.height;
+		plates << plate;
+	}
+	return plates;
+}
+
+QStringList PlateFinder::series() const
+{
+	QStringList out;
+	for (const Plate &p : m_plates) {
+		const QString s = EnclosureSize::seriesOf(p.type);
+		if (!out.contains(s)) out << s;
+	}
+	out.sort();
+	return out;
+}
+
+PlateFinder::Plate PlateFinder::nearestOf(const QVector<Plate> &plates, const QString &series,
+										  double width, double height)
+{
+	Plate best;
+	double best_d = 0;
+	for (const Plate &p : plates) {
+		if (EnclosureSize::seriesOf(p.type).compare(series, Qt::CaseInsensitive) != 0) continue;
+		const double d = qAbs(p.width - width) + qAbs(p.height - height);
+		if (best.isNull() || d < best_d) {best = p; best_d = d;}
+	}
+	return best;
+}
+
+PlateFinder::Plate PlateFinder::nearest(const QString &series, double width, double height) const
+{
+	return nearestOf(m_plates, series, width, height);
+}
+
+QString PlateFinder::storedFile(const Plate &plate)
+{
+	if (plate.isNull()) return QString();
+	const QString path = QDir(PanelImport::templatesDirectory()).filePath(safeName(plate.name()) + QStringLiteral(".dxf"));
+	return QFileInfo::exists(path) ? path : QString();
+}
+
+void PlateFinder::fetch(const Plate &plate)
+{
+	if (plate.isNull()) {emit failed(QStringLiteral("no plate")); return;}
+	const QString stored = storedFile(plate);
+	if (!stored.isEmpty()) {emit fetched(stored); return;}
+	const QString token = ManufacturerPortals::dataPortalToken();
+	if (token.isEmpty()) {
+		emit failed(tr("The download needs your EPLAN Data Portal token: enter it once in "
+					   "Part import > From the EPLAN Data Portal (\"Remember the token\")."));
+		return;
+	}
+	m_pending = plate;
+	m_client->setToken(token);
+	m_client->downloadDxf(plate.id);
 }

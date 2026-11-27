@@ -768,6 +768,158 @@ Jede Änderung ist ein eigener Rückgängig-Schritt (Strg+Z). Darf Claude den Pl
         <source>%1 – click to remove</source>
         <translation>%1 – Klicken entfernt den Anhang</translation>
     </message>
+    <message>
+        <source>Assistant</source>
+        <translation type="vanished">Assistent</translation>
+    </message>
+    <message>
+        <source>Settings…</source>
+        <translation type="vanished">Einstellungen…</translation>
+    </message>
+    <message>
+        <source>API key and Python of the assistant</source>
+        <translation type="vanished">API-Schlüssel und Python des Assistenten</translation>
+    </message>
+    <message>
+        <source>Your question… (Enter sends, Shift+Enter: new line)</source>
+        <translation>Deine Frage… (Enter sendet, Umschalt+Enter: neue Zeile)</translation>
+    </message>
+    <message>
+        <source>No API key: the assistant cannot answer without one.</source>
+        <translation type="vanished">Kein API-Schlüssel: ohne ihn kann der Assistent nicht antworten.</translation>
+    </message>
+    <message>
+        <source>Settings saved; the next question starts a new conversation.</source>
+        <translation type="vanished">Einstellungen gespeichert; die nächste Frage beginnt ein neues Gespräch.</translation>
+    </message>
+    <message>
+        <source>found when the import starts</source>
+        <translation type="vanished">wird beim Start gesucht</translation>
+    </message>
+    <message>
+        <source>The output of the import appears here.</source>
+        <translation type="vanished">Hier erscheint die Ausgabe des Imports.</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <translation type="vanished">Importieren</translation>
+    </message>
+    <message>
+        <source>EPLAN project archives (*.zw1);;All files (*)</source>
+        <translation type="vanished">EPLAN-Projektarchive (*.zw1);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <source>Save the imported project as</source>
+        <translation type="vanished">Importiertes Projekt speichern als</translation>
+    </message>
+    <message>
+        <source>QElectroTech projects (*.qet)</source>
+        <translation type="vanished">QElectroTech-Projekte (*.qet)</translation>
+    </message>
+    <message>
+        <source>Where is the import program?</source>
+        <translation type="vanished">Wo liegt das Importprogramm?</translation>
+    </message>
+    <message>
+        <source>Import program (%1)</source>
+        <translation type="vanished">Importprogramm (%1)</translation>
+    </message>
+    <message>
+        <source>Programs (*.exe)</source>
+        <translation type="vanished">Programme (*.exe)</translation>
+    </message>
+    <message>
+        <source>Which Python should run the import?</source>
+        <translation type="vanished">Mit welchem Python soll der Import laufen?</translation>
+    </message>
+    <message>
+        <source>Choose the EPLAN project (.zw1).</source>
+        <translation type="vanished">Wähle das EPLAN-Projekt (.zw1).</translation>
+    </message>
+    <message>
+        <source>The EPLAN project %1 does not exist.</source>
+        <translation type="vanished">Das EPLAN-Projekt %1 gibt es nicht.</translation>
+    </message>
+    <message>
+        <source>Choose where the QElectroTech project is to be saved.</source>
+        <translation type="vanished">Wähle, wo das QElectroTech-Projekt gespeichert werden soll.</translation>
+    </message>
+    <message>
+        <source>The import program (%1) was not found. Choose it with &quot;Change…&quot;.</source>
+        <translation type="vanished">Das Importprogramm (%1) wurde nicht gefunden. Wähle es mit „Ändern…“.</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="vanished">Abbrechen</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation type="vanished">Schließen</translation>
+    </message>
+    <message>
+        <source>%1 does not start.</source>
+        <translation type="vanished">%1 startet nicht.</translation>
+    </message>
+    <message>
+        <source>%1 did not answer.</source>
+        <translation type="vanished">%1 hat nicht geantwortet.</translation>
+    </message>
+    <message>
+        <source>Checking %1 …</source>
+        <translation type="vanished">Prüfe %1 …</translation>
+    </message>
+    <message>
+        <source>No Python runs the import program:</source>
+        <translation type="vanished">Kein Python kann das Importprogramm ausführen:</translation>
+    </message>
+    <message>
+        <source>Install what is missing, e.g. &quot;py -m pip install fonttools pymupdf&quot;, or choose another Python.</source>
+        <translation type="vanished">Installiere, was fehlt, z. B. „py -m pip install fonttools pymupdf“, oder wähle ein anderes Python.</translation>
+    </message>
+    <message>
+        <source>%1 is open in QElectroTech. Close it first or choose another file.</source>
+        <translation type="vanished">%1 ist in QElectroTech geöffnet. Schließe es zuerst oder wähle eine andere Datei.</translation>
+    </message>
+    <message>
+        <source>%1 already exists. Replace it?</source>
+        <translation type="vanished">%1 gibt es schon. Ersetzen?</translation>
+    </message>
+    <message>
+        <source>The folder %1 cannot be created.</source>
+        <translation type="vanished">Der Ordner %1 kann nicht angelegt werden.</translation>
+    </message>
+    <message>
+        <source>No usable Python found.</source>
+        <translation type="vanished">Kein passendes Python gefunden.</translation>
+    </message>
+    <message>
+        <source>The import does not start: %1</source>
+        <translation type="vanished">Der Import startet nicht: %1</translation>
+    </message>
+    <message>
+        <source>The import did not start.</source>
+        <translation type="vanished">Der Import ist nicht gestartet.</translation>
+    </message>
+    <message>
+        <source>Importing %1 … this can take several minutes.</source>
+        <translation type="vanished">Importiere %1 … das kann einige Minuten dauern.</translation>
+    </message>
+    <message>
+        <source>Done: %1</source>
+        <translation type="vanished">Fertig: %1</translation>
+    </message>
+    <message>
+        <source>The import was stopped.</source>
+        <translation type="vanished">Der Import wurde abgebrochen.</translation>
+    </message>
+    <message>
+        <source>The import failed (exit code %1). The reason is in the output below.</source>
+        <translation type="vanished">Der Import ist fehlgeschlagen (Rückgabewert %1). Der Grund steht in der Ausgabe darunter.</translation>
+    </message>
+    <message>
+        <source>Stop the running import?</source>
+        <translation type="vanished">Den laufenden Import abbrechen?</translation>
+    </message>
 </context>
 <context>
     <name>AssistantSetupPage</name>
@@ -4532,6 +4684,50 @@ Fortfahren?</translation>
         <source>Not drawn yet. Double-click to place it on the current folio.</source>
         <translation>Noch nicht gezeichnet. Doppelklicken Sie, um es auf der aktuellen Seite zu platzieren.</translation>
     </message>
+    <message>
+        <source>Devices</source>
+        <translation>Betriebsmittel</translation>
+    </message>
+    <message>
+        <source>Cables</source>
+        <translation>Kabel</translation>
+    </message>
+    <message>
+        <source>- Not active -</source>
+        <translation type="vanished">- Nicht aktiviert -</translation>
+    </message>
+    <message>
+        <source>Contactors / Relays (-K)</source>
+        <translation type="vanished">Schütze / Relais (-K)</translation>
+    </message>
+    <message>
+        <source>Protection / Fuses (-F)</source>
+        <translation type="vanished">Sicherungen / Schutz (-F)</translation>
+    </message>
+    <message>
+        <source>Switches (-Q)</source>
+        <translation type="vanished">Schalter (-Q)</translation>
+    </message>
+    <message>
+        <source>Terminals (-X)</source>
+        <translation type="vanished">Klemmen (-X)</translation>
+    </message>
+    <message>
+        <source>Cables (-W)</source>
+        <translation type="vanished">Kabel (-W)</translation>
+    </message>
+    <message>
+        <source>Motors (-M)</source>
+        <translation type="vanished">Motoren (-M)</translation>
+    </message>
+    <message>
+        <source>Sensors (-B)</source>
+        <translation type="vanished">Sensoren (-B)</translation>
+    </message>
+    <message>
+        <source>Device (BMK)</source>
+        <translation>Betriebsmittel (BMK)</translation>
+    </message>
 </context>
 <context>
     <name>DeviceNavigatorFilterDialog</name>
@@ -4702,6 +4898,82 @@ Fortfahren?</translation>
     <message>
         <source>Custom</source>
         <translation>Benutzerdefiniert</translation>
+    </message>
+    <message>
+        <source>Filter Configuration</source>
+        <translation type="vanished">Filterkonfiguration</translation>
+    </message>
+    <message>
+        <source>Device Tag (BMK)</source>
+        <translation>Betriebsmittelkennzeichen (BMK)</translation>
+    </message>
+    <message>
+        <source>BMK prefixes (comma-separated, e.g. K, Q, F, X, W):</source>
+        <translation>BMK-Kennbuchstaben (durch Komma getrennt, z. B. K, Q, F, X, W):</translation>
+    </message>
+    <message>
+        <source>Reset Defaults</source>
+        <translation type="vanished">Zurücksetzen</translation>
+    </message>
+    <message>
+        <source>Device tag prefixes (comma-separated, e.g. K, Q, F):</source>
+        <translation type="vanished">Betriebsmittel-Kennbuchstaben (kommagetrennt, z.B. K, Q, F):</translation>
+    </message>
+    <message>
+        <source>Custom BMK wildcard pattern (e.g. *Pump*, -K[1-9]):</source>
+        <translation type="vanished">BMK-Suchmuster / Wildcard (z.B. *Pumpe*, -K[1-9]):</translation>
+    </message>
+    <message>
+        <source>Masters / Coils</source>
+        <translation type="vanished">Hauptfunktionen / Spulen</translation>
+    </message>
+    <message>
+        <source>Slaves / Contacts</source>
+        <translation type="vanished">Nebenfunktionen / Kontakte</translation>
+    </message>
+    <message>
+        <source>Cabinet Layout / Placement</source>
+        <translation type="vanished">Artikelplatzierung / Schaltschrankaufbau</translation>
+    </message>
+    <message>
+        <source>Folio Reports (Cross references)</source>
+        <translation type="vanished">Folienverweise (Abbruchstellen)</translation>
+    </message>
+    <message>
+        <source>Conductor Definitions</source>
+        <translation type="vanished">Verbindungs- / Leiterdefinitionen</translation>
+    </message>
+    <message>
+        <source>Other Symbols</source>
+        <translation type="vanished">Sonstige Symbole</translation>
+    </message>
+    <message>
+        <source>Structure Filter Mode</source>
+        <translation type="vanished">Strukturkennzeichen-Filter</translation>
+    </message>
+    <message>
+        <source>Only elements WITH structure (=Plant +Location)</source>
+        <translation type="vanished">Nur Betriebsmittel MIT Struktur (=Anlage +Ort)</translation>
+    </message>
+    <message>
+        <source>Only elements WITHOUT structure (Ohne Strukturkennzeichen)</source>
+        <translation type="vanished">Nur Betriebsmittel OHNE Strukturkennzeichen</translation>
+    </message>
+    <message>
+        <source>Structure text contains (e.g. =010 or +A1):</source>
+        <translation type="vanished">Strukturtext enthält (z.B. =010 oder +A1):</translation>
+    </message>
+    <message>
+        <source>New Filter Scheme</source>
+        <translation type="vanished">Neues Filterschema</translation>
+    </message>
+    <message>
+        <source>Scheme name:</source>
+        <translation type="vanished">Schemaname:</translation>
+    </message>
+    <message>
+        <source>The default scheme cannot be deleted.</source>
+        <translation>Das Standardschema kann nicht gelöscht werden.</translation>
     </message>
 </context>
 <context>
@@ -9303,6 +9575,18 @@ Geschrieben nach %4</translation>
 %1</numerusform>
         </translation>
     </message>
+    <message>
+        <source>Part data (.edz):</source>
+        <translation type="vanished">Artikeldaten (.edz):</translation>
+    </message>
+    <message>
+        <source>EPLAN DXF package</source>
+        <translation type="vanished">EPLAN-DXF-Paket</translation>
+    </message>
+    <message>
+        <source>EPLAN DXF</source>
+        <translation type="vanished">EPLAN-DXF</translation>
+    </message>
 </context>
 <context>
     <name>EplanProject</name>
@@ -9584,6 +9868,42 @@ Geschrieben nach %4</translation>
     <message>
         <source>The import failed: %1</source>
         <translation>Der Import ist fehlgeschlagen: %1</translation>
+    </message>
+    <message>
+        <source>Python program</source>
+        <translation type="vanished">Python-Programm</translation>
+    </message>
+    <message>
+        <source>The bridge needs the Python package “anthropic” (py -m pip install anthropic).</source>
+        <translation type="vanished">Die Brücke braucht das Python-Paket „anthropic“ (py -m pip install anthropic).</translation>
+    </message>
+    <message>
+        <source>Remove key</source>
+        <translation type="vanished">Schlüssel entfernen</translation>
+    </message>
+    <message>
+        <source>No credential store on this system: set ANTHROPIC_API_KEY in the environment instead.</source>
+        <translation type="vanished">Auf diesem System gibt es keinen Anmeldeinformationsspeicher: stattdessen ANTHROPIC_API_KEY in der Umgebung setzen.</translation>
+    </message>
+    <message>
+        <source>A key is stored. Leave the field empty to keep it.</source>
+        <translation type="vanished">Ein Schlüssel ist hinterlegt. Feld leer lassen, um ihn zu behalten.</translation>
+    </message>
+    <message>
+        <source>No key stored yet.</source>
+        <translation type="vanished">Noch kein Schlüssel hinterlegt.</translation>
+    </message>
+    <message>
+        <source>The key could not be stored: %1</source>
+        <translation type="vanished">Der Schlüssel ließ sich nicht speichern: %1</translation>
+    </message>
+    <message>
+        <source>Remove the stored API key?</source>
+        <translation type="vanished">Den hinterlegten API-Schlüssel entfernen?</translation>
+    </message>
+    <message>
+        <source>The key could not be removed: %1</source>
+        <translation type="vanished">Der Schlüssel ließ sich nicht entfernen: %1</translation>
     </message>
 </context>
 <context>
@@ -13944,6 +14264,22 @@ Mit dem MCP-Server qet: Lies es mit qet_recording_read, schreibe ein Skript, das
         <source>The request log cannot be written: %1</source>
         <translation>Das Anforderungsprotokoll kann nicht geschrieben werden: %1</translation>
     </message>
+    <message>
+        <source>Beckhoff</source>
+        <translation>Beckhoff</translation>
+    </message>
+    <message>
+        <source>Not in the Data Portal and no API: the EPLAN macros come as one package from the product page (myBeckhoff login, in the browser), the drawings (DXF, STEP) per housing without a login. The password stays in the store, QElectroTech does not send it.</source>
+        <translation>Nicht im Data Portal und keine Schnittstelle: die EPLAN-Makros kommen als ein Paket von der Produktseite (myBeckhoff-Anmeldung, im Browser), die Zeichnungen (DXF, STEP) je Gehäuseform ohne Anmeldung. Das Passwort bleibt im Speicher, QElectroTech sendet es nicht.</translation>
+    </message>
+    <message>
+        <source>RS Components</source>
+        <translation>RS Components</translation>
+    </message>
+    <message>
+        <source>Distributor, no API for CAD data: the product page offers the model of many makers (STEP, DXF; from TraceParts) after the RS login, in the browser. Useful where the maker asks for an account of its own. The password stays in the store, QElectroTech does not send it.</source>
+        <translation>Händler, keine Schnittstelle für CAD-Daten: Die Produktseite bietet nach der RS-Anmeldung im Browser das Modell vieler Hersteller (STEP, DXF; von TraceParts). Hilfreich, wenn der Hersteller ein eigenes Konto verlangt. Das Passwort bleibt im Speicher, QElectroTech sendet es nicht.</translation>
+    </message>
 </context>
 <context>
     <name>MarginsEditDialog</name>
@@ -15247,6 +15583,25 @@ Ignoriert: %3</translation>
         <source>Open the door of the enclosure (needs a door surface)</source>
         <translation>Tür des Schranks öffnen (braucht eine Türfläche)</translation>
     </message>
+    <message>
+        <source>Front</source>
+        <translation>Vorne</translation>
+    </message>
+    <message>
+        <source>Top</source>
+        <translation>Oben</translation>
+    </message>
+    <message>
+        <source>Isometric</source>
+        <translation>Isometrisch</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n bodies. Drag: turn, right drag: move, wheel: zoom, click: select on the folio.</source>
+        <translation>
+            <numerusform>%n Körper. Ziehen: drehen, rechts ziehen: verschieben, Rad: zoomen, Klick: auf dem Blatt wählen.</numerusform>
+            <numerusform>%n Körper. Ziehen: drehen, rechts ziehen: verschieben, Rad: zoomen, Klick: auf dem Blatt wählen.</numerusform>
+        </translation>
+    </message>
 </context>
 <context>
     <name>Panel3DWidget</name>
@@ -15436,6 +15791,18 @@ Ignoriert: %3</translation>
     <message>
         <source>No findings.</source>
         <translation>Keine Befunde.</translation>
+    </message>
+    <message>
+        <source>Enclosure...</source>
+        <translation>Schrank…</translation>
+    </message>
+    <message>
+        <source>Plate only...</source>
+        <translation>Nur Platte…</translation>
+    </message>
+    <message>
+        <source>Find the enclosure by its width, height and depth; its mounting plate comes with it. Or only a mounting plate of your own size, with the manufacturer&apos;s holes.</source>
+        <translation>Schrank über Breite, Höhe und Tiefe finden; die Montageplatte kommt mit. Oder nur eine Montageplatte im eigenen Maß, mit den Löchern des Herstellers.</translation>
     </message>
 </context>
 <context>
@@ -16580,6 +16947,97 @@ Ignoriert: %3</translation>
         <source>This folio has no mounting plate yet. Use &quot;Build cabinet...&quot; to start.</source>
         <translation>Dieses Blatt hat noch keine Montageplatte. Mit „Schaltschrank aufbauen…“ beginnen.</translation>
     </message>
+    <message>
+        <source>Cabinet layout %1</source>
+        <translation>Schaltschrankaufbau %1</translation>
+    </message>
+    <message>
+        <source>Size from</source>
+        <translation>Maße ab</translation>
+    </message>
+    <message>
+        <source>No stored enclosure of at least this size: &quot;Data Portal…&quot; lists the manufacturer&apos;s enclosures of this size.</source>
+        <translation>Kein gespeicherter Schrank mit mindestens diesen Maßen: „Data Portal…“ zeigt die Schränke des Herstellers in dieser Größe.</translation>
+    </message>
+    <message>
+        <source>This folio is in use: the enclosure gets a new folio &quot;Cabinet layout&quot; at the end of the project.</source>
+        <translation>Diese Seite ist belegt: der Schrank bekommt eine neue Seite „Schaltschrankaufbau“ am Ende des Projekts.</translation>
+    </message>
+    <message>
+        <source>Plate of %1</source>
+        <translation>Platte von %1</translation>
+    </message>
+    <message>
+        <source>The series of the manufacturer whose fixings the plate gets, e.g. KX: terminal boxes, AX: compact enclosures, VX: baying enclosures</source>
+        <translation>Die Baureihe des Herstellers, deren Befestigungen die Platte bekommt, z. B. KX: Klemmenkästen, AX: Kompaktschränke, VX: Anreihschränke</translation>
+    </message>
+    <message>
+        <source>Series</source>
+        <translation>Baureihe</translation>
+    </message>
+    <message>
+        <source>More options</source>
+        <translation>Weitere Einstellungen</translation>
+    </message>
+    <message>
+        <source>The data of this enclosure hold no mounting plate.</source>
+        <translation>Die Daten dieses Schranks enthalten keine Montageplatte.</translation>
+    </message>
+    <message>
+        <source>A plain plate, without holes.</source>
+        <translation>Glatte Platte, ohne Löcher.</translation>
+    </message>
+    <message>
+        <source>With the fixings of %1 (%2 x %3 mm): fetched from the Data Portal with OK.</source>
+        <translation>Mit den Befestigungen von %1 (%2 x %3 mm): wird mit OK aus dem Data Portal geholt.</translation>
+    </message>
+    <message>
+        <source>No manufacturer&apos;s plate is stored yet, so this one stays plain. Insert an enclosure from the Data Portal once: its plate then is the pattern for all.</source>
+        <translation>Noch ist keine Herstellerplatte gespeichert, deshalb bleibt diese Platte glatt. Einmal einen Schrank aus dem Data Portal einfügen: seine Platte ist dann das Muster für alle.</translation>
+    </message>
+    <message>
+        <source>With the manufacturer&apos;s holes and edges (%1).</source>
+        <translation>Mit den Löchern und Kanten des Herstellers (%1).</translation>
+    </message>
+    <message>
+        <source>This folio holds a schematic: the plate gets a new folio &quot;Cabinet layout&quot; at the end of the project.</source>
+        <translation>Diese Seite enthält einen Schaltplan: die Platte bekommt eine neue Seite „Schaltschrankaufbau“ am Ende des Projekts.</translation>
+    </message>
+    <message>
+        <source>Fetching %1 from the Data Portal…</source>
+        <translation>Hole %1 aus dem Data Portal…</translation>
+    </message>
+    <message>
+        <source>OK inserts the plate as it is now: %1</source>
+        <translation>OK fügt die Platte so ein, wie sie jetzt ist: %1</translation>
+    </message>
+    <message>
+        <source>plain</source>
+        <translation>glatt</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n terminal(s) are not listed: they come with &quot;Place terminal strips&quot;.</source>
+        <translation>
+            <numerusform>%n Klemme ist nicht aufgeführt: sie kommt mit „Klemmenleisten platzieren“.</numerusform>
+            <numerusform>%n Klemmen sind nicht aufgeführt: sie kommen mit „Klemmenleisten platzieren“.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>The data hold no mounting plate.</source>
+        <translation type="vanished">Die Daten enthalten keine Montageplatte.</translation>
+    </message>
+    <message>
+        <source>%1: %2 terminals of %3 x %4 mm</source>
+        <translation type="vanished">%1: %2 Klemmen zu %3 x %4 mm</translation>
+    </message>
+    <message>
+        <source>Order number of the terminal</source>
+        <translation type="vanished">Bestellnummer der Klemme</translation>
+    </message>
+    <message>
+        <source>Without an order number the terminals are drawn 5.2 x 60 mm.</source>
+        <translation type="vanished">Ohne Bestellnummer werden die Klemmen 5,2 x 60 mm gezeichnet.</translation>
+    </message>
 </context>
 <context>
     <name>PanelShapePropertiesWidget</name>
@@ -16777,6 +17235,54 @@ Ignoriert: %3</translation>
     <message>
         <source>%1 enclosures shown, %2 of %3 hits loaded. Only parts with DXF data are listed.</source>
         <translation>%1 Gehäuse angezeigt, %2 von %3 Treffern geladen. Nur Teile mit DXF-Daten werden aufgeführt.</translation>
+    </message>
+    <message>
+        <source>Narrow by words, e.g. VX stainless</source>
+        <translation>Mit Wörtern eingrenzen, z. B. VX Edelstahl</translation>
+    </message>
+    <message>
+        <source>Only the enclosures whose type or description holds every word</source>
+        <translation>Nur Schränke, deren Typ oder Beschreibung jedes Wort enthält</translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation>Laden</translation>
+    </message>
+    <message>
+        <source>Width</source>
+        <translation>Breite</translation>
+    </message>
+    <message>
+        <source>Height</source>
+        <translation>Höhe</translation>
+    </message>
+    <message>
+        <source>Depth</source>
+        <translation>Tiefe</translation>
+    </message>
+    <message>
+        <source>Use this enclosure</source>
+        <translation>Diesen Schrank nehmen</translation>
+    </message>
+    <message>
+        <source>Loading the enclosures… (%1)</source>
+        <translation>Lade die Schränke… (%1)</translation>
+    </message>
+    <message>
+        <source>Loading the enclosures…</source>
+        <translation>Lade die Schränke…</translation>
+    </message>
+    <message>
+        <source>No enclosure of at least this size among the %1 of this manufacturer.</source>
+        <translation>Unter den %1 Schränken dieses Herstellers ist keiner mit mindestens diesen Maßen.</translation>
+    </message>
+    <message>
+        <source>%1 of %2 enclosures. Enter a width, height or depth to narrow the list.</source>
+        <translation>%1 von %2 Schränken. Breite, Höhe oder Tiefe eingeben, um die Liste einzugrenzen.</translation>
+    </message>
+    <message>
+        <source>%1 of %2 enclosures of at least this size, the closest fit first.</source>
+        <translation>%1 von %2 Schränken mit mindestens diesen Maßen, der passendste zuerst.</translation>
     </message>
 </context>
 <context>
@@ -17863,6 +18369,14 @@ Sollen sie importiert werden? Die Bauteile erhalten dann die nächsten Nummern, 
 %1 parts: %2 done, %3 partly, %4 there already, %5 not found, %6 planned.</source>
         <translation>
 %1 Bauteile: %2 fertig, %3 teilweise, %4 schon vorhanden, %5 nicht gefunden, %6 geplant.</translation>
+    </message>
+    <message>
+        <source>One account per portal. Passwords and tokens are kept in the Windows Credential Manager, never in the settings. QElectroTech uses official interfaces and public files only; it does not fill in login forms and solves no CAPTCHAs.</source>
+        <translation>Ein Konto je Portal. Passwörter und Tokens liegen in der Windows-Anmeldeinformationsverwaltung, nie in den Einstellungen. QElectroTech nutzt nur offizielle Schnittstellen und öffentliche Dateien; es füllt keine Anmeldeformulare aus und löst keine CAPTCHAs.</translation>
+    </message>
+    <message>
+        <source>Logged in (token in the Credential Manager).</source>
+        <translation>Angemeldet (Token in der Anmeldeinformationsverwaltung).</translation>
     </message>
 </context>
 <context>
@@ -23332,6 +23846,22 @@ Hier ist das Projekt ab sofort nur zum Lesen offen. Eigene Änderungen sichern S
     <message>
         <source>THM printers...</source>
         <translation>THM-Drucker…</translation>
+    </message>
+    <message>
+        <source>EPLAN DXF package (ZIP)…</source>
+        <translation type="vanished">EPLAN-DXF-Paket (ZIP)…</translation>
+    </message>
+    <message>
+        <source>Unpacked EPLAN DXF package (folder)…</source>
+        <translation type="vanished">Entpacktes EPLAN-DXF-Paket (Ordner)…</translation>
+    </message>
+    <message>
+        <source>Single EPLAN DXF…</source>
+        <translation type="vanished">Einzelne EPLAN-DXF…</translation>
+    </message>
+    <message>
+        <source>EPLAN part (.edz)…</source>
+        <translation type="vanished">EPLAN-Bauteil (.edz)…</translation>
     </message>
 </context>
 <context>
@@ -36749,6 +37279,103 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <message>
         <source>Stop the running import?</source>
         <translation>Laufenden Import abbrechen?</translation>
+    </message>
+</context>
+<context>
+    <name>AssistantSettingsDialog</name>
+    <message>
+        <source>Assistant settings</source>
+        <translation type="vanished">Einstellungen des Assistenten</translation>
+    </message>
+    <message>
+        <source>The assistant uses Claude (Anthropic). It needs an API key from console.anthropic.com. The key is kept in the Windows Credential Manager, never in a file of QElectroTech.</source>
+        <translation type="vanished">Der Assistent nutzt Claude (Anthropic). Er braucht einen API-Schlüssel von console.anthropic.com. Der Schlüssel liegt in der Windows-Anmeldeinformationsverwaltung, nie in einer Datei von QElectroTech.</translation>
+    </message>
+    <message>
+        <source>API key:</source>
+        <translation type="vanished">API-Schlüssel:</translation>
+    </message>
+    <message>
+        <source>not found</source>
+        <translation type="vanished">nicht gefunden</translation>
+    </message>
+    <message>
+        <source>Choose…</source>
+        <translation type="vanished">Wählen…</translation>
+    </message>
+    <message>
+        <source>Python:</source>
+        <translation type="vanished">Python:</translation>
+    </message>
+    <message>
+        <source>Python program</source>
+        <translation type="vanished">Python-Programm</translation>
+    </message>
+    <message>
+        <source>The bridge needs the Python package “anthropic” (py -m pip install anthropic).</source>
+        <translation type="vanished">Die Brücke braucht das Python-Paket „anthropic“ (py -m pip install anthropic).</translation>
+    </message>
+    <message>
+        <source>Remove key</source>
+        <translation type="vanished">Schlüssel entfernen</translation>
+    </message>
+    <message>
+        <source>No credential store on this system: set ANTHROPIC_API_KEY in the environment instead.</source>
+        <translation type="vanished">Auf diesem System gibt es keinen Anmeldeinformationsspeicher: stattdessen ANTHROPIC_API_KEY in der Umgebung setzen.</translation>
+    </message>
+    <message>
+        <source>A key is stored. Leave the field empty to keep it.</source>
+        <translation type="vanished">Ein Schlüssel ist hinterlegt. Feld leer lassen, um ihn zu behalten.</translation>
+    </message>
+    <message>
+        <source>No key stored yet.</source>
+        <translation type="vanished">Noch kein Schlüssel hinterlegt.</translation>
+    </message>
+    <message>
+        <source>The key could not be stored: %1</source>
+        <translation type="vanished">Der Schlüssel ließ sich nicht speichern: %1</translation>
+    </message>
+    <message>
+        <source>Remove the stored API key?</source>
+        <translation type="vanished">Den hinterlegten API-Schlüssel entfernen?</translation>
+    </message>
+    <message>
+        <source>The key could not be removed: %1</source>
+        <translation type="vanished">Der Schlüssel ließ sich nicht entfernen: %1</translation>
+    </message>
+</context>
+<context>
+    <name>EnclosureSizeFields</name>
+    <message>
+        <source>In millimetres; empty: any. Listed are the enclosures of at least this size, the closest fit first.</source>
+        <translation>In Millimetern; leer: beliebig. Gezeigt werden die Schränke mit mindestens diesen Maßen, der passendste zuerst.</translation>
+    </message>
+    <message>
+        <source>any</source>
+        <translation>beliebig</translation>
+    </message>
+    <message>
+        <source>Width</source>
+        <translation>Breite</translation>
+    </message>
+    <message>
+        <source>Height</source>
+        <translation>Höhe</translation>
+    </message>
+    <message>
+        <source>Depth</source>
+        <translation>Tiefe</translation>
+    </message>
+    <message>
+        <source>mm</source>
+        <translation>mm</translation>
+    </message>
+</context>
+<context>
+    <name>PlateFinder</name>
+    <message>
+        <source>The download needs your EPLAN Data Portal token: enter it once in Part import &gt; From the EPLAN Data Portal (&quot;Remember the token&quot;).</source>
+        <translation>Der Download braucht dein EPLAN-Data-Portal-Token: einmal unter Bauteil-Import &gt; Aus dem EPLAN Data Portal eintragen („Token merken“).</translation>
     </message>
 </context>
 </TS>

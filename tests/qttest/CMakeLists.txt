@@ -2515,6 +2515,17 @@ target_compile_definitions(tst_thmlayouts PRIVATE
 # Label printing > Print THM labels...: preview of the markers and the printer
 # chosen by the article loaded (one preselected, none among several).
 qet_add_app_test(tst_thmprintdialog tst_thmprintdialog.cpp)
+# Finding an enclosure by width, height and depth: the sizes read from the
+# description of a part, and the list of those of at least the size asked
+# for, the closest fit first (sources/panel/enclosuresize.cpp).
+add_executable(
+  tst_enclosuresize
+  tst_enclosuresize.cpp
+  ${QET_DIR}/sources/panel/enclosuresize.cpp
+  ${QET_DIR}/sources/panel/enclosuresize.h)
+add_test(NAME tst_enclosuresize COMMAND tst_enclosuresize)
+target_include_directories(tst_enclosuresize PRIVATE ${QET_DIR}/sources)
+target_link_libraries(tst_enclosuresize PRIVATE Qt::Core Qt::Test)
 
 # A project split into the parts of a .qetz and joined back is the same
 # document, on every example (and QET_CONTAINER_CORPUS if set).

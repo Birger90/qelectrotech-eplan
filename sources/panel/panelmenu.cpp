@@ -44,11 +44,14 @@
 #include "../qetgraphicsitem/qetshapeitem.h"
 #include "../qetgraphicsitem/terminalelement.h"
 #include "../qetproject.h"
+#include "../projectview.h"
+#include "../titleblockproperties.h"
 #include "../TerminalStrip/terminalstrip.h"
 #include "../TerminalStrip/physicalterminal.h"
 #include "../TerminalStrip/realterminal.h"
 #include "../qetversion.h"
 #include "../undocommand/addgraphicsobjectcommand.h"
+#include "../undocommand/changetitleblockcommand.h"
 #include "../undocommand/changeelementinformationcommand.h"
 #include "../undocommand/deleteqgraphicsitemcommand.h"
 #include "../diagramcontent.h"
@@ -67,6 +70,8 @@
 #include <QGraphicsObject>
 #include <QGroupBox>
 #include <QHBoxLayout>
+#include <QHash>
+#include <QSignalBlocker>
 #include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
@@ -155,6 +160,71 @@ QDialogButtonBox *okCancel(QDialog *dialog)
 	QObject::connect(buttons, &QDialogButtonBox::accepted, dialog, &QDialog::accept);
 	QObject::connect(buttons, &QDialogButtonBox::rejected, dialog, &QDialog::reject);
 	return buttons;
+}
+
+	/// a folio that holds a cabinet layout: an enclosure or a mounting surface
+bool hasLayout(Diagram *d)
+{
+	for (QGraphicsItem *item : d->items())
+		if (auto *s = dynamic_cast<QetShapeItem *>(item)) {
+			const PanelData::Role role = s->panelData().role;
+			if (role == PanelData::Enclosure || role == PanelData::Surface) return true;
+		}
+	return false;
+}
+
+	/// a folio with something drawn on it: a schematic, or a layout
+bool folioInUse(Diagram *d)
+{
+	if (!d->elements().isEmpty() || !d->conductors().isEmpty()) return true;
+	for (QGraphicsItem *item : d->items())
+		if (dynamic_cast<QetShapeItem *>(item)) return true;
+	return false;
+}
+
+	/// Where a new enclosure or mounting plate goes. Every enclosure has a
+	/// folio of its own: the open one only while nothing is on it. A plate
+	/// alone joins the layout of the open folio, but never a schematic.
+bool needsNewFolio(Diagram *d, bool enclosure)
+{
+	if (!folioInUse(d)) return false;
+	return enclosure || !hasLayout(d);
+}
+
+	/// a new folio at the end of the project, titled "Cabinet layout +S1",
+	/// shown in the editor; @p current when the project takes none
+Diagram *newLayoutFolio(QETDiagramEditor *editor, Diagram *current, const QString &designation)
+{
+	QETProject *project = current->project();
+	Diagram *folio = project ? project->addNewDiagram() : nullptr;
+	if (!folio) return current;
+		// the title the way the title block dialog sets it: the tab and the
+		// folio list follow
+	const TitleBlockProperties old_title = folio->border_and_titleblock.exportTitleBlock();
+	TitleBlockProperties title = old_title;
+	title.title = PanelMenu::tr("Cabinet layout %1").arg(designation).trimmed();
+	folio->undoStack().push(new ChangeTitleBlockCommand(folio, old_title, title));
+	// (the folio came from the editor's current view: its project is shown)
+	if (ProjectView *view = editor->currentProjectView()) view->showDiagram(folio);
+	return folio;
+}
+
+	/// "+S1", or the next number no enclosure of the project has yet
+QString nextEnclosureDesignation(Diagram *d)
+{
+	QSet<QString> used;
+	if (QETProject *project = d->project()) {
+			// folios not built yet are left alone: looking must not load them
+		const QList<Diagram *> folios = project->unloadedFolioCount() == 0 ? project->diagrams()
+																		   : project->builtFolios();
+		for (Diagram *folio : folios)
+			for (QGraphicsItem *item : folio->items())
+				if (auto *s = dynamic_cast<QetShapeItem *>(item))
+					if (s->panelData().role == PanelData::Enclosure) used << s->panelData().designation;
+	}
+	int n = 1;
+	while (used.contains(QStringLiteral("+S%1").arg(n))) ++n;
+	return QStringLiteral("+S%1").arg(n);
 }
 
 /* ------------------------------------------------------------------ */
@@ -655,11 +725,13 @@ void PanelMenu::showAssistant()
 	if (!d) return;
 	PanelAssistant::Actions a;
 	a.enclosure = [this]() {insertEnclosure();};
+	a.surface = [this]() {insertSurface();};
 	a.devices = [this]() {placeDevices();};
 	a.terminals = [this]() {placeTerminalStrips();};
 	a.checks = [this]() {if (m_check_action) m_check_action->setChecked(true); showChecks(true);};
 	a.view3d = [this]() {show3D();};
 	a.manufacturing = [this]() {exportManufacturing();};
+	a.current = [this]() {return diagram();};
 	auto *assistant = new PanelAssistant(d, a, m_editor);
 	assistant->show();
 }
@@ -771,9 +843,13 @@ void PanelMenu::insertEnclosure()
 	dialog.setWindowTitle(tr("Insert enclosure"));
 	auto *form = new QFormLayout;
 	auto *list = new QComboBox(&dialog);
-	auto fill = [list](const QString &select) {
+		// the enclosure is found by its sizes: the stored ones of at least
+		// that size here, all of the manufacturer in the Data Portal
+	auto *sizes = new EnclosureSizeFields(&dialog);
+	auto fill = [list, sizes](const QString &select) {
 		list->clear();
-		for (const QString &f : PanelImport::enclosureFolders()) list->addItem(QFileInfo(f).fileName(), f);
+		for (const QString &f : PanelImport::enclosureFolders(sizes->size()))
+			list->addItem(QFileInfo(f).fileName(), f);
 		const int i = list->findData(select);
 		if (i >= 0) list->setCurrentIndex(i);
 	};
@@ -785,7 +861,7 @@ void PanelMenu::insertEnclosure()
 	row->addWidget(portal);
 	auto *info = new QLabel(&dialog);
 	info->setWordWrap(true);
-	auto *designation = new QLineEdit(QStringLiteral("+S1"), &dialog);
+	auto *designation = new QLineEdit(nextEnclosureDesignation(d), &dialog);
 	auto *plate_name = new QLineEdit(QStringLiteral("-MP1"), &dialog);
 	auto *with_plate = new QCheckBox(tr("With its mounting plate"), &dialog);
 	with_plate->setChecked(true);
@@ -796,6 +872,7 @@ void PanelMenu::insertEnclosure()
 	plate_size->addWidget(plate_w);
 	plate_size->addWidget(new QLabel(QStringLiteral("x"), &dialog));
 	plate_size->addWidget(plate_h);
+	form->addRow(tr("Size from"), sizes);
 	form->addRow(tr("Enclosure"), row);
 	form->addRow(QString(), info);
 	form->addRow(tr("Designation"), designation);
@@ -809,7 +886,10 @@ void PanelMenu::insertEnclosure()
 		enclosure = PanelImport::Enclosure();
 		const QString folder = list->currentData().toString();
 		if (folder.isEmpty()) {
-			info->setText(tr("No enclosure yet: choose one in the Data Portal."));
+			info->setText(sizes->size().isNull()
+						  ? tr("No enclosure yet: choose one in the Data Portal.")
+						  : tr("No stored enclosure of at least this size: \"Data Portal…\" lists "
+							   "the manufacturer's enclosures of this size."));
 		} else {
 			enclosure = PanelImport::readEnclosure(folder);
 			QString text = enclosure.description;
@@ -833,18 +913,37 @@ void PanelMenu::insertEnclosure()
 		machined->setEnabled(!enclosure.plate.isEmpty());
 	};
 	connect(list, &QComboBox::currentIndexChanged, &dialog, load);
+	connect(sizes, &EnclosureSizeFields::changed, &dialog, [&]() {
+		fill(list->currentData().toString());
+		load();
+	});
 	connect(portal, &QPushButton::clicked, &dialog, [&]() {
-		PanelTemplateDialog dp(&dialog, true);
+			// the Data Portal starts with the sizes asked for here
+		PanelTemplateDialog dp(&dialog, true, sizes->size());
 		if (dp.exec() == QDialog::Accepted && !dp.templateFile().isEmpty()) {
+			sizes->setSize(dp.sizeFilter());
 			fill(dp.templateFile());
+				// chosen there by other words: it is the one wanted
+			if (list->findData(dp.templateFile()) < 0) {
+				sizes->setSize(EnclosureSize());
+				fill(dp.templateFile());
+			}
 			load();
 		}
 	});
 	load();
 	auto *box = new QVBoxLayout(&dialog);
 	box->addLayout(form);
+	if (needsNewFolio(d, true)) {
+		auto *where = new QLabel(tr("This folio is in use: the enclosure gets a new folio \"Cabinet layout\" "
+									"at the end of the project."), &dialog);
+		where->setWordWrap(true);
+		box->addWidget(where);
+	}
 	box->addWidget(okCancel(&dialog));
 	if (dialog.exec() != QDialog::Accepted || enclosure.isNull()) return;
+		// every enclosure on a folio of its own
+	if (needsNewFolio(d, true)) d = newLayoutFolio(m_editor, d, designation->text().trimmed());
 
 		// a scale at which the front view fits the folio
 	const QRectF area = d->border_and_titleblock.insideBorderRect().adjusted(20, 20, -20, -20);
@@ -901,13 +1000,29 @@ void PanelMenu::insertSurface()
 	basis->addItem(tr("Sizes, holes and edges like the template"));
 	basis->addItem(tr("Template plate as it is"));
 	auto *templ = new QComboBox(&dialog);
+		// the plate of a stored enclosure is a template too: a plate of any
+		// size then gets the manufacturer's holes and edges without a
+		// plate of its own from the Data Portal
+	auto enclosure_of = [](const QString &file) {
+		const QFileInfo info(file);
+		return info.fileName() == QLatin1String("B.dxf")
+			   && QDir(info.absolutePath()).absolutePath().startsWith(
+					  QDir(PanelImport::enclosuresDirectory()).absolutePath())
+			   ? info.absolutePath() : QString();
+	};
 	auto fill_templates = [templ](const QString &select) {
 		templ->clear();
 		for (const QString &f : PanelImport::templateFiles()) templ->addItem(PanelImport::templateName(f), f);
+		for (const QString &f : PanelImport::enclosurePlateFiles())
+			templ->addItem(tr("Plate of %1").arg(QFileInfo(QFileInfo(f).absolutePath()).fileName()
+												 .section(QStringLiteral(" - "), 0, 0)), f);
 		const int i = templ->findData(select);
 		if (i >= 0) templ->setCurrentIndex(i);
 	};
 	fill_templates(QString());
+		// with a template at hand the plate gets its holes: that is what a
+		// plate of one's own size is wanted with
+	if (templ->count() > 0) basis->setCurrentIndex(1);
 	auto *from_portal = new QPushButton(tr("Data Portal…"), &dialog);
 	from_portal->setToolTip(tr("Load a manufacturer's mounting plate (e.g. Rittal) as template"));
 	auto *from_file = new QPushButton(tr("DXF file…"), &dialog);
@@ -935,27 +1050,69 @@ void PanelMenu::insertSurface()
 	auto *article = new QLineEdit(&dialog);
 	auto *manufacturer = new QLineEdit(&dialog);
 	auto *step = new QLineEdit(&dialog);
-	form->addRow(tr("Made from"), basis);
-	form->addRow(tr("Template"), templ_row);
-	form->addRow(QString(), templ_info);
-	form->addRow(QString(), machined);
+		// what one needs to say: the name and the size. The plate gets the
+		// manufacturer's holes and edges by itself; all else is under
+		// "More options"
 	form->addRow(tr("Designation"), designation);
 	form->addRow(tr("Width"), w);
 	form->addRow(tr("Height"), h);
-	form->addRow(tr("Sheet thickness"), t);
-	form->addRow(tr("Scale"), scale);
-	form->addRow(tr("Zero point"), origin);
-	form->addRow(tr("Manufacturer"), manufacturer);
-	form->addRow(tr("Article number"), article);
-	form->addRow(tr("STEP model"), stepPicker(step, &dialog));
+		// the series says which fixings the plate gets: the plates of one
+		// series have the same corners, whatever their size
+	auto *series = new QComboBox(&dialog);
+	series->setToolTip(tr("The series of the manufacturer whose fixings the plate gets, e.g. KX: terminal "
+						  "boxes, AX: compact enclosures, VX: baying enclosures"));
+	form->addRow(tr("Series"), series);
+	auto *standard = new QLabel(&dialog);
+	standard->setWordWrap(true);
+	form->addRow(QString(), standard);
+	auto *finder = new PlateFinder(&dialog);
+		// the plate of the Data Portal that fits better than all stored
+		// ones: fetched when the dialog is confirmed
+	PlateFinder::Plate wanted;
+	bool fetch_failed = false;
+	auto *more_button = new QPushButton(tr("More options"), &dialog);
+	more_button->setCheckable(true);
+	more_button->setAutoDefault(false);
+	auto *more = new QWidget(&dialog);
+	auto *more_form = new QFormLayout(more);
+	more_form->setContentsMargins(0, 0, 0, 0);
+	more_form->addRow(tr("Made from"), basis);
+	more_form->addRow(tr("Template"), templ_row);
+	more_form->addRow(QString(), templ_info);
+	more_form->addRow(QString(), machined);
+	more_form->addRow(tr("Sheet thickness"), t);
+	more_form->addRow(tr("Scale"), scale);
+	more_form->addRow(tr("Zero point"), origin);
+	more_form->addRow(tr("Manufacturer"), manufacturer);
+	more_form->addRow(tr("Article number"), article);
+	more_form->addRow(tr("STEP model"), stepPicker(step, &dialog));
+	more->setVisible(false);
 
+		// the templates read so far, by file: the size fields ask again
+		// with every key
+	QHash<QString, PanelOutline> outlines;
+	auto outline_of = [&](const QString &file, QString *error) {
+		if (!outlines.contains(file)) {
+			const QString enclosure = enclosure_of(file);
+				// of an enclosure only what is a plate: view B of some
+				// enclosures is their back
+			outlines.insert(file, enclosure.isEmpty() ? PanelImport::readDxfFile(file, error)
+													  : PanelImport::readEnclosure(enclosure).plate);
+		}
+		if (error && error->isEmpty() && outlines.value(file).isEmpty())
+			*error = tr("The data of this enclosure hold no mounting plate.");
+		return outlines.value(file);
+	};
+		// the template is chosen for the user, until they choose one
+	bool own_choice = false;
 	PanelOutline outline;
 	auto load_template = [&]() {
 		outline = PanelOutline();
 		const QString file = templ->currentData().toString();
+		const QString enclosure = enclosure_of(file);
 		if (!file.isEmpty()) {
 			QString error;
-			outline = PanelImport::readDxfFile(file, &error);
+			outline = outline_of(file, &error);
 			if (outline.isEmpty()) templ_info->setText(error);
 			else templ_info->setText(tr("%1 x %2 mm, %n holes", nullptr, int(outline.circles().size()))
 									 .arg(num(outline.width), num(outline.height)));
@@ -971,22 +1128,95 @@ void PanelMenu::insertSurface()
 		const bool as_is = basis->currentIndex() == 2 && !outline.isEmpty();
 		w->setEnabled(!as_is);
 		h->setEnabled(!as_is);
-		if (use && !outline.isEmpty() && (as_is || (w->value() == 500 && h->value() == 700))) {
+		if (use && !outline.isEmpty() && as_is) {
+			const QSignalBlocker bw(w), bh(h);
 			w->setValue(outline.width);
 			h->setValue(outline.height);
 		}
+		if (basis->currentIndex() == 0)
+			standard->setText(tr("A plain plate, without holes."));
+		else if (!wanted.isNull() && !own_choice)
+			standard->setText(tr("With the fixings of %1 (%2 x %3 mm): fetched from the Data Portal with OK.")
+							  .arg(wanted.type, num(wanted.width), num(wanted.height)));
+		else if (outline.isEmpty())
+			standard->setText(tr("No manufacturer's plate is stored yet, so this one stays plain. Insert an "
+								 "enclosure from the Data Portal once: its plate then is the pattern for all."));
+		else
+			standard->setText(tr("With the manufacturer's holes and edges (%1).").arg(templ->currentText()));
 			// a Data Portal template is named "<type> - <description>"
-		if (use && !outline.isEmpty() && article->text().isEmpty()) {
+			// (the plate of an enclosure has the enclosure's number: not taken)
+		if (use && own_choice && !outline.isEmpty() && article->text().isEmpty() && enclosure.isEmpty()) {
 			const QString type = outline.name.section(QStringLiteral(" - "), 0, 0);
 			if (type.contains(QLatin1Char('.'))) article->setText(type.section(QLatin1Char('.'), 1));
 		}
 	};
+		// The stored plate nearest in size is the pattern: stretched the
+		// least, its holes and edges fit best.
+		// the series of a stored template: its name begins with the type
+		// number ("KX.1570800 - ...", or the enclosure "SE.5842600 - ...")
+	auto series_of = [&](int i) {
+		const QString file = templ->itemData(i).toString();
+		const QString enclosure = enclosure_of(file);
+		const QString name = enclosure.isEmpty() ? PanelImport::templateName(file) : QFileInfo(enclosure).fileName();
+		return EnclosureSize::seriesOf(name.section(QStringLiteral(" - "), 0, 0));
+	};
+	auto fill_series = [&]() {
+		QSettings settings;
+		const QString now = series->count() ? series->currentText()
+											: settings.value(QStringLiteral("panel/plate_series"), QStringLiteral("KX")).toString();
+		QStringList names = finder->series();
+		for (int i = 0; i < templ->count(); ++i) {
+			const QString s = series_of(i);
+			if (!s.isEmpty() && !names.contains(s)) names << s;
+		}
+		if (!names.contains(now)) names << now;
+		names.sort();
+		const QSignalBlocker blocker(series);
+		series->clear();
+		series->addItems(names);
+		series->setCurrentText(now);
+	};
+	auto pick_template = [&]() {
+		wanted = PlateFinder::Plate();
+		if (own_choice || basis->currentIndex() != 1) {load_template(); return;}
+		int best = -1;
+		double best_d = 0;
+		for (int i = 0; i < templ->count(); ++i) {
+			if (series_of(i).compare(series->currentText(), Qt::CaseInsensitive) != 0) continue;
+			const PanelOutline o = outline_of(templ->itemData(i).toString(), nullptr);
+			if (o.isEmpty()) continue;
+			const double dist = qAbs(o.width - w->value()) + qAbs(o.height - h->value());
+			if (best < 0 || dist < best_d) {best = i; best_d = dist;}
+		}
+			// a plate of the Data Portal nearer than all stored ones
+		if (finder->isReady() && !fetch_failed) {
+			const PlateFinder::Plate p = finder->nearest(series->currentText(), w->value(), h->value());
+			if (!p.isNull() && PlateFinder::storedFile(p).isEmpty()
+				&& (best < 0 || qAbs(p.width - w->value()) + qAbs(p.height - h->value()) < best_d - 0.5))
+				wanted = p;
+		}
+		{
+			const QSignalBlocker blocker(templ);
+			templ->setCurrentIndex(best);   // -1: no stored plate of this series
+		}
+		load_template();
+	};
+	connect(series, &QComboBox::currentIndexChanged, &dialog, pick_template);
+	connect(finder, &PlateFinder::ready, &dialog, [&]() {fill_series(); pick_template();});
 	connect(basis, &QComboBox::currentIndexChanged, &dialog, load_template);
 	connect(templ, &QComboBox::currentIndexChanged, &dialog, load_template);
+	connect(templ, &QComboBox::activated, &dialog, [&]() {own_choice = true;});
+	connect(w, &QDoubleSpinBox::valueChanged, &dialog, pick_template);
+	connect(h, &QDoubleSpinBox::valueChanged, &dialog, pick_template);
+	connect(more_button, &QPushButton::toggled, &dialog, [&](bool on) {
+		more->setVisible(on);
+		dialog.adjustSize();
+	});
 	connect(from_portal, &QPushButton::clicked, &dialog, [&]() {
 		PanelTemplateDialog portal(&dialog);
 		if (portal.exec() == QDialog::Accepted && !portal.templateFile().isEmpty()) {
 			fill_templates(portal.templateFile());
+			own_choice = true;
 			if (manufacturer->text().isEmpty()) manufacturer->setText(QStringLiteral("Rittal"));
 			load_template();
 		}
@@ -1001,14 +1231,60 @@ void PanelMenu::insertSurface()
 		const QString stored = PanelImport::saveTemplate(QFileInfo(file).completeBaseName(), f.readAll(), &error);
 		if (stored.isEmpty()) {templ_info->setText(error); return;}
 		fill_templates(stored);
+		own_choice = true;
 		load_template();
 	});
-	load_template();
+	fill_series();
+	pick_template();
+	finder->load();
 
 	auto *layout = new QVBoxLayout(&dialog);
 	layout->addLayout(form);
-	layout->addWidget(okCancel(&dialog));
+	layout->addWidget(more_button, 0, Qt::AlignLeft);
+	layout->addWidget(more);
+	if (needsNewFolio(d, false)) {
+		auto *where = new QLabel(tr("This folio holds a schematic: the plate gets a new folio \"Cabinet layout\" "
+									"at the end of the project."), &dialog);
+		where->setWordWrap(true);
+		layout->addWidget(where);
+	}
+		// OK first fetches the plate that fits best, then closes
+	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+	connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+	connect(buttons, &QDialogButtonBox::accepted, &dialog, [&]() {
+		if (wanted.isNull() || finder->isBusy()) {
+			if (!finder->isBusy()) dialog.accept();
+			return;
+		}
+		buttons->button(QDialogButtonBox::Ok)->setEnabled(false);
+		standard->setText(tr("Fetching %1 from the Data Portal…").arg(wanted.type));
+		finder->fetch(wanted);
+	});
+	connect(finder, &PlateFinder::fetched, &dialog, [&](const QString &file) {
+		wanted = PlateFinder::Plate();
+		outlines.remove(file);
+		{
+			const QSignalBlocker blocker(templ);
+			fill_templates(file);
+		}
+		load_template();
+		dialog.accept();
+	});
+	connect(finder, &PlateFinder::failed, &dialog, [&](const QString &message) {
+			// what is stored stays the pattern; OK again inserts the plate
+		const bool was_fetching = !buttons->button(QDialogButtonBox::Ok)->isEnabled();
+		buttons->button(QDialogButtonBox::Ok)->setEnabled(true);
+		fetch_failed = true;
+		pick_template();
+		if (was_fetching)
+			standard->setText(message + QStringLiteral("\n") + tr("OK inserts the plate as it is now: %1")
+							  .arg(outline.isEmpty() ? tr("plain") : templ->currentText()));
+	});
+	layout->addWidget(buttons);
 	if (dialog.exec() != QDialog::Accepted) return;
+	QSettings().setValue(QStringLiteral("panel/plate_series"), series->currentText());
+		// a plate never lands in a schematic
+	if (needsNewFolio(d, false)) d = newLayoutFolio(m_editor, d, designation->text().trimmed());
 
 	const QRectF area = d->border_and_titleblock.insideBorderRect().adjusted(20, 20, -20, -20);
 	double n = scale->currentData().toDouble();
@@ -1777,8 +2053,11 @@ QString PanelMenu::placeDevicesOn(Diagram *d, QWidget *parent, bool interactive)
 			}
 
 		// devices already on a layout: by their full designation
+		// (diagrams(), not folios(): a project opened with lazy folios has
+		// folios not built yet, and those would show no devices at all)
+	const QList<Diagram *> all_folios = project->diagrams();
 	QSet<QString> placed;
-	for (Diagram *folio : project->folios())
+	for (Diagram *folio : all_folios)
 		if (!PanelLayout::surfaces(folio).isEmpty())
 			for (Element *e : folio->elements()) {
 				const QString of = e->elementInformations().value(QStringLiteral("panel_of")).toString();
@@ -1788,17 +2067,17 @@ QString PanelMenu::placeDevicesOn(Diagram *d, QWidget *parent, bool interactive)
 	struct Row {Element *e; QString label; QString key; double w, h, dep;};
 	QList<Row> rows;
 	QSet<QString> seen, elsewhere;
-	int duplicates = 0;
-	for (Diagram *folio : project->folios()) {
+	int duplicates = 0, terminals = 0;
+	for (Diagram *folio : all_folios) {
 		if (!PanelLayout::surfaces(folio).isEmpty()) continue;
 		for (Element *e : folio->elements()) {
 			const int t = e->linkType();
-			if (!(t == Element::Simple || t == Element::Master || t == Element::Terminale)) continue;
+				// a terminal is no device: terminals go onto the rail as
+				// strips ("Place terminal strips"), with or without a strip
+				// of their own in the project
+			if (t == Element::Terminale) {++terminals; continue;}
+			if (!(t == Element::Simple || t == Element::Master)) continue;
 			if (e->actualLabel().trimmed().isEmpty()) continue;
-				// a terminal of a terminal strip goes onto the rail with its
-				// strip ("Place terminal strips"), not on its own
-			if (auto *te = qobject_cast<TerminalElement *>(e))
-				if (te->realTerminal() && te->realTerminal()->parentStrip()) continue;
 			const Tag tag = tagOf(e, folio);
 			if (tag.bmk.isEmpty()) continue;
 			if (!enclosure_location.isEmpty() && !tag.location.isEmpty()
@@ -1869,6 +2148,9 @@ QString PanelMenu::placeDevicesOn(Diagram *d, QWidget *parent, bool interactive)
 								.arg(rows.size())
 								.arg(enclosure_location.isEmpty() ? tr("all locations") : QStringLiteral("+") + enclosure_location)
 								.arg(elsewhere.size()).arg(duplicates).arg(without_order)
+							+ (terminals ? QStringLiteral(" ") + tr("%n terminal(s) are not listed: they come with "
+																	"\"Place terminal strips\".", nullptr, terminals)
+										 : QString())
 							+ QStringLiteral("\n")
 							+ tr("Devices without a size are proposed at 45 x 90 x 70 mm; correct the sizes here "
 							   "or in the part. They are snapped onto the DIN rails from left to right."), &dialog);

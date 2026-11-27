@@ -3065,7 +3065,7 @@ int run(const QStringList &args)
 	if (format == "portallogin" || format == "portallogout") {
 		const QString id = rest.value(0);
 		if (ManufacturerPortals::portal(id).id.isEmpty()) {
-			err << "Usage: qelectrotech " << flag << " <dataportal|siemens|rittal|3dfindit|keyence>"
+			err << "Usage: qelectrotech " << flag << " <dataportal|siemens|rittal|3dfindit|keyence|beckhoff|rs>"
 			    << (format == "portallogin" ? " [--user NAME]  (password or token on stdin)" : "") << "\n";
 			return 2;
 		}

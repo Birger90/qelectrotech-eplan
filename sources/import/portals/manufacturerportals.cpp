@@ -93,6 +93,25 @@ QList<ManufacturerPortal> ManufacturerPortals::portals()
 			"\"Fetch missing parts\" stores it as 3D/Keyence/<order number>.stp. "
 			"The password stays in the store, QElectroTech does not send it.");
 	list << key;
+	ManufacturerPortal bck;
+	bck.id = QStringLiteral("beckhoff");
+	bck.name = tr("Beckhoff");
+	bck.login_url = QStringLiteral("https://www.beckhoff.com");
+	bck.secret_label = tr("Password");
+	bck.access = tr("Not in the Data Portal and no API: the EPLAN macros come as one package from the product "
+			"page (myBeckhoff login, in the browser), the drawings (DXF, STEP) per housing without a login. "
+			"The password stays in the store, QElectroTech does not send it.");
+	list << bck;
+
+	ManufacturerPortal rs;
+	rs.id = QStringLiteral("rs");
+	rs.name = tr("RS Components");
+	rs.login_url = QStringLiteral("https://de.rs-online.com");
+	rs.secret_label = tr("Password");
+	rs.access = tr("Distributor, no API for CAD data: the product page offers the model of many makers "
+		       "(STEP, DXF; from TraceParts) after the RS login, in the browser. Useful where the maker "
+		       "asks for an account of its own. The password stays in the store, QElectroTech does not send it.");
+	list << rs;
 	return list;
 }
 

@@ -76,11 +76,15 @@ class PanelAssistant : public QDialog
 	public:
 		struct Actions {
 			std::function<void()> enclosure;     ///< enclosure and mounting plate (dialog)
+			std::function<void()> surface;       ///< a mounting plate alone, of any size (dialog)
 			std::function<void()> devices;       ///< place the devices of the schematic
 			std::function<void()> terminals;     ///< place the terminal strips
 			std::function<void()> checks;        ///< show the check list
 			std::function<void()> view3d;
 			std::function<void()> manufacturing; ///< export the manufacturing files
+				/// the folio open in the editor: a step may have made a new
+				/// one (an enclosure gets a folio of its own)
+			std::function<Diagram *()> current;
 		};
 		PanelAssistant(Diagram *diagram, const Actions &actions, QWidget *parent = nullptr);
 
@@ -93,6 +97,7 @@ class PanelAssistant : public QDialog
 
 	private:
 		void update();
+		void follow(Diagram *diagram);
 
 		QPointer<Diagram> m_diagram;
 		Actions m_actions;
@@ -100,6 +105,7 @@ class PanelAssistant : public QDialog
 		QList<QLabel *> m_states;
 		QSpinBox *m_rows = nullptr;
 		QComboBox *m_duct = nullptr;
+		bool m_running = false;   ///< a step is at work
 };
 
 #endif // PANELASSISTANT_H

@@ -194,6 +194,35 @@ class DataPortalClientTest : public QObject
 			QCOMPARE(query.queryItemValue(QStringLiteral("page[offset]")), QStringLiteral("50"));
 		}
 
+		/// a whole product group (the enclosures of a manufacturer) as a
+		/// long, slim list: the group's id as filter, texts and numbers
+		/// only, no text to search for
+		void searchProductGroup()
+		{
+			Stub stub;
+			stub.m_reply = {200, "Content-Type: application/vnd.api+json\r\n", PARTS};
+			DataPortalClient client;
+			client.setBaseUrl(stub.url());
+			QSignalSpy found(&client, &DataPortalClient::searchFinished);
+			DataPortalQuery q = query(QString(), QStringLiteral("TST"));
+			q.only_dxf = true;
+			q.catalog = QStringLiteral("400560000");
+			q.brief = true;
+			q.limit = 1000;
+			client.search(q);
+			QVERIFY(found.wait(10000));
+			const QUrlQuery query(QUrl(QString::fromLatin1(stub.m_target)).query());
+			QCOMPARE(query.queryItemValue(QStringLiteral("filter[catalog_eplan]")), QStringLiteral("400560000"));
+			QCOMPARE(query.queryItemValue(QStringLiteral("filter[manufacturer]")), QStringLiteral("TST"));
+			QCOMPARE(query.queryItemValue(QStringLiteral("page[limit]")), QStringLiteral("1000"));
+			QVERIFY(query.queryItemValue(QStringLiteral("fields[parts]")).contains(QStringLiteral("description")));
+			QVERIFY(query.queryItemValue(QStringLiteral("fields[parts]")).contains(QStringLiteral("order_number")));
+				// a fixed order: the pages of a long list must not overlap
+			QCOMPARE(query.queryItemValue(QStringLiteral("sort")), QStringLiteral("part_number"));
+			QVERIFY(!query.hasQueryItem(QStringLiteral("include")));
+			QVERIFY(!query.hasQueryItem(QStringLiteral("search")));
+		}
+
 		void manufacturers()
 		{
 			const QVector<DataPortalManufacturer> list = DataPortalClient::parseManufacturers(MANUFACTURERS);

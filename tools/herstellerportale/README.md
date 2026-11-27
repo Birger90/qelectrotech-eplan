@@ -15,6 +15,7 @@ darunter „Fehlende Bauteile holen“ für eine Fehlliste).
 | Siemens SiePortal | nein; die Seite sperrt Programme (Akamai), keine CAx-API | lädt die **öffentlichen** Dateien `static.siemens.com/mimes/imagedb_edz|dxf|stp/…`, sobald ihre Links bekannt sind (Linkdatei) |
 | Rittal | nein | Rittal-Daten kommen über das Data Portal |
 | 3Dfindit | nein (PARTcommunity-Webservice nur für Katalogpartner) | Bauteil im Browser anfordern; QET zählt die Anforderungen, **50 je 24 h und Konto**, und lehnt darüber ab |
+| RS Components | nein (Händler; CAD-Modelle von TraceParts) | nur Konto und Link; das Modell (STEP, DXF) wird nach der RS-Anmeldung im Browser von der Produktseite geladen |
 
 Ein Konto je Portal. Passwörter und Tokens liegen in der Windows-Anmeldeinformationsverwaltung
 (`QElectroTech/portal/<id>`), nie in den Einstellungen; das alte Klartext-Token

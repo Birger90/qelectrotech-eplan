@@ -188,7 +188,8 @@ class ToolRegistry(unittest.TestCase):
         "qet_recording_remove", "qet_layout_check", "qet_live_new_project",
         "qet_live_open_project", "qet_live_switch_project", "qet_live_save_project",
         "qet_live_close_project", "qet_live_print", "qet_live_changes",
-        "qet_live_layout_check", "qet_dataportal_search", "qet_dataportal_import"})
+        "qet_live_layout_check", "qet_dataportal_search", "qet_dataportal_import",
+        "qet_folio_text", "qet_folio_text_check", "qet_folio_text_apply"})
 
 
 class FluidSimImport(unittest.TestCase):
@@ -546,6 +547,9 @@ class EditValidation(unittest.TestCase):
             "mirror_element": el + [{"op": "mirror_element", "folio": "$f", "element": "$e", "vertical": False}],
             "set_label": el + [{"op": "set_label", "folio": "$f", "element": "$e", "label": "K"}],
             "set_info": el + [{"op": "set_info", "folio": "$f", "element": "$e", "key": "k", "value": "v"}],
+            "set_conductor_path": two + [{"op": "set_conductor_path", "folio": "$f", "from": "$e",
+                                          "from_terminal": 0, "to": "$e2", "to_terminal": 0,
+                                          "corners": "10,20;30,20"}],
             "add_conductor": two + [{"op": "add_conductor", "folio": "$f", "from": "$e", "from_terminal": 0,
                                      "to": "$e2", "to_terminal": 0}],
             "delete_element": el + [{"op": "delete_element", "folio": "$f", "element": "$e"}],

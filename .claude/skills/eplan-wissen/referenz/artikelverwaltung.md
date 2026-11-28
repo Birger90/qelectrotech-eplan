@@ -725,6 +725,46 @@ https://www.eplan.com.tr/fileadmin/eplan_content_international/tr/data/Student_H
 - Auswertungen lassen sich filtern und sortieren, u. a. SPS-Kartenübersicht mit freien Anschlüssen; jede Auswertung ist
   als XML, Text oder Excel exportierbar (z. B. für Beschriftungsmaschinen). (S. 44–45)
 
+## 18b. Artikeldatenbank als XML und Data-Portal-Web-API (gemessen, nicht aus der Hilfe)
+
+Quelle: Canary-ECAD `eplan-scripting-skill` (MIT), `references/parts-database.md` (gemessen an EPLAN 2025.0.3) und
+`references/dataportal-api.md` (gegen die Live-API am 19.11.2026), https://github.com/Canary-ECAD/eplan-scripting-skill.
+Eigene Nachmessung im Fork am 27.11.2026 ist mit **Fork** markiert.
+
+**Stolperstein Beschreibung:** Das Feld „Beschreibung“ im Artikeldialog ist **22009 `ARTICLE_NOTE`** (mehrsprachig), nicht
+`ARTICLE_DESCR1/2/3`. Eine Prüfung „Artikel ohne Beschreibung“ über `ARTICLE_DESCR1` meldet die falschen Artikel.
+
+**Austauschformat `XPamExportXml`** (Aktion `partsmanagementapi /TYPE:EXPORT`, Import heißt `XPamImportXml`):
+- `<partsmanagement version=… length-unit="mm" weight-unit="kg" count=…>` mit einem `<part>` je Artikel; die
+  Artikeleigenschaften sind Attribute `P_` + API-Name (`P_ARTICLE_PARTNR`, `P_ARTICLE_ERPNR`, `P_ARTICLE_DISCONTINUED`,
+  `P_ARTICLE_MANUFACTURER`, `P_ARTICLE_NOTE`, `P_ARTICLE_GROUPSYMBOLMACRO` = 22145, `P_ARTICLE_PICTUREFILE` = 22045 …).
+- Kinder: `variant` (darin `functiontemplate functiondefcategory/-group/-id` = Funktionsschablonen), `freeproperty`,
+  `userproperty`, `accessoryposition`.
+- **Leere Eigenschaften fehlen** als Attribut (nicht `""`); mehrsprachig `xx_XX@Text;` je Sprache, `??_??@` sprachneutral,
+  `??_??@;` ist leer. Pfade beginnen mit Pfadvariablen (`$(MD_MACROS)\…`, `$(MD_IMG)\…`).
+- Importmodus `MODE`: 0 nur neue anhängen, 1 nur vorhandene aktualisieren, 2 aktualisieren und anhängen, 3 ersetzen und
+  anhängen (zerstörerisch). Für Feldänderungen ganze `<part>`-Elemente wie exportiert mit Modus 1.
+
+**Data-Portal-Download aus EPLAN** (Add-in): bringt Makro- und Bilddateien auch für Artikel, die die Datenbank schon hat,
+**überschreibt aber deren Artikeldatensatz nicht** (Beschreibung, Makropfad, Funktionsschablonen bleiben alt).
+
+**Data-Portal-Web-API** (`https://dataportal.eplan.com/api`, JSON:API):
+- Ohne Token: `/partscheck`, `/parts`, `/parts/{id}`, `/macros/{id}`, `/macro_variants/{id}`, `/manufacturers`,
+  `/eplan_catalog_entries`. Mit Personal Access Token (`Authorization: Bearer PAT:<token>`): alle `/download/*`, Merkliste.
+- `POST /partscheck` (text/plain, **eine Nummer je Zeile**): viele Artikel-, Typ- oder Bestellnummern auf einmal → `partid`,
+  `partnr`, `ordernr`, `data_supplier`; Fehlanzeige als `partscheckmissingresult` (kein Beweis, dass es den Artikel nicht
+  gibt). `POST /parts` mit `id1,id2` (Komma) lädt mehrere Artikel.
+- `GET /parts` Filter: `filter[manufacturer]` = Kurzname (`SIE`), `filter[data_types]`, `filter[catalog_eplan]`;
+  `filter[features]` der Spezifikation wird abgewiesen.
+- 3D (`.e3d`): Artikel → `relationships.graphic_macro` → Makro → `macro_variants` → Variante mit
+  **`representation_type` 10** = 3D → `GET /download/e3d_data/{variante}` (Token). Ob ein Makro 3D ist, sagt der
+  Darstellungstyp, nicht die Namensendung `_3D`. **Fork:** `/macro_variants/{id}` liefert `data` als Liste mit einem
+  Element, `/parts/{id}` und `/macros/{id}` als Objekt.
+
+**Bedeutung für QET:** Der Fork nutzt `/partscheck` für die Einkaufsliste (alle Nummern in einer Abfrage, Rest einzeln) und
+holt beim Bauteile-Holen ohne STEP das `.e3d` aus dem Data Portal (`3D/<Hersteller>/<Bestellnr>.e3d`, liest die 3D-Ansicht).
+Ein Import von `XPamExportXml` (Firmen-Artikeldatenbank aus EPLAN übernehmen) wäre damit beschrieben, ist aber nicht gebaut.
+
 ## 99. Quellen
 Artikelverwaltung:
 - https://www.eplan.help/de-de/Infoportal/Content/Plattform/2.9/Content/htm/partsmanagementgui_k_artverwnutzen.htm

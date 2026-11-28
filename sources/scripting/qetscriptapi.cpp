@@ -3052,7 +3052,12 @@ bool QetScriptApi::linkElements(int folioIndexA, const QString &elementUuidA,
 	// setGroupIndex() is silently a no-op. Build the command from the
 	// slave's side instead, exactly as PlcLinkWidget does (m_element is
 	// always the slave being edited there).
-	Element *slave = (groupIndex >= 0 && b->elementData().m_type == ElementData::Slave) ? b : a;
+	//
+	// Fork: the same for every master/slave pair, not only a PLC one. Built
+	// from the master's side, setLink() gives the master this one slave in
+	// place of the ones it had: linking a coil to its second contact undid
+	// the link to the first.
+	Element *slave = (b->linkType() & Element::Slave) ? b : a;
 	Element *master = (slave == a) ? b : a;
 
 	auto *cmd = new LinkElementCommand(slave);

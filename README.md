@@ -6,8 +6,8 @@
 > 🇩🇪 [Deutsche Fassung](README.de.md)
 >
 > This fork extends QElectroTech so that EPLAN schematics can be rebuilt as
-> real, linked projects — navigating like an EPLAN PDF and carrying their data the way EPLAN does — and so that
-> manufacturer parts and cables can be used directly. The upstream
+> real, linked projects — navigating like an EPLAN PDF and carrying their data the way EPLAN does —, so that plans
+> from WSCAD, sPlan and FluidSIM can be brought in, and so that manufacturer parts and cables can be used directly. The upstream
 > ([qelectrotech-source-mirror](https://github.com/qelectrotech/qelectrotech-source-mirror)) is merged regularly;
 > everything below exists only here.
 >
@@ -19,8 +19,12 @@
 > - **sPlan schematic** (`.spl8`, Abacom): File > *Import sPlan schematic* -- drawn anew as a QET project; nets from
 >   the drawing, device boxes and PLC channels from a mapping file to manufacturer macros
 >   ([tools/splan_import](tools/splan_import/README.md)).
-> - **Parts**: EPLAN macros and EDZ, manufacturer macro packages (e.g. Beckhoff), DWG, WSCAD article data (`.wspak`)
->   and the EPLAN Data Portal (part import below).
+> - **WSCAD project** (project folder with `Database/WSCAD6.db` and `.wsELD` pages, ELECTRIX/SUITE 6.x and later):
+>   File > *Import WSCAD project* -- an editable project with the WSCAD frame and title block, parts, conductors,
+>   linked report arrows and master/slave; missing articles go sorted into the company collection
+>   ([format description](tools/wscad_import/FORMATBESCHREIBUNG_WSCAD.md)).
+> - **Parts**: EPLAN macros and EDZ, manufacturer macro packages (e.g. Beckhoff), DWG, WSCAD article data (`.wspak`),
+>   Asset Administration Shells (`.aasx`) and the EPLAN Data Portal (part import below).
 >
 > **Part import** (menu "Part import", headless: `--import-eplan`)
 > - EPLAN macros and EDZ packages: graphics from DXF, schematic from `.ema`, terminals and article data; black box
@@ -29,10 +33,14 @@
 >   embedded drawings), every multi-line variant becomes a schematic of its own.
 > - DWG drawings (AutoCAD 2004–2018) read directly, no converter; mounting views at the scale of the EPLAN macros.
 > - Article data from WSCAD packages (`.wspak`).
+> - Asset Administration Shell (`.aasx`, IEC 63278 / IDTA): manufacturer and order number from the *Digital
+>   Nameplate*, the element from the embedded EDZ (else DXF/DWG), STEP into `3D`, datasheets and all submodels
+>   (`aasx.json`) into `herstellerdaten`.
 > - Manufacturer macro packages (ZIP or folder of `.ema` and article data, e.g. Beckhoff): tab *Manufacturer
 >   packages* in the collection, converted per type when needed; PLC cards get their channel table from the
 >   function templates. Headless: `--import-eplan <collection> --macro-package <zip|folder> --type T`.
-> - Search and import straight from the EPLAN Data Portal (manufacturer list, filters, picture preview).
+> - Search and import straight from the EPLAN Data Portal (manufacturer list, filters, picture preview); without a
+>   STEP model, *Fetch parts* takes EPLAN's 3D model (`.e3d`) from the Data Portal (with the token).
 >
 > **Navigation like EPLAN** (in QET and in the exported PDF)
 > - EPLAN's three-way jump on a part: left third forward through the jump sequence of the device, middle to its main
@@ -78,6 +86,21 @@
 >   60364-5-52 G, at In of the protective device; limit 3 % unless `voltage_drop_limit_pct`, voltage
 >   `nominal_voltage_v`), IP addresses and PROFINET names (valid, unique, in the subnet; element information
 >   `ip_address`, `subnet_mask`, `network_name`, `profinet_name`), the cabinet layout.
+> - The report opens with its verdict: *Correction needed* (errors), *Review* (warnings), *Read incompletely*
+>   (nothing wrong found, but data were missing to check everything) or *No finding*; a missing datum is never
+>   "no finding" (JSON `status`, `statusText`, `summary.incomplete`, `incomplete` per finding).
+> - *Control circuit* reads the contactor logic as a graph of its potentials: contactors whose main contacts
+>   short-circuit the supply when both are closed (reversing, star-delta) and that can pull in together (error),
+>   an interlock in one direction only or by push-buttons alone, a self-holding without an off contact, a circuit
+>   without a stable state (pumping) — EN 60204-1 9.3.4. Rails: `sim_role` supply+/supply-, wire function L+/M/24V/0V,
+>   else the outputs of the protective devices and the common A2 return.
+> - *Short circuit, disconnection and RCDs*: In ≤ Iz after IEC 60364-5-52 annex B (copper, methods A1, A2, B1, B2, C,
+>   PVC or XLPE; element information `installation_method`, `insulation`, `ambient_c`, `grouping`, or the cable type
+>   NYM/NYY/N2X/H07V), Ik3 at the feed after IEC 60909-0 (simplified; `ik3_ka`, `sk_mva`, `sr_kva` + `ukr_pct` +
+>   `un_v`) against the breaking capacity (`icu_ka` or "6 kA"), Zs × Ia ≤ U0 after IEC 60364-4-41 411.4.4 (`zs_ohm`
+>   or `ik1_ka`, `u0_v`; Ia from B/C/D or `ia_a`), RCDs in series (selective only with type S and 3 × IΔn;
+>   `idn_ma`, `rcd_type`), socket-outlets without an RCD of at most 30 mA (411.3.3). Formulas P01–P16 in
+>   `tools/simulation/FORMELN.md`, tests `tools/plancheck/pruefen_logik.py`.
 > - Script API `qet.checkProject(folio = -1)`, CLI `--check-project <project.qet> [report.json]` (the same rules;
 >   exit code 3 when errors are found).
 >
@@ -261,6 +284,14 @@
 >   section and potential; interruption points become linked report arrows, coils and contacts master and slave;
 >   frame, title block and structure boxes are kept. Beside it the device list, the connection list and the 3D
 >   installation spaces (`.e3d`). Without Python the pages come in as pictures (`--import-epdz export.epdz`).
+> - File > *Import WSCAD project*: a WSCAD project folder (ELECTRIX/SUITE 6.x and later, `Database/WSCAD6.db`
+>   and the `.wsELD` schematic pages) becomes an editable QET project -- every page a folio with the WSCAD frame
+>   and title block, every symbol a part with its graphics, terminals, device tag, article and function text; the
+>   connection list becomes conductors running where WSCAD draws them (with colour, section, potential); arrows
+>   with a target become linked report arrows, coils and contacts master and slave, PLC channels show their
+>   addresses (E0.7, AEW1); texts in WSCAD's font Roboto Mono. Articles the company collection does not know yet
+>   become parts under manufacturer/category/order number. Beside it a device and a connection list (CSV). Format:
+>   [tools/wscad_import/FORMATBESCHREIBUNG_WSCAD.md](tools/wscad_import/FORMATBESCHREIBUNG_WSCAD.md).
 > - Claude assistant as a dock window (button *Claude* in the main toolbar): it reads and changes the open project
 >   through the MCP server below; images and PDFs can be attached. With an API key, or in own builds
 >   (`-DQET_CLAUDE_KONTO=ON`) through one's own Claude account.

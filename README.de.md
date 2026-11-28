@@ -5,8 +5,9 @@
 🇬🇧 [English version](README.md) · Allgemeine Beschreibung von QElectroTech: [README.md](README.md#qelectrotech)
 
 Dieser Fork erweitert QElectroTech so, dass sich EPLAN-Schaltpläne als echte,
-verknüpfte Projekte nachbauen lassen – sie navigieren wie ein EPLAN-PDF und tragen ihre Daten so, wie EPLAN es tut –
-und dass Herstellerbauteile und -kabel direkt nutzbar sind. Der Upstream
+verknüpfte Projekte nachbauen lassen – sie navigieren wie ein EPLAN-PDF und tragen ihre Daten so, wie EPLAN es tut –,
+dass sich Pläne aus WSCAD, sPlan und FluidSIM übernehmen lassen und dass Herstellerbauteile und -kabel direkt nutzbar
+sind. Der Upstream
 ([qelectrotech-source-mirror](https://github.com/qelectrotech/qelectrotech-source-mirror)) wird regelmäßig
 eingemischt; alles Folgende gibt es nur hier.
 
@@ -22,8 +23,13 @@ Alle Importe auf einen Blick; Einzelheiten stehen in den Abschnitten darunter.
 - **sPlan-Plan** (`.spl8`, Abacom): Datei > *sPlan-Plan importieren* – neu gezeichnet als QET-Projekt; Netze aus der
   Zeichnung, Gerätekästen und SPS-Kanäle aus einer Zuordnungsdatei zu Herstellermakros
   ([tools/splan_import](tools/splan_import/README.md)).
-- **Bauteile**: EPLAN-Makros und EDZ, Hersteller-Makropakete (z. B. Beckhoff), DWG, WSCAD-Artikeldaten (`.wspak`) und
-  das EPLAN Data Portal ([Bauteil-Import](#bauteil-import)).
+- **WSCAD-Projekt** (Projektordner mit `Database/WSCAD6.db` und `.wsELD`-Seiten, ELECTRIX/SUITE ab 6.x): Datei >
+  *WSCAD-Projekt importieren* – ein bearbeitbares Projekt mit WSCAD-Rahmen und Schriftfeld, Bauteilen, Leitungen,
+  verknüpften Verweisen und Master/Slave; fehlende Artikel kommen sortiert in die Firmensammlung
+  ([EPLAN-Projekte](#eplan-projekte-und-eingebauter-assistent),
+  [Formatbeschreibung](tools/wscad_import/FORMATBESCHREIBUNG_WSCAD.md)).
+- **Bauteile**: EPLAN-Makros und EDZ, Hersteller-Makropakete (z. B. Beckhoff), DWG, WSCAD-Artikeldaten (`.wspak`),
+  Verwaltungsschalen (`.aasx`) und das EPLAN Data Portal ([Bauteil-Import](#bauteil-import)).
 
 ## Bauteil-Import
 
@@ -35,10 +41,14 @@ Menü „Bauteil-Import“, ohne Oberfläche: `--import-eplan`
   Bögen, Texte, eingebettete Zeichnungen), jede allpolige Variante wird ein eigenes Schaltbild.
 - DWG-Zeichnungen (AutoCAD 2004–2018) direkt, ohne Konverter; Aufbauansichten im Maßstab der EPLAN-Aufbaumakros.
 - Artikeldaten aus WSCAD-Paketen (`.wspak`).
+- Verwaltungsschale (`.aasx`, IEC 63278 / IDTA): Hersteller und Bestellnummer aus dem *Digital Nameplate*, das
+  Bauteil aus dem eingebetteten EDZ (sonst DXF/DWG), STEP nach `3D`, Datenblätter und alle Teilmodelle (`aasx.json`)
+  nach `herstellerdaten`.
 - Hersteller-Makropakete (ZIP oder Ordner mit `.ema` und Artikeldaten, z. B. Beckhoff): Reiter *Herstellerpakete* in
   der Bauteilsammlung, Umwandlung je Typ bei Bedarf; SPS-Karten bekommen ihre Kanaltabelle aus den
   Funktionsschablonen. Ohne Oberfläche: `--import-eplan <sammlung> --macro-package <zip|ordner> --type T`.
-- Suche und Import direkt aus dem EPLAN Data Portal (Herstellerliste, Filter, Bildvorschau).
+- Suche und Import direkt aus dem EPLAN Data Portal (Herstellerliste, Filter, Bildvorschau); fehlt ein STEP-Modell,
+  holt *Bauteile holen* EPLANs 3D-Modell (`.e3d`) aus dem Data Portal (mit Token).
 
 ## Navigation wie bei EPLAN
 
@@ -92,6 +102,21 @@ In QET und im exportierten PDF:
   (IEC 60364-5-52 G, bei In des Schutzorgans; Grenze 3 %, sonst `voltage_drop_limit_pct`, Spannung
   `nominal_voltage_v`), IP-Adressen und PROFINET-Namen (gültig, eindeutig, im Subnetz; Elementinfos `ip_address`,
   `subnet_mask`, `network_name`, `profinet_name`), Schaltschrankaufbau.
+- Der Bericht beginnt mit seinem Ergebnis: *Korrektur nötig* (Fehler), *Prüfen* (Warnungen), *Unvollständig
+  gelesen* (nichts Falsches gefunden, aber Angaben fehlten) oder *Kein Befund*; eine fehlende Angabe ist nie
+  „kein Befund“ (JSON `status`, `statusText`, `summary.incomplete`, `incomplete` je Befund).
+- *Steuerstromkreis* liest die Schützlogik als Graph ihrer Potentiale: Schütze, deren Hauptkontakte zusammen die
+  Einspeisung kurzschließen (Wendeschütz, Stern-Dreieck) und die gleichzeitig anziehen können (Fehler), Verriegelung
+  nur in eine Richtung oder nur über Taster, Selbsthaltung ohne Aus-Kontakt, Kreis ohne Ruhezustand (Pumpen) –
+  EN 60204-1 9.3.4. Schienen: `sim_role` supply+/supply-, Leitungsfunktion L+/M/24V/0V, sonst die Ausgänge der
+  Schutzorgane und der gemeinsame A2-Rückleiter.
+- *Kurzschluss, Abschaltung und FI*: In ≤ Iz nach IEC 60364-5-52 Anhang B (Kupfer, Verlegeart A1, A2, B1, B2, C,
+  PVC oder VPE; Elementinfos `installation_method`, `insulation`, `ambient_c`, `grouping` oder Kabeltyp
+  NYM/NYY/N2X/H07V), Ik3 an der Einspeisung nach IEC 60909-0 (vereinfacht; `ik3_ka`, `sk_mva`, `sr_kva` + `ukr_pct`
+  + `un_v`) gegen das Schaltvermögen (`icu_ka` oder „6 kA“), Zs × Ia ≤ U0 nach IEC 60364-4-41 411.4.4 (`zs_ohm`
+  oder `ik1_ka`, `u0_v`; Ia aus B/C/D oder `ia_a`), FI hintereinander (selektiv nur mit Typ S und 3 × IΔn;
+  `idn_ma`, `rcd_type`), Steckdose ohne FI ≤ 30 mA (411.3.3). Formeln P01–P16 in `tools/simulation/FORMELN.md`,
+  Tests `tools/plancheck/pruefen_logik.py`.
 - Skript-API `qet.checkProject(folio = -1)`, CLI `--check-project <projekt.qet> [bericht.json]` (dieselben Regeln;
   Rückgabewert 3 bei Fehlern).
 
@@ -301,6 +326,14 @@ Menü *Schaltschrankaufbau* – der 2D-Ablauf von EPLAN Pro Panel auf einem norm
   gezeichnet hat, mit Farbe, Querschnitt und Potential; Unterbrechungspunkte werden verknüpfte Verweispfeile, Spulen
   und Kontakte Master und Slave; Rahmen, Schriftfeld und Strukturkästen bleiben. Daneben Geräteliste,
   Verbindungsliste und die 3D-Bauräume (`.e3d`). Ohne Python kommen die Seiten als Bild (`--import-epdz export.epdz`).
+- Datei > *WSCAD-Projekt importieren*: ein WSCAD-Projektordner (ELECTRIX/SUITE ab 6.x, `Database/WSCAD6.db` und
+  die `.wsELD`-Schaltplanseiten) wird ein bearbeitbares QET-Projekt – jede Seite ein Blatt mit WSCAD-Rahmen und
+  Schriftfeld, jedes Symbol ein Bauteil mit seiner Grafik, seinen Anschlüssen, BMK, Artikel und Funktionstext;
+  die Verbindungsliste wird zu Leitungen, die so laufen, wie WSCAD sie zeichnet (mit Farbe, Querschnitt,
+  Potential); Pfeile mit Ziel werden verknüpfte Verweise, Spulen und Kontakte Master und Slave, SPS-Kanäle zeigen
+  ihre Adressen (E0.7, AEW1); Texte in WSCADs Schrift Roboto Mono. Artikel, die die Firmensammlung noch nicht kennt,
+  kommen als Bauteil nach Hersteller/Kategorie/Bestellnummer. Daneben Geräte- und Verbindungsliste (CSV). Format:
+  [tools/wscad_import/FORMATBESCHREIBUNG_WSCAD.md](tools/wscad_import/FORMATBESCHREIBUNG_WSCAD.md).
 - Claude-Assistent als Andockfenster (Knopf *Claude* in der Hauptwerkzeugleiste): liest und ändert das offene Projekt
   über den MCP-Server unten; Bilder und PDFs lassen sich mitschicken. Mit API-Schlüssel oder in eigenen Builds
   (`-DQET_CLAUDE_KONTO=ON`) über das eigene Claude-Konto.

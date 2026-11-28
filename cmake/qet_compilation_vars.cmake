@@ -197,6 +197,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/import/portals/portalcredentials.h
   ${QET_DIR}/sources/import/portals/portalsdialog.cpp
   ${QET_DIR}/sources/import/portals/portalsdialog.h
+  ${QET_DIR}/sources/import/aasx/aasxpackage.cpp
+  ${QET_DIR}/sources/import/aasx/aasxpackage.h
   ${QET_DIR}/sources/import/edz/edzarchive.cpp
   ${QET_DIR}/sources/import/edz/edzarchive.h
   ${QET_DIR}/sources/import/edz/edzpart.cpp
@@ -252,6 +254,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/conductorautonumerotation.h
   ${QET_DIR}/sources/plancheck/plancheck.h
   ${QET_DIR}/sources/plancheck/plancheck.cpp
+  ${QET_DIR}/sources/plancheck/logiccheck.h
+  ${QET_DIR}/sources/plancheck/logiccheck.cpp
   ${QET_DIR}/sources/duplicatelabels.h
   ${QET_DIR}/sources/duplicatelabels.cpp
   ${QET_DIR}/sources/projectcheck.h

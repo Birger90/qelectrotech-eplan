@@ -72,7 +72,16 @@ class ProjectCheck
 			OpenTerminals,     ///< terminals and fluid ports left open on a wired symbol
 			WireProtection,    ///< wires too thin for the protective device in front of them
 			Network,           ///< IP addresses and PROFINET device names: valid, unique, in the subnet
-			CabinetLayout      ///< the warnings of the cabinet layouts
+			CabinetLayout,     ///< the warnings of the cabinet layouts
+			ControlCircuit,    ///< interlocks, self-holding and stability of the contactor logic
+			FaultProtection    ///< short-circuit current, loop impedance, RCDs and sockets
+		};
+			/// Fork: the verdict of a whole report, its head line
+		enum class Status {
+			Correction,   ///< an error: the plan must be corrected
+			Review,       ///< warnings only: worth a look
+			NoFinding,    ///< nothing found and nothing left unchecked
+			Incomplete    ///< nothing found, but data were missing to check all
 		};
 
 			/// Fork: how bad a finding is, for the filter of the panel and
@@ -107,6 +116,8 @@ class ProjectCheck
 			Severity severity = Severity::Warning;
 			QString rule;   ///< key of the rule, e.g. "open_terminal"
 			QString eplan;  ///< number of EPLAN's message, empty when none
+				/// a datum was missing: this part of the plan was not checked
+			bool incomplete = false;
 				/// Further lasting ids of what the finding is about (a
 				/// terminal's uuid), when its places alone do not tell
 				/// it from another finding: CheckSettings::findingId()
@@ -138,6 +149,11 @@ class ProjectCheck
 		static QString key(Kind kind);              ///< "duplicate_labels", ...
 		static QString severityKey(Severity severity);   ///< "error", "warning", "info"
 		static QString severityText(Severity severity);  ///< translated
+			/// the verdict of @p results; @p counts, if given, gets the
+			/// errors, warnings, notes and findings with missing data
+		static Status status(const QVector<Result> &results, int *counts = nullptr);
+		static QString statusKey(Status status);    ///< "correction", "review", "no_finding", "incomplete"
+		static QString statusText(Status status);   ///< translated
 			/// the folio of a place, nullptr if none; builds no folio
 		static Diagram *diagramOf(QETProject *project, const Place &place);
 			/// one finding for scripts: {severity, check, rule, eplan,

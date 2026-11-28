@@ -2526,6 +2526,11 @@ add_executable(
 add_test(NAME tst_enclosuresize COMMAND tst_enclosuresize)
 target_include_directories(tst_enclosuresize PRIVATE ${QET_DIR}/sources)
 target_link_libraries(tst_enclosuresize PRIVATE Qt::Core Qt::Test)
+# File > Import WSCAD project: the sPlan import dialog in its WSCAD kind
+# (project folder, target, arguments, progress, menu command).
+qet_add_app_test(tst_wscadimportdialog tst_wscadimportdialog.cpp)
+target_compile_definitions(tst_wscadimportdialog PRIVATE
+  QET_WSCAD_SCRIPT="${QET_DIR}/tools/wscad_import/wscad_nach_qet.py")
 
 # A project split into the parts of a .qetz and joined back is the same
 # document, on every example (and QET_CONTAINER_CORPUS if set).

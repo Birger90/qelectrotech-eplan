@@ -22,7 +22,10 @@
 #include <QObject>
 #include <QPointer>
 #include <QString>
+#include <QStringList>
 #include <QVector>
+
+#include <functional>
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -68,6 +71,18 @@ struct DataPortalQuery
 	int limit = 50;
 };
 
+/// one value of POST /partscheck: a part, type or order number and the part it names
+struct DataPortalCheck
+{
+	QString search;        ///< the value asked for
+	bool found = false;    ///< false: partscheckmissingresult (no proof of absence)
+	QString part_id;       ///< Data Portal id, for GET /parts/{id}
+	QString part_number;   ///< MFR.TYPE, e.g. SIE.5SL6316-7
+	QString type_number;
+	QString order_number;
+	QString supplier;      ///< manufacturer short name, e.g. SIE
+};
+
 /**
 	@brief Client of the EPLAN Data Portal API (https://dataportal.eplan.com/api).
 
@@ -96,6 +111,23 @@ class DataPortalClient : public QObject
 		void search(const DataPortalQuery &query);
 		/// the DXF package (MAC_<part>.zip) of a part; needs the token
 		void downloadDxf(const QString &part_id);
+		/**
+			Many part, type or order numbers at once (POST /partscheck,
+			no token): partsChecked() with one entry per match, a miss as
+			found = false. Exact, unlike the text search; a miss does not
+			prove the part is not there (other punctuation in a catalog).
+		*/
+		void checkParts(const QStringList &values, bool all_matches = false);
+		/// several parts by their ids (POST /parts, no token): searchFinished()
+		void loadParts(const QStringList &ids);
+		/**
+			The 3D model (.e3d) of a part; needs the token. Three steps:
+			the part names its graphic macro, the macro its variants, and
+			the variant of representation type 10 is the 3D one
+			(GET /download/e3d_data/{variant}). downloadFinished() with the
+			file, or failed() when the part has no 3D macro.
+		*/
+		void downloadE3d(const QString &part_id);
 		/// all manufacturers, for the filter; no token needed
 		void loadManufacturers();
 		/// a product picture; a newer request replaces a running one
@@ -110,8 +142,11 @@ class DataPortalClient : public QObject
 		static QVector<DataPortalManufacturer> parseManufacturers(const QByteArray &json);
 		/// the value of the Authorization header for @p token
 		static QByteArray authorization(const QString &token);
+		/// the entries of a reply of POST /partscheck
+		static QVector<DataPortalCheck> parseCheck(const QByteArray &json);
 
 	signals:
+		void partsChecked(const QVector<DataPortalCheck> &results);
 		/// @p offset is the one of the query: 0 for a new search
 		void searchFinished(const QVector<DataPortalPart> &parts, int total, int offset);
 		void downloadFinished(const QByteArray &data, const QString &file_name);
@@ -123,6 +158,9 @@ class DataPortalClient : public QObject
 		QNetworkRequest request(const QString &path) const;
 		void finished(QNetworkReply *reply, bool download, int offset);
 		QString errorText(QNetworkReply *reply, const QByteArray &body, bool download) const;
+			/// GET @p path as JSON:API; @p done with the body, or failed()
+		void getJson(const QString &path, const std::function<void(const QByteArray &)> &done);
+		void e3dVariants(const QStringList &variants, const QString &part_id);
 
 		QNetworkAccessManager *m_manager = nullptr;
 		QPointer<QNetworkReply> m_reply;          ///< search or download

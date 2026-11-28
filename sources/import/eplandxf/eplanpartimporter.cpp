@@ -22,6 +22,8 @@
 
 #include "../../container/miniz/miniz.h"
 #include "../../container/qetzip.h"
+#include "../aasx/aasxpackage.h"
+#include "../portals/manufacturerportals.h"
 #include "../edz/edzarchive.h"
 #include "../edz/edzelementbuilder.h"
 #include "../edz/edzimporter.h"
@@ -41,6 +43,7 @@
 #include <QRegularExpression>
 #include <QSet>
 #include <QStringDecoder>
+#include <QTemporaryDir>
 
 #include <algorithm>
 #include <cmath>
@@ -889,6 +892,142 @@ bool EplanPartImporter::importEdz(const QString &edz_path, const QString &manufa
 		}
 	}
 	return finish();
+}
+
+/// "Phoenix Contact GmbH & Co. KG" -> "Phoenix Contact": the folder name of a manufacturer
+QString EplanPartImporter::shortManufacturer(const QString &name)
+{
+	QString s = manufacturerName(name.simplified());
+	static const QRegularExpression legal(QStringLiteral(
+		"(,|\\s+(GmbH|AG|SE|KG|KGaA|mbH|Inc\\.?|Ltd\\.?|LLC|Corp\\.?|S\\.A\\.|S\\.p\\.A\\.|B\\.V\\.|e\\.K\\.|&\\s*Co\\.?)(\\s|$)).*$"),
+		QRegularExpression::CaseInsensitiveOption);
+	const QString cut = s.remove(legal).trimmed();
+	return cut.isEmpty() ? name.simplified() : cut;
+}
+
+/**
+	Import the part of an Asset Administration Shell package (.aasx, IEC
+	63278 / IDTA): manufacturer, order and type number from the Digital
+	Nameplate; the element from an EPLAN part (.edz) the package carries,
+	else from a DXF or DWG of it; a STEP model into
+	ManufacturerPortals::modelDir()/<maker>/<order>.stp; the documents and
+	the other files with a JSON summary of all submodels into
+	ManufacturerPortals::rawDir()/<maker>/<order>/. A package without a
+	schematic still gives the part data, the 3D model and the documents.
+*/
+bool EplanPartImporter::importAasx(const QString &aasx_path, const QString &category,
+				   const QString &collection_dir)
+{
+	clear();
+	AasxPackage package;
+	if (!package.open(aasx_path)) {
+		m_error = package.errorString();
+		return false;
+	}
+	const QString maker = shortManufacturer(package.manufacturer());
+	const QString order = package.orderNumber();
+	const QString type_nr = package.typeNumber().isEmpty() ? order : package.typeNumber();
+	if (maker.isEmpty() || type_nr.isEmpty()) {
+		m_error = QStringLiteral("%1: the Digital Nameplate names no manufacturer or no order/type number")
+				  .arg(QFileInfo(aasx_path).fileName());
+		return false;
+	}
+	const QString key = safe(order.isEmpty() ? type_nr : order);
+
+		// the files of the package, unpacked: EDZ, DXF, DWG for the element,
+		// STEP for the 3D folder, all of them for the raw folder
+	QTemporaryDir tmp;
+	if (!tmp.isValid()) {
+		m_error = QStringLiteral("Cannot create a temporary folder");
+		return false;
+	}
+		// without a data folder set up: next to the collection imported into
+	QDir beside(collection_dir);
+	beside.cdUp();
+	QString raw_base = ManufacturerPortals::rawDir();
+	if (raw_base.isEmpty()) raw_base = beside.filePath(QStringLiteral("herstellerdaten"));
+	QString model_base = ManufacturerPortals::modelDir();
+	if (model_base.isEmpty()) model_base = beside.filePath(QStringLiteral("3D"));
+	const QString raw = QDir(raw_base).filePath(maker + QLatin1Char('/') + key);
+	QDir().mkpath(raw);
+	QStringList edz, dxf, dwg, step;
+	QStringList written, messages;
+	for (const QString &name : package.files()) {
+		const QString base = QFileInfo(name).fileName();
+		if (base.isEmpty()) continue;
+		const QString ext = QFileInfo(base).suffix().toLower();
+		const QByteArray data = package.file(name);
+		const QString unpacked = QDir(tmp.path()).filePath(safe(QFileInfo(base).completeBaseName())
+								     + QLatin1Char('.') + ext);
+		QFile out(unpacked);
+		if (!out.open(QIODevice::WriteOnly) || out.write(data) != data.size()) continue;
+		out.close();
+		if (ext == QLatin1String("edz")) edz << unpacked;
+		else if (ext == QLatin1String("dxf")) dxf << unpacked;
+		else if (ext == QLatin1String("dwg")) dwg << unpacked;
+		else if (ext == QLatin1String("stp") || ext == QLatin1String("step")) step << unpacked;
+		const QString kept = QDir(raw).filePath(base);
+		if (m_force || !QFileInfo::exists(kept)) {
+			QFile::remove(kept);
+			if (QFile::copy(unpacked, kept)) written << kept;
+		}
+	}
+
+		// the element: the manufacturer's EPLAN part first, it carries the macro
+	bool built = false;
+	const auto take = [&](bool ok, const QString &source) {
+		written << m_written;
+		messages << m_messages;
+		if (ok) built = true;
+		else messages << QStringLiteral("%1: %2").arg(QFileInfo(source).fileName(), m_error);
+	};
+	for (const QString &f : edz) take(importEdz(f, maker, category, type_nr, collection_dir), f);
+	if (!built)
+		for (const QString &f : dxf) take(importDxf(f, QString(), maker, category, type_nr, collection_dir), f);
+	if (!built)
+		for (const QString &f : dwg) take(importDwg(f, QString(), maker, category, type_nr, collection_dir), f);
+	if (!built)
+		messages << QStringLiteral("The package holds no EPLAN part, DXF or DWG: only the part data, "
+					   "the 3D model and the documents were taken");
+
+	if (!step.isEmpty()) {
+		const QString model = QDir(model_base).filePath(maker + QLatin1Char('/') + key + QStringLiteral(".stp"));
+		QDir().mkpath(QFileInfo(model).path());
+		if (m_force || !QFileInfo::exists(model)) {
+			QFile::remove(model);
+			if (QFile::copy(step.first(), model)) written << model;
+		} else {
+			messages << QStringLiteral("3D model kept: %1").arg(model);
+		}
+	}
+
+		// all submodels as JSON, the part data where nothing else holds it
+	QJsonObject summary {
+		{QStringLiteral("source"), QFileInfo(aasx_path).fileName()},
+		{QStringLiteral("manufacturer"), package.manufacturer()},
+		{QStringLiteral("order"), order},
+		{QStringLiteral("type"), type_nr},
+		{QStringLiteral("designation"), package.designation()}};
+	QJsonObject submodels;
+	for (const AasxSubmodel &s : package.submodels()) {
+		QJsonObject values;
+		for (const AasxElement &e : s.elements)
+			if (!e.value.isEmpty()) values.insert(e.path, e.value);
+		submodels.insert(s.id_short.isEmpty() ? s.id : s.id_short, values);
+	}
+	summary.insert(QStringLiteral("submodels"), submodels);
+	QFile json(QDir(raw).filePath(QStringLiteral("aasx.json")));
+	if (json.open(QIODevice::WriteOnly)) {
+		json.write(QJsonDocument(summary).toJson(QJsonDocument::Indented));
+		written << json.fileName();
+	}
+	messages.prepend(QStringLiteral("%1 %2 (%3): %4 submodels, %5 files")
+				 .arg(maker, type_nr, order).arg(package.submodels().size()).arg(package.files().size()));
+
+	m_written = written;
+	m_messages = messages;
+	m_error.clear();
+	return true;
 }
 
 void EplanPartImporter::clear()

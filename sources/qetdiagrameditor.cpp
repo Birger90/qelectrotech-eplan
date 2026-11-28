@@ -2707,6 +2707,21 @@ void QETDiagramEditor::setUpMenu()
 		if (m_element_collection_widget) m_element_collection_widget->reload();
 		openAndAddProject(dialog.resultPath());
 	});
+		//A WSCAD project (folder with Database/WSCAD6.db and .wsELD pages) as an
+		//editable QElectroTech project; same dialog as the sPlan import
+	QAction *import_wscad = menu_fichier->addAction(
+		QET::Icons::DocumentOpen, tr("Import WSCAD project…"));
+	import_wscad->setObjectName(QStringLiteral("import_wscad"));
+	import_wscad->setStatusTip(tr("Reads a WSCAD project (schematic pages, symbols, wires, cross references) "
+				      "as an editable QElectroTech project"));
+	connect(import_wscad, &QAction::triggered, this, [this]() {
+		SplanImportDialog dialog(this, SplanImportDialog::Kind::Wscad);
+		QTimer::singleShot(0, &dialog, [&dialog]() { dialog.chooseSource(); });
+		if (dialog.exec() != QDialog::Accepted || dialog.resultPath().isEmpty()) return;
+		// the import writes the WSCAD symbols into the company collection (WSCAD-Import)
+		if (m_element_collection_widget) m_element_collection_widget->reload();
+		openAndAddProject(dialog.resultPath());
+	});
 	menu_fichier -> addSeparator();
 	menu_fichier -> addAction(m_export_to_images);
 	menu_fichier -> addAction(m_export_to_pdf);

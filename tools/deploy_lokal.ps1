@@ -110,5 +110,8 @@ if (Test-Path $weid) {
 $ziel = Join-Path $deploy "splan_import"
 New-Item -ItemType Directory -Force $ziel | Out-Null
 Copy-Item (Join-Path $repo "tools\splan_import\*") $ziel -Include "*.py", "*.md" -Force
+$ziel = Join-Path $deploy "wscad_import"
+New-Item -ItemType Directory -Force $ziel | Out-Null
+Copy-Item (Join-Path $repo "tools\wscad_import\*") $ziel -Include "*.py", "*.md" -Force
 
 Write-Output "build\deploy aktuell: $((& $exe --version | Out-String).Trim())"

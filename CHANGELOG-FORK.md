@@ -39,6 +39,89 @@ Ein Plan aus einer Tabelle, nach dem Vorbild von EPLAN EEC Pro; Konzept in [docs
   `--decode-product <nummer> [--json]`, MCP `qet_product_rules` (beide Kopien). Beispielfamilie
   `funktionsvorlagen/Produkte/MS.product.json`, Typical *Antrieb* mit Spannung `U` (nur 400 V).
 
+## 1.67.0 – 27.11.2026 – Plan prüfen: Steuerstromkreis, Leistungsteil nach IEC, Berichtskopf
+
+*Plan prüfen* liest den Plan jetzt auch als Schaltung. Was aus dem Plan nicht sicher folgt, wird als „Angabe fehlt“
+gemeldet, nie geschätzt.
+
+- **Berichtskopf mit Ergebnis:** *Korrektur nötig* / *Prüfen* / *Unvollständig gelesen* / *Kein Befund* im Prüfpanel
+  und im JSON (`status`, `statusText`, `summary.incomplete`, `incomplete` je Befund). Fehlen Angaben, heißt es nie
+  „kein Befund“; auch die bisherigen Hinweise „ohne Bemessungsstrom“ und „ohne Querschnitt“ zählen als fehlende
+  Angabe.
+- **Steuerstromkreis** (neue Kategorie): Schütze, deren Hauptkontakte zusammen die Einspeisung kurzschließen
+  (Wendeschütz, Stern-Dreieck; der Netzschütz darf dabei an sein), dürfen nicht gleichzeitig anziehen können
+  (Fehler); Verriegelung nur in eine Richtung, nur über Taster; Selbsthaltung ohne Aus-Kontakt; Kreis ohne
+  Ruhezustand (Pumpen, Zeitglieder ausgenommen). EN 60204-1 9.3.4; Formeln P01–P07.
+- **Leistungsteil:** In ≤ Iz nach IEC 60364-5-52 Anhang B mit Verlegeart, Isolierung, Temperatur und Häufung, nur
+  wenn angegeben (P08–P10); Ik3 an der Einspeisung nach IEC 60909-0 vereinfacht gegen das Schaltvermögen (P11, P12);
+  Abschaltbedingung Zs × Ia ≤ U0 nach IEC 60364-4-41 411.4.4 (P13, P14); FI hintereinander (P15); Steckdose ohne FI
+  ≤ 30 mA (411.3.3, P16). Neue Kategorie *Kurzschluss, Abschaltung und FI*.
+- FI und Steckdosen werden auch an französischen Symbolnamen erkannt („différentiel“, „sélectif“, IΔn im Namen);
+  ein abgesicherter Neutralleiter (2-polige Absicherung) gilt als Rückleiter der Spulen. Das Prüfpanel ist offscreen
+  angesehen (`tests/qttest/check_panel_probe.cpp`); 27 fehlende deutsche Texte des Panels ergänzt.
+- An den Beispielplänen geschärft: Doppelklick auf einen Befund zeigt Blatt und Bauteil (offscreen im Editor geprüft);
+  ein Schutzorgan speist nur ohne Schützkontakt/Spule am Eingang (Motorschutz-Hilfskontakt im Steuerkreis); gemeinsamer
+  Rückleiter = Netz mehrerer Spulen ohne Kontakt; alte Klemmen- und Sicherungssymbole ohne Link-Typ (Klemmblock,
+  Borne continuité, Odłącznik bezpiecznikowy) und Schutzschalter/FI als einfache Symbole werden erkannt; endet ein
+  Kreis an einem Gerät ohne Schaltfunktion, nennt „Angabe fehlt“ dieses Gerät; Steckdose ohne verfolgbare Zuleitung
+  oder hinter FI ohne IΔn ist „Angabe fehlt“ statt „ohne FI“.
+- **Behoben:** `qet.linkElements(spule, kontakt)` ersetzte die bisherigen Kontakte der Spule durch den neuen (der
+  Befehl wurde von der Master-Seite gebaut); jetzt immer von der Kontaktseite, wie bisher nur bei SPS-Kanälen.
+- Tests: `tools/plancheck/pruefen_logik.py` baut 13 Testprojekte (Wendeschütz richtig/ohne/einseitig, Stern-Dreieck
+  richtig/falsch, Schütze in Reihe, Selbsthaltung, Pumpen, Kabel zu klein/richtig, ohne Angaben, Abschaltung, FI) und prüft Befunde und
+  Ergebnis.
+
+## 1.66.0 – 27.11.2026 – Verwaltungsschale (AASX) als Bauteilquelle
+
+- **Bauteil-Import nimmt `.aasx`:** Ein Paket der Verwaltungsschale (Asset Administration Shell, IEC 63278 / IDTA)
+  liefert Hersteller, Bestell- und Typnummer aus dem Teilmodell *Digital Nameplate* (IDTA 02006). Aus dem Paket wird
+  das Bauteil gebaut, bevorzugt aus einem eingebetteten EPLAN-Artikel (`.edz`, mit Herstellermakro), sonst aus einer
+  DXF oder DWG. Ein STEP-Modell geht nach `3D/<Hersteller>/<Bestellnr>.stp`. Datenblätter und alle anderen Dateien
+  gehen samt `aasx.json` (alle Teilmodelle mit ihren Werten) nach `herstellerdaten/<Hersteller>/<Bestellnr>/`.
+  Ohne Schaltbildquelle bleiben Artikeldaten, 3D-Modell und Datenblätter, mit Hinweis.
+- Gelesen wird das OPC-Paket über die `aas-spec`-Beziehung, mit XML oder JSON, Metamodell 2.0 und 3.0, nach
+  Elementnamen statt Schema (`sources/import/aasx/aasxpackage.*`). Mehrsprachige Werte nimmt der Import auf
+  Englisch, sonst auf Deutsch. Rechtsformen fallen aus dem Ordnernamen weg („Phoenix Contact GmbH & Co. KG“ →
+  „Phoenix Contact“).
+- Ohne Oberfläche: `qelectrotech --import-eplan teil.aasx <Sammlung> [--category C] [--force]`.
+- Skill `eplan-wissen`: neue Referenz `api-erfahrungen.md`, Beobachtungen am laufenden EPLAN aus dem Projekt
+  eplan-mcp (MIT).
+
+## 1.65.0 – 27.11.2026 – WSCAD-Projekte importieren
+
+- **Datei > WSCAD-Projekt importieren:** liest einen WSCAD-Projektordner (ELECTRIX/SUITE ab 6.x) als
+  bearbeitbares Projekt. Die Schaltplanseiten (`.wsELD`) sind AES-verschleierte GZip-Abschnitte mit XML; Schlüssel
+  und IV stehen im Abschnitt selbst (`tools/wscad_import/wscad.py`, Formatbeschreibung
+  `FORMATBESCHREIBUNG_WSCAD.md`). `wscad_nach_qet.py` macht daraus je Seite ein Blatt mit WSCAD-Rahmen und
+  Schriftfeld (Maßstab 1:1), je Symbol ein Bauteil mit seiner Grafik, Texten (am WSCAD-PDF geeichte Ausrichtung),
+  Anschlüssen, BMK und Artikel; die Verbindungsliste der Projektdatenbank (`WSCAD6.db`) wird zu Leitungen auf dem
+  gezeichneten Weg (Winkel/T, Brücken als Spannbaum) mit Farbe, Querschnitt und Potential; Pfeile mit Ziel werden
+  verknüpfte Verweise, Spule/Kontakte Master/Slave; SPS-Kanaladressen werden lesbar (E0.7). Am WSCAD-Demoprojekt:
+  27 Seiten, 311 Bauteile, 1080 Anschlüsse, 574 Leitungen (218 mit Ecken wie gezeichnet), 151 verknüpfte
+  Verweispaare, 13 Master/Slave, keine fehlgeschlagene Operation; Blätter gegen das WSCAD-PDF verglichen (Linien
+  auf 0,1 mm, Texte auf rund 0,5 mm). Ebenso das P&I-Musterprojekt (45 Seiten, 377 Bauteile, 654 Leitungen,
+  151 Verweispaare) und das ProjectWizard-Projekt (5 Seiten). Texte in WSCADs Schrift Roboto Mono.
+- **Bauteile in die Firmensammlung:** Artikel aus dem WSCAD-Plan, die die Sammlung noch nicht kennt, werden ein
+  sauberes Bauteil unter Hersteller/Kategorie/Bestellnummer (Hersteller auf vorhandene Ordner abgeglichen, sonst aus
+  der Artikeldatenbank des Projekts); vorhandene bleiben unberührt. Aus den drei Projekten 138 neue, 125 schon da.
+- Derselbe Dialog wie der sPlan-Import (`SplanImportDialog` mit Art sPlan/WSCAD), kein zweiter Dialog; das
+  Programm liegt neben QET in `wscad_import/` (Installation und `tools/deploy_lokal.ps1`).
+- Tests: `python -m unittest tools/wscad_import/test_wscad_import.py` (selbst gebaute Seite und Datenbank;
+  mit `QET_WSCAD_TESTPROJEKT` der ganze Import eines Projekts).
+- Offen: PE-Leitungen gestrichelt, SPS-Karte/Kanäle als SPS-Master verknüpfen, Drahtnummern, Fluid- und
+  Auswertungsseiten.
+## 1.64.0 – 27.11.2026 – Data Portal: viele Nummern auf einmal, 3D-Modelle (E3D)
+
+Abgeglichen mit der live geprüften API-Beschreibung von Canary-ECAD (`eplan-scripting-skill`, MIT).
+
+- **Einkaufsliste:** alle Bestellnummern in einer Abfrage (`POST /partscheck`, exakt, ohne Token), die Treffer mit einem
+  `POST /parts`; nur was dort fehlt, wird wie bisher einzeln gesucht. Am Beispielprojekt 32 von 39 Artikeln gefunden.
+- **Bauteile holen** (`--fetch-parts`, Herstellerportale): Gibt es kein STEP-Modell, kommt EPLANs 3D-Modell (`.e3d`) aus
+  dem Data Portal (Artikel → 3D-Makro → Variante mit Darstellungstyp 10, braucht das Token) nach
+  `3D/<Hersteller>/<Bestellnr>.e3d`; 3D-Ansicht und Schaltschrankaufbau lesen es (ein STEP-Modell hat Vorrang).
+- Skill `eplan-wissen`: Austauschformat der EPLAN-Artikeldatenbank (`XPamExportXml`), Importmodi, „Beschreibung“ ist
+  22009 `ARTICLE_NOTE`, Data-Portal-Web-API.
+
 ## 1.63.0 – 27.11.2026 – liegengebliebene Branches in main
 
 Die fertigen Feature-Branches, die noch nicht in `main` waren, sind jetzt übernommen und mit dem heutigen Stand

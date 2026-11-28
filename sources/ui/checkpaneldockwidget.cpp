@@ -249,6 +249,8 @@ namespace {
 		/// Fork: the finding's ProjectCheck::Severity and its tool tip
 	constexpr int severity_role = Qt::UserRole + 4;
 	constexpr int tip_role = Qt::UserRole + 5;
+		/// Fork: the finding could not be checked for want of data
+	constexpr int incomplete_role = Qt::UserRole + 6;
 }
 
 /// Fork: the icon of a severity
@@ -303,6 +305,7 @@ void CheckPanelDockWidget::fillCheck(QTreeWidgetItem *root, ProjectCheck::Kind k
 		row->setData(0, accepted_role, accepted.contains(id));
 		row->setData(0, accepted_note_role, accepted.value(id));
 		row->setData(0, severity_role, int(finding.severity));
+		row->setData(0, incomplete_role, finding.incomplete);
 		row->setIcon(0, severityIcon(int(finding.severity)));
 		//: %1 is the finding, %2 its severity, %3 EPLAN's number of the same message
 		row->setData(0, tip_role, finding.eplan.isEmpty()
@@ -402,21 +405,32 @@ void CheckPanelDockWidget::updateSummary()
 {
 	m_finding_count = 0;
 	int count[3] = {0, 0, 0};
+	int incomplete = 0;
 	for (int i = 0 ; i < m_tree->topLevelItemCount() ; ++i) {
 		QTreeWidgetItem *root = m_tree->topLevelItem(i);
 		for (int j = 0 ; j < root->childCount() ; ++j)
 			if (!root->child(j)->data(0, accepted_role).toBool()) {
 				++m_finding_count;
 				++count[qBound(0, root->child(j)->data(0, severity_role).toInt(), 2)];
+				if (root->child(j)->data(0, incomplete_role).toBool()) ++incomplete;
 			}
 	}
+		// Fork: the head of the report, its verdict; missing data are
+		// never "no finding"
+	const ProjectCheck::Status status = count[0] ? ProjectCheck::Status::Correction
+		: count[1] ? ProjectCheck::Status::Review
+		: incomplete ? ProjectCheck::Status::Incomplete : ProjectCheck::Status::NoFinding;
+	QString head = QStringLiteral("<b>%1</b>").arg(ProjectCheck::statusText(status).toHtmlEscaped());
+	if (incomplete)
+		//: %1 is the verdict, %2 how many findings could not be checked for want of data
+		head = tr("%1 (%2)").arg(head, tr("%n datum/data missing", nullptr, incomplete));
 	//: %1 counts the errors, %2 the warnings, %3 the notes
-	m_summary->setText(m_finding_count
+	m_summary->setText(head + QStringLiteral(" — ") + (m_finding_count
 		? tr("%1, %2, %3. Double-click a finding to show it; run the checks again after a change.")
 			  .arg(tr("%n error(s)", nullptr, count[0]),
 				   tr("%n warning(s)", nullptr, count[1]),
-				   tr("%n note(s)", nullptr, count[2]))
-		: tr("Nothing found."));
+				   tr("%n note(s)", nullptr, count[2])).toHtmlEscaped()
+		: tr("Nothing found.").toHtmlEscaped()));
 	applyFilter();
 }
 

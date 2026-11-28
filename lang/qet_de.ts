@@ -3218,6 +3218,79 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
         <source>This is no longer in the project. Run the checks again.</source>
         <translation>Dies ist nicht mehr im Projekt. Prüfungen erneut ausführen.</translation>
     </message>
+    <message numerus="yes">
+        <source>%n datum/data missing</source>
+        <translation>
+            <numerusform>%n Angabe fehlt</numerusform>
+            <numerusform>%n Angaben fehlen</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Accepted findings</source>
+        <translation>Angenommene Befunde</translation>
+    </message>
+    <message>
+        <source>Show accepted findings</source>
+        <translation>Angenommene Befunde zeigen</translation>
+    </message>
+    <message>
+        <source>Double-click a finding to show it on its folio. Right-click to accept it, or to switch its check off for this project.</source>
+        <translation>Doppelklick zeigt einen Befund auf seinem Blatt. Rechtsklick nimmt ihn an oder schaltet seine Prüfung für dieses Projekt ab.</translation>
+    </message>
+    <message>
+        <source>%1: switched off for this project</source>
+        <translation>%1: für dieses Projekt abgeschaltet</translation>
+    </message>
+    <message>
+        <source>%1 (accepted)</source>
+        <translation>%1 (angenommen)</translation>
+    </message>
+    <message>
+        <source>%1 (accepted: %2)</source>
+        <translation>%1 (angenommen: %2)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1: nothing found, %n accepted</source>
+        <translation>
+            <numerusform>%1: nichts gefunden, %n angenommen</numerusform>
+            <numerusform>%1: nichts gefunden, %n angenommen</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%1 (%2, %n accepted)</source>
+        <translation>
+            <numerusform>%1 (%2, %n angenommen)</numerusform>
+            <numerusform>%1 (%2, %n angenommen)</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>List this finding again</source>
+        <translation>Diesen Befund wieder aufführen</translation>
+    </message>
+    <message>
+        <source>Accept this finding...</source>
+        <translation>Diesen Befund annehmen …</translation>
+    </message>
+    <message>
+        <source>The finding is not listed any more in this project, until Options &gt; Show accepted findings.</source>
+        <translation>Der Befund wird in diesem Projekt nicht mehr aufgeführt, außer mit Optionen &gt; Angenommene Befunde zeigen.</translation>
+    </message>
+    <message>
+        <source>Accept this finding</source>
+        <translation>Diesen Befund annehmen</translation>
+    </message>
+    <message>
+        <source>Why it is right as it is (kept in the project):</source>
+        <translation>Warum es so richtig ist (wird im Projekt gespeichert):</translation>
+    </message>
+    <message>
+        <source>Switch this check off for this project</source>
+        <translation>Diese Prüfung für dieses Projekt abschalten</translation>
+    </message>
+    <message>
+        <source>Switch this check on for this project</source>
+        <translation>Diese Prüfung für dieses Projekt einschalten</translation>
+    </message>
 </context>
 <context>
     <name>ClickableImageLabel</name>
@@ -4068,6 +4141,14 @@ Fortfahren?</translation>
     <message>
         <source>The Data Portal reported an error (HTTP %1): %2</source>
         <translation>Das Data Portal meldet einen Fehler (HTTP %1): %2</translation>
+    </message>
+    <message>
+        <source>The Data Portal has no 3D model (E3D) for this part.</source>
+        <translation>Das Data Portal hat kein 3D-Modell (E3D) für diesen Artikel.</translation>
+    </message>
+    <message>
+        <source>The Data Portal sent no 3D model.</source>
+        <translation>Das Data Portal hat kein 3D-Modell geschickt.</translation>
     </message>
 </context>
 <context>
@@ -9494,8 +9575,8 @@ Geschrieben nach %4</translation>
         <translation>Die Bauteile werden in Ordnern Hersteller / Kategorie / Typ abgelegt. Jedes leere EPLAN-Feld (SPS-Adresse, symbolische Adresse, Funktionstext) wird ein eigener Text, der je Platzierung im Plan ausgefüllt wird.</translation>
     </message>
     <message>
-        <source>Parts (*.zip *.edz *.dxf *.dwg)</source>
-        <translation>Artikel (*.zip *.edz *.dxf *.dwg)</translation>
+        <source>Parts (*.zip *.edz *.dxf *.dwg *.aasx)</source>
+        <translation>Artikel (*.zip *.edz *.dxf *.dwg *.aasx)</translation>
     </message>
     <message>
         <source>EPLAN Data Portal DXF package (*.zip)</source>
@@ -9514,6 +9595,16 @@ Geschrieben nach %4</translation>
         <translation>DWG-Zeichnungen, z. B. WSCAD Universe (*.dwg)</translation>
     </message>
     <message>
+        <source>Asset Administration Shell (*.aasx)</source>
+        <translation>Verwaltungsschale (*.aasx)</translation>
+    </message>
+    <message>
+        <source>This is no Asset Administration Shell package:
+%1</source>
+        <translation>Das ist kein Verwaltungsschalen-Paket (AASX):
+%1</translation>
+    </message>
+    <message>
         <source>Import part</source>
         <translation>Artikel importieren</translation>
     </message>
@@ -9522,8 +9613,8 @@ Geschrieben nach %4</translation>
         <translation>Entpacktes EPLAN-DXF-Paket</translation>
     </message>
     <message>
-        <source>%1 is no part file: choose a ZIP package, an .edz part, a DXF, a DWG or the folder of an unpacked package.</source>
-        <translation>%1 ist keine Artikeldatei: Ein ZIP-Paket, einen .edz-Artikel, eine DXF, eine DWG oder den Ordner eines entpackten Pakets wählen.</translation>
+        <source>%1 is no part file: choose a ZIP package, an .edz part, a DXF, a DWG, an .aasx or the folder of an unpacked package.</source>
+        <translation>%1 ist keine Artikeldatei: Ein ZIP-Paket, einen .edz-Artikel, eine DXF, eine DWG, eine .aasx oder den Ordner eines entpackten Pakets wählen.</translation>
     </message>
     <message>
         <source>This is no EPLAN DXF package:
@@ -17616,6 +17707,26 @@ Ignoriert: %3</translation>
         <source>symbol: from the macro package %1</source>
         <translation>Symbol: aus dem Makropaket %1</translation>
     </message>
+    <message>
+        <source>E3D: a Data Portal token would fetch EPLAN's 3D model (Part import &gt; Manufacturer portals)</source>
+        <translation>E3D: Mit einem Data-Portal-Token käme das 3D-Modell von EPLAN (Bauteil-Import &gt; Herstellerportale)</translation>
+    </message>
+    <message>
+        <source>would fetch the 3D model (E3D) from the Data Portal as %1</source>
+        <translation>würde das 3D-Modell (E3D) aus dem Data Portal als %1 holen</translation>
+    </message>
+    <message>
+        <source>E3D: %1</source>
+        <translation>E3D: %1</translation>
+    </message>
+    <message>
+        <source>E3D: EPLAN's 3D model stored as %1</source>
+        <translation>E3D: 3D-Modell von EPLAN abgelegt als %1</translation>
+    </message>
+    <message>
+        <source>E3D: %1 cannot be written</source>
+        <translation>E3D: %1 kann nicht geschrieben werden</translation>
+    </message>
 </context>
 <context>
     <name>PartLine</name>
@@ -19608,6 +19719,258 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
         <source>Voltage drop %1 % (%2 V of %3 V) over %4 m of %5 mm² at %6 A of %7, limit %8 %; this section reaches %9 m (IEC 60364-5-52 G, copper 70 °C, cos φ 1)</source>
         <translation>Spannungsfall %1 % (%2 V von %3 V) über %4 m mit %5 mm² bei %6 A von %7, Grenze %8 %; dieser Querschnitt reicht für %9 m (IEC 60364-5-52 G, Kupfer 70 °C, cos φ 1)</translation>
     </message>
+    <message>
+        <source>%1 on</source>
+        <translation>%1 an</translation>
+    </message>
+    <message>
+        <source>%1 off</source>
+        <translation>%1 aus</translation>
+    </message>
+    <message>
+        <source>%1 actuated</source>
+        <translation>%1 betätigt</translation>
+    </message>
+    <message>
+        <source>%1 not actuated</source>
+        <translation>%1 nicht betätigt</translation>
+    </message>
+    <message>
+        <source>the supply alone</source>
+        <translation>der Versorgung allein</translation>
+    </message>
+    <message numerus="yes">
+        <source>Supply of the control circuit not found (no potential L+ and M, no sim_role supply+/supply- and no protective device in front): interlocks, self-holding and stability of %n coil(s) are not checked</source>
+        <translation>
+            <numerusform>Angabe fehlt: Versorgung des Steuerstromkreises nicht gefunden (kein Potential L+ und M, keine sim_role supply+/supply-, kein Schutzorgan davor): Verriegelung, Selbsthaltung und Ruhezustand von %n Spule nicht geprüft</numerusform>
+            <numerusform>Angabe fehlt: Versorgung des Steuerstromkreises nicht gefunden (kein Potential L+ und M, keine sim_role supply+/supply-, kein Schutzorgan davor): Verriegelung, Selbsthaltung und Ruhezustand von %n Spulen nicht geprüft</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Coil circuit too large to follow (more than %1 paths or %2 contacts in a row): not checked</source>
+        <translation>Spulenkreis zu groß zum Verfolgen (mehr als %1 Pfade oder %2 Kontakte in Reihe): nicht geprüft</translation>
+    </message>
+    <message>
+        <source>%1 is never supplied from the rails found: the interlock of %2 and %3 is not checked</source>
+        <translation>Angabe fehlt: %1 wird von den gefundenen Schienen nie versorgt, die Verriegelung von %2 und %3 ist nicht geprüft</translation>
+    </message>
+    <message>
+        <source>%1 and %2 can pull in at the same time (e.g. with %3), but their main contacts then short-circuit the supply: each needs a normally closed contact of the other in its coil circuit (EN 60204-1 9.3.4)</source>
+        <translation>%1 und %2 können gleichzeitig anziehen (z. B. bei %3), ihre Hauptkontakte schließen dann die Einspeisung kurz: jeder braucht einen Öffner des anderen im Spulenkreis (EN 60204-1 9.3.4)</translation>
+    </message>
+    <message>
+        <source>%1 and %2 are interlocked in one direction only: the coil circuit of %3 has no normally closed contact of %4, so %3 pulls in while %4 is still on (EN 60204-1 9.3.4)</source>
+        <translation>%1 und %2 sind nur in eine Richtung verriegelt: im Spulenkreis von %3 fehlt ein Öffner von %4, %3 zieht also an, solange %4 noch an ist (EN 60204-1 9.3.4)</translation>
+    </message>
+    <message>
+        <source>%1 and %2 are kept apart only by push-buttons or switches, not by normally closed contacts of each other: a welded contact lets both be on (EN 60204-1 9.3.4)</source>
+        <translation>%1 und %2 sind nur über Taster oder Schalter gegeneinander verriegelt, nicht über Öffner des jeweils anderen: ein verschweißter Kontakt lässt beide an (EN 60204-1 9.3.4)</translation>
+    </message>
+    <message>
+        <source>Self-holding without an off contact: %1 holds itself through its own normally open contact and nothing in that path can switch it off</source>
+        <translation>Selbsthaltung ohne Aus-Kontakt: %1 hält sich über den eigenen Schließer, und nichts in diesem Pfad schaltet ihn ab</translation>
+    </message>
+    <message>
+        <source>Loop of %1 coil(s) with %2 input(s) too large to check for a stable state: not checked</source>
+        <translation>Rückkopplung aus %1 Spule(n) mit %2 Eingang/Eingängen zu groß für die Prüfung auf einen Ruhezustand: nicht geprüft</translation>
+    </message>
+    <message>
+        <source>No stable state with %1: the coil(s) %2 switch on and off without end (pumping)</source>
+        <translation>Kein Ruhezustand bei %1: %2 schalten ohne Ende ein und aus (Pumpen)</translation>
+    </message>
+    <message>
+        <source>given</source>
+        <translation>angegeben</translation>
+    </message>
+    <message>
+        <source>transformer and network, IEC 60909-0</source>
+        <translation>Transformator und Netz, IEC 60909-0</translation>
+    </message>
+    <message>
+        <source>transformer on a network of unlimited power, IEC 60909-0</source>
+        <translation>Transformator am starren Netz, IEC 60909-0</translation>
+    </message>
+    <message>
+        <source>network, IEC 60909-0</source>
+        <translation>Netz, IEC 60909-0</translation>
+    </message>
+    <message>
+        <source>Short-circuit current at the feed Ik3 = %1 kA (%2, c = %3)</source>
+        <translation>Kurzschlussstrom an der Einspeisung Ik3 = %1 kA (%2, c = %3)</translation>
+    </message>
+    <message>
+        <source>Installation method %1 is not in the tables used (A1, A2, B1, B2, C): In ≤ Iz not checked</source>
+        <translation>Verlegeart %1 steht nicht in den verwendeten Tabellen (A1, A2, B1, B2, C): In ≤ Iz nicht geprüft</translation>
+    </message>
+    <message>
+        <source>%1 mm² is outside the tables used (1.5 to 120 mm²): In ≤ Iz not checked</source>
+        <translation>%1 mm² liegt außerhalb der verwendeten Tabellen (1,5 bis 120 mm²): In ≤ Iz nicht geprüft</translation>
+    </message>
+    <message>
+        <source>Ambient temperature or grouping outside the tables (60 °C, 20 circuits): In ≤ Iz not checked</source>
+        <translation>Umgebungstemperatur oder Häufung außerhalb der Tabellen (60 °C, 20 Stromkreise): In ≤ Iz nicht geprüft</translation>
+    </message>
+    <message>
+        <source>In = %1 A is above Iz = %2 A of %3 mm² (IEC 60364-5-52 annex B: method %4, %5, %6 loaded conductors, factor %7 for temperature and grouping)</source>
+        <translation>In = %1 A liegt über Iz = %2 A von %3 mm² (IEC 60364-5-52 Anhang B: Verlegeart %4, %5, %6 belastete Adern, Faktor %7 für Temperatur und Häufung)</translation>
+    </message>
+    <message>
+        <source>Breaking capacity %1 kA is below the short-circuit current %2 kA at the feed (IEC 60909-0, simplified: cables in front neglected, the highest value)</source>
+        <translation>Schaltvermögen %1 kA liegt unter dem Kurzschlussstrom %2 kA an der Einspeisung (IEC 60909-0 vereinfacht: Leitungen davor vernachlässigt, der höchste Wert)</translation>
+    </message>
+    <message>
+        <source>Ia (characteristic B, C, D or ia_a)</source>
+        <translation>Ia (Charakteristik B, C, D oder ia_a)</translation>
+    </message>
+    <message>
+        <source>U0 (u0_v, or un_v of the feed)</source>
+        <translation>U0 (u0_v oder un_v der Einspeisung)</translation>
+    </message>
+    <message>
+        <source>No disconnection in time: Zs × Ia = %1 Ω × %2 A = %3 V is above U0 = %4 V (cable %5, %6 m of %7 mm², copper 70 °C; Zs at the origin %8 Ω); this section reaches %9 m (IEC 60364-4-41 411.4.4)</source>
+        <translation>Keine rechtzeitige Abschaltung: Zs × Ia = %1 Ω × %2 A = %3 V liegt über U0 = %4 V (Kabel %5, %6 m mit %7 mm², Kupfer 70 °C; Zs am Ursprung %8 Ω); dieser Querschnitt reicht für %9 m (IEC 60364-4-41 411.4.4)</translation>
+    </message>
+    <message>
+        <source>loop impedance at the device (zs_ohm)</source>
+        <translation>Schleifenimpedanz am Einbauort (zs_ohm)</translation>
+    </message>
+    <message>
+        <source>RCD behind RCD %1: not selective, the one in front must be of type S with IΔn of at least 3 × %2 mA (IEC 60364-5-53 535.3)</source>
+        <translation>FI hinter FI %1: nicht selektiv, der vordere muss Typ S mit IΔn von mindestens 3 × %2 mA sein (IEC 60364-5-53 535.3)</translation>
+    </message>
+    <message>
+        <source>RCD behind RCD %1: selectivity not decided, type S or IΔn not given (rcd_type, idn_ma; IEC 60364-5-53 535.3)</source>
+        <translation>FI hinter FI %1: Angabe fehlt, Selektivität nicht entschieden (Typ S oder IΔn: rcd_type, idn_ma; IEC 60364-5-53 535.3)</translation>
+    </message>
+    <message>
+        <source>Socket-outlet behind an RCD without IΔn (idn_ma): 30 mA not checked (IEC 60364-4-41 411.3.3)</source>
+        <translation>Angabe fehlt: Steckdose hinter einem FI ohne IΔn (idn_ma), 30 mA nicht geprüft (IEC 60364-4-41 411.3.3)</translation>
+    </message>
+    <message>
+        <source>Socket-outlet without an RCD in front: additional protection by an RCD of at most 30 mA is required (IEC 60364-4-41 411.3.3)</source>
+        <translation>Steckdose ohne FI davor: zusätzlicher Schutz durch einen FI mit höchstens 30 mA ist gefordert (IEC 60364-4-41 411.3.3)</translation>
+    </message>
+    <message>
+        <source>Socket-outlet behind an RCD of more than 30 mA: additional protection by an RCD of at most 30 mA is required (IEC 60364-4-41 411.3.3)</source>
+        <translation>Steckdose hinter einem FI über 30 mA: zusätzlicher Schutz durch einen FI mit höchstens 30 mA ist gefordert (IEC 60364-4-41 411.3.3)</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n protective device(s) without installation method or insulation of their wires: In ≤ Iz after IEC 60364-5-52 not checked (installation_method A1, A2, B1, B2 or C and insulation PVC or XLPE, at the device or in the cable)</source>
+        <translation>
+            <numerusform>Angabe fehlt: %n Schutzorgan ohne Verlegeart oder Isolierung seiner Leitungen, In ≤ Iz nach IEC 60364-5-52 nicht geprüft (installation_method A1, A2, B1, B2 oder C und insulation PVC oder XLPE, am Schutzorgan oder im Kabel)</numerusform>
+            <numerusform>Angabe fehlt: %n Schutzorgane ohne Verlegeart oder Isolierung ihrer Leitungen, In ≤ Iz nach IEC 60364-5-52 nicht geprüft (installation_method A1, A2, B1, B2 oder C und insulation PVC oder XLPE, am Schutzorgan oder im Kabel)</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n protective device(s): ambient temperature or grouping not given (ambient_c, grouping); Iz taken at 30 °C without grouping, a higher temperature or more circuits lower it</source>
+        <translation>
+            <numerusform>Angabe fehlt: %n Schutzorgan ohne Umgebungstemperatur oder Häufung (ambient_c, grouping); Iz bei 30 °C ohne Häufung gerechnet, mehr Wärme oder mehr Stromkreise senken es</numerusform>
+            <numerusform>Angabe fehlt: %n Schutzorgane ohne Umgebungstemperatur oder Häufung (ambient_c, grouping); Iz bei 30 °C ohne Häufung gerechnet, mehr Wärme oder mehr Stromkreise senken es</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>No feed data in the plan (ik3_ka, ik1_ka, zs_ohm, sk_mva or sr_kva with ukr_pct and un_v at the supply): short-circuit current and disconnection are not checked</source>
+        <translation>Angabe fehlt: keine Einspeisedaten im Plan (ik3_ka, ik1_ka, zs_ohm, sk_mva oder sr_kva mit ukr_pct und un_v an der Einspeisung), Kurzschlussstrom und Abschaltung nicht geprüft</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n protective device(s) without breaking capacity (icu_ka, or &quot;6 kA&quot; in the designation): not checked against the short-circuit current</source>
+        <translation>
+            <numerusform>Angabe fehlt: %n Schutzorgan ohne Schaltvermögen (icu_ka oder „6 kA“ in der Bezeichnung), nicht gegen den Kurzschlussstrom geprüft</numerusform>
+            <numerusform>Angabe fehlt: %n Schutzorgane ohne Schaltvermögen (icu_ka oder „6 kA“ in der Bezeichnung), nicht gegen den Kurzschlussstrom geprüft</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Disconnection not decided, missing: %1</source>
+        <translation>Abschaltung nicht entschieden, Angabe fehlt: %1</translation>
+    </message>
+    <message>
+        <source>Control circuit: interlocks and self-holding</source>
+        <translation>Steuerstromkreis: Verriegelung und Selbsthaltung</translation>
+    </message>
+    <message>
+        <source>Short circuit, disconnection and RCDs</source>
+        <translation>Kurzschluss, Abschaltung und FI</translation>
+    </message>
+    <message>
+        <source>The contactor logic as a graph of its potentials: contactors whose main contacts short-circuit when both are closed (reversing, star-delta) and that can pull in together, an interlock in one direction only, a self-holding without an off contact, a circuit without a stable state (pumping). Interlocks for contrary motions: EN 60204-1 9.3.4.</source>
+        <translation>Die Schützlogik als Graph ihrer Potentiale: Schütze, deren Hauptkontakte zusammen kurzschließen (Wendeschütz, Stern-Dreieck) und die gleichzeitig anziehen können, Verriegelung nur in eine Richtung, Selbsthaltung ohne Aus-Kontakt, Kreis ohne Ruhezustand (Pumpen). Verriegelung gegenläufiger Bewegungen: EN 60204-1 9.3.4.</translation>
+    </message>
+    <message>
+        <source>With feed data (ik3_ka, ik1_ka, zs_ohm, sk_mva, sr_kva/ukr_pct, un_v): short-circuit current after IEC 60909-0 (simplified) against the breaking capacity, loop impedance Zs × Ia ≤ U0 after IEC 60364-4-41 411.4.4; RCDs in series; socket-outlets without an RCD of at most 30 mA (IEC 60364-4-41 411.3.3). A missing datum is listed, never assumed.</source>
+        <translation>Mit Einspeisedaten (ik3_ka, ik1_ka, zs_ohm, sk_mva, sr_kva/ukr_pct, un_v): Kurzschlussstrom nach IEC 60909-0 (vereinfacht) gegen das Schaltvermögen, Schleifenimpedanz Zs × Ia ≤ U0 nach IEC 60364-4-41 411.4.4; FI hintereinander; Steckdosen ohne FI bis 30 mA (IEC 60364-4-41 411.3.3). Eine fehlende Angabe wird gemeldet, nie angenommen.</translation>
+    </message>
+    <message>
+        <source>Correction needed</source>
+        <translation>Korrektur nötig</translation>
+    </message>
+    <message>
+        <source>Review</source>
+        <translation>Prüfen</translation>
+    </message>
+    <message>
+        <source>Read incompletely</source>
+        <translation>Unvollständig gelesen</translation>
+    </message>
+    <message>
+        <source>No finding</source>
+        <translation>Kein Befund</translation>
+    </message>
+    <message>
+        <source>Wires in two cables</source>
+        <translation>Leitungen in zwei Kabeln</translation>
+    </message>
+    <message>
+        <source>Symbols with no part number</source>
+        <translation>Symbole ohne Artikelnummer</translation>
+    </message>
+    <message>
+        <source>Unanswered prompts</source>
+        <translation>Unbeantwortete Abfragen</translation>
+    </message>
+    <message>
+        <source>Wires set as a core of more than one cable. A wire runs in one cable: the cable core list would show it twice.</source>
+        <translation>Leitungen, die als Ader mehrerer Kabel eingetragen sind. Eine Leitung liegt in einem Kabel: die Aderliste zeigte sie doppelt.</translation>
+    </message>
+    <message>
+        <source>Symbols the parts list holds that have no part number. Folio reports, junctions and symbols set to be left out of the bill of materials are not listed.</source>
+        <translation>Symbole der Stückliste ohne Artikelnummer. Abbruchstellen, Verbindungspunkte und Symbole, die nicht in die Stückliste sollen, sind nicht aufgeführt.</translation>
+    </message>
+    <message>
+        <source>Labels and texts of symbols, wires and folios that still hold a question mark or a ?name: what a macro asks for when it is placed, left unanswered.</source>
+        <translation>Kennzeichen und Texte von Symbolen, Leitungen und Blättern, die noch ein Fragezeichen oder ein ?name enthalten: was ein Makro beim Einfügen abfragt, unbeantwortet.</translation>
+    </message>
+    <message>
+        <source>A wire is a core of two cables: %1</source>
+        <translation>Eine Leitung ist Ader zweier Kabel: %1</translation>
+    </message>
+    <message>
+        <source>Wire %1 is a core of two cables: %2</source>
+        <translation>Leitung %1 ist Ader zweier Kabel: %2</translation>
+    </message>
+    <message>
+        <source>Unanswered: %1</source>
+        <translation>Unbeantwortet: %1</translation>
+    </message>
+    <message>
+        <source>%1: unanswered %2</source>
+        <translation>%1: unbeantwortet %2</translation>
+    </message>
+    <message>
+        <source>Wire: unanswered %1</source>
+        <translation>Leitung: unbeantwortet %1</translation>
+    </message>
+    <message>
+        <source>Text: unanswered %1</source>
+        <translation>Text: unbeantwortet %1</translation>
+    </message>
+    <message>
+        <source>%1 is never supplied: its circuit ends at %4, a device with no known switching function; give the supply as wire function L+ and M or with sim_role. The interlock of %2 and %3 is not checked</source>
+        <translation>Angabe fehlt: %1 wird nie versorgt, sein Kreis endet an %4, einem Gerät ohne bekannte Schaltfunktion; Versorgung als Leitungsfunktion L+ und M oder mit sim_role angeben. Die Verriegelung von %2 und %3 ist nicht geprüft</translation>
+    </message>
+    <message>
+        <source>Supply of the socket-outlet not followed back to a protective device: an RCD of at most 30 mA in front is not checked (IEC 60364-4-41 411.3.3)</source>
+        <translation>Angabe fehlt: Zuleitung der Steckdose nicht bis zu einem Schutzorgan verfolgt, ein FI mit höchstens 30 mA davor ist nicht geprüft (IEC 60364-4-41 411.3.3)</translation>
+    </message>
 </context>
 <context>
     <name>ProjectDBModel</name>
@@ -21179,6 +21542,14 @@ Verfügbare Optionen:
     <message>
         <source>Reads an sPlan 8 schematic and draws it anew as a QElectroTech project</source>
         <translation>Liest einen sPlan-8-Plan und zeichnet ihn als QElectroTech-Projekt neu</translation>
+    </message>
+    <message>
+        <source>Import WSCAD project…</source>
+        <translation>WSCAD-Projekt importieren…</translation>
+    </message>
+    <message>
+        <source>Reads a WSCAD project (schematic pages, symbols, wires, cross references) as an editable QElectroTech project</source>
+        <translation>Liest ein WSCAD-Projekt (Schaltplanseiten, Symbole, Leitungen, Verweise) als bearbeitbares QElectroTech-Projekt</translation>
     </message>
     <message>
         <source>Show or hide the assistant (Claude)</source>
@@ -37347,6 +37718,58 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
     <message>
         <source>Stop the running import?</source>
         <translation>Laufenden Import abbrechen?</translation>
+    </message>
+    <message>
+        <source>Import a WSCAD project</source>
+        <translation>WSCAD-Projekt importieren</translation>
+    </message>
+    <message>
+        <source>Reads a WSCAD project (the project folder with Database/WSCAD6.db and the .wsELD schematic pages, WSCAD ELECTRIX / SUITE 6 and later) and turns it into an editable QElectroTech project: every schematic page a folio with its frame and title block, every symbol a part with its terminals, the wires of the WSCAD connection list, linked cross references and coil/contact links. Device and wire lists (CSV) are written next to the project.</source>
+        <translation>Liest ein WSCAD-Projekt (den Projektordner mit Database/WSCAD6.db und den .wsELD-Schaltplanseiten, WSCAD ELECTRIX / SUITE ab 6) und macht daraus ein bearbeitbares QElectroTech-Projekt: jede Schaltplanseite ein Blatt mit Rahmen und Schriftfeld, jedes Symbol ein Bauteil mit seinen Anschlüssen, die Leitungen aus der WSCAD-Verbindungsliste, verknüpfte Verweise und Spule/Kontakt-Verknüpfungen. Geräte- und Verbindungsliste (CSV) kommen neben das Projekt.</translation>
+    </message>
+    <message>
+        <source>WSCAD project folder:</source>
+        <translation>WSCAD-Projektordner:</translation>
+    </message>
+    <message>
+        <source>Also write a PDF</source>
+        <translation>Zusätzlich ein PDF schreiben</translation>
+    </message>
+    <message>
+        <source>Reading the WSCAD project</source>
+        <translation>WSCAD-Projekt lesen</translation>
+    </message>
+    <message>
+        <source>Reading the schematic pages and their symbols</source>
+        <translation>Schaltplanseiten und Symbole lesen</translation>
+    </message>
+    <message>
+        <source>Pairing the cross reference arrows</source>
+        <translation>Verweispfeile paaren</translation>
+    </message>
+    <message>
+        <source>Drawing the wires of the connection list</source>
+        <translation>Leitungen aus der Verbindungsliste zeichnen</translation>
+    </message>
+    <message>
+        <source>Writing the device and wire lists</source>
+        <translation>Geräte- und Verbindungsliste schreiben</translation>
+    </message>
+    <message>
+        <source>Choose the WSCAD project folder (with Database/WSCAD6.db)</source>
+        <translation>WSCAD-Projektordner wählen (mit Database/WSCAD6.db)</translation>
+    </message>
+    <message>
+        <source>Choose the WSCAD project folder.</source>
+        <translation>WSCAD-Projektordner wählen.</translation>
+    </message>
+    <message>
+        <source>%1 is not a WSCAD project folder (Database/WSCAD6.db is missing).</source>
+        <translation>%1 ist kein WSCAD-Projektordner (Database/WSCAD6.db fehlt).</translation>
+    </message>
+    <message>
+        <source>Install what is missing, e.g. &quot;py -m pip install cryptography pymupdf fonttools&quot;, or choose another Python.</source>
+        <translation>Fehlendes installieren, z. B. „py -m pip install cryptography pymupdf fonttools“, oder ein anderes Python wählen.</translation>
     </message>
 </context>
 <context>

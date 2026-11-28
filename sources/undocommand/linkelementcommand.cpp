@@ -130,6 +130,14 @@ bool LinkElementCommand::mergeWith(const QUndoCommand *other)
 */
 bool LinkElementCommand::isLinkable(Element *element_a, Element *element_b, bool already_linked)
 {
+		//A star report (@sa Element::isReportStar()) and a report of the
+		//other kind it may take: one that is free, or already its own
+	const auto starTakes = [already_linked](Element *star, Element *other) {
+		if (!star->isReportStar()) return false;
+		if (other->isFree()) return true;
+		return already_linked && star->linkedElements().contains(other);
+	};
+
 	switch(element_a->linkType())
 	{
 		case Element::Simple: return false;
@@ -142,6 +150,8 @@ bool LinkElementCommand::isLinkable(Element *element_a, Element *element_b, bool
 			if (element_a->isFree() && element_b->isFree()) return true;
 				//Reports aren't free but are already linked between them and and already_linked is true
 			if (element_a->linkedElements().contains(element_b) && already_linked) return true;
+				//A star takes every free report of the other kind
+			if (starTakes(element_a, element_b) || starTakes(element_b, element_a)) return true;
 
 			return false;
 		}
@@ -154,6 +164,8 @@ bool LinkElementCommand::isLinkable(Element *element_a, Element *element_b, bool
 		if (element_a->isFree() && element_b->isFree()) return true;
 			//Reports aren't free but are already linked between them and and already_linked is true
 		if (element_a->linkedElements().contains(element_b) && already_linked) return true;
+			//A star takes every free report of the other kind
+		if (starTakes(element_a, element_b) || starTakes(element_b, element_a)) return true;
 
 		return false;
 		}
@@ -453,7 +465,8 @@ void LinkElementCommand::setUpNewLink(
 {
 	//m_element is a master we can connect several element to it
 	//if m_element isn't master (may be a report or slave) we can connect only one element
-	if (m_element->linkType() == Element::Master || element_list.size() == 1)
+	if (m_element->linkType() == Element::Master || m_element->isReportStar()
+		|| element_list.size() == 1)
 	{
 		foreach(Element *elmt, element_list)
 			if (isLinkable(m_element, elmt, already_link))
@@ -485,6 +498,15 @@ void LinkElementCommand::makeLink(const QList<Element *> &element_list)
 	{
 		m_element->unlinkAllElements();
 		return;
+	}
+
+		//A star report lets go of the reports the list leaves out: it keeps
+		//every link it is given, so linking alone would not take one back
+	if (m_element->isReportStar()) {
+		const QList<Element *> linked = m_element->linkedElements();
+		for (Element *elmt : linked)
+			if (!element_list.contains(elmt))
+				m_element->unlinkElement(elmt);
 	}
 
 		//We link all element from element_list

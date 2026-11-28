@@ -167,6 +167,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/safety/iso13849.cpp
   ${QET_DIR}/sources/safety/iso13849.h
   ${QET_DIR}/sources/plc/tiaplctags.h
+  ${QET_DIR}/sources/plc/plcaddressing.cpp
+  ${QET_DIR}/sources/plc/plcaddressing.h
   ${QET_DIR}/sources/import/eplanproject/epdzimport.cpp
   ${QET_DIR}/sources/import/eplanproject/epdzimport.h
   ${QET_DIR}/sources/import/eplanproject/eplanprojectimportdialog.cpp
@@ -524,6 +526,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/devicetype/devicetypeplacement.h
   ${QET_DIR}/sources/autoNum/renumberconductorscommand.cpp
   ${QET_DIR}/sources/autoNum/renumberconductorscommand.h
+  ${QET_DIR}/sources/autoNum/wirenumberpattern.cpp
+  ${QET_DIR}/sources/autoNum/wirenumberpattern.h
   ${QET_DIR}/sources/autoNum/renumberelementscommand.cpp
   ${QET_DIR}/sources/autoNum/renumberelementscommand.h
   ${QET_DIR}/sources/autoNum/autonumschemecommand.cpp
@@ -1175,8 +1179,16 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/ui/fluidcheckdialog.h
   ${QET_DIR}/sources/ui/openwireendsdialog.cpp
   ${QET_DIR}/sources/ui/openwireendsdialog.h
+  ${QET_DIR}/sources/ui/wirenumberpatterndialog.cpp
+  ${QET_DIR}/sources/ui/wirenumberpatterndialog.h
+  ${QET_DIR}/sources/ui/networkaddressdialog.cpp
+  ${QET_DIR}/sources/ui/networkaddressdialog.h
+  ${QET_DIR}/sources/network/networkaddresses.cpp
+  ${QET_DIR}/sources/network/networkaddresses.h
   ${QET_DIR}/sources/projectcheck/checksettings.cpp
   ${QET_DIR}/sources/projectcheck/checksettings.h
+  ${QET_DIR}/sources/projectcheck/checkfixes.cpp
+  ${QET_DIR}/sources/projectcheck/checkfixes.h
   ${QET_DIR}/sources/projectcheck/openwireends.cpp
   ${QET_DIR}/sources/projectcheck/openwireends.h
   ${QET_DIR}/sources/ui/tiatagsdialog.cpp
@@ -1255,6 +1267,10 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/undocommand/itemmodelcommand.h
   ${QET_DIR}/sources/undocommand/linkelementcommand.cpp
   ${QET_DIR}/sources/undocommand/linkelementcommand.h
+  ${QET_DIR}/sources/undocommand/reportstarcommand.cpp
+  ${QET_DIR}/sources/undocommand/reportstarcommand.h
+  ${QET_DIR}/sources/undocommand/pairrepresentation.cpp
+  ${QET_DIR}/sources/undocommand/pairrepresentation.h
   ${QET_DIR}/sources/undocommand/movediagramcommand.cpp
   ${QET_DIR}/sources/undocommand/movediagramcommand.h
   ${QET_DIR}/sources/undocommand/removediagramcommand.cpp

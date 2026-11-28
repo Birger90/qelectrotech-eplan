@@ -98,6 +98,8 @@ class LinkSingleElementWidget : public AbstractElementPropertiesEditorWidget
 
 	Ui::LinkSingleElementWidget *ui;
 
+	QCheckBox *m_star_cb = nullptr;
+	class QPushButton *m_pair_pb = nullptr;
 	bool m_unlink = false;
 	ElementData::Type m_filter;
 

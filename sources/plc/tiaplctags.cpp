@@ -751,6 +751,14 @@ QVector<Channel> channels(QETProject *project, QStringList *notes)
 			Diagram *d = c.slave ? c.slave->diagram() : module->diagram();
 			c.folio = d ? project->folioIndex(d) : -1;
 			const bool analog = isAnalog(io.type);
+				//TwinCAT links "%I*" and "%Q*" itself (PlcAddressing):
+				//the GVL says AT %I*, the name comes from module and channel
+			if (c.rawAddress == QLatin1String("%I*") || c.rawAddress == QLatin1String("%Q*")) {
+				c.address = c.rawAddress;
+				c.dataType = analog ? QStringLiteral("Int") : QStringLiteral("Bool");
+				result << c;
+				continue;
+			}
 			Parts p = parse(c.rawAddress);
 			if (!p.valid()) {
 				// "1.0": byte.bit without area
@@ -828,7 +836,10 @@ QVector<Channel> channels(QETProject *project, QStringList *notes)
 		name.remove(QLatin1Char('"'));
 		name = name.trimmed();
 		if (name.isEmpty()) {
-			const QString channel = c.autoAddress || c.rawAddress.isEmpty()
+				//"%I*" is every TwinCAT channel's: the channel counts
+			const bool linked = c.address.endsWith(QLatin1Char('*'));
+			const QString channel = linked ? c.kind + QString::number(c.io)
+				: c.autoAddress || c.rawAddress.isEmpty()
 				? (c.rawAddress.isEmpty() ? c.kind + QString::number(c.io) : c.rawAddress)
 				: c.address;
 			name = nameToken(c.module) + QLatin1Char('_') + nameToken(channel);
@@ -841,7 +852,7 @@ QVector<Channel> channels(QETProject *project, QStringList *notes)
 		if (unique != name && notes)
 			*notes << tr("%1, row %2: the name \"%3\" is taken, written as \"%4\".")
 						  .arg(c.module).arg(c.io + 1).arg(name, unique);
-		if (addresses.contains(c.address) && notes)
+		if (addresses.contains(c.address) && !c.address.endsWith(QLatin1Char('*')) && notes)
 			*notes << tr("%1, row %2: address %3 is used twice.").arg(c.module).arg(c.io + 1).arg(c.address);
 		addresses.insert(c.address, 1);
 	}

@@ -70,6 +70,9 @@ import uuid
 import xml.etree.ElementTree as ET
 from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import qet_text  # noqa: E402  (QET-Text v1, one folio as text)
+
 SERVER_NAME = "qet-mcp"
 SERVER_VERSION = "0.1.0"
 DEFAULT_PROTOCOL = "2025-06-18"
@@ -5636,6 +5639,64 @@ TOOLS = [
                                              a.get("limit", 200)),
     },
     {
+        "name": "qet_folio_text",
+        "description": "One folio as QET-Text v1, a line per element, to read or to "
+                       "rewrite: 'blatt 3 titel=...', 'bauteil -K1 typ=<symbol> @x,y "
+                       "rot=0 uuid=<uuid> info=value', 'leiter -S1:14 -K1:A1 nummer=3.01 "
+                       "farbe=BU querschnitt=1,5'. Write the folio back with "
+                       "qet_folio_text_apply; check it first with qet_folio_text_check.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string"},
+                "folio": {"type": "integer", "description": "folio number counted from 1"},
+            },
+            "required": ["path", "folio"],
+        },
+        "handler": lambda a: {"text": qet_text.export_folio(_root(a["path"]), a["folio"])},
+    },
+    {
+        "name": "qet_folio_text_check",
+        "description": "Check a folio in QET-Text v1 against the project without changing "
+                       "anything: unknown words, symbols without typ=, labels the wires "
+                       "name but the text does not place, terminal names the symbol does "
+                       "not have. Each error with its line.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string"},
+                "text": {"type": "string"},
+            },
+            "required": ["path", "text"],
+        },
+        "handler": lambda a: qet_text.check(_root(a["path"]), a["text"]),
+    },
+    {
+        "name": "qet_folio_text_apply",
+        "description": "Make the folio what a QET-Text v1 says, on a copy of the project: "
+                       "a folio of that number is replaced (symbols with uuid= stay and are "
+                       "moved, relabelled, given their information; what the text leaves out "
+                       "is deleted), a number one past the last adds a folio. Runs as "
+                       "qet_edit and reports its diff.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "binary": {"type": "string", "description": "the qelectrotech executable; leave it out to use the one this server is configured with"},
+                "project": {"type": "string"},
+                "text": {"type": "string"},
+                "output": {"type": "string"},
+                "elements_dir": {"type": "string"},
+                "overwrite": {"type": "boolean", "default": False},
+                "timeout": {"type": "integer", "default": 180},
+            },
+            "required": ["project", "text", "output"],
+        },
+        "handler": lambda a: tool_edit(a["binary"], a["project"],
+                                       qet_text.operations(_root(a["project"]), a["text"]),
+                                       a["output"], a.get("elements_dir"),
+                                       a.get("timeout", 180)),
+    },
+    {
         "name": "qet_diff",
         "description": "Structurally diff two .qet files: which elements moved and "
                        "by what delta, which were rotated (orientation in quarter "
@@ -6957,6 +7018,9 @@ _DATA_PATHS = {
     "qet_elements":       {"read": ("path",)},
     "qet_items":          {"read": ("path",)},
     "qet_conductors":     {"read": ("path",)},
+    "qet_folio_text":     {"read": ("path",)},
+    "qet_folio_text_check": {"read": ("path",)},
+    "qet_folio_text_apply": {"read": ("project",), "write": ("output",)},
     "qet_diff":           {"read": ("before", "after")},
     "qet_scan":           {"read": ("directory",)},
     "qet_element_info":   {"read": ("path",)},
@@ -7001,7 +7065,7 @@ _DATA_PATHS = {
 _LAUNCHES_QET = {"qet_generate_from_config", "qet_product_rules", "qet_simulate", "qet_simulate_reference", "qet_fluidsim_import", "qet_export", "qet_edit", "qet_query", "qet_continuity",
                  "qet_check", "qet_plan_check", "qet_layout_check", "qet_project_new", "qet_script_api",
                  "qet_script_test", "qet_recording_check", "qet_live_layout_check",
-                 "qet_dataportal_import"}
+                 "qet_dataportal_import", "qet_folio_text_apply"}
 
 # Tools that launch QElectroTech only when given this argument.
 _LAUNCHES_QET_WITH = {"qet_script_install": "test_project"}

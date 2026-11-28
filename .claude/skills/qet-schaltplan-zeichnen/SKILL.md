@@ -153,7 +153,7 @@ Funktionsvorlage einfügen – mit Artikeldaten, Klemmen, Kabel und Verknüpfung
 
 ## Konfigurator (Plan aus einer Tabelle, nach EEC Pro)
 
-Ab Fork-Branch `feature/konfigurator`, Konzept `docs/konfigurator.md`. Für Maschinen aus wiederkehrenden Objekten
+Ab Fork 1.69.0, Konzept `docs/konfigurator.md`. Für Maschinen aus wiederkehrenden Objekten
 (Antriebe, Ventile, Sensoren) nicht Blatt für Blatt zeichnen, sondern eine Tabelle anlegen und erzeugen:
 - Tabelle (xlsx erstes Blatt oder CSV `;`): `Objekt;Typical;Anlage;Ort;P_kW;TEXT` …, eine Zeile je Objekt.
   `Typical` = Funktionsvorlage („Antrieb“, „Ventil“, „Sensor“ aus `funktionsvorlagen/Typicals`, oder jede andere).
@@ -276,6 +276,23 @@ Ab Fork-Branch `feature/konfigurator`, Konzept `docs/konfigurator.md`. Für Masc
     Punkt über das unsichtbare „Ecke (Plan)“ (Anschlüsse N/W/E/S wie `bod`). Punkte nur dort, wo
     auch das Original einen Punkt hat. Vor jedem Blatt im Original nachsehen, welche Art es ist.
   - Fehler, die beim Vergleich auffallen, sofort ausbessern statt sie nur zu melden.
+  - **Ganzer Plan aus einem fremden Vektor-PDF** (SEE Electrical, WSCAD, EPLAN …): `tools/pdf_import/pdf_projekt.py
+    plan.pdf --nur-analyse` zeigt die erkannte Leiterstärke und die Seitenarten (Deckblatt/Listen werden übersprungen),
+    `--ziel SAMMLUNG --ordner Import/Plan --aus OUT` schreibt je Schaltplanseite das JSON von `pdf_blatt.py` (dazu
+    Blattnummer, Titel, Ort, Leiterfarbe nach IEC 60757, Drahtnummer, BMK) und `projekt.json` mit gepaarten
+    Unterbrechungspunkten. Ob ein Bauteil Spule oder Kontakt ist, weiß die Grafik nicht: Verknüpfungen danach setzen.
+  - **Blatt als Text** (QET-Text v1): `qet_folio_text` gibt ein Blatt zeilenweise aus (`bauteil -K1 typ=… @x,y uuid=…`,
+    `leiter -S1:14 -K1:A1 nummer=3.01 farbe=BU`), `qet_folio_text_check` prüft einen geänderten Text mit Zeilennummern,
+    `qet_folio_text_apply` ersetzt das Blatt (Bauteile mit uuid bleiben, Fehlendes wird gelöscht) oder hängt eines an.
+    Für Änderungen an ganzen Blättern meist schneller als einzelne qet_edit-Operationen.
+  - **Drahtnummern nach Muster** statt QET-Nummerierungsbausteinen: `qet.setWireNumberPattern({pattern:
+    "{seite}.{n:2}", scope: "folio"|"cabinet"|"project", reserve: 3, order: "columns"|"rows", mode:
+    "fixed"|"recalculate", active: true})`, dann `qet.numberWires()`; doppelte Nummern im Prüfpanel mit *Beheben*.
+  - **SPS-Adressen je Station**: Elementinfo `plc_station` an den Modulen, `qet.setPlcStation("PLC1", {format:
+    "siemens_de"|"siemens"|"iec"|"omron"|"twincat", order: "analog_first"})`, `qet.assignPlcAddresses(true)`;
+    IO-Link-Port als Adresse `IOL:2/2` (Bytes ein/aus) eintragen.
+  - **Netzwerk**: `qet.setIpNetworks("Maschine = 10.0.0.0/24, gw 10.0.0.1, from 10")`, `qet.assignIpAddresses()`,
+    `qet.assignProfinetNames()`; Tabelle unter *Projekt > Netzwerkadressen …*.
   - **Ganze Blätter automatisch** (ab Blatt 36): `tools/symbole/pdf_blatt.py` im Fork setzt ein EPLAN-PDF-Blatt
     komplett um – Leitungen (waagerecht/senkrecht, Leiterstärke, freie Enden ausgeschlossen, Kästen erkannt)
     werden echte Leiter, Ecken/Abzweige Knoten (unsichtbare „Ecke“), zusammenhängende Grafik wird je ein Bauteil

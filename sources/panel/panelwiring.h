@@ -73,10 +73,34 @@ struct PanelBundleRun
 	double diameter_mm = 0;     ///< sqrt(sum d² / 0.75): round wires packed in a bundle
 };
 
+/**
+	@brief One wire of the wiring list of a mounting surface: from one
+	device to another, in the order the wiring goes (each potential grows
+	from its first device, the nearest device next: the shortest wires the
+	route found), its length through the ducts or on the plate, and the
+	ferrule for its cross-section.
+*/
+struct PanelWireRun
+{
+	int order = 0;              ///< 1, 2 ... over the surface
+	QString wire;               ///< the wire number of the potential, empty when none
+	QString from, to;           ///< designations of the two devices
+	double section_mm2 = 0;
+	bool assumed_section = false;
+	double length_mm = 0;       ///< device to device, without the reserve
+	bool free = false;          ///< laid on the plate, no duct
+	bool unrouted = false;      ///< no way at all
+		/// with @p reserve_mm at each end, rounded up to 10 mm
+	double cutLength(double reserve_mm) const;
+		/// Phoenix Contact AI type for the cross-section (DIN 46228-4)
+	QString ferrule() const;
+};
+
 struct PanelWiring
 {
 	QList<PanelDuctFill> ducts;
 	QList<PanelBundleRun> bundles;  ///< the free ways, wires without a duct
+	QList<PanelWireRun> runs;   ///< every wire, in the order of the wiring
 	int wires = 0;              ///< wires routed through ducts
 	int free_wires = 0;         ///< wires laid freely on the plate (no duct, or no duct joins them)
 	int unrouted = 0;           ///< wires with no way at all (enclosed by devices)
@@ -90,6 +114,8 @@ struct PanelWiring
 	QStringList warnings() const;
 	QString summary() const;
 	QJsonObject toJson() const;
+		/// the wiring list, one row per wire, ; separated with a header
+	QString wireListCsv(double reserve_mm = 0) const;
 
 	static PanelWiring route(const PanelLayout &layout);
 		/// guide value of the outer diameter of a single core wire, mm

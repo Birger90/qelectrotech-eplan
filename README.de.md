@@ -119,6 +119,31 @@ In QET und im exportierten PDF:
   Tests `tools/plancheck/pruefen_logik.py`.
 - Skript-API `qet.checkProject(folio = -1)`, CLI `--check-project <projekt.qet> [bericht.json]` (dieselben Regeln;
   Rückgabewert 3 bei Fehlern).
+- **Ein-Klick-Korrekturen:** Knopf *Beheben* und Rechtsklick *Beheben: …*, wo die Lösung eindeutig ist
+  (Unterbrechungspunkt verbinden oder Stern bilden, Kontakt mit seiner Spule verbinden, BMK vergeben, doppelte
+  Drahtnummer neu vergeben, verwaisten Paarquerverweis löschen). Skript `qet.checkFixes()`, `qet.applyCheckFix()`.
+
+## Querverweise, Drahtnummern, SPS-Adressen, Netzwerk (Abgleich mit OpenWiring)
+
+Vergleichsliste: [docs/vergleich-openwiring.md](docs/vergleich-openwiring.md).
+
+- **Stern-Unterbrechungspunkt:** ein Unterbrechungspunkt, verbunden mit allen freien gleichnamigen Gegenstücken
+  (+24V auf viele Blätter), Querverweis mit allen Positionen. Verknüpfungsfenster *Stern*, `qet.setReportStar()`.
+- **Paarquerverweis:** ein Kontakt auf einem anderen Blatt nur dargestellt; folgt BMK und Anschlüssen, zählt nicht im
+  Kontaktspiegel, beide verweisen aufeinander. Verknüpfungsfenster *Als Paarquerverweis darstellen …*,
+  `qet.addPairRepresentation()`.
+- **Drahtnummern nach Muster** (*Projekt > Drahtnummern nach Muster …*): `{seite}.{n:2}`, `{spalte}`, `{zeile}`,
+  `{schrank}`, `{anlage}`, `{n:A}`; Zähler je Blatt, Schrank oder Projekt; Reserve je Blatt; Spalten oder Zeilen;
+  gesperrt oder mitlaufend. `qet.setWireNumberPattern()`, `qet.numberWires()`.
+- **SPS-Adressen je Station:** Siemens international/deutsch, IEC, Omron, TwinCAT (`AT %I*`), IO-Link-Ports,
+  „Analoge zuerst“ (WAGO). `qet.setPlcStation()`, `qet.assignPlcAddresses()`.
+- **Netzwerkadressen** (*Projekt > Netzwerkadressen …*): Tabelle aller Netzgeräte mit Problemen, freie IP-Adressen
+  aus den IP-Netzen, PROFINET-Namen aus Ort und BMK, CSV. `qet.assignIpAddresses()`, `qet.assignProfinetNames()`.
+- **Drahtliste des Aufbaus:** jede Leitung in Verdrahtungsreihenfolge mit Querschnitt, Aderendhülse und Zuschnitt;
+  `qet.exportPanelWireList()`.
+- **QET-Text v1 für KI-Agenten:** ein Blatt als Text; MCP `qet_folio_text`, `qet_folio_text_check`,
+  `qet_folio_text_apply`.
+- **Import aus Vektor-PDF fremder CAD** (SEE Electrical …): `tools/pdf_import/pdf_projekt.py`, alle Seiten auf einmal.
 
 ## Blätter und Schriftfeld
 

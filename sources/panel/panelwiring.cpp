@@ -402,6 +402,16 @@ PanelWiring PanelWiring::route(const PanelLayout &layout)
 			QList<int> &list = net_devices[root(t)];
 			if (!list.contains(m.second)) list << m.second;
 		}
+		//The number of each potential, from its first wire that has one
+	QHash<Terminal *, QString> net_text;
+	for (Diagram *folio : diagram->project()->folios()) {
+		if (!PanelLayout::surfaces(folio).isEmpty()) continue;
+		for (Conductor *c : folio->conductors()) {
+			const QString text = c->properties().text.trimmed();
+			Terminal *r = root(c->terminal1);
+			if (!text.isEmpty() && text != QLatin1String("_") && !net_text.contains(r)) net_text.insert(r, text);
+		}
+	}
 	QHash<Terminal *, double> net_section;
 	QSet<Terminal *> net_with_section;
 	for (const auto &s : std::as_const(sections)) {
@@ -442,6 +452,9 @@ PanelWiring PanelWiring::route(const PanelLayout &layout)
 	};
 	QList<QList<int>> nets;
 	QList<double> net_mm2;
+	QList<double> net_s;
+	QList<bool> net_assumed;
+	QStringList net_wire;
 	for (auto it = net_devices.constBegin(); it != net_devices.constEnd(); ++it) {
 		if (it.value().size() < 2) continue;
 		nets << it.value();
@@ -449,7 +462,12 @@ PanelWiring PanelWiring::route(const PanelLayout &layout)
 		if (!net_with_section.contains(it.key()) || s <= 0) {
 			s = kDefaultSection;
 			out.assumed_section += int(it.value().size()) - 1;
+			net_assumed << true;
+		} else {
+			net_assumed << false;
 		}
+		net_s << s;
+		net_wire << net_text.value(it.key());
 		const double d = outerDiameter(s);
 		net_mm2 << d * d;
 		if (!ducts.isEmpty()) for (int i : it.value()) entry(i);
@@ -476,19 +494,32 @@ PanelWiring PanelWiring::route(const PanelLayout &layout)
 	QVector<double> used(stretch_duct.size(), 0);
 	QVector<int> count(stretch_duct.size(), 0);
 	FreeGrid free(devices);
+	auto addRun = [&](int n, int a, int b, double length, bool free_way, bool unrouted) {
+		PanelWireRun run;
+		run.order = int(out.runs.size()) + 1;
+		run.wire = net_wire.value(n);
+		run.from = devices.at(a).designation;
+		run.to = devices.at(b).designation;
+		run.section_mm2 = net_s.value(n);
+		run.assumed_section = net_assumed.value(n);
+		run.length_mm = length;
+		run.free = free_way;
+		run.unrouted = unrouted;
+		out.runs << run;
+	};
 	for (int n = 0; n < nets.size(); ++n) {
 		const QList<int> &net = nets.at(n);   // layout devices
 		QList<int> in_tree{net.first()};
 		QList<int> left = net.mid(1);
 		while (!ducts.isEmpty() && !left.isEmpty()) {
 			double best = kInf;
-			int bi = -1, bt = -1;
+			int bi = -1, bt = -1, bd = -1;
 			for (int t : std::as_const(in_tree)) {
 				const int tp = device_point.value(t);
 				from(tp);
 				for (int j = 0; j < left.size(); ++j) {
 					const double d = dist[tp].at(device_point.value(left.at(j)));
-					if (d < best) {best = d; bi = j; bt = tp;}
+					if (d < best) {best = d; bi = j; bt = tp; bd = t;}
 				}
 			}
 			if (bi < 0) break;
@@ -496,6 +527,7 @@ PanelWiring PanelWiring::route(const PanelLayout &layout)
 			in_tree << target;
 			++out.wires;
 			out.length_mm += best;
+			addRun(n, bd, target, best, false, false);
 			for (int p = device_point.value(target); p != bt && p >= 0; p = prev_point[bt].at(p)) {
 				const int s = prev_stretch[bt].at(p);
 				if (s >= 0) {used[s] += net_mm2.at(n); ++count[s];}
@@ -515,7 +547,8 @@ PanelWiring PanelWiring::route(const PanelLayout &layout)
 			const int target = left.takeAt(bi);
 			in_tree << target;
 			const double length = free.lay(bt, target, net_mm2.at(n));
-			if (length < 0) {++out.unrouted; continue;}
+			if (length < 0) {++out.unrouted; addRun(n, bt, target, 0, true, true); continue;}
+			addRun(n, bt, target, length, true, false);
 			++out.free_wires;
 			out.length_mm += length;
 			out.free_length_mm += length;
@@ -526,6 +559,44 @@ PanelWiring PanelWiring::route(const PanelLayout &layout)
 		if (used.at(s) > f.used_mm2) {f.used_mm2 = used.at(s); f.wires = count.at(s);}
 	}
 	free.bundles(out);
+	return out;
+}
+
+double PanelWireRun::cutLength(double reserve_mm) const
+{
+	if (unrouted) return 0;
+	return std::ceil((length_mm + 2 * qMax(0.0, reserve_mm)) / 10.0) * 10.0;
+}
+
+QString PanelWireRun::ferrule() const
+{
+		// Phoenix Contact AI (DIN 46228-4, with collar): cross-section and
+		// sleeve length in the type, catalogue values (FORMELN.md W)
+	static const struct {double s; const char *type;} table[] = {
+		{0.25, "AI 0,25-8"}, {0.34, "AI 0,34-8"}, {0.5, "AI 0,5-8"}, {0.75, "AI 0,75-8"},
+		{1.0, "AI 1-8"}, {1.5, "AI 1,5-8"}, {2.5, "AI 2,5-8"}, {4, "AI 4-10"}, {6, "AI 6-12"},
+		{10, "AI 10-12"}, {16, "AI 16-12"}, {25, "AI 25-16"}, {35, "AI 35-16"}};
+	for (const auto &row : table)
+		if (std::abs(row.s - section_mm2) < 1e-6) return QString::fromLatin1(row.type);
+	return QString();
+}
+
+QString PanelWiring::wireListCsv(double reserve_mm) const
+{
+	const auto cell = [](QString s) {
+		s.replace(QLatin1Char('"'), QStringLiteral("\"\""));
+		return QStringLiteral("\"%1\"").arg(s);
+	};
+	QString out = QStringLiteral("Reihenfolge;Drahtnummer;Von;Nach;Querschnitt mm²;Aderendhülse;"
+								 "Weg mm;Zuschnitt mm;Verlegung\r\n");
+	for (const PanelWireRun &r : runs) {
+		const QString way = r.unrouted ? QStringLiteral("ohne Weg")
+						  : r.free ? QStringLiteral("frei gebündelt") : QStringLiteral("Kanal");
+		out += QStringLiteral("%1;%2;%3;%4;%5;%6;%7;%8;%9\r\n").arg(r.order)
+				.arg(cell(r.wire), cell(r.from), cell(r.to),
+					 fmt(r.section_mm2, 2) + (r.assumed_section ? QStringLiteral(" (angenommen)") : QString()),
+					 cell(r.ferrule()), fmt(r.length_mm), fmt(r.cutLength(reserve_mm)), way);
+	}
 	return out;
 }
 
@@ -581,7 +652,20 @@ QJsonObject PanelWiring::toJson() const
 								{QStringLiteral("x2"), b.line_mm.x2()}, {QStringLiteral("y2"), b.line_mm.y2()},
 								{QStringLiteral("wires"), b.wires},
 								{QStringLiteral("diameter_mm"), qRound(b.diameter_mm * 10) / 10.0}});
+	QJsonArray wire_runs;
+	for (const PanelWireRun &r : this->runs)
+		wire_runs.append(QJsonObject{{QStringLiteral("order"), r.order},
+									 {QStringLiteral("wire"), r.wire},
+									 {QStringLiteral("from"), r.from},
+									 {QStringLiteral("to"), r.to},
+									 {QStringLiteral("section_mm2"), r.section_mm2},
+									 {QStringLiteral("assumed_section"), r.assumed_section},
+									 {QStringLiteral("ferrule"), r.ferrule()},
+									 {QStringLiteral("length_mm"), qRound(r.length_mm)},
+									 {QStringLiteral("free"), r.free},
+									 {QStringLiteral("unrouted"), r.unrouted}});
 	return QJsonObject{{QStringLiteral("ducts"), list},
+					   {QStringLiteral("runs"), wire_runs},
 					   {QStringLiteral("bundles"), runs},
 					   {QStringLiteral("wires"), wires},
 					   {QStringLiteral("free_wires"), free_wires},

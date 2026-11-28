@@ -381,7 +381,8 @@ class tst_conductormultiedit : public QObject
 			after.m_wire_section = "8x6";
 			QUndoStack stack;
 			stack.push(ConductorMultiEdit::undo(t, a.properties(), after,
-				QSet<FakeWire *>(), QSet<FakeWire *> {&b}));
+				QSet<FakeWire *>(), nullptr, QSet<FakeWire *>(),
+				QSet<FakeWire *> {&b}));
 			QCOMPARE(a.m_properties.m_length, QStringLiteral("3.5 m"));
 			QCOMPARE(b.m_properties.m_length, QStringLiteral("2 m"));
 			QCOMPARE(b.m_properties.m_wire_section, QStringLiteral("8x6"));

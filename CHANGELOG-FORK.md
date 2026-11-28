@@ -39,6 +39,11 @@ Ein Plan aus einer Tabelle, nach dem Vorbild von EPLAN EEC Pro; Konzept in [docs
   `--decode-product <nummer> [--json]`, MCP `qet_product_rules` (beide Kopien). Beispielfamilie
   `funktionsvorlagen/Produkte/MS.product.json`, Typical *Antrieb* mit Spannung `U` (nur 400 V).
 
+## 1.68.1 – 28.11.2026 – MCP-Unittest wieder grün
+
+- `test_qet_mcp`: Die Werkzeuge `qet_folio_text`, `qet_folio_text_check` und `qet_folio_text_apply` (seit 1.68.0) stehen in der Liste der erwarteten Werkzeuge; die Operation `set_conductor_path` (seit 1.62.0) hat ein Beispiel.
+  Übrig sind nur die vier bekannten Umgebungsfehler (Symlink-Rechte unter Windows).
+
 ## 1.68.0 – 28.11.2026 – Abgleich mit OpenWiring
 
 Funktion für Funktion mit OpenWiring 2.1.16 verglichen ([docs/vergleich-openwiring.md](docs/vergleich-openwiring.md));

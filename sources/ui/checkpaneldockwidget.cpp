@@ -32,6 +32,7 @@
 
 #include <QApplication>
 #include <QComboBox>
+#include <QFont>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QInputDialog>
@@ -67,7 +68,7 @@ CheckPanelDockWidget::CheckPanelDockWidget(QWidget *parent) :
 		// Fork: the one-click correction of the chosen finding (CheckFixes)
 	m_fix = new QPushButton(tr("Fix"), body);
 	m_fix->setObjectName(QStringLiteral("checkPanelFix"));
-	m_fix->setToolTip(tr("Choose a finding that can be put right in one click"));
+	m_fix->setToolTip(tr("Choose a finding that can be put right in one click (shown in bold)"));
 	m_fix->setEnabled(false);
 	top->addWidget(m_fix);
 
@@ -153,7 +154,7 @@ CheckPanelDockWidget::CheckPanelDockWidget(QWidget *parent) :
 	connect(m_tree, &QTreeWidget::currentItemChanged, this, [this](QTreeWidgetItem *current) {
 		const QString fix = fixOf(findingRow(current));
 		m_fix->setEnabled(!fix.isEmpty());
-		m_fix->setToolTip(fix.isEmpty() ? tr("Choose a finding that can be put right in one click")
+		m_fix->setToolTip(fix.isEmpty() ? tr("Choose a finding that can be put right in one click (shown in bold)")
 										: fix);
 	});
 	connect(m_tree, &QTreeWidget::itemActivated, this,
@@ -331,9 +332,14 @@ void CheckPanelDockWidget::fillCheck(QTreeWidgetItem *root, ProjectCheck::Kind k
 			? tr("%1 (%2)").arg(finding.text, ProjectCheck::severityText(finding.severity))
 			: tr("%1 (%2, EPLAN %3)").arg(finding.text,
 				ProjectCheck::severityText(finding.severity), finding.eplan));
-		if (!fix.isEmpty())
+		if (!fix.isEmpty()) {
 			//: %1 is the tool tip of the finding, %2 what its one-click correction does
 			row->setData(0, tip_role, tr("%1\nFix: %2").arg(row->data(0, tip_role).toString(), fix));
+			// Bold: the findings the Fix button can put right
+			QFont font = row->font(0);
+			font.setBold(true);
+			row->setFont(0, font);
+		}
 			// One place: on the finding's own row. Several: a row each,
 			// and the finding shows the first that can be shown.
 		if (finding.places.size() == 1) {

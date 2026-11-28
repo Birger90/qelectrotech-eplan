@@ -144,7 +144,8 @@ LinkSingleElementWidget::LinkSingleElementWidget(Element *elmt,
 		QStringList names;
 		const QList<Diagram *> folios = project->diagrams();
 		for (Diagram *d : folios)
-			names << QStringLiteral("%1 - %2").arg(d->folioIndex() + 1).arg(d->title());
+			names << (d->title().isEmpty() ? QString::number(d->folioIndex() + 1)
+					: QStringLiteral("%1 - %2").arg(d->folioIndex() + 1).arg(d->title()));
 		bool ok = false;
 		const QString chosen = QInputDialog::getItem(this, tr("Pair cross-reference"),
 				tr("Folio to show the contact on:"), names,

@@ -3263,8 +3263,8 @@ Beheben: %2</translation>
         <translation>Akzeptierte Befunde</translation>
     </message>
     <message>
-        <source>Choose a finding that can be put right in one click</source>
-        <translation>Einen Befund wählen, der sich mit einem Klick beheben lässt</translation>
+        <source>Choose a finding that can be put right in one click (shown in bold)</source>
+        <translation>Einen Befund wählen, der sich mit einem Klick beheben lässt (fett dargestellt)</translation>
     </message>
     <message>
         <source>Done: %1. %2</source>

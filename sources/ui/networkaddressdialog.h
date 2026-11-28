@@ -41,6 +41,7 @@ class NetworkAddressDialog : public QDialog
 	Q_OBJECT
 	public:
 		explicit NetworkAddressDialog(QETProject *project, QWidget *parent = nullptr);
+		~NetworkAddressDialog() override;
 		static void addMenu(QETDiagramEditor *editor, QMenu *project_menu);
 
 	private:

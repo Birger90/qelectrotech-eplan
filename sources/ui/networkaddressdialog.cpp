@@ -111,6 +111,18 @@ NetworkAddressDialog::NetworkAddressDialog(QETProject *project, QWidget *parent)
 	fill();
 }
 
+/**
+	@brief NetworkAddressDialog::~NetworkAddressDialog
+	Taking the dialog down takes the focus from the networks line, which
+	emits editingFinished while the dialog is half destroyed: the slots
+	would then fill a table that is going away. Cut them first.
+*/
+NetworkAddressDialog::~NetworkAddressDialog()
+{
+	disconnect(m_networks, nullptr, this, nullptr);
+	disconnect(m_table, nullptr, this, nullptr);
+}
+
 void NetworkAddressDialog::addMenu(QETDiagramEditor *editor, QMenu *project_menu)
 {
 	QAction *action = project_menu->addAction(tr("Network addresses..."));

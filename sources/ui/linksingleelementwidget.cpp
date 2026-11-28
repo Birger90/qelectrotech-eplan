@@ -409,6 +409,10 @@ void LinkSingleElementWidget::updateUi()
 		hideButtons();
 	else
 		showButtons();
+		//A pair cross-reference lives only through its link: unlinking it
+		//would leave an orphan drawing, so it is deleted instead
+	if (m_element->isPairRepresentation())
+		ui->m_unlink_pb->hide();
 
 	if (m_pair_pb) {
 		const bool slave = m_element->elementData().m_type == ElementData::Slave

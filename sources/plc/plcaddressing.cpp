@@ -88,6 +88,19 @@ bool ioLinkBytes(const QString &raw, int *in, int *out)
 		linked_any = true;
 	}
 	if (linked_any) return true;
+		//Omron: "IN 0…1 [4 B] / OUT 100 [2 B]", channels with the byte count
+	static const QRegularExpression omron(
+			QStringLiteral("\\b(IN|OUT)\\s+\\d+(?:\\s*(?:…|\\.\\.)\\s*\\d+)?\\s*\\[(\\d+)\\s*B\\]"),
+			QRegularExpression::CaseInsensitiveOption);
+	auto ot = omron.globalMatch(s);
+	bool omron_any = false;
+	while (ot.hasNext()) {
+		const auto r = ot.next();
+		(r.captured(1).compare(QLatin1String("IN"), Qt::CaseInsensitive) == 0 ? *in : *out)
+				= r.captured(2).toInt();
+		omron_any = true;
+	}
+	if (omron_any) return true;
 	if (!s.contains(QLatin1Char('B'), Qt::CaseInsensitive)) return false;
 	bool any = false;
 	auto it = range.globalMatch(s);
@@ -374,7 +387,40 @@ QList<PlcAddressing::Change> PlcAddressing::plan(QETProject *project, bool all, 
 				to_number << module;
 				continue;
 			}
-			if (omron || s.format == Format::TwinCat) continue;
+			if (s.format == Format::TwinCat) continue;
+			if (omron) {
+					//channels "0.05", "2000", "IN 3…4 [4 B]": the counters go past them
+				for (const ElementData::PlcIO &io : module->elementData().plcMasterData().ios) {
+					static const QRegularExpression area(
+							QStringLiteral("\\b(IN|OUT)\\s+\\d+(?:\\s*(?:…|\\.\\.)\\s*(\\d+))?"),
+							QRegularExpression::CaseInsensitiveOption);
+					static const QRegularExpression first(QStringLiteral("\\b(IN|OUT)\\s+(\\d+)"),
+														  QRegularExpression::CaseInsensitiveOption);
+					auto it = first.globalMatch(io.address);
+					if (it.hasNext()) {
+						auto rt = area.globalMatch(io.address);
+						while (it.hasNext() && rt.hasNext()) {
+							const auto m = it.next(), r = rt.next();
+							const int last = r.capturedLength(2) ? r.captured(2).toInt() : m.captured(2).toInt();
+							if (m.captured(1).compare(QLatin1String("IN"), Qt::CaseInsensitive) == 0)
+								in = qMax(in, last + 1);
+							else
+								out = qMax(out, last + 1);
+						}
+						continue;
+					}
+					const int ch = io.address.trimmed().section(QLatin1Char('.'), 0, 0).toInt();
+					const bool input = isInput(io.type);
+					if (isAnalog(io.type)) {
+						int &a = input ? ain : aout;
+						a = qMax(a, ch + 1);
+					} else {
+						int &d = input ? in : out;
+						d = qMax(d, ch + 1);
+					}
+				}
+				continue;
+			}
 			for (const ElementData::PlcIO &io : module->elementData().plcMasterData().ios) {
 				static const QRegularExpression rx(QStringLiteral("%?([IQEA])([XBWD]?)(\\d+)"),
 												   QRegularExpression::CaseInsensitiveOption);
@@ -420,6 +466,17 @@ QList<PlcAddressing::Change> PlcAddressing::plan(QETProject *project, bool all, 
 							//TwinCAT links them; the byte counts stay written
 						if (ib) parts << QStringLiteral("%I* [%1 B]").arg(ib);
 						if (ob) parts << QStringLiteral("%Q* [%1 B]").arg(ob);
+					} else if (omron) {
+							//Omron counts channels of 16 bits: the bytes fill
+							//whole words; the byte count stays written
+						const auto words = [](const char *area, int bytes, int first) {
+							const int n = (bytes + 1) / 2;
+							const QString ch = n == 1 ? QString::number(first)
+									: QStringLiteral("%1…%2").arg(first).arg(first + n - 1);
+							return QStringLiteral("%1 %2 [%3 B]").arg(QLatin1String(area), ch).arg(bytes);
+						};
+						if (ib) { parts << words("IN", ib, in); in += (ib + 1) / 2; }
+						if (ob) { parts << words("OUT", ob, out); out += (ob + 1) / 2; }
 					} else {
 						if (ib) { parts << byteRange(s.format, true, in, ib); in += ib; }
 						if (ob) { parts << byteRange(s.format, false, out, ob); out += ob; }

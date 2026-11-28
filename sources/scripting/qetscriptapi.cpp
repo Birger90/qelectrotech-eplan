@@ -7662,11 +7662,27 @@ namespace
 			parameter.insert(QStringLiteral("default"), p.defaultValue);
 			if (!p.unit.isEmpty()) parameter.insert(QStringLiteral("unit"), p.unit);
 			if (!p.of.isEmpty()) parameter.insert(QStringLiteral("of"), p.of);
+			if (!p.io.isEmpty()) parameter.insert(QStringLiteral("io"), p.io);
+			if (p.count > 1) parameter.insert(QStringLiteral("count"), p.count);
 			const QStringList choices = tpl.choicesFor(p);
 			if (!choices.isEmpty()) parameter.insert(QStringLiteral("choices"), choices);
 			parameters << parameter;
 		}
 		map.insert(QStringLiteral("parameters"), parameters);
+		QVariantList variants;
+		for (const FunctionTemplate::Variant &v : tpl.variants()) {
+			QVariantMap variant;
+			variant.insert(QStringLiteral("name"), v.name);
+			variant.insert(QStringLiteral("when"), v.condition);
+			variant.insert(QStringLiteral("template"), v.target);
+			variants << variant;
+		}
+		if (!variants.isEmpty()) map.insert(QStringLiteral("variants"), variants);
+		QVariantList formulas;
+		for (const FunctionTemplate::Formula &f : tpl.formulas())
+			formulas << QVariantMap{{QStringLiteral("name"), f.name}, {QStringLiteral("expr"), f.expression}};
+		if (!formulas.isEmpty()) map.insert(QStringLiteral("formulas"), formulas);
+		map.insert(QStringLiteral("drawing"), tpl.hasDrawing());
 		if (with_tables) {
 			QVariantList tables;
 			for (const FunctionTemplate::Table &t : tpl.tables()) {
@@ -7752,6 +7768,7 @@ QVariantMap QetScriptApi::insertTemplate(int folioIndex, const QString &template
 	result.insert(QStringLiteral("elements"), uuids);
 	result.insert(QStringLiteral("values"), filled);
 	result.insert(QStringLiteral("notes"), placed.notes);
+	if (!placed.variant.isEmpty()) result.insert(QStringLiteral("variant"), placed.variant);
 	return result;
 }
 
@@ -7782,6 +7799,8 @@ QString QetScriptApi::saveTemplate(int folioIndex, const QString &name, const QV
 		p.of = m.value(QStringLiteral("of")).toString();
 		p.help = m.value(QStringLiteral("help")).toString();
 		p.choices = m.value(QStringLiteral("choices")).toStringList();
+		p.io = m.value(QStringLiteral("io")).toString().trimmed().toUpper();
+		p.count = qMax(1, m.value(QStringLiteral("count"), 1).toInt());
 		save.parameters << p;
 	}
 	for (const QVariant &v : options.value(QStringLiteral("tables")).toList()) {

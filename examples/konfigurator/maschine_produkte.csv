@@ -1,0 +1,5 @@
+# Beispiel für den zweiten Eingang: Produktnummern statt einzelner Kennwerte (Regeln: funktionsvorlagen/Produkte/MS.product.json).
+Objekt;Produkt;Anlage;Ort;TEXT
+Kühlpumpe;MS-400-4K0;KW;M3;Kühlmittelpumpe
+Absaugung;MS-400-11K;KW;M3;Absaugung
+Späneförderer;MS-400-7K5-D;KW;M3;Späneförderer

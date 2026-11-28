@@ -1,0 +1,33 @@
+{
+  "family": "MS",
+  "name": "Motorstarter (Beispielfamilie)",
+  "description": "MS-<Spannung>-<Leistung>[-<Anlauf>], z. B. MS-400-7K5 (Stern-Dreieck nach Leistung) oder MS-400-7K5-D (Direktstart). Nur 400 V: die Auswahltabellen der Vorlagen gelten für 400 V.",
+  "separator": "-",
+  "segments": [
+    {"name": "U", "label": "Spannung", "codes": {
+      "400": {"label": "400 V AC", "values": {"U": "400"}}
+    }},
+    {"name": "P", "label": "Leistung", "codes": {
+      "0K37": {"label": "0,37 kW", "values": {"P_kW": "0.37"}},
+      "0K55": {"label": "0,55 kW", "values": {"P_kW": "0.55"}},
+      "0K75": {"label": "0,75 kW", "values": {"P_kW": "0.75"}},
+      "1K1":  {"label": "1,1 kW",  "values": {"P_kW": "1.1"}},
+      "1K5":  {"label": "1,5 kW",  "values": {"P_kW": "1.5"}},
+      "2K2":  {"label": "2,2 kW",  "values": {"P_kW": "2.2"}},
+      "3K0":  {"label": "3 kW",    "values": {"P_kW": "3"}},
+      "4K0":  {"label": "4 kW",    "values": {"P_kW": "4"}},
+      "5K5":  {"label": "5,5 kW",  "values": {"P_kW": "5.5"}},
+      "7K5":  {"label": "7,5 kW",  "values": {"P_kW": "7.5"}},
+      "11K":  {"label": "11 kW",   "values": {"P_kW": "11"}},
+      "15K":  {"label": "15 kW",   "values": {"P_kW": "15"}}
+    }},
+    {"name": "ANL", "label": "Anlauf", "optional": true, "codes": {
+      "":  {"label": "nach Leistung (über 5,5 kW Stern-Dreieck)"},
+      "D": {"label": "Direktstart"}
+    }}
+  ],
+  "rules": [
+    {"template": "Typicals/Antrieb"},
+    {"when": {"ANL": "D"}, "template": "Typicals/Antrieb", "variant": "Direktstart"}
+  ]
+}

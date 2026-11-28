@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qet_macro>
+    <function_template category="Typicals" name="Sensor" version="2">
+        <description>Typical 3-Leiter-Sensor (PNP) am SPS-Eingang (nächster freier DI-Kanal), mit Kabel und Klemmen.</description>
+        <parameter default="BG1" kind="label" label="Kennzeichen" name="BMK"/>
+        <parameter default="Sensor" label="Funktion" name="TEXT"/>
+        <parameter default="X2" label="Klemmleiste" name="X"/>
+        <variant name="DI-Sensor mit Kabel" template="../Sensoren/DI-Sensor mit Kabel"/>
+    </function_template>
+</qet_macro>

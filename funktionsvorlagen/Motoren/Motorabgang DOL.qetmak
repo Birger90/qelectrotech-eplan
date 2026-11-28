@@ -4,7 +4,7 @@
         <parameter default="MA1" kind="label" label="Kennzeichen Motor" name="BMK"/>
         <parameter default="4" label="Leistung" name="P_kW" unit="kW"/>
         <parameter default="Antrieb" label="Funktion" name="TEXT"/>
-        <parameter default="%Q0.0" label="SPS-Ausgang" name="ADR"/>
+        <parameter default="%Q0.0" io="DQ" kind="address" label="SPS-Ausgang" name="ADR"/>
         <parameter default="X1" label="Klemmleiste" name="X"/>
         <parameter default="" kind="terminal" label="erste Klemme" name="XN" of="X"/>
         <parameter default="W1" kind="cable" label="Kabel" name="W"/>
@@ -18,8 +18,8 @@
             <row I_N="6.5 A" KM_ART="3RT2015-1BB41" P_kW="3" QA_ART="3RV2011-1HA10" QA_I="5,5...8 A" W_TYP="Motorleitung 4G1,5"/>
             <row I_N="8.5 A" KM_ART="3RT2016-1BB41" P_kW="4" QA_ART="3RV2011-1JA10" QA_I="7...10 A" W_TYP="Motorleitung 4G1,5"/>
             <row I_N="11.5 A" KM_ART="3RT2017-1BB41" P_kW="5.5" QA_ART="3RV2011-1KA10" QA_I="9...12,5 A" W_TYP="Motorleitung 4G1,5"/>
-            <row I_N="15.5 A" KM_ART="3RT2018-1BB41" P_kW="7.5" QA_ART="3RV2011-4AA10" QA_I="10...16 A" W_TYP="Motorleitung 4G2,5"/>
-            <row I_N="22 A" KM_ART="3RT2026-1BB40" P_kW="11" QA_ART="3RV2021-4CA10" QA_I="18...25 A" W_TYP="Motorleitung 4G4"/>
+            <row I_N="15.5 A" KM_ART="3RT2018-1BB41" P_kW="7.5" QA_ART="3RV2011-4AA10" QA_I="11...16 A" W_TYP="Motorleitung 4G2,5"/>
+            <row I_N="22 A" KM_ART="3RT2026-1BB40" P_kW="11" QA_ART="3RV2021-4DA10" QA_I="18...25 A" W_TYP="Motorleitung 4G4"/>
             <row I_N="29 A" KM_ART="3RT2027-1BB40" P_kW="15" QA_ART="3RV2021-4EA10" QA_I="27...32 A" W_TYP="Motorleitung 4G6"/>
         </table>
     </function_template>
@@ -430,7 +430,7 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
     <diagram_content>
         <diagram projectId="-1">
             <elements>
-                <element freezeLabel="false" is_movable="1" orientation="0" prefix="X" type="macro://import/10_electric/10_allpole/130_terminals_terminal_strips/borne_continuite2.elmt" uuid="{447bc52a-fc4e-4c48-810d-6fca74a09384}" x="180" y="330" z="10">
+                <element freezeLabel="false" is_movable="1" orientation="0" prefix="X" type="macro://import/10_electric/10_allpole/130_terminals_terminal_strips/borne_continuite2.elmt" uuid="{d7cc5138-e481-4fd3-b5c9-384f1a6f9933}" x="180" y="330" z="10">
                     <terminals>
                         <terminal id="0" orientation="0" x="0" y="-6"/>
                         <terminal id="1" orientation="2" x="0" y="6"/>
@@ -446,14 +446,14 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                         <element_type terminal_function="generic" terminal_led="false" terminal_type="generic"/>
                     </properties>
                     <dynamic_texts>
-                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{dda2bc37-7693-48a1-8447-2c30e6159316}" x="4" y="-13">
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{23331f36-40bf-40a3-8fd6-7e649d5fe10c}" x="4" y="-13">
                             <text>{XN}</text>
                             <info_name>label</info_name>
                         </dynamic_elmt_text>
                     </dynamic_texts>
                     <texts_groups/>
                 </element>
-                <element freezeLabel="false" is_movable="1" orientation="0" prefix="Q" type="macro://import/10_electric/10_allpole/200_fuses_protective_gears/12_magneto_thermal_circuit_breakers/dis_mag_term_3f-2.elmt" uuid="{167fa30c-7e83-4cc5-9c57-187f3a574121}" x="200" y="150" z="10">
+                <element freezeLabel="false" is_movable="1" orientation="0" prefix="Q" type="macro://import/10_electric/10_allpole/200_fuses_protective_gears/12_magneto_thermal_circuit_breakers/dis_mag_term_3f-2.elmt" uuid="{f15e5927-4d0d-41f1-8c64-97a07ddbb9cc}" x="200" y="150" z="10">
                     <terminals>
                         <terminal id="2" orientation="0" x="-20" y="-36"/>
                         <terminal id="3" orientation="0" x="0" y="-36"/>
@@ -470,14 +470,14 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                         <elementInformation name="manufacturer_reference" show="1">{QA_ART}</elementInformation>
                     </elementInformations>
                     <dynamic_texts>
-                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{600f506a-13f2-41c4-ba55-9f8f50dab668}" x="50" y="-22">
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{8a4fc387-cdc3-4271-acd6-dcce401fcb42}" x="50" y="-22">
                             <text>QA1</text>
                             <info_name>label</info_name>
                         </dynamic_elmt_text>
                     </dynamic_texts>
                     <texts_groups/>
                 </element>
-                <element freezeLabel="false" is_movable="1" orientation="0" prefix="S" type="macro://import/10_electric/10_allpole/310_relays_contactors_contacts/02_contacts_cross_referencing/02_power_contacts/com_puiss4.elmt" uuid="{3cffb002-3d0c-449f-984e-98b0d488d04c}" x="200" y="250" z="10">
+                <element freezeLabel="false" is_movable="1" orientation="0" prefix="S" type="macro://import/10_electric/10_allpole/310_relays_contactors_contacts/02_contacts_cross_referencing/02_power_contacts/com_puiss4.elmt" uuid="{a0c6bbe6-348d-4543-866e-59bb2d2bd0f3}" x="200" y="250" z="10">
                     <terminals>
                         <terminal id="8" orientation="0" x="-20" y="-16"/>
                         <terminal id="9" orientation="0" x="0" y="-16"/>
@@ -488,17 +488,17 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                     </terminals>
                     <inputs/>
                     <links_uuids>
-                        <link_uuid uuid="{b4e623a7-539a-4fbb-84a3-6827c42cd5cc}"/>
+                        <link_uuid uuid="{a0f60e97-707b-47de-80a1-2f4ad12b9f29}"/>
                     </links_uuids>
                     <dynamic_texts>
-                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{0031d279-6645-46ba-bf9c-98f39d054d90}" x="25" y="-9.5">
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{d52e14ba-8e97-4db6-806d-c243880c4155}" x="25" y="-9.5">
                             <text>QA2</text>
                             <info_name>label</info_name>
                         </dynamic_elmt_text>
                     </dynamic_texts>
                     <texts_groups/>
                 </element>
-                <element freezeLabel="false" is_movable="1" orientation="0" prefix="X" type="macro://import/10_electric/10_allpole/130_terminals_terminal_strips/borne_continuite2.elmt" uuid="{0b0d32ac-5970-4c77-8e50-bf190bc013cc}" x="200" y="330" z="10">
+                <element freezeLabel="false" is_movable="1" orientation="0" prefix="X" type="macro://import/10_electric/10_allpole/130_terminals_terminal_strips/borne_continuite2.elmt" uuid="{86a2d85d-e4f7-422f-8472-162a647c767d}" x="200" y="330" z="10">
                     <terminals>
                         <terminal id="14" orientation="0" x="0" y="-6"/>
                         <terminal id="15" orientation="2" x="0" y="6"/>
@@ -514,14 +514,14 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                         <element_type terminal_function="generic" terminal_led="false" terminal_type="generic"/>
                     </properties>
                     <dynamic_texts>
-                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{865ce647-4f07-4a74-9023-5614836f6e8b}" x="4" y="-13">
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{a54e1738-a51e-402c-8058-5a87de7e133c}" x="4" y="-13">
                             <text>{XN+1}</text>
                             <info_name>label</info_name>
                         </dynamic_elmt_text>
                     </dynamic_texts>
                     <texts_groups/>
                 </element>
-                <element freezeLabel="false" is_movable="1" orientation="0" prefix="M" type="macro://import/10_electric/10_allpole/391_consumers_actuators/10_engines/moto_ac_3ph.elmt" uuid="{08f7b027-8cd2-44e3-ade3-c5d07a0516ca}" x="200" y="470" z="10">
+                <element freezeLabel="false" is_movable="1" orientation="0" prefix="M" type="macro://import/10_electric/10_allpole/391_consumers_actuators/10_engines/moto_ac_3ph.elmt" uuid="{7d62f0ba-cfac-44ea-9388-21c19d59359b}" x="200" y="470" z="10">
                     <terminals>
                         <terminal id="16" orientation="0" x="-20" y="-36"/>
                         <terminal id="17" orientation="0" x="0" y="-36"/>
@@ -535,14 +535,14 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                         <elementInformation name="label" show="1">{BMK}</elementInformation>
                     </elementInformations>
                     <dynamic_texts>
-                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="true" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{298c2dec-ed52-4f87-80ed-0d4f21492f9d}" x="-50" y="-5">
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="true" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{1bbf5c55-6e61-48d3-9dc9-e8bce30dea53}" x="-50" y="-5">
                             <text>{BMK}</text>
                             <info_name>label</info_name>
                         </dynamic_elmt_text>
                     </dynamic_texts>
                     <texts_groups/>
                 </element>
-                <element freezeLabel="false" is_movable="1" orientation="0" prefix="X" type="macro://import/10_electric/10_allpole/130_terminals_terminal_strips/borne_continuite2.elmt" uuid="{27d1589a-f69a-40ae-bd25-bf920f62fa77}" x="220" y="330" z="10">
+                <element freezeLabel="false" is_movable="1" orientation="0" prefix="X" type="macro://import/10_electric/10_allpole/130_terminals_terminal_strips/borne_continuite2.elmt" uuid="{66077d73-a38c-4f22-aa80-17ea73bf597e}" x="220" y="330" z="10">
                     <terminals>
                         <terminal id="20" orientation="0" x="0" y="-6"/>
                         <terminal id="21" orientation="2" x="0" y="6"/>
@@ -558,14 +558,14 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                         <element_type terminal_function="generic" terminal_led="false" terminal_type="generic"/>
                     </properties>
                     <dynamic_texts>
-                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{5f4204ef-a4c3-482e-a80f-23d7e67a2489}" x="4" y="-13">
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{34ac959e-fe56-4437-8126-e9bbf75c257d}" x="4" y="-13">
                             <text>{XN+2}</text>
                             <info_name>label</info_name>
                         </dynamic_elmt_text>
                     </dynamic_texts>
                     <texts_groups/>
                 </element>
-                <element freezeLabel="false" is_movable="1" orientation="0" prefix="X" type="macro://import/10_electric/10_allpole/130_terminals_terminal_strips/borne_continuite2.elmt" uuid="{9bf5ae5b-fd7a-4463-b030-866026142bcc}" x="240" y="330" z="10">
+                <element freezeLabel="false" is_movable="1" orientation="0" prefix="X" type="macro://import/10_electric/10_allpole/130_terminals_terminal_strips/borne_continuite2.elmt" uuid="{039d8e1f-893a-4fbf-bac8-618c91831b42}" x="240" y="330" z="10">
                     <terminals>
                         <terminal id="22" orientation="0" x="0" y="-6"/>
                         <terminal id="23" orientation="2" x="0" y="6"/>
@@ -581,14 +581,14 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                         <element_type terminal_function="generic" terminal_led="false" terminal_type="generic"/>
                     </properties>
                     <dynamic_texts>
-                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{5f67119b-b328-4a80-83a0-d544f26ce318}" x="4" y="-13">
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,7,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{555d2e20-6beb-40a3-93c9-24892f0553c9}" x="4" y="-13">
                             <text>{XN+3}</text>
                             <info_name>label</info_name>
                         </dynamic_elmt_text>
                     </dynamic_texts>
                     <texts_groups/>
                 </element>
-                <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="macro://import/Allgemein/SPS/SPS_Kanal_DQ.elmt" uuid="{ba266c87-09b2-4e4b-acce-4aedf7964d59}" x="400" y="170" z="10">
+                <element freezeLabel="false" is_movable="1" orientation="0" prefix="" type="macro://import/Allgemein/SPS/SPS_Kanal_DQ.elmt" uuid="{9831f73d-2534-42a0-8153-6b22d9f4205c}" x="400" y="170" z="10">
                     <terminals>
                         <terminal id="24" orientation="2" x="0" y="16"/>
                     </terminals>
@@ -598,25 +598,25 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                         <elementInformation name="plc_address" show="1">{ADR}</elementInformation>
                     </elementInformations>
                     <dynamic_texts>
-                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{79301170-a9ae-48b4-b23a-3e2c1c2b2806}" x="-27" y="-6">
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,8,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{fc196efc-30da-4d7e-aeb5-3106b5d18963}" x="-27" y="-6">
                             <text>{ADR}</text>
                             <info_name>plc_address</info_name>
                         </dynamic_elmt_text>
-                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{d42e4e94-2caa-4d1c-a7b9-2799595ba4e6}" x="34" y="-20">
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{52d1dbdd-7376-4f12-94f5-67d127d45a37}" x="34" y="-20">
                             <text></text>
                             <info_name>label</info_name>
                         </dynamic_elmt_text>
                     </dynamic_texts>
                     <texts_groups/>
                 </element>
-                <element freezeLabel="false" is_movable="1" orientation="0" prefix="K" type="macro://import/10_electric/10_allpole/310_relays_contactors_contacts/01_coils/bobine3.elmt" uuid="{b4e623a7-539a-4fbb-84a3-6827c42cd5cc}" x="400" y="250" z="10">
+                <element freezeLabel="false" is_movable="1" orientation="0" prefix="K" type="macro://import/10_electric/10_allpole/310_relays_contactors_contacts/01_coils/bobine3.elmt" uuid="{a0f60e97-707b-47de-80a1-2f4ad12b9f29}" x="400" y="250" z="10">
                     <terminals>
                         <terminal id="25" orientation="0" x="0" y="-16"/>
                         <terminal id="26" orientation="2" x="0" y="16"/>
                     </terminals>
                     <inputs/>
                     <links_uuids>
-                        <link_uuid uuid="{3cffb002-3d0c-449f-984e-98b0d488d04c}"/>
+                        <link_uuid uuid="{a0c6bbe6-348d-4543-866e-59bb2d2bd0f3}"/>
                     </links_uuids>
                     <elementInformations>
                         <elementInformation name="description" show="1">Leistungsschütz {P_kW} kW AC-3, Spule 24 V DC</elementInformation>
@@ -625,13 +625,13 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                         <elementInformation name="manufacturer_reference" show="1">{KM_ART}</elementInformation>
                     </elementInformations>
                     <dynamic_texts>
-                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,4,-1,5,25,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{06b3d5d5-02ee-492b-bdb0-8343aba5fd38}" x="2" y="11.33">
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,4,-1,5,25,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{e00cbf08-4281-471d-b6e6-542f28d16c37}" x="2" y="11.33">
                             <text>A2</text>
                         </dynamic_elmt_text>
-                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,4,-1,5,25,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{ebcf1d08-b002-4ca2-a9f4-1cd78f15bc8d}" x="2" y="-24.67">
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,4,-1,5,25,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="UserText" text_width="-1" uuid="{3bd3b39b-c422-4c2c-839e-88d6c4aba053}" x="2" y="-24.67">
                             <text>A1</text>
                         </dynamic_elmt_text>
-                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{8667f3ad-2ce6-4435-a2e6-c65fcc733b23}" x="25" y="-9.17">
+                        <dynamic_elmt_text Halignment="AlignLeft" Valignment="AlignTop" font="Liberation Sans,9,-1,5,50,0,0,0,0,0,Regular" frame="false" keep_visual_rotation="false" rotation="0" rotation_point_center="false" text_from="ElementInfo" text_width="-1" uuid="{983c36c7-4222-415c-82f2-81dfe754f9a6}" x="25" y="-9.17">
                             <text>QA2</text>
                             <info_name>label</info_name>
                         </dynamic_elmt_text>
@@ -640,59 +640,59 @@ License: see http://qelectrotech.org/wiki/doc/elements_license</informations>
                 </element>
             </elements>
             <conductors>
-                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{447bc52a-fc4e-4c48-810d-6fca74a09384}" element1_label="{X}:{XN}" element1_name="Terminal block" element2="{3cffb002-3d0c-449f-984e-98b0d488d04c}" element2_label="" element2_linked="QA2" element2_name="Contact power contactor" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{3927e802-9996-40cd-ae26-f054f368d2fe}" terminal2="{ed13c88c-d39e-47a8-aea9-7594b268733e}" terminalname1="" terminalname2="" text_color="#000000" type="multi" uuid="{11f10d73-3738-44f1-b955-5446bbd53e4e}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{d7cc5138-e481-4fd3-b5c9-384f1a6f9933}" element1_label="{X}:{XN}" element1_name="Terminal block" element2="{a0c6bbe6-348d-4543-866e-59bb2d2bd0f3}" element2_label="" element2_linked="QA2" element2_name="Contact power contactor" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{3927e802-9996-40cd-ae26-f054f368d2fe}" terminal2="{ed13c88c-d39e-47a8-aea9-7594b268733e}" terminalname1="" terminalname2="" text_color="#000000" type="multi" uuid="{1742df05-db4c-4504-af97-eb41386e7db9}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                     <sequentialNumbers/>
                 </conductor>
-                <conductor bicolor="false" bus="" cable="{W}:1" cable_slot="0" cable_uuid="{ee520e67-0774-4ab4-95fc-ff2171644965}" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{447bc52a-fc4e-4c48-810d-6fca74a09384}" element1_label="{X}:{XN}" element1_name="Terminal block" element2="{08f7b027-8cd2-44e3-ade3-c5d07a0516ca}" element2_label="{BMK}" element2_name="AC MOTOR 3-Phases" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{f8fe52fd-f1a1-4091-8de0-1df5a341dacc}" terminal2="{4591450c-f9a4-41e4-8982-4a077e29fd7f}" terminalname1="" terminalname2="" text_color="#000000" type="multi" uuid="{3ddeda1d-e190-4081-a16b-ca038670eaa7}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <conductor bicolor="false" bus="" cable="{W}:1" cable_slot="0" cable_uuid="{3d435519-4d31-4096-9602-fa7aa84f2f62}" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{d7cc5138-e481-4fd3-b5c9-384f1a6f9933}" element1_label="{X}:{XN}" element1_name="Terminal block" element2="{7d62f0ba-cfac-44ea-9388-21c19d59359b}" element2_label="{BMK}" element2_name="AC MOTOR 3-Phases" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{f8fe52fd-f1a1-4091-8de0-1df5a341dacc}" terminal2="{4591450c-f9a4-41e4-8982-4a077e29fd7f}" terminalname1="" terminalname2="" text_color="#000000" type="multi" uuid="{275d4ac1-cbd0-443e-986a-ecfa0cdeda16}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                     <sequentialNumbers/>
                 </conductor>
-                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{167fa30c-7e83-4cc5-9c57-187f3a574121}" element1_label="QA1" element1_name="Magneto-thermal circuit breaker GV" element2="{3cffb002-3d0c-449f-984e-98b0d488d04c}" element2_label="" element2_linked="QA2" element2_name="Contact power contactor" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{9c350389-782f-4bc4-b1d2-ed2c75894390}" terminal2="{b1e149d1-a457-4123-a865-ac6ab218b652}" terminalname1="2" terminalname2="" text_color="#000000" type="multi" uuid="{05b197af-1a36-4876-94f4-7f63bec49edb}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{f15e5927-4d0d-41f1-8c64-97a07ddbb9cc}" element1_label="QA1" element1_name="Magneto-thermal circuit breaker GV" element2="{a0c6bbe6-348d-4543-866e-59bb2d2bd0f3}" element2_label="" element2_linked="QA2" element2_name="Contact power contactor" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{9c350389-782f-4bc4-b1d2-ed2c75894390}" terminal2="{b1e149d1-a457-4123-a865-ac6ab218b652}" terminalname1="2" terminalname2="" text_color="#000000" type="multi" uuid="{efc67bcb-7416-4f0d-b77f-17618f337b55}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                     <sequentialNumbers/>
                 </conductor>
-                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{167fa30c-7e83-4cc5-9c57-187f3a574121}" element1_label="QA1" element1_name="Magneto-thermal circuit breaker GV" element2="{3cffb002-3d0c-449f-984e-98b0d488d04c}" element2_label="" element2_linked="QA2" element2_name="Contact power contactor" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{88081f24-54a0-4489-a07b-044e2ccae9e9}" terminal2="{0380e8d3-4a53-4303-8b3d-fc50f33c0928}" terminalname1="4" terminalname2="" text_color="#000000" type="multi" uuid="{852cfb47-42a0-4f80-9124-10ceae5bcda4}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{f15e5927-4d0d-41f1-8c64-97a07ddbb9cc}" element1_label="QA1" element1_name="Magneto-thermal circuit breaker GV" element2="{a0c6bbe6-348d-4543-866e-59bb2d2bd0f3}" element2_label="" element2_linked="QA2" element2_name="Contact power contactor" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{88081f24-54a0-4489-a07b-044e2ccae9e9}" terminal2="{0380e8d3-4a53-4303-8b3d-fc50f33c0928}" terminalname1="4" terminalname2="" text_color="#000000" type="multi" uuid="{120a3b39-6dd2-4f54-962f-86ba5c0d71eb}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                     <sequentialNumbers/>
                 </conductor>
-                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{167fa30c-7e83-4cc5-9c57-187f3a574121}" element1_label="QA1" element1_name="Magneto-thermal circuit breaker GV" element2="{3cffb002-3d0c-449f-984e-98b0d488d04c}" element2_label="" element2_linked="QA2" element2_name="Contact power contactor" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{87eba5e0-1fe1-46ee-9dc4-62a0c68a7110}" terminal2="{df6fc818-e098-49e3-80de-37822bbef71c}" terminalname1="6" terminalname2="" text_color="#000000" type="multi" uuid="{c4912c8d-c5e4-4c57-bd49-e34bb569974e}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{f15e5927-4d0d-41f1-8c64-97a07ddbb9cc}" element1_label="QA1" element1_name="Magneto-thermal circuit breaker GV" element2="{a0c6bbe6-348d-4543-866e-59bb2d2bd0f3}" element2_label="" element2_linked="QA2" element2_name="Contact power contactor" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{87eba5e0-1fe1-46ee-9dc4-62a0c68a7110}" terminal2="{df6fc818-e098-49e3-80de-37822bbef71c}" terminalname1="6" terminalname2="" text_color="#000000" type="multi" uuid="{5bcf133f-cddb-47a1-94f9-93ef7ef066ec}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                     <sequentialNumbers/>
                 </conductor>
-                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{3cffb002-3d0c-449f-984e-98b0d488d04c}" element1_label="" element1_linked="QA2" element1_name="Contact power contactor" element2="{0b0d32ac-5970-4c77-8e50-bf190bc013cc}" element2_label="{X}:{XN+1}" element2_name="Terminal block" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{e098d804-f947-4e2a-83ad-5054ab8b6d0c}" terminal2="{3927e802-9996-40cd-ae26-f054f368d2fe}" terminalname1="" terminalname2="" text_color="#000000" type="multi" uuid="{e22cb80a-b190-4405-b418-3286a9dad28a}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{a0c6bbe6-348d-4543-866e-59bb2d2bd0f3}" element1_label="" element1_linked="QA2" element1_name="Contact power contactor" element2="{86a2d85d-e4f7-422f-8472-162a647c767d}" element2_label="{X}:{XN+1}" element2_name="Terminal block" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{e098d804-f947-4e2a-83ad-5054ab8b6d0c}" terminal2="{3927e802-9996-40cd-ae26-f054f368d2fe}" terminalname1="" terminalname2="" text_color="#000000" type="multi" uuid="{d8ee0038-fe59-4763-a818-8c3251f6054a}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                     <sequentialNumbers/>
                 </conductor>
-                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{3cffb002-3d0c-449f-984e-98b0d488d04c}" element1_label="" element1_linked="QA2" element1_name="Contact power contactor" element2="{27d1589a-f69a-40ae-bd25-bf920f62fa77}" element2_label="{X}:{XN+2}" element2_name="Terminal block" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{711ec3d7-c0e0-4a11-b69a-aacb5277329e}" terminal2="{3927e802-9996-40cd-ae26-f054f368d2fe}" terminalname1="" terminalname2="" text_color="#000000" type="multi" uuid="{34821186-19a5-447a-9b33-3885c3132989}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{a0c6bbe6-348d-4543-866e-59bb2d2bd0f3}" element1_label="" element1_linked="QA2" element1_name="Contact power contactor" element2="{66077d73-a38c-4f22-aa80-17ea73bf597e}" element2_label="{X}:{XN+2}" element2_name="Terminal block" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{711ec3d7-c0e0-4a11-b69a-aacb5277329e}" terminal2="{3927e802-9996-40cd-ae26-f054f368d2fe}" terminalname1="" terminalname2="" text_color="#000000" type="multi" uuid="{9664f538-15c6-4c0f-a2c4-2a7ff063b314}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                     <sequentialNumbers/>
                 </conductor>
-                <conductor bicolor="false" bus="" cable="{W}:2" cable_slot="1" cable_uuid="{ee520e67-0774-4ab4-95fc-ff2171644965}" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{0b0d32ac-5970-4c77-8e50-bf190bc013cc}" element1_label="{X}:{XN+1}" element1_name="Terminal block" element2="{08f7b027-8cd2-44e3-ade3-c5d07a0516ca}" element2_label="{BMK}" element2_name="AC MOTOR 3-Phases" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{f8fe52fd-f1a1-4091-8de0-1df5a341dacc}" terminal2="{eac11a53-76cd-4048-a89a-3b2056a4e807}" terminalname1="" terminalname2="" text_color="#000000" type="multi" uuid="{775ed13f-8331-4c5a-95ed-f8b32b80b66c}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <conductor bicolor="false" bus="" cable="{W}:2" cable_slot="1" cable_uuid="{3d435519-4d31-4096-9602-fa7aa84f2f62}" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{86a2d85d-e4f7-422f-8472-162a647c767d}" element1_label="{X}:{XN+1}" element1_name="Terminal block" element2="{7d62f0ba-cfac-44ea-9388-21c19d59359b}" element2_label="{BMK}" element2_name="AC MOTOR 3-Phases" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{f8fe52fd-f1a1-4091-8de0-1df5a341dacc}" terminal2="{eac11a53-76cd-4048-a89a-3b2056a4e807}" terminalname1="" terminalname2="" text_color="#000000" type="multi" uuid="{e5f28b75-1975-457e-9603-9656012a2181}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                     <sequentialNumbers/>
                 </conductor>
-                <conductor bicolor="false" bus="" cable="{W}:3" cable_slot="2" cable_uuid="{ee520e67-0774-4ab4-95fc-ff2171644965}" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{08f7b027-8cd2-44e3-ade3-c5d07a0516ca}" element1_label="{BMK}" element1_name="AC MOTOR 3-Phases" element2="{27d1589a-f69a-40ae-bd25-bf920f62fa77}" element2_label="{X}:{XN+2}" element2_name="Terminal block" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{473f8a15-f933-4bfb-a9d6-1d1aaa5eb581}" terminal2="{f8fe52fd-f1a1-4091-8de0-1df5a341dacc}" terminalname1="" terminalname2="" text_color="#000000" type="multi" uuid="{96c6cc5a-bab2-44cb-abea-2a050be60e86}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <conductor bicolor="false" bus="" cable="{W}:3" cable_slot="2" cable_uuid="{3d435519-4d31-4096-9602-fa7aa84f2f62}" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{7d62f0ba-cfac-44ea-9388-21c19d59359b}" element1_label="{BMK}" element1_name="AC MOTOR 3-Phases" element2="{66077d73-a38c-4f22-aa80-17ea73bf597e}" element2_label="{X}:{XN+2}" element2_name="Terminal block" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{473f8a15-f933-4bfb-a9d6-1d1aaa5eb581}" terminal2="{f8fe52fd-f1a1-4091-8de0-1df5a341dacc}" terminalname1="" terminalname2="" text_color="#000000" type="multi" uuid="{24fff655-4b1b-48bf-883e-8649ca43b926}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                     <sequentialNumbers/>
                 </conductor>
-                <conductor bicolor="false" bus="" cable="{W}:GNYE" cable_slot="3" cable_uuid="{ee520e67-0774-4ab4-95fc-ff2171644965}" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{08f7b027-8cd2-44e3-ade3-c5d07a0516ca}" element1_label="{BMK}" element1_name="AC MOTOR 3-Phases" element2="{9bf5ae5b-fd7a-4463-b030-866026142bcc}" element2_label="{X}:{XN+3}" element2_name="Terminal block" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{74dd3752-ddc2-4d12-9295-f51d85d2b655}" terminal2="{f8fe52fd-f1a1-4091-8de0-1df5a341dacc}" terminalname1="" terminalname2="" text_color="#000000" type="multi" uuid="{db65776b-c713-429c-a4f9-79c47837f1ac}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <conductor bicolor="false" bus="" cable="{W}:GNYE" cable_slot="3" cable_uuid="{3d435519-4d31-4096-9602-fa7aa84f2f62}" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{7d62f0ba-cfac-44ea-9388-21c19d59359b}" element1_label="{BMK}" element1_name="AC MOTOR 3-Phases" element2="{039d8e1f-893a-4fbf-bac8-618c91831b42}" element2_label="{X}:{XN+3}" element2_name="Terminal block" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{74dd3752-ddc2-4d12-9295-f51d85d2b655}" terminal2="{f8fe52fd-f1a1-4091-8de0-1df5a341dacc}" terminalname1="" terminalname2="" text_color="#000000" type="multi" uuid="{e27872e8-ea3f-41d2-bde0-f4555d17f749}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                     <sequentialNumbers/>
                 </conductor>
-                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{ba266c87-09b2-4e4b-acce-4aedf7964d59}" element1_label="" element1_name="PLC output channel (generic)" element2="{b4e623a7-539a-4fbb-84a3-6827c42cd5cc}" element2_label="QA2" element2_linked="" element2_name="Coil" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{64a60bc1-30d8-5898-85e1-f24932247e6d}" terminal2="{8d0fa333-2d98-4a75-8a4e-21c81cce7ec3}" terminalname1="1" terminalname2="A1" text_color="#000000" type="multi" uuid="{913c5bf2-64e8-493a-add5-b8a9a5b9ab1c}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
+                <conductor bicolor="false" bus="" cable="" color2="#000000" condsize="1" conductor_color="" conductor_section="" dash-size="1" displaytext="1" element1="{9831f73d-2534-42a0-8153-6b22d9f4205c}" element1_label="" element1_name="PLC output channel (generic)" element2="{a0f60e97-707b-47de-80a1-2f4ad12b9f29}" element2_label="QA2" element2_linked="" element2_name="Coil" formula="" freezeLabel="false" function="" horizontal-alignment="AlignBottom" horizrotatetext="0" num="" numsize="7" onetextperfolio="0" tension_protocol="" terminal1="{64a60bc1-30d8-5898-85e1-f24932247e6d}" terminal2="{8d0fa333-2d98-4a75-8a4e-21c81cce7ec3}" terminalname1="1" terminalname2="A1" text_color="#000000" type="multi" uuid="{0317fd8a-d297-4234-b61a-01105a30f51b}" vertical-alignment="AlignRight" vertirotatetext="270" x="0" y="0">
                     <sequentialNumbers/>
                 </conductor>
             </conductors>
             <inputs>
-                <input font="Liberation Sans,9,-1,0,50,0,0,0,0,0,Regular" rotation="0" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;meta charset=&quot;utf-8&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;hr { height: 1px; border-width: 0; }&#xa;li.unchecked::marker { content: &quot;\2610&quot;; }&#xa;li.checked::marker { content: &quot;\2612&quot;; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Liberation Sans'; font-size:9pt; font-weight:400; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>-{X}&lt;/p>&lt;/body>&lt;/html>" uuid="{053c21d0-ec12-4fc1-8f96-9e78b2c20a28}" x="146" y="320"/>
-                <input font="Liberation Sans,9,-1,0,50,0,0,0,0,0,Regular" rotation="0" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;meta charset=&quot;utf-8&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;hr { height: 1px; border-width: 0; }&#xa;li.unchecked::marker { content: &quot;\2610&quot;; }&#xa;li.checked::marker { content: &quot;\2612&quot;; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Liberation Sans'; font-size:9pt; font-weight:400; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>L1  L2  L3&lt;/p>&lt;/body>&lt;/html>" uuid="{49552380-0cc0-464f-999c-96d1d91547ac}" x="172" y="80"/>
-                <input font="Liberation Sans,9,-1,0,50,0,0,0,0,0,Regular" rotation="0" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;meta charset=&quot;utf-8&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;hr { height: 1px; border-width: 0; }&#xa;li.unchecked::marker { content: &quot;\2610&quot;; }&#xa;li.checked::marker { content: &quot;\2612&quot;; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Liberation Sans'; font-size:9pt; font-weight:400; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>PE&lt;/p>&lt;/body>&lt;/html>" uuid="{36697582-9f3d-4f97-90cb-97fe0b9d8a7a}" x="234" y="300"/>
-                <input font="Liberation Sans,9,-1,0,50,0,0,0,0,0,Regular" rotation="0" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;meta charset=&quot;utf-8&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;hr { height: 1px; border-width: 0; }&#xa;li.unchecked::marker { content: &quot;\2610&quot;; }&#xa;li.checked::marker { content: &quot;\2612&quot;; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Liberation Sans'; font-size:9pt; font-weight:400; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>M&lt;/p>&lt;/body>&lt;/html>" uuid="{0ff881dd-c477-4c43-bcdd-d426e7b8f669}" x="395" y="285"/>
+                <input font="Liberation Sans,9,-1,0,50,0,0,0,0,0,Regular" rotation="0" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;meta charset=&quot;utf-8&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;hr { height: 1px; border-width: 0; }&#xa;li.unchecked::marker { content: &quot;\2610&quot;; }&#xa;li.checked::marker { content: &quot;\2612&quot;; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Liberation Sans'; font-size:9pt; font-weight:400; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>-{X}&lt;/p>&lt;/body>&lt;/html>" uuid="{93addfad-8935-4978-948f-4b0691b51461}" x="146" y="320"/>
+                <input font="Liberation Sans,9,-1,0,50,0,0,0,0,0,Regular" rotation="0" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;meta charset=&quot;utf-8&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;hr { height: 1px; border-width: 0; }&#xa;li.unchecked::marker { content: &quot;\2610&quot;; }&#xa;li.checked::marker { content: &quot;\2612&quot;; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Liberation Sans'; font-size:9pt; font-weight:400; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>L1  L2  L3&lt;/p>&lt;/body>&lt;/html>" uuid="{857fbc92-5c20-43b9-a24e-9f02038c10e8}" x="172" y="80"/>
+                <input font="Liberation Sans,9,-1,0,50,0,0,0,0,0,Regular" rotation="0" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;meta charset=&quot;utf-8&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;hr { height: 1px; border-width: 0; }&#xa;li.unchecked::marker { content: &quot;\2610&quot;; }&#xa;li.checked::marker { content: &quot;\2612&quot;; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Liberation Sans'; font-size:9pt; font-weight:400; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>PE&lt;/p>&lt;/body>&lt;/html>" uuid="{3d43ff16-35b9-4f99-ae1c-3e6187e661e4}" x="234" y="300"/>
+                <input font="Liberation Sans,9,-1,0,50,0,0,0,0,0,Regular" rotation="0" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;meta charset=&quot;utf-8&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;hr { height: 1px; border-width: 0; }&#xa;li.unchecked::marker { content: &quot;\2610&quot;; }&#xa;li.checked::marker { content: &quot;\2612&quot;; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Liberation Sans'; font-size:9pt; font-weight:400; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>M&lt;/p>&lt;/body>&lt;/html>" uuid="{f94027b5-5b68-4b0c-af92-c9a03022cb65}" x="395" y="285"/>
             </inputs>
             <cables>
-                <cable cores="4" designation="{W}" designation_by_hand="1" line="{f1e07bc7-02a2-4455-8a71-85bc4f35279b}" type="{W_TYP}" uuid="{ee520e67-0774-4ab4-95fc-ff2171644965}" x1="165.00" x2="255.00" y1="410.00" y2="410.00">
+                <cable cores="4" designation="{W}" designation_by_hand="1" line="{cc04c9e7-5f50-4686-ab10-8f96f5f9b0b2}" type="{W_TYP}" uuid="{3d435519-4d31-4096-9602-fa7aa84f2f62}" x1="165.00" x2="255.00" y1="410.00" y2="410.00">
                     <colors>
                         <color>1</color>
                         <color>2</color>
                         <color>3</color>
                         <color>GNYE</color>
                     </colors>
-                    <part diagram="{20a7fbfa-8d31-44a1-9831-27a09ffab0fa}" uuid="{f1e07bc7-02a2-4455-8a71-85bc4f35279b}" x1="165.00" x2="255.00" y1="410.00" y2="410.00"/>
-                    <core conductor="{3ddeda1d-e190-4081-a16b-ca038670eaa7}" index="0" part="{f1e07bc7-02a2-4455-8a71-85bc4f35279b}" x="180.00" y="410.00"/>
-                    <core conductor="{775ed13f-8331-4c5a-95ed-f8b32b80b66c}" index="1" part="{f1e07bc7-02a2-4455-8a71-85bc4f35279b}" x="200.00" y="410.00"/>
-                    <core conductor="{96c6cc5a-bab2-44cb-abea-2a050be60e86}" index="2" part="{f1e07bc7-02a2-4455-8a71-85bc4f35279b}" x="220.00" y="410.00"/>
-                    <core conductor="{db65776b-c713-429c-a4f9-79c47837f1ac}" index="3" part="{f1e07bc7-02a2-4455-8a71-85bc4f35279b}" x="240.00" y="410.00"/>
+                    <part diagram="{406f20ce-f8a4-4c73-9771-1584e7534214}" uuid="{cc04c9e7-5f50-4686-ab10-8f96f5f9b0b2}" x1="165.00" x2="255.00" y1="410.00" y2="410.00"/>
+                    <core conductor="{275d4ac1-cbd0-443e-986a-ecfa0cdeda16}" index="0" part="{cc04c9e7-5f50-4686-ab10-8f96f5f9b0b2}" x="180.00" y="410.00"/>
+                    <core conductor="{e5f28b75-1975-457e-9603-9656012a2181}" index="1" part="{cc04c9e7-5f50-4686-ab10-8f96f5f9b0b2}" x="200.00" y="410.00"/>
+                    <core conductor="{24fff655-4b1b-48bf-883e-8649ca43b926}" index="2" part="{cc04c9e7-5f50-4686-ab10-8f96f5f9b0b2}" x="220.00" y="410.00"/>
+                    <core conductor="{e27872e8-ea3f-41d2-bde0-f4555d17f749}" index="3" part="{cc04c9e7-5f50-4686-ab10-8f96f5f9b0b2}" x="240.00" y="410.00"/>
                 </cable>
             </cables>
         </diagram>

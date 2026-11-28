@@ -1,0 +1,11 @@
+# Beispielkonfiguration für den Konfigurator (docs/konfigurator.md): eine Zeile je Objekt.
+Objekt;Typical;Anlage;Ort;P_kW;TEXT
+Förderband;Antrieb;FB;M1;3;Förderband
+Lüfter Schaltschrank;Antrieb;FB;M1;0,75;Schranklüfter
+Hauptpumpe;Antrieb;HY;M2;11;Hydraulikpumpe
+Rührwerk;Antrieb;HY;M2;7,5;Rührwerk
+Zylinder ausfahren;Ventil;HY;M2;;Zylinder 1 aus
+Zylinder einfahren;Ventil;HY;M2;;Zylinder 1 ein
+Endlage hinten;Sensor;HY;M2;;Zylinder 1 hinten
+Endlage vorn;Sensor;HY;M2;;Zylinder 1 vorn
+Füllstand min;Sensor;HY;M2;;Tank Füllstand min

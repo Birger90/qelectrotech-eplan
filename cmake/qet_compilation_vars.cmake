@@ -641,6 +641,14 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/functiontemplates/functiontemplatedock.h
   ${QET_DIR}/sources/functiontemplates/functiontemplatesavedialog.cpp
   ${QET_DIR}/sources/functiontemplates/functiontemplatesavedialog.h
+  ${QET_DIR}/sources/functiontemplates/templateexpression.cpp
+  ${QET_DIR}/sources/functiontemplates/templateexpression.h
+  ${QET_DIR}/sources/functiontemplates/configgenerator.cpp
+  ${QET_DIR}/sources/functiontemplates/configgenerator.h
+  ${QET_DIR}/sources/functiontemplates/configgeneratorui.cpp
+  ${QET_DIR}/sources/functiontemplates/configgeneratorui.h
+  ${QET_DIR}/sources/functiontemplates/productrules.cpp
+  ${QET_DIR}/sources/functiontemplates/productrules.h
   ${QET_DIR}/sources/diagramevent/diagrameventaddmacro.h
   ${QET_DIR}/sources/diagramevent/diagrameventaddpaste.cpp
   ${QET_DIR}/sources/diagramevent/diagrameventaddpaste.h

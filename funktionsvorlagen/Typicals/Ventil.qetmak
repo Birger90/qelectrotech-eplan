@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qet_macro>
+    <function_template category="Typicals" name="Ventil" version="2">
+        <description>Typical Magnetventil am SPS-Ausgang (nächster freier DQ-Kanal), mit Klemmen und Kabel.</description>
+        <parameter default="MB1" kind="label" label="Kennzeichen" name="BMK"/>
+        <parameter default="Ventil" label="Funktion" name="TEXT"/>
+        <parameter default="X3" label="Klemmleiste" name="X"/>
+        <variant name="Ventil mit DQ-Kanal" template="../Ventile/Ventil mit DQ-Kanal"/>
+    </function_template>
+</qet_macro>

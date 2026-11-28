@@ -131,7 +131,7 @@ speichern("Motorabgang DOL", "Motoren",
   [{name: "BMK", label: "Kennzeichen Motor", kind: "label", default: "MA1"},
    {name: "P_kW", label: "Leistung", unit: "kW", default: "4"},
    {name: "TEXT", label: "Funktion", default: "Antrieb"},
-   {name: "ADR", label: "SPS-Ausgang", default: "%Q0.0"},
+   {name: "ADR", label: "SPS-Ausgang", kind: "address", io: "DQ", default: "%Q0.0"},
    {name: "X", label: "Klemmleiste", default: "X1"},
    {name: "XN", label: "erste Klemme", kind: "terminal", of: "X"},
    {name: "W", label: "Kabel", kind: "cable", default: "W1"}],
@@ -145,8 +145,8 @@ speichern("Motorabgang DOL", "Motoren",
     {P_kW: "3", I_N: "6.5 A", QA_ART: "3RV2011-1HA10", QA_I: "5,5...8 A", KM_ART: "3RT2015-1BB41", W_TYP: "Motorleitung 4G1,5"},
     {P_kW: "4", I_N: "8.5 A", QA_ART: "3RV2011-1JA10", QA_I: "7...10 A", KM_ART: "3RT2016-1BB41", W_TYP: "Motorleitung 4G1,5"},
     {P_kW: "5.5", I_N: "11.5 A", QA_ART: "3RV2011-1KA10", QA_I: "9...12,5 A", KM_ART: "3RT2017-1BB41", W_TYP: "Motorleitung 4G1,5"},
-    {P_kW: "7.5", I_N: "15.5 A", QA_ART: "3RV2011-4AA10", QA_I: "10...16 A", KM_ART: "3RT2018-1BB41", W_TYP: "Motorleitung 4G2,5"},
-    {P_kW: "11", I_N: "22 A", QA_ART: "3RV2021-4CA10", QA_I: "18...25 A", KM_ART: "3RT2026-1BB40", W_TYP: "Motorleitung 4G4"},
+    {P_kW: "7.5", I_N: "15.5 A", QA_ART: "3RV2011-4AA10", QA_I: "11...16 A", KM_ART: "3RT2018-1BB41", W_TYP: "Motorleitung 4G2,5"},
+    {P_kW: "11", I_N: "22 A", QA_ART: "3RV2021-4DA10", QA_I: "18...25 A", KM_ART: "3RT2026-1BB40", W_TYP: "Motorleitung 4G4"},
     {P_kW: "15", I_N: "29 A", QA_ART: "3RV2021-4EA10", QA_I: "27...32 A", KM_ART: "3RT2027-1BB40", W_TYP: "Motorleitung 4G6"}]}]);
 
 // ---------------------------------------------------------------------------
@@ -175,7 +175,7 @@ speichern("DI-Sensor mit Kabel", "Sensoren",
   "Der Kanal wird mit dem SPS-Modul verknüpft, das die Adresse hat.",
   [{name: "BMK", label: "Kennzeichen", kind: "label", default: "BG1"},
    {name: "TEXT", label: "Funktion", default: "Endlage"},
-   {name: "ADR", label: "SPS-Eingang", default: "%I0.0"},
+   {name: "ADR", label: "SPS-Eingang", kind: "address", io: "DI", default: "%I0.0"},
    {name: "X", label: "Klemmleiste", default: "X2"},
    {name: "XN", label: "erste Klemme", kind: "terminal", of: "X"},
    {name: "W", label: "Kabel", kind: "cable", default: "W1"},
@@ -208,7 +208,7 @@ speichern("Ventil mit DQ-Kanal", "Ventile",
   "Der Kanal wird mit dem SPS-Modul verknüpft, das die Adresse hat.",
   [{name: "BMK", label: "Kennzeichen", kind: "label", default: "MB1"},
    {name: "TEXT", label: "Funktion", default: "Zylinder ausfahren"},
-   {name: "ADR", label: "SPS-Ausgang", default: "%Q0.1"},
+   {name: "ADR", label: "SPS-Ausgang", kind: "address", io: "DQ", default: "%Q0.1"},
    {name: "X", label: "Klemmleiste", default: "X3"},
    {name: "XN", label: "erste Klemme", kind: "terminal", of: "X"},
    {name: "W", label: "Kabel", kind: "cable", default: "W1"},
@@ -232,7 +232,7 @@ speichern("Meldeleuchte DQ", "Meldungen",
   [{name: "BMK", label: "Kennzeichen", kind: "label", default: "PF1"},
    {name: "TEXT", label: "Funktion", default: "Betrieb"},
    {name: "FARBE", label: "Farbe", default: "grün"},
-   {name: "ADR", label: "SPS-Ausgang", default: "%Q0.2"}],
+   {name: "ADR", label: "SPS-Ausgang", kind: "address", io: "DQ", default: "%Q0.2"}],
   [{key: "FARBE", columns: ["FARBE", "P_ART"], rows: [
     {FARBE: "grün", P_ART: "M22-L-G + M22-A + M22-LED-G"},
     {FARBE: "gelb", P_ART: "M22-L-Y + M22-A + M22-LED-Y"},
@@ -259,7 +259,7 @@ speichern("Taster DI", "Befehlsgeräte",
   [{name: "BMK", label: "Kennzeichen", kind: "label", default: "SF1"},
    {name: "TEXT", label: "Funktion", default: "Start"},
    {name: "FARBE_K", label: "Farbe (Kurzzeichen)", default: "G", choices: ["G", "R", "W", "Y", "B", "S"]},
-   {name: "ADR", label: "SPS-Eingang", default: "%I0.1"}]);
+   {name: "ADR", label: "SPS-Eingang", kind: "address", io: "DI", default: "%I0.1"}]);
 
 // ---------------------------------------------------------------------------
 // 6. Steckdose 230 V mit Leitungsschutzschalter; die Absicherung wählt den Artikel.
@@ -361,7 +361,8 @@ for (i = 0; i < 3; ++i) {
 }
 leiste(x - 20, 330);
 leiste(400, 480);
-var kpeS = klemme(x + 40, 330, "{X}:{XN+3}", "2002-1207");
+// PE rechts vom Motoranschluss (der zeigt nach rechts): die Leitung kommt mit einem Knick aus
+var kpeS = klemme(x + 60, 330, "{X}:{XN+3}", "2002-1207");
 // Sternbrücke
 w(kmS, -20, 20, kmS, 0, 20);
 w(kmS, 0, 20, kmS, 20, 20);
@@ -373,12 +374,21 @@ if (tM >= 0) {
   qet.setElementTextProperty(F, mS, tM, "x", "-80");
   qet.setElementTextProperty(F, mS, tM, "y", "-100");
 }
+// Die freien Typenschildtexte des Symbols ("P= kW", "I= A") mit den Werten der Vorlage; die
+// Drehzahl kennt die Vorlage nicht, ihr Text bleibt leer statt "n= 1/min" ohne Zahl
+for (var tt = 0; tt < qet.elementTexts(F, mS).length; ++tt) {
+  var tx = qet.elementTextProperty(F, mS, tt, "text");
+  if (/^P=/.test(tx)) qet.setElementTextProperty(F, mS, tt, "text", "P= {P_kW} kW");
+  else if (/^I=/.test(tx)) qet.setElementTextProperty(F, mS, tt, "text", "I= {I_N}");
+  else if (/^n=/.test(tx)) qet.setElementTextProperty(F, mS, tt, "text", "");
+}
 for (i = 0; i < 3; ++i) {
   w(kA[i], 0, 10, mS, -20 + 20 * i, -100);
   w(kB[i], 0, 10, mS, -20 + 20 * i, 20);
 }
 w(kpeS, 0, 10, mS, 42, -11);
-qet.addCable(F, "{W}", "{W_TYP}", ["1", "2", "3", "GNYE"], "", x - 35, 410, x + 55, 410);
+qet.routeConductorBetween(F, kpeS, ti(kpeS, 0, 10), mS, ti(mS, 42, -11));
+qet.addCable(F, "{W}", "{W_TYP}", ["1", "2", "3", "GNYE"], "", x - 35, 410, x + 75, 410);
 qet.addCable(F, "{W+1}", "{W_TYP}", ["1", "2", "3"], "", 385, 545, 455, 545);
 qet.addText(F, "L1  L2  L3", x - 28, 80);
 qet.addText(F, "Netz", x + 32, 270);
@@ -392,14 +402,14 @@ speichern("Motorabgang Stern-Dreieck", "Motoren",
   [{name: "BMK", label: "Kennzeichen Motor", kind: "label", default: "MA1"},
    {name: "P_kW", label: "Leistung", unit: "kW", default: "7.5"},
    {name: "TEXT", label: "Funktion", default: "Antrieb"},
-   {name: "ADR", label: "SPS-Ausgang Netz", default: "%Q0.0"},
+   {name: "ADR", label: "SPS-Ausgang Netz", kind: "address", io: "DQ", count: 3, default: "%Q0.0"},
    {name: "X", label: "Klemmleiste", default: "X1"},
    {name: "XN", label: "erste Klemme", kind: "terminal", of: "X"},
    {name: "W", label: "Kabel", kind: "cable", default: "W1"}],
   [{key: "P_kW", columns: ["P_kW", "I_N", "QA_ART", "QA_I", "KM_ART", "KS_ART", "W_TYP"], rows: [
     {P_kW: "5.5", I_N: "11.5 A", QA_ART: "3RV2011-1KA10", QA_I: "9...12,5 A", KM_ART: "3RT2015-1BB41", KS_ART: "3RT2015-1BB41", W_TYP: "Motorleitung 4G1,5"},
-    {P_kW: "7.5", I_N: "15.5 A", QA_ART: "3RV2011-4AA10", QA_I: "10...16 A", KM_ART: "3RT2016-1BB41", KS_ART: "3RT2015-1BB41", W_TYP: "Motorleitung 4G1,5"},
-    {P_kW: "11", I_N: "22 A", QA_ART: "3RV2021-4CA10", QA_I: "18...25 A", KM_ART: "3RT2018-1BB41", KS_ART: "3RT2016-1BB41", W_TYP: "Motorleitung 4G1,5"},
+    {P_kW: "7.5", I_N: "15.5 A", QA_ART: "3RV2011-4AA10", QA_I: "11...16 A", KM_ART: "3RT2016-1BB41", KS_ART: "3RT2015-1BB41", W_TYP: "Motorleitung 4G1,5"},
+    {P_kW: "11", I_N: "22 A", QA_ART: "3RV2021-4DA10", QA_I: "18...25 A", KM_ART: "3RT2018-1BB41", KS_ART: "3RT2016-1BB41", W_TYP: "Motorleitung 4G1,5"},
     {P_kW: "15", I_N: "29 A", QA_ART: "3RV2021-4EA10", QA_I: "27...32 A", KM_ART: "3RT2025-1BB40", KS_ART: "3RT2017-1BB41", W_TYP: "Motorleitung 4G2,5"}]}]);
 
 if (fehler.length) qet.log("FEHLER " + fehler.join("; "));

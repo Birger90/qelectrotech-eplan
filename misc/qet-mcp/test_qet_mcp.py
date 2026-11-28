@@ -156,6 +156,29 @@ def pdf(path: Path, page_colors=("1 0 0", "0 0 1")) -> None:
 # unit
 # ==========================================================================
 
+class GenerateFromConfig(unittest.TestCase):
+    """qet_generate_from_config refuses what --generate-from-config cannot read"""
+
+    def test_missing_table(self):
+        with self.assertRaises(ValueError):
+            m.tool_generate_from_config("qelectrotech", "/no/such/table.csv", "plan.qet")
+
+    def test_wrong_kinds(self):
+        with tempfile.TemporaryDirectory() as d:
+            table = Path(d) / "maschine.pdf"
+            table.write_text("x", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                m.tool_generate_from_config("qelectrotech", str(table), str(Path(d) / "plan.qet"))
+            csv = Path(d) / "maschine.csv"
+            csv.write_text("Objekt;Typical\n", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                m.tool_generate_from_config("qelectrotech", str(csv), str(Path(d) / "plan.pdf"))
+
+    def test_registered_with_its_paths(self):
+        tool = next(t for t in m.TOOLS if t["name"] == "qet_generate_from_config")
+        self.assertEqual(tool["inputSchema"]["required"], ["table", "output"])
+
+
 class ToolRegistry(unittest.TestCase):
     def test_names_are_unique_and_prefixed(self):
         names = [t["name"] for t in m.TOOLS]
@@ -177,7 +200,7 @@ class ToolRegistry(unittest.TestCase):
         self.assertEqual({t["name"] for t in m.TOOLS}, {
             "qet_project_info", "qet_elements", "qet_conductors", "qet_diff",
             "qet_scan", "qet_element_info", "qet_export", "qet_simulate",
-            "qet_simulate_reference", "qet_fluidsim_import", "qet_edit", "qet_query",
+            "qet_simulate_reference", "qet_generate_from_config", "qet_product_rules", "qet_fluidsim_import", "qet_edit", "qet_query",
             "qet_project_new", "qet_element_search", "qet_check", "qet_plan_check", "qet_element_build",
             "qet_continuity", "qet_items", "qet_script_api", "qet_script_test",
         "qet_script_install", "qet_script_list", "qet_script_read",

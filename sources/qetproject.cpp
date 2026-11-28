@@ -6992,6 +6992,55 @@ QString reportMatchKey(const ReportElement *report, QETProject::ReportLinkKey ke
 }
 }
 
+/**
+	@brief QETProject::starReportName
+	The name a star report (@sa Element::isReportStar()) gathers its
+	reports by: its label, else the function of the wire its terminal
+	holds, else that wire's number. Empty when it has none.
+*/
+QString QETProject::starReportName(const ReportElement *report)
+{
+	if (!report) return QString();
+	const QString label = reportMatchKey(report, ReportLinkKey::Label);
+	if (!label.isEmpty()) return label;
+	const QString function = reportMatchKey(report, ReportLinkKey::Function);
+	if (!function.isEmpty()) return function;
+	const QList<Terminal *> terminals = report->terminals();
+	if (terminals.isEmpty() || terminals.first()->conductors().isEmpty())
+		return QString();
+	return terminals.first()->conductors().first()->properties().text.trimmed();
+}
+
+/**
+	@brief QETProject::starReportCandidates
+	@return the free reports of the other kind that @p star would take if
+	it were a star: on another folio, of the same name (starReportName()),
+	in folio order. A report that is a star itself is left out.
+*/
+QList<ReportElement *> QETProject::starReportCandidates(const ReportElement *star)
+{
+	QList<ReportElement *> out;
+	if (!star) return out;
+		//Free reports on folios not built yet are looked at too
+	buildFoliosHolding(ElementData::Types(ElementData::AllReport), true);
+	const QString name = starReportName(star);
+	if (name.isEmpty()) return out;
+	const int inverse = star->linkType() == Element::NextReport
+			? Element::PreviousReport : Element::NextReport;
+	for (Diagram *diagram : m_diagrams_list) {
+		if (diagram == star->diagram()) continue;
+		for (QGraphicsItem *item : diagram->items()) {
+			auto *report = dynamic_cast<ReportElement *>(item);
+			if (!report || report->linkType() != inverse || !report->isFree()
+					|| report->isReportStar())
+				continue;
+			if (starReportName(report) == name)
+				out << report;
+		}
+	}
+	return out;
+}
+
 void QETProject::scheduleAutoLink()
 {
 	if (!m_chained_reports || m_pending_auto_link) {
@@ -7150,11 +7199,22 @@ void QETProject::autoLinkReportElements()
 	const QVector<QPointer<Element>> all_report_elmts = ep.find(ElementData::AllReport);
 
 	QHash<QString, QList<ReportElement*>> freeReports;
+	QHash<QString, QList<ReportElement*>> stars;
 
 	for (const auto &elmt_ptr : all_report_elmts) {
 		if (!elmt_ptr) continue;
 		ReportElement *report = dynamic_cast<ReportElement*>(elmt_ptr.data());
 		if (!report) continue;
+
+		// A star takes the free reports of its key even when it has
+		// links already (@sa Element::isReportStar())
+		if (report->isReportStar()) {
+			const QString key = reportMatchKey(report, m_chained_reports_key);
+			if (!key.isEmpty()) {
+				stars[key].append(report);
+			}
+			continue;
+		}
 
 		// Only auto-link reports that are currently unlinked (isFree() == true)
 		// and have a non-empty key! Never overwrite existing or manual links.
@@ -7167,6 +7227,27 @@ void QETProject::autoLinkReportElements()
 	}
 
 	bool linked_any = false;
+
+		// A star first: every free report of the other kind with its key,
+		// on another folio, goes to it -- one +24V out to many sheets
+	for (auto it = stars.begin(); it != stars.end(); ++it) {
+		QList<ReportElement*> &free = freeReports[it.key()];
+		for (ReportElement *star : std::as_const(it.value())) {
+			const int inverse = star->linkType() == Element::NextReport
+					? Element::PreviousReport : Element::NextReport;
+			for (int i = 0; i < free.size(); ) {
+				ReportElement *other = free.at(i);
+				if (other->linkType() == inverse && other->diagram() != star->diagram()
+						&& !other->isReportStar()) {
+					star->linkToElement(other);
+					linked_any = true;
+					free.removeAt(i);
+				} else {
+					++i;
+				}
+			}
+		}
+	}
 
 	for (auto it = freeReports.begin(); it != freeReports.end(); ++it) {
 		QList<ReportElement*> &reports = it.value();

@@ -76,6 +76,8 @@ class CheckPanelDockWidget : public QDockWidget
 		void applyFilter();
 
 	private:
+		QString fixOf(QTreeWidgetItem *row) const;
+		void applyFix(QTreeWidgetItem *row);
 		void clear(const QString &summary);
 		void buildFolios();
 		void fillCheck(QTreeWidgetItem *root, ProjectCheck::Kind kind);
@@ -94,6 +96,7 @@ class CheckPanelDockWidget : public QDockWidget
 		QPointer<QETProject> m_pending;
 		QMetaObject::Connection m_destroyed;
 		QPushButton *m_run = nullptr;
+		QPushButton *m_fix = nullptr;
 		QLabel *m_summary = nullptr;
 		QMenu *m_options = nullptr;
 		QAction *m_show_accepted = nullptr;

@@ -28,9 +28,11 @@
 #include "../qetproject.h"
 #include "../dataBase/projectdatabase.h"
 #include "../projectcheck/checksettings.h"
+#include "../projectcheck/checkfixes.h"
 
 #include <QApplication>
 #include <QComboBox>
+#include <QFont>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QInputDialog>
@@ -63,6 +65,12 @@ CheckPanelDockWidget::CheckPanelDockWidget(QWidget *parent) :
 	m_run->setObjectName(QStringLiteral("checkPanelRun"));
 	m_run->setToolTip(tr("Run every check on the current project"));
 	top->addWidget(m_run);
+		// Fork: the one-click correction of the chosen finding (CheckFixes)
+	m_fix = new QPushButton(tr("Fix"), body);
+	m_fix->setObjectName(QStringLiteral("checkPanelFix"));
+	m_fix->setToolTip(tr("Choose a finding that can be put right in one click (shown in bold)"));
+	m_fix->setEnabled(false);
+	top->addWidget(m_fix);
 
 	auto *options = new QToolButton(body);
 	options->setObjectName(QStringLiteral("checkPanelOptions"));
@@ -142,6 +150,13 @@ CheckPanelDockWidget::CheckPanelDockWidget(QWidget *parent) :
 	setWidget(body);
 
 	connect(m_run, &QPushButton::clicked, this, &CheckPanelDockWidget::run);
+	connect(m_fix, &QPushButton::clicked, this, [this]() { applyFix(findingRow(m_tree->currentItem())); });
+	connect(m_tree, &QTreeWidget::currentItemChanged, this, [this](QTreeWidgetItem *current) {
+		const QString fix = fixOf(findingRow(current));
+		m_fix->setEnabled(!fix.isEmpty());
+		m_fix->setToolTip(fix.isEmpty() ? tr("Choose a finding that can be put right in one click (shown in bold)")
+										: fix);
+	});
 	connect(m_tree, &QTreeWidget::itemActivated, this,
 			[this](QTreeWidgetItem *row, int) { showRow(row); });
 	clear(tr("No project is open."));
@@ -251,6 +266,10 @@ namespace {
 	constexpr int tip_role = Qt::UserRole + 5;
 		/// Fork: the finding could not be checked for want of data
 	constexpr int incomplete_role = Qt::UserRole + 6;
+		/// Fork: the finding's index in its check's result, and what its
+		/// one-click correction does (CheckFixes::label()), empty if none
+	constexpr int finding_role = Qt::UserRole + 7;
+	constexpr int fix_role = Qt::UserRole + 8;
 }
 
 /// Fork: the icon of a severity
@@ -297,9 +316,13 @@ void CheckPanelDockWidget::fillCheck(QTreeWidgetItem *root, ProjectCheck::Kind k
 	const ProjectCheck::Result result = m_results.value(int(kind));
 	if (!result.note.isEmpty()) root->setData(0, note_role, result.note);
 	const auto accepted = CheckSettings::acceptedFindings(m_project);
-	for (const auto &finding : result.findings) {
+	for (int index = 0 ; index < result.findings.size() ; ++index) {
+		const ProjectCheck::Finding &finding = result.findings.at(index);
 		auto *row = new QTreeWidgetItem(root);
 		const QString id = CheckSettings::findingId(kind, finding);
+		row->setData(0, finding_role, index);
+		const QString fix = CheckFixes::label(m_project, finding);
+		row->setData(0, fix_role, fix);
 		row->setData(0, id_role, id);
 		row->setData(0, text_role, finding.text);
 		row->setData(0, accepted_role, accepted.contains(id));
@@ -312,6 +335,14 @@ void CheckPanelDockWidget::fillCheck(QTreeWidgetItem *root, ProjectCheck::Kind k
 			? tr("%1 (%2)").arg(finding.text, ProjectCheck::severityText(finding.severity))
 			: tr("%1 (%2, EPLAN %3)").arg(finding.text,
 				ProjectCheck::severityText(finding.severity), finding.eplan));
+		if (!fix.isEmpty()) {
+			//: %1 is the tool tip of the finding, %2 what its one-click correction does
+			row->setData(0, tip_role, tr("%1\nFix: %2").arg(row->data(0, tip_role).toString(), fix));
+			// Bold: the findings the Fix button can put right
+			QFont font = row->font(0);
+			font.setBold(true);
+			row->setFont(0, font);
+		}
 			// One place: on the finding's own row. Several: a row each,
 			// and the finding shows the first that can be shown.
 		if (finding.places.size() == 1) {
@@ -593,6 +624,15 @@ void CheckPanelDockWidget::showMenu(const QPoint &pos)
 				if (ok) setAccepted(findAgain(), true, note.trimmed());
 			});
 		}
+		const QString fix = fixOf(row);
+		if (!fix.isEmpty()) {
+			QAction *action = menu.addAction(tr("Fix: %1").arg(fix));
+			action->setObjectName(QStringLiteral("checkPanelFixAction"));
+			connect(action, &QAction::triggered, this, [this, findAgain]() {
+				applyFix(findAgain());
+			});
+			menu.insertAction(menu.actions().first(), action);
+		}
 		menu.addSeparator();
 	}
 	const bool enabled = CheckSettings::ruleEnabled(m_project, kind);
@@ -686,3 +726,35 @@ bool CheckPanelDockWidget::showRow(QTreeWidgetItem *row)
 	}
 	return true;
 }
+
+/**
+	@brief CheckPanelDockWidget::fixOf
+	Fork: what the one-click correction of the finding of @p row does,
+	empty when it has none (CheckFixes)
+*/
+QString CheckPanelDockWidget::fixOf(QTreeWidgetItem *row) const
+{
+	if (!row || !m_project || m_project->isReadOnly()) return QString();
+	return row->data(0, fix_role).toString();
+}
+
+/**
+	@brief CheckPanelDockWidget::applyFix
+	Fork: put the finding of @p row right (CheckFixes::apply()), one undo
+	step, then check again: what the step changed may solve or show other
+	findings.
+*/
+void CheckPanelDockWidget::applyFix(QTreeWidgetItem *row)
+{
+	if (fixOf(row).isEmpty() || !row->parent()) return;
+	const auto kind = ProjectCheck::Kind(row->parent()->data(0, kind_role).toInt());
+	const int index = row->data(0, finding_role).toInt();
+	const ProjectCheck::Result result = m_results.value(int(kind));
+	if (index < 0 || index >= result.findings.size()) return;
+	const QString done = CheckFixes::apply(m_project, result.findings.at(index));
+	run();
+	if (!done.isEmpty())
+		//: %1 is what the one-click correction did
+		m_summary->setText(tr("Done: %1. %2").arg(done, m_summary->text()));
+}
+

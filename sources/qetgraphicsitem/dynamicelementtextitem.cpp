@@ -15,6 +15,7 @@
 	You should have received a copy of the GNU General Public License
 	along with QElectroTech.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "../undocommand/pairrepresentation.h"
 #include "dynamicelementtextitem.h"
 
 #include <bridge/bridgemanager.h>
@@ -1664,7 +1665,32 @@ void DynamicElementTextItem::reportChanged()
 	if(text_have_label)
 	{
 		setConnectionForReportFormula(m_report_formula);
+		watchStarReports();
 		updateReportText();
+	}
+}
+
+/**
+	@brief DynamicElementTextItem::watchStarReports
+	A star report names every report it is linked to: the text follows
+	each of them, not only the first one setConnectionForReportFormula()
+	watches.
+*/
+void DynamicElementTextItem::watchStarReports()
+{
+	for (const QMetaObject::Connection &c : std::as_const(m_star_connections))
+		disconnect(c);
+	m_star_connections.clear();
+	if (!m_parent_element || !m_parent_element.data()->isReportStar())
+		return;
+	const QList<Element *> linked = m_parent_element.data()->linkedElements();
+	for (Element *elmt : linked) {
+		if (elmt == m_other_report.data()) continue;
+		m_star_connections << connect(elmt, &Element::xChanged, this, &DynamicElementTextItem::updateReportText);
+		m_star_connections << connect(elmt, &Element::yChanged, this, &DynamicElementTextItem::updateReportText);
+		if (Diagram *d = elmt->diagram())
+			m_star_connections << connect(&d->border_and_titleblock, &BorderTitleBlock::titleBlockFolioChanged,
+										  this, &DynamicElementTextItem::updateReportText);
 	}
 }
 
@@ -1844,10 +1870,7 @@ void DynamicElementTextItem::updateReportText()
 		{
 			if(m_other_report)
 			{
-				Element *elmt = m_other_report.data();
-				QString label = m_report_formula;
-				autonum::sequentialNumbers seq_copy = elmt->sequenceStruct();
-				label = autonum::AssignVariables::formulaToLabel(label, seq_copy, elmt->diagram(), elmt);
+				QString label = otherReportText();
 				setPlainText(label);
 			}
 			else
@@ -1866,20 +1889,14 @@ void DynamicElementTextItem::updateReportText()
 	{
 		if (m_info_name == "cross_ref") {
 			if (m_other_report) {
-				Element *elmt = m_other_report.data();
-				QString xref_str = m_report_formula;
-				autonum::sequentialNumbers seq_copy = elmt->sequenceStruct();
-				xref_str = autonum::AssignVariables::formulaToLabel(xref_str, seq_copy, elmt->diagram(), elmt);
+				QString xref_str = otherReportText();
 				setPlainText(xref_str);
 			} else {
 				setPlainText("");
 			}
 		} else if (m_info_name == "label") {
 			if (m_other_report) {
-				Element *elmt = m_other_report.data();
-				QString xref_str = m_report_formula;
-				autonum::sequentialNumbers seq_copy = elmt->sequenceStruct();
-				xref_str = autonum::AssignVariables::formulaToLabel(xref_str, seq_copy, elmt->diagram(), elmt);
+				QString xref_str = otherReportText();
 				QString lbl = m_parent_element ? m_parent_element.data()->actualLabel() : "";
 				if (!lbl.isEmpty() && !xref_str.isEmpty()) {
 					if (m_parent_element && m_parent_element.data()->linkType() == Element::PreviousReport) {
@@ -2257,6 +2274,39 @@ bool DynamicElementTextItem::refreshRemoteEndpoint()
 	return true;
 }
 
+/**
+	@brief DynamicElementTextItem::otherReportText
+	@return where the report linked to the parent report is, by the
+	project's report formula. A star (@sa Element::isReportStar()) names
+	every report it is linked to, in folio order, apart by a space.
+*/
+QString DynamicElementTextItem::otherReportText() const
+{
+	const auto one = [this](Element *elmt) {
+		autonum::sequentialNumbers seq_copy = elmt->sequenceStruct();
+		return autonum::AssignVariables::formulaToLabel(
+				m_report_formula, seq_copy, elmt->diagram(), elmt);
+	};
+	Element *parent = m_parent_element.data();
+	if (parent && parent->isReportStar() && parent->linkedElements().size() > 1) {
+		QList<Element *> linked = parent->linkedElements();
+		std::sort(linked.begin(), linked.end(), [](Element *a, Element *b) {
+			const int fa = a->diagram() ? a->diagram()->folioIndex() : -1;
+			const int fb = b->diagram() ? b->diagram()->folioIndex() : -1;
+			if (fa != fb) return fa < fb;
+			if (a->pos().x() != b->pos().x()) return a->pos().x() < b->pos().x();
+			return a->pos().y() < b->pos().y();
+		});
+		QStringList texts;
+		for (Element *elmt : std::as_const(linked))
+			texts << one(elmt);
+		return texts.join(QLatin1Char(' '));
+	}
+	if (!m_other_report)
+		return QString();
+	return one(m_other_report.data());
+}
+
 QString DynamicElementTextItem::reportReplacedCompositeText() const
 {
 	QString string;
@@ -2268,10 +2318,7 @@ QString DynamicElementTextItem::reportReplacedCompositeText() const
 		
 		if (string.contains("%{label}") && m_other_report)
 		{
-			Element *elmt = m_other_report.data();
-			QString label = m_report_formula;
-			autonum::sequentialNumbers seq_copy = elmt->sequenceStruct();
-			label = autonum::AssignVariables::formulaToLabel(label, seq_copy, elmt->diagram(), elmt);
+			QString label = otherReportText();
 			string.replace("%{label}", label);
 		}
 			// if element is not linked, replace an empty string
@@ -2394,6 +2441,46 @@ void DynamicElementTextItem::thisRotationChanged() {
 }
 
 /**
+	@brief DynamicElementTextItem::slaveXrefText
+	The cross-reference a contact shows: where its master is, by the
+	project's slave label. A pair cross-reference shows where the contact
+	it stands for is (@sa PairRepresentation), and that contact adds where
+	its representations are.
+*/
+QString DynamicElementTextItem::slaveXrefText(const XRefProperties &xrp, Element *master_elmt)
+{
+	Element *self = m_parent_element.data();
+	const auto one = [&xrp, self](Element *target) {
+		QString label = xrp.slaveLabel();
+		autonum::sequentialNumbers seq_copy = target->sequenceStruct();
+		return autonum::AssignVariables::formulaToLabel(
+				autonum::AssignVariables::forViewer(label, target->diagram(),
+													self ? self->diagram() : nullptr),
+				seq_copy, target->diagram(), target);
+	};
+	for (const QMetaObject::Connection &c : std::as_const(m_pair_connections))
+		disconnect(c);
+	m_pair_connections.clear();
+	const auto watch = [this](Element *other) {
+		m_pair_connections << connect(other, &Element::xChanged, this, &DynamicElementTextItem::updateXref);
+		m_pair_connections << connect(other, &Element::yChanged, this, &DynamicElementTextItem::updateXref);
+	};
+	if (self && self->isPairRepresentation()) {
+		if (Element *real = PairRepresentation::realOf(self)) {
+			watch(real);
+			return one(real);
+		}
+		return QStringLiteral("(?)");
+	}
+	QString text = one(master_elmt);
+	for (Element *rep : PairRepresentation::representationsOf(self)) {
+		watch(rep);
+		text += QLatin1Char(' ') + one(rep);
+	}
+	return text;
+}
+
+/**
 	@brief DynamicElementTextItem::updateXref
 	Create or delete the Xref according to the current properties of the project
 */
@@ -2434,9 +2521,7 @@ void DynamicElementTextItem::updateXref()
 				{
 					if(m_text_from == DynamicElementTextItem::ElementInfo && m_info_name == "xref")
 					{
-						QString xref_label = xrp.slaveLabel();
-						autonum::sequentialNumbers seq_copy = master_elmt->sequenceStruct();
-						xref_label = autonum::AssignVariables::formulaToLabel(autonum::AssignVariables::forViewer(xref_label, master_elmt->diagram(), m_parent_element ? m_parent_element->diagram() : nullptr), seq_copy, master_elmt->diagram(), master_elmt);
+						QString xref_label = slaveXrefText(xrp, master_elmt);
 
 						DiagramContext dc = m_parent_element->elementInformations();
 						if(dc.value("xref").toString() != xref_label)
@@ -2465,9 +2550,7 @@ void DynamicElementTextItem::updateXref()
 				   (m_text_from == DynamicElementTextItem::CompositeText && m_composite_text.contains("%{label}"))
 			   )
 				{
-					QString xref_label = xrp.slaveLabel();
-					autonum::sequentialNumbers seq_copy = master_elmt->sequenceStruct();
-					xref_label = autonum::AssignVariables::formulaToLabel(autonum::AssignVariables::forViewer(xref_label, master_elmt->diagram(), m_parent_element ? m_parent_element->diagram() : nullptr), seq_copy, master_elmt->diagram(), master_elmt);
+					QString xref_label = slaveXrefText(xrp, master_elmt);
 					
 					if(!m_slave_Xref_item)
 					{
@@ -2530,9 +2613,7 @@ void DynamicElementTextItem::updateXref()
 				XRefProperties xrp = diagram()->project()->defaultXRefProperties(master_elmt->kindInformations()["type"].toString());
 				if(xrp.getXrefPos() == Qt::AlignHCenter)
 				{
-					QString xref_label = xrp.slaveLabel();
-					autonum::sequentialNumbers seq_copy = master_elmt->sequenceStruct();
-					xref_label = autonum::AssignVariables::formulaToLabel(autonum::AssignVariables::forViewer(xref_label, master_elmt->diagram(), m_parent_element ? m_parent_element->diagram() : nullptr), seq_copy, master_elmt->diagram(), master_elmt);
+					QString xref_label = slaveXrefText(xrp, master_elmt);
 
 					DiagramContext dc = m_parent_element->elementInformations();
 					if(dc.value("xref").toString() != xref_label)

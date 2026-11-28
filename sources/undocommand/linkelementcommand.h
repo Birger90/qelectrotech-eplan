@@ -44,6 +44,9 @@ class LinkElementCommand : public QUndoCommand
 		void setLink (Element *element_);
 		void unlink  (QList<Element *> element_list);
 		void unlinkAll ();
+			/// What redo() links, taken as it is: for a step whose earlier
+			/// part changes what isLinkable() says (@sa ReportStar::command())
+		void setLinkedAfter(const QList<Element *> &list) { m_linked_after = list; }
 		void setGroupIndex(int index) { m_group_index = index; }
 		void setGroupIndices(const QMap<Element*, int> &indices) { m_group_indices = indices; }
 

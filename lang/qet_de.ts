@@ -3291,6 +3291,28 @@ Möchten Sie diese ebenfalls neu nummerieren?</numerusform>
         <source>Switch this check on for this project</source>
         <translation>Diese Prüfung für dieses Projekt einschalten</translation>
     </message>
+    <message>
+        <source>%1
+Fix: %2</source>
+        <translation>%1
+Beheben: %2</translation>
+    </message>
+    <message>
+        <source>Choose a finding that can be put right in one click (shown in bold)</source>
+        <translation>Einen Befund wählen, der sich mit einem Klick beheben lässt (fett dargestellt)</translation>
+    </message>
+    <message>
+        <source>Done: %1. %2</source>
+        <translation>Erledigt: %1. %2</translation>
+    </message>
+    <message>
+        <source>Fix</source>
+        <translation>Beheben</translation>
+    </message>
+    <message>
+        <source>Fix: %1</source>
+        <translation>Beheben: %1</translation>
+    </message>
 </context>
 <context>
     <name>ClickableImageLabel</name>
@@ -14083,6 +14105,34 @@ Bringen Sie sie zuerst auf eine Klemmleiste.</translation>
         <source>Unlink</source>
         <translation>Trennen</translation>
     </message>
+    <message>
+        <source>Draw this contact once more on another folio, as a drawing only: it follows the label and terminals of this contact, and the two point at each other</source>
+        <translation>Diesen Kontakt auf einem anderen Blatt noch einmal zeichnen, nur als Darstellung: sie folgt BMK und Anschlüssen dieses Kontakts, und beide verweisen aufeinander</translation>
+    </message>
+    <message>
+        <source>Folio to show the contact on:</source>
+        <translation>Blatt, auf dem der Kontakt dargestellt wird:</translation>
+    </message>
+    <message>
+        <source>Go to the real contact (this is its pair cross-reference)</source>
+        <translation>Zum echten Kontakt (dies ist sein Paarquerverweis)</translation>
+    </message>
+    <message>
+        <source>One source going out to many folios, a +24V say: the report is linked to every free report of the other kind with its name and shows all their positions.</source>
+        <translation>Eine Quelle auf viele Blätter, etwa +24V: der Unterbrechungspunkt wird mit allen freien gleichnamigen Gegenstücken verbunden und zeigt alle ihre Positionen.</translation>
+    </message>
+    <message>
+        <source>Pair cross-reference</source>
+        <translation>Paarquerverweis</translation>
+    </message>
+    <message>
+        <source>Show as pair cross-reference...</source>
+        <translation>Als Paarquerverweis darstellen …</translation>
+    </message>
+    <message>
+        <source>Star: link every report of this name on the other folios</source>
+        <translation>Stern: alle gleichnamigen Unterbrechungspunkte der anderen Blätter verbinden</translation>
+    </message>
 </context>
 <context>
     <name>LiveServer</name>
@@ -19926,6 +19976,14 @@ Geben Sie ihnen zuerst eine andere Nummerierung.</numerusform>
     <message>
         <source>Supply of the socket-outlet not followed back to a protective device: an RCD of at most 30 mA in front is not checked (IEC 60364-4-41 411.3.3)</source>
         <translation>Angabe fehlt: Zuleitung der Steckdose nicht bis zu einem Schutzorgan verfolgt, ein FI mit höchstens 30 mA davor ist nicht geprüft (IEC 60364-4-41 411.3.3)</translation>
+    </message>
+    <message>
+        <source>Pair cross-reference whose contact is gone</source>
+        <translation>Paarquerverweis, dessen Kontakt fehlt</translation>
+    </message>
+    <message>
+        <source>Pair cross-reference with wires: it is a drawing only, wire the real contact</source>
+        <translation>Paarquerverweis mit Leitern: er ist nur Darstellung, den echten Kontakt verdrahten</translation>
     </message>
 </context>
 <context>
@@ -37982,6 +38040,410 @@ die Variable &quot;volta&quot; kombiniert mit dem Wert &quot;1745&quot; lässt i
 %2</source>
         <translation>%1 konnte nicht umgewandelt werden:
 %2</translation>
+    </message>
+</context>
+<context>
+    <name>CheckFixes</name>
+    <message>
+        <source>Delete the pair cross-reference</source>
+        <translation>Paarquerverweis löschen</translation>
+    </message>
+    <message>
+        <source>Give it number %1 of %2</source>
+        <translation>Nummer %1 aus %2 vergeben</translation>
+    </message>
+    <message>
+        <source>Give it the label %1</source>
+        <translation>BMK %1 vergeben</translation>
+    </message>
+    <message>
+        <source>Link to %1 on folio %2</source>
+        <translation>Mit %1 auf Blatt %2 verbinden</translation>
+    </message>
+    <message>
+        <source>Link to the star %1 on folio %2</source>
+        <translation>Am Stern %1 auf Blatt %2 anschließen</translation>
+    </message>
+    <message numerus="yes">
+        <source>Make %1 on folio %2 a star (links %n more report(s))</source>
+        <translation>
+            <numerusform>%1 auf Blatt %2 zum Stern machen (verbindet %n weiteren Unterbrechungspunkt)</numerusform>
+            <numerusform>%1 auf Blatt %2 zum Stern machen (verbindet %n weitere Unterbrechungspunkte)</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Make it a star: link the %n report(s) %1 on the other folios</source>
+        <translation>
+            <numerusform>Zum Stern machen: den %n Unterbrechungspunkt %1 der anderen Blätter verbinden</numerusform>
+            <numerusform>Zum Stern machen: die %n Unterbrechungspunkte %1 der anderen Blätter verbinden</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>New number for the other wire(s): %1</source>
+        <translation>Neue Nummer für die anderen Leiter: %1</translation>
+    </message>
+</context>
+<context>
+    <name>NetworkAddressDialog</name>
+    <message>
+        <source>A free address of its network for each device with an IP field and none</source>
+        <translation>Eine freie Adresse seines Netzes für jedes Gerät mit IP-Feld ohne Adresse</translation>
+    </message>
+    <message>
+        <source>A name from location and label (+Q1 -2A1: q1-2a1) for each device with a PROFINET field and none; names already written stay</source>
+        <translation>Ein Name aus Ort und BMK (+Q1 -2A1: q1-2a1) für jedes Gerät mit PROFINET-Feld ohne Namen; vorhandene Namen bleiben</translation>
+    </message>
+    <message>
+        <source>Assign IP addresses</source>
+        <translation>IP-Adressen vergeben</translation>
+    </message>
+    <message>
+        <source>Automatic PROFINET names</source>
+        <translation>PROFINET-Namen automatisch</translation>
+    </message>
+    <message>
+        <source>CSV (*.csv)</source>
+        <translation>CSV (*.csv)</translation>
+    </message>
+    <message>
+        <source>Diagram editors</source>
+        <translation>Schaltplaneditoren</translation>
+    </message>
+    <message>
+        <source>Every device with a network address: IP, subnet, PROFINET name, the problems; give IP addresses and PROFINET names, export as CSV</source>
+        <translation>Alle Geräte mit Netzwerkadresse: IP, Subnetz, PROFINET-Name, Probleme; IP-Adressen und PROFINET-Namen vergeben, als CSV ausgeben</translation>
+    </message>
+    <message>
+        <source>Export CSV...</source>
+        <translation>CSV exportieren …</translation>
+    </message>
+    <message>
+        <source>Export network addresses</source>
+        <translation>Netzwerkadressen exportieren</translation>
+    </message>
+    <message>
+        <source>Folio</source>
+        <translation>Blatt</translation>
+    </message>
+    <message>
+        <source>Give an IP network first.</source>
+        <translation>Zuerst ein IP-Netz angeben.</translation>
+    </message>
+    <message>
+        <source>IP address</source>
+        <translation>IP-Adresse</translation>
+    </message>
+    <message>
+        <source>IP networks:</source>
+        <translation>IP-Netze:</translation>
+    </message>
+    <message>
+        <source>Label</source>
+        <translation>BMK</translation>
+    </message>
+    <message>
+        <source>Location</source>
+        <translation>Ort</translation>
+    </message>
+    <message>
+        <source>Machine = 10.0.0.0/24, gw 10.0.0.1, from 10; ...</source>
+        <translation>Maschine = 10.0.0.0/24, gw 10.0.0.1, ab 10; …</translation>
+    </message>
+    <message>
+        <source>Network</source>
+        <translation>Netz</translation>
+    </message>
+    <message>
+        <source>Network addresses</source>
+        <translation>Netzwerkadressen</translation>
+    </message>
+    <message>
+        <source>Network addresses...</source>
+        <translation>Netzwerkadressen …</translation>
+    </message>
+    <message>
+        <source>One or more networks, apart by ;: name = address/prefix, the gateway and the first host to give. A device takes the network its information network_name names, else the first.</source>
+        <translation>Ein oder mehrere Netze, getrennt durch ;: Name = Adresse/Präfix, Gateway und erster zu vergebender Host. Ein Gerät nimmt das Netz aus seiner Information network_name, sonst das erste.</translation>
+    </message>
+    <message>
+        <source>PLC station</source>
+        <translation>SPS-Station</translation>
+    </message>
+    <message>
+        <source>PROFINET name / address</source>
+        <translation>PROFINET-Name / Adresse</translation>
+    </message>
+    <message>
+        <source>Problems</source>
+        <translation>Probleme</translation>
+    </message>
+    <message>
+        <source>Subnet mask</source>
+        <translation>Subnetzmaske</translation>
+    </message>
+</context>
+<context>
+    <name>NetworkAddresses</name>
+    <message>
+        <source>Assign IP addresses</source>
+        <translation>IP-Adressen vergeben</translation>
+    </message>
+    <message>
+        <source>Edit network address</source>
+        <translation>Netzwerkadresse ändern</translation>
+    </message>
+    <message>
+        <source>IP address not valid</source>
+        <translation>IP-Adresse ungültig</translation>
+    </message>
+    <message numerus="yes">
+        <source>IP address used %n times</source>
+        <translation>
+            <numerusform>IP-Adresse %n-mal vergeben</numerusform>
+            <numerusform>IP-Adresse %n-mal vergeben</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>PROFINET name %1</source>
+        <translation>PROFINET-Name %1</translation>
+    </message>
+    <message numerus="yes">
+        <source>PROFINET name used %n times</source>
+        <translation>
+            <numerusform>PROFINET-Name %n-mal vergeben</numerusform>
+            <numerusform>PROFINET-Name %n-mal vergeben</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>PROFINET names from the labels</source>
+        <translation>PROFINET-Namen aus den BMK</translation>
+    </message>
+    <message>
+        <source>begins like a port name (port-xyz)</source>
+        <translation>beginnt wie ein Portname (port-xyz)</translation>
+    </message>
+    <message>
+        <source>has a part beginning or ending with -</source>
+        <translation>hat einen Teil, der mit - beginnt oder endet</translation>
+    </message>
+    <message>
+        <source>has a part longer than 63 characters</source>
+        <translation>hat einen Teil mit mehr als 63 Zeichen</translation>
+    </message>
+    <message>
+        <source>has an empty part between dots</source>
+        <translation>hat einen leeren Teil zwischen Punkten</translation>
+    </message>
+    <message>
+        <source>has the form of an IP address</source>
+        <translation>hat die Form einer IP-Adresse</translation>
+    </message>
+    <message>
+        <source>holds &quot;%1&quot;: only a-z, 0-9, - and . are allowed</source>
+        <translation>enthält „%1“: erlaubt sind nur a-z, 0-9, - und .</translation>
+    </message>
+    <message>
+        <source>is empty</source>
+        <translation>ist leer</translation>
+    </message>
+    <message>
+        <source>is longer than 240 characters</source>
+        <translation>ist länger als 240 Zeichen</translation>
+    </message>
+    <message>
+        <source>network or broadcast address</source>
+        <translation>Netz- oder Broadcastadresse</translation>
+    </message>
+    <message>
+        <source>outside network %1</source>
+        <translation>außerhalb von Netz %1</translation>
+    </message>
+</context>
+<context>
+    <name>PairRepresentation</name>
+    <message>
+        <source>Link the contact to its coil or main function first</source>
+        <translation>Zuerst den Kontakt mit seiner Spule bzw. Hauptfunktion verbinden</translation>
+    </message>
+    <message>
+        <source>No contact or no folio</source>
+        <translation>Kein Kontakt oder kein Blatt</translation>
+    </message>
+    <message>
+        <source>Only a contact can be shown as a pair cross-reference</source>
+        <translation>Nur ein Kontakt kann als Paarquerverweis dargestellt werden</translation>
+    </message>
+    <message>
+        <source>Pair cross-reference of %1</source>
+        <translation>Paarquerverweis von %1</translation>
+    </message>
+    <message>
+        <source>The project is read-only</source>
+        <translation>Das Projekt ist schreibgeschützt</translation>
+    </message>
+    <message>
+        <source>The symbol of the contact cannot be built</source>
+        <translation>Das Symbol des Kontakts lässt sich nicht erzeugen</translation>
+    </message>
+</context>
+<context>
+    <name>PlcAddressing</name>
+    <message>
+        <source>Assign PLC addresses</source>
+        <translation>SPS-Adressen vergeben</translation>
+    </message>
+    <message>
+        <source>Beckhoff TwinCAT (%I*, %Q*: linked in TwinCAT)</source>
+        <translation>Beckhoff TwinCAT (%I*, %Q*: in TwinCAT verknüpft)</translation>
+    </message>
+    <message>
+        <source>IEC 61131-3 / CODESYS (%IX0.0, %QX0.0, %IW, %QW)</source>
+        <translation>IEC 61131-3 / CODESYS (%IX0.0, %QX0.0, %IW, %QW)</translation>
+    </message>
+    <message>
+        <source>Omron CJ/CP (0.00, 100.00, 2000, 2100)</source>
+        <translation>Omron CJ/CP (0.00, 100.00, 2000, 2100)</translation>
+    </message>
+    <message>
+        <source>Siemens TIA (I0.0, Q0.0, IW, QW)</source>
+        <translation>Siemens TIA, international (I0.0, Q0.0, IW, QW)</translation>
+    </message>
+    <message>
+        <source>Siemens, German mnemonics (E0.0, A0.0, EW, AW)</source>
+        <translation>Siemens, deutsche Mnemonik (E0.0, A0.0, EW, AW)</translation>
+    </message>
+</context>
+<context>
+    <name>ReportStar</name>
+    <message>
+        <source>Folio report with one partner</source>
+        <translation>Unterbrechungspunkt mit einem Gegenstück</translation>
+    </message>
+    <message>
+        <source>Star folio report</source>
+        <translation>Stern-Unterbrechungspunkt</translation>
+    </message>
+</context>
+<context>
+    <name>WireNumberPattern</name>
+    <message>
+        <source>Number wires by pattern</source>
+        <translation>Drähte nach Muster nummerieren</translation>
+    </message>
+    <message>
+        <source>The pattern needs the counter {n}</source>
+        <translation>Das Muster braucht den Zähler {n}</translation>
+    </message>
+    <message>
+        <source>Unknown field %1</source>
+        <translation>Unbekanntes Feld %1</translation>
+    </message>
+</context>
+<context>
+    <name>WireNumberPatternDialog</name>
+    <message>
+        <source>(none)</source>
+        <translation>(keine)</translation>
+    </message>
+    <message>
+        <source>By columns (left to right)</source>
+        <translation>Nach Spalten (von links nach rechts)</translation>
+    </message>
+    <message>
+        <source>By rows (top down)</source>
+        <translation>Nach Zeilen (von oben nach unten)</translation>
+    </message>
+    <message>
+        <source>Counter:</source>
+        <translation>Zähler:</translation>
+    </message>
+    <message>
+        <source>Diagram editors</source>
+        <translation>Schaltplaneditoren</translation>
+    </message>
+    <message>
+        <source>Every wire already has its number</source>
+        <translation>Jeder Leiter hat schon seine Nummer</translation>
+    </message>
+    <message>
+        <source>First number:</source>
+        <translation>Erste Nummer:</translation>
+    </message>
+    <message>
+        <source>Fixed: numbers stay, new wires take the first free one</source>
+        <translation>Gesperrt: Nummern bleiben, neue Leiter nehmen die erste freie</translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation>Neu</translation>
+    </message>
+    <message>
+        <source>New wires take their number from the pattern</source>
+        <translation>Neue Leiter erhalten ihre Nummer aus dem Muster</translation>
+    </message>
+    <message>
+        <source>Now</source>
+        <translation>Jetzt</translation>
+    </message>
+    <message>
+        <source>Number the wires by a pattern like {seite}.{n:2}: counter per folio, cabinet or project, reserve per folio, by columns or rows</source>
+        <translation>Drähte nach einem Muster wie {seite}.{n:2} nummerieren: Zähler je Blatt, Schrank oder Projekt, Reserve je Blatt, nach Spalten oder Zeilen</translation>
+    </message>
+    <message>
+        <source>Number wires now</source>
+        <translation>Jetzt nummerieren</translation>
+    </message>
+    <message>
+        <source>Numbering:</source>
+        <translation>Nummerierung:</translation>
+    </message>
+    <message>
+        <source>Numbers left free after each folio, for wires drawn later; the next folios keep their numbers</source>
+        <translation>Nummern, die nach jedem Blatt frei bleiben, für später gezeichnete Leiter; die folgenden Blätter behalten ihre Nummern</translation>
+    </message>
+    <message>
+        <source>Numbers typed by hand (L1, +24V) and frozen wires stay in both</source>
+        <translation>Von Hand geschriebene Nummern (L1, +24V) und eingefrorene Leiter bleiben in beiden Fällen</translation>
+    </message>
+    <message>
+        <source>One counter for the project</source>
+        <translation>Ein Zähler für das Projekt</translation>
+    </message>
+    <message>
+        <source>Order on the folio:</source>
+        <translation>Reihenfolge auf dem Blatt:</translation>
+    </message>
+    <message>
+        <source>Pattern:</source>
+        <translation>Muster:</translation>
+    </message>
+    <message>
+        <source>Recalculate: number every wire anew, in order</source>
+        <translation>Mitlaufend: alle Leiter der Reihe nach neu nummerieren</translation>
+    </message>
+    <message>
+        <source>Reserve per folio:</source>
+        <translation>Reserve je Blatt:</translation>
+    </message>
+    <message>
+        <source>Starts again in each cabinet (+)</source>
+        <translation>Beginnt in jedem Schrank (+) neu</translation>
+    </message>
+    <message>
+        <source>Starts again on each folio</source>
+        <translation>Beginnt auf jedem Blatt neu</translation>
+    </message>
+    <message>
+        <source>Wire numbers by pattern</source>
+        <translation>Drahtnummern nach Muster</translation>
+    </message>
+    <message>
+        <source>Wire numbers by pattern...</source>
+        <translation>Drahtnummern nach Muster …</translation>
+    </message>
+    <message>
+        <source>{seite} folio, {spalte} column, {zeile} row, {schrank} location (+), {anlage} plant (=), {n} counter, {n:2} at least two digits, {n:A} letters A, B ... Z, AA</source>
+        <translation>{seite} Blatt, {spalte} Spalte, {zeile} Zeile, {schrank} Ort (+), {anlage} Anlage (=), {n} Zähler, {n:2} mindestens zwei Stellen, {n:A} Buchstaben A, B … Z, AA</translation>
     </message>
 </context>
 </TS>

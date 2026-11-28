@@ -195,6 +195,9 @@ class DynamicElementTextItem : public DiagramTextItem
 		void setPotentialConductor();
 		void conductorPropertiesChanged();
 		QString reportReplacedCompositeText() const;
+		QString otherReportText() const;
+		void watchStarReports();
+		QString slaveXrefText(const XRefProperties &xrp, Element *master_elmt);
 		QString remoteEndpoint() const;
 		bool refreshRemoteEndpoint();
 		void zoomToLinkedElement();
@@ -230,7 +233,9 @@ class DynamicElementTextItem : public DiagramTextItem
 		QMetaObject::Connection m_label_source_con;
 		QList<QMetaObject::Connection>
 		m_formula_connection,
-		m_update_slave_Xref_connection;
+		m_update_slave_Xref_connection,
+		m_star_connections,
+		m_pair_connections;
 		QColor m_user_color;
 		bool
 		m_frame = false,

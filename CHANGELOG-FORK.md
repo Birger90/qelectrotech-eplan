@@ -3,6 +3,56 @@
 Neuere Versionen stehen oben. Das Schema erklärt [VERSIONIERUNG.md](VERSIONIERUNG.md). Die Änderungen des
 Original-QElectroTech stehen in `ChangeLog*`.
 
+## 1.68.0 – 28.11.2026 – Abgleich mit OpenWiring
+
+Funktion für Funktion mit OpenWiring 2.1.16 verglichen ([docs/vergleich-openwiring.md](docs/vergleich-openwiring.md));
+übernommen, was fehlte, und angeglichen, wo OpenWiring es besser löst. Eigener Code, nichts aus OpenWiring kopiert.
+
+- **Stern-Unterbrechungspunkt:** Ein Unterbrechungspunkt kann *Stern* sein (Verknüpfungsfenster: „Stern: alle
+  gleichnamigen Unterbrechungspunkte der anderen Blätter verbinden“) und ist dann mit allen freien gleichnamigen
+  Gegenstücken verbunden, etwa ein +24V auf viele Blätter; sein Querverweis nennt alle Positionen („3-A2 4-A2 5-A2“).
+  Verkettete Unterbrechungspunkte hängen sich selbst an den Stern. Ein Undo-Schritt; Skript `qet.setReportStar()`,
+  `qet.isReportStar()`. Gespeichert als Elementattribut `reportStar="true"`.
+- **Paarquerverweis** (EPLAN „Paarquerverweis“): Ein Kontakt lässt sich auf einem anderen Blatt nur darstellen
+  (Verknüpfungsfenster: „Als Paarquerverweis darstellen …“, Skript `qet.addPairRepresentation()`). Die Darstellung
+  folgt BMK und Anschlussnamen des echten Kontakts, zählt nicht im Kontaktspiegel und in Listen, und beide verweisen
+  aufeinander. Die Prüfung meldet eine verwaiste Darstellung (Kontakt gelöscht) und eine mit Leitern.
+  Gespeichert als Elementattribut `pairOf="{uuid}"`.
+- **Ein-Klick-Korrekturen im Prüfpanel:** Knopf *Beheben* und Rechtsklick *Beheben: …* für Befunde, deren Lösung
+  eindeutig ist: Unterbrechungspunkt mit seinem einzigen freien Gegenstück verbinden, an den Stern anschließen oder
+  zum Stern machen; Kontakt mit der einzigen Spule seines BMK verbinden; BMK aus der Nummerierung vergeben;
+  doppelte Drahtnummer neu vergeben; verwaisten Paarquerverweis löschen. Je ein Undo-Schritt, danach wird neu
+  geprüft. Skript `qet.checkFixes()`, `qet.applyCheckFix(index)`.
+- **Drahtnummern nach Muster:** *Projekt > Drahtnummern nach Muster …* mit lesbarem Muster `{seite}.{n:2}`
+  (`{spalte}`, `{zeile}`, `{schrank}`, `{anlage}`, `{n:3}`, Buchstabenzähler `{n:A}`/`{n:a}`), Zähler je Blatt, je
+  Schrank oder je Projekt, **Reserve je Blatt**, Reihenfolge nach Spalten oder Zeilen, **gesperrt** (Nummern
+  bleiben, neue Leiter nehmen die erste freie ihres Blatts) oder **mitlaufend** (alle neu). Von Hand geschriebene
+  Namen (L1, +24V) und eingefrorene Leiter bleiben. Vorschau im Fenster; Skript `qet.setWireNumberPattern()`,
+  `qet.previewWireNumbers()`, `qet.numberWires()`.
+- **SPS-Adressformate je Station:** Siemens international (I0.0), **Siemens deutsch (E0.0, EW)**, IEC/CODESYS
+  (%IX0.0), **Omron** (0.00/100.00/2000/2100), **Beckhoff TwinCAT** (%I*/%Q*, die GVL schreibt `AT %I*`);
+  **IO-Link-Ports** (`IOL:2/2` → `EB4…EB5 / AB2…AB3`); **„Analoge zuerst“** wie WAGO-Koppler. Station = Elementinfo
+  `plc_station` des Moduls; stabile Vergabe (vorhandene bleiben) oder alles neu. Skript `qet.plcStations()`,
+  `qet.setPlcStation()`, `qet.assignPlcAddresses()`.
+- **Netzwerk-Adresstabelle:** *Projekt > Netzwerkadressen …* listet alle Geräte mit IP- oder PROFINET-Feld und die
+  SPS-Stationen mit Problemen (doppelt, außerhalb des Netzes, Netz-/Broadcastadresse, ungültiger PROFINET-Name),
+  vergibt **freie IP-Adressen** aus den IP-Netzen des Projekts und **PROFINET-Namen** aus Ort und BMK
+  (`+Q1 -2A1` → `q1-2a1`), CSV-Export. Skript `qet.networkAddresses()`, `qet.setIpNetworks()`,
+  `qet.assignIpAddresses()`, `qet.assignProfinetNames()`, `qet.exportNetworkAddresses()`.
+- **Drahtliste des Schaltschrankaufbaus:** jede Leitung von Gerät zu Gerät in Verdrahtungsreihenfolge, mit
+  Drahtnummer, Querschnitt, Aderendhülse (Phoenix AI nach DIN 46228-4), Weg durch die Kanäle und Zuschnitt mit
+  Reserve je Ende (FORMELN.md W9–W11). In `qet.panelDuctFill()` als `runs`, CSV mit `qet.exportPanelWireList()`.
+- **QET-Text v1 für KI-Agenten:** ein Blatt als Text, eine Zeile je Element (`bauteil -K1 typ=… @x,y`,
+  `leiter -S1:14 -K1:A1 nummer=3.01`). MCP-Werkzeuge `qet_folio_text` (ausgeben), `qet_folio_text_check` (Fehler
+  mit Zeilennummer) und `qet_folio_text_apply` (Blatt ersetzen oder anhängen, über qet_edit mit Diff).
+- **Plan-Import aus Vektor-PDF fremder CAD** (SEE Electrical, EPLAN, WSCAD …): `tools/pdf_import/pdf_projekt.py`
+  übernimmt alle Seiten auf einmal: Leiterstärke des Dokuments erkannt, Deckblatt und Listen übersprungen,
+  Blattnummer und Titel aus dem Schriftfeld (Titelpräfix → Ort), Leiterfarbe nach IEC 60757, Drahtnummern, BMK,
+  Unterbrechungspunkte gepaart. Je Seite das JSON von `pdf_blatt.py`.
+- **Nach dem GUI-Test:** Absturz beim Schließen des Fensters *Netzwerkadressen* behoben; im Prüfpanel stehen Befunde mit Ein-Klick-Korrektur fett; Blattauswahl des Paarquerverweises ohne leeren Titel; an der Paardarstellung kein *Lösen*-Knopf (sie wird gelöscht, nicht gelöst).
+- **Omron:** IO-Link-Ports als Kanäle mit Byteanzahl (`IN 2 [2 B] / OUT 101 [2 B]`); fertig adressierte Module schieben die Zähler weiter, neue Module belegen keine Kanäle doppelt.
+- Test `tst_conductormultiedit` an die erweiterte `undo()`-Signatur angepasst (baute seit dem Upstream-Merge nicht).
+
 ## 1.67.0 – 27.11.2026 – Plan prüfen: Steuerstromkreis, Leistungsteil nach IEC, Berichtskopf
 
 *Plan prüfen* liest den Plan jetzt auch als Schaltung. Was aus dem Plan nicht sicher folgt, wird als „Angabe fehlt“

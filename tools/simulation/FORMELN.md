@@ -294,6 +294,11 @@ sicher folgt, wird als Hinweis mit „Angabe fehlt“ (`incomplete`) gemeldet; d
   0 … 10 V) meldet beim Sollwert 4 V genau 40 bar. Die Stellgröße stellt sich auf den Öffnungsdruck ein, bei dem
   V09 die Pumpenförderung abführt (rund 2,8 V).
 
+## Drahtliste des Schaltschrankaufbaus (keine Simulationsformeln)
+
+Die Drahtliste aus dem Abgleich mit OpenWiring (Reihenfolge, Zuschnitt, Aderendhülse) rechnet der
+Schaltschrankaufbau; ihre Beziehungen stehen im Formelregister des Aufbaus, `FORMELN.md` W9–W11.
+
 ## Abweichungen von FluidSIM (bekannt, nicht nachgebildet)
 
 - Zylinderfeder: FluidSIM führt „Federdruck bei x = 0“ und „bei x = x_max“ (lineare Kennlinie); der Kern rechnet eine

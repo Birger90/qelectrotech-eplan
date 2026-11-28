@@ -935,6 +935,37 @@ void Element::setShownAsDot(bool dot)
 }
 
 /**
+	@brief Element::setPairOf
+	Make this contact the pair cross-reference of the contact @p real, or
+	(a null uuid) a contact of its own again. Kept with the project.
+*/
+void Element::setPairOf(const QUuid &real)
+{
+	if (m_pair_of == real)
+		return;
+	m_pair_of = real;
+	scheduleTextsStore();
+	emit linkedElementChanged();
+	for (Element *elmt : std::as_const(connected_elements))
+		if (elmt) emit elmt->linkedElementChanged();
+}
+
+/**
+	@brief Element::setReportStar
+	Make this folio report a star, linked to every report of the other kind
+	it is given, or again one linked to a single report (@sa ReportElement).
+	Kept with the project.
+*/
+void Element::setReportStar(bool star)
+{
+	if (m_report_star == star)
+		return;
+	m_report_star = star;
+	scheduleTextsStore();
+	emit linkedElementChanged();
+}
+
+/**
 	@brief Element::drawAsDot
 	The lines from each terminal to @a meet and a filled dot there, the
 	size of the dot a wire junction gets.
@@ -1749,6 +1780,8 @@ bool Element::fromXml(QDomElement &e,
 	QString fl = e.attribute(QStringLiteral("freezeLabel"), QStringLiteral("false"));
 	m_freeze_label = fl == QLatin1String("false") ? false : true;
 	m_shown_as_dot = e.attribute(QStringLiteral("shownAsDot")) == QLatin1String("true");
+	m_report_star = e.attribute(QStringLiteral("reportStar")) == QLatin1String("true");
+	m_pair_of = QUuid(e.attribute(QStringLiteral("pairOf")));
 
 		//Load Sequential Values
 	if (e.hasAttribute(QStringLiteral("sequ_1"))
@@ -1949,6 +1982,10 @@ QDomElement Element::toXml(
 		//a T-junction drawn as a dot; left out otherwise
 	if (m_shown_as_dot)
 		element.setAttribute(QStringLiteral("shownAsDot"), QStringLiteral("true"));
+	if (m_report_star)
+		element.setAttribute(QStringLiteral("reportStar"), QStringLiteral("true"));
+	if (!m_pair_of.isNull())
+		element.setAttribute(QStringLiteral("pairOf"), m_pair_of.toString());
 
 		// sequential num
 	QDomElement seq = m_autoNum_seq.toXml(document);
@@ -3054,6 +3091,10 @@ QDomElement Element::ownValuesXml(QDomDocument &document) const
 	element.setAttribute(QStringLiteral("is_movable"), bool(is_movable_));
 	if (m_shown_as_dot)
 		element.setAttribute(QStringLiteral("shownAsDot"), QStringLiteral("true"));
+	if (m_report_star)
+		element.setAttribute(QStringLiteral("reportStar"), QStringLiteral("true"));
+	if (!m_pair_of.isNull())
+		element.setAttribute(QStringLiteral("pairOf"), m_pair_of.toString());
 	appendDataXml(document, element);
 	return element;
 }
